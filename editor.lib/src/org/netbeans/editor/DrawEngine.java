@@ -300,6 +300,10 @@ import javax.swing.text.View;
                 ctx.strikeThroughColor = null;
                 ctx.underlineColor = null;
                 ctx.waveUnderlineColor = null;
+                ctx.topBorderLineColor = null;
+                ctx.rightBorderLineColor = null;
+                ctx.bottomBorderLineColor = null;
+                ctx.leftBorderLineColor = null;
 
                 int lineNumber = ctx.startLineNumber + ctx.lineIndex;
                 // Update line-number by layers
@@ -333,6 +337,10 @@ import javax.swing.text.View;
                 ctx.drawGraphics.setStrikeThroughColor(ctx.strikeThroughColor);
                 ctx.drawGraphics.setUnderlineColor(ctx.underlineColor);
                 ctx.drawGraphics.setWaveUnderlineColor(ctx.waveUnderlineColor);
+                ctx.drawGraphics.setTopBorderLineColor(ctx.topBorderLineColor);
+                ctx.drawGraphics.setRightBorderLineColor(ctx.rightBorderLineColor);
+                ctx.drawGraphics.setBottomBorderLineColor(ctx.bottomBorderLineColor);
+                ctx.drawGraphics.setLeftBorderLineColor(ctx.leftBorderLineColor);
                 ctx.drawGraphics.setFont(ctx.font);
                 ctx.drawGraphics.drawChars(0, ctx.lineNumberChars.length,
                     ctx.editorUI.lineNumberWidth);
@@ -615,6 +623,10 @@ import javax.swing.text.View;
             ctx.drawGraphics.setStrikeThroughColor(ctx.strikeThroughColor);
             ctx.drawGraphics.setUnderlineColor(ctx.underlineColor);
             ctx.drawGraphics.setWaveUnderlineColor(ctx.waveUnderlineColor);
+            ctx.drawGraphics.setTopBorderLineColor(ctx.topBorderLineColor);
+            ctx.drawGraphics.setRightBorderLineColor(ctx.rightBorderLineColor);
+            ctx.drawGraphics.setBottomBorderLineColor(ctx.bottomBorderLineColor);
+            ctx.drawGraphics.setLeftBorderLineColor(ctx.leftBorderLineColor);
             ctx.drawGraphics.setFont(ctx.font);
 
             if (ctx.tabsFragment) {
@@ -792,6 +804,10 @@ import javax.swing.text.View;
         ctx.strikeThroughColor = null;
         ctx.underlineColor = null;
         ctx.waveUnderlineColor = null;
+        ctx.topBorderLineColor = null;
+        ctx.rightBorderLineColor = null;
+        ctx.bottomBorderLineColor = null;
+        ctx.leftBorderLineColor = null;
 
         if (ctx.bol) { // if we are on the line begining
             Color fg = ctx.foreColor;
@@ -940,6 +956,10 @@ import javax.swing.text.View;
                 ctx.strikeThroughColor = null;
                 ctx.underlineColor = null;
                 ctx.waveUnderlineColor = null;
+                ctx.topBorderLineColor = null;
+                ctx.rightBorderLineColor = null;
+                ctx.bottomBorderLineColor = null;
+                ctx.leftBorderLineColor = null;
 
                 int lineNumber = ctx.startLineNumber + j;
                 // Update line-number by layers
@@ -966,6 +986,10 @@ import javax.swing.text.View;
                 ctx.drawGraphics.setStrikeThroughColor(ctx.strikeThroughColor);
                 ctx.drawGraphics.setUnderlineColor(ctx.underlineColor);
                 ctx.drawGraphics.setWaveUnderlineColor(ctx.waveUnderlineColor);
+                ctx.drawGraphics.setTopBorderLineColor(ctx.topBorderLineColor);
+                ctx.drawGraphics.setRightBorderLineColor(ctx.rightBorderLineColor);
+                ctx.drawGraphics.setBottomBorderLineColor(ctx.bottomBorderLineColor);
+                ctx.drawGraphics.setLeftBorderLineColor(ctx.leftBorderLineColor);
                 ctx.drawGraphics.setFont(ctx.font);
 
                 ctx.drawGraphics.setX(lnBarX);
@@ -1176,6 +1200,11 @@ import javax.swing.text.View;
         /** Color of the strike-through line or null. */
         Color strikeThroughColor;
 
+        Color topBorderLineColor;
+        Color rightBorderLineColor;
+        Color bottomBorderLineColor;
+        Color leftBorderLineColor;
+        
         /** Current font. */
         Font font;
 
@@ -1396,6 +1425,38 @@ import javax.swing.text.View;
 
         public void setStrikeThroughColor(Color strikeThroughColor) {
             this.strikeThroughColor = strikeThroughColor;
+        }
+
+        public Color getTopBorderLineColor() {
+            return topBorderLineColor;
+        }
+
+        public void setTopBorderLineColor(Color topBorderLineColor) {
+            this.topBorderLineColor = topBorderLineColor;
+        }
+
+        public Color getRightBorderLineColor() {
+            return rightBorderLineColor;
+        }
+
+        public void setRightBorderLineColor(Color rightBorderLineColor) {
+            this.rightBorderLineColor = rightBorderLineColor;
+        }
+
+        public Color getBottomBorderLineColor() {
+            return bottomBorderLineColor;
+        }
+
+        public void setBottomBorderLineColor(Color bottomBorderLineColor) {
+            this.bottomBorderLineColor = bottomBorderLineColor;
+        }
+
+        public Color getLeftBorderLineColor() {
+            return leftBorderLineColor;
+        }
+
+        public void setLeftBorderLineColor(Color leftBorderLineColor) {
+            this.leftBorderLineColor = leftBorderLineColor;
         }
 
         public Font getFont() {

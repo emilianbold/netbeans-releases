@@ -800,7 +800,9 @@ made subject to such option by the copyright holder.
                         <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/</xsl:text>${<xsl:value-of select="$subproj"/>.su.name}</xsl:attribute>
                         <patternset>
                             <include name="**/*.wsdl"/>
+                            <include name="**/*.WSDL"/>
                             <include name="**/*.xsd"/>
+                            <include name="**/*.XSD"/>
                             <include name="META-INF/jbi.xml"/>
                             <include name="META-INF/catalog.xml"/>
                         </patternset>
@@ -904,7 +906,9 @@ made subject to such option by the copyright holder.
                     <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/</xsl:text>${<xsl:value-of select="$subproj"/>.su.name}</xsl:attribute>
                     <patternset>
                         <include name="**/*.wsdl"/>
+                        <include name="**/*.WSDL"/>
                         <include name="**/*.xsd"/>
+                        <include name="**/*.XSD"/>
                         <include name="META-INF/jbi.xml"/>
                     </patternset>
                 </unzip>  

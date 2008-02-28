@@ -79,6 +79,11 @@ public class JBIComponentConfigurationDescriptor {
     public static final QName XSD_STRING = new QName(XSD_NS, "string"); // NOI18N
     public static final QName XSD_BOOLEAN = new QName(XSD_NS, "boolean"); // NOI18N
     
+    public static final QName[] SUPPORTED_TYPES = new QName[] {
+        XSD_BYTE, XSD_SHORT, XSD_INT, XSD_POSITIVE_INTEGER, XSD_NEGATIVE_INTEGER,
+        XSD_NON_POSITIVE_INTEGER, XSD_NON_NEGATIVE_INTEGER, XSD_STRING, XSD_BOOLEAN
+    };
+    
     private static final String SHOWDISPLAY_INSTALLATION = "install"; // NOI18N
     private static final String SHOWDISPLAY_RUNTIME = "runtime"; // NOI18N
     private static final String SHOWDISPLAY_ALL = "all"; // NOI18N
