@@ -79,7 +79,7 @@ public final class Search extends Dialog {
     mySearchEngine = engines.get(0);
 
     mySearchEngine.removeSearchListeners();
-    mySearchEngine.addSearchListener(new Tree());
+    mySearchEngine.addSearchListener(new View());
     mySearchEngine.addSearchListener(new Progress());
 
     show();
