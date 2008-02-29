@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.project.ant;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -62,6 +63,7 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -276,6 +278,60 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         mgr.removeLibrary(lib);
         expected.remove("libs.gps.type");
         assertEquals(expected, loadProperties("libraries.properties"));
+    }
+
+    public void testCreateLibraryUnderFSAtomicAction() throws Exception {
+        final LibraryManager mgr = LibraryManager.forLocation(new URL(base, "libraries.properties"));
+        final Map<String,List<URL>> content = new HashMap<String,List<URL>>();
+        content.put("classpath", Arrays.asList(new URL("jar:file:jh.jar!/"), new URL("jar:file:jh-search.jar!/")));
+        content.put("javadoc", Arrays.asList(new URL("file:jh-api/")));
+
+        FileSystem fs = projdir.getFileSystem();
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                Library lib = mgr.createLibrary("j2se", "javahelp", content);
+                assertEquals("j2se", lib.getType());
+                assertEquals("javahelp", lib.getName());
+                assertEquals(content.get("classpath"), lib.getRawContent("classpath"));
+                assertEquals(content.get("javadoc"), lib.getRawContent("javadoc"));
+                try {
+                    setLibraryContent(lib, "src", new URL(base, "separate/jgraph-src/"), new URL(base, "jgraph-other-src/"));
+                } catch (Exception e) {
+                    throw new IOException(e.toString());
+                }
+            }});
+    }
+
+    public void testCreateLibraryAndLibrariesEventFiring() throws Exception {
+        final LibraryManager mgr = LibraryManager.forLocation(new URL(base, "libraries.properties"));
+        final Map<String,List<URL>> content = new HashMap<String,List<URL>>();
+        content.put("classpath", Arrays.asList(new URL("jar:file:jh.jar!/"), new URL("jar:file:jh-search.jar!/")));
+        content.put("javadoc", Arrays.asList(new URL("file:jh-api/")));
+        final List<PropertyChangeEvent> list = new ArrayList<PropertyChangeEvent>();
+        final PropertyChangeListener l = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                list.add(evt);
+                if (evt.getPropertyName().equals(LibraryManager.PROP_LIBRARIES)) {
+                    // by the time we got this event library must be fully set up:
+                    assertTrue("must have one library", mgr.getLibraries().length == 1);
+                    assertEquals("library content must be set", content.get("classpath"), mgr.getLibraries()[0].getRawContent("classpath"));
+                    assertEquals("library content must be set", content.get("javadoc"), mgr.getLibraries()[0].getRawContent("javadoc"));
+                }
+            }
+        };
+        mgr.addPropertyChangeListener(l);
+        Library lib = mgr.createLibrary("j2se", "javahelp", content);
+        mgr.removePropertyChangeListener(l);
+        assertTrue(list.size() == 1);
+        mgr.removeLibrary(lib);
+        FileSystem fs = projdir.getFileSystem();
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                mgr.addPropertyChangeListener(l);
+                mgr.createLibrary("j2se", "javahelp", content);
+                mgr.removePropertyChangeListener(l);
+                assertTrue(list.size() == 2);
+            }});
     }
 
     public void testPropertyProviderBasic() throws Exception {
