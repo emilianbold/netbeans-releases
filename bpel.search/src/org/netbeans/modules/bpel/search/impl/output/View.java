@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.search.impl.ui;
+package org.netbeans.modules.bpel.search.impl.output;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -50,6 +50,7 @@ import org.openide.windows.WindowManager;
 import org.netbeans.modules.bpel.search.api.SearchElement;
 import org.netbeans.modules.bpel.search.api.SearchEvent;
 import org.netbeans.modules.bpel.search.spi.SearchListener;
+import org.netbeans.modules.bpel.search.impl.ui.Element;
 import org.netbeans.modules.bpel.search.impl.util.Util;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
