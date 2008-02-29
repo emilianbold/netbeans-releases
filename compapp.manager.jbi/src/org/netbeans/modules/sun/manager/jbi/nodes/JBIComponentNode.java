@@ -238,18 +238,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             logger.warning(e.getMessage());
         }
 
-        // 3. Augment the general property sheet by adding loggers sheet
-        try {
-            addSheetSet(sheet,
-                    LOGGERS_SHEET_SET_NAME,
-                    "LBL_LOGGERS_PROPERTIES", // NOI18N
-                    "DSC_LOGGERS_PROPERTIES", // NOI18N
-                    getLoggerSheetSetProperties());
-        } catch (ManagementRemoteException e) {
-            logger.warning(e.getMessage());
-        }
-
-        // 4. Augment the general property sheet by adding component 
+        // 3. Augment the general property sheet by adding component 
         // statistics sheet.
         if (JBIComponentStatus.STARTED_STATE.equals(getState())) {
             try {
@@ -317,7 +306,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         return supports.toArray(new PropertySupport[0]);
     }
 
-    private Map<Attribute, MBeanAttributeInfo> getGeneralSheetSetProperties() {
+    protected Map<Attribute, MBeanAttributeInfo> getGeneralSheetSetProperties() {
         JBIComponentInfo componentInfo = getJBIComponentInfo();
         return Utils.getIntrospectedPropertyMap(componentInfo, false,
                 MODEL_BEAN_INFO_PACKAGE_NAME);
@@ -353,7 +342,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 // Fallback on regular attributes if the component does not have 
                 // configuration schema defined yet.
                 List<String> keys = new ArrayList<String>();
-                keys.addAll(configMap.keySet());
+                if (configMap != null) {
+                    keys.addAll(configMap.keySet());
+                }
                 Collections.sort(keys);
 
                 for (String key : keys) {
@@ -426,12 +417,12 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         String name = configDescriptor.getName();
         Object value = null;
 
-        if (configDescriptor.isApplicationConfiguration()) {
+        if (configDescriptor instanceof JBIComponentConfigurationDescriptor.ApplicationConfiguration) {
             if (JBIComponentStatus.STARTED_STATE.equals(getState())) {
                 value = configService.getApplicationConfigurationsAsTabularData(
                         getName(), SERVER_TARGET);
             }
-        } else if (configDescriptor.isApplicationVariable()) {
+        } else if (configDescriptor instanceof JBIComponentConfigurationDescriptor.ApplicationVariable) {
             if (JBIComponentStatus.STARTED_STATE.equals(getState())) {
                 value = configService.getApplicationVariablesAsTabularData(
                         getName(), SERVER_TARGET);
@@ -458,40 +449,6 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
 
             attrMap.put(attr, attrInfo);
         }
-    }
-
-    /**
-     * Gets the logger properties to be displayed for this JBI Component.
-     *
-     * @return A java.util.Map containing all logger properties.
-     */
-    private Map<Attribute, MBeanAttributeInfo> getLoggerSheetSetProperties()
-            throws ManagementRemoteException {
-
-        // Sorted by the fully qualified logger name (loggerCustomName).
-        // Only display the short name in the property sheet.
-        Map<Attribute, MBeanAttributeInfo> ret =
-                new TreeMap<Attribute, MBeanAttributeInfo>();
-
-        ConfigurationService configService = getConfigurationService();
-        Map<String, Level> loggerMap = configService.getComponentLoggerLevels(
-                getName(), SERVER_TARGET, null); // NULL?    
-
-        for (String loggerCustomName : loggerMap.keySet()) {
-            Level logLevel = loggerMap.get(loggerCustomName);
-            int lastDotIndex = loggerCustomName.lastIndexOf("."); // NOI18N
-            String shortName = lastDotIndex == -1 ? loggerCustomName : loggerCustomName.substring(lastDotIndex + 1);
-
-            Attribute attr = new Attribute(loggerCustomName, logLevel);
-            MBeanAttributeInfo info = new MBeanAttributeInfo(
-                    shortName,
-                    "java.util.logging.Level", // NOI18N
-                    loggerCustomName,
-                    true, true, false);
-            ret.put(new ComparableAttribute(attr), info);
-        }
-
-        return ret;
     }
 
     /**
@@ -1279,6 +1236,59 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             return null;
         }
 
+        @Override
+        protected Sheet createSheet() {
+
+            Sheet sheet = super.createSheet();
+
+            // Augment the property sheet by adding loggers sheet
+            try {
+                addSheetSet(sheet,
+                        LOGGERS_SHEET_SET_NAME,
+                        "LBL_LOGGERS_PROPERTIES", // NOI18N
+                        "DSC_LOGGERS_PROPERTIES", // NOI18N
+                        getLoggerSheetSetProperties());
+            } catch (ManagementRemoteException e) {
+                logger.warning(e.getMessage());
+            }
+            
+            return sheet;
+        }
+
+        /**
+         * Gets the logger properties to be displayed for this JBI Component.
+         *
+         * @return A java.util.Map containing all logger properties.
+         */
+        private Map<Attribute, MBeanAttributeInfo> getLoggerSheetSetProperties()
+                throws ManagementRemoteException {
+
+            // Sorted by the fully qualified logger name (loggerCustomName).
+            // Only display the short name in the property sheet.
+            Map<Attribute, MBeanAttributeInfo> ret =
+                    new TreeMap<Attribute, MBeanAttributeInfo>();
+
+            ConfigurationService configService = getConfigurationService();
+            Map<String, Level> loggerMap = configService.getComponentLoggerLevels(
+                    getName(), SERVER_TARGET, null); // NULL?    
+
+            for (String loggerCustomName : loggerMap.keySet()) {
+                Level logLevel = loggerMap.get(loggerCustomName);
+                int lastDotIndex = loggerCustomName.lastIndexOf("."); // NOI18N
+                String shortName = lastDotIndex == -1 ? loggerCustomName : loggerCustomName.substring(lastDotIndex + 1);
+
+                Attribute attr = new Attribute(loggerCustomName, logLevel);
+                MBeanAttributeInfo info = new MBeanAttributeInfo(
+                        shortName,
+                        "java.util.logging.Level", // NOI18N
+                        loggerCustomName,
+                        true, true, false);
+                ret.put(new ComparableAttribute(attr), info);
+            }
+
+            return ret;
+        }
+
         protected String uninstallComponent(
                 InstallationService installationService,
                 String componentName,
@@ -1420,9 +1430,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                             }
                         }
 
-                        Node startableNode = isBC ? 
-                            getChildNode(bcsNode, componentNeedingStart) : 
-                            getChildNode(sesNode, componentNeedingStart);
+                        Node startableNode = isBC ? getChildNode(bcsNode, componentNeedingStart) : getChildNode(sesNode, componentNeedingStart);
                         ((Startable) startableNode).start();
                     }
                 } catch (ManagementRemoteException e) {
@@ -1755,12 +1763,25 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             AdministrationService adminService = getAdministrationService();
             return adminService.getSharedLibraryInstallationDescriptor(getName());
         }
-        
+
+        //#125827 Remove the State property for Shared Library to reduce confusion.
+        @Override
+        protected Map<Attribute, MBeanAttributeInfo> getGeneralSheetSetProperties() {
+            Map<Attribute, MBeanAttributeInfo> ret = super.getGeneralSheetSetProperties();
+            for (Attribute attr : ret.keySet()) {
+                if (attr.getName().equals("State")) { // NOI18N
+                    ret.remove(attr);
+                    break;
+                }
+            }
+            return ret;
+        }
+
         //========================== Undeployable =================================
         public boolean canUndeploy() {
             return false;
         }
-        
+
         public boolean undeploy(boolean force) {
             throw new RuntimeException("Cannot undeploy shared library."); // NOI18N
         }
