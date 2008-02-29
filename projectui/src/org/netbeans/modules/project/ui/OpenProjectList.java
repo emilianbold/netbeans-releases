@@ -1078,7 +1078,7 @@ public final class OpenProjectList {
             }
             return ok;
         } else {
-            // issue 43958, if attr 'templateCategorized' is not set => all is ok
+            // issue 44871, if attr 'templateCategorized' is not set => all is ok
             // no category set, ok display it
             return true;
         }

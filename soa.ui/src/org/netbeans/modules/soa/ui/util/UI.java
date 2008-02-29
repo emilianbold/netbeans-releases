@@ -99,7 +99,9 @@ public final class UI {
   }
 
   public static boolean isCtrl(int modifiers) {
-    return isModifier(modifiers, KeyEvent.CTRL_MASK);
+    return
+      isModifier(modifiers, KeyEvent.CTRL_MASK) ||
+      isModifier(modifiers, KeyEvent.META_MASK);
   }
 
   private static boolean isModifier(int modifiers, int mask) {
@@ -112,9 +114,11 @@ public final class UI {
     return label;
   }
 
-  public static JRadioButton createRadioButton(String message) {
+  public static JRadioButton createRadioButton(String text, String toolTip) {
     JRadioButton button = new JRadioButton();
-    Mnemonics.setLocalizedText(button, message);
+    Mnemonics.setLocalizedText(button, text);
+    button.setText(cutMnemonicAndAmpersand(text));
+    button.setToolTipText(toolTip);
     return button;
   }
 

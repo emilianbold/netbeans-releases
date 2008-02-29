@@ -266,6 +266,13 @@ public class GdbProxy implements GdbMiDefinitions {
         return engine.sendCommand("-data-disassemble -f " + filename + " -l " + line + " -- 0"); // NOI18N
     }
     
+    /*
+     * @param size - size in bytes
+     */
+    public int data_disassemble(int size) {
+        return engine.sendCommand("-data-disassemble -s $pc -e \"$pc+" + size + "\" -- 0"); // NOI18N
+    }
+    
     public int print(CommandBuffer cb, String expression) {
         return engine.sendCommand(cb, "print " + expression); // NOI18N
     }

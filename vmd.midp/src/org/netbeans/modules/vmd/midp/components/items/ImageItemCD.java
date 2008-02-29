@@ -127,8 +127,6 @@ public class ImageItemCD extends ComponentDescriptor {
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
-                // accept
-                new MidpAcceptTrensferableKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
                 // properties
                 createPropertiesPresenter(),
                 // code
@@ -138,6 +136,7 @@ public class ImageItemCD extends ComponentDescriptor {
                 //accept
                 new ImageFileAcceptPresenter(ImageItemCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "gif", "png"), //NOI18N
                 new MidpAcceptProducerKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
+                new MidpAcceptTrensferableKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
                 // screen
                 new ImageItemDisplayPresenter(),
                 new ImageItemInjectorPresenter ()

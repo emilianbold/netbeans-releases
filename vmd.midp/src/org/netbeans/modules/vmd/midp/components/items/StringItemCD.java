@@ -129,7 +129,8 @@ public class StringItemCD extends ComponentDescriptor {
             // screen
             new StringItemDisplayPresenter(),
             // accept
-            new MidpAcceptProducerKindPresenter().addType(FontCD.TYPEID, PROP_FONT)
+            new MidpAcceptProducerKindPresenter().addType(FontCD.TYPEID, PROP_FONT),
+            new MidpAcceptTrensferableKindPresenter().addType(FontCD.TYPEID, PROP_FONT)
        );   
     }
     
