@@ -1137,6 +1137,18 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (name.equals("this")) {
             return evaluationContext.getFrame().thisObject();
         }
+        if (name.equals("super")) {
+            ReferenceType thisType = evaluationContext.getFrame().location().declaringType();
+            if (thisType instanceof ClassType) {
+                ClassType superClass = ((ClassType) thisType).superclass();
+                ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+                if (thisObject == null) {
+                    return superClass;
+                } else {
+                    return thisObject;
+                }
+            }
+        }
         Field field = evaluationContext.getFrame().location().declaringType().fieldByName(name);
         if (field != null) {
             if (field.isStatic()) {
@@ -1198,6 +1210,18 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 String fieldName = ve.getSimpleName().toString();
                 if (fieldName.equals("this")) {
                     return evaluationContext.getFrame().thisObject();
+                }
+                if (fieldName.equals("super")) {
+                    ReferenceType thisType = evaluationContext.getFrame().location().declaringType();
+                    if (thisType instanceof ClassType) {
+                        ClassType superClass = ((ClassType) thisType).superclass();
+                        ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+                        if (thisObject == null) {
+                            return superClass;
+                        } else {
+                            return thisObject;
+                        }
+                    }
                 }
                 Element enclosing = ve.getEnclosingElement();
                 String enclosingClass = null;
