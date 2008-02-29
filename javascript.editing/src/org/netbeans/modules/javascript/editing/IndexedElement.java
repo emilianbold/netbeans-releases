@@ -94,7 +94,7 @@ public abstract class IndexedElement extends JsElement {
     static IndexedElement create(String attributes, String fileUrl, String name, String in, int attrIndex, JsIndex index, boolean createPackage) {
         int flags = IndexedElement.decode(attributes, attrIndex, 0);
         if (createPackage) {
-            IndexedPackage func = new IndexedPackage(name, in, index, fileUrl, attributes, flags);
+            IndexedPackage func = new IndexedPackage(name, in, index, fileUrl, attributes, flags, ElementKind.PACKAGE);
             return func;
         }
         if ((flags & FUNCTION) != 0) {
@@ -139,7 +139,7 @@ public abstract class IndexedElement extends JsElement {
             int nextDot = elementName.indexOf('.', name.length());
             if (nextDot != -1) {
                 String pkg = elementName.substring(0, nextDot);
-                IndexedPackage element = new IndexedPackage(pkg, null, index, fileUrl, signature, IndexedElement.decode(signature, inEndIdx, 0));
+                IndexedPackage element = new IndexedPackage(pkg, null, index, fileUrl, signature, IndexedElement.decode(signature, inEndIdx, 0), ElementKind.PACKAGE);
                 return element;
             }
         }
@@ -377,7 +377,7 @@ public abstract class IndexedElement extends JsElement {
     public static final int NODOC = 1 << 5;
     /** This is a global variable */
     public static final int GLOBAL = 1 << 6;
-    /** This is a function, not a property */
+    /** This is a constructor */
     public static final int CONSTRUCTOR = 1 << 7;
 
     /** Return a string (suitable for persistence) encoding the given flags */

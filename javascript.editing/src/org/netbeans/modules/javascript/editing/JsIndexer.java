@@ -223,6 +223,8 @@ public class JsIndexer implements Indexer {
                     }
                 } else if (childKind == ElementKind.GLOBAL || childKind == ElementKind.PROPERTY) {
                     indexFuncOrProperty(child, document, computeSignature(child));
+                } else if (childKind == ElementKind.CLASS) {
+                    // Nothing to be stored; inferred from methods or properties  
                 } else {
                     assert false : childKind;
                 }

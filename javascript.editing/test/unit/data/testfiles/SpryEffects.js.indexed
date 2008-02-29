@@ -129,8 +129,6 @@ Indexed:
   base : shake;Spry.Effect;Shake|CONSTRUCTOR|;element,options;0;;;;
   base : size;Spry.Effect;Size|DOCUMENTED|CONSTRUCTOR|;element,fromRect,toRect,options;0;43d7;;;
   base : slide;Spry.Effect;Slide|CONSTRUCTOR|;element,options;0;;;;
-  base : spry;;Spry|DOCUMENTED|GLOBAL|;;0;3b;;;
-  base : spryregistry;;SpryRegistry|GLOBAL|;;0;;;;
   base : squish;Spry.Effect;Squish|CONSTRUCTOR|;element,options;0;;;;
   base : start;Spry.Effect.Animator.prototype;start|FUNCTION|queue;0;;;;
   base : start;Spry.Effect.Cluster.prototype;start|FUNCTION|;0;;;;
@@ -365,7 +363,5 @@ Indexed:
   fqn : spry.effect.utils.positionedrectangle;;Spry.Effect.Utils.PositionedRectangle|CONSTRUCTOR|;;0;;;;
   fqn : spry.effect.utils.rectangle;;Spry.Effect.Utils.Rectangle|CONSTRUCTOR|;;0;;;;
   fqn : spry.effect.utils.rgb;;Spry.Effect.Utils.rgb|FUNCTION|redInt,greenInt,blueInt;0;;;;
-  fqn : spry;;Spry|DOCUMENTED|GLOBAL|;;0;3b;;;
-  fqn : spryregistry;;SpryRegistry|GLOBAL|;;0;;;;
 
 Not Indexed:
