@@ -141,7 +141,8 @@ public class CSSRuleAddTest  extends org.netbeans.performance.test.utilities.Per
         log("::open");
         
         invokeAddRuleEditor();
-        createRuleDialog = new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.css.editor.Bundle", "STYLE_RULE_EDITOR_TITLE"));
+        String dialogTitle = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.css.actions.Bundle", "STYLE_RULE_EDITOR_TITLE");
+        createRuleDialog = new NbDialogOperator(dialogTitle);
         processAddRule();
         changeRuleValueOne();
         changeRuleValueTwo();

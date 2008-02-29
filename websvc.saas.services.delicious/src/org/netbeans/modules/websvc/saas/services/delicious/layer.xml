@@ -50,6 +50,6 @@
             <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/delicious/resources/profile.properties"/>
             <file name="Delicious.xml" url="/org/netbeans/modules/websvc/saas/services/delicious/resources/Delicious.xml"/>
         </folder>
-    </folder>
+        </folder>
     
 </filesystem>

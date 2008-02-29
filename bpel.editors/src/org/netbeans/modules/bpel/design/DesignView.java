@@ -31,6 +31,7 @@ import java.awt.event.KeyEvent;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.accessibility.AccessibleContext;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -92,6 +93,7 @@ import org.netbeans.modules.bpel.design.actions.FindUsagesAction;
 import org.netbeans.modules.bpel.design.actions.GoToLoggingAction;
 import org.netbeans.modules.bpel.design.actions.GoToMapperAction;
 import org.netbeans.modules.bpel.design.actions.GoToSourceAction;
+import org.netbeans.modules.bpel.design.actions.ShowContextMenuAction;
 import org.netbeans.modules.bpel.design.actions.TabToNextComponentAction;
 import org.netbeans.modules.bpel.design.model.PartnerRole;
 import org.netbeans.modules.bpel.nodes.actions.GoToAction;
@@ -99,6 +101,7 @@ import org.netbeans.modules.bpel.nodes.actions.ShowBpelMapperAction;
 import org.netbeans.modules.bpel.properties.NodeUtils;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 public class DesignView extends JPanel implements
@@ -175,8 +178,22 @@ public class DesignView extends JPanel implements
         overlayView = new OverlayPanel(this);
 
         consumersView = new PartnerlinksView(this, PartnerRole.CONSUMER);
+        consumersView.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(DesignView.class, "ACSN_ConsumersPLPanel"));
+        consumersView.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(DesignView.class, "ACSD_ConsumersPLPanel"));
+        
         providersView = new PartnerlinksView(this, PartnerRole.PROVIDER);
+        providersView.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(DesignView.class, "ACSN_ProvidersPLPanel"));
+        providersView.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(DesignView.class, "ACSD_ProvidersPLPanel"));
+
         processView = new ProcessView(this);
+        processView.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(DesignView.class, "ACSN_ProcessPanel"));
+        processView.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(DesignView.class, "ACSD_ProcessPanel"));
  
         navigationTools = new NavigationTools(this);
  
@@ -208,6 +225,21 @@ public class DesignView extends JPanel implements
 
         reloadModel();
         diagramChanged();
+    }
+
+    @Override
+    public AccessibleContext getAccessibleContext() {
+        EntitySelectionModel selModel = getSelectionModel();
+        Pattern selPattern = null;
+        if (selModel != null) {
+            selPattern = selModel.getSelectedPattern();
+        }
+        
+        DiagramView dView = null;
+        if (selPattern != null) {
+            dView = selPattern.getView();
+        }
+        return dView != null ? dView.getAccessibleContext() : super.getAccessibleContext();
     }
 
     public DiagramView getConsumersView() {
@@ -498,7 +530,7 @@ public class DesignView extends JPanel implements
         am.put("gotologging-something", new GoToLoggingAction(this)); // NOI18N
         am.put("findusages-something", new FindUsagesAction(this)); // NOI18N
 //        am.put("find_next_mex_peer", new CycleMexAction()); // NOI18N
-//        am.put("show_context_menu", new ShowContextMenu()); // NOI18N
+        am.put("show_context_menu", new ShowContextMenuAction(this)); // NOI18N
         am.put("go_next_hierarchy_component", new TabToNextComponentAction(this, true)); // NOI18N
         am.put("go_previous_hierarchy_component", new TabToNextComponentAction(this, false)); // NOI18N
 //

@@ -926,8 +926,10 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         }
 
         // Make sure no service assembly is deployed before stop-shutdown-uninstall.
-        if (!undeploy(force)) { // undeployment cancelled or failed
-            return;
+        if (canUndeploy()) {
+            if (!undeploy(force)) { // undeployment cancelled or failed
+                return;
+            }
         }
 
         InstallationService mgmtService = getInstallationService();
@@ -1074,260 +1076,6 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 stop();
             }
         }
-    }
-
-    //========================== Undeployable =================================
-    public boolean canUndeploy() {
-        RuntimeManagementServiceWrapper mgmtService =
-                getRuntimeManagementServiceWrapper();
-        if (mgmtService == null) {
-            return false;
-        }
-
-        String componentName = getName();
-
-        try {
-            List<ServiceAssemblyInfo> saInfos = mgmtService.listServiceAssemblies(
-                    componentName, SERVER_TARGET);
-
-            return !busy && saInfos.size() > 0;
-        } catch (ManagementRemoteException e) {
-            NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
-                    NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(d);
-        }
-
-        return true;
-    }
-
-    public boolean undeploy(boolean force) {
-        RuntimeManagementServiceWrapper mgmtService =
-                getRuntimeManagementServiceWrapper();
-
-        if (mgmtService == null) {
-            return false;
-        }
-
-        String componentName = getName();
-        List<String> saNames = null;
-        try {
-            saNames = mgmtService.getServiceAssemblyNames(
-                    componentName, SERVER_TARGET);
-        } catch (ManagementRemoteException e) {
-            NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
-                    NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(d);
-            return false;
-        }
-
-        boolean success = true;
-
-        if (saNames.size() > 0) {
-
-            JBINode jbiNode = (JBINode) getParentNode().getParentNode();
-
-            JBIComponentContainerNode sesNode =
-                    (JBIComponentContainerNode.ServiceEngines) jbiNode.getChildren().getNodes()[0];
-            // Can't do refresh: NPE while invoking undeployment on multiple components.
-            sesNode.refresh();
-
-            JBIComponentContainerNode bcsNode =
-                    (JBIComponentContainerNode.BindingComponents) jbiNode.getChildren().getNodes()[1];
-            bcsNode.refresh();
-
-            JBIServiceAssembliesNode sasNode =
-                    (JBIServiceAssembliesNode) jbiNode.getChildren().getNodes()[3];
-            sasNode.refresh();
-
-            try {
-                List<String> componentsNeedingStart =
-                        getNonStartedComponentsForServiceAssemblies(saNames);
-
-                if (confirmForServiceAssembliesUndeployment) {
-                    String wordWrappedSANames = Utils.wordWrapString(
-                            saNames.toString(), 80, "<br>");  // NOI18N
-
-                    String msg;
-                    if (componentsNeedingStart.size() > 0) {
-                        if (StackTraceUtil.isCalledBy(
-                                "org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode", // NOI18N
-                                //JBIComponentNode.this.getClass().getCanonicalName(),
-                                "uninstall")) { // NOI18N
-                            msg = NbBundle.getMessage(JBIComponentNode.class,
-                                    "MSG_UNDEPLOY_WITH_AUTO_COMPONENT_START_DURING_UNINSTALL_CONFIRMATION", // NOI18N
-                                    componentName, wordWrappedSANames, componentsNeedingStart);
-                        } else {
-                            msg = NbBundle.getMessage(JBIComponentNode.class,
-                                    "MSG_UNDEPLOY_WITH_AUTO_COMPONENT_START_CONFIRMATION", // NOI18N
-                                    componentName, wordWrappedSANames, componentsNeedingStart);
-                        }
-                    } else {
-                        if (StackTraceUtil.isCalledBy(
-                                "org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode", // NOI18N
-                                //JBIComponentNode.this.getClass().getCanonicalName(),
-                                "uninstall")) { // NOI18N
-                            msg = NbBundle.getMessage(JBIComponentNode.class,
-                                    "MSG_UNDEPLOY_DURING_UNINSTALL_CONFIRMATION", // NOI18N
-                                    componentName, wordWrappedSANames);
-                        } else {
-                            msg = NbBundle.getMessage(JBIComponentNode.class,
-                                    "MSG_UNDEPLOY_CONFIRMATION", // NOI18N
-                                    componentName, wordWrappedSANames);
-                        }
-                    }
-
-                    String title = NbBundle.getMessage(JBIComponentNode.class,
-                            "TTL_UNDEPLOY_CONFIRMATION"); // NOI18N
-                    DoNotShowAgainConfirmation d = new DoNotShowAgainConfirmation(
-                            msg, title, NotifyDescriptor.YES_NO_OPTION);
-
-                    if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.NO_OPTION) {
-                        return false;
-                    }
-
-                    if (d.getDoNotShowAgain()) {
-                        confirmForServiceAssembliesUndeployment = false;
-                    }
-                }
-
-                // Start the required components
-                List<JBIComponentInfo> bcInfoes =
-                        mgmtService.listBindingComponents(SERVER_TARGET);
-
-                for (String componentNeedingStart : componentsNeedingStart) {
-                    boolean isBC = false;
-                    for (JBIComponentInfo bcInfo : bcInfoes) {
-                        if (bcInfo.getName().equals(componentNeedingStart)) {
-                            isBC = true;
-                            break;
-                        }
-                    }
-
-                    Node startableNode = isBC ? 
-                        getChildNode(bcsNode, componentNeedingStart) : 
-                        getChildNode(sesNode, componentNeedingStart);
-                    ((Startable) startableNode).start();
-                }
-            } catch (ManagementRemoteException e) {
-                NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
-                        NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(d);
-                return false;
-            }
-
-            // real work
-            for (String saName : saNames) {
-                Node saNode = getChildNode(sasNode, saName);
-                if (saNode != null) {
-                    success = success && ((Undeployable) saNode).undeploy(force);
-                }
-            }
-
-            sasNode.refresh();
-        }
-
-        return success;
-    }
-
-    private Node getChildNode(Node parentNode, String childName) {
-        Node[] childNodes = parentNode.getChildren().getNodes();
-        for (Node childNode : childNodes) {
-            if (childNode.getName().equals(childName)) {
-                return childNode;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Gets the list of non-started components that the given list of
-     * service assemblies are deployed on.
-     * 
-     * @param saNames   a list of service assembly names
-     * @return          the list of target components
-     */
-    private List<String> getNonStartedComponentsForServiceAssemblies(
-            List<String> saNames) throws ManagementRemoteException {
-
-        List<String> ret = new ArrayList<String>();
-
-        RuntimeManagementServiceWrapper mgmtService =
-                getRuntimeManagementServiceWrapper();
-        assert mgmtService != null;
-
-        AdministrationService adminService = getAdministrationService();
-        assert adminService != null;
-
-        Set<String> componentNames = new HashSet<String>();
-        for (String saName : saNames) {
-            componentNames.addAll(
-                    getComponentsForServiceAssembly(adminService, saName));
-        }
-
-        List<JBIComponentInfo> bcInfoes =
-                mgmtService.listBindingComponents(SERVER_TARGET);
-        List<JBIComponentInfo> seInfoes =
-                mgmtService.listServiceEngines(SERVER_TARGET);
-
-        for (String componentName : componentNames) {
-            String state = null;
-            for (JBIComponentInfo bcInfo : bcInfoes) {
-                if (bcInfo.getName().equals(componentName)) {
-                    state = bcInfo.getState();
-                    break;
-                }
-            }
-            if (state == null) {
-                for (JBIComponentInfo seInfo : seInfoes) {
-                    if (seInfo.getName().equals(componentName)) {
-                        state = seInfo.getState();
-                        break;
-                    }
-                }
-            }
-
-            if (!JBIComponentStatus.STARTED_STATE.equals(state)) {
-                ret.add(componentName);
-            }
-        }
-
-        return ret;
-    }
-
-    /**
-     * Gets the list of components that the given service assembly is 
-     * deployed on.
-     * 
-     * @param saName   a service assembly names
-     * @return         the list of target components
-     */
-    private static List<String> getComponentsForServiceAssembly(
-            AdministrationService adminService, String saName) {
-        List<String> ret = new ArrayList<String>();
-
-        try {
-            String saDD =
-                    adminService.getServiceAssemblyDeploymentDescriptor(saName);
-
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
-            DocumentBuilder builder = factory.newDocumentBuilder();
-
-            // parse SA DD
-            Document saDoc = builder.parse(new InputSource(new StringReader(saDD)));
-            NodeList sus = saDoc.getElementsByTagName("service-unit"); // NOI18N
-            for (int i = 0; i < sus.getLength(); i++) {
-                Element su = (Element) sus.item(i);
-                String componentName = ((Element) su.getElementsByTagName(
-                        "component-name").item(0)).getFirstChild().getNodeValue(); // target/component-name                    
-                ret.add(componentName);
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        return ret;
     }
 
     private List<File> filterSelectedFiles(File[] files) {
@@ -1544,6 +1292,260 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             AdministrationService adminService = getAdministrationService();
             return adminService.getComponentInstallationDescriptor(getName());
         }
+
+        //========================== Undeployable =================================
+        public boolean canUndeploy() {
+            RuntimeManagementServiceWrapper mgmtService =
+                    getRuntimeManagementServiceWrapper();
+            if (mgmtService == null) {
+                return false;
+            }
+
+            String componentName = getName();
+
+            try {
+                List<ServiceAssemblyInfo> saInfos = mgmtService.listServiceAssemblies(
+                        componentName, SERVER_TARGET);
+
+                return saInfos.size() > 0;
+            } catch (ManagementRemoteException e) {
+                NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
+                        NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
+            }
+
+            return true;
+        }
+
+        public boolean undeploy(boolean force) {
+            RuntimeManagementServiceWrapper mgmtService =
+                    getRuntimeManagementServiceWrapper();
+
+            if (mgmtService == null) {
+                return false;
+            }
+
+            String componentName = getName();
+            List<String> saNames = null;
+            try {
+                saNames = mgmtService.getServiceAssemblyNames(
+                        componentName, SERVER_TARGET);
+            } catch (ManagementRemoteException e) {
+                NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
+                        NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
+                return false;
+            }
+
+            boolean success = true;
+
+            if (saNames.size() > 0) {
+
+                JBINode jbiNode = (JBINode) getParentNode().getParentNode();
+
+                JBIComponentContainerNode sesNode =
+                        (JBIComponentContainerNode.ServiceEngines) jbiNode.getChildren().getNodes()[0];
+                // Can't do refresh: NPE while invoking undeployment on multiple components.
+                sesNode.refresh();
+
+                JBIComponentContainerNode bcsNode =
+                        (JBIComponentContainerNode.BindingComponents) jbiNode.getChildren().getNodes()[1];
+                bcsNode.refresh();
+
+                JBIServiceAssembliesNode sasNode =
+                        (JBIServiceAssembliesNode) jbiNode.getChildren().getNodes()[3];
+                sasNode.refresh();
+
+                try {
+                    List<String> componentsNeedingStart =
+                            getNonStartedComponentsForServiceAssemblies(saNames);
+
+                    if (confirmForServiceAssembliesUndeployment) {
+                        String wordWrappedSANames = Utils.wordWrapString(
+                                saNames.toString(), 80, "<br>");  // NOI18N
+
+                        String msg;
+                        if (componentsNeedingStart.size() > 0) {
+                            if (StackTraceUtil.isCalledBy(
+                                    "org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode", // NOI18N
+                                    //JBIComponentNode.this.getClass().getCanonicalName(),
+                                    "uninstall")) { // NOI18N
+                                msg = NbBundle.getMessage(JBIComponentNode.class,
+                                        "MSG_UNDEPLOY_WITH_AUTO_COMPONENT_START_DURING_UNINSTALL_CONFIRMATION", // NOI18N
+                                        componentName, wordWrappedSANames, componentsNeedingStart);
+                            } else {
+                                msg = NbBundle.getMessage(JBIComponentNode.class,
+                                        "MSG_UNDEPLOY_WITH_AUTO_COMPONENT_START_CONFIRMATION", // NOI18N
+                                        componentName, wordWrappedSANames, componentsNeedingStart);
+                            }
+                        } else {
+                            if (StackTraceUtil.isCalledBy(
+                                    "org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode", // NOI18N
+                                    //JBIComponentNode.this.getClass().getCanonicalName(),
+                                    "uninstall")) { // NOI18N
+                                msg = NbBundle.getMessage(JBIComponentNode.class,
+                                        "MSG_UNDEPLOY_DURING_UNINSTALL_CONFIRMATION", // NOI18N
+                                        componentName, wordWrappedSANames);
+                            } else {
+                                msg = NbBundle.getMessage(JBIComponentNode.class,
+                                        "MSG_UNDEPLOY_CONFIRMATION", // NOI18N
+                                        componentName, wordWrappedSANames);
+                            }
+                        }
+
+                        String title = NbBundle.getMessage(JBIComponentNode.class,
+                                "TTL_UNDEPLOY_CONFIRMATION"); // NOI18N
+                        DoNotShowAgainConfirmation d = new DoNotShowAgainConfirmation(
+                                msg, title, NotifyDescriptor.YES_NO_OPTION);
+
+                        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.NO_OPTION) {
+                            return false;
+                        }
+
+                        if (d.getDoNotShowAgain()) {
+                            confirmForServiceAssembliesUndeployment = false;
+                        }
+                    }
+
+                    // Start the required components
+                    List<JBIComponentInfo> bcInfoes =
+                            mgmtService.listBindingComponents(SERVER_TARGET);
+
+                    for (String componentNeedingStart : componentsNeedingStart) {
+                        boolean isBC = false;
+                        for (JBIComponentInfo bcInfo : bcInfoes) {
+                            if (bcInfo.getName().equals(componentNeedingStart)) {
+                                isBC = true;
+                                break;
+                            }
+                        }
+
+                        Node startableNode = isBC ? 
+                            getChildNode(bcsNode, componentNeedingStart) : 
+                            getChildNode(sesNode, componentNeedingStart);
+                        ((Startable) startableNode).start();
+                    }
+                } catch (ManagementRemoteException e) {
+                    NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
+                            NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d);
+                    return false;
+                }
+
+                // real work
+                for (String saName : saNames) {
+                    Node saNode = getChildNode(sasNode, saName);
+                    if (saNode != null) {
+                        success = success && ((Undeployable) saNode).undeploy(force);
+                    }
+                }
+
+                sasNode.refresh();
+            }
+
+            return success;
+        }
+
+        private Node getChildNode(Node parentNode, String childName) {
+            Node[] childNodes = parentNode.getChildren().getNodes();
+            for (Node childNode : childNodes) {
+                if (childNode.getName().equals(childName)) {
+                    return childNode;
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * Gets the list of non-started components that the given list of
+         * service assemblies are deployed on.
+         * 
+         * @param saNames   a list of service assembly names
+         * @return          the list of target components
+         */
+        private List<String> getNonStartedComponentsForServiceAssemblies(
+                List<String> saNames) throws ManagementRemoteException {
+
+            List<String> ret = new ArrayList<String>();
+
+            RuntimeManagementServiceWrapper mgmtService =
+                    getRuntimeManagementServiceWrapper();
+            assert mgmtService != null;
+
+            AdministrationService adminService = getAdministrationService();
+            assert adminService != null;
+
+            Set<String> componentNames = new HashSet<String>();
+            for (String saName : saNames) {
+                componentNames.addAll(
+                        getComponentsForServiceAssembly(adminService, saName));
+            }
+
+            List<JBIComponentInfo> bcInfoes =
+                    mgmtService.listBindingComponents(SERVER_TARGET);
+            List<JBIComponentInfo> seInfoes =
+                    mgmtService.listServiceEngines(SERVER_TARGET);
+
+            for (String componentName : componentNames) {
+                String state = null;
+                for (JBIComponentInfo bcInfo : bcInfoes) {
+                    if (bcInfo.getName().equals(componentName)) {
+                        state = bcInfo.getState();
+                        break;
+                    }
+                }
+                if (state == null) {
+                    for (JBIComponentInfo seInfo : seInfoes) {
+                        if (seInfo.getName().equals(componentName)) {
+                            state = seInfo.getState();
+                            break;
+                        }
+                    }
+                }
+
+                if (!JBIComponentStatus.STARTED_STATE.equals(state)) {
+                    ret.add(componentName);
+                }
+            }
+
+            return ret;
+        }
+
+        /**
+         * Gets the list of components that the given service assembly is 
+         * deployed on.
+         * 
+         * @param saName   a service assembly names
+         * @return         the list of target components
+         */
+        private static List<String> getComponentsForServiceAssembly(
+                AdministrationService adminService, String saName) {
+            List<String> ret = new ArrayList<String>();
+
+            try {
+                String saDD =
+                        adminService.getServiceAssemblyDeploymentDescriptor(saName);
+
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                factory.setNamespaceAware(true);
+                DocumentBuilder builder = factory.newDocumentBuilder();
+
+                // parse SA DD
+                Document saDoc = builder.parse(new InputSource(new StringReader(saDD)));
+                NodeList sus = saDoc.getElementsByTagName("service-unit"); // NOI18N
+                for (int i = 0; i < sus.getLength(); i++) {
+                    Element su = (Element) sus.item(i);
+                    String componentName = ((Element) su.getElementsByTagName(
+                            "component-name").item(0)).getFirstChild().getNodeValue(); // target/component-name                    
+                    ret.add(componentName);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+            return ret;
+        }
     }
     //========================= Concrete Nodes =================================
     /**
@@ -1752,6 +1754,15 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 throws ManagementRemoteException {
             AdministrationService adminService = getAdministrationService();
             return adminService.getSharedLibraryInstallationDescriptor(getName());
+        }
+        
+        //========================== Undeployable =================================
+        public boolean canUndeploy() {
+            return false;
+        }
+        
+        public boolean undeploy(boolean force) {
+            throw new RuntimeException("Cannot undeploy shared library."); // NOI18N
         }
     }
 }
