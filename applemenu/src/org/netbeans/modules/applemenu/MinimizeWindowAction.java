@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,54 +39,26 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.compapp.casaeditor;
+package org.netbeans.modules.applemenu;
 
-import org.openide.loaders.UniFileLoader;
-
-import org.openide.util.Utilities;
-
-import java.awt.*;
-
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.SimpleBeanInfo;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.openide.windows.WindowManager;
 
 /**
- * DOCUMENT ME!
- *
- * To change the template for this generated type comment go to Window - Preferences
- *         - Java - Code Generation - Code and Comments
- *
- * @author tli
- *
+ * JDK on Mac ignores Meta-M shortcut to minimize the main window, so we need 
+ * to define our own shortcut and assign shortcut to it.
+ * 
+ * @author S. Aubrecht
  */
-public class CasaDataLoaderBeanInfo extends SimpleBeanInfo {
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public BeanInfo[] getAdditionalBeanInfo() {
-        try {
-            return new BeanInfo[] {Introspector.getBeanInfo(UniFileLoader.class)};
-        } catch (IntrospectionException e) {
-            throw new AssertionError(e);
-        }
+public class MinimizeWindowAction extends AbstractAction {
+
+    public MinimizeWindowAction() {
+    }
+    
+    public void actionPerformed(ActionEvent arg0) {
+        WindowManager.getDefault().getMainWindow().setExtendedState(Frame.ICONIFIED);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param type DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public Image getIcon(int type) {
-        if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-            return Utilities.loadImage("org/netbeans/modules/compapp/casaeditor/resources/service_composition_16.png"); // NOI18N
-        } else {
-            return null;
-        }
-    }
 }
