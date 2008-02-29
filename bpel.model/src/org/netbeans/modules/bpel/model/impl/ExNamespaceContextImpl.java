@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.model.impl;
 
 import java.net.URI;
@@ -37,7 +36,7 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
 
     static final String DEFAULT_NS_PREFIX = "ns";      // NOI18N
 
-    public ExNamespaceContextImpl( BpelEntityImpl element ) {
+    public ExNamespaceContextImpl(BpelEntityImpl element) {
         myElement = element;
     }
 
@@ -46,12 +45,11 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
      * 
      * @see javax.xml.namespace.NamespaceContext#getNamespaceURI(java.lang.String)
      */
-    public String getNamespaceURI( String prefix ) {
+    public String getNamespaceURI(String prefix) {
         myElement.readLock();
         try {
             return myElement.lookupNamespaceURI(prefix);
-        }
-        finally {
+        } finally {
             myElement.readUnlock();
         }
     }
@@ -61,17 +59,16 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
      * 
      * @see javax.xml.namespace.NamespaceContext#getPrefix(java.lang.String)
      */
-    public String getPrefix( String uri ) {
+    public String getPrefix(String uri) {
         myElement.readLock();
         try {
             String str = myElement.getPeer().lookupPrefix(uri);
-            if ( str!=null && str.length() == 0) {
+            if (str != null && str.length() == 0) {
                 // it seems this is some buf in XDM when "" prefix is returned .
                 return null;
             }
             return str;
-        }
-        finally {
+        } finally {
             myElement.readUnlock();
         }
     }
@@ -81,7 +78,7 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
      * 
      * @see javax.xml.namespace.NamespaceContext#getPrefixes(java.lang.String)
      */
-    public Iterator getPrefixes( String uri ) {
+    public Iterator getPrefixes(String uri) {
         myElement.readLock();
         try {
             assert uri != null;
@@ -95,8 +92,7 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
             }
 
             return list.iterator();
-        }
-        finally {
+        } finally {
             myElement.readUnlock();
         }
 
@@ -119,8 +115,7 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
             }
 
             return list.iterator();
-        }
-        finally {
+        } finally {
             myElement.readUnlock();
         }
     }
@@ -130,13 +125,11 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
      * 
      * @see org.netbeans.modules.soa.model.bpel.api.support.ExNamespaceContext#addNamespace(java.lang.String)
      */
-    public String addNamespace( String uri ) throws InvalidNamespaceException {
+    public String addNamespace(String uri) throws InvalidNamespaceException {
         try {
             new URI(uri);
-        }
-        catch (URISyntaxException e) {
-            InvalidNamespaceException exc = new InvalidNamespaceException(e
-                    .getMessage());
+        } catch (URISyntaxException e) {
+            InvalidNamespaceException exc = new InvalidNamespaceException(e.getMessage());
             throw exc;
         }
         myElement.writeLock();
@@ -153,7 +146,7 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
             }
             //
             int i = getMaximumSuffix(prefix);
-            if (i == -1) { 
+            if (i == -1) {
                 if (useDefaultPrefix) {
                     prefix = prefix + "0"; // NOI18N
                 } else {
@@ -169,8 +162,7 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
             BpelEntityImpl entity = getRoot();
             entity.addPrefix(prefix, uri);
             return prefix;
-        }
-        finally {
+        } finally {
             myElement.writeUnlock();
         }
     }
@@ -181,26 +173,23 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
      * @see org.netbeans.modules.soa.model.bpel.api.support.ExNamespaceContext#addNamespace(java.lang.String,
      *      java.lang.String)
      */
-    public void addNamespace( String prefix, String uri )
-            throws InvalidNamespaceException
-    {
+    public void addNamespace(String prefix, String uri)
+            throws InvalidNamespaceException {
         assert prefix != null && prefix.length() != 0;
         //
         String registeredUri = getNamespaceURI(prefix);
-        if (registeredUri != null && registeredUri.length() > 0 && 
+        if (registeredUri != null && registeredUri.length() > 0 &&
                 !registeredUri.equals(uri)) {
             throw new InvalidNamespaceException(
                     "Element's scope already have the prefix \""// NOI18N
-                            + prefix + "\" and it declared "// NOI18N
-                            + "with different namespace uri"); // NOI18N
+                    + prefix + "\" and it declared "// NOI18N
+                    + "with different namespace uri"); // NOI18N
         }
         //
         try {
             new URI(uri);
-        }
-        catch (URISyntaxException e) {
-            InvalidNamespaceException exc = new InvalidNamespaceException(e
-                    .getMessage());
+        } catch (URISyntaxException e) {
+            InvalidNamespaceException exc = new InvalidNamespaceException(e.getMessage());
             throw exc;
         }
         //
@@ -211,15 +200,13 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
                         "' is not acceptable as prefix fot namespace."); // NOI18N
             }
             getRoot().addPrefix(prefix, uri);
-        }
-        finally {
+        } finally {
             myElement.writeUnlock();
         }
     }
 
-    private void fillPrefixes( BpelEntityImpl entity, String uri,
-            List<String> list )
-    {
+    private void fillPrefixes(BpelEntityImpl entity, String uri,
+            List<String> list) {
         Map<String, String> map = entity.getPrefixes();
         for (Entry<String, String> entry : map.entrySet()) {
             String key = entry.getKey();
@@ -242,9 +229,9 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
     private boolean isPrefixRegistered(String prefix) {
         assert prefix != null;
         String uri = getNamespaceURI(prefix);
-        return (uri != null && uri.length() > 0); 
+        return (uri != null && uri.length() > 0);
     }
-    
+
     /**
      * Takes all prefixes of the special form and calculate the maximum 
      * integer value for set of prefixes. 
@@ -259,7 +246,7 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
      * @param pref
      * @return
      */
-    private int getMaximumSuffix( String prefPreposition ) {
+    private int getMaximumSuffix(String prefPreposition) {
         assert prefPreposition != null;
         //
         Iterator<String> iterator = getPrefixes();
@@ -273,8 +260,7 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
                     if (ind > maxPrefixIndex) {
                         maxPrefixIndex = ind;
                     }
-                }
-                catch (NumberFormatException e) {
+                } catch (NumberFormatException e) {
                     // we don't care about it.
                 }
             }
@@ -290,7 +276,5 @@ public class ExNamespaceContextImpl implements ExNamespaceContext {
         }
         return entity;
     }
-
     private BpelEntityImpl myElement;
-
 }
