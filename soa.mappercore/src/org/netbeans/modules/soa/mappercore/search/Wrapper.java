@@ -132,18 +132,16 @@ final class Wrapper extends JPanel {
     component.setPreferredSize(dimension);
   }
 
-  private boolean isCtrl(int modifiers) {
-    return isModifier(modifiers, KeyEvent.CTRL_MASK);
-  }
-
   private boolean isAlt(int modifiers) {
     return isModifier(modifiers, KeyEvent.ALT_MASK);
   }
 
-  private boolean isMeta(int modifiers) {
-    return isModifier(modifiers, KeyEvent.META_MASK);
+  private boolean isCtrl(int modifiers) {
+    return
+      isModifier(modifiers, KeyEvent.CTRL_MASK) ||
+      isModifier(modifiers, KeyEvent.META_MASK);
   }
-                         
+
   private boolean isModifier(int modifiers, int mask) {
     return (modifiers & mask) != 0;
   }
@@ -277,9 +275,6 @@ final class Wrapper extends JPanel {
         return;
       }
       if (isAlt(modifiers)) {
-        return;
-      }
-      if (isMeta(modifiers)) {
         return;
       }
       myTextField.setText(String.valueOf(c));

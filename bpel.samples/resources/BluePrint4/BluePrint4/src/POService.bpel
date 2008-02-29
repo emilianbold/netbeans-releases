@@ -106,7 +106,7 @@
                  variable="purchaseOrderRequest"
                  createInstance="yes">
             <bpws:correlations>
-                <bpws:correlation set="CorrelationSet" initiate="no"/>
+                <bpws:correlation set="CorrelationSet" initiate="yes"/>
             </bpws:correlations>
         </receive>
         <assign name="Assign_1">
