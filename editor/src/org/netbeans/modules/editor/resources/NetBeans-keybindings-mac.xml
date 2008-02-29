@@ -73,6 +73,13 @@ made subject to such option by the copyright holder.
     <bind key="D-M" remove="true"/>
     <bind key="C-M" actionName="select-next-parameter"/>
     
+    <bind key="D-R" remove="true"/>
+    <bind key="C-R" actionName="in-place-refactoring"/>
+
+    <bind key="C-H" remove="true"/>
+    <bind key="M-R" actionName="replace"/>
+
+    
     <!-- Things we add only on the mac -->
     
     <bind actionName="caret-begin" key="M-UP"/> 
