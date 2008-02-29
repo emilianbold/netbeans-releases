@@ -471,7 +471,7 @@ public final class JsfForm implements ActiveEditorDrop {
     }
     
     public static void createForm(CompilationController controller, TypeElement bean, int formType, String variable, StringBuffer stringBuffer, boolean createSelectForRel) {
-        createForm(controller, bean, formType, variable, stringBuffer, createSelectForRel, null);
+        createForm(controller, bean, formType, variable, stringBuffer, createSelectForRel, "");
     }
     
     public static void createForm(CompilationController controller, TypeElement bean, int formType, String variable, StringBuffer stringBuffer, boolean createSelectForRel, String entityClass) {
