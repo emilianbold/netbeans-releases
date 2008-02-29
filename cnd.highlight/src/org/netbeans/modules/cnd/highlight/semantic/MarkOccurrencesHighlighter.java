@@ -177,7 +177,7 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
             assert fo != null;
             CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, CaretAwareCsmFileTaskFactory.getLastPosition(fo));
             if (ref!=null && ref.getReferencedObject()!=null) {
-                out = CsmReferenceRepository.getDefault().getReferences(ref.getReferencedObject(), file, CsmReferenceKind.ANY_USAGE);
+                out = CsmReferenceRepository.getDefault().getReferences(ref.getReferencedObject(), file, CsmReferenceKind.ALL);
             }
         }
         return out;

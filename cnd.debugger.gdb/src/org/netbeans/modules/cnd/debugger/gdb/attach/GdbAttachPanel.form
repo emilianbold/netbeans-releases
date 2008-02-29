@@ -18,12 +18,12 @@
           <Group type="102" alignment="0" attributes="1">
               <Component id="filterLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="filterCB" pref="495" max="32767" attributes="0"/>
+              <Component id="filterCB" pref="506" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="projectLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="projectCB" pref="488" max="32767" attributes="0"/>
+              <Component id="projectCB" pref="502" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="procLabel" min="-2" max="-2" attributes="0"/>

@@ -383,7 +383,7 @@ public final class NbPlatform {
             // Common case.
             String plafDestDir = PLATFORM_PREFIX + id + PLATFORM_DEST_DIR_SUFFIX;
             props.setProperty(harnessDirKey, "${" + plafDestDir + "}/" + harness.getName()); // NOI18N
-        } else if (harness.equals(getDefaultPlatform().getHarnessLocation())) {
+        } else if (getDefaultPlatform() != null && harness.equals(getDefaultPlatform().getHarnessLocation())) {
             // Also common.
             props.setProperty(harnessDirKey, "${" + PLATFORM_PREFIX + PLATFORM_ID_DEFAULT + PLATFORM_HARNESS_DIR_SUFFIX + "}"); // NOI18N
         } else {

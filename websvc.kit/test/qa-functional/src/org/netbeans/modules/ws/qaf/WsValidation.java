@@ -463,7 +463,7 @@ public class WsValidation extends WebServicesTestBase {
         if (isService) {
             eo = new EditorOperator(getWsName());
             assertTrue("missing @HandlerChain", //NOI18N
-                    eo.contains("@HandlerChain(file = \"MyWebWs_handler.xml\")")); //NOI18N
+                    eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
         }
         assertTrue(handlerCfg.exists());
         FileObject fo = FileUtil.toFileObject(handlerCfg);

@@ -64,6 +64,8 @@ import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpointPanel;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpointPanel;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpointPanel;
 
@@ -143,6 +145,8 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
             c = new LineBreakpointPanel((LineBreakpoint) b);
         } else if (b instanceof FunctionBreakpoint) {
             c = new FunctionBreakpointPanel((FunctionBreakpoint) b);
+        } else if (b instanceof AddressBreakpoint) {
+            c = new AddressBreakpointPanel((AddressBreakpoint) b);
         } else {
 	    return; // should never happen (ie, its a developer error)
 	}

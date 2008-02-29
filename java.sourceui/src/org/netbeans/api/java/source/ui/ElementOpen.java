@@ -44,6 +44,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.java.BinaryElementOpen;
+import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
@@ -198,8 +199,10 @@ public final class ElementOpen {
                         Exceptions.printStackTrace(ioe);
                     }
                     Element el = handle.resolve(info);                
-                    if (el == null)
-                        throw new IllegalArgumentException();
+                    if (el == null) {
+                        ErrorManager.getDefault().log(ErrorManager.ERROR, "Cannot resolve " + handle + ". " + info.getClasspathInfo());
+                        return;
+                    }
 
                     FindDeclarationVisitor v = new FindDeclarationVisitor(el, info);
 

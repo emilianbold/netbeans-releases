@@ -89,6 +89,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
                     !propertyName.equals(LineBreakpoint.PROP_URL) &&
                     !propertyName.equals(LineBreakpoint.PROP_LINE_NUMBER) &&
                     !propertyName.equals(GdbBreakpoint.PROP_ENABLED) &&
+                    !propertyName.equals(AddressBreakpoint.PROP_ADDRESS_VALUE) &&
                     !propertyName.equals(AddressBreakpoint.PROP_REFRESH))) {
                 return;
             }

@@ -522,7 +522,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
      * @param path path to normalize
      * @return normalized path without "." and ".." elements
      */ 
-    private static String normalize(String path) {
+    public static String normalize(String path) {
       for (Matcher m = thisDirectoryPattern.matcher(path); m.find(); )
       {
         path = m.replaceAll("$1");
