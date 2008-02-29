@@ -699,6 +699,26 @@ public final class CsmProjectContentResolver {
             }
         }
         
+        // inspect unnamed unions, structs and classes
+        CsmDeclaration.Kind memberKinds[] = {
+            CsmDeclaration.Kind.UNION,
+            CsmDeclaration.Kind.STRUCT,
+            CsmDeclaration.Kind.CLASS,
+        };
+        it = clazz.getMembers().iterator();
+        while (it.hasNext()) {
+            CsmMember member = (CsmMember) it.next();
+            if (isKindOf(member.getKind(), memberKinds) &&
+                    matchVisibility(member, minVisibility)) {
+                CharSequence memberName = member.getName();
+                if (memberName.length() == 0) {
+                    Map set = getClassMembers((CsmClass) member, contextDeclaration, kinds, strPrefix, staticOnly, match,
+                        new HashSet(), CsmVisibility.PUBLIC, INIT_INHERITANCE_LEVEL, inspectParentClasses, returnUnnamedMembers);
+                    res.putAll(set);
+                }
+            }
+        }
+        
         if (inspectParentClasses) {
             // handle base classes in context of original class/function
             for (it = clazz.getBaseClasses().iterator(); it.hasNext();) {
