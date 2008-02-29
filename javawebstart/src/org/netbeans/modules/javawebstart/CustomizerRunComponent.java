@@ -79,7 +79,7 @@ public class CustomizerRunComponent extends javax.swing.JPanel implements Action
 
         setLayout(new java.awt.GridBagLayout());
 
-        runCheckBox.setText(org.openide.util.NbBundle.getMessage(CustomizerRunComponent.class, "LBL_Run_with_JWS")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(runCheckBox, org.openide.util.NbBundle.getMessage(CustomizerRunComponent.class, "LBL_Run_with_JWS")); // NOI18N
         runCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         runCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -87,8 +87,10 @@ public class CustomizerRunComponent extends javax.swing.JPanel implements Action
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(runCheckBox, gridBagConstraints);
+        runCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRunComponent.class, "ACSN_Run_With_JWS")); // NOI18N
+        runCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRunComponent.class, "ACSD_Run_With_JWS")); // NOI18N
 
-        hintLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerRunComponent.class, "HINT_Run_with_JWS")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(hintLabel, org.openide.util.NbBundle.getMessage(CustomizerRunComponent.class, "HINT_Run_with_JWS")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
