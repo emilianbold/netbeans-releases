@@ -147,15 +147,6 @@ public class JRubyServerModule implements RubyInstance {
 
             GlassfishModule.ServerState state = commonModule.getServerState();
             if(state == GlassfishModule.ServerState.STOPPED) {
-//                final Future<GlassfishModule.OperationState> startFuture = 
-//                        commonModule.startServer(new OperationStateListener() {
-//                    public void operationStateChanged(GlassfishModule.OperationState newState, String message) {
-//                        System.out.println("runApplication/start V3/JRuby: " + newState + " - " + message);
-//                        if(newState == GlassfishModule.OperationState.COMPLETED) {
-//                            deploy(applicationName, applicationDir);
-//                        }
-//                    }
-//                });
                 FutureTask<OperationState> task = new FutureTask<OperationState>(
                         new RunAppTask(commonModule, applicationName, applicationDir));
                 RequestProcessor.getDefault().post(task);
@@ -196,7 +187,7 @@ public class JRubyServerModule implements RubyInstance {
             if(result == GlassfishModule.OperationState.COMPLETED) {
                 step = "deploy";
                 final Future<GlassfishModule.OperationState> deployFuture = 
-                        commonModule.deploy(this, applicationDir, applicationName);
+                        commonModule.deploy(this, applicationDir, applicationName, "/");
                 result = deployFuture.get();
             }
             return translateOperationState(result);
@@ -228,7 +219,7 @@ public class JRubyServerModule implements RubyInstance {
                 public void operationStateChanged(final GlassfishModule.OperationState newState, final String message) {
                     System.out.println("deploy V3/JRuby: " + newState + " - " + message);
                 }
-            }, applicationDir, applicationName));
+            }, applicationDir, applicationName, "/"));
         } else {
             throw new IllegalStateException("No V3 Common Server support found for V3/Ruby server instance");
         }
@@ -275,7 +266,8 @@ public class JRubyServerModule implements RubyInstance {
     }
 
     public String getContextRoot(String applicationName) {
-        return applicationName;
+//        return applicationName;
+        return "";
     }
 
     public int getRailsPort() {
