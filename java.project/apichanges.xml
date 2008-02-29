@@ -117,8 +117,8 @@ is the proper place.
                 <p> A new utility class for helping project types create UI for
                 sharable Libraries.
                 </p>
-                <p> An additional protected method for use in ProjectClassPathModifierImplementation subclasses named
-                <code>performSharabilityHeuristics()</code> that takes classpath roots and tries to find the best way to reference that jar/folder.
+                <p> An additional protected method for use in <code>ProjectClassPathModifierImplementation</code> subclasses named
+                <code>performSharabilityHeuristics(URL,AntProjectHelper)</code> that takes classpath roots and tries to find the best way to reference that jar/folder.
                 </p>
                 
             </description>

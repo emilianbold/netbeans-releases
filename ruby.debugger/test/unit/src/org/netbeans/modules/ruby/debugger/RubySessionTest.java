@@ -50,9 +50,6 @@ import org.openide.filesystems.FileUtil;
 import org.rubyforge.debugcommons.model.RubyThreadInfo;
 import org.rubyforge.debugcommons.model.RubyVariable;
 
-/**
- * @author Martin Krauskopf
- */
 public final class RubySessionTest extends TestBase {
     
     public RubySessionTest(final String name) {

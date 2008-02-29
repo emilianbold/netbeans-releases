@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
@@ -55,7 +56,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
  */
 public abstract class Instantiation {
     protected final CsmTemplate template;
-    private final CsmType instantiation;
+    protected final CsmType instantiation;
     
     private Instantiation(CsmTemplate template, CsmType instantiation) {
         assert template instanceof CsmTemplate : "Instantiated class is not a CsmTemplate"; // NOI18N
@@ -89,7 +90,7 @@ public abstract class Instantiation {
         return type;
     }
     
-    public static class Class extends Instantiation implements CsmClass {
+    private static class Class extends Instantiation implements CsmClass, CsmInstantiation {
         public Class(CsmTemplate clazz, CsmType type) {
             super(clazz, type);
         }
@@ -188,9 +189,22 @@ public abstract class Instantiation {
         public Collection<CsmInheritance> getBaseClasses() {
             return ((CsmClass)template).getBaseClasses();
         }
+
+        public CsmOffsetableDeclaration getTemplateDeclaration() {
+            return (CsmClass)template;
+        }
+
+        public CsmType getInstantiationType() {
+            return instantiation;
+        }
+        
+        @Override
+        public String toString() {
+            return "INSTANTIATION OF CLASS: " + getTemplateDeclaration() + " with type " + getInstantiationType();
+        }
     }
     
-    public static class Function extends Instantiation implements CsmFunction {
+    private static class Function extends Instantiation implements CsmFunction, CsmInstantiation {
         
         public Function(CsmTemplate template, CsmType instantiation) {
             super(template, instantiation);
@@ -256,6 +270,14 @@ public abstract class Instantiation {
             return ((CsmFunction)template).isInline();
         }
 
+        public boolean isOperator() {
+            return ((CsmFunction)template).isOperator();
+        }
+        
+        public OperatorKind getOperatorKind() {
+            return ((CsmFunction)template).getOperatorKind();
+        }
+        
         public CharSequence getSignature() {
             return ((CsmFunction)template).getSignature();
         }
@@ -277,17 +299,36 @@ public abstract class Instantiation {
             return ((CsmFunction)template).getDefinition();
         }
 
+        public CsmFunction getDeclaration() {
+            return ((CsmFunction)template).getDeclaration();
+        }
+        
         public CharSequence getDeclarationText() {
             return ((CsmFunction)template).getDeclarationText();
         }
+
+        public CsmOffsetableDeclaration getTemplateDeclaration() {
+            return (CsmFunction)template;
+        }
+
+        public CsmType getInstantiationType() {
+            return instantiation;
+        }
+        
+        @Override
+        public String toString() {
+            return "INSTANTIATION OF FUNCTION: " + getTemplateDeclaration() + " with type " + getInstantiationType();
+        }
     }
 
-    public static class Field implements CsmField {
+    private static class Field implements CsmField, CsmInstantiation {
         private final CsmField fieldRef;
+        private final Instantiation clazzRef;
         private final CsmType type;
 
         public Field(CsmField field, Instantiation clazz) {
             this.fieldRef = field;
+            this.clazzRef = clazz;
             this.type = clazz.getInstantiatedType(field.getType());
         }
 
@@ -375,9 +416,22 @@ public abstract class Instantiation {
         public CsmClass getContainingClass() {
             return fieldRef.getContainingClass();
         }
+
+        public CsmOffsetableDeclaration getTemplateDeclaration() {
+            return fieldRef;
+        }
+
+        public CsmType getInstantiationType() {
+            return clazzRef.instantiation;
+        }
+        
+        @Override
+        public String toString() {
+            return "INSTANTIATION OF FIELD: " + getTemplateDeclaration() + " with type " + getInstantiationType();
+        }
     }
     
-    public static class Method implements CsmMethod {
+    private static class Method implements CsmMethod, CsmFunctionDefinition, CsmInstantiation {
         private final CsmMethod methodRef;
         private final Class clazzRef;
         private final CsmType retType;
@@ -501,14 +555,45 @@ public abstract class Instantiation {
         public boolean isAbstract() {
             return methodRef.isAbstract();
         }
+
+        public boolean isOperator() {
+            return methodRef.isOperator();
+        }
+
+        public OperatorKind getOperatorKind() {
+            return methodRef.getOperatorKind();
+        }
+        
+        public CsmCompoundStatement getBody() {
+            return ((CsmFunctionDefinition)methodRef).getBody();
+        }
+
+        public CsmFunction getDeclaration() {
+            return ((CsmFunctionDefinition)methodRef).getDeclaration();
+        }
+        
+        public CsmOffsetableDeclaration getTemplateDeclaration() {
+            return methodRef;
+        }
+
+        public CsmType getInstantiationType() {
+            return clazzRef.getInstantiationType();
+        }
+        
+        @Override
+        public String toString() {
+            return "INSTANTIATION OF METHOD: " + getTemplateDeclaration() + " with type " + getInstantiationType();
+        }
     }
     
-    public static class Parameter implements CsmParameter {
+    private static class Parameter implements CsmParameter, CsmInstantiation {
         private final CsmParameter parameterRef;
+        private final Instantiation clazzRef;
         private final CsmType type;
 
         public Parameter(CsmParameter parameter, Instantiation clazz) {
             this.parameterRef = parameter;
+            this.clazzRef = clazz;
             this.type = clazz.getInstantiatedType(parameter.getType());
         }
         
@@ -588,9 +673,22 @@ public abstract class Instantiation {
         public boolean isVarArgs() {
             return parameterRef.isVarArgs();
         }
+
+        public CsmOffsetableDeclaration getTemplateDeclaration() {
+            return parameterRef;
+        }
+
+        public CsmType getInstantiationType() {
+            return clazzRef.instantiation;
+        }
+
+        @Override
+        public String toString() {
+            return "INSTANTIATION OF FUN PARAM: " + getTemplateDeclaration() + " with type " + getInstantiationType();
+        }
     }
     
-    public static class Type implements CsmType {
+    private static class Type implements CsmType {
         private final CsmType template;
         private final CsmType instantiation;
 

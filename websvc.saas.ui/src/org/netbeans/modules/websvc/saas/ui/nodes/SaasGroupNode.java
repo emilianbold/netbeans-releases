@@ -113,8 +113,20 @@ public class SaasGroupNode extends AbstractNode {
         return null;
     }
 
+    private Image vendorIcon = null;
+    private Image getVendorIcon(int type) {
+        if (vendorIcon == null && group.getServices().size() > 0) {
+            vendorIcon = SaasUtil.loadIcon(group, type);
+        }
+        return vendorIcon;
+    }
+    
     @Override
     public Image getIcon(int type){
+        Image icon = getVendorIcon(type);
+        if (icon != null) {
+            return icon;
+        }
         Image standardFolderImage = getUserDirFolderImage(type);
         if (standardFolderImage != null) {
             return standardFolderImage;
@@ -124,6 +136,10 @@ public class SaasGroupNode extends AbstractNode {
     
     @Override
     public Image getOpenedIcon(int type){
+        Image icon = getVendorIcon(type);
+        if (icon != null) {
+            return icon;
+        }
         Image standardFolderImage = getUserDirFolderImage(type);
         if (standardFolderImage != null) {
             return standardFolderImage;
@@ -133,12 +149,7 @@ public class SaasGroupNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>();
-        for (SaasNodeActionsProvider ext : SaasUtil.getSaasNodeActionsProviders()) {
-            for (Action a : ext.getSaasActions(this.getLookup())) {
-                actions.add(a);
-            }
-        }
+        List<Action> actions = SaasNode.getActions(getLookup());
         actions.add(SystemAction.get(AddServiceAction.class));
         actions.add(SystemAction.get(AddGroupAction.class));
         actions.add(SystemAction.get(DeleteGroupAction.class));

@@ -1,7 +1,7 @@
 /*
  *  CcCI1CClass
  *
- * Created on December 12, 2007, 1:31 AM
+ * Created on February 19, 2008, 7:17 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -14,6 +14,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.ProduceMime;
+import org.codehaus.jettison.json.JSONObject;
 
 /**
  * REST Web Service
@@ -25,18 +26,18 @@ import javax.ws.rs.ProduceMime;
 public class CcCI1CClass {
     @HttpContext
     private UriInfo context;
-    
+
     /** Creates a new instance of CcCI1CClass */
     public CcCI1CClass() {
     }
 
     /**
      * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.CcCI1CClass
-     * @return an instance of java.lang.String
+     * @return an instance of org.codehaus.jettison.json.JSONObject
      */
     @GET
     @ProduceMime("application/json")
-    public String getJson() {
+    public JSONObject getJson() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
     }

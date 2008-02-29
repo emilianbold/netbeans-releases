@@ -43,6 +43,7 @@ package org.netbeans.api.languages.database;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -54,6 +55,7 @@ public class DatabaseDefinition extends DatabaseItem {
     private String                  type;
     private List<DatabaseUsage>     usages;
     private DatabaseContext         context;
+    private URL                     sourceFileUrl;
 
     public DatabaseDefinition (
         String name,
@@ -91,6 +93,14 @@ public class DatabaseDefinition extends DatabaseItem {
         if (usages == null)
             return Collections.<DatabaseUsage>emptyList ();
         return usages;
+    }
+    
+    public void setSourceFileUrl(URL url) {
+        this.sourceFileUrl = url;
+    }
+    
+    public URL getSourceFileUrl() {
+        return sourceFileUrl;
     }
     
     public String toString () {

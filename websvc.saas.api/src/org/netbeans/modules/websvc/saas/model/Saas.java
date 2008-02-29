@@ -43,10 +43,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices.Header;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.CodeGen;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -62,8 +64,10 @@ public class Saas {
 
     public static enum State { 
         UNINITIALIZED, 
-        RETRIEVED, 
-        READY 
+        INITIALIZING, 
+        RETRIEVED,
+        READY
+     
     }
     
     public static final String NS_SAAS = "http://xml.netbeans.org/websvc/saas/services/1.0";
@@ -73,6 +77,7 @@ public class Saas {
     
     protected final SaasServices delegate;
     private SaasGroup parentGroup;
+    private SaasGroup topGroup;
     private List<SaasMethod> saasMethods;
     
     private State state = State.UNINITIALIZED;
@@ -85,11 +90,24 @@ public class Saas {
         this.parentGroup = parentGroup;
     }
     
-    public Saas(String url, String displayName, String description) {
+    public Saas(SaasGroup parent, String url, String displayName, String packageName) {
         delegate = new SaasServices();
         delegate.setUrl(url);
-        delegate.setDisplayName(url);
-        delegate.setDescription(description);
+        delegate.setDisplayName(displayName);
+        
+        SaasMetadata m = delegate.getSaasMetadata();
+        if (m == null) {
+            m = new SaasMetadata();
+            this.getDelegate().setSaasMetadata(m);
+        }
+        CodeGen cg = m.getCodeGen();
+        if (cg == null) {
+            cg = new CodeGen();
+            m.setCodeGen(cg);
+        }
+        cg.setPackageName(packageName);
+        setParentGroup(parent);
+        computePathFromRoot();
     }
 
     public SaasServices getDelegate() {
@@ -100,24 +118,28 @@ public class Saas {
         return parentGroup;
     }
 
-    public void setParentGroup(SaasGroup parentGroup) {
-        if (this.parentGroup == parentGroup) {
-            return;
-        }
+    protected void setParentGroup(SaasGroup parentGroup) {
         this.parentGroup = parentGroup;
-        SaasMetadata data = delegate.getSaasMetadata();
-        if (data == null) {
-            data = new SaasMetadata();
-            delegate.setSaasMetadata(data);
-        }
-        data.setGroup(parentGroup.getPathFromRoot());
     }
-
+    
+    public SaasGroup getTopLevelGroup() {
+        return topGroup;
+    }
+    
+    public void setTopLevelGroup(SaasGroup topGroup) {
+        this.topGroup = topGroup;
+    }
+    
+    protected void computePathFromRoot() {
+        delegate.getSaasMetadata().setGroup(parentGroup.getPathFromRoot());
+    }
+    
     protected FileObject saasFile;
     public FileObject getSaasFile() throws IOException {
         if (saasFile == null) {
-            String filename = getSaasFolder() + "-saas.xml"; //NOI18N
-            saasFile = getSaasFolder().getFileObject(filename);
+            FileObject folder = getSaasFolder();
+            String filename = folder.getName() + "-saas.xml"; //NOI18N
+            saasFile = folder.getFileObject(filename);
             if (saasFile == null) {
                 saasFile = getSaasFolder().createData(filename);
             }
@@ -137,7 +159,7 @@ public class Saas {
         return userDefined;
     }
     
-    public void setUserDefined(boolean v) {
+    protected void setUserDefined(boolean v) {
         if (userDefined) {
             userDefined = v;
         }
@@ -161,12 +183,16 @@ public class Saas {
      * Asynchronous call to transition Saas to READY state; mainly for UI usage
      * Sub-class need to completely override as needed, without calling super().
      */
-    public void toStateReady() {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                setState(State.READY);
-            }
-        });
+    public void toStateReady(boolean synchronous) {
+        if (synchronous) {
+            setState(state);
+        } else {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    setState(State.READY);
+                }
+            });
+        }
     }
     
     public FileObject getModuleJar() {
@@ -214,17 +240,31 @@ public class Saas {
     }
     
     public FileObject getSaasFolder() {
+        return getSaasFolder(true);
+    }
+    
+    public FileObject getSaasFolder(boolean create) {
         if (saasFolder == null) {
-            saasFolder = getParentGroup().getGroupFolder().getFileObject(getDisplayName(), null);
-            if (saasFolder == null) {
+            saasFolder = SaasServicesModel.getWebServiceHome().getFileObject(getDisplayName());
+            if (saasFolder == null && create) {
                 try {
-                    saasFolder = getParentGroup().getGroupFolder().createFolder(getDisplayName());
+                    saasFolder = SaasServicesModel.getWebServiceHome().createFolder(getDisplayName());
                 } catch(Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
         }
         return saasFolder;
+    }
+    
+    @Override
+    public String toString() {
+        return getDisplayName();
+    }
+    
+    protected void refresh() {
+        setState(State.INITIALIZING);
+        saasMethods = null;
     }
     
     /**

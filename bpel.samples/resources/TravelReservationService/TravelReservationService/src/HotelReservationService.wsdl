@@ -41,7 +41,7 @@
             <xs:import namespace="http://www.opentravel.org/OTA/2003/05" schemaLocation="OTA_TravelItinerary.xsd"/>
         </xs:schema>
     </types>
-    
+
     <message name="ReserveHotelIn">
         <part name="itinerary" element="ota:TravelItinerary"/>
     </message>
@@ -49,15 +49,15 @@
     <message name="CancelHotelIn">
         <part name="itinerary" element="ota:ItineraryRef"/>
     </message>
-    
+
     <message name="CancelHotelOut">
         <part name="succeeded" element="ota:CancellationStatus"/>
     </message>
-    
+
     <message name="HotelReservedIn">
         <part name="itinerary" element="ota:TravelItinerary"/>
     </message>
-    
+
     <portType name="HotelReservationPortType">
         <operation name="reserveHotel">
             <input message="tns:ReserveHotelIn"/>
@@ -67,13 +67,13 @@
             <output message="tns:CancelHotelOut"/>
         </operation>
     </portType>
-    
+
     <portType name="HotelReservationCallbackPortType">
         <operation name="hotelReserved">
             <input message="tns:HotelReservedIn"/>
         </operation>
-    </portType> 
-    
+    </portType>
+
     <binding name="HotelReservationSoapBinding" type="tns:HotelReservationPortType">
         <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="reserveHotel">
@@ -92,7 +92,7 @@
             </output>
         </operation>
     </binding>
-    
+
     <binding name="HotelReservationCallbackSoapBinding" type="tns:HotelReservationCallbackPortType">
         <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="hotelReserved">
@@ -100,21 +100,21 @@
             <input>
                 <soap:body use="literal"/>
             </input>
-        </operation>                
+        </operation>
     </binding>
-    
+
     <service name="HotelReservationSoapService">
         <port name="HotelReservationSoapHttpPort" binding="tns:HotelReservationSoapBinding">
             <soap:address location="http://localhost:8080/webservice/HotelReservationService"/>
         </port>
     </service>
-    
+
     <plnk:partnerLinkType name="HotelReservationPartnerLinkType">
         <plnk:role name="HotelReservationServiceRole" 
                    portType="tns:HotelReservationPortType">
         </plnk:role>
         <plnk:role name="HotelReservationCallbackServiceRole"
                    portType="tns:HotelReservationCallbackPortType">
-        </plnk:role>        
-    </plnk:partnerLinkType>     
+        </plnk:role>
+    </plnk:partnerLinkType>
 </definitions>

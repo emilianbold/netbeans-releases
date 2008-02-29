@@ -790,7 +790,7 @@ SettingsChangeListener, FocusListener {
         ExtEditorUI ui = extEditorUI;
         if (ui != null) {
             JTextComponent component = ui.getComponent();
-            if (enabled && component != null && component.getCaret().isSelectionVisible()) {
+            if (enabled && component != null && Utilities.isSelectionShowing(component)) {
                 enterTimer.restart();
             }
         }

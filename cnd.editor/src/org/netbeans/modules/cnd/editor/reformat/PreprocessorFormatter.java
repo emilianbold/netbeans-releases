@@ -39,12 +39,13 @@
 
 package org.netbeans.modules.cnd.editor.reformat;
 
+import java.util.Stack;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
-import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
+import org.netbeans.modules.cnd.editor.reformat.DiffLinkedList.DiffResult;
 
 /**
  *
@@ -52,16 +53,20 @@ import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
  */
 public class PreprocessorFormatter {
     private ReformatterImpl context;
-    private final TokenSequence<CppTokenId> ts;
+    private final ExtendedTokenSequence ts;
     private final CodeStyle codeStyle;
     private final DiffLinkedList diffs;
     private int prepocessorDepth = 0;
+    private Stack<BracesStack> stateStack = new Stack<BracesStack>();
+    private BracesStack braces;
+
     
-    public PreprocessorFormatter(ReformatterImpl context){
+    /*package local*/ PreprocessorFormatter(ReformatterImpl context){
         this.context = context;
         this.ts = context.ts;
         this.codeStyle = context.codeStyle;
         this.diffs = context.diffs;
+        this.braces = context.braces;
     }
     
     /*package local*/ void indentPreprocessor(Token<CppTokenId> previous) {
@@ -85,14 +90,24 @@ public class PreprocessorFormatter {
             switch (directive.id()) {
                 case PREPROCESSOR_ELSE: //("else", "preprocessor-keyword-directive"),
                 case PREPROCESSOR_ELIF: //("elif", "preprocessor-keyword-directive"),
+                    prepocessorDepth--;
+                    if (!stateStack.empty()){
+                        braces.reset(stateStack.pop());
+                    }
+                    break;
                 case PREPROCESSOR_ENDIF: //("endif", "preprocessor-keyword-directive"),
                     prepocessorDepth--;
+                    if (!stateStack.empty()){
+                        stateStack.pop();
+                    }
                     break;
             }
-            while(prep.movePrevious()) {
-                if (prep.token().id() == PREPROCESSOR_START) {
-                    atSharp = true;
-                    break;
+            if (context.doFormat()) {
+                while(prep.movePrevious()) {
+                    if (prep.token().id() == PREPROCESSOR_START) {
+                        atSharp = true;
+                        break;
+                    }
                 }
             }
         }
@@ -105,10 +120,12 @@ public class PreprocessorFormatter {
                 case PREPROCESSOR_IFDEF: //("ifdef", "preprocessor-keyword-directive"),
                 case PREPROCESSOR_IFNDEF: //("ifndef", "preprocessor-keyword-directive"),
                     prepocessorDepth++;
+                    stateStack.push(braces.clone());
                     break;
                 case PREPROCESSOR_ELSE: //("else", "preprocessor-keyword-directive"),
                 case PREPROCESSOR_ELIF: //("elif", "preprocessor-keyword-directive"),
                     prepocessorDepth++;
+                    stateStack.push(braces.clone());
                     break;
             }
         }
@@ -134,27 +151,31 @@ public class PreprocessorFormatter {
     }
 
     private void noIndent(Token<CppTokenId> previous, TokenSequence<CppTokenId> prep, Token<CppTokenId> next) {
-        indentBefore(previous, "");
-        indentAfter(prep, next, "");
+        indentBefore(previous, ""); // NOI18N
+        indentAfter(prep, next, ""); // NOI18N
     }
 
     private void indentBefore(Token<CppTokenId> previous, String spaces) {
-        Diff diff = diffs.getFirst();
-        if (diff != null && diff.getEndOffset() == ts.offset()) {
-            if (diff.getText().startsWith("\n")) {
-                diff.setText("\n"+spaces);
-            } else {
-                diff.setText(spaces);
+        DiffResult diff = diffs.getDiffs(ts, -1);
+        if (diff != null) {
+            if (diff.after != null) {
+                diff.after.replaceSpaces(spaces); // NOI18N
+                if (diff.replace != null && !diff.after.hasNewLine()){
+                    diff.replace.replaceSpaces(""); // NOI18N
+                }
+                return;
+            } else if (diff.replace != null) {
+                diff.replace.replaceSpaces(spaces); // NOI18N
+                return;
             }
-        } else if (previous != null && previous.id() == WHITESPACE) {
+        }
+        if (previous != null && previous.id() == WHITESPACE) {
             if (!spaces.equals(previous.text().toString())){
-                diffs.addFirst(ts.offset() - previous.length(),
-                               ts.offset(), spaces);
+                ts.replacePrevious(previous, spaces);
             }
         } else {
             if (spaces.length()>0){
-                diffs.addFirst(ts.offset(),
-                               ts.offset(), spaces);
+                ts.addBeforeCurrent(spaces);
             }
         }
     }
@@ -176,21 +197,21 @@ public class PreprocessorFormatter {
 
     private void indentByCode(Token<CppTokenId> previous, TokenSequence<CppTokenId> prep, Token<CppTokenId> next) {
         if (codeStyle.sharpAtStartLine()) {
-            indentBefore(previous, "");
-            indentAfter(prep, next, context.getIndent(""));
+            indentBefore(previous, ""); // NOI18N
+            indentAfter(prep, next, context.getIndent("")); // NOI18N
         } else {
-            indentBefore(previous, context.getIndent(""));
-            indentAfter(prep, next, "");
+            indentBefore(previous, context.getIndent("")); // NOI18N
+            indentAfter(prep, next, ""); // NOI18N
         }
     }
 
     private void indentByPreprocessor(Token<CppTokenId> previous, TokenSequence<CppTokenId> prep, Token<CppTokenId> next) {
         if (codeStyle.sharpAtStartLine()) {
-            indentBefore(previous, "");
-            indentAfter(prep, next, getPreprocessorIndent("", prepocessorDepth));
+            indentBefore(previous, ""); // NOI18N
+            indentAfter(prep, next, getPreprocessorIndent("", prepocessorDepth)); // NOI18N
         } else {
-            indentBefore(previous, getPreprocessorIndent("", prepocessorDepth));
-            indentAfter(prep, next, "");
+            indentBefore(previous, getPreprocessorIndent("", prepocessorDepth)); // NOI18N
+            indentAfter(prep, next, ""); // NOI18N
         }
     }
 

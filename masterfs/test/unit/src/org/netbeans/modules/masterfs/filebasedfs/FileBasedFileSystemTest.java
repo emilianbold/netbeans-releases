@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileObjectTestHid;
 import org.openide.filesystems.FileSystem;
@@ -93,7 +94,7 @@ public class FileBasedFileSystemTest extends FileSystemFactoryHid {
     }
             
     protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
-        FileBasedFileSystem.reinitForTests();
+        FileObjectFactory.reinitForTests();
         FileObject workFo = FileBasedFileSystem.getFileObject(getWorkDir());
         assertNotNull(workFo);
         for (int i = 0; i < resources.length; i++) {

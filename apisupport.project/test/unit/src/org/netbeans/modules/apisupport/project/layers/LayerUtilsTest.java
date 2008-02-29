@@ -309,12 +309,12 @@ public class LayerUtilsTest extends LayerTestBase {
     }
     
     public void testSystemFilesystemNetBeansOrgProject() throws Exception {
-        FileObject nbcvsroot = FileUtil.toFileObject(new File(System.getProperty("test.nbcvsroot")));
-        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(nbcvsroot.getFileObject("image"));
+        FileObject nbroot = FileUtil.toFileObject(new File(System.getProperty("test.nbroot")));
+        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(nbroot.getFileObject("image"));
         FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(p);
         assertDisplayName(fs, "right display name for netbeans.org standard file", "Menu/RunProject", "Run");
         assertNull("not loading files from extra modules", fs.findResource("Templates/Documents/docbook-article.xml"));
-        FileObject docbook = nbcvsroot.getFileObject("contrib/docbook");
+        FileObject docbook = nbroot.getFileObject("contrib/docbook");
         if (docbook == null) {
             System.err.println("Skipping part of testSystemFilesystemNetBeansOrgProject since contrib is not checked out");
             return;

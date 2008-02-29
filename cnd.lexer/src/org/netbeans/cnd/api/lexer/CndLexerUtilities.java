@@ -42,8 +42,10 @@ package org.netbeans.cnd.api.lexer;
 
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.cnd.lexer.PreprocLexer;
 
 /**
  *
@@ -51,12 +53,38 @@ import org.netbeans.api.lexer.TokenSequence;
  */
 public final class CndLexerUtilities {
 
+    public static String C_MIME_TYPE = "text/x-c";// NOI18N
+    public static String CPLUSPLUS_MIME_TYPE = "text/x-c++";    // NOI18N
+    public static String PREPROC_MIME_TYPE = "text/x-preprocessor";// NOI18N
+    public static String LEXER_STATE = "lexer-state"; // NOI18N
+    public static String LEXER_FILTER = "lexer-filter"; // NOI18N
+    public static int PREPROC_STATE_IN_BODY = PreprocLexer.OTHER;
+    
     private CndLexerUtilities() {
     }
 
     public static TokenSequence<CppTokenId> getCppTokenSequence(final JTextComponent component, final int offset) {
         Document doc = component.getDocument();
         return getCppTokenSequence(doc, offset);
+    }
+    
+    public static Language<CppTokenId> getLanguage(String mime) {
+        if (C_MIME_TYPE.equals(mime)) {
+            return CppTokenId.languageC();
+        } else if (CPLUSPLUS_MIME_TYPE.equals(mime)) {
+            return CppTokenId.languageCpp();
+        }
+        return null;
+    } 
+    
+    public static Language<CppTokenId> getLanguage(final Document doc) {
+        // try from property
+        Language lang = (Language) doc.getProperty(Language.class);
+        if (lang == null || (lang != CppTokenId.languageC() &&
+                             lang != CppTokenId.languageCpp())) {
+            lang = getLanguage((String) doc.getProperty("mimeType")); // NOI18N
+        }
+        return (Language<CppTokenId>)lang;
     }
     
     public static TokenSequence<CppTokenId> getCppTokenSequence(final Document doc, final int offset) {
@@ -190,6 +218,7 @@ public final class CndLexerUtilities {
             CppTokenId.PREPROCESSOR_INCLUDE,
             CppTokenId.PREPROCESSOR_INCLUDE_NEXT,
             CppTokenId.PREPROCESSOR_LINE,
+            CppTokenId.PREPROCESSOR_IDENT,
             CppTokenId.PREPROCESSOR_PRAGMA,
             CppTokenId.PREPROCESSOR_WARNING,
             CppTokenId.PREPROCESSOR_ERROR,

@@ -135,6 +135,11 @@ public class NbServiceTagCreateAction extends WizardAction {
                 source = StringUtils.format(SOURCE_NAME_JDK,
                         bundledJdks.get(0).getDisplayName(new Locale("")));
             }
+            List<Product> bundledAppservers = bundledRegistry.getProducts("sjsas");
+            
+            if (bundledAppservers.size() > 0) {
+                source = SOURCE_NAME_JTB;
+            }
         } catch (InitializationException e) {
             LogManager.log("Cannot load bundled registry", e);
         }
@@ -351,4 +356,7 @@ public class NbServiceTagCreateAction extends WizardAction {
     public static final String SOURCE_NAME_JDK =
             ResourceUtils.getString(NbServiceTagCreateAction.class,
             "NSTCA.installer.source.name.jdk");//NOI18N
+    public static final String SOURCE_NAME_JTB =
+            ResourceUtils.getString(NbServiceTagCreateAction.class,
+            "NSTCA.installer.source.name.jtb");//NOI18N
 }

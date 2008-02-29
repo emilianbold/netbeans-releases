@@ -75,10 +75,11 @@ public class ToggleOutputAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(outputGraphImgUrl));
 
         //action tooltip
-        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle));
+        String nbBundle2 = mLoc.t("PRSR001: Toggle Output View (Cntl-O)");
+        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle2));
 
-        // Acceleratot Cntl-Shift-O
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('O', InputEvent.CTRL_MASK + InputEvent.SHIFT_DOWN_MASK));
+        // Acceleratot Cntl-O
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('O', InputEvent.CTRL_MASK ));
     }
 
     /**

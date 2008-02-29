@@ -81,8 +81,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
 
     //XXX update mimetype once Hanz fixes the mimetype in CSS editor module
 //    private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
-    private static final String CSS_INLINED_MIMETYPE = "text/x-css-inlined"; //NOI18N
-
+    private static final String CSS_INLINED_MIMETYPE = "text/x-css"; //NOI18N
 //    private static final String CSS_SCRIPT_TAG_NAME = "style"; //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(EmbeddingUpdater.class.getName());

@@ -142,7 +142,8 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
     
     private static final int FILE_LOCAL_VAR_PRIORITY = TYPEDEF_PRIORITY + PRIORITY_SHIFT;
     private static final int FILE_LOCAL_ENUMERATOR_PRIORITY = FILE_LOCAL_VAR_PRIORITY + PRIORITY_SHIFT;
-    private static final int FILE_LOCAL_MACRO_PRIORITY = FILE_LOCAL_ENUMERATOR_PRIORITY + PRIORITY_SHIFT;
+    private static final int FILE_LOCAL_FUNCTION_PRIORITY = FILE_LOCAL_ENUMERATOR_PRIORITY + PRIORITY_SHIFT;
+    private static final int FILE_LOCAL_MACRO_PRIORITY = FILE_LOCAL_FUNCTION_PRIORITY + PRIORITY_SHIFT;
     private static final int FILE_INCLUDED_PRJ_MACRO_PRIORITY = FILE_LOCAL_MACRO_PRIORITY + PRIORITY_SHIFT;
     
     private static final int GLOBAL_VAR_PRIORITY = FILE_INCLUDED_PRJ_MACRO_PRIORITY + PRIORITY_SHIFT;
@@ -212,6 +213,10 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
             return new NbCsmResultItem.NbMacroResultItem(mac, FILE_LOCAL_MACRO_PRIORITY);  
         }
         
+        public CsmResultItem.FileLocalFunctionResultItem createFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp) {
+            return new NbCsmResultItem.NbFileLocalFunctionResultItem(fun, substituteExp, FILE_LOCAL_FUNCTION_PRIORITY); 
+        }
+        
         public CsmResultItem.MacroResultItem createFileIncludedProjectMacroResultItem(CsmMacro mac) {
             return new NbCsmResultItem.NbMacroResultItem(mac, FILE_INCLUDED_PRJ_MACRO_PRIORITY);  
         }
@@ -276,6 +281,6 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
 
         public CsmResultItem.NamespaceAliasResultItem createLibNamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath) {
             return new NbCsmResultItem.NbNamespaceAliasResultItem(alias, displayFullNamespacePath, LIB_NAMESPACE_ALIAS_PRIORITY);
-        }        
+        }
     }
 }

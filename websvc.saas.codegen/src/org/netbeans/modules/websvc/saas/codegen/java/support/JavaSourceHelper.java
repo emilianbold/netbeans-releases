@@ -89,7 +89,6 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -207,7 +206,8 @@ public class JavaSourceHelper {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     ExpressionTree packageTree = controller.getCompilationUnit().getPackageName();
-                    packageName[0] = packageTree.toString();
+                    if(packageTree != null)
+                        packageName[0] = packageTree.toString();
                 }
             }, true);
         } catch (IOException ex) {
@@ -780,7 +780,7 @@ public class JavaSourceHelper {
         for (ExecutableElement method : methods) {
             List<? extends AnnotationMirror> anmirs = method.getAnnotationMirrors();
 
-            AnnotationMirror mirrorHttpMethod = findAnnotation(anmirs, RestConstants.GET);
+            AnnotationMirror mirrorHttpMethod = findAnnotation(anmirs, Constants.GET);
             if (mirrorHttpMethod != null) {
                 TypeMirror tm = method.getReturnType();
                 if (tm != null && tm.getKind() == TypeKind.DECLARED) {

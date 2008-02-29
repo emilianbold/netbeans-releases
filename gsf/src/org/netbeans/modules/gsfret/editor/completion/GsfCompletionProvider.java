@@ -45,22 +45,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JToolTip;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.gsf.CompletionProposal;
-import org.netbeans.api.gsf.Completable;
-import org.netbeans.api.gsf.Parser;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.Completable.QueryType;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementHandle;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.NameKind;
-import org.netbeans.api.gsf.ParameterInfo;
+import org.netbeans.modules.gsf.api.CompletionProposal;
+import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.Completable.QueryType;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -86,7 +85,6 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -98,6 +96,9 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class GsfCompletionProvider implements CompletionProvider {
+    
+    private static final String COMMENT_CATEGORY_NAME = "comment";
+    
     /** 
      * Flag which is set when we're in a query that was initiated 
      * automatically rather than through an explicit gesture 
@@ -105,17 +106,26 @@ public class GsfCompletionProvider implements CompletionProvider {
     private static boolean isAutoQuery;
     private static boolean expectingCreateTask;
         
-    private static Completable getCompletable(Document doc) {
-        DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
-        if (dobj == null) {
+    public static Completable getCompletable(CompilationInfo info, int offset) {
+        try {
+            return getCompletable(info.getDocument(), offset);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
             return null;
         }
-        FileObject fo = dobj.getPrimaryFile();
-        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(fo.getMIMEType());
-
-        return (language != null) ? language.getCompletionProvider() : null;
+    }
+    
+    static Completable getCompletable(Document doc, int offset) {
+        BaseDocument baseDoc = (BaseDocument)doc;
+        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
+        for (Language l : list) {
+            if (l.getCompletionProvider() != null) {
+                return l.getCompletionProvider();
             }
-            
+        }
+
+        return null;
+    }
     private static boolean isInCompletion(JTextComponent component) {
         Object o = component.getClientProperty("completion-active"); // NOI18N
         return o == Boolean.TRUE;
@@ -123,7 +133,7 @@ public class GsfCompletionProvider implements CompletionProvider {
     
     public static int autoQueryTypes(JTextComponent component, String typedText) {
         if (typedText.length() > 0) {
-            Completable provider = getCompletable(component.getDocument());
+            Completable provider = getCompletable(component.getDocument(), component.getCaretPosition());
             if (provider != null) {
                 QueryType autoQuery = provider.getAutoQuery(component, typedText);
                 switch (autoQuery) {
@@ -174,10 +184,17 @@ public class GsfCompletionProvider implements CompletionProvider {
             if (!ts.moveNext() || ts.move(offset) == 0) {
                 return true;
             }
-            ts.moveNext(); // Move to the next token after move(offset)
+            if (!ts.moveNext()) { // Move to the next token after move(offset)
+                return false;
+            }
 
             TokenId tokenId = ts.token().id();
-            return !language.tokenCategoryMembers("comment").contains(tokenId); //NOI18N
+            
+            Set s = language.tokenCategories().contains(COMMENT_CATEGORY_NAME) 
+                    ? language.tokenCategoryMembers(COMMENT_CATEGORY_NAME) 
+                    : null;
+            
+            return s == null || !s.contains(tokenId); //NOI18N
         } finally {
             if (doc instanceof AbstractDocument) {
                 ((AbstractDocument) doc).readUnlock();
@@ -208,14 +225,9 @@ public class GsfCompletionProvider implements CompletionProvider {
         return null;
     }
 
-    static CompletionTask createDocTask(Element element, CompilationInfo info) { // TODO - use ComObjectHandle ??
+    static CompletionTask createDocTask(ElementHandle element, CompilationInfo info) { // TODO - use ComObjectHandle ??
         JavaCompletionQuery query = new JavaCompletionQuery(DOCUMENTATION_QUERY_TYPE, -1);
-
-        Language language = info.getLanguage();
-        Parser parser = language.getParser();
-        if (parser != null) {
-            query.element = parser.createHandle(info, element);
-        }
+        query.element = element;
 
         return new AsyncCompletionTask(query, Registry.getMostActiveComponent());
     }
@@ -390,12 +402,11 @@ public class GsfCompletionProvider implements CompletionProvider {
 
         public void cancel() {
         }
-
+        
         private void resolveToolTip(final CompilationController controller) throws IOException {
             CompletionProposal proposal = GsfCompletionItem.tipProposal;
             Env env = getCompletionEnvironment(controller, false);
-            Language language = controller.getLanguage();
-            Completable completer = language.getCompletionProvider();
+            Completable completer = env.getCompletable();
 
             if (completer != null) {
                 int offset = env.getOffset();
@@ -453,8 +464,7 @@ public class GsfCompletionProvider implements CompletionProvider {
                 results = new ArrayList<CompletionItem>();
                 anchorOffset = env.getOffset() - ((prefix != null) ? prefix.length() : 0);
 
-                Language language = controller.getLanguage();
-                Completable completer = language.getCompletionProvider();
+                Completable completer = env.getCompletable();
 
                 if (completer != null) {
                     List<CompletionProposal> proposals =
@@ -463,19 +473,14 @@ public class GsfCompletionProvider implements CompletionProvider {
 
                     if (proposals != null) {
                         for (CompletionProposal proposal : proposals) {
-                            Element element = proposal.getElement();
+                            ElementHandle element = proposal.getElement();
                             if (element != null) {
-                                Parser parser = language.getParser();
-                                if (parser != null) {
-                                    ElementHandle handle = parser.createHandle(controller, element);
-                                    documentation = GsfCompletionDoc.create(controller, handle);
-                                    // TODO - find some way to show the multiple overloaded methods?
-                                    if (documentation.getText() != null && documentation.getText().length() > 0) {
-                                        // Make sure we at least pick an alternative that has documentation
-                                        break;
-                                    }
+                                documentation = GsfCompletionDoc.create(controller, element);
+                                // TODO - find some way to show the multiple overloaded methods?
+                                if (documentation.getText() != null && documentation.getText().length() > 0) {
+                                    // Make sure we at least pick an alternative that has documentation
+                                    break;
                                 }
-                                
                             }
                         }
                     }
@@ -491,8 +496,7 @@ public class GsfCompletionProvider implements CompletionProvider {
             results = new ArrayList<CompletionItem>();
             anchorOffset = env.getOffset() - ((prefix != null) ? prefix.length() : 0);
 
-            Language language = controller.getLanguage();
-            Completable completer = language.getCompletionProvider();
+            Completable completer = env.getCompletable();
 
             if (completer != null) {
                 List<CompletionProposal> proposals =
@@ -575,10 +579,9 @@ public class GsfCompletionProvider implements CompletionProvider {
             // Look at the parse tree, and find the corresponding end node
             // offset...
             
+            Completable completer = getCompletable(controller, offset);
             try {
                 // TODO: use the completion helper to get the contxt
-                Language language = controller.getLanguage();
-                Completable completer = language.getCompletionProvider();
                 if (completer != null) {
                     prefix = completer.getPrefix(controller, offset, upToOffset);
                 }
@@ -607,19 +610,21 @@ public class GsfCompletionProvider implements CompletionProvider {
             
             controller.toPhase(Phase.PARSED);
 
-            return new Env(offset, prefix, controller);
+            return new Env(offset, prefix, controller, completer);
         }
-
+        
         private class Env {
             private int offset;
             private String prefix;
             private CompilationController controller;
+            private Completable completable;
             private boolean autoCompleting;
 
-            private Env(int offset, String prefix, CompilationController controller) {
+            private Env(int offset, String prefix, CompilationController controller, Completable completable) {
                 this.offset = offset;
                 this.prefix = prefix;
                 this.controller = controller;
+                this.completable = completable;
             }
 
             public int getOffset() {
@@ -640,6 +645,10 @@ public class GsfCompletionProvider implements CompletionProvider {
 
             public CompilationController getController() {
                 return controller;
+            }
+            
+            public Completable getCompletable() {
+                return completable;
             }
         }
     }

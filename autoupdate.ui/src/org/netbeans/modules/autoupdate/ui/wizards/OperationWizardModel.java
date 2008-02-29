@@ -107,7 +107,7 @@ public abstract class OperationWizardModel {
     public Set<UpdateElement> getPrimaryUpdateElements () {
         if (primaryElements == null) {
             primaryElements = new HashSet<UpdateElement> ();
-            for (OperationInfo<?> info : getStandardInfos ()) {
+            for (OperationInfo<?> info : getBaseInfos ()) {
                 primaryElements.add (info.getUpdateElement ());
             }
         }
@@ -122,7 +122,7 @@ public abstract class OperationWizardModel {
         if (requiredElements == null) {
             requiredElements = new HashSet<UpdateElement> ();
             
-            for (OperationInfo<?> info : getStandardInfos ()) {
+            for (OperationInfo<?> info : getBaseInfos ()) {
                 requiredElements.addAll (info.getRequiredElements ());
             }
             
@@ -176,23 +176,16 @@ public abstract class OperationWizardModel {
         return getCustomHandledContainer ().listAll ();
     }
     
-    @SuppressWarnings("unchecked")
-    private List<OperationInfo> getStandardInfos () {
-        List<OperationInfo> infos = new ArrayList<OperationInfo> ();
-        if (OperationType.LOCAL_DOWNLOAD == getOperation ()) {
-            infos.addAll (Containers.forAvailableNbms ().listAll ());
-            infos.addAll (Containers.forUpdateNbms ().listAll ());
-        } else {
-            infos.addAll (getBaseContainer ().listAll ());
-        }
-        return infos;
+    @SuppressWarnings({"unchecked"})
+    private List<OperationInfo> getBaseInfos () {
+        return getBaseContainer ().listAll ();
     }
     
     public SortedMap<String, Set<String>> getBrokenDependencies () {
         SortedMap<String, Set<String>> brokenDeps = new TreeMap<String, Set<String>> ();
 
         int brokenPlugins = 0;
-        for (OperationInfo<?> info : getStandardInfos ()) {
+        for (OperationInfo<?> info : getBaseInfos ()) {
             Set<String> broken = info.getBrokenDependencies ();
             if (! broken.isEmpty()) {
                 brokenDeps.put (info.getUpdateElement ().getDisplayName (),

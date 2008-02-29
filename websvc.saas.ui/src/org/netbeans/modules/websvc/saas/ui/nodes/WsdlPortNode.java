@@ -42,15 +42,12 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasPort;
-import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
 import org.netbeans.modules.websvc.saas.ui.actions.ViewWSDLAction;
 import org.netbeans.modules.websvc.saas.util.SaasTransferable;
-import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -82,16 +79,14 @@ public class WsdlPortNode extends AbstractNode {
                 new SaasTransferable(port,SaasTransferable.WSDL_PORT_FLAVORS));
     }    
     
-    // Create the popup menu:
+    @Override
+    public String getDisplayName() {
+        return port.getName();
+    }
+    
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>();
-        for (SaasNodeActionsProvider ext : SaasUtil.getSaasNodeActionsProviders()) {
-            for (Action a : ext.getSaasActions(this.getLookup())) {
-                actions.add(a);
-            }
-        }
-        actions.add(SystemAction.get(ViewWSDLAction.class));
+        List<Action> actions = SaasNode.getActions(getLookup());
         return actions.toArray(new Action[actions.size()]);
     }
     
@@ -100,21 +95,21 @@ public class WsdlPortNode extends AbstractNode {
         return actions.length > 0 ? actions[0] : null;
     }
     
-    private static final Image icon = 
-        Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/wsport-closed.png"); // NOI18N
-    private static final Image iconOpened = 
-        Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/wsport-open.png"); // NOI18N
-
+    private static final java.awt.Image ICON =
+       Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/wsport-closed.png" ); //NOI18N
+    private static final java.awt.Image OPENED_ICON =
+       Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/wsport-open.png" ); //NOI18N
+    
     @Override
-    public Image getIcon(int type){
-        return icon;
+    public Image getIcon(int type) {
+        return ICON;
     }
     
     @Override
     public Image getOpenedIcon(int type){
-        return iconOpened;
+        return OPENED_ICON;
     }
-    
+
     /**
      * Create a property sheet for the individual W/S port node. The properties sheet contains the
      * the following properties:
@@ -174,7 +169,7 @@ public class WsdlPortNode extends AbstractNode {
     @Override
     public Transferable clipboardCopy() throws IOException {
         if (port.getParentSaas().getState() != Saas.State.READY) {
-            port.getParentSaas().toStateReady();
+            port.getParentSaas().toStateReady(false);
             return super.clipboardCopy();
         }
         return SaasTransferable.addFlavors(transferable);

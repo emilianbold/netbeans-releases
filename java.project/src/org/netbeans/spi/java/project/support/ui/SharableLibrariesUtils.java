@@ -76,6 +76,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * Utility methods related to sharable libraries UI.
@@ -94,8 +95,28 @@ public final class SharableLibrariesUtils {
     /**
      * The default filename for sharable library definition file.
      */
-    public static final String DEFAULT_LIBRARIES_FILENAME = "nblibraries.properties";
+    public static final String DEFAULT_LIBRARIES_FILENAME = "nblibraries.properties"; //NOI18N
     
+    private static String PROP_LAST_SHARABLE = "lastSharable"; //NOI18N
+    
+    /**
+     * boolean value representing the state of library sharability of the last created project.
+     * To be used by new project wizards.
+     * @return true if last created project was created sharable, false if not.
+     */
+    public static boolean isLastProjectSharable() {
+        return NbPreferences.root().node("org.netbeans.modules.java.project.share").getBoolean(PROP_LAST_SHARABLE, false); //NOI18N
+    }
+    /**
+     * Setter for boolean value representing the state of library sharability of the last created project.
+     * To be used by new project wizards.
+     * 
+     * @param sharable
+     */
+    public static void setLastProjectSharable(boolean sharable) {
+        NbPreferences.root().node("org.netbeans.modules.java.project.share").putBoolean(PROP_LAST_SHARABLE, sharable); //NOI18N
+    }
+
     
     
     /**
@@ -115,6 +136,7 @@ public final class SharableLibrariesUtils {
         chooser.setCurrentDirectory(lib);
         chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
         chooser.setDialogTitle(NbBundle.getMessage(SharableLibrariesUtils.class,"LBL_Browse_Libraries_Title"));
+        chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SharableLibrariesUtils.class,"ASCD_Browse_Libraries_Title"));
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(comp)) {
             String[] files;
             try {
@@ -144,12 +166,13 @@ public final class SharableLibrariesUtils {
         final WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle("Make project sharable and self-contained.");
+        wizardDescriptor.setTitle(NbBundle.getMessage(SharableLibrariesUtils.class, "TIT_MakeSharableWizard")); 
         wizardDescriptor.putProperty(PROP_HELPER, helper);
         wizardDescriptor.putProperty(PROP_REFERENCE_HELPER, ref);
         wizardDescriptor.putProperty(PROP_LIBRARIES, libraryNames);
         wizardDescriptor.putProperty(PROP_JAR_REFS, jarReferences);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SharableLibrariesUtils.class, "ACSD_MakeSharableWizard"));
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;

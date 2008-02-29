@@ -39,12 +39,14 @@
 
 package org.netbeans.modules.cnd.editor.options;
 
-import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -58,9 +60,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Formatter;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter;
 import org.openide.explorer.propertysheet.PropertySheet;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
@@ -72,12 +78,16 @@ import org.openide.util.NbBundle;
  * @author  as204739
  */
 public class EditorPropertySheet extends javax.swing.JPanel implements ActionListener, PropertyChangeListener, PreferenceChangeListener {
+    
+    private static final boolean USE_NEW_FORMATTER = false;
+    
     private EditorOptionsPanelController topControler;
     private boolean loaded = false;
     private CodeStyle.Language currentLanguage;
     private String lastChangedproperty;
     private Map<CodeStyle.Language, String> defaultStyles = new HashMap<CodeStyle.Language, String>();
     private Map<CodeStyle.Language, Map<String,PreviewPreferences>> allPreferences = new HashMap<CodeStyle.Language, Map<String, PreviewPreferences>>();
+    private PropertySheet holder = new PropertySheet();
 
 
     EditorPropertySheet(EditorOptionsPanelController topControler) {
@@ -111,20 +121,24 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         map.put(styleId, clone);
     }
     
+
+    private void initLanguageMap(){
+        for(String style:EditorOptions.PREDEFINED_STYLES){
+            initLanguageStylePreferences(CodeStyle.Language.C, style);
+        }
+        defaultStyles.put(CodeStyle.Language.C, EditorOptions.getCurrentProfileId(CodeStyle.Language.C));
+
+        for(String style:EditorOptions.PREDEFINED_STYLES){
+            initLanguageStylePreferences(CodeStyle.Language.CPP, style);
+        }
+        defaultStyles.put(CodeStyle.Language.CPP, EditorOptions.getCurrentProfileId(CodeStyle.Language.CPP));
+    }
     
     private void initLanguages(){
         DefaultComboBoxModel model = new DefaultComboBoxModel();
-
         model.addElement(CodeStyle.Language.C);
-        initLanguageStylePreferences(CodeStyle.Language.C, EditorOptions.DEFAULT_PROFILE);
-        initLanguageStylePreferences(CodeStyle.Language.C, EditorOptions.APACHE_PROFILE);
-        defaultStyles.put(CodeStyle.Language.C, EditorOptions.getCurrentProfileId(CodeStyle.Language.C));
-        
         model.addElement(CodeStyle.Language.CPP);
-        initLanguageStylePreferences(CodeStyle.Language.CPP, EditorOptions.DEFAULT_PROFILE);
-        initLanguageStylePreferences(CodeStyle.Language.CPP, EditorOptions.APACHE_PROFILE);
-        defaultStyles.put(CodeStyle.Language.CPP, EditorOptions.getCurrentProfileId(CodeStyle.Language.CPP));
-        
+        initLanguageMap();
         languagesComboBox.setModel(model);
         currentLanguage = CodeStyle.Language.C;
         languagesComboBox.setSelectedIndex(0);
@@ -132,6 +146,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     }
 
     private void initLanguageCategory(){
+        styleComboBox.removeActionListener(this);
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         Map<String, PreviewPreferences> map = allPreferences.get(currentLanguage);
         String currentProfile = defaultStyles.get(currentLanguage);
@@ -146,131 +161,122 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         }
         styleComboBox.setModel(model);
         styleComboBox.setSelectedIndex(index);
-        actionPerformed(new ActionEvent(styleComboBox, 0, null));
         EntryWrapper entry = (EntryWrapper)styleComboBox.getSelectedItem();
         initSheets(entry.preferences);
         styleComboBox.addActionListener(this);
+        //actionPerformed(new ActionEvent(styleComboBox, 0, null));
     }
     
     private void initSheets(PreviewPreferences preferences){
 	Sheet sheet = new Sheet();
 	Sheet.Set set = new Sheet.Set();
 	set.setName("Indents"); // NOI18N
-	set.setDisplayName(getString("LBL_TabsAndIndents"));
-        set.setShortDescription(getString("HINT_TabsAndIndents"));
+	set.setDisplayName(getString("LBL_TabsAndIndents")); // NOI18N
+        set.setShortDescription(getString("HINT_TabsAndIndents")); // NOI18N
 	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.statementContinuationIndent));
 	set.put(new PreprocessorIndentProperty(currentLanguage, preferences, EditorOptions.indentPreprocessorDirectives));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.sharpAtStartLine));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.indentCasesFromSwitch));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
         
 	set = new Sheet.Set();
 	set.setName("BracesPlacement"); // NOI18N
-	set.setDisplayName(getString("LBL_BracesPlacement"));
-	set.setShortDescription(getString("HINT_BracesPlacement"));
+	set.setDisplayName(getString("LBL_BracesPlacement")); // NOI18N
+	set.setShortDescription(getString("HINT_BracesPlacement")); // NOI18N
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceNamespace));
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceClass));
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceDeclaration));
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBrace));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
         
 	set = new Sheet.Set();
 	set.setName("MultilineAlignment"); // NOI18N
-	set.setDisplayName(getString("LBL_MultilineAlignment"));
-	set.setShortDescription(getString("HINT_MultilineAlignment"));
+	set.setDisplayName(getString("LBL_MultilineAlignment")); // NOI18N
+	set.setShortDescription(getString("HINT_MultilineAlignment")); // NOI18N
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineMethodParams));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineCallArgs));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineArrayInit));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
 
         set = new Sheet.Set();
 	set.setName("NewLine"); // NOI18N
-	set.setDisplayName(getString("LBL_NewLine"));
-	set.setShortDescription(getString("HINT_NewLine"));
+	set.setDisplayName(getString("LBL_NewLine")); // NOI18N
+	set.setShortDescription(getString("HINT_NewLine")); // NOI18N
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.newLineCatch));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.newLineElse));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.newLineWhile));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
         
         set = new Sheet.Set();
 	set.setName("SpacesBeforeKeywords"); // NOI18N
-	set.setDisplayName(getString("LBL_BeforeKeywords"));
-	set.setShortDescription(getString("HINT_BeforeKeywords"));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeWhile));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeElse));
+	set.setDisplayName(getString("LBL_BeforeKeywords")); // NOI18N
+	set.setShortDescription(getString("HINT_BeforeKeywords")); // NOI18N
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeCatch));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeElse));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeWhile));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
         
         set = new Sheet.Set();
 	set.setName("SpacesBeforeParentheses"); // NOI18N
-	set.setDisplayName(getString("LBL_BeforeParentheses"));
-	set.setShortDescription(getString("HINT_BeforeParentheses"));
+	set.setDisplayName(getString("LBL_BeforeParentheses")); // NOI18N
+	set.setShortDescription(getString("HINT_BeforeParentheses")); // NOI18N
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeMethodDeclParen));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeMethodCallParen));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeIfParen));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeForParen));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeWhileParen));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeCatchParen));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeForParen));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeIfParen));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeSwitchParen));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeWhileParen));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
         
         set = new Sheet.Set();
 	set.setName("SpacesAroundOperators"); // NOI18N
-	set.setDisplayName(getString("LBL_AroundOperators"));
-	set.setShortDescription(getString("HINT_AroundOperators"));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAroundUnaryOps));
+	set.setDisplayName(getString("LBL_AroundOperators")); // NOI18N
+	set.setShortDescription(getString("HINT_AroundOperators")); // NOI18N
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAroundAssignOps));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAroundBinaryOps));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAroundTernaryOps));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAroundAssignOps));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAroundUnaryOps));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
     
         set = new Sheet.Set();
 	set.setName("SpacesBeforeLeftBracess"); // NOI18N
-	set.setDisplayName(getString("LBL_BeforeLeftBraces"));
-	set.setShortDescription(getString("HINT_BeforeLeftBraces"));
+	set.setDisplayName(getString("LBL_BeforeLeftBraces")); // NOI18N
+	set.setShortDescription(getString("HINT_BeforeLeftBraces")); // NOI18N
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeClassDeclLeftBrace));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeMethodDeclLeftBrace));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeIfLeftBrace));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeElseLeftBrace));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeWhileLeftBrace));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeForLeftBrace));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeArrayInitLeftBrace));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeCatchLeftBrace));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeDoLeftBrace));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeElseLeftBrace));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeForLeftBrace));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeIfLeftBrace));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeSwitchLeftBrace));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeTryLeftBrace));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeCatchLeftBrace));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeArrayInitLeftBrace));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeWhileLeftBrace));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
 
         set = new Sheet.Set();
 	set.setName("SpacesWithinParentheses"); // NOI18N
-	set.setDisplayName(getString("LBL_WithinParentheses"));
-	set.setShortDescription(getString("HINT_WithinParentheses"));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinParens));
+	set.setDisplayName(getString("LBL_WithinParentheses")); // NOI18N
+	set.setShortDescription(getString("HINT_WithinParentheses")); // NOI18N
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinMethodDeclParens));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinMethodCallParens));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinIfParens));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinForParens));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinWhileParens));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinSwitchParens));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinCatchParens));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinTypeCastParens));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinBraces));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinArrayInitBrackets));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinBraces));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinParens));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinCatchParens));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinForParens));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinIfParens));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinSwitchParens));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinTypeCastParens));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinWhileParens));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
                 
         set = new Sheet.Set();
 	set.setName("SpacesOther"); // NOI18N
-	set.setDisplayName(getString("LBL_Other"));
-	set.setShortDescription(getString("HINT_Other"));
+	set.setDisplayName(getString("LBL_Other_Spaces")); // NOI18N
+	set.setShortDescription(getString("HINT_Other_Spaces")); // NOI18N
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeComma));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAfterComma));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeSemi));
@@ -279,12 +285,11 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAfterColon));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAfterTypeCast));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
         
         set = new Sheet.Set();
 	set.setName("BlankLines"); // NOI18N
-	set.setDisplayName(getString("LBL_BlankLines"));
-	set.setShortDescription(getString("HINT_BlankLines"));
+	set.setDisplayName(getString("LBL_BlankLines")); // NOI18N
+	set.setShortDescription(getString("HINT_BlankLines")); // NOI18N
 	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesBeforeClass));
 	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesAfterClass));
 	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesAfterClassHeader));
@@ -293,30 +298,36 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesBeforeMethods));
 	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesAfterMethods));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
         
         set = new Sheet.Set();
 	set.setName("Other"); // NOI18N
-	set.setDisplayName(getString("LBL_Other"));
-	set.setShortDescription(getString("HINT_Other"));
+	set.setDisplayName(getString("LBL_Other")); // NOI18N
+	set.setShortDescription(getString("HINT_Other")); // NOI18N
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.addLeadingStarInComment));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
 
+        categoryPanel.setVisible(false);
+        categoryPanel.removeAll();
+        holder.removeNotify();
         DummyNode[] dummyNodes = new DummyNode[1];
-        dummyNodes[0] = new DummyNode(sheet, "Sheet");
-        PropertySheet holder = new PropertySheet();
+        dummyNodes[0] = new DummyNode(sheet, "Sheet"); // NOI18N
         holder.setNodes(dummyNodes);
-        categoryPanel.add(holder, BorderLayout.CENTER);
+        GridBagConstraints fillConstraints = new GridBagConstraints();
+        fillConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        fillConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        fillConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        fillConstraints.weightx = 1.0;
+        fillConstraints.weighty = 1.0;
+        categoryPanel.add(holder, fillConstraints);
         categoryPanel.validate();
         categoryPanel.repaint();
+        categoryPanel.setVisible(true);
     }
 
     void load() {
         loaded = false;
-//        for (Category category : categories) {
-//            category.update();
-//        }
+        initLanguageMap();
+        initLanguageCategory();
         loaded = true;
         repaintPreview();        
     }
@@ -332,24 +343,27 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
                 Preferences toSave = EditorOptions.getPreferences(language, style);
                 try {
                     for (String key : preferences.keys()) {
-                            Object def = EditorOptions.getDefault(language, key, defaultStyles.get(language));
-                            if (def instanceof Boolean) {
-                                toSave.putBoolean(key, preferences.getBoolean(key, (Boolean) def));
-                            } else if (def instanceof Integer) {
-                                toSave.putInt(key, preferences.getInt(key, (Integer) def));
-                            } else {
-                                toSave.put(key, preferences.get(key, (String) def));
-                            }
+                        Object def = EditorOptions.getDefault(language, key, defaultStyles.get(language));
+                        if (def instanceof Boolean) {
+                            toSave.putBoolean(key, preferences.getBoolean(key, (Boolean) def));
+                        } else if (def instanceof Integer) {
+                            toSave.putInt(key, preferences.getInt(key, (Integer) def));
+                        } else {
+                            toSave.put(key, preferences.get(key, (String) def));
+                        }
                     }
                 } catch (BackingStoreException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
         }
+        defaultStyles.clear();
+        allPreferences.clear();
     }
     
     void cancel() {
-        //EditorOptions.lastValues = null;
+        defaultStyles.clear();
+        allPreferences.clear();
     }
 
     // Change in the combo
@@ -359,10 +373,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
             EntryWrapper category = (EntryWrapper)styleComboBox.getSelectedItem();
             if (category != null) {
                 defaultStyles.put(currentLanguage,category.name);
-                categoryPanel.setVisible(false);
-                categoryPanel.removeAll();
                 initSheets(category.preferences);
-                categoryPanel.setVisible(true);
                 if (CodeStyle.Language.C.equals(currentLanguage)){
                     previewPane.setContentType("text/x-c"); // NOI18N
                 } else {
@@ -422,42 +433,78 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     }
     
     private String getPreviwText(){
+        String suffix;
+        if (CodeStyle.Language.C.equals(currentLanguage)){
+            suffix = ".c";
+        } else {
+            suffix = ".cpp";
+        }
         if (lastChangedproperty != null) {
-            if (lastChangedproperty.startsWith("space")) {
-                return getString("SAMPLE_Spaces");
-            } else if (lastChangedproperty.startsWith("blank")) {
-                return getString("SAMPLE_BlankLines");
-            }  else if (lastChangedproperty.startsWith("align") ||
-                        lastChangedproperty.startsWith("new")) {
-                return getString("SAMPLE_AlignBraces");
+            if (lastChangedproperty.startsWith("space")) { // NOI18N
+                return loadPreviewExample("SAMPLE_Spaces"+suffix); // NOI18N
+            } else if (lastChangedproperty.startsWith("blank")) { // NOI18N
+                return loadPreviewExample("SAMPLE_BlankLines"+suffix); // NOI18N
+            }  else if (lastChangedproperty.startsWith("align") || // NOI18N
+                        lastChangedproperty.startsWith("new")) { // NOI18N
+                return loadPreviewExample("SAMPLE_AlignBraces"+suffix); // NOI18N
             }
         }
-            return getString("SAMPLE_TabsIndents");
+        return loadPreviewExample("SAMPLE_TabsIndents"+suffix); // NOI18N
+    }
+    
+    private String loadPreviewExample(String example) {
+        //return getString(example);
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+        FileObject exampleFile = fs.findResource("OptionsDialog/CPlusPlus/FormatterPreviewExamples/" + example); //NOI18N
+        if (exampleFile != null) {
+            StringBuilder sb = new StringBuilder((int) exampleFile.getSize());
+            try {
+                InputStreamReader is = new InputStreamReader(exampleFile.getInputStream());
+                char[] buffer = new char[1024];
+                int size;
+                try {
+                    while (0 < (size = is.read(buffer, 0, buffer.length))) {
+                        sb.append(buffer, 0, size);
+                    }
+                } finally {
+                    is.close();
+                }
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+            return sb.toString();
+        } else {
+            return ""; //NOI18N
+        }
     }
     
     public void refreshPreview(JEditorPane pane, Preferences p) {
         pane.setText(getPreviwText());
-        CodeStyle codeStyle = EditorOptions.createCodeStyle(currentLanguage, p);
         BaseDocument bd = (BaseDocument) pane.getDocument();
-        try {
-            new Reformatter(bd, codeStyle).reformat();
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
+        if (USE_NEW_FORMATTER) {
+            CodeStyle codeStyle = EditorOptions.createCodeStyle(currentLanguage, p);
+            try {
+                new Reformatter(bd, codeStyle).reformat();
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            CodeStyle codeStyle = CodeStyle.getDefault(currentLanguage);
+            Preferences oldPreferences = EditorOptions.getPreferences(codeStyle);
+            EditorOptions.setPreferences(codeStyle, p);
+            Formatter f = bd.getFormatter();
+            try {
+                f.reformatLock();
+                f.reformat(bd, 0, bd.getLength());
+                String x = bd.getText(0, bd.getLength());
+                pane.setText(x);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                EditorOptions.setPreferences(codeStyle, oldPreferences);
+                f.reformatUnlock();
+            }
         }
-//        Preferences oldPreferences = ((CodeStyleImpl)CodeStyle.getDefault(language)).getPref();
-//        ((CodeStyleImpl)CodeStyle.getDefault(language)).setPref(p);
-//        Formatter f = bd.getFormatter();
-//        try {
-//	    f.reformatLock();
-//            f.reformat(bd, 0, bd.getLength());
-//            String x = bd.getText(0, bd.getLength());
-//            pane.setText(x);
-//        } catch (BadLocationException ex) {
-//            Exceptions.printStackTrace(ex);
-//        } finally {
-//            ((CodeStyleImpl)CodeStyle.getDefault(language)).setPref(oldPreferences);
-//	    f.reformatUnlock();
-//	}
     }
 
     private static String getString(String key) {
@@ -469,7 +516,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // NOI18N
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
@@ -489,6 +536,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 
         setLayout(new java.awt.GridBagLayout());
 
+        jLabel2.setLabelFor(languagesComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(EditorPropertySheet.class, "EditorPropertySheet.jLabel2.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -510,6 +558,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         oprionsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         oprionsPanel.setLayout(new java.awt.GridBagLayout());
 
+        jLabel1.setLabelFor(styleComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(EditorPropertySheet.class, "LBL_Style_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -526,7 +575,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         oprionsPanel.add(styleComboBox, gridBagConstraints);
 
         categoryPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        categoryPanel.setLayout(new java.awt.BorderLayout());
+        categoryPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;

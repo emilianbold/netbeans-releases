@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -132,9 +133,11 @@ public abstract class SunCCCCompiler extends CCCCompiler {
             path = getDefaultPath();
         }
         try {
-            getSystemIncludesAndDefines(path + getCompilerStderrCommand(), false);
+            getSystemIncludesAndDefines(IpeUtils.getDirName(path), path + getCompilerStderrCommand(), false);
             if (getCompilerStderrCommand2() != null)
-                getSystemIncludesAndDefines(path + getCompilerStderrCommand2(), false);
+                getSystemIncludesAndDefines(IpeUtils.getDirName(path), path + getCompilerStderrCommand2(), false);
+            systemIncludeDirectoriesList.addUnique("/usr/include"); // NOI18N
+
             saveSystemIncludesAndDefines();
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);

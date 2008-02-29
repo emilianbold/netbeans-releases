@@ -58,10 +58,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
-import org.netbeans.modules.ruby.platform.DebuggerPreferences;
 import org.netbeans.modules.ruby.platform.Util;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -78,8 +80,6 @@ import org.openide.util.Utilities;
  * Class which handles gem interactions - executing gem, installing, uninstalling, etc.
  *
  * @todo Use the new ExecutionService to do process management.
- *
- * @author Tor Norbye
  */
 public final class GemManager {
 
@@ -97,8 +97,6 @@ public final class GemManager {
      */
     private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(-\\S+)?"); // NOI18N
     
-    private static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
-
     private static boolean SKIP_INDEX_LIBS = System.getProperty("ruby.index.nolibs") != null; // NOI18N
     private static boolean SKIP_INDEX_GEMS = System.getProperty("ruby.index.nogems") != null; // NOI18N
 
@@ -188,6 +186,13 @@ public final class GemManager {
     }
 
     /** Initialize/creates empty Gem Repository. */
+    public static void initializeRepository(File gemRepo) throws IOException {
+        if (!gemRepo.exists()) {
+            gemRepo.mkdirs();
+        }
+        initializeRepository(FileUtil.toFileObject(gemRepo));
+    }
+    /** Initialize/creates empty Gem Repository. */
     public static void initializeRepository(FileObject gemRepo) throws IOException {
         for (String dir : TOP_LEVEL_REPO_DIRS) {
             gemRepo.createFolder(dir);
@@ -252,10 +257,6 @@ public final class GemManager {
         }
         if (result) {
             storeGemPath(gemPath);
-            DebuggerPreferences prefs = DebuggerPreferences.getInstance();
-            if (!platform.isJRuby() && platform.hasFastDebuggerInstalled()) {
-                prefs.setUseClassicDebugger(platform, false);
-            }
         }
         return result;
     }
@@ -398,8 +399,8 @@ public final class GemManager {
             }
 
             // special hack for fast debugger
-            if (specName.startsWith("ruby-debug-base-")) {
-                boolean forJavaPlaf = specName.endsWith("-java.gemspec");
+            if (specName.startsWith("ruby-debug-base-")) { // NOI18N
+                boolean forJavaPlaf = specName.endsWith("-java.gemspec"); // NOI18N
                 if (platform.isJRuby() && !forJavaPlaf) {
                     continue;
                 }
@@ -422,16 +423,16 @@ public final class GemManager {
         }
         
         if (gemFiles == null) {
-            LOGGER.log(level, "No gems found, gemFiles is null");
+            LOGGER.log(level, "No gems found, gemFiles is null"); // NOI18N
             return;
         }
         
-        LOGGER.log(level, "Found " + gemFiles.size() + " gems.");
+        LOGGER.log(level, "Found " + gemFiles.size() + " gems."); // NOI18N
         for (String key : gemFiles.keySet()) {
             Map<String, File> value = gemFiles.get(key);
-            LOGGER.log(level, key + " has " + (value == null ? "null" : "" + value.size()) + " version(s):");
+            LOGGER.log(level, key + " has " + (value == null ? "null" : "" + value.size()) + " version(s):"); // NOI18N
             for (String version : value.keySet()) {
-                LOGGER.log(level, version + " at " + value.get(version));
+                LOGGER.log(level, version + " at " + value.get(version)); // NOI18N
             }
         }
     }
@@ -1013,7 +1014,7 @@ public final class GemManager {
             // Install gems.
             if (!SKIP_INDEX_GEMS) {
                 initGemList();
-                if (PREINDEXING) {
+                if (RubyPlatformManager.PREINDEXING) {
                     String gemDir = getGemHome();
                     File specDir = new File(gemDir, "gems"); // NOI18N
 
@@ -1074,7 +1075,8 @@ public final class GemManager {
             // Register boot roots. This is a bit of a hack.
             // I need to find a better way to distinguish source directories
             // from boot (library, gems, etc.) directories at the scanning and indexing end.
-            ClassIndexManager mgr = ClassIndexManager.getDefault();
+            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyInstallation.RUBY_MIME_TYPE);
+            ClassIndexManager mgr = ClassIndexManager.get(language);
             List<URL> roots = new ArrayList<URL>(gemUrls.size() + nonGemUrls.size());
             roots.addAll(gemUrls.values());
             roots.addAll(nonGemUrls);
@@ -1106,7 +1108,7 @@ public final class GemManager {
     }
 
     static boolean isValidGemHome(final File gemHomeF) {
-        Parameters.notNull("gemHomeF", gemHomeF);
+        Parameters.notNull("gemHomeF", gemHomeF); // NOI18N
         boolean valid = gemHomeF.isDirectory();
         for (int i = 0; valid && i < TOP_LEVEL_REPO_DIRS.length; i++) {
             String dir = TOP_LEVEL_REPO_DIRS[i];

@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.awt.Image;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.properties.Constants;

@@ -130,6 +130,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.project.ant</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.19</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.project.libraries</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -159,7 +168,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>0-1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -286,17 +295,16 @@ made subject to such option by the copyright holder.
                     <test-dependency>
                         <code-name-base>org.openide.modules</code-name-base>
                         <compile-dependency/>
-                    </test-dependency>                    
+                    </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.core</code-name-base>
                         <recursive/>
-                    </test-dependency>                   
+                    </test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>
                 </test-type>
-            </test-dependencies>           
-            
+            </test-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.j2ee.deployment.common.api</package>
                 <package>org.netbeans.modules.j2ee.deployment.devmodules.api</package>

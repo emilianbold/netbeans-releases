@@ -81,6 +81,7 @@ public final class DurationDialog extends JDialog {
 
   public DurationDialog() {
     super((Frame) null, i18n(DurationDialog.class, "LBL_Duration"), true); // NOI18N
+    a11y(this, i18n(DurationDialog.class, "ACS_Duration")); // NOI18N
     setLayout(new BorderLayout());
     add(getResizable(createPanel()), BorderLayout.CENTER);
     add(createButtonPanel(), BorderLayout.SOUTH);
@@ -112,7 +113,7 @@ public final class DurationDialog extends JDialog {
     panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
     JButton button;
 
-    button = createButton("OK"); // NOI18N
+    button = createButton("LBL_OK", "ACS_OK"); // NOI18N
     getRootPane().setDefaultButton(button);
     button.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
@@ -123,7 +124,7 @@ public final class DurationDialog extends JDialog {
     });
     panel.add(button);
 
-    button = createButton("Cancel"); // NOI18N
+    button = createButton("LBL_Cancel", "ACS_Cancel"); // NOI18N
     button.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
         dispose();
@@ -134,9 +135,9 @@ public final class DurationDialog extends JDialog {
     return panel;
   }
 
-  private JButton createButton(String text) {
-    JButton button = new JButton(text);
-    button.getAccessibleContext().setAccessibleName(text);
+  private JButton createButton(String key, String a11y) {
+    JButton button = new JButton(i18n(DurationDialog.class, key));
+    a11y(button, i18n(DurationDialog.class, a11y));
     return button;
   }
 
@@ -145,20 +146,20 @@ public final class DurationDialog extends JDialog {
     GridBagConstraints c = new GridBagConstraints();
     c.gridy = 0;
 
-    myYear = createField("LBL_Year", c, panel); // NOI18N
-    myMonth = createField("LBL_Month", c, panel); // NOI18N
-    myDay = createField("LBL_Day", c, panel); // NOI18N
+    myYear = createField("LBL_Year", "ACS_Year", c, panel); // NOI18N
+    myMonth = createField("LBL_Month", "ACS_Month", c, panel); // NOI18N
+    myDay = createField("LBL_Day", "ACS_Day", c, panel); // NOI18N
 
     c.gridy++;
 
-    myHour = createField("LBL_Hour", c, panel); // NOI18N
-    myMinute = createField("LBL_Minute", c, panel); // NOI18N
-    mySecond = createField("LBL_Second", c, panel); // NOI18N
+    myHour = createField("LBL_Hour", "ACS_Hour", c, panel); // NOI18N
+    myMinute = createField("LBL_Minute", "ACS_Minute", c, panel); // NOI18N
+    mySecond = createField("LBL_Second", "ACS_Second", c, panel); // NOI18N
 
     return panel;
   }
 
-  private JTextField createField(String key, GridBagConstraints c, JPanel panel) {
+  private JTextField createField(String key, String a11y, GridBagConstraints c, JPanel panel) {
     c.weightx = 0.0;
     c.fill = GridBagConstraints.NONE;
     c.insets = new Insets(10, 10, 0, 0);
@@ -171,6 +172,7 @@ public final class DurationDialog extends JDialog {
     c.insets = new Insets(10, 10, 0, 0);
     c.anchor = GridBagConstraints.WEST;
     JTextField field = new JTextField(DEFAULT_VALUE);
+    a11y(field, i18n(DurationDialog.class, a11y));
     setWidth(field, TEXT_WIDTH);
     panel.add(field, c);
     label.setLabelFor(field);

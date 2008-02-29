@@ -38,17 +38,25 @@ public class TriScrollPane extends JScrollPane {
     private JComponent left;
     private JComponent right;
     private JComponent center;
+    private JComponent handToolPanel;
+    private JComponent overlayPanel;
     private SideComponent leftComponent;
     private SideComponent rightComponent;
     private boolean layoutNow = false;
     private ArrayList<ScrollListener> scrollListeners = new ArrayList<ScrollListener>(1);
 
     public TriScrollPane(JComponent center, JComponent left,
-            JComponent right) {
+            JComponent right, 
+            JComponent handToolPanel, 
+            JComponent overlayPanel) 
+    {
         super(center);
 
         setBorder(null);
 
+        this.handToolPanel = handToolPanel;
+        this.overlayPanel = overlayPanel;
+        
         this.left = left;
         this.right = right;
         this.center = center;
@@ -61,6 +69,14 @@ public class TriScrollPane extends JScrollPane {
 
         add(leftComponent);
         add(rightComponent);
+        
+        if (overlayPanel != null) {
+            add(overlayPanel, 0);
+        }
+        
+        if (handToolPanel != null) {
+            add(handToolPanel, 0);
+        }
 
         getVerticalScrollBar().setUnitIncrement(10);
         getHorizontalScrollBar().setUnitIncrement(10);
@@ -115,6 +131,20 @@ public class TriScrollPane extends JScrollPane {
         JScrollBar hsb = getHorizontalScrollBar();
 
         Rectangle viewportBounds = getViewport().getBounds();
+        
+        if (handToolPanel != null) {
+            handToolPanel.setBounds(viewportBounds.x, viewportBounds.y, 
+                    leftWidth + viewportBounds.width + rightWidth,
+                    viewportBounds.height);
+        }
+        
+        if (overlayPanel != null) {
+            overlayPanel.setBounds(viewportBounds.x, viewportBounds.y, 
+                    leftWidth + viewportBounds.width + rightWidth,
+                    viewportBounds.height);
+        }
+        
+        
         Rectangle vsbBounds = (vsb.isVisible()) ? vsb.getBounds() : null;
         Rectangle hsbBounds = (hsb.isVisible()) ? hsb.getBounds() : null;
 
@@ -469,14 +499,18 @@ public class TriScrollPane extends JScrollPane {
 
             int y1 = y + height - 1;
 
-            g.setColor(c.getBackground().darker());
+            g.setColor(Color.LIGHT_GRAY);
             g.drawLine(x, y, x, y1);
             g.setColor(oldColor);
         }
     };
+    
     private ChangeListener myScrollListener  = new ChangeListener() {
-
         public void stateChanged(ChangeEvent e) {
+            if (e.getSource() != getViewport()) {
+                center.repaint();
+            }
+            
             for (ScrollListener l : scrollListeners) {
                 l.viewScrolled(null);
             }

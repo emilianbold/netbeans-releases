@@ -73,7 +73,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProvider;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -110,7 +110,7 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
         this.panel = panel;
         initComponents ();
         setJ2eeVersionWarningPanel();
-        initServers(FoldersListSettings.getDefault().getLastUsedServer());
+        initServers(UserProjectSettings.getDefault().getLastUsedServer());
         // preselect the first item in the j2ee spec combo
         if (j2eeSpecComboBox.getModel().getSize() > 0) {
             j2eeSpecComboBox.setSelectedIndex(0);
@@ -794,7 +794,7 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
             String j2ee = getSelectedJ2eeSpec();
             if (j2ee != null) {
                 String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
-                FoldersListSettings fls = FoldersListSettings.getDefault();
+                UserProjectSettings fls = UserProjectSettings.getDefault();
                 String srcLevel = "1.6"; //NOI18N
                 if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14) && fls.isAgreedSetSourceLevel14()) {
                     srcLevel = "1.4"; //NOI18N

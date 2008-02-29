@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.refactoring.ruby.ui;
 
-import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -51,9 +50,8 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.Phase;
@@ -66,19 +64,17 @@ import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyParseResult;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.netbeans.modules.ruby.StructureAnalyzer;
 import org.netbeans.modules.ruby.StructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstElement;
-import org.netbeans.modules.ruby.elements.AstElement;
+import org.netbeans.modules.ruby.elements.Element;
+import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.datatransfer.PasteType;
 import org.openide.windows.TopComponent;
 
 /**
@@ -141,84 +137,47 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             return false;
         }
         FileObject fo = dob.getPrimaryFile();
+        
+        if (isOutsideRuby(lookup, fo)) {
+            return false;
+        }
+        
         if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
-        if ((dob instanceof DataFolder) && 
-                RetoucheUtils.isFileInOpenProject(fo) && 
-                RetoucheUtils.isOnSourceClasspath(fo) &&
-                !RetoucheUtils.isClasspathRoot(fo))
-            return true;
+
         return false;
     }
     
-//    @Override
-//    public void doCopy(final Lookup lookup) {
-//        Runnable task;
-//        EditorCookie ec = lookup.lookup(EditorCookie.class);
-//        final Dictionary dictionary = lookup.lookup(Dictionary.class);
-////        if (isFromEditor(ec)) {
-////            return new TextComponentRunnable(ec) {
-////                @Override
-////                protected RefactoringUI createRefactoringUI(RubyElementCtx selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-////                    Element selected = selectedElement.resolveElement(info);
-////                    if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
-////                        FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
-////                        return new RenameRefactoringUI(f==null?info.getFileObject():f);
-////                    } else {
-////                        return new RenameRefactoringUI(selectedElement, info);
-////                    }
-////                }
-////            };
-////        } else {
-//            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
-//                @Override
-//                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<RubyElementCtx> handle) {
-//                    return new CopyClassRefactoringUI(selectedElements[0], getTarget(dictionary), getPaste(dictionary));
-//                }
-//            };
-////        }
-//        task.run();
-//    }
-
     /**
      * returns true if exactly one refactorable file is selected
      */
     @Override
     public boolean canCopy(Lookup lookup) {
-//        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-//        if (nodes.size() != 1) {
-//            return false;
-//        }
-//        Node n = nodes.iterator().next();
-//        DataObject dob = n.getCookie(DataObject.class);
-//        if (dob==null) {
-//            return false;
-//        }
-//        
-//        Dictionary dict = lookup.lookup(Dictionary.class);
-//        FileObject fob = getTarget(dict);
-//        if (dict!=null && dict.get("target") != null && fob==null) { //NOI18N
-//            //unknown target
-//            return false;
-//        }
-//        if (fob != null) {
-//            if (!fob.isFolder())
-//                return false;
-//            FileObject fo = dob.getPrimaryFile();
-//            if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
-//                return true;
-//            }
-//
-//        } else {
-//            FileObject fo = dob.getPrimaryFile();
-//            if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
-//                return true;
-//            }
-//        }
-//
         return false;
     }    
+    
+    private boolean isOutsideRuby(Lookup lookup, FileObject fo) {
+        if (RubyUtils.isRhtmlFile(fo)) {
+            // We're attempting to refactor in an RHTML file... If it's in
+            // the editor, make sure we're trying to refactoring in a Ruby section;
+            // if not, we shouldn't grab it. (JavaScript refactoring won't get
+            // invoked if Ruby returns true for canRename even when the caret is
+            // in the caret section
+            EditorCookie ec = lookup.lookup(EditorCookie.class);
+            if (isFromEditor(ec)) {
+                JTextComponent textC = ec.getOpenedPanes()[0];
+                int caret = textC.getCaretPosition();
+                if (LexUtilities.getToken((BaseDocument) textC.getDocument(), caret) == null) {
+                    // Not in Ruby code!
+                    return true;
+                }
+                
+            }
+        }
+        
+        return false;
+    }
 
     @Override
     public boolean canFindUsages(Lookup lookup) {
@@ -227,8 +186,19 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             return false;
         }
         Node n = nodes.iterator().next();
+
         DataObject dob = n.getCookie(DataObject.class);
-        if ((dob!=null) && RubyUtils.isRubyOrRhtmlFile(dob.getPrimaryFile())) { //NOI18N
+        if (dob == null) {
+            return false;
+        }
+
+        FileObject fo = dob.getPrimaryFile();
+        
+        if (isOutsideRuby(lookup, fo)) {
+            return false;
+        }
+        
+        if ((dob!=null) && RubyUtils.isRubyOrRhtmlFile(fo)) { //NOI18N
             return true;
         }
         return false;
@@ -260,79 +230,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         }
     }
 
-    /**
-     * returns true iff all selected file are refactorable java files
-     **/
-
     @Override
     public boolean canDelete(Lookup lookup) {
-//        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-//        for (Node n:nodes) {
-//            DataObject dob = n.getCookie(DataObject.class);
-//            if (dob==null)
-                return false;
-//            
-//            if (!RetoucheUtils.isRefactorable(dob.getPrimaryFile())) {
-//                return false;
-//            }
-//        }
-//        return !nodes.isEmpty();
-    }
-
-//    @Override
-//    public void doDelete(final Lookup lookup) {
-//        Runnable task;
-//        EditorCookie ec = lookup.lookup(EditorCookie.class);
-//        if (isFromEditor(ec)) {
-//            task = new TextComponentTask(ec) {
-//                @Override
-//                protected RefactoringUI createRefactoringUI(RubyElementCtx selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-//                    Element selected = selectedElement.resolveElement(info);
-//                    if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
-//                        return new SafeDeleteUI(new FileObject[]{info.getFileObject()}, Collections.singleton(selectedElement));
-//                    } else {
-//                        return new SafeDeleteUI(new RubyElementCtx[]{selectedElement}, info);
-//                    }
-//                }
-//            };
-//        } else {
-//            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
-//                @Override
-//                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<RubyElementCtx> handles) {
-//                    return new SafeDeleteUI(selectedElements, handles);
-//                }
-//                
-//            };
-//        }
-//        task.run();
-//    }
-    
-    private FileObject getTarget(Dictionary dict) {
-        if (dict==null)
-            return null;
-        Node n = (Node) dict.get("target"); //NOI18N
-        if (n==null)
-            return null;
-        DataObject dob = n.getCookie(DataObject.class);
-        if (dob!=null)
-            return dob.getPrimaryFile();
-        return null;
-    }
-    
-    private PasteType getPaste(Dictionary dict) {
-        if (dict==null) 
-            return null;
-        Transferable orig = (Transferable) dict.get("transferable"); //NOI18N
-        if (orig==null)
-            return null;
-        Node n = (Node) dict.get("target");
-        if (n==null)
-            return null;
-        PasteType[] pt = n.getPasteTypes(orig);
-        if (pt.length==1) {
-            return null;
-        }
-        return pt[1];
+        return false;
     }
 
     static String getName(Dictionary dict) {
@@ -341,133 +241,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         return (String) dict.get("name"); //NOI18N
     }
     
-    /**
-     * returns true if there is at least one java file in the selection
-     * and all java files are refactorable
-     */
     @Override
     public boolean canMove(Lookup lookup) {
-//        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-//        Dictionary dict = lookup.lookup(Dictionary.class);
-//        FileObject fo = getTarget(dict);
-//        if (fo != null) {
-//            if (!fo.isFolder())
-//                return false;
-//            //it is drag and drop
-//            Set<DataFolder> folders = new HashSet();
-//            boolean jdoFound = false;
-//            for (Node n:nodes) {
-//                DataObject dob = n.getCookie(DataObject.class);
-//                if (dob==null) {
-//                    return false;
-//                }
-//                if (!RetoucheUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
-//                    return false;
-//                }
-//                if (dob instanceof DataFolder) {
-//                    folders.add((DataFolder)dob);
-//                } else if (RetoucheUtils.isRubyOrRhtmlFile(dob.getPrimaryFile())) {
-//                    jdoFound = true;
-//                }
-//            }
-//            if (jdoFound)
-//                return true;
-//            for (DataFolder fold:folders) {
-//                for (Enumeration<DataObject> e = (fold).children(true); e.hasMoreElements();) {
-//                    if (RetoucheUtils.isRubyOrRhtmlFile(e.nextElement().getPrimaryFile())) {
-//                        return true;
-//                    }
-//                }
-//            }
-//            return false;
-//        } else {
-//            //regular invokation
-//            boolean result = false;
-//            for (Node n:nodes) {
-//                DataObject dob = n.getCookie(DataObject.class);
-//                if (dob==null) {
-//                    return false;
-//                }
-//                if (dob instanceof DataFolder) {
-//                    Object b = dict.get("DnD"); //NOI18N
-//                    return b==null?false: (Boolean) b;
-//                }
-//                if (!RetoucheUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
-//                    return false;
-//                }
-//                if (RetoucheUtils.isRubyOrRhtmlFile(dob.getPrimaryFile())) {
-//                    result = true;
-//                }
-//            }
-//            return result;
-//        }
         return false;
     }
 
     @Override
     public void doMove(final Lookup lookup) {
-//        Runnable task;
-//        EditorCookie ec = lookup.lookup(EditorCookie.class);
-//        final Dictionary dictionary = lookup.lookup(Dictionary.class);
-//        if (isFromEditor(ec)) {
-//            task = new TextComponentTask(ec) {
-//                @Override
-//                protected RefactoringUI createRefactoringUI(RubyElementCtx selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-//
-//                    Element e = selectedElement.resolveElement(info);
-//                    if ((e.getKind().isClass() || e.getKind().isInterface()) &&
-//                            SourceUtils.getOutermostEnclosingTypeElement(e)==e) {
-//                        try {
-//                            FileObject fo = SourceUtils.getFile(e, info.getClasspathInfo());
-//                            if (fo!=null) {
-//                                DataObject d = DataObject.find(SourceUtils.getFile(e, info.getClasspathInfo()));
-//                                if (d.getName().equals(e.getSimpleName().toString())) {
-//                                    return new MoveClassUI(d);
-//                                }
-//                            }
-//                        } catch (DataObjectNotFoundException ex) {
-//                            throw (RuntimeException) new RuntimeException().initCause(ex);
-//                        }
-//                    }
-//                    if (selectedElement.resolve(info).getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
-//                        try {
-//                            return new MoveClassUI(DataObject.find(info.getFileObject()));
-//                        } catch (DataObjectNotFoundException ex) {
-//                            throw (RuntimeException) new RuntimeException().initCause(ex);
-//                        }
-//                    } else {
-//                        try {
-//                            return new MoveClassUI(DataObject.find(info.getFileObject()));
-//                        } catch (DataObjectNotFoundException ex) {
-//                            throw (RuntimeException) new RuntimeException().initCause(ex);
-//                        }
-//                    }
-//                }
-//            };
-//        } else {
-//            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
-//                @Override
-//                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<RubyElementCtx> handles) {
-//                    PasteType paste = getPaste(dictionary);
-//                    FileObject tar=getTarget(dictionary);
-//                    if (selectedElements.length == 1) {
-//                        try {
-//                            return new MoveClassUI(DataObject.find(selectedElements[0]), tar, paste, handles);
-//                        } catch (DataObjectNotFoundException ex) {
-//                            throw (RuntimeException) new RuntimeException().initCause(ex);
-//                        }
-//                    } else {
-//                        Set<FileObject> s = new HashSet<FileObject>();
-//                        s.addAll(Arrays.asList(selectedElements));
-//                        return new MoveClassesUI(s, tar, paste);
-//                    }
-//                }
-//                
-//            };
-//        }
-//        task.run();
     }    
-
     
     public static abstract class TextComponentTask implements Runnable, CancellableTask<CompilationController> {
         private JTextComponent textC;
@@ -545,7 +326,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             info.toPhase(Phase.ELEMENTS_RESOLVED);
             org.jruby.ast.Node root = AstUtilities.getRoot(info);
             if (root != null) {
-                Element element = AstElement.create(root);
+                Element element = AstElement.create(info, root);
                 RubyElementCtx fileCtx = new RubyElementCtx(root, root, element, info.getFileObject(), info);
                 ui = createRefactoringUI(fileCtx, info);
             }
@@ -585,7 +366,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             info.toPhase(Phase.ELEMENTS_RESOLVED);
             org.jruby.ast.Node root = AstUtilities.getRoot(info);
             if (root != null) {
-                RubyParseResult rpr = (RubyParseResult)info.getParserResult();
+                RubyParseResult rpr = AstUtilities.getParseResult(info);
                 if (rpr != null) {
                     AnalysisResult ar = rpr.getStructure();
                     List<? extends AstElement> els = ar.getElements();
@@ -613,8 +394,6 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     fobs[i] = dob.getPrimaryFile();
                     Source source = RetoucheUtils.getSource(fobs[i]);
                     if (source == null) {
-                        // http://www.netbeans.org/issues/show_bug.cgi?id=125181
-                        // TODO - log this? What's the problem?
                         continue;
                     }
                     assert source != null;

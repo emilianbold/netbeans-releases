@@ -42,13 +42,13 @@
 <project name="properties" default="none" basedir=".">
     <property environment="env"/>
 
+    <!-- dev -->
+    <property name="netbeans.host" value="http://deadlock.netbeans.org"/>
+    <property name="netbeans.path" value="hudson/job/trunk/lastSuccessfulBuild/artifact/nbbuild/dist/zip"/>
+
     <!-- daily -->
     <property name="netbeans.host" value="http://bits.netbeans.org"/>
     <property name="netbeans.path" value="dev/nightly/latest/zip"/>
-
-    <!-- dev -->
-    <!--property name="netbeans.host" value="http://deadlock.netbeans.org"/>
-    <property name="netbeans.path" value="hudson/job/trunk/lastSuccessfulBuild/artifact/nbbuild/dist/zip"/-->
 
     <property name="test.cvs.root" value=":pserver:guest@cvs.dev.java.net:/cvs"/>
     <property name="test.cvs.path" value="open-jbi-components/driver-tests/bpelse"/>
@@ -80,7 +80,6 @@
         ${test.cvs.path}/clusterSupport/ClusterBPEL
         ${test.cvs.path}/compensation/IterativeScopes
         ${test.cvs.path}/compensation/NestedScope
-        ${test.cvs.path}/correlation/correlationBPEL
         ${test.cvs.path}/correlation/correlationBPEL2
         ${test.cvs.path}/correlation/outoforder
         ${test.cvs.path}/correlation/CorrelationOnePropBPEL
@@ -98,7 +97,6 @@
         ${test.cvs.path}/eventHandlers/onAlarm
         ${test.cvs.path}/eventHandlers/onEvent
         ${test.cvs.path}/exit/ExitBpel
-        ${test.cvs.path}/faulthandling/FaultHandlingBpel
         ${test.cvs.path}/flow/FlowBpel
         ${test.cvs.path}/foreach-bpel20/ForEachBpel
         ${test.cvs.path}/if/ifBpel
@@ -110,7 +108,6 @@
         ${test.cvs.path}/JavaEEIntegration/JavaEEToBP/FaultTest/bplGreetService
         ${test.cvs.path}/JavaEEIntegration/JavaEEToBP/JavaEEToBPProj
         ${test.cvs.path}/MessageExchange/MessageExchangeBpel
-        ${test.cvs.path}/misc/MiscBpel
         ${test.cvs.path}/PartnerLinks/DuplicateProject1
         ${test.cvs.path}/PartnerLinks/DuplicateProject2
         ${test.cvs.path}/PartnerLinks/OneBP

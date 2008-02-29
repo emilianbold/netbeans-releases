@@ -62,6 +62,10 @@ import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
+import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 
 /**
  *
@@ -168,6 +172,16 @@ public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
                     DesignComponent component = getComponent ();
                     DesignComponent menu = component.getParentComponent ();
                     ArraySupport.remove (menu, SVGMenuCD.PROP_ELEMENTS, component);
+                }
+            }, 
+            // general
+            new GoToSourcePresenter () {
+                protected boolean matches (GuardedSection section) {
+                    DesignComponent parentComponent = getComponent().getParentComponent();
+                    if (parentComponent == null)
+                        return false;
+                    boolean lazyInit = MidpTypes.getBoolean (parentComponent.readProperty (ClassCD.PROP_LAZY_INIT));
+                    return MultiGuardedSection.matches(section, lazyInit ? parentComponent.getComponentID() + "-getter" : parentComponent.getDocument ().getRootComponent ().getComponentID () + "-initialize", 1); // NOI18N
                 }
             }        
         );

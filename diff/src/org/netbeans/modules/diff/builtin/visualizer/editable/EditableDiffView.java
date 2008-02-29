@@ -96,6 +96,8 @@ import org.openide.text.NbDocument;
  */
 public class EditableDiffView extends DiffControllerImpl implements DiffView, DocumentListener, AncestorListener, PropertyChangeListener, PreferenceChangeListener {
 
+    private static final int INITIAL_DIVIDER_SIZE = 32;
+    
     private Stroke boldStroke = new BasicStroke(3);
     
     // === Default Diff Colors ===========================================================
@@ -172,11 +174,11 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (!binaryDiff) {
             jEditorPane2.getEditorPane().putClientProperty(DiffMarkProviderCreator.MARK_PROVIDER_KEY, diffMarkprovider);
         }
-        jSplitPane1.setName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "DiffComponent.title")); // NOI18N
+        jSplitPane1.setName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "DiffComponent.title", ss1.getName(), ss2.getName())); // NOI18N
         spui = new DiffSplitPaneUI(jSplitPane1);
         jSplitPane1.setUI(spui);
         jSplitPane1.setResizeWeight(0.5);
-        jSplitPane1.setDividerSize(32);
+        jSplitPane1.setDividerSize(INITIAL_DIVIDER_SIZE);
         jSplitPane1.putClientProperty("PersistenceType", "Never"); // NOI18N
         jSplitPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yName"));  // NOI18N
         jSplitPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yDesc"));  // NOI18N
@@ -921,6 +923,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                         support.firePropertyChange(DiffController.PROP_DIFFERENCES, null, null);
                         jEditorPane1.setCurrentDiff(diffs);
                         jEditorPane2.setCurrentDiff(diffs);
+                        refreshDividerSize();
                         jSplitPane1.repaint();
                         diffMarkprovider.refresh();
                     }
@@ -953,6 +956,15 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
     }
     
+    private void refreshDividerSize() {
+        Font font = jSplitPane1.getFont();
+        if (font == null) return;
+        FontMetrics fm = jSplitPane1.getFontMetrics(jSplitPane1.getFont());
+        String maxDiffNumber = Integer.toString(Math.max(1, diffs.length));
+        int neededWidth = fm.stringWidth(maxDiffNumber + " /" + maxDiffNumber);
+        jSplitPane1.setDividerSize(Math.max(neededWidth, INITIAL_DIVIDER_SIZE));
+    }
+
     synchronized int getDiffSerial() {
         return diffSerial;
     }

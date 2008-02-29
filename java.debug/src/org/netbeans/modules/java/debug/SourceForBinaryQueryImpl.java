@@ -63,12 +63,8 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
         String binaryRootS = binaryRoot.toExternalForm();
         URL result = null;
         if (binaryRootS.startsWith("jar:file:")) { // NOI18N
-            if ((result = checkForBinaryRoot(binaryRootS, "/java/source/javacapi/external/javac-api", false)) == null) { // NOI18N
-                if ((result = checkForBinaryRoot(binaryRootS, "/java/source/javacimpl/external/javac-impl", false)) == null) { // NOI18N
-                    if ((result = checkForBinaryRoot(binaryRootS, "/libs.javacapi/external/javac-api", true)) == null) { // NOI18N
-                        result = checkForBinaryRoot(binaryRootS, "/libs.javacimpl/external/javac-impl", true); // NOI18N
-                    }
-                }
+            if ((result = checkForBinaryRoot(binaryRootS, "/libs.javacapi/external/javac-api")) == null) { // NOI18N
+                result = checkForBinaryRoot(binaryRootS, "/libs.javacimpl/external/javac-impl"); // NOI18N
             }
             final FileObject resultFO = result != null ? URLMapper.findFileObject(result) : null;
             if (resultFO != null) {
@@ -88,21 +84,12 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
         return null;
     }
 
-    private URL checkForBinaryRoot(String ext, String prefix, boolean oneUp) {
+    private URL checkForBinaryRoot(String ext, String prefix) {
         if (ext.endsWith(prefix + "-nb-7.0-b07.jar!/")) { // NOI18N
             try {
                 String part = ext.substring("jar:".length(), ext.length() - prefix.length() - "-nb-7.0-b07.jar!/".length()); // NOI18N
                 
-                if (oneUp) {
-                    int lastSlash = part.lastIndexOf('/');
-
-                    if (lastSlash == (-1)) {
-                        return null;
-                    }
-                    part = part.substring(0, lastSlash);
-                }
-
-                return new URL(part + "/retouche/Jsr199/src"); // NOI18N
+                return new URL(part + "/nb-javac/src/share/classes"); // NOI18N
             } catch (MalformedURLException ex) {
                 Logger.getLogger("global").log(Level.INFO, null, ex); //NOI18N
             }

@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -111,14 +112,31 @@ public class CsmBaseUtilities {
     
     private static boolean TRACE_XREF_REPOSITORY = Boolean.getBoolean("cnd.modelimpl.trace.xref.repository");
     
+    public static CsmFunction getOperator(CsmClassifier cls, CsmFunction.OperatorKind opKind) {
+        if (!CsmKindUtilities.isClass(cls)) {
+            return null;
+        }
+        for (CsmMember member : ((CsmClass)cls).getMembers()) {
+            if (CsmKindUtilities.isOperator(member)) {
+                if (((CsmFunction)member).getOperatorKind() == opKind) {
+                    return (CsmFunction)member;
+                }
+            }
+        }        
+        return null;
+    }
+    
     /**
      * 
      * @param target
      * @return new CsmObject[] { declaration, definion }
      */
-    public static CsmObject[] getDefinitionDeclaration(CsmObject target) {
+    public static CsmObject[] getDefinitionDeclaration(CsmObject target, boolean unboxInstantiation) {
         CsmObject decl;
         CsmObject def; 
+        if (unboxInstantiation && CsmKindUtilities.isTemplateInstantiation(target)) {
+            target = ((CsmInstantiation)target).getTemplateDeclaration();
+        }
         if (CsmKindUtilities.isVariableDefinition(target)) {
             decl = ((CsmVariableDefinition)target).getDeclaration();
             if (decl == null) {
@@ -237,6 +255,14 @@ public class CsmBaseUtilities {
         }
         return funDecl;
     }    
+    
+    public static boolean isFileLocalFunction(CsmFunction fun) {
+        CsmFunction decl = getFunctionDeclaration(fun);
+        if (decl != null && CsmKindUtilities.isFile(decl.getScope())) {
+            return true;
+        }
+        return false;
+    }
     
     public static CsmClass getContextClass(CsmOffsetableDeclaration contextDeclaration) {
         if (contextDeclaration == null) {

@@ -56,8 +56,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.project.JavaAntLogger;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.core.jsploader.JspParserAccess;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
+import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
@@ -99,14 +99,14 @@ final class TestUtil {
         return FileUtil.createData(workDirFO, path);
     }
 
-    static JspParserAPI.WebModule getWebModule(FileObject fo) {
+    static WebModule getWebModule(FileObject fo) {
         WebModule wm =  WebModule.getWebModule(fo);
         if (wm == null) {
             return null;
         }
         FileObject wmRoot = wm.getDocumentBase();
         if (fo == wmRoot || FileUtil.isParentOf(wmRoot, fo)) {
-            return JspParserAccess.getJspParserWM(WebModule.getWebModule(fo));
+            return WebModule.getWebModule(fo);
         }
         return null;
     }
@@ -127,7 +127,23 @@ final class TestUtil {
         return fo;
     }
 
-    private static File getProjectAsFile(NbTestCase test, String projectFolderName) throws Exception {
+    static WebModule createWebModule(FileObject documentRoot) {
+        WebModuleImplementation webModuleImpl = new WebModuleImpl(documentRoot);
+        return WebModuleFactory.createWebModule(webModuleImpl);
+    }
+
+    static void copyFolder(FileObject source, FileObject dest) throws IOException {
+        for (FileObject child : source.getChildren()) {
+            if (child.isFolder()) {
+                FileObject created = FileUtil.createFolder(dest, child.getNameExt());
+                copyFolder(child, created);
+            } else {
+                FileUtil.copyFile(child, dest, child.getName(), child.getExt());
+            }
+        }
+    }
+
+    static File getProjectAsFile(NbTestCase test, String projectFolderName) throws Exception {
         File f = new File(test.getDataDir(), projectFolderName);
         if (!f.exists()) {
             // maybe it's zipped

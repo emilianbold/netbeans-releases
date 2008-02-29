@@ -88,6 +88,7 @@ public class EPFootprintUtilities extends gui.EPUtilities{
             wizard_location.txtProjectName().clearText();
             wizard_location.txtProjectName().typeText(pname);
         }
+        wizard.next();
         wizard.finish();
 
         // wait 10 seconds

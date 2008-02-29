@@ -92,39 +92,15 @@ public class CDataLoader extends CndAbstractDataLoaderExt {
         return new CDataObject(primaryFile, this);
     }
 
-//    public String getDefaultExtension() {
-//        String l = (String)getProperty (PROP_DEFAULT_EXTENSIONS);
-//        if (l == null) {
-//            l = cExtensions[0];
-//            putProperty (PROP_DEFAULT_EXTENSIONS, l, false);
-//        }
-//        return l;
-//    }
-//
-//    public void setDefaultExtension(String defaultExtension) {
-//        String oldExtension = getDefaultExtension();
-//        if (!defaultExtension.equals(oldExtension) && getExtensions().isRegistered("a."+defaultExtension)){ // NOI18N
-//            TemplateExtensionUtils.renameCExtension(defaultExtension);
-//            putProperty (PROP_DEFAULT_EXTENSIONS, defaultExtension, true);
-//        }
-//    }
-//
-//    @Override
-//    public void writeExternal (java.io.ObjectOutput oo) throws IOException {
-//        super.writeExternal (oo);
-//        oo.writeObject (getProperty (PROP_DEFAULT_EXTENSIONS));
-//    }
-//
-//    @Override
-//    public void readExternal (java.io.ObjectInput oi)  throws IOException, ClassNotFoundException {
-//        super.readExternal (oi);
-//        setDefaultExtension((String)oi.readObject ());
-//    }
-//
-//    public static final String PROP_DEFAULT_EXTENSIONS = "defaultExtension"; // NOI18N
-
-    @Override
     public ExtensionList getDefaultExtensionList() {
         return arrayToExtensionList(cExtensions);
+    }
+
+    public String getDisplayNameForExtensionList() {
+	return NbBundle.getMessage(CDataLoader.class, "CDataLoader_Name_ForExtList"); // NOI18N
+    }
+
+    public String getDefaultDefaultExtension() {
+        return cExtensions[0];
     }
 }

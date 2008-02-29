@@ -87,6 +87,8 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  */
 public final class Iterator implements TemplateWizard.Iterator {
 
+  private static final long serialVersionUID = 1L;
+
   public static Iterator createXsl() {
     return new Iterator();
   }

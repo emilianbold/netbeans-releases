@@ -34,7 +34,7 @@
               <ComponentRef name="documentNameTextField"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/editor/Bundle.properties" key="LBL_TargetChooser_FileName_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/editor/filecreation/Bundle.properties" key="LBL_TargetChooser_FileName_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Constraints>
@@ -61,7 +61,7 @@
               <ComponentRef name="cbExtension"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/cnd/editor/Bundle.properties" key="LBL_TargetChooser_Extension_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/cnd/editor/filecreation/Bundle.properties" key="LBL_TargetChooser_Extension_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Constraints>
@@ -99,7 +99,7 @@
           <ComponentRef name="projectTextField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/editor/Bundle.properties" key="LBL_TargetChooser_Project_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cnd/editor/filecreation/Bundle.properties" key="LBL_TargetChooser_Project_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -129,7 +129,7 @@
           <ComponentRef name="locationComboBox"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/editor/Bundle.properties" key="LBL_TargetChooser_Location_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cnd/editor/filecreation/Bundle.properties" key="LBL_TargetChooser_Location_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -156,7 +156,7 @@
           <ComponentRef name="folderTextField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/editor/Bundle.properties" key="LBL_TargetChooser_Folder_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cnd/editor/filecreation/Bundle.properties" key="LBL_TargetChooser_Folder_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -180,7 +180,7 @@
     <Component class="javax.swing.JButton" name="browseButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/editor/Bundle.properties" key="LBL_TargetChooser_Browse_Button" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cnd/editor/filecreation/Bundle.properties" key="LBL_TargetChooser_Browse_Button" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
@@ -197,11 +197,14 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel4">
       <Properties>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+          <ResourceString bundle="org/netbeans/modules/cnd/editor/filecreation/Bundle.properties" key="LBL_TargetChooser_CreatedFile_Label_Mnemonic" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="fileTextField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/editor/Bundle.properties" key="LBL_TargetChooser_CreatedFile_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cnd/editor/filecreation/Bundle.properties" key="LBL_TargetChooser_CreatedFile_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>

@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
+import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
 import org.openide.util.NbBundle;
 
 /**

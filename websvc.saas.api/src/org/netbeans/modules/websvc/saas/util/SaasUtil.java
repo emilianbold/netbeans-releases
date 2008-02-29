@@ -45,11 +45,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.net.URL;
+import javax.swing.ImageIcon;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -62,7 +65,6 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.sax.SAXSource;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
-import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
@@ -74,7 +76,9 @@ import org.netbeans.modules.websvc.saas.model.wadl.ParamStyle;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -192,7 +196,8 @@ public class SaasUtil {
     }
     
     public static final QName QNAME_GROUP = new QName(Saas.NS_SAAS, "group");
-
+    public static final QName QNAME_SAAS_SERVICES = new QName(Saas.NS_SAAS, "saas-services");
+    
     public static void saveSaasGroup(SaasGroup saasGroup, OutputStream output) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Group.class.getPackage().getName());
         Marshaller marshaller = jc.createMarshaller();
@@ -203,7 +208,21 @@ public class SaasUtil {
     public static void saveSaas(Saas saas, FileObject file) throws IOException, JAXBException {
         JAXBContext jc = JAXBContext.newInstance(SaasServices.class.getPackage().getName());
         Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(saas.getDelegate(), file.getOutputStream());
+        JAXBElement<SaasServices> jbe = new JAXBElement<SaasServices>(QNAME_SAAS_SERVICES, SaasServices.class, saas.getDelegate());
+        OutputStream out = null;
+        FileLock lock = null;
+        try {
+            lock = file.lock();
+            out = file.getOutputStream(lock);
+            marshaller.marshal(jbe, out);
+        } finally {
+            if (out != null) {
+                out.close();
+            }
+            if (lock != null) {
+                lock.releaseLock();
+            }
+        }
     }
     
     public static Application loadWadl(FileObject wadlFile) throws IOException {
@@ -414,13 +433,74 @@ public class SaasUtil {
         return sb.toString();
     }
     
-    public static Image loadIcon(Saas saas, int type) {
-        String path = saas.getSaasMetadata().getIcon16();
+    public static Image loadIcon(SaasGroup saasGroup, int type) {
+        String path = saasGroup.getIcon16Path();
         if (type == BeanInfo.ICON_COLOR_32x32 || type == BeanInfo.ICON_MONO_32x32) {
-            path =  saas.getSaasMetadata().getIcon32();
+            path =  saasGroup.getIcon32Path();
         }
         if (path != null) {
+            URL url = Thread.currentThread().getContextClassLoader().getResource(path);
+            if (url != null) {
+                return new ImageIcon(url).getImage();
+            }
             return Utilities.loadImage(path);
+        }
+        return null;
+    }
+    
+    public static final String CATALOG = "catalog";
+    
+    public static String deriveFileName(String path) {
+        String name = null;
+        try {
+            URL url = new URL(path);
+            name = url.getPath();
+            
+        } catch(MalformedURLException e) {
+        }
+        if (name == null) {
+            name = path;
+        }
+        name = name.substring(name.lastIndexOf('/')+1);   
+        return name;
+    }
+    
+    public static FileObject getWadlFile(WadlSaas saas) throws IOException {
+        InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(saas.getUrl());
+        if (in == null) {
+            return null;
+        }
+        OutputStream out = null;
+        FileObject wadlFile;
+        try {
+            FileObject dir = saas.getSaasFolder();
+            FileObject catalogDir = dir.getFileObject("catalog");
+            if (catalogDir == null) {
+                catalogDir = dir.createFolder(CATALOG);
+            }
+            String wadlFileName = deriveFileName(saas.getUrl());
+            wadlFile = catalogDir.getFileObject(wadlFileName);
+            if (wadlFile == null) {
+                wadlFile = catalogDir.createData(wadlFileName);
+            }
+            out = wadlFile.getOutputStream();
+            FileUtil.copy(in, out);
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+            if (out != null) {
+                out.close();
+            }
+        }
+        return wadlFile;
+    }
+
+    public static Saas getServiceByUrl(SaasGroup group, String url) {
+        for (Saas s : group.getServices()) {
+            if (s.getUrl().equals(url)) {
+                return s;
+            }
         }
         return null;
     }

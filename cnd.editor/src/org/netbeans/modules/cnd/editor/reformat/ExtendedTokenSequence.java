@@ -1,0 +1,545 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * 
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.modules.cnd.editor.reformat;
+
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.modules.cnd.editor.reformat.DiffLinkedList.DiffResult;
+import static org.netbeans.cnd.api.lexer.CppTokenId.*;
+
+/**
+ *
+ * @author Alexander Simon
+ */
+public class ExtendedTokenSequence {
+    private final TokenSequence<CppTokenId> ts;
+    private final DiffLinkedList diffs;
+    /*package local*/ ExtendedTokenSequence(TokenSequence<CppTokenId> ts, DiffLinkedList diffs){
+        this.ts = ts;
+        this.diffs = diffs;
+    }
+
+    /*package local*/ void replacePrevious(Token<CppTokenId> previous, String space){
+        String old = previous.text().toString();
+        if (!old.equals(space) || old.indexOf('\t') >=0){ // NOI18N
+            diffs.addFirst(ts.offset() - previous.length(),
+                           ts.offset(), space);
+        }
+    }
+
+    /*package local*/ void addBeforeCurrent(String space){
+        if (space.length()>0) {
+            diffs.addFirst(ts.offset(),
+                           ts.offset(), space);
+        }
+    }
+
+    /*package local*/ void replaceCurrent(Token<CppTokenId> current, String space){
+        String old = current.text().toString();
+        if (!old.equals(space) || old.indexOf('\t') >=0){ // NOI18N
+            diffs.addFirst(ts.offset(),
+                           ts.offset() + current.length(), space);
+        }
+    }
+
+    /*package local*/ void addAfterCurrent(Token<CppTokenId> current, String space){
+        if (space.length()>0) {
+            diffs.addFirst(ts.offset() + current.length(),
+                           ts.offset() + current.length(), space);
+        }
+    }
+
+    /*package local*/ void replaceNext(Token<CppTokenId> current, Token<CppTokenId> next, String space){
+        String old = next.text().toString();
+        if (!old.equals(space) || old.indexOf('\t') >=0){ // NOI18N
+            diffs.addFirst(ts.offset()+current.length(),
+                           ts.offset()+current.length()+next.length(), space); 
+        }
+    }
+    
+    /*package local*/ int getTokenPosition(){
+        int index = ts.index();
+        try {
+            int column = 0;
+            while(ts.movePrevious()){
+                DiffResult diff = diffs.getDiffs(this, 0);
+                if (diff != null){
+                    if (diff.before != null){
+                        column+=diff.before.spaceLength();
+                        if (diff.before.hasNewLine()) {
+                            return column;
+                        }
+                    }
+                    if (diff.replace != null){
+                        column+=diff.replace.spaceLength();
+                        if (diff.replace.hasNewLine()) {
+                            return column;
+                        }
+                        continue;
+                    }
+                }
+                switch (ts.token().id()) {
+                    case NEW_LINE:
+                    case PREPROCESSOR_DIRECTIVE:
+                         return column;
+                    case DOXYGEN_COMMENT:
+                    case BLOCK_COMMENT:
+                        String text = ts.token().text().toString();
+                        int i = text.lastIndexOf('\n');
+                        if (i < 0){
+                            column+=text.length();
+                            break;
+                        } 
+                        column+=text.length()-i+1;
+                        return column;
+                    default:
+                        column+=ts.token().length();
+                        break;
+                }
+            }
+            return column;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+    
+    /*package local*/ Token<CppTokenId> lookNextImportant(){
+        int index = ts.index();
+        try {
+            while(ts.moveNext()){
+                switch (ts.token().id()) {
+                    case WHITESPACE:
+                    case NEW_LINE:
+                    case LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                        break;
+                    default:
+                        return ts.token();
+                }
+            }
+            return null;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ Token<CppTokenId> lookNextLineImportant(){
+        int index = ts.index();
+        try {
+            while(ts.moveNext()){
+                switch (ts.token().id()) {
+                    case LINE_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                    case NEW_LINE:
+                        return null;
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                        if (ts.token().text().toString().indexOf('\n')>=0) {
+                            return null;
+                        }
+                        break;
+                    case WHITESPACE:
+                        break;
+                    default:
+                        return ts.token();
+                }
+            }
+            return null;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+    
+    /*package local*/ Token<CppTokenId> lookPreviousStatement(){
+        int index = ts.index();
+        int balance = 0;
+        if (ts.token().id() == RPAREN){
+            balance = 1;
+        }
+        try {
+            while(ts.movePrevious()){
+                switch(ts.token().id()) {
+                    case LPAREN:
+                        if (balance == 0) {
+                            return null;
+                        }
+                        balance--;
+                        break;
+                    case RPAREN:
+                        balance++;
+                        break;
+                    case WHITESPACE:
+                    case NEW_LINE:
+                    case LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                        break;
+                    default:
+                        if (balance == 0) {
+                            return ts.token();
+                        }
+                        break;
+                }
+            }
+            return null;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ Token<CppTokenId> lookNext(){
+        if (ts.moveNext()) {
+            Token<CppTokenId> next = ts.token();
+            ts.movePrevious();
+            return next;
+        }
+        return null;
+    }
+
+    /*package local*/ Token<CppTokenId> lookNext(int i){
+        int index = ts.index();
+        try {
+            while(i-- > 0) {
+                if (!ts.moveNext()){
+                    return null;
+                }
+            }
+            return ts.token();
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ boolean isLastLineToken(){
+        int index = ts.index();
+        try {
+            while(true) {
+                if (!ts.moveNext()){
+                    return true;
+                }
+                DiffResult diff = diffs.getDiffs(this, 0);
+                if (diff != null){
+                    if (diff.replace != null){
+                        if (diff.replace.hasNewLine()) {
+                            return true;
+                        }
+                        continue;
+                    }
+                }
+                CppTokenId id = ts.token().id();
+                if (id == NEW_LINE){
+                    return true;
+                } else if ( id == LINE_COMMENT){
+                    // skip
+                } else if (ts.token().id() != WHITESPACE){
+                    return false;
+                }
+                if (diff != null){
+                    if (diff.after != null){
+                        if (diff.after.hasNewLine()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ Token<CppTokenId> lookPreviousLineImportant(){
+        int index = ts.index();
+        try {
+            while(ts.movePrevious()){
+                switch (ts.token().id()) {
+                    case LINE_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                    case NEW_LINE:
+                        return null;
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                        if (ts.token().text().toString().indexOf('\n')>=0) {
+                            return null;
+                        }
+                        break;
+                    case WHITESPACE:
+                        break;
+                    default:
+                        return ts.token();
+                }
+            }
+            return null;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ Token<CppTokenId> lookPreviousImportant(){
+        int index = ts.index();
+        try {
+            while(ts.movePrevious()){
+                switch (ts.token().id()) {
+                    case WHITESPACE:
+                    case NEW_LINE:
+                    case LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                        break;
+                    default:
+                        return ts.token();
+                }
+            }
+            return null;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ Token<CppTokenId> lookPreviousImportant(int i){
+        int index = ts.index();
+        try {
+            while(ts.movePrevious()){
+                switch (ts.token().id()) {
+                    case WHITESPACE:
+                    case NEW_LINE:
+                    case LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                        break;
+                    default:
+                        i--;
+                        if (i <= 0 ) {
+                            return ts.token();
+                        }
+                }
+            }
+            return null;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ Token<CppTokenId> lookPrevious(){
+        if (ts.movePrevious()) {
+            Token<CppTokenId> previous = ts.token();
+            ts.moveNext();
+            return previous;
+        }
+        return null;
+    }
+
+    /*package local*/ Token<CppTokenId> lookPrevious(int i){
+        int index = ts.index();
+        try {
+            while(i-- > 0) {
+                if (!ts.movePrevious()){
+                    return null;
+                }
+            }
+            return ts.token();
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ boolean isFirstLineToken(){
+        int index = ts.index();
+        try {
+            while(true) {
+                if (!ts.movePrevious()){
+                    return true;
+                }
+                DiffResult diff = diffs.getDiffs(this, 0);
+                if (diff != null){
+                    if (diff.after != null){
+                        if (diff.after.hasNewLine()) {
+                            return true;
+                        }
+                    }
+                    if (diff.replace != null){
+                        if (diff.replace.hasNewLine()) {
+                            return true;
+                        }
+                        continue;
+                    }
+                }
+                if (ts.token().id() == NEW_LINE ||
+                    ts.token().id() == PREPROCESSOR_DIRECTIVE){
+                    return true;
+                } else if (ts.token().id() != WHITESPACE){
+                    return false;
+                }
+            }
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ Token<CppTokenId> findOpenParenToken(int parenDepth) {
+        int index = ts.index();
+        try {
+            while(true) {
+                if (!ts.movePrevious()){
+                    return null;
+                }
+                if (ts.token().id() == LPAREN){
+                    parenDepth--;
+                    if (parenDepth == 0){
+                        return lookPreviousImportant();
+                    }
+                } else if (ts.token().id() == RPAREN){
+                    parenDepth++;
+                }
+            }
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ int openParenIndent(int parenDepth) {
+        int index = ts.index();
+        try {
+            while(true) {
+                if (!ts.movePrevious()){
+                    return -1;
+                }
+                if (ts.token().id() == LPAREN){
+                    parenDepth--;
+                    if (parenDepth == 0){
+                        return getTokenPosition()+1;
+                    }
+                } else if (ts.token().id() == RPAREN){
+                    parenDepth++;
+                }
+            }
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+        
+    /* Stab implementation */
+    
+    public Language<CppTokenId> language() {
+        return ts.language();
+    }
+    
+    public LanguagePath languagePath() {
+        return ts.languagePath();
+    }
+
+    public Token<CppTokenId> token() {
+        return ts.token();
+    }
+
+    public Token<CppTokenId> offsetToken() {
+        return ts.offsetToken();
+    }
+
+    public int offset() {
+        return ts.offset();
+    }
+
+    public int index() {
+        return ts.index();
+    }
+
+    public <ET extends TokenId> TokenSequence<ET> embedded(Language<ET> embeddedLanguage) {
+        return ts.embedded(embeddedLanguage);
+    }
+
+    public boolean moveNext() {
+        return ts.moveNext();
+    }
+
+    public boolean movePrevious() {
+        return ts.movePrevious();
+    }
+
+    public int moveIndex(int index) {
+        return ts.moveIndex(index);
+    }
+
+    public void moveStart() {
+        ts.moveStart();
+    }
+
+    public void moveEnd() {
+        ts.moveEnd();
+    }
+
+    public int move(int offset) {
+        return ts.move(offset);
+    }
+    
+    public boolean isEmpty() {
+        return ts.isEmpty();
+    }
+
+    public int tokenCount() {
+        return ts.tokenCount();
+    }
+
+    @Override
+    public String toString() {
+        return ts.toString();
+    }
+}

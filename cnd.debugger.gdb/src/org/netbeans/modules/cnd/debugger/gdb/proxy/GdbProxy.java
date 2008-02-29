@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
@@ -246,6 +247,25 @@ public class GdbProxy implements GdbMiDefinitions {
         return engine.sendCommand("-data-evaluate-expression " + string); // NOI18N
     }
     
+    /**
+     */
+    public int data_list_register_names(CommandBuffer cb, String regIds) {
+        return engine.sendCommand(cb, "-data-list-register-names " + regIds); // NOI18N
+    }
+    
+    /**
+     */
+    public int data_list_register_values(CommandBuffer cb, String regIds) {
+        return engine.sendCommand(cb, "-data-list-register-values r " + regIds); // NOI18N
+    }
+    
+    /*
+     * @param filename - source file to disassemble
+     */
+    public int data_disassemble(String filename, int line) {
+        return engine.sendCommand("-data-disassemble -f " + filename + " -l " + line + " -- 0"); // NOI18N
+    }
+    
     public int print(CommandBuffer cb, String expression) {
         return engine.sendCommand(cb, "print " + expression); // NOI18N
     }
@@ -302,6 +322,13 @@ public class GdbProxy implements GdbMiDefinitions {
     public int exec_next() {
         return engine.sendCommand("-exec-next"); // NOI18N
     }
+    
+    /**
+     * Execute single instruction
+     */
+    public int exec_instruction() {
+        return engine.sendCommand("-exec-step-instruction"); // NOI18N
+    }
 
     /**
      * Send "-exec-finish" to the debugger (finish this function)
@@ -353,6 +380,7 @@ public class GdbProxy implements GdbMiDefinitions {
         }
         return engine.sendCommand(cmd);
     }
+    
 
     /**
      * Send "-break-insert function" to the debugger
@@ -361,20 +389,21 @@ public class GdbProxy implements GdbMiDefinitions {
      *
      * @param flags One or more flags aout this breakpoint
      * @param name A function name
+     * @param threadID The thread number for this breakpoint
      * @return token number
      */
-    public int break_insert(int flags, String name) {
+    public int break_insert(int flags, String name, String threadID) {
         StringBuilder cmd = new StringBuilder();
 
         if (GdbUtils.isMultiByte(name)) {
-            if ((flags & GdbDebugger.GDB_TMP_BREAKPOINT) != 0) {
+            if ((flags == GdbDebugger.GDB_TMP_BREAKPOINT)) {
                 cmd.append("tbreak "); // NOI18N
             } else {
                 cmd.append("break "); // NOI18N
             }
         } else {
             cmd.append("-break-insert "); // NOI18N
-            if ((flags & GdbDebugger.GDB_TMP_BREAKPOINT) != 0) {
+            if ((flags == GdbDebugger.GDB_TMP_BREAKPOINT)) {
                 cmd.append("-t "); // NOI18N
             }
         }
@@ -386,8 +415,25 @@ public class GdbProxy implements GdbMiDefinitions {
         } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
             cmd.append("-l 1 "); // NOI18N - Always use 1st choice
         }
+        if (flags == GdbBreakpoint.SUSPEND_THREAD) {
+            // FIXME - Does the Mac support -p?
+            cmd.append("-p " + threadID + " "); // NOI18N
+        }
         cmd.append(name);
         return engine.sendCommand(cmd.toString());
+    }
+    
+    /**
+     * Send "-break-insert function" to the debugger
+     * This command inserts a regular breakpoint in all functions
+     * whose names match the given name.
+     *
+     * @param flags One or more flags aout this breakpoint
+     * @param name The function name or linenumber information
+     * @return token number
+     */
+    public int break_insert(int flags, String name) {
+        return break_insert(flags, name, "");
     }
 
     /**
@@ -399,7 +445,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * @return token number
      */
     public int break_insert(String name) {
-        return break_insert(0, name);
+        return break_insert(0, name, null);
     }
 
     /**
@@ -433,6 +479,14 @@ public class GdbProxy implements GdbMiDefinitions {
      */
     public int break_disable(int number) {
         return engine.sendCommand("-break-disable " + Integer.toString(number)); // NOI18N
+    }
+    
+    public int break_condition(int number, String condition) {
+        return engine.sendCommand("-break-condition " + Integer.toString(number) + " " + condition); // NOI18N
+    }
+    
+    public int break_after(int number, String count) {
+        return engine.sendCommand("-break-after " + Integer.toString(number) + " " + count); // NOI18N
     }
 
     /** Send "-stack-list-locals" to the debugger */

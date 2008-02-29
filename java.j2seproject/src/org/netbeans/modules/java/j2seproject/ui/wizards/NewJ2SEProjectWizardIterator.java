@@ -207,16 +207,16 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
 
         // Returning FileObject of project diretory. 
         // Project will be open and set as main
-        int index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
+        int ind = (Integer) wiz.getProperty(PROP_NAME_INDEX);
         switch (type) {
             case APP:
-                FoldersListSettings.getDefault().setNewApplicationCount(index);
+                FoldersListSettings.getDefault().setNewApplicationCount(ind);
                 break;
             case LIB:
-                FoldersListSettings.getDefault().setNewLibraryCount(index);
+                FoldersListSettings.getDefault().setNewLibraryCount(ind);
                 break;
             case EXT:
-                FoldersListSettings.getDefault().setNewProjectCount(index);
+                FoldersListSettings.getDefault().setNewProjectCount(ind);
                 break;
         }        
         resultSet.add (dir);
@@ -225,7 +225,8 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
         if (dirF != null && dirF.exists()) {
             ProjectChooser.setProjectsFolder (dirF);    
         }
-                        
+         
+        SharableLibrariesUtils.setLastProjectSharable(librariesDefinition != null);
         return resultSet;
     }
     

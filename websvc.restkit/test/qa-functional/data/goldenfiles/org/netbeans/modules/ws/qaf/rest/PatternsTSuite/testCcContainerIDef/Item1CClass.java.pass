@@ -1,7 +1,7 @@
 /*
  *  Item1CClass
  *
- * Created on December 12, 2007, 1:31 AM
+ * Created on February 19, 2008, 7:17 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -25,7 +25,7 @@ import javax.ws.rs.ProduceMime;
 public class Item1CClass {
     @HttpContext
     private UriInfo context;
-    
+
     /** Creates a new instance of Item1CClass */
     public Item1CClass() {
     }

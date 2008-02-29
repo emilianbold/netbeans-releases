@@ -52,6 +52,7 @@ class EtlproActionProvider implements ActionProvider {
         COMMAND_COMPILE_SINGLE,
         EtlproProject.COMMAND_GENWSDL,
         EtlproProject.COMMAND_SCHEMA,
+        EtlproProject.COMMAND_BULK_LOADER,
         COMMAND_DELETE,
         COMMAND_COPY,
         COMMAND_MOVE,
@@ -73,6 +74,7 @@ class EtlproActionProvider implements ActionProvider {
         commands.put(COMMAND_REBUILD, new String[]{"clean", "dist"}); // NOI18N
         commands.put(EtlproProject.COMMAND_GENWSDL, new String[]{"gen-wsdl"}); // NOI18N
         commands.put(EtlproProject.COMMAND_SCHEMA, new String[]{"gen-schema"}); // NOI18N
+        commands.put(EtlproProject.COMMAND_BULK_LOADER, new String[]{"etl_bulkloader"}); // NOI18N
         //commands.put(IcanproConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
         //commands.put(IcanproConstants.COMMAND_DEPLOY, new String[] {"run"}); // NOI18N
 
@@ -167,6 +169,7 @@ class EtlproActionProvider implements ActionProvider {
                     NbBundle.getMessage(NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
                     true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
             Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
+            dlg.getAccessibleContext().setAccessibleDescription("This dialog displays warning if no server is selected");
             dlg.setVisible(true);
             if (desc.getValue() != options[0]) {
                 selected = false;

@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.services.strikeiron.ui.FindServiceUI;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceData;
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
@@ -106,7 +107,8 @@ public class FindServiceAction extends NodeAction {
                 String url = service.getUrl();
                 String name = service.getServiceName();
                 if (WsdlUtil.findWsdlData(url, name) == null) {
-                    SaasServicesModel.getInstance().addWsdlService(group, name, url, service.getPackageName());
+                    WsdlSaas saas = SaasServicesModel.getInstance().createWsdlService(group, name, url, service.getPackageName());
+                    saas.getDelegate().setApiDoc(service.getInfoPage());
                 }
             }
         }

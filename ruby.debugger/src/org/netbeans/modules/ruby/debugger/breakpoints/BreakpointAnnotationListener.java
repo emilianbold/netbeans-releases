@@ -51,9 +51,6 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.modules.ruby.debugger.DebuggerAnnotation;
 import org.openide.text.Annotation;
 
-/**
- * @author Martin Krauskopf
- */
 public final class BreakpointAnnotationListener extends DebuggerManagerAdapter
         implements PropertyChangeListener {
     

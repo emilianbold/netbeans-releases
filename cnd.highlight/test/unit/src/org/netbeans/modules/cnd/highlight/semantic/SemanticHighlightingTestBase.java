@@ -57,11 +57,15 @@ public abstract class SemanticHighlightingTestBase  extends TraceModelTestBase {
         super(name);
     }
     
-    protected abstract List<? extends CsmOffsetable> getBlocks(FileImpl testFile);
+    protected abstract List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset);
     
-    protected @Override void postTest(String[] args) {
+    protected @Override void postTest(String[] args, Object... params) {
         FileImpl file = getFileImpl(new File(args[0]));
-        List<? extends CsmOffsetable> out = getBlocks(file);
+        int offset = -1;
+        if (params != null && params.length > 0) {
+            offset = params[0] instanceof Integer ? (Integer)params[0] : -1;
+        }
+        List<? extends CsmOffsetable> out = getBlocks(file, offset);
         assert out != null;
         int i = 1;
         for (CsmOffsetable b : out) {

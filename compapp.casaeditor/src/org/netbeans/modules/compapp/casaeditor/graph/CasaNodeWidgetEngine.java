@@ -47,21 +47,18 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.*;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.border.LineBorder;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.model.StateModel;
-import org.netbeans.api.visual.widget.LabelWidget.Alignment;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularPainter;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularProvider;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.InnerGlowBorderDrawer;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.Painter;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.PainterWidget;
-import org.netbeans.modules.compapp.casaeditor.nodes.actions.GoToSourceAction;
-import org.openide.util.actions.SystemAction;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 
 /**
  *
@@ -213,11 +210,25 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
     }
 
     public void setMinimized(boolean isMinimized) {
+        ObjectScene scene = (ObjectScene) getScene();
+        
         for (Widget child : mContainerWidget.getChildren()) {
             if (child instanceof CasaMinimizable) {
                 ((CasaMinimizable) child).setMinimized(isMinimized);
             }
+            
+            if (child instanceof CasaPinWidget) {
+                CasaPinWidget pinWidget = (CasaPinWidget) child;
+                for (CasaComponent connection : pinWidget.getConnections()) {
+                    CasaConnectionWidget connectionWidget = 
+                            (CasaConnectionWidget) scene.findWidget(connection);
+                    if (connectionWidget instanceof CasaMinimizable) {
+                        ((CasaMinimizable)connectionWidget).setMinimized(isMinimized);
+                    }
+                }
+            }
         }
+        
         mContainerWidget.setPreferredBounds(isMinimized ? mTitleWidget.getPreferredBounds() : null);
         getScene().validate();
     }
@@ -267,15 +278,17 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
      * @param widget the pin widget
      */
     public void attachPinWidget(CasaPinWidget widget) {
-        // All Provides pins should come before Consumes pins.
-        //addPinWithOrdering(widget);
         mContainerWidget.addChild(widget);
         setPinFont(getPinFont());
         setPinColor(getPinColor());
         mContainerWidget.setPreferredBounds(null);
     }
-    private List<String> groupNames = new ArrayList<String>();
-
+    
+    public void attachProcessWidget(CasaProcessTitleWidget widget) {
+        mContainerWidget.addChild(widget);
+        mContainerWidget.setPreferredBounds(null);
+    }
+    
     public void doneAddingWidget() {
         //Add a cushoning widget only if there are other widgets than the title.
         if (mContainerWidget.getChildren().size() > 1) {
@@ -286,47 +299,6 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
                 cushioningWidget.setBorder(new LineBorder(Color.BLACK));
             }
         }
-    }
-
-    class GroupTitleWidget extends Widget {
-
-        GroupTitleWidget(Scene scene, String processName) {
-            super(scene);
-
-            setLayout(RegionUtilities.createHorizontalFlowLayoutWithJustifications(LayoutFactory.SerialAlignment.CENTER, 5));
-
-            Widget leftEmptyWidget = new Widget(getScene()); //Placeholder to place MinimizeIcon inside rounded rectangle
-            leftEmptyWidget.setPreferredBounds(new Rectangle(CasaNodeWidgetEngine.ARROW_PIN_WIDTH, 2));
-            Widget rightEmptyWidget = new Widget(getScene()); //Placeholder to place MinimizeIcon inside rounded rectangle
-            rightEmptyWidget.setPreferredBounds(new Rectangle(CasaNodeWidgetEngine.ARROW_PIN_WIDTH, 2));
-
-            LabelWidget groupTitleWidget = new LabelWidget(getScene(), "<" + processName + ">");
-            groupTitleWidget.setOpaque(true);
-            groupTitleWidget.setAlignment(Alignment.RIGHT);
-            groupTitleWidget.setBackground(Color.green);
-            groupTitleWidget.setFont(getScene().getDefaultFont().deriveFont(Font.BOLD));
-
-            addChild(leftEmptyWidget);
-            addChild(groupTitleWidget);
-            addChild(rightEmptyWidget);
-
-            //getActions().addAction(SystemAction.getAction(GoToSourceAction.class));
-            
-            if (DEBUG) {
-                leftEmptyWidget.setBorder(new LineBorder(Color.red));
-                groupTitleWidget.setBorder(new LineBorder(Color.blue));
-                rightEmptyWidget.setBorder(new LineBorder(Color.red));
-            }
-        }
-    }
-
-    public void addGroupWidget(String processName) {
-
-        groupNames.add(processName);
-        Widget myWidget = new GroupTitleWidget(getScene(), processName);
-        mContainerWidget.addChild(myWidget);
-
-        mContainerWidget.setPreferredBounds(null);
     }
 
     /**

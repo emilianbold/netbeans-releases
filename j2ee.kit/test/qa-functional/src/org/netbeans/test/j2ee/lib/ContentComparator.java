@@ -38,16 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-/*
- * ContentComparator.java
- *
- * Created on December 14, 2005, 4:02 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.test.j2ee.lib;
 
 import java.io.File;
@@ -75,13 +65,13 @@ import org.xml.sax.SAXException;
  * @author jungi
  */
 public final class ContentComparator {
-    
+
     private static final Logger LOGGER = Logger.getLogger(ContentComparator.class.getName());
-    
+
     /** Creates a new instance of ContentComparator */
     private ContentComparator() {
     }
-    
+
     /**
      *
      *  Compares the content of two xml files. Ignores whitespaces.
@@ -98,15 +88,15 @@ public final class ContentComparator {
             Document d2 = db.parse(f2);
             return compare(d1.getDocumentElement(), d2.getDocumentElement());
         } catch (ParserConfigurationException e) {
-            LOGGER.log(Level.WARNING, "Exception from test - comparing XML files", e);
+            LOGGER.log(Level.WARNING, "Exception from test - comparing XML files", e); //NOI18N
         } catch (SAXException e) {
-            LOGGER.log(Level.WARNING, "Exception from test - comparing XML files", e);
+            LOGGER.log(Level.WARNING, "Exception from test - comparing XML files", e); //NOI18N
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Exception from test - comparing XML files", e);
+            LOGGER.log(Level.WARNING, "Exception from test - comparing XML files", e); //NOI18N
         }
         return false;
     }
-    
+
     /**
      *  Compares two manifest files. First check is for number of attributes,
      * next one is comparing name-value pairs.
@@ -143,9 +133,9 @@ public final class ContentComparator {
             }
             return a2.isEmpty();
         } catch (FileNotFoundException fnfe) {
-            LOGGER.log(Level.WARNING, "Exception from test - comparing manifests", fnfe);
+            LOGGER.log(Level.WARNING, "Exception from test - comparing manifests", fnfe); //NOI18N
         } catch (IOException ioe) {
-            LOGGER.log(Level.WARNING, "Exception from test - comparing manifests", ioe);
+            LOGGER.log(Level.WARNING, "Exception from test - comparing manifests", ioe); //NOI18N
         }
         return false;
     }
@@ -164,13 +154,13 @@ public final class ContentComparator {
             // //ejb-jar/display-name element randomly disappears from ejb-jar.xml
             // therefore we skip the check for this node here
             //see issue #122947 for details
-            if ("display-name".equals(m1.getLocalName()) && "ejb-jar".equals(m1.getParentNode().getLocalName())) {
-                LOGGER.warning("skiping /ejb-jar/display-name from golden file");
+            if ("display-name".equals(m1.getNodeName()) && "ejb-jar".equals(m1.getParentNode().getNodeName())) { //NOI18N
+                LOGGER.warning("skiping /ejb-jar/display-name from golden file"); //NOI18N
                 m1 = l1.remove(0);
             }
-            if ("display-name".equals(m2.getLocalName()) && "ejb-jar".equals(m2.getParentNode().getLocalName())) {
+            if ("display-name".equals(m2.getNodeName()) && "ejb-jar".equals(m2.getParentNode().getNodeName())) { //NOI18N
                 m2 = l2.remove(0);
-                LOGGER.warning("skiping /ejb-jar/display-name from created file");
+                LOGGER.warning("skiping /ejb-jar/display-name from created file"); //NOI18N
             }
             //check basic things - node name, value, attributes - iff they're OK, we can continue
             if (sameNode(m1, m2)) {
@@ -199,32 +189,32 @@ public final class ContentComparator {
                 }
             } else {
                 //nodes are not equals - print some info
-                LOGGER.warning("================================================");
-                LOGGER.warning("m1: " + m1.getNodeName() + "; \'" + m1.getNodeValue() + "\'");
-                LOGGER.warning("m2: " + m2.getNodeName() + "; \'" + m2.getNodeValue() + "\'");
-                LOGGER.warning("================================================");
+                LOGGER.warning("================================================"); //NOI18N
+                LOGGER.warning("m1: " + m1.getNodeName() + "; \'" + m1.getNodeValue() + "\'"); //NOI18N
+                LOGGER.warning("m2: " + m2.getNodeName() + "; \'" + m2.getNodeValue() + "\'"); //NOI18N
+                LOGGER.warning("================================================"); //NOI18N
                 return false;
             }
         }
         return true;
     }
-    
+
     //attrs, name, value
     private static boolean sameNode(Node n1, Node n2) {
         //check node name
         if (!n1.getNodeName().equals(n2.getNodeName())) {
-            LOGGER.warning("================================================");
-            LOGGER.warning("Expected node: " + n1.getNodeName() + ", got: " + n2.getNodeName());
-            LOGGER.warning("================================================");
+            LOGGER.warning("================================================"); //NOI18N
+            LOGGER.warning("Expected node: " + n1.getNodeName() + ", got: " + n2.getNodeName()); //NOI18N
+            LOGGER.warning("================================================"); //NOI18N
             return false;
         }
         //check node value
         if (!((n1.getNodeValue() != null)
                 ? n1.getNodeValue().equals(n2.getNodeValue())
                 : (n2.getNodeValue() == null))) {
-            LOGGER.warning("================================================");
-            LOGGER.warning("Expected node value: " + n1.getNodeValue() + ", got: " + n2.getNodeValue());
-            LOGGER.warning("================================================");
+            LOGGER.warning("================================================"); //NOI18N
+            LOGGER.warning("Expected node value: " + n1.getNodeValue() + ", got: " + n2.getNodeValue()); //NOI18N
+            LOGGER.warning("================================================"); //NOI18N
             return false;
         }
         //check node attributes
@@ -243,14 +233,14 @@ public final class ContentComparator {
             if (!(x.getNodeName().equals(y.getNodeName())
                     && x.getNodeValue().equals(y.getNodeValue()))) {
                 //nodes are not equals - print some info
-                LOGGER.warning("================================================");
-                LOGGER.warning("Expected attribute: " + x.getNodeName() + "=\'" +  x.getNodeValue() + "\',"
-                        + " got: " + y.getNodeName() + "=\'" +  y.getNodeValue() + "\'");
-                LOGGER.warning("================================================");
+                LOGGER.warning("================================================"); //NOI18N
+                LOGGER.warning("Expected attribute: " + x.getNodeName() + "=\'" +  x.getNodeValue() + "\'," //NOI18N
+                        + " got: " + y.getNodeName() + "=\'" +  y.getNodeValue() + "\'"); //NOI18N
+                LOGGER.warning("================================================"); //NOI18N
                 return false;
             }
         }
         return true;
     }
-    
+
 }

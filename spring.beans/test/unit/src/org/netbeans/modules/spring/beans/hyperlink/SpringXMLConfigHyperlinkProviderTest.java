@@ -43,9 +43,7 @@ package org.netbeans.modules.spring.beans.hyperlink;
 
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.netbeans.modules.spring.beans.TestUtils;
-import org.openide.text.CloneableEditorSupport;
 
 /**
  *
@@ -72,7 +70,8 @@ public class SpringXMLConfigHyperlinkProviderTest extends NbTestCase {
                 "factory-method='getInstance' " +
                 "init-method='myInitMethod' " +
                 "destroy-method='myDestroyMethod' " +
-                "p:location='/WEB-INF/jdbc.properties'/>");
+                "p:location='/WEB-INF/jdbc.properties'" +
+                "p:foobar-ref='sampleBeanRef'/>");
         BaseDocument testDoc = TestUtils.createSpringXMLConfigDocument(config);
         assertHyperlink(testDoc, "org.dummy.config.PropertyConfigurer");
         assertHyperlink(testDoc, "getInstance");
@@ -81,6 +80,8 @@ public class SpringXMLConfigHyperlinkProviderTest extends NbTestCase {
         assertHyperlink(testDoc, "myInitMethod");
         assertHyperlink(testDoc, "myDestroyMethod");
         assertHyperlink(testDoc, "p:location");
+        assertHyperlink(testDoc, "p:foobar-ref");
+        assertHyperlink(testDoc, "sampleBeanRef");
     }
 
     public void testImportHyperlink() throws Exception {

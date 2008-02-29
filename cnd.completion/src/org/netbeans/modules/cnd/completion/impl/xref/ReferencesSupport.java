@@ -61,11 +61,9 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver.ReferenceKind;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver.Scope;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionProvider;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider;
@@ -351,8 +349,8 @@ public final class ReferencesSupport {
         return doc;
     }
     
-    static ReferenceKind getReferenceKind(CsmReference ref) {
-        ReferenceKind kind = ReferenceKind.UNKNOWN;
+    static CsmReferenceKind getReferenceKind(CsmReference ref) {
+        CsmReferenceKind kind = CsmReferenceKind.UNKNOWN;
         CsmObject owner = ref.getOwner();
         if (CsmKindUtilities.isType(owner)) {
             kind = getReferenceUsageKind(ref);
@@ -360,8 +358,8 @@ public final class ReferencesSupport {
         return kind;
     }
     
-    static ReferenceKind getReferenceUsageKind(CsmReference ref) {
-        ReferenceKind kind = ReferenceKind.DIRECT_USAGE;
+    static CsmReferenceKind getReferenceUsageKind(CsmReference ref) {
+        CsmReferenceKind kind = CsmReferenceKind.DIRECT_USAGE;
         if (ref instanceof ReferenceImpl) {
             Document doc = getRefDocument(ref);
             int offset = ref.getStartOffset();
@@ -387,7 +385,7 @@ public final class ReferencesSupport {
                         case ARROW:
                         case ARROWMBR:
                         case SCOPE:
-                            kind = ReferenceKind.AFTER_DEREFERENCE_USAGE;
+                            kind = CsmReferenceKind.AFTER_DEREFERENCE_USAGE;
                     }
                 }
             }

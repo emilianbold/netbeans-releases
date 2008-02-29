@@ -42,27 +42,70 @@ package org.netbeans.spi.java.project.support.ui;
 
 import java.io.File;
 import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 
 final class MakeSharableVisualPanel1 extends JPanel {
 
     private AntProjectHelper helper;
+    private ChangeSupport support;
+    private WizardDescriptor settings;
+    private DocumentListener docListener;
+
     /** Creates new form MakeSharableVisualPanel1 */
-    public MakeSharableVisualPanel1() {
+    public MakeSharableVisualPanel1(ChangeSupport supp) {
         initComponents();
+        this.support = supp;
+        docListener = new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { 
+                support.fireChange();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                support.fireChange();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                support.fireChange();
+            }
+            
+        };
+        txtDefinition.getDocument().addDocumentListener(docListener);
     }
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(MakeSharableVisualPanel1.class, "TIT_LibraryDefinitionSelection");
+        return NbBundle.getMessage(MakeSharableVisualPanel1.class, "TIT_LibraryDefinitionSelection"); //NOI18N
     }
 
     boolean isValidPanel() {
-        //TODO
+        String location = getLibraryLocation();
+        boolean wrong = false;
+        if (new File(location).isAbsolute()) {
+            settings.putProperty("WizardPanel_errorMessage", // NOI18N
+                    org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel1.class, "WARN_MakeSharable.absolutePath"));
+            wrong = true;
+        } else {
+            File projectLoc = helper.resolveFile(location);
+            File libLoc = PropertyUtils.resolveFile(projectLoc, location);
+            if (!CollocationQuery.areCollocated(projectLoc, libLoc)) {
+                settings.putProperty("WizardPanel_errorMessage", // NOI18N
+                        org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel1.class, "WARN_makeSharable.relativePath"));
+                wrong = true;
+            }
+        }
+        if (!wrong) {
+            settings.putProperty("WizardPanel_errorMessage", null);// NOI18N
+        }
+
         return true;
     }
 
@@ -75,14 +118,16 @@ final class MakeSharableVisualPanel1 extends JPanel {
     }
 
     void readSettings(WizardDescriptor wiz) {
+        settings = wiz;
         String loc = (String) wiz.getProperty(SharableLibrariesUtils.PROP_LOCATION);
-        helper = (AntProjectHelper)wiz.getProperty(SharableLibrariesUtils.PROP_HELPER);
+        helper = (AntProjectHelper) wiz.getProperty(SharableLibrariesUtils.PROP_HELPER);
         if (loc == null) {
-            loc = ".." + File.separator + "libraries";
+            loc = ".." + File.separator + "libraries"; //NOI18N
         } else {
-            loc.substring(loc.length() - SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME.length(), loc.length());
+            loc = loc.substring(0, loc.length() - SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME.length());
         }
         setLibraryLocation(loc);
+        support.fireChange();
     }
 
     void storeSettings(WizardDescriptor wiz) {
@@ -149,6 +194,10 @@ final class MakeSharableVisualPanel1 extends JPanel {
                 .add(lblNote, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 129, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(116, Short.MAX_VALUE))
         );
+
+        lblDefinition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel1.class, "ACSD_lblDefinition")); // NOI18N
+        txtDefinition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel1.class, "ACSD_lblDefinition")); // NOI18N
+        btnDefinition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel1.class, "ACSD_btnDefinition")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void btnDefinitionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDefinitionActionPerformed

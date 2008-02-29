@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
-
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -54,9 +53,6 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.openide.util.RequestProcessor;
 
 
 /**
@@ -140,6 +136,9 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
         } else if (b instanceof FunctionBreakpoint) {
             breakpointToImpl.put(b, new FunctionBreakpointImpl(
 			(FunctionBreakpoint) b, breakpointsReader, debugger, session));
+        } else if (b instanceof AddressBreakpoint) {
+            breakpointToImpl.put(b, new AddressBreakpointImpl(
+			(AddressBreakpoint) b, breakpointsReader, debugger, session));
         }
     }
     

@@ -51,6 +51,10 @@ import java.util.List;
 import java.awt.Component;
 import java.awt.Dialog;
 
+import java.io.FileOutputStream;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.URL;
 import javax.swing.JPanel;
 import javax.swing.JFileChooser;
 import javax.swing.JRadioButton;
@@ -781,6 +785,31 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             } else
                 wizardDescriptor.putProperty(ClientWizardProperties.WSDL_FILE_PATH, retriever == null ? "" : retriever.getWsdlFileName()); //NOI18N
         }
+        if(jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS)
+                &&  (wsdlSource != WSDL_FROM_FILE)){
+            boolean rpcEncoded = false;
+            File tmpWsdl = null;
+            try {
+                URL tmpWsdlUrl = new URL(wsdlSource == WSDL_FROM_PROJECT ? jTxtWsdlProject.getText() : jTxtWsdlURL.getText().trim());
+                tmpWsdl = File.createTempFile("tmp", "wsdl");
+                List<Proxy> proxies = ProxySelector.getDefault().select(tmpWsdlUrl.toURI());
+                Utilities.downloadURLUsingProxyAndSave(tmpWsdlUrl, 
+                        proxies.isEmpty()?null:proxies.get(0), tmpWsdl);
+                rpcEncoded = isRpcEncoded(tmpWsdl);
+            } catch (Exception e) {
+                ErrorManager.getDefault().annotate(e, ErrorManager.WARNING,
+                        "Unable to check if wsdl is rpc encoded.", 
+                        NbBundle.getMessage(ClientInfo.class, "ERR_UnableToDetermineRPCEncoded"),
+                        e.getCause(), new java.util.Date());
+            }
+            if (tmpWsdl != null)
+                tmpWsdl.delete();
+            if (rpcEncoded) {
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(ClientInfo.class, "ERR_RPCEncodedJaxrpcClientRequired")); // NOI18N
+                throw new WizardValidationException(this, "", ""); //NOI18N
+            }
+        }
     }
     
     private ComboBoxModel getPackageModel(Project p) {
@@ -1023,7 +1052,14 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             // unless it turns out the user didn't want to update the service in the
             // first place.
             
-            rpcEncoded = isRpcEncoded(f);
+            try {
+                rpcEncoded = isRpcEncoded(f);
+            } catch (Exception e) {
+                ErrorManager.getDefault().annotate(e, ErrorManager.WARNING,
+                        "Unable to check if wsdl is rpc encoded.", 
+                        NbBundle.getMessage(ClientInfo.class, "ERR_UnableToDetermineRPCEncoded"),
+                        e.getCause(), new java.util.Date());
+            }
         }
         
         if(rpcEncoded) {
@@ -1031,7 +1067,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                 jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);
             } 
             if(!ClientWizardProperties.JAX_RPC.equals(jComboBoxJaxVersion.getSelectedItem())) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "RPC encoded wsdl requires jaxrpc client"); // NOI18N
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_RPCEncodedJaxrpcClientRequired")); // NOI18N
                 return false;
             }
         }
@@ -1039,13 +1075,9 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         String packageName = getPackageName();
         if(packageName == null || packageName.length() == 0) {
             String jaxwsVersion = (String)this.jComboBoxJaxVersion.getSelectedItem();
-            if(projectType == 0 && !jaxwsVersion.equals(ClientWizardProperties.JAX_WS)){
+            if(!jaxwsVersion.equals(ClientWizardProperties.JAX_WS)){
                 wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterJavaPackageName")); // NOI18N
-                return false; // unspecified WSDL file
-            }
-            if(!Util.isJavaEE5orHigher(project) && projectType != 0){
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterJavaPackageName")); // NOI18N
-                return false; // unspecified WSDL file
+                return false; // unspecified java package file
             }
         }
         

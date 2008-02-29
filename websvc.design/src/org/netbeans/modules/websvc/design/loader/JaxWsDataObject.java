@@ -148,7 +148,7 @@ public final class JaxWsDataObject extends MultiDataObject {
     static class JaxWsDataNode extends DataNode {
         public JaxWsDataNode(DataObject dobj) {
             super(dobj, Children.LEAF);
-            setIconBaseWithExtension("org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif");
+            setIconBaseWithExtension("org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.png");
         }
 
         @Override

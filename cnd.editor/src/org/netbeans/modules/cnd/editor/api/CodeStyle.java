@@ -160,12 +160,30 @@ public final class CodeStyle {
         return PreprocessorIndent.valueOf(getOption(EditorOptions.indentPreprocessorDirectives,
                                       EditorOptions.indentPreprocessorDirectivesDefault));
     }
+    
+    public boolean indentCasesFromSwitch() {
+        return getOption(EditorOptions.indentCasesFromSwitch,
+                         EditorOptions.indentCasesFromSwitchDefault);
+    }
 
     public boolean sharpAtStartLine(){
         return getOption(EditorOptions.sharpAtStartLine,
                          EditorOptions.sharpAtStartLineDefault);
     }
-            
+       //NewLine
+    public boolean newLineCatch(){
+        return getOption(EditorOptions.newLineCatch,
+                         EditorOptions.newLineCatchDefault);
+    }
+    public boolean newLineElse(){
+        return getOption(EditorOptions.newLineElse,
+                         EditorOptions.newLineElseDefault);
+    }
+    public boolean newLineWhile(){
+        return getOption(EditorOptions.newLineWhile,
+                         EditorOptions.newLineWhileDefault);
+    }
+         
     public boolean getFormatLeadingStarInComment() {
         return getOption(EditorOptions.addLeadingStarInComment,
                          EditorOptions.addLeadingStarInCommentDefault);
@@ -174,6 +192,16 @@ public final class CodeStyle {
     public int getFormatStatementContinuationIndent() {
         return getOption(EditorOptions.statementContinuationIndent,
                          EditorOptions.statementContinuationIndentDefault);
+    }
+
+    public boolean alignMultilineCallArgs() {
+        return getOption(EditorOptions.alignMultilineCallArgs,
+                         EditorOptions.alignMultilineCallArgsDefault);
+    }
+
+    public boolean alignMultilineMethodParams() {
+        return getOption(EditorOptions.alignMultilineMethodParams,
+                         EditorOptions.alignMultilineMethodParamsDefault);
     }
 
     public boolean spaceAroundUnaryOps() {
@@ -360,7 +388,7 @@ public final class CodeStyle {
         
         @Override
         public String toString() {
-            return NbBundle.getMessage(CodeStyle.class, "LBL_Language_"+name());
+            return NbBundle.getMessage(CodeStyle.class, "LBL_Language_"+name()); // NOI18N
         }
     }
 
@@ -370,7 +398,7 @@ public final class CodeStyle {
         
         @Override
         public String toString() {
-            return NbBundle.getMessage(CodeStyle.class, "LBL_bp_"+name());
+            return NbBundle.getMessage(CodeStyle.class, "LBL_bp_"+name()); // NOI18N
         }
     }
 
@@ -381,7 +409,7 @@ public final class CodeStyle {
 
         @Override
         public String toString() {
-            return NbBundle.getMessage(CodeStyle.class, "LBL_pi_"+name());
+            return NbBundle.getMessage(CodeStyle.class, "LBL_pi_"+name()); // NOI18N
         }
     }
 

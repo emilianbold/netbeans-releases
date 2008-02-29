@@ -189,11 +189,14 @@ public class DefaultProjectActionHandler implements ActionListener {
             return handle;
         }
         
-        private InputOutput getIOTab(String name) {
+        private InputOutput getIOTab(String name, boolean reuse) {
             sa = new StopAction(this);
             ra = new RerunAction(this);
-            InputOutput tab = IOProvider.getDefault().getIO(name, false); // This will (sometimes!) find an existing one.
-            tab.closeInputOutput(); // Close it...
+            InputOutput tab;
+            if (reuse) {
+                tab = IOProvider.getDefault().getIO(name, false); // This will (sometimes!) find an existing one.
+                tab.closeInputOutput(); // Close it...
+            }
             tab = IOProvider.getDefault().getIO(name, new Action[] {ra, sa}); // Create a new ...
             try {
                 tab.getOut().reset();
@@ -221,7 +224,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                     if (tabNames.contains(tabName)) {
                         int seq = 2;
                         while (true) {
-                            tabNameSeq = tabName + " #" + seq;
+                            tabNameSeq = tabName + " #" + seq; // NOI18N
                             if (!tabNames.contains(tabNameSeq)) {
                                 break;
                             }
@@ -229,7 +232,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                         }
                     }
                     tabNames.add(tabNameSeq);
-                    ioTab = getIOTab(tabNameSeq);
+                    ioTab = getIOTab(tabNameSeq, true);
                     if (mainTabHandler == null) {
                         mainTab = ioTab;
                         mainTabHandler = this;
@@ -239,7 +242,7 @@ public class DefaultProjectActionHandler implements ActionListener {
             else {
                 tabName = getTabName(paes);
                 tabNameSeq = tabName;
-                ioTab = getIOTab(tabName);
+                ioTab = getIOTab(tabName, false);
             }
         }
         
@@ -317,6 +320,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                                 rcfile = File.createTempFile("nbcnd_rc", "").getAbsolutePath(); // NOI18N
                             } catch (IOException ex) {
                             }
+                            String args2;
                             if (pae.getProfile().getTerminalPath().indexOf("gnome-terminal") != -1) { // NOI18N
                                 /* gnome-terminal has differnt quoting rules... */
                                 StringBuffer b = new StringBuffer();
@@ -327,10 +331,11 @@ public class DefaultProjectActionHandler implements ActionListener {
                                         b.append(args.charAt(i));
                                     }
                                 }
-                                args = b.toString();
-                                exe = "\\\"" + pae.getExecutable() + "\\\""; // NOI18N
+                                args2 = b.toString();
+                            } else {
+                                args2 = "";
                             }
-                            args = MessageFormat.format(pae.getProfile().getTerminalOptions(), rcfile, exe, args);
+                            args = MessageFormat.format(pae.getProfile().getTerminalOptions(), rcfile, exe, args, args2);
                             exe = pae.getProfile().getTerminalPath();
                         }
                     }
@@ -351,7 +356,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                         }
                     }
                     if (!gotpath) {
-                        env1[i] = pathname + csdirs + File.pathSeparator + CppSettings.getDefault().getPath();
+                        env1[i] = pathname + csdirs + File.pathSeparator + Path.getPathAsString();
                     }
                     env = env1;
                 }

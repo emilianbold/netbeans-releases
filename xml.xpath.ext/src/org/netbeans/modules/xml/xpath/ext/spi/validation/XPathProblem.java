@@ -59,7 +59,8 @@ public enum XPathProblem {
     AMBIGUOUS_ABSOLUTE_PATH_BEGINNING, 
     ATTEMPT_GO_UPPER_THAN_ROOT, 
     MISSING_PARENT_SCHEMA_CONTEXT, 
-    EXPR_CONTAINS_STUB;
+    EXPR_CONTAINS_STUB, 
+    RUNTIME_NOT_SUPPORT_OPERATION;
     
     public String getMsgTemplate() {
         return NbBundle.getMessage(XPathProblem.class, this.toString());

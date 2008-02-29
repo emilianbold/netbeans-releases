@@ -50,9 +50,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WarIncludesUiSupport;
@@ -86,8 +88,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
         this.project = project;
         this.helper = helper;
         this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), helper,
-                                        WebProjectProperties.WELL_KNOWN_PATHS, 
-                                        WebProjectProperties.ANT_ARTIFACT_PREFIX );
+                                        new ClassPathSupportCallbackImpl(helper.getAntProjectHelper()));
         this.refHelper = refHelper;
     }
     
@@ -102,8 +103,10 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
     private boolean handlePackageLibraries(final Library[] libraries, final String path, final int operation) throws IOException {
         List<ClassPathSupport.Item> items = new ArrayList<ClassPathSupport.Item>(libraries.length);
         for (int i = 0; i < libraries.length; i++) {
-            Library lib = WebProjectClassPathModifier.checkLibrarySharability(project, refHelper, libraries[i]);
-            items.add(ClassPathSupport.Item.create(lib, null, path));
+            Library lib = ClassPathModifier.checkLibrarySharability(project, project.getAntProjectHelper(), refHelper, libraries[i]);
+            ClassPathSupport.Item item = ClassPathSupport.Item.create(lib, null);
+            item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, path);
+            items.add(item);
         }
         return handlePackageLibraryClassPathItems(items, operation, true);
     }
@@ -118,7 +121,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                 new Mutex.ExceptionAction<Boolean>() {
                     public Boolean run() throws IOException {
                         EditableProperties projectProperties = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        List<ClassPathSupport.Item> resources = cs.itemsList((String)projectProperties.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL), ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+                        List<ClassPathSupport.Item> resources = cs.itemsList((String)projectProperties.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
                         List<ClassPathSupport.Item> changed = new ArrayList<ClassPathSupport.Item>(items.size());
                         for (ClassPathSupport.Item item : items) {
                             assert item != null;
@@ -132,14 +135,14 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                             }
                         }
                         if (!changed.isEmpty()) {
-                            String itemRefs[] = cs.encodeToStrings( resources.iterator(), ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+                            String itemRefs[] = cs.encodeToStrings( resources, ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
                             projectProperties = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
                             projectProperties.setProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL, itemRefs);                                
 
                             ArrayList l = new ArrayList ();
-                            l.addAll(cs.itemsList(projectProperties.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
+                            l.addAll(cs.itemsList(projectProperties.getProperty(ProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
                             l.addAll(resources);
-                            WebProjectProperties.storeLibrariesLocations(l.iterator(), projectProperties, project.getProjectDirectory());
+                            ProjectProperties.storeLibrariesLocations(l.iterator(), projectProperties, project.getProjectDirectory());
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
                             if (saveProject) {
                                 ProjectManager.getDefault().saveProject(project);
@@ -170,13 +173,13 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                 new Mutex.ExceptionAction<Boolean>() {
                     public Boolean run() throws IOException {
                         EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        String raw = props.getProperty(WebProjectProperties.JAVAC_CLASSPATH);
-                        List<ClassPathSupport.Item> resources = cs.itemsList(raw, ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
+                        String raw = props.getProperty(ProjectProperties.JAVAC_CLASSPATH);
+                        List<ClassPathSupport.Item> resources = cs.itemsList(raw, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
                         List<ClassPathSupport.Item> changed = new ArrayList<ClassPathSupport.Item>(libraries.length);
                         for (int i=0; i< libraries.length; i++) {
                             assert libraries[i] != null;
-                            Library lib = WebProjectClassPathModifier.checkLibrarySharability(project, refHelper, libraries[i]);
-                            ClassPathSupport.Item item = ClassPathSupport.Item.create( lib, null, ClassPathSupport.Item.PATH_IN_WAR_NONE);
+                            Library lib = ClassPathModifier.checkLibrarySharability(project, project.getAntProjectHelper(), refHelper, libraries[i]);
+                            ClassPathSupport.Item item = ClassPathSupport.Item.create( lib, null);
                             if (operation == ADD && !resources.contains(item)) {
                                 resources.add(item);
                                 changed.add(item);
@@ -186,13 +189,13 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                             }
                         }
                         if (!changed.isEmpty()) {
-                            String itemRefs[] = cs.encodeToStrings( resources.iterator(), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
+                            String itemRefs[] = cs.encodeToStrings( resources, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
                             props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
-                            props.setProperty(WebProjectProperties.JAVAC_CLASSPATH, itemRefs);                                
+                            props.setProperty(ProjectProperties.JAVAC_CLASSPATH, itemRefs);                                
                             ArrayList l = new ArrayList ();
                             l.addAll(resources);
                             l.addAll(cs.itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-                            WebProjectProperties.storeLibrariesLocations(l.iterator(), props, project.getProjectDirectory());
+                            ProjectProperties.storeLibrariesLocations(l.iterator(), props, project.getProjectDirectory());
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                             ProjectManager.getDefault().saveProject(project);
                             return true;
@@ -224,12 +227,13 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                     public Boolean run() throws Exception {
                         EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         String raw = props.getProperty ((String)props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL));
-                        List<ClassPathSupport.Item> resources = cs.itemsList(raw, ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+                        List<ClassPathSupport.Item> resources = cs.itemsList(raw, ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
                         boolean changed = false;
                         for (int i=0; i<artifacts.length; i++) {
                             assert artifacts[i] != null;
                             assert artifactElements[i] != null;
-                            ClassPathSupport.Item item = ClassPathSupport.Item.create( artifacts[i], artifactElements[i], null, path);
+                            ClassPathSupport.Item item = ClassPathSupport.Item.create( artifacts[i], artifactElements[i], null);
+                            item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, path);
                             if (operation == ADD && !resources.contains(item)) {
                                 resources.add(item);
                                 changed = true;
@@ -239,7 +243,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                             }
                         }                            
                         if (changed) {
-                            String itemRefs[] = cs.encodeToStrings( resources.iterator(), ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+                            String itemRefs[] = cs.encodeToStrings( resources, ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
                             props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                             props.setProperty (WebProjectProperties.WAR_CONTENT_ADDITIONAL, itemRefs);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
@@ -279,13 +283,13 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                 new Mutex.ExceptionAction<Boolean>() {
                     public Boolean run() throws Exception {
                         EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        String raw = props.getProperty (WebProjectProperties.JAVAC_CLASSPATH);
-                        List<ClassPathSupport.Item> resources = cs.itemsList(raw, ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
+                        String raw = props.getProperty (ProjectProperties.JAVAC_CLASSPATH);
+                        List<ClassPathSupport.Item> resources = cs.itemsList(raw, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
                         boolean changed = false;
                         for (int i=0; i<artifacts.length; i++) {
                             assert artifacts[i] != null;
                             assert artifactElements[i] != null;
-                            ClassPathSupport.Item item = ClassPathSupport.Item.create( artifacts[i], artifactElements[i], null, ClassPathSupport.Item.PATH_IN_WAR_NONE);
+                            ClassPathSupport.Item item = ClassPathSupport.Item.create( artifacts[i], artifactElements[i], null);
                             if (operation == ADD && !resources.contains(item)) {
                                 resources.add(item);
                                 changed = true;
@@ -295,9 +299,9 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                             }
                         }                            
                         if (changed) {
-                            String itemRefs[] = cs.encodeToStrings( resources.iterator(), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
+                            String itemRefs[] = cs.encodeToStrings( resources, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
                             props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                            props.setProperty (WebProjectProperties.JAVAC_CLASSPATH, itemRefs);
+                            props.setProperty (ProjectProperties.JAVAC_CLASSPATH, itemRefs);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                             ProjectManager.getDefault().saveProject(project);
                             return true;
@@ -337,7 +341,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                         File projectFolderFile = FileUtil.toFile(project.getProjectDirectory());
                         if (operation == ADD) {
                             //Temporary solution till missing libraries described in issue #100114 are fixed
-                            WarIncludesUiSupport.ClasspathTableModel addModel = WarIncludesUiSupport.createTableModel(cs.itemsList((String) props.get(WebProjectProperties.WAR_CONTENT_ADDITIONAL), ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
+                            WarIncludesUiSupport.ClasspathTableModel addModel = WarIncludesUiSupport.createTableModel(cs.itemsList((String) props.get(WebProjectProperties.WAR_CONTENT_ADDITIONAL), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
                             String[] filePaths = new String[roots.length];
                             for (int i = 0; i < roots.length; i++) {
                                 URL toAdd = FileUtil.getArchiveFile(roots[i]);
@@ -355,26 +359,26 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                             int count = addModel.getRowCount();
                             for (int i = 0; i < filePaths.length; i++) {
                                 ClassPathSupport.Item item = (ClassPathSupport.Item) addModel.getValueAt(count - i - 1, 0);
-                                item.setPathInWAR(path);
+                                item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, path);
                                 addModel.setValueAt(path, count - i - 1, 1);
                             }
 
-                            String[] war_includes = cs.encodeToStrings(WarIncludesUiSupport.getIterator(addModel), ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+                            String[] war_includes = cs.encodeToStrings(WarIncludesUiSupport.getList(addModel), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
                             props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
                             props.setProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL, war_includes);
 
                             ArrayList libs = new ArrayList ();
-                            libs.addAll(cs.itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
+                            libs.addAll(cs.itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
                             libs.addAll(WarIncludesUiSupport.getList(addModel));
 
-                            WebProjectProperties.storeLibrariesLocations (libs.iterator(), props, project.getProjectDirectory());
+                            ProjectProperties.storeLibrariesLocations (libs.iterator(), props, project.getProjectDirectory());
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
 
                             ProjectManager.getDefault().saveProject(project);
                             return true;
                         } else if (operation == REMOVE) {
                             String raw = props.getProperty((String)props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL));                            
-                            List<ClassPathSupport.Item> resources = cs.itemsList(raw, ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+                            List<ClassPathSupport.Item> resources = cs.itemsList(raw, ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
                             boolean changed = false;
                             for (int i=0; i< roots.length; i++) {
                                 assert roots[i] != null;
@@ -388,14 +392,15 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                                 if (f == null ) {
                                     throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
                                 }
-                                ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath, projectFolderFile, null, path);
+                                ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath, projectFolderFile, null);
+                                item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, path);
                                 if (resources.contains(item)) {
                                     resources.remove(item);
                                     changed = true;
                                 }                            
                             }                                                                                                                
                             if (changed) {
-                                String itemRefs[] = cs.encodeToStrings( resources.iterator(), ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+                                String itemRefs[] = cs.encodeToStrings( resources, ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
                                 props.setProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL, itemRefs);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
@@ -435,8 +440,8 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                 new Mutex.ExceptionAction<Boolean>() {
                     public Boolean run() throws Exception {
                         EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        String raw = props.getProperty(WebProjectProperties.JAVAC_CLASSPATH);                            
-                        List<ClassPathSupport.Item> resources = cs.itemsList(raw, ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
+                        String raw = props.getProperty(ProjectProperties.JAVAC_CLASSPATH);                            
+                        List<ClassPathSupport.Item> resources = cs.itemsList(raw, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
                         boolean changed = false;
                         File projectFolderFile = FileUtil.toFile(project.getProjectDirectory());
                         for (int i=0; i< roots.length; i++) {
@@ -451,7 +456,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                             if (f == null ) {
                                 throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
                             }
-                            ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath, projectFolderFile, null, ClassPathSupport.Item.PATH_IN_WAR_NONE);
+                            ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath, projectFolderFile, null);
                             if (operation == ADD && !resources.contains(item)) {
                                 resources.add(item);
                                 changed = true;
@@ -461,9 +466,9 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                             }
                         }                                                                                                                
                         if (changed) {
-                            String itemRefs[] = cs.encodeToStrings( resources.iterator(), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
+                            String itemRefs[] = cs.encodeToStrings( resources, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
                             props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
-                            props.setProperty(WebProjectProperties.JAVAC_CLASSPATH, itemRefs);
+                            props.setProperty(ProjectProperties.JAVAC_CLASSPATH, itemRefs);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                             ProjectManager.getDefault().saveProject(project);
                             return true;

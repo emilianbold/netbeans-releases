@@ -46,7 +46,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -65,7 +67,6 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -91,7 +92,7 @@ final class Service {
     
     static Service createService(String codebase,String fileName, InputStream jarIs) throws IOException {
         List<String> list = new ArrayList<String>();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(jarIs));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(jarIs, "UTF-8"));
         String line = null;
         while ((line = reader.readLine())!= null) {
             line = line.trim();
@@ -106,6 +107,7 @@ final class Service {
         List <Service> services = new ArrayList<Service>();
         try {
             JarFile jar = new JarFile(jarFile);
+            try {
             Attributes attrs = jar.getManifest().getMainAttributes();
             String codebase  = attrs.getValue("OpenIDE-Module"); // NOI18N
             Enumeration /*JarEntry*/entries =  jar.entries();
@@ -122,6 +124,9 @@ final class Service {
                         }
                     }
                 }
+            }
+            } finally {
+                jar.close();
             }
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.ERROR,ioe);
@@ -247,16 +252,14 @@ final class Service {
                 if (serviceFo == null) {
                     serviceFo = mIServicesFolder.createData(getFileName());
                 }
-                FileLock lock = serviceFo.lock();
+                OutputStream os = serviceFo.getOutputStream();
                 try {
-                    PrintStream ps = new PrintStream(serviceFo.getOutputStream(lock));
-                    for (Iterator it = classes.iterator() ; it.hasNext() ; ) {
-                        Object object = it.next();
-                        ps.println(object);
+                    PrintWriter w = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
+                    for (String clazz : classes) {
+                        w.println(clazz);
                     }
-                    ps.close();
                 } finally {
-                    lock.releaseLock();
+                    os.close();
                 }
             } else {
                 // no service, remove file

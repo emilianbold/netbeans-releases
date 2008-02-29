@@ -64,7 +64,7 @@ public class CCDataLoader extends CndAbstractDataLoaderExt {
 
     /** The suffix list for C++ primary files */
     private static final String[] cppExtensions =
-				{ "cc", "cpp", "c++", "cxx", "C", "mm" }; // NOI18N
+				{ "cpp", "cc", "c++", "cxx", "C", "mm" }; // NOI18N
 
     protected CCDataLoader() {
 	super("org.netbeans.modules.cnd.loaders.CCDataObject"); // NOI18N
@@ -93,39 +93,15 @@ public class CCDataLoader extends CndAbstractDataLoaderExt {
         return new CCDataObject(primaryFile, this);
     }
 
-//    public String getDefaultExtension() {
-//        String l = (String)getProperty (PROP_DEFAULT_EXTENSIONS);
-//        if (l == null) {
-//            l = cppExtensions[0];
-//            putProperty (PROP_DEFAULT_EXTENSIONS, l, false);
-//        }
-//        return l;
-//    }
-//
-//    public void setDefaultExtension(String defaultExtension) {
-//        String oldExtension = getDefaultExtension();
-//        if (!defaultExtension.equals(oldExtension) && getExtensions().isRegistered("a."+defaultExtension)){ // NOI18N
-//            TemplateExtensionUtils.renameCppExtension(defaultExtension);
-//            putProperty (PROP_DEFAULT_EXTENSIONS, defaultExtension, true);
-//        }
-//    }*
-//
-//    @Override
-//    public void writeExternal (java.io.ObjectOutput oo) throws IOException {
-//        super.writeExternal (oo);
-//        oo.writeObject (getProperty (PROP_DEFAULT_EXTENSIONS));
-//    }
-//
-//    @Override
-//    public void readExternal (java.io.ObjectInput oi)  throws IOException, ClassNotFoundException {
-//        super.readExternal (oi);
-//        setDefaultExtension((String)oi.readObject ());
-//    }
-//
-//    public static final String PROP_DEFAULT_EXTENSIONS = "defaultExtension"; // NOI18N
-
-    @Override
     public ExtensionList getDefaultExtensionList() {
         return arrayToExtensionList(cppExtensions);
+    }
+
+    public String getDefaultDefaultExtension() {
+        return cppExtensions[0];
+    }
+
+    public String getDisplayNameForExtensionList() {
+	return NbBundle.getMessage(CCDataLoader.class, "CCDataLoader_Name_ForExtList"); // NOI18N
     }
 }

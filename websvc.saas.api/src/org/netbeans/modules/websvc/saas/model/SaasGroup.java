@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
-import java.io.IOException;
+import java.awt.Image;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,6 +55,7 @@ import org.openide.util.NbBundle;
  * @author nam
  */
 public class SaasGroup {
+    public static final String PROP_GROUP_NAME = "groupName";
 
     private final Group delegate;
     private final SaasGroup parent;
@@ -62,6 +63,8 @@ public class SaasGroup {
     private boolean userDefined = true; //once set to false, remain false.
     private SortedMap<String, Saas> services;
     private SortedMap<String, SaasGroup> children;
+    private String icon16Path;
+    private String icon32Path;
     
     public SaasGroup(SaasGroup parent, Group group) {
         this.parent = parent;
@@ -76,7 +79,7 @@ public class SaasGroup {
     public FileObject getGroupFolder() {
         if (groupFolder == null) {
             if (parent == null) {
-                return SaasServicesModel.getInstance().getWebServiceHome();
+                return SaasServicesModel.getWebServiceHome();
             }
             groupFolder = parent.getGroupFolder().getFileObject(getName(), null);
             if (groupFolder == null) {
@@ -105,7 +108,6 @@ public class SaasGroup {
      */
     public void addService(Saas service) {
         getServices();
-        service.setParentGroup(this);
         services.put(service.getDisplayName(), service);
     }
     
@@ -146,8 +148,18 @@ public class SaasGroup {
         if (message != null) {
             throw new IllegalArgumentException(message);
         }
+        
         delegate.setName(value);
-        SaasServicesModel.getInstance().saveRootGroup();
+        resetAllServicesGroupPath();
+    }
+    
+    private void resetAllServicesGroupPath() {
+        for (Saas s : getServices()) {
+            s.computePathFromRoot();
+        }
+        for (SaasGroup g : getChildrenGroups()) {
+            g.resetAllServicesGroupPath();
+        }
     }
 
     public String getName() {
@@ -164,6 +176,23 @@ public class SaasGroup {
         }
     }
 
+    public String getIcon16Path() {
+        return icon16Path;
+    }
+
+    protected void setIcon16Path(String icon16Path) {
+        this.icon16Path = icon16Path;
+    }
+
+    public String getIcon32Path() {
+        return icon32Path;
+    }
+
+    protected void setIcon32Path(String icon32Path) {
+        this.icon32Path = icon32Path;
+    }
+
+    
     public List<SaasGroup> getChildrenGroups() {
         if (children == null) {
             children = Collections.synchronizedSortedMap(new TreeMap<String,SaasGroup>());
@@ -186,7 +215,7 @@ public class SaasGroup {
      * Caller is responsible for persisting changes.
      * @param group saas group to remove
      */
-    public boolean removeChildGroup(SaasGroup group) {
+    protected boolean removeChildGroup(SaasGroup group) {
         if (! group.canRemove()) {
             return false;
         }
@@ -201,7 +230,10 @@ public class SaasGroup {
             for (Saas saas : child.getServices()) {
                 removeService(saas);
                 try {
-                    saas.getSaasFile().delete();
+                    FileObject saasFile = saas.getSaasFile();
+                    if (saasFile != null) {
+                        saasFile.delete();
+                    }
                 } catch(Exception e) {
                     Exceptions.printStackTrace(e);
                 }
@@ -209,12 +241,19 @@ public class SaasGroup {
             for (SaasGroup c : child.getChildrenGroups()) {
                 _removeChildGroup(c);
             }
+            getDelegate().getGroup().remove(child.getDelegate());
+            children.remove(child.getName());
         }
     }
     
     public boolean canRemove() {
-        if (isUserDefined()) {
+        if (! isUserDefined()) {
             return false;
+        }
+        for (Saas s : getServices()) {
+            if (! s.isUserDefined()) {
+                return false;
+            }
         }
         for (SaasGroup child : getChildrenGroups()) {
             if (! child.canRemove()) {
@@ -230,22 +269,26 @@ public class SaasGroup {
      * 
      * @param group saas group to add
      */
-    public void addChildGroup(SaasGroup group) {
+    protected void addChildGroup(SaasGroup group) {
         getChildrenGroups();
         children.put(group.getName(), group);
         getDelegate().getGroup().add(group.getDelegate());
     }
     
     /**
-     * Return a clone of root group element that has one descendant at each level down to
-     * the current root.
+     * Return a clone of group element that has one descendant at each level,
+     * excluding root, down to the current group.
      * @return
      */
     public Group getPathFromRoot() {
+        SaasGroup parentGroup = getParent();
+        if (parentGroup == null) {
+            return null;
+        }
+        
         Group group = new Group();
         group.setName(getName());
-        SaasGroup parentGroup = getParent();
-        while(parentGroup != null) {
+        while(parentGroup != SaasServicesModel.getInstance().getRootGroup()) {
             Group p = new Group();
             p.setName(parentGroup.getName());
             p.getGroup().add(group);
@@ -262,7 +305,7 @@ public class SaasGroup {
      * @param name
      * @return created group
      */
-    public SaasGroup createGroup(String name) {
+    protected SaasGroup createGroup(String name) {
         Group g = new Group();
         g.setName(name);
         SaasGroup child = new SaasGroup(this, g);
@@ -270,4 +313,8 @@ public class SaasGroup {
         return child;
     }
     
+    public String toString() {
+        return getName();
+    }
+
 }

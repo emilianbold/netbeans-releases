@@ -43,6 +43,7 @@ package org.netbeans.spi.java.project.support.ui;
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
 class MakeSharableWizardPanel1 implements WizardDescriptor.Panel {
@@ -52,6 +53,7 @@ class MakeSharableWizardPanel1 implements WizardDescriptor.Panel {
      * component from this class, just use getComponent().
      */
     private MakeSharableVisualPanel1 component;
+    private ChangeSupport support = new ChangeSupport(this);
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -59,7 +61,7 @@ class MakeSharableWizardPanel1 implements WizardDescriptor.Panel {
     // create only those which really need to be visible.
     public Component getComponent() {
         if (component == null) {
-            component = new MakeSharableVisualPanel1();
+            component = new MakeSharableVisualPanel1(support);
         }
         return component;
     }
@@ -82,33 +84,11 @@ class MakeSharableWizardPanel1 implements WizardDescriptor.Panel {
     }
 
     public final void addChangeListener(ChangeListener l) {
-    }
-
-    public final void removeChangeListener(ChangeListener l) {
-    }
-    /*
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
-    public final void addChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.add(l);
-    }
+        support.addChangeListener(l);
     }
     public final void removeChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.remove(l);
+        support.removeChangeListener(l);
     }
-    }
-    protected final void fireChangeEvent() {
-    Iterator<ChangeListener> it;
-    synchronized (listeners) {
-    it = new HashSet<ChangeListener>(listeners).iterator();
-    }
-    ChangeEvent ev = new ChangeEvent(this);
-    while (it.hasNext()) {
-    it.next().stateChanged(ev);
-    }
-    }
-     */
 
     // You can use a settings object to keep track of state. Normally the
     // settings object will be the WizardDescriptor, so you can use

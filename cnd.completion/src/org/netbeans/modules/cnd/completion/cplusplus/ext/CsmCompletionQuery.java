@@ -72,6 +72,7 @@ import org.netbeans.editor.TokenID;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
@@ -529,6 +530,23 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         NONE, SCOPE, ARROW, DOT
     }
     
+
+    private static CsmClassifier getClassifier(CsmType type, boolean resolveArrow) {
+        CsmClassifier cls = type.getClassifier();
+        cls = cls != null ? CsmBaseUtilities.getOriginalClassifier(cls) : cls;
+        if (resolveArrow && CsmKindUtilities.isClass(cls)) {
+            CsmFunction op = CsmBaseUtilities.getOperator((CsmClass)cls, CsmFunction.OperatorKind.ARROW);
+            if (op != null) {
+                CsmType opType = op.getReturnType();
+                CsmClassifier opCls = getClassifier(opType, true);
+                if (opCls != null) {
+                    cls = opCls;
+                }
+            }
+        }
+        return cls;
+    }       
+    
     class Context {
 
         private boolean sort;
@@ -661,6 +679,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     ok = resolveItem(exp.getParameter(i), (i == 0),
                                      (!lastDot && i == parmCnt - 1),
                                     kind);
+            
+                    if ((i == 0) && lastType != null && lastType.getArrayDepth() == 0 && kind == ExprKind.ARROW) {
+                        CsmClassifier cls = getClassifier(lastType, true);
+                        if (cls != null) {
+                            lastType = CsmCompletion.getType(cls, 0);
+                        }
+                    }                    
                 }
 
                 if (ok && lastDot) { // Found either type or package help
@@ -1066,12 +1091,21 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     cont = false;
                     if (lastType != null) { // must be type
                         if (item.getParameterCount() == 2) { // index in array follows
-                            CsmType arrayType = resolveType(item.getParameter(1));
-                            if (arrayType != null && arrayType.equals(CsmCompletion.INT_TYPE)) {
+//                            CsmType arrayType = resolveType(item.getParameter(0));
+//                            if (arrayType != null && arrayType.equals(CsmCompletion.INT_TYPE)) {
+                               if (lastType.getArrayDepth() == 0) {
+                                   CsmClassifier cls = getClassifier(lastType, false);
+                                   if (cls != null) {
+                                       CsmFunction opArray = CsmBaseUtilities.getOperator(cls, CsmFunction.OperatorKind.ARRAY);
+                                       if (opArray != null) {
+                                           lastType = opArray.getReturnType();
+                                       }
+                                   }
+                               }
                                lastType = CsmCompletion.getType(lastType.getClassifier(),
                                                     Math.max(lastType.getArrayDepth() - 1, 0));
                                 cont = true;
-                            }
+//                            }
                         } else { // no index, increase array depth
                             lastType = CsmCompletion.getType(lastType.getClassifier(),
                                                               lastType.getArrayDepth() + 1);
@@ -1873,6 +1907,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         public CsmResultItem.FileLocalVariableResultItem createFileLocalVariableResultItem(CsmVariable var);
         public CsmResultItem.EnumeratorResultItem createFileLocalEnumeratorResultItem(CsmEnumerator enmtr, int enumtrDisplayOffset, boolean displayFQN);
+        public CsmResultItem.FileLocalFunctionResultItem createFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp);
         
         public CsmResultItem.MacroResultItem createFileLocalMacroResultItem(CsmMacro mac);
         public CsmResultItem.MacroResultItem createFileIncludedProjectMacroResultItem(CsmMacro mac);
@@ -1980,7 +2015,11 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         public CsmResultItem.FileLocalVariableResultItem createFileLocalVariableResultItem(CsmVariable var) {
             return new CsmResultItem.FileLocalVariableResultItem(var, FAKE_PRIORITY); 
         }        
-
+        
+        public CsmResultItem.FileLocalFunctionResultItem createFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp) {
+            return new CsmResultItem.FileLocalFunctionResultItem(fun, substituteExp, FAKE_PRIORITY); 
+        }
+        
         public CsmResultItem.MacroResultItem createGlobalMacroResultItem(CsmMacro mac) {
             return new CsmResultItem.MacroResultItem(mac, FAKE_PRIORITY); 
         }
@@ -2011,7 +2050,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         
         public CsmResultItem.NamespaceAliasResultItem createLibNamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath) {
             return createNamespaceAliasResultItem(alias, displayFullNamespacePath);
-        }        
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -2056,7 +2095,11 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             } else if (CsmKindUtilities.isMethodDeclaration(csmObj)) { 
                 return getCsmItemFactory().createMethodResultItem((CsmMethod)csmObj, substituteExp);
             } else if (CsmKindUtilities.isGlobalFunction(csmObj)) {
-                return getCsmItemFactory().createGlobalFunctionResultItem((CsmFunction)csmObj, substituteExp);
+                if (CsmBaseUtilities.isFileLocalFunction((CsmFunction) csmObj)) {
+                    return getCsmItemFactory().createFileLocalFunctionResultItem((CsmFunction)csmObj, substituteExp);
+                } else {
+                    return getCsmItemFactory().createGlobalFunctionResultItem((CsmFunction)csmObj, substituteExp);
+                }
             } else if (CsmKindUtilities.isGlobalVariable(csmObj)) {
                 return getCsmItemFactory().createGlobalVariableResultItem ((CsmVariable)csmObj);
             } else if (CsmKindUtilities.isFileLocalVariable(csmObj)) {
@@ -2146,6 +2189,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             out.add(item);            
         }
         
+        for (CsmFunction elem : res.getFileLocalFunctions()){
+            item = factory.createFileLocalFunctionResultItem(elem, substituteExp);
+            assert item != null;
+            item.setSubstituteOffset(substituteOffset);    
+            out.add(item);            
+        }
+
         for (CsmMacro elem : res.getInFileIncludedProjectMacros()) {
             item = factory.createFileIncludedProjectMacroResultItem(elem);
             assert item != null;

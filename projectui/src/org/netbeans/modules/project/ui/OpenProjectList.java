@@ -910,12 +910,12 @@ public final class OpenProjectList {
             try {
                 ProjectOpenedTrampoline.DEFAULT.projectOpened(hook);
             } catch (RuntimeException e) {
-                ErrorManager.getDefault().notify(e);
+                LOGGER.log(Level.WARNING, null, e);
                 // Do not try to call its close hook if its open hook already failed:
                 INSTANCE.openProjects.remove(p);
                 INSTANCE.removeModuleInfo(p);
             } catch (Error e) {
-                ErrorManager.getDefault().notify(e);
+                LOGGER.log(Level.WARNING, null, e);
                 INSTANCE.openProjects.remove(p);
                 INSTANCE.removeModuleInfo(p);
             }
@@ -929,9 +929,9 @@ public final class OpenProjectList {
             try {
                 ProjectOpenedTrampoline.DEFAULT.projectClosed(hook);
             } catch (RuntimeException e) {
-                ErrorManager.getDefault().notify(e);
+                LOGGER.log(Level.WARNING, null, e);
             } catch (Error e) {
-                ErrorManager.getDefault().notify(e);
+                LOGGER.log(Level.WARNING, null, e);
             }
         }
     }
@@ -1078,7 +1078,7 @@ public final class OpenProjectList {
             }
             return ok;
         } else {
-            // issue 43958, if attr 'templateCategorized' is not set => all is ok
+            // issue 44871, if attr 'templateCategorized' is not set => all is ok
             // no category set, ok display it
             return true;
         }

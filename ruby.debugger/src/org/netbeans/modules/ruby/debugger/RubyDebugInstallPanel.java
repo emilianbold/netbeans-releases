@@ -43,9 +43,6 @@ package org.netbeans.modules.ruby.debugger;
 
 import javax.swing.JPanel;
 
-/**
- * @author Martin Krauskopf
- */
 final class RubyDebugInstallPanel extends JPanel {
     
     /** Creates new form RubyDebugInstallPanel */

@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
@@ -134,6 +135,10 @@ public class CsmKindUtilities {
         } else {
             return false;
         }
+    }
+    
+    public static boolean isTemplateInstantiation(CsmObject obj) {
+        return obj instanceof CsmInstantiation;
     }
     
     public static boolean isTemplateParameterType(CsmObject obj) {
@@ -293,17 +298,11 @@ public class CsmKindUtilities {
     }   
 
     /*
-     * checks if object is operatir
+     * checks if object is function operator
      */
     public static boolean isOperator(CsmObject obj) {
-        // Fix me.
-        if (isDeclaration(obj)) {
-            CsmDeclaration.Kind kind = ((CsmDeclaration)obj).getKind();
-            if (kind == CsmDeclaration.Kind.FUNCTION ||
-                kind == CsmDeclaration.Kind.FUNCTION_DEFINITION) {
-                String name = ((CsmDeclaration)obj).getName().toString();
-                return name != null && name.startsWith("operator "); // NOI18N
-            }
+        if (isFunction(obj)) {
+            return ((CsmFunction)obj).isOperator();
         }
         return false;
     }   

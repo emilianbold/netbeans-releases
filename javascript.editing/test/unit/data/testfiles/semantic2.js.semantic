@@ -1,0 +1,14 @@
+|>CLASS:Autocompleter<|.Base.prototype = {
+  |>METHOD:onHover<|: function(event) {
+    var element = |>CLASS:Event<|.findElement(event, 'LI');
+    |>GLOBAL:foo<| = 5
+    //puts(foo)
+    if(this.index != element.autocompleteIndex) 
+    {
+        this.index = element.autocompleteIndex;
+        this.render();
+    }
+    |>CLASS:Event<|.stop(event);
+  }
+}  
+  

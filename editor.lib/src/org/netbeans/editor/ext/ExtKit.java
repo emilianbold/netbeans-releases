@@ -887,7 +887,7 @@ public class ExtKit extends BaseKit {
                         int startPos;
                         int endPos;
                         
-                        if (caret.isSelectionVisible()) {
+                        if (Utilities.isSelectionShowing(caret)) {
                             startPos = Utilities.getRowStart(doc, target.getSelectionStart());
                             endPos = target.getSelectionEnd();
                             if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) {

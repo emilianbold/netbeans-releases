@@ -41,16 +41,16 @@
 package org.netbeans.modules.bpel.core.util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.WeakHashMap;
 
-import org.openide.filesystems.FileObject;
 import org.openide.text.Line;
 import org.netbeans.modules.xml.xam.Model.State;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
@@ -188,20 +188,37 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
       myAnnotations.clear();
 //out();
 //out("SHOW ANNOTATION IN EDITOR");
-
-      for (ResultItem item : result) {
-        if (item.getType() != ResultType.ERROR) {
-            continue;
-        }
-        Line line = Util.getLine(item);
-//out("  see line: " + line);
-
-        if (line == null) {
-            continue;
-        }
-        BPELValidationAnnotation annotation = new BPELValidationAnnotation();
-        myAnnotations.add(annotation);
-        annotation.show(line, item.getDescription());
+      
+      // First we need to group the results by line. We need this to add only 
+      // one annotation per line
+      Map<Line, List<ResultItem>> map = new HashMap<Line, List<ResultItem>>();
+      for (ResultItem item: result) {
+          final Line line = Util.getLine(item);
+          
+          List<ResultItem> list = map.get(line);
+          if (list == null) {
+              list = new LinkedList<ResultItem>();
+              map.put(line, list);
+          }
+          
+          list.add(item);
+      }
+      
+      for (Line line: map.keySet()) {
+          final StringBuilder description = new StringBuilder();
+          
+          final List<ResultItem> list = map.get(line);
+          for (int i = 0; i < list.size(); i++) {
+              description.append(list.get(i).getDescription());
+              
+              if (i < list.size() - 1) {
+                  description.append("\n\n"); // NOI18N
+              }
+          }
+          
+          BPELValidationAnnotation annotation = new BPELValidationAnnotation();
+          myAnnotations.add(annotation);
+          annotation.show(line, description.toString());
       }
     }
   }

@@ -45,11 +45,9 @@ import java.awt.event.*;
 import java.util.ResourceBundle;
 import javax.swing.JPanel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JTextField;
 import javax.swing.JComponent;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Vector;
 
 import org.netbeans.editor.EditorState;
 import org.openide.util.NbBundle;
@@ -94,7 +92,7 @@ public class GotoDialogPanel extends JPanel implements FocusListener {
         dontFire = false;
     }
 
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
@@ -104,8 +102,7 @@ public class GotoDialogPanel extends JPanel implements FocusListener {
         setLayout(new java.awt.GridBagLayout());
 
         gotoLabel.setLabelFor(gotoCombo);
-        gotoLabel.setText(bundle.getString("goto-line"));
-        gotoLabel.setDisplayedMnemonic(bundle.getString("goto-line-mnemonic").charAt(0));
+        org.openide.awt.Mnemonics.setLocalizedText(gotoLabel, bundle.getString("goto-line")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weighty = 1.0;
@@ -120,7 +117,6 @@ public class GotoDialogPanel extends JPanel implements FocusListener {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 10);
         add(gotoCombo, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
 

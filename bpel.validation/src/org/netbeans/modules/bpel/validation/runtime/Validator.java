@@ -1,20 +1,42 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.validation.runtime;
 
@@ -75,15 +97,15 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.netbeans.modules.bpel.validation.core.Outcome;
+import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.05.03
  */
-public final class Validator extends org.netbeans.modules.bpel.validation.core.Validator {
+public final class Validator extends BpelValidator {
     
-    // vlv
     private void processCorrelationsHolder(CorrelationsHolder holder) {
 //out();
 //out();
@@ -160,24 +182,26 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
 
     @Override
     public void visit( Process process ) {
-
         String queryLang = process.getQueryLanguage();
+
         if ( queryLang != null ) {
             addAttributeWarning( Process.QUERY_LANGUAGE, process );
         }
         String expression = process.getExpressionLanguage();
+        
         if ( expression != null ) {
             addAttributeWarning( Process.EXPRESSION_LANGUAGE, process );
         }
         TBoolean value = process.getSuppressJoinFailure();
+        
         if ( value != null ) {
             addAttributeWarning( Process.SUPPRESS_JOIN_FAILURE, process );
         }
         value = process.getExitOnStandardFault();
+        
         if ( value != null ) {
             addAttributeWarning( Process.EXIT_ON_STANDART_FAULT, process );
         }
-        
         // check whether the URI is valid.
         checkValidURI(process, Process.QUERY_LANGUAGE, process.getQueryLanguage());
         checkValidURI(process, Process.EXPRESSION_LANGUAGE, process.getExpressionLanguage());
@@ -189,30 +213,10 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
     }
     
     @Override
-    public void visit( ReThrow reThrow ) {
-       // addElementError( reThrow ); //Rethrow is supported now
-    }
-    
-    @Override
-    public void visit( Compensate compensate ) {
-//      addElementError( compensate );
-    }
-    
-    @Override
     public void visit( PartnerLink partnerLink ) {
         if ( partnerLink.getInitializePartnerRole() != null ) {
             addAttributeWarning( PartnerLink.INITIALIZE_PARTNER_ROLE, partnerLink);
         }
-    }
-    
-    @Override
-    public void visit( CompensationHandler handler ) {
-//      addElementError( handler );
-    }
-    
-    @Override
-    public void visit( TerminationHandler handler ) {
-//      addElementError( handler );
     }
     
     @Override
@@ -241,15 +245,15 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
             addElementsInParentError(invoke, (BpelEntity[])catches);
         }
         CatchAll catchAll = invoke.getCatchAll();
+
         if ( catchAll != null ) {
             addElementsInParentError( invoke, catchAll );
         }
-        
         // Rule: <fromPart>, <toPart> is not supported.
-        if(invoke.getFromPartContaner() != null ) {
+        if (invoke.getFromPartContaner() != null ) {
             addElementsInParentError(invoke, FROM_PARTS);
         }
-        if(invoke.getToPartContaner() != null ) {
+        if (invoke.getToPartContaner() != null ) {
             addElementsInParentError(invoke, TO_PARTS);
         }
     }
@@ -271,37 +275,39 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
     @Override
     public void visit( From from ) {
         Documentation[] docs = from.getDocumentations();
-        if ( docs!= null && docs.length>0 ) {
-            addElementsInParentError(from, (BpelEntity[])docs);
+
+        if (docs!= null && docs.length > 0) {
+            addElementsInParentError(from, (BpelEntity[]) docs);
         }
-        if ( from.getExpressionLanguage()!= null ) {
-            addAttributeWarning( From.EXPRESSION_LANGUAGE, from );
+        if (from.getExpressionLanguage()!= null ) {
+            addAttributeWarning(From.EXPRESSION_LANGUAGE, from);
         }
-        if ( from.getProperty()!= null ) {
-            addAttributeWarning( From.PROPERTY, from );
+        if (from.getProperty() != null ) {
+            addAttributeWarning(From.PROPERTY, from);
         }
 // # 123382
-//        if ( from.getPartnerLink()!= null ) {
-//            addAttributeWarning( From.PARTNER_LINK, from );
+//        if (from.getPartnerLink() != null) {
+//            addAttributeWarning(From.PARTNER_LINK, from);
 //        }
-        if ( from.getEndpointReference()!= null ) {
-            addAttributeWarning( From.ENDPOINT_REFERENCE, from );
-        }
-        
-        checkAbsenceExtensions( from );
+// # 128665
+//        if (from.getEndpointReference() != null) {
+//            addAttributeWarning(From.ENDPOINT_REFERENCE, from);
+//        }
+        checkAbsenceExtensions(from);
     }
     
-    public void visit( To to ) {
-    Documentation[] docs = to.getDocumentations();
-        if ( docs!= null && docs.length>0 ) {
-            addElementsInParentError(to, (BpelEntity[])docs);
+    public void visit(To to) {
+        Documentation[] docs = to.getDocumentations();
+    
+        if (docs!= null && docs.length > 0) {
+            addElementsInParentError(to, (BpelEntity[]) docs);
         }
-        if ( to.getProperty()!= null ) {
+        if (to.getProperty () != null) {
             addAttributeWarning( To.PROPERTY, to );
         }
 // # 123382
-//        if ( to .getPartnerLink()!= null ) {
-//            addAttributeWarning(To.PARTNER_LINK, to );
+//        if (to.getPartnerLink () != null) {
+//            addAttributeWarning(To.PARTNER_LINK, to);
 //        }
         checkAbsenceExtensions( to );
     }
@@ -310,8 +316,9 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
     public void visit( Flow flow ) {
         super.visit(flow);
         LinkContainer container = flow.getLinkContainer();
-        if ( container!= null ) {
-            addElementError( container );
+
+        if (container!= null) {
+            addElementError(container);
         }
     }
     
@@ -367,8 +374,9 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
     @Override
     public void visit(Receive receive) {
         super.visit(receive);
+
         // Rule: <fromPart>, <toPart> is not supported.
-        if(receive.getFromPartContaner()!= null ) {
+        if (receive.getFromPartContaner()!= null ) {
             addElementsInParentError(receive, FROM_PARTS);
         }
         
@@ -425,11 +433,6 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
     @Override
     public void  visit(MessageExchangeContainer messageExchangeContainer) {
             addElementError(messageExchangeContainer);
-    }
-
-    @Override
-    public void visit(ExtensionEntity entity) {
-        // TODO a to suuport Logging Alerting extensions
     }
 
     private void checkAbsenceExtensions( ExtensibleElements element ) {

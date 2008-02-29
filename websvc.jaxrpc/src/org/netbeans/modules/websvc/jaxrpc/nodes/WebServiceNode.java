@@ -98,6 +98,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import javax.swing.ListModel;
 import javax.swing.table.TableModel;
 import org.apache.tools.ant.module.api.support.ActionUtils;
@@ -113,6 +114,7 @@ import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.lookup.Lookups;
 
 public class WebServiceNode extends AbstractNode implements WSRegisterCookie, WsWsdlCookie,
         ConfigureHandlerCookie, OpenCookie, RegenerateFromWsdlCookie{
@@ -141,10 +143,11 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ws
         setName(wsName);
         content.add(this);
         content.add(implClass);
+        setValue("wsdl-url",getWsdlURL());
     }
     
     public Image getIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif");
+        return Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/webservice.png");
     }
     
     public Image getOpenedIcon(int type){
@@ -188,7 +191,7 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ws
     
     // Create the popup menu:
     public Action[] getActions(boolean context) {
-        return new SystemAction[] {
+        ArrayList<Action> actions = new ArrayList<Action>(Arrays.asList(
             SystemAction.get(OpenAction.class),
             null,
             SystemAction.get(AddOperationAction.class),
@@ -201,10 +204,22 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ws
             null,
             SystemAction.get(DeleteAction.class),
             null,
-            SystemAction.get(PropertiesAction.class),
-        };
+            SystemAction.get(PropertiesAction.class)));
+        addFromLayers(actions, "WebServices/Services/Actions");
+        return actions.toArray(new Action[actions.size()]);
     }
     
+    private void addFromLayers(ArrayList<Action> actions, String path) {
+        Lookup look = Lookups.forPath(path);
+        for (Object next : look.lookupAll(Object.class)) {
+            if (next instanceof Action) {
+                actions.add((Action) next);
+            } else if (next instanceof javax.swing.JSeparator) {
+                actions.add(null);
+            }
+        }
+    }
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

@@ -40,19 +40,27 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
-import javax.swing.text.Document;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsCodeGenerator;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.WsdlSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
-import org.netbeans.modules.websvc.saas.util.LibrariesHelper;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.text.ActiveEditorDrop;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /** JaxWsEditorDrop
  *
@@ -61,31 +69,110 @@ import org.openide.text.ActiveEditorDrop;
 public class JaxWsEditorDrop implements ActiveEditorDrop {
 
     private WsdlSaasMethod method;
+    private FileObject targetFO;
+    private RequestProcessor.Task generatorTask;
 
     public JaxWsEditorDrop(WsdlSaasMethod method) {
         this.method = method;
     }
 
-    public boolean handleTransfer(JTextComponent targetComponent) {
+    private boolean isAcceptTarget(JTextComponent targetComponent) {
         Object mimeType = targetComponent.getDocument().getProperty("mimeType"); //NOI18N
         if (mimeType != null && ("text/x-java".equals(mimeType) || "text/x-jsp".equals(mimeType))) { //NOI18N
-
-            FileObject targetSource = NbEditorUtilities.getFileObject(targetComponent.getDocument());
-            Project targetProject = FileOwnerQuery.getOwner(targetSource);
-
-            //copy client jars
-            LibrariesHelper.addDefaultJaxWsClientJars(targetProject, targetSource, method.getSaas());
-
-            WsdlService service = method.getSaas().getWsdlModel();
-            WsdlPort port = method.getWsdlPort();
-            WsdlOperation operation = method.getWsdlOperation();
-            String wsdlUrl = method.getSaas().getWsdlData().getWsdlFile();
-            Document document = targetComponent.getDocument();
-            int pos = targetComponent.getCaret().getDot();
-
-            JaxWsCodeGenerator.insertMethod(document, pos, service, port, operation, wsdlUrl);
-
+            return true;
         }
         return false;
     }
+    
+    public boolean handleTransfer(JTextComponent targetComponent) {
+        if(isAcceptTarget(targetComponent))
+            return doHandleTransfer(targetComponent);
+        return false;
+    }
+    
+    private boolean doHandleTransfer(final JTextComponent targetComponent) {
+        FileObject targetSource = NbEditorUtilities.getFileObject(targetComponent.getDocument());
+        Project targetProject = FileOwnerQuery.getOwner(targetSource);
+        WsdlOperation op = method.getWsdlOperation();
+        final String displayName = op.getName();
+        
+        targetFO = getTargetFile(targetComponent);
+
+        if (targetFO == null) {
+            return false;
+        }
+
+        final List<Exception> errors = new ArrayList<Exception>();
+       
+        final ProgressDialog dialog = new ProgressDialog(
+                NbBundle.getMessage(JaxWsEditorDrop.class, "LBL_CodeGenProgress", 
+                displayName));
+
+        generatorTask = RequestProcessor.getDefault().create(new Runnable() {
+            public void run() {
+                try {
+                    JaxWsCodeGenerator codegen = 
+                        JaxWsCodeGeneratorFactory.create(targetComponent, targetFO, method);
+                
+                    WsdlSaasBean bean = codegen.getBean();
+                    boolean showParams = codegen.canShowParam();
+                    List<ParameterInfo> allParams = new ArrayList<ParameterInfo>(bean.getHeaderParameters());
+                    if (showParams && bean.getInputParameters() != null) {
+                        allParams.addAll(bean.getInputParameters());
+                    }
+                    JaxWsCodeSetupPanel panel = new JaxWsCodeSetupPanel(
+                            codegen.getSubresourceLocatorUriTemplate(),
+                            bean.getQualifiedClassName(), 
+                            allParams,
+                            codegen.canShowResourceInfo(), showParams);
+
+                    DialogDescriptor desc = new DialogDescriptor(panel, 
+                            NbBundle.getMessage(JaxWsEditorDrop.class,
+                            "LBL_CustomizeSaasService", displayName));
+                    Object response = DialogDisplayer.getDefault().notify(desc);
+                    
+                    if (response.equals(NotifyDescriptor.YES_OPTION)) {
+                        codegen.setSubresourceLocatorUriTemplate(panel.getUriTemplate());
+                        codegen.setSubresourceLocatorName(panel.getMethodName());
+                    } else {
+                        // cancel
+                        return;
+                    }
+
+                    codegen.generate(dialog.getProgressHandle());
+                    Util.showMethod(targetFO, codegen.getSubresourceLocatorName());
+                } catch (Exception ioe) {
+                    errors.add(ioe);
+                } finally {
+                    dialog.close();
+                }
+            }
+        });
+
+        generatorTask.schedule(50);
+
+        dialog.open();
+
+        if (errors.size() > 0) {
+            Exceptions.printStackTrace(errors.get(0));
+            return false;
+        }
+        return true;
+    }
+    
+    public static FileObject getTargetFile(JTextComponent targetComponent) {
+        if (targetComponent == null) {
+            return null;
+        }
+        DataObject d = NbEditorUtilities.getDataObject(targetComponent.getDocument());
+        if (d == null) {
+            return null;
+        }
+        EditorCookie ec = (EditorCookie) d.getCookie(EditorCookie.class);
+        if (ec == null || ec.getOpenedPanes() == null) {
+            return null;
+        }
+        return d.getPrimaryFile();
+    }
+    
 }

@@ -11,3 +11,47 @@ org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileNodeProvider$RunProfi
 org.netbeans.modules.cnd.makeproject.MakeProjectModule$L
 org.netbeans.modules.cnd.makeproject.MakeProjectModule
 
+#IZ 125971
+org.netbeans.modules.uml.UMLCoreModule
+org.netbeans.modules.uml.core.metamodel.core.foundation.ConfigManager
+
+#IZ 127225
+org.netbeans.spi.mobility.deployment.DeploymentPlugin
+org.netbeans.modules.mobility.deployment.ftpscp.FtpCustomizerPanel
+org.netbeans.modules.mobility.deployment.ftpscp.FtpDeploymentPlugin
+org.netbeans.modules.mobility.deployment.ftpscp.FtpProjectCustomizerPanel
+org.netbeans.modules.mobility.deployment.ftpscp.ScpCustomizerPanel
+org.netbeans.modules.mobility.deployment.ftpscp.ScpDeploymentPlugin
+org.netbeans.modules.mobility.deployment.ftpscp.ScpProjectCustomizerPanel
+org.netbeans.modules.mobility.deployment.ricoh.RicohCustomizerPanel
+org.netbeans.modules.mobility.deployment.ricoh.RicohDeploymentPlugin
+org.netbeans.modules.mobility.deployment.sonyericsson.SonyEricssonCustomizerPanel
+org.netbeans.modules.mobility.deployment.sonyericsson.SonyEricssonDeploymentPlugin
+org.netbeans.modules.mobility.deployment.webdav.WebDAVCustomizerPanel
+org.netbeans.modules.mobility.deployment.webdav.WebDAVDeploymentPlugin
+org.netbeans.modules.mobility.deployment.webdav.WebDAVProjectCustomizerPanel
+
+#IZ 128447
+org.mozilla.javascript.ErrorReporter
+org.mozilla.javascript.Node
+org.mozilla.javascript.ScriptOrFnNode
+org.netbeans.modules.css2.gsf.CSSGSFParser
+org.netbeans.modules.css2.gsf.CSSLanguage
+org.netbeans.modules.css2.gsf.CSSParserResult
+org.netbeans.modules.css2.parser.CharStream
+org.netbeans.modules.css2.parser.ParseException
+org.netbeans.modules.css2.parser.Token
+org.netbeans.modules.javascript.editing.Element
+org.netbeans.modules.javascript.editing.JsLanguage
+org.netbeans.modules.javascript.editing.JsParseResult
+org.netbeans.modules.javascript.editing.JsParser
+org.netbeans.modules.javascript.editing.JsPositionManager
+org.netbeans.modules.javascript.editing.JsUtils
+org.netbeans.modules.gsf.api.ElementHandle
+org.netbeans.modules.gsf.api.Error
+org.netbeans.modules.gsf.api.GsfLanguage
+org.netbeans.modules.gsf.api.Parser
+org.netbeans.modules.gsf.api.ParserResult$AstTreeNode
+org.netbeans.modules.gsf.api.ParserResult
+org.netbeans.modules.gsf.api.PositionManager
+

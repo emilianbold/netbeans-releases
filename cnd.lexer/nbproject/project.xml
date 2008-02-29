@@ -38,9 +38,14 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.cnd</friend>
+                <friend>org.netbeans.modules.cnd.completion</friend>
+                <friend>org.netbeans.modules.cnd.editor</friend>
+                <friend>org.netbeans.modules.cnd.kit</friend>
+                <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <package>org.netbeans.cnd.api.lexer</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

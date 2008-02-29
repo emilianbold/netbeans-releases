@@ -34,6 +34,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
  */
 public abstract class XPathModelTracerVisitor extends XPathVisitorAdapter {
     
+    @Override
     public void visit(LocationStep locationStep) {
         XPathPredicateExpression[] expressions = locationStep.getPredicates();
         if ( expressions!= null ){
@@ -43,18 +44,22 @@ public abstract class XPathModelTracerVisitor extends XPathVisitorAdapter {
         }
     }
 
+    @Override
     public void visit(XPathCoreFunction coreFunction) {
         visitChildren( coreFunction );
     }
 
+    @Override
     public void visit(XPathCoreOperation coreOperation) {
         visitChildren( coreOperation );
     }
 
+    @Override
     public void visit(XPathExtensionFunction extensionFunction) {
         visitChildren( extensionFunction );
     }
 
+    @Override
     public void visit(XPathLocationPath locationPath) {
         LocationStep[] steps = locationPath.getSteps();
         if ( steps != null ){
@@ -64,6 +69,7 @@ public abstract class XPathModelTracerVisitor extends XPathVisitorAdapter {
         }
     }
 
+    @Override
     public void visit(XPathExpressionPath expressionPath) {
         XPathExpression expression = expressionPath.getRootExpression();
         if ( !expressionPath.equals( expression ) ) {

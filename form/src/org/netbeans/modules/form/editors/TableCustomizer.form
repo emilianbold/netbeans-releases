@@ -17,6 +17,14 @@
     <Component class="javax.swing.JComboBox" name="typeCellEditor">
     </Component>
   </NonVisualComponents>
+  <AccessibilityProperties>
+    <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_ACSN" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+  </AccessibilityProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -43,6 +51,9 @@
   <SubComponents>
     <Container class="javax.swing.JTabbedPane" name="tabbedPane">
       <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_ACSN" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -455,6 +466,11 @@
                   <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Columns_Count" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Columns_Count_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
               </AuxValues>
@@ -558,6 +574,11 @@
                   <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Column_Title" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Column_Title_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
               </AuxValues>
@@ -571,6 +592,11 @@
                   <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Column_Type" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Column_Type_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
               </AuxValues>
@@ -584,6 +610,11 @@
                   <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Column_Editor" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Column_Editor_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
               </AuxValues>
@@ -597,6 +628,11 @@
                   <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Column_Renderer" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Column_Renderer_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
               </AuxValues>
@@ -694,6 +730,11 @@
                   <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_SelectionModel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_SelectionModel_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
               </AuxValues>
@@ -791,6 +832,11 @@
                   <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Width_Pref" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Width_Pref_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
               </AuxValues>
@@ -804,6 +850,11 @@
                   <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Width_Min" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Width_Min_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
               </AuxValues>
@@ -817,6 +868,11 @@
                   <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Width_Max" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Width_Max_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
               </AuxValues>
@@ -954,6 +1010,11 @@
                   <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Rows_Count" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_TableCustomizer_Rows_Count_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JSpinner" name="rowCountSpinner">
               <Properties>

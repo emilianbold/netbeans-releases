@@ -49,6 +49,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.Hashtable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -145,40 +147,42 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
      * @return startup time
      */
     protected long runIDEandMeasureStartup(String performanceDataName, File measureFile, File userdir, long timeout) throws IOException {
-        long startTime = runIDE(getIdeHome(),userdir,measureFile,timeout);
-        Hashtable measuredValues = parseMeasuredValues(measureFile);
         
-        if(measuredValues==null)
-            fail("It isn't possible measure startup time");
-        
-        long runTime=((Long)measuredValues.get("IDE starts t=")).longValue(); // from STARTUP_DATA
-        measuredValues.remove("IDE starts t="); // remove from measured values, the rest we will log as performance data
-        long endTime=((Long)measuredValues.get("IDE is running t=")).longValue(); // from STARTUP_DATA
-        measuredValues.remove("IDE is running t="); // remove from measured values, the rest we will log as performance data
-        
-        long startupTime = endTime - startTime;
-        
-        System.out.println("\t" + startTime + " -> run from command line (start) ");
-        System.out.println("\t" + runTime + " -> time from -Dorg.netbeans.log.startup.logfile - IDE starts (run)");
-        System.out.println("\t" + endTime + " -> time from RepaintManager - IDE is running (end)");
-        System.out.println("Measured Startup Time=" + startupTime + " / IDE run="+(runTime-startTime));
-        
-        if (startupTime <= 0)
-            fail("Measured value ["+startupTime+"] is not > 0 !");
-        
-        reportPerformance(performanceDataName + " | IDE run",(runTime-startTime),"ms",1);
-        
-        for(String[] data:STARTUP_DATA) {
-            if(measuredValues.containsKey(data[1])){
-                long value = ((Long)measuredValues.get(data[1])).longValue();
-                System.out.println(data[0]+"="+value);
-                reportPerformance(performanceDataName + " | " + data[0],value,"ms",1);
-            }else{
-                System.out.println("Value for "+data[1]+" isn't present");
+        try {
+            long startTime = runIDE(getIdeHome(), userdir, measureFile, timeout);
+            Hashtable measuredValues = parseMeasuredValues(measureFile);
+
+            long runTime = ((Long) measuredValues.get("IDE starts t=")).longValue(); // from STARTUP_DATA
+            measuredValues.remove("IDE starts t="); // remove from measured values, the rest we will log as performance data
+            long endTime = ((Long) measuredValues.get("IDE is running t=")).longValue(); // from STARTUP_DATA
+            measuredValues.remove("IDE is running t="); // remove from measured values, the rest we will log as performance data
+            long startupTime = endTime - startTime;
+
+            System.out.println("\t" + startTime + " -> run from command line (start) ");
+            System.out.println("\t" + runTime + " -> time from -Dorg.netbeans.log.startup.logfile - IDE starts (run)");
+            System.out.println("\t" + endTime + " -> time from RepaintManager - IDE is running (end)");
+            System.out.println("Measured Startup Time=" + startupTime + " / IDE run=" + (runTime - startTime));
+
+            if (startupTime <= 0) {
+                fail("Measured value [" + startupTime + "] is not > 0 !");
             }
+            reportPerformance(performanceDataName + " | IDE run", runTime - startTime, "ms", 1);
+
+            for (String[] data : STARTUP_DATA) {
+                if (measuredValues.containsKey(data[1])) {
+                    long value = ((Long) measuredValues.get(data[1])).longValue();
+                    System.out.println(data[0] + "=" + value);
+                    reportPerformance(performanceDataName + " | " + data[0], value, "ms", 1);
+                } else {
+                    System.out.println("Value for " + data[1] + " isn't present");
+                }
+            }
+
+            return startupTime;
+        } catch (CantParseMeasuredValuesException ex) {
+            Logger.getLogger(MeasureStartupTimeTestCase.class.getName()).log(Level.SEVERE, null, ex);
+            throw new AssertionError(ex);
         }
-        
-        return startupTime;
     }
     
     
@@ -240,13 +244,30 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         // guiltracker lib
         cmd.append(" --cp:a ").append(classpath);
         // userdir
-        cmd.append(" --userdir ").append(userdir.getAbsolutePath());
+        // TODO: Check if this is really necessary to not quote paths without spaces
+        String userdirPath = userdir.getAbsolutePath();
+        if (userdirPath.indexOf(' ') >= 0) {
+            cmd.append(" --userdir \"").append(userdirPath).append('\"');
+        } else {
+            cmd.append(" --userdir ").append(userdirPath);
+        }        
         // get jdkhome path
-        cmd.append(" --jdkhome ").append(jdkhome);
+        // TODO: Check if this is really necessary to not quote paths without spaces
+        if (jdkhome.indexOf(' ') >= 0) {
+            cmd.append(" --jdkhome \"").append(jdkhome).append('\"');
+        } else {    
+            cmd.append(" --jdkhome ").append(jdkhome);
+        }
         // netbeans full hack
         cmd.append(" -J-Dnetbeans.full.hack=true");
         // measure argument
-        cmd.append(" -J-Dorg.netbeans.log.startup.logfile=").append(measureFile.getAbsolutePath());
+        // TODO: Check if this is really necessary to not quote paths without spaces
+        String measureFilePath = measureFile.getAbsolutePath();
+        if (measureFilePath.indexOf(' ') >= 0) {
+            cmd.append(" -J-Dorg.netbeans.log.startup.logfile=\"").append(measureFilePath).append('\"');
+        } else {
+            cmd.append(" -J-Dorg.netbeans.log.startup.logfile=").append(measureFilePath);
+        }
         // measure argument - we have to set this one to ommit repaint of memory toolbar (see openide/actions/GarbageCollectAction)
         cmd.append(" -J-Dorg.netbeans.log.startup=tests");
         // close the IDE after startup
@@ -274,9 +295,10 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         Process ideProcess = runtime.exec(cmd.toString(),null,ideBinDir);
         
         // track out and errs from ide - the last parameter is PrintStream where the
-        // streams are copied - currently set to null, so it does not hit performance much
-        ThreadReader sout = new ThreadReader(ideProcess.getInputStream(), null);
-        ThreadReader serr = new ThreadReader(ideProcess.getErrorStream(), null);
+        // streams are copied - currently set to null, so it does not hit performance much        
+        // TODO: Remove System.out which is used to catch errors from the running IDE
+        ThreadReader sout = new ThreadReader(ideProcess.getInputStream(), System.out);
+        ThreadReader serr = new ThreadReader(ideProcess.getErrorStream(), System.out);
         try {
             System.out.println("IDE exited with status = " + ideProcess.waitFor());
         } catch (InterruptedException ie) {
@@ -355,11 +377,19 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         return new File(getWorkDir(),"measured_startup_"+i+".txt");
     }
     
+    protected static class CantParseMeasuredValuesException extends Exception {
+
+        public CantParseMeasuredValuesException(Throwable cause) {
+            super("Can't parse measured values", cause);
+        }
+
+    }
+    
     /** Parse logged startup time from the file.
      * @param measuredFile file where the startup time is stored
      * @return measured startup time
      */
-    protected static Hashtable parseMeasuredValues(File measuredFile) {
+    protected static Hashtable parseMeasuredValues(File measuredFile) throws CantParseMeasuredValuesException {
         Hashtable<String, Long> measuredValues = new Hashtable<String, Long>();
         
         Hashtable<String, String> startup_data = new Hashtable<String, String>(STARTUP_DATA.length);
@@ -390,21 +420,18 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
                     }
                     
                 } catch (NumberFormatException nfe) {
-                    nfe.printStackTrace(System.err);
-                    return null;
+                    throw new CantParseMeasuredValuesException(nfe);
                 }
             }
             return measuredValues;
         } catch (IOException ioe) {
-            ioe.printStackTrace(System.err);
-            return null;
+            throw new CantParseMeasuredValuesException(ioe);
         } finally {
             if (br != null) {
                 try {
                     br.close();
                 } catch (IOException ioe) {
-                    ioe.printStackTrace(System.err);
-                    return null;
+                    throw new CantParseMeasuredValuesException(ioe);
                 }
             }
         }

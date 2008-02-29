@@ -50,140 +50,195 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.zip.GZIPInputStream;
 
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.java.source.classpath.GlobalSourcePathTestUtil;
+import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- * Utilities to aid unit testing Jackpot rule files, Query and Transformer classes.
+ * Utilities to aid unit testing java.source module.
  *
  * @author Jaroslav Tulach
  * @author Tom Ball
+ * @author Tomas Zezula
  */
 public final class TestUtilities {
     
     // do not instantiate
     private TestUtilities() {}
     
-//    /**
-//     * Tests whether a transformation makes an expected result.
-//     *
-//     * @param from   the source text to be transformed.
-//     * @param result the expected text after transformation.
-//     * @param rules  one or more rules that define the transformation to use.
-//     * @throws TransformationException if the transformed text doesn't match the result.
-//     */
-//     public static void assertTransform(String from, String result, String rules) throws TransformationException, Exception {
-//        File src = copyStringToFile(getClassName(from), from);
-//        File rulesFile = copyStringToFile("test.rules", rules);
-//        apply(tempDirectory, rulesFile.getPath(), true, true, false);
-//
-//        String txt = copyFileToString(src);
-//        if (!txt.equals(result))
-//            throw new TransformationException("expected: \"" + result + "\" got: \"" + txt + "\"");
-//    }
-//    
-//    /**
-//     * Tests whether a transformation makes an expected result.
-//     *
-//     * @param from   the source text to be transformed.
-//     * @param result the expected text after transformation.
-//     * @param clazz  the transformation class to use.
-//     * @throws TransformationException if the transformed text doesn't match the result.
-//     */
-//     public static void assertTransform(String from, String result, Class clazz) throws TransformationException, Exception {
-//        File src = copyStringToFile(getClassName(from), from);
-//        String className = clazz.getName();
-//        apply(tempDirectory, className, false, true, false);
-//
-//        String txt = copyFileToString(src);
-//        if (!txt.equals(result))
-//            throw new TransformationException("expected: \"" + result + "\" got: \"" + txt + "\"");
-//    }
-//     
-//     private static String getClassName(String src) {
-//         return null; // FIXME
-//     }
-//
-//    /**
-//     * Applies a rule file to a directory of source files.
-//     * 
-//     * @param  dir the directory containing the source files to be modified.
-//     * @param  rules the rule file to apply to the source files.
-//     * @return the number of matches found
-//     * @throws BuildErrorsException 
-//     *         If any errors are found when building the source files.
-//     */
-//    public static int applyRules(File dir, URL rules) 
-//            throws BuildErrorsException, Exception {
-//        return applyRules(dir, rules, false);
-////    }
-//
-//    /**
-//     * Applies a rule file to a directory of source files.
-//     * 
-//     * @param  dir the directory containing the source files to be modified.
-//     * @param  rules the rule file to apply to the source files.
-//     * @param  allowErrors true if the rules should still be applied if there are build errors.
-//     * @return the number of matches found
-//     * @throws BuildErrorsException 
-//     *         If any errors are found when building the source files.
-//     */
-//    public static int applyRules(File dir, URL rules, boolean allowErrors) 
-//            throws BuildErrorsException, Exception {
-//        File rulesFile = copyResourceToFile(rules);
-//        return apply(dir, rulesFile.getPath(), true, true, allowErrors).getResultCount();
-//    }
-//
-//    /**
-//     * Applies a Query class to a directory of source files.
-//     * 
-//     * @param  dir the directory containing the source files to be modified.
-//     * @param  query the rules to apply to the source files.
-//     * @return the matches found
-//     * @throws BuildErrorsException 
-//     *         If any errors are found when building the source files.
-//     * @throws ModificationException
-//     *         If any changes were made to the source files after applying the 
-//     *         Query class.
-//     */
-//    public static ResultTableModel applyQuery(File dir, String queryName) 
-//            throws BuildErrorsException, Exception {
-//        return apply(dir, queryName, false, true, false);
-//    }
-//
-//    /**
-//     * Applies a Transformer class to a directory of source files.
-//     * 
-//     * @param  dir the directory containing the source files to be modified.
-//     * @param  transformer the rules to apply to the source files.
-//     * @return the number of matches found
-//     * @throws BuildErrorsException 
-//     *         If any errors are found when building the source files.
-//     */
-//    public static int applyTransformer(File dir, String transformerName) 
-//            throws BuildErrorsException, Exception {
-//        return apply(dir, transformerName, false, true, false).getResultCount();
-//    }
-//
-//    private static ResultTableModel apply(File dir, String cmd, boolean isScript, boolean makesChanges, boolean allowErrors) 
-//            throws BuildErrorsException, Exception {
-//        DefaultApplicationContext context = new DefaultApplicationContext();
-//        JackpotEngine eng = EngineFactory.createEngine(context);
-//
-//        int errors = eng.initialize(dir.getPath(), System.getProperty("java.class.path"), "1.5");
-//        if (errors > 0 && !allowErrors)
-//            throw new BuildErrorsException(Integer.toString(errors) + " build errors"); // TODO: get log from engine
-//
-//        ResultTableModel result = isScript ? 
-//            eng.runScript("q", "t", cmd) : eng.runCommand("q", "t", cmd);
-//        if (makesChanges && !eng.commit())
-//            throw new AssertionError("commit canceled"); // shouldn't happen with new UI
-//
-//        return result;
-//    }
-//    
+    /**
+     * Waits for the end of the background scan, this helper method 
+     * is designed for tests which require to wait for the end of initial scan.
+     * The method can be used as a barrier but it is not garanted that the
+     * backgoud scan will not start again after return from this method, the
+     * test is responsible for it itself. In general it's safer to use {@link JavaSource#runWhenScanFinished}
+     * method and do the critical action inside the run methed.
+     * @param timeout the maximum time to wait
+     * @param unit the time unit of the timeout argument
+     * @return true if the scan finished, false when the timeout elapsed before the end of the scan.
+     * @throws InterruptedException is thrown when the waiting thread is interrupted.
+     */
+    public static boolean waitScanFinished (final long timeout, final TimeUnit unit) throws InterruptedException {
+        assert unit != null;
+        final ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[0]),
+                ClassPathSupport.createClassPath(new URL[0]), null);
+        assert cpInfo != null;
+        final JavaSource js = JavaSource.create(cpInfo);
+        assert js != null;
+        try {
+            Future<Void> future = js.runWhenScanFinished(new Task<CompilationController>() {
+                public void run(CompilationController parameter) throws Exception {
+                }
+            }, true);
+            future.get(timeout,unit);
+            return true;
+        } catch (IOException ioe) {
+            //Actually never thrown
+        }
+        catch (ExecutionException ee) {
+            //Actually never thrown
+        }
+        catch (TimeoutException timeoutEx) {
+        }
+        return false;
+    }
+    
+    /**
+     * Schedules compilation of the folder inside the source root. May be used by tests
+     * which need to fill data into {@link ClassIndex} or need to work on the group of java files.
+     * @param folder to be compiled, has to be either the root itself or must be subfolder of the root.
+     * @param root owning the folder. There must be boot, compile and source ClassPath for it
+     * available by {@link ClassPath#getClassPah} method - there must be {@link ClassPathProvider} handling
+     * the root registered in the global {@link Lookup}. There must be also source level provided for the root - 
+     * {@link SourceLevelImplementation} registered in the global {@link Lookup}.  
+     * @return CountDownLatch which may be used to wait to the end of asynchronous compilation, {@see CountDownLatch#await}
+     * @throws java.io.IOException when folder or root is not valid
+     */
+    public static CountDownLatch scheduleCompilation (final FileObject folder, final FileObject root) throws IOException {
+        assert folder != null;
+        assert root != null;
+        assert folder.equals(root) || FileUtil.isParentOf(root, folder);
+        return RepositoryUpdater.getDefault().scheduleCompilationAndWait(folder, root);
+    }
+    
+    /**
+     * Schedules compilation of the folder inside the source root. May be used by tests
+     * which need to fill data into {@link ClassIndex} or need to work on the group of java files.
+     * @param folder to be compiled, has to be either the root itself or must be subfolder of the root.
+     * @param root owning the folder. There must be boot, compile and source ClassPath for it
+     * available by {@link ClassPath#getClassPah} method - there must be {@link ClassPathProvider} handling
+     * the root registered in the global {@link Lookup}. There must be also source level provided for the root - 
+     * {@link SourceLevelImplementation} registered in the global {@link Lookup}.  
+     * @return CountDownLatch which may be used to wait to the end of asynchronous compilation, {@see CountDownLatch#await}
+     * @throws java.io.IOException when folder or root is not valid
+     */
+    public static CountDownLatch scheduleCompilation (final File folder, final File root) throws IOException {
+        assert folder != null;
+        assert root != null;
+        final FileObject rootFo = FileUtil.toFileObject(root);
+        final FileObject folderFo = FileUtil.toFileObject(folder);
+        return RepositoryUpdater.getDefault().scheduleCompilationAndWait(folderFo, rootFo);
+    }
+    
+    /**
+     * Schedules compilation of the folder inside the source root and blocks until it finishes. May be used by tests
+     * which need to fill data into {@link ClassIndex} or need to work on the group of java files.
+     * @param folder to be compiled, has to be either the root itself or must be subfolder of the root.
+     * @param root owning the folder. There must be boot, compile and source ClassPath for it
+     * available by {@link ClassPath#getClassPah} method - there must be {@link ClassPathProvider} handling
+     * the root registered in the global {@link Lookup}. There must be also source level provided for the root - 
+     * a {@link SourceLevelImplementation} registered in the global {@link Lookup}.  
+     * @param timeout the maximum time to wait
+     * @param unit the time unit of the timeout argument
+     * @return false if the timeout elapsed before the end of compilation
+     * @throws java.io.IOException when folder or root is not valid
+     * @throws InterruptedException when the thread is interrupted
+     */
+    public static boolean scheduleCompilationAndWait (final FileObject folder, final FileObject root,
+            final long timeout, final TimeUnit unit) throws IOException, InterruptedException {
+        assert unit != null;
+        final CountDownLatch latch = scheduleCompilation(folder, root);
+        return latch.await(timeout, unit);
+    }
+    
+    /**
+     * Schedules compilation of the folder inside the source root and blocks until it finishes. May be used by tests
+     * which need to fill data into {@link ClassIndex} or need to work on the group of java files.
+     * @param folder to be compiled, has to be either the root itself or must be subfolder of the root.
+     * @param root owning the folder. There must be boot, compile and source ClassPath for it
+     * available by {@link ClassPath#getClassPah} method - there must be {@link ClassPathProvider} handling
+     * the root registered in the global {@link Lookup}. There must be also source level provided for the root - 
+     * a {@link SourceLevelImplementation} registered in the global {@link Lookup}.  
+     * @param timeout the maximum time to wait
+     * @param unit the time unit of the timeout argument
+     * @return false if the timeout elapsed before the end of compilation
+     * @throws java.io.IOException when folder or root is not valid
+     * @throws InterruptedException when the thread is interrupted
+     */
+    public static boolean scheduleCompilationAndWait (final File folder, final File root,
+            final long timeout, final TimeUnit unit) throws IOException, InterruptedException {
+        assert unit != null;
+        final CountDownLatch latch = scheduleCompilation(folder, root);
+        return latch.await(timeout, unit);
+    }
+    
+    /**
+     * Disables use of {@link LibraryManager} in the {@link GlobalSourcePath}. The tests
+     * which don't register {@link LibraryProvider} or {@link LibraryTypeProvider} may
+     * use this method to disable use of {@link LibraryManager} in the {@link GlobalSourcePath}.
+     * @param use false value disables use of {@link LibraryManager}
+     */
+    public static void setUseLibraries (final boolean use) {
+        GlobalSourcePathTestUtil.setUseLibraries(use);
+    }
+    
+    /**
+     * Sets a root folder of the java source caches. This method may be used by tests
+     * which need to do an initial compilation, they require either {@link ClassIndex} or
+     * need to work with a group of related java files.
+     * @param cacheFolder the folder used by java infrastructure as a cache,
+     * has to exist and must be a folder.
+     */
+    public static void setCacheFolder (final File cacheFolder) {
+        IndexUtil.setCacheFolder(cacheFolder);
+    }
+    
+    /**
+     * Creates boot {@link ClassPath} for platform the test is running on,
+     * it uses the sun.boot.class.path property to find out the boot path roots.
+     * @return ClassPath
+     * @throws java.io.IOException when boot path property conatins non valid path
+     */
+    public static ClassPath createBootClassPath () throws IOException {
+        String bootPath = System.getProperty ("sun.boot.class.path");
+        String[] paths = bootPath.split(File.pathSeparator);
+        List<URL>roots = new ArrayList<URL> (paths.length);
+        for (String path : paths) {
+            File f = new File (path);            
+            if (!f.exists()) {
+                continue;
+            }
+            URL url = f.toURI().toURL();
+            if (FileUtil.isArchiveFile(url)) {
+                url = FileUtil.getArchiveRoot(url);
+            }
+            roots.add (url);
+        }
+        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
+    }
     /**
      * Returns a string which contains the contents of a file.
      *
@@ -234,6 +289,13 @@ public final class TestUtilities {
         return f;
     }
     
+    /**
+     * Copies a string to a specified file.
+     *
+     * @param f the {@link FilObject} to use.
+     * @param content the contents of the returned file.
+     * @return the created file
+     */
     public final static FileObject copyStringToFile (FileObject f, String content) throws Exception {
         OutputStream os = f.getOutputStream();
         InputStream is = new ByteArrayInputStream(content.getBytes("UTF-8"));
@@ -242,33 +304,5 @@ public final class TestUtilities {
         is.close();
             
         return f;
-    }
-    
-    private final static File copyStringToFile(String filename, String res) throws Exception {
-        File f = new File(tempDirectory, filename);
-        f.deleteOnExit ();
-        return copyStringToFile(f, res);
-    }
-
-    private final static File copyResourceToFile(URL u) throws Exception {
-        File f = File.createTempFile("res", ".xml");
-        f.deleteOnExit ();
-       
-        FileOutputStream os = new FileOutputStream(f);
-        InputStream is = u.openStream();
-        FileUtil.copy(is, os);
-        os.close ();
-            
-        return f;
-    }
-
-    private static File tempDirectory;
-    {
-        try {
-            File f = File.createTempFile("foo", "bar");
-            tempDirectory = f.getParentFile();
-        } catch (IOException e) {
-            tempDirectory = new File("/tmp");
-        }
-    }
+    }   
 }

@@ -67,6 +67,7 @@ import org.netbeans.modules.websvc.core.WebServiceReference;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -202,7 +203,7 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
         
         Transferable tr = dtde.getTransferable();
         
-        
+
         if (tr.isDataFlavorSupported(flowDataFlavor)){
             FPoint p;
             try {
@@ -410,6 +411,7 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
                 } else if (WebServiceReference.class.isAssignableFrom(repClass)) {
                     entity = designView.getBPELModel().getBuilder().createPartnerLink();
                     entity.setCookie(DnDHandler.class, data);
+                    
                 } else if (DataObject.class.isAssignableFrom(repClass)) {
                     DataObject dataObj = (DataObject) data;
                     String ext = dataObj.getPrimaryFile().getExt();
@@ -551,6 +553,9 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
         } else if (item.equals("foreach")) { // NOI18N
             ForEach fe = builder.createForEach();
             fe.setParallel(TBoolean.NO);
+            try {
+                fe.setCounterName(fe.getName() + "Counter"); // NOI18N
+            } catch (VetoException ex) {}
             return fe;
         } else if (item.equals("scope")) { // NOI18N
             return builder.createScope();

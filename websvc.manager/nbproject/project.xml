@@ -296,10 +296,6 @@ made subject to such option by the copyright holder.
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.websvc.components.strikeiron</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.openide.util</code-name-base>
                         <compile-dependency/>
                         <test/>
@@ -313,6 +309,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.rest</friend>
                 <friend>org.netbeans.modules.websvc.saas.api</friend>
                 <friend>org.netbeans.modules.websvc.saas.ui</friend>
+                <friend>org.netbeans.modules.websvc.saas.codegen</friend>
                 <package>org.netbeans.modules.websvc.manager.api</package>
                 <package>org.netbeans.modules.websvc.manager.model</package>
                 <package>org.netbeans.modules.websvc.manager.spi</package>

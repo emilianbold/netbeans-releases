@@ -49,7 +49,6 @@ import java.util.List;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
-import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
 
 /**
  * A webservice meta data. Holds the URL location, package name for code generation
@@ -63,7 +62,7 @@ public class WebServiceData implements WsdlData {
     
     /** Unique Web service id*/
     private String websvcId;
-    
+
     /** Absolute path to web service definition file */
     private String wsdlFile;
     
@@ -154,6 +153,18 @@ public class WebServiceData implements WsdlData {
         this.wsdlService = that.wsdlService;
         this.wsName = that.wsName;
         this.wsdlState = that.wsdlState;
+    }
+    
+    public void reset() {
+        this.jaxWsDescriptor = null;
+        this.jaxWsDescriptorPath = null;
+        this.jaxWsEnabled = false;
+        this.jaxRpcDescriptor = null;
+        this.jaxRpcDescriptorPath = null;
+        this.jaxRpcEnabled = false;
+        this.catalog = null;
+        this.wsdlService = null;
+        this.setState(State.WSDL_UNRETRIEVED);
     }
     
     public boolean isReady() {
@@ -369,11 +380,21 @@ public class WebServiceData implements WsdlData {
         boolean fireEvent = (!wsdlState.equals(State.WSDL_SERVICE_COMPILED) && 
                 state.equals(State.WSDL_SERVICE_COMPILED));
         
+        State old = wsdlState;
+        Status oldStatus = getStatus();
         this.wsdlState = state;
+        Status newStatus = getStatus();
+        
         if (fireEvent) {
             for (WebServiceDataListener listener : listeners) {
                 listener.webServiceCompiled(new WebServiceDataEvent(this));
-            }            
+            }          
+        }
+        
+        PropertyChangeEvent evt =
+                new PropertyChangeEvent(this, PROP_STATE, oldStatus, newStatus); // NOI18N
+        for (PropertyChangeListener listener : propertyListeners) {
+            listener.propertyChange(evt);
         }
     }
     
@@ -421,6 +442,25 @@ public class WebServiceData implements WsdlData {
     
     public static enum State {
         WSDL_UNRETRIEVED, WSDL_RETRIEVING, WSDL_RETRIEVED, WSDL_SERVICE_COMPILING, WSDL_SERVICE_COMPILED, WSDL_SERVICE_COMPILE_FAILED
+    }
+
+    public Status getStatus() {
+        if (getState() == State.WSDL_RETRIEVED) {
+            return Status.WSDL_RETRIEVED;
+        }
+        if (getState() == State.WSDL_RETRIEVING) {
+            return Status.WSDL_RETRIEVING;
+        }
+        if (getState() == State.WSDL_SERVICE_COMPILED) {
+            return Status.WSDL_SERVICE_COMPILED;
+        }
+        if (getState() == State.WSDL_SERVICE_COMPILE_FAILED) {
+            return Status.WSDL_SERVICE_COMPILE_FAILED;
+        }
+        if (getState() == State.WSDL_SERVICE_COMPILING) {
+            return Status.WSDL_SERVICE_COMPILING;
+        }
+        return Status.WSDL_SERVICE_COMPILING;
     }
     
 }

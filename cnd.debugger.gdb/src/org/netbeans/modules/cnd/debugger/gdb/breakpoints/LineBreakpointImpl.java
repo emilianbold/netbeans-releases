@@ -73,24 +73,32 @@ public class LineBreakpointImpl extends BreakpointImpl {
     
     protected void setRequests() {
         String st = getState();
-        if (getDebugger().getState().equals(GdbDebugger.STATE_RUNNING) &&
-                !st.equals(BPSTATE_REVALIDATE)) {
+        if (getDebugger().getState().equals(GdbDebugger.STATE_RUNNING) && !st.equals(BPSTATE_REVALIDATE)) {
             getDebugger().setSilentStop();
         }
         if (st.equals(BPSTATE_UNVALIDATED) || st.equals(BPSTATE_REVALIDATE)) {
             setState(BPSTATE_VALIDATION_PENDING);
             lineNumber = breakpoint.getLineNumber();
             String path = getDebugger().getBestPath(breakpoint.getPath());
-            int token = getDebugger().getGdbProxy().break_insert(path + ':' + lineNumber);
+            int token;
+            if (getBreakpoint().getSuspend() == GdbBreakpoint.SUSPEND_THREAD) {
+                token = getDebugger().getGdbProxy().break_insert(GdbBreakpoint.SUSPEND_THREAD,
+                        path + ':' + lineNumber, getBreakpoint().getThreadID());
+            } else {
+                token = getDebugger().getGdbProxy().break_insert(path + ':' + lineNumber);
+            }
             getDebugger().addPendingBreakpoint(token, this);
 	} else {
-	    if (st.equals(BPSTATE_DELETION_PENDING)) {
-		getDebugger().getGdbProxy().break_delete(getBreakpointNumber());
-	    } else if (st.equals(BPSTATE_VALIDATED)) {
-                if (breakpoint.isEnabled()) {
-                    getDebugger().getGdbProxy().break_enable(getBreakpointNumber());
-                } else {
-                    getDebugger().getGdbProxy().break_disable(getBreakpointNumber());
+            int bnum = getBreakpointNumber();
+            if (bnum > 0) { // bnum < 0 for breakpoints from other projects...
+                if (st.equals(BPSTATE_DELETION_PENDING)) {
+                    getDebugger().getGdbProxy().break_delete(bnum);
+                } else if (st.equals(BPSTATE_VALIDATED)) {
+                    if (breakpoint.isEnabled()) {
+                        getDebugger().getGdbProxy().break_enable(bnum);
+                    } else {
+                        getDebugger().getGdbProxy().break_disable(bnum);
+                    }
                 }
             }
 	}

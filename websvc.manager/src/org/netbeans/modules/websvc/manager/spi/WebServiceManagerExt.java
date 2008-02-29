@@ -41,39 +41,21 @@
 
 package org.netbeans.modules.websvc.manager.spi;
 
-import javax.swing.Action;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.manager.*;
-import org.openide.nodes.Node;
 
+/**
+ * Note (nam): 
+ * this is a legacy interface, only for the existing implementation from
+ * visualweb.websvcmgr.  Other consumer types that want to contribute to WSDL
+ * service proxy or other kind of artifacts just need to attach a property listener
+ * to SaasServicesModel defined in websvc.saas.api.  The "state" property event with
+ * Saas object as new value, would provide access to update description for codegen 
+ * artifacts.
+ */
 public interface WebServiceManagerExt {
-    public static final Action[] EMPTY_ACTIONS = new Action[0];
-    
+
     public boolean wsServiceAddedExt(WebServiceDescriptor wsMetadataDesc);
     public boolean wsServiceRemovedExt(WebServiceDescriptor wsMetadataDesc);
     
-    /**
-     * @return list of consumer-specific actions for web service root node.
-     */
-    public Action[] getWebServicesRootActions(Node node);
-
-    /**
-     * @return list of consumer-specific actions for group nodes.
-     */
-    public Action[] getGroupActions(Node node);
-
-    /**
-     * @return list of consumer-specific actions for web service nodes.
-     */
-    public Action[] getWebServiceActions(Node node);
-
-    /**
-     * @return list of consumer-specific actions for port nodes.
-     */
-    public Action[] getPortActions(Node node);
-
-    /**
-     * @return list of consumer-specific actions for method nodes.
-     */
-    public Action[] getMethodActions(Node node);
 }

@@ -158,7 +158,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
 // as modified before the project customizer is shown. 
 //            assert !ProjectManager.getDefault().isModified(project) : 
 //                "Some of the customizer panels has written the changed data before OK Button was pressed. Please file it as bug."; //NOI18N
-            uiProperties.save();
             
             // Close & dispose the the dialog
             Dialog dialog = (Dialog)project2Dialog.get( project );

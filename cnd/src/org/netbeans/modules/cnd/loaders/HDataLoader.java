@@ -92,7 +92,7 @@ public final class HDataLoader extends CndAbstractDataLoaderExt {
         for (String name : newExt) {
             newList.addExtension(name);
         }   
-        putProperty(PROP_EXTENSIONS, newList, true);
+        setExtensions(newList);
     }
     
     protected String getMimeType(){
@@ -123,39 +123,15 @@ public final class HDataLoader extends CndAbstractDataLoaderExt {
 	return new HDataObject(primaryFile, this);
     }
 
-//    public String getDefaultExtension() {
-//        String l = (String)getProperty (PROP_DEFAULT_EXTENSIONS);
-//        if (l == null) {
-//            l = hdrExtensions[0];
-//            putProperty (PROP_DEFAULT_EXTENSIONS, l, false);
-//        }
-//        return l;
-//    }
-//
-//    public void setDefaultExtension(String defaultExtension) {
-//        String oldExtension = getDefaultExtension();
-//        if (!defaultExtension.equals(oldExtension) && getExtensions().isRegistered("a."+defaultExtension)){ // NOI18N
-//            TemplateExtensionUtils.renameCppHExtension(defaultExtension);
-//            TemplateExtensionUtils.renameCHExtension(defaultExtension);
-//            putProperty (PROP_DEFAULT_EXTENSIONS, defaultExtension, true);
-//        }
-//    }
-//
-//    @Override
-//    public void writeExternal (java.io.ObjectOutput oo) throws IOException {
-//        super.writeExternal (oo);
-//        oo.writeObject (getProperty (PROP_DEFAULT_EXTENSIONS));
-//    }
-//
-//    @Override
-//    public void readExternal (java.io.ObjectInput oi)  throws IOException, ClassNotFoundException {
-//        super.readExternal (oi);
-//        setDefaultExtension((String)oi.readObject ());
-//    }
-//
-//    public static final String PROP_DEFAULT_EXTENSIONS = "defaultExtension"; // NOI18N
-    @Override
     public ExtensionList getDefaultExtensionList() {
         return arrayToExtensionList(hdrExtensions);
+    }
+
+    public String getDisplayNameForExtensionList() {
+	return NbBundle.getMessage(HDataLoader.class, "HDataLoader_Name_ForExtList"); // NOI18N
+    }
+
+    public String getDefaultDefaultExtension() {
+        return hdrExtensions[0];
     }
 }

@@ -58,7 +58,7 @@ public class PreprocessorIndentProperty extends PropertySupport.ReadWrite<CodeSt
     private PropertyEditor editor;
 
     public PreprocessorIndentProperty(CodeStyle.Language language, PreviewPreferences preferences, String optionID) {
-        super(optionID, CodeStyle.PreprocessorIndent.class, getString("LBL_"+optionID), getString("HINT_"+optionID));
+        super(optionID, CodeStyle.PreprocessorIndent.class, getString("LBL_"+optionID), getString("HINT_"+optionID)); // NOI18N
         this.language = language;
         this.optionID = optionID;
         this.preferences = preferences;
@@ -85,7 +85,7 @@ public class PreprocessorIndentProperty extends PropertySupport.ReadWrite<CodeSt
     @Override
     public String getHtmlDisplayName() {
         if (!isDefaultValue()) {
-            return "<b>" + getDisplayName();
+            return "<b>" + getDisplayName(); // NOI18N
         }
         return null;
     }
@@ -140,7 +140,7 @@ public class PreprocessorIndentProperty extends PropertySupport.ReadWrite<CodeSt
         @Override
         public String getAsText() {
             Object o = getValue();
-            return o != null ? o.toString() : "";
+            return o != null ? o.toString() : ""; // NOI18N
         }
 
         @Override

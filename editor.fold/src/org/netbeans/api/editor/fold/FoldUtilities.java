@@ -41,7 +41,6 @@
 
 package org.netbeans.api.editor.fold;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -402,8 +401,9 @@ public final class FoldUtilities {
     }
 
     /**
-     * Find the first collapsed fold (deep-diving into the hierarchy)
-     * in the requested boundaries.
+     * Find a first collapsed fold by going from top-level folds to more nested ones
+     * within the requested bounds. Once a collapsed fold is found it is returned
+     * (its children even if they would be collapsed are not inspected).
      *
      * @param hierarchy hierarchy in which to search.
      * @param startOffset &gt;=0 only fold ending above it will be returned.

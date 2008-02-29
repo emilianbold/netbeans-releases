@@ -474,6 +474,10 @@ public class BuildServiceAssembly extends Task {
                 
                 if (realUri.getScheme() == null) {
                     uri = "../" + sesuName + "/META-INF/" + uri;
+                    
+                    // correct the URI (get rid of "META-INF/../")
+                    uri = uri.replace("/META-INF/..", "");
+                    
                     systemNode.setAttribute("uri", uri);
                 }
             }
@@ -531,6 +535,9 @@ public class BuildServiceAssembly extends Task {
             dd.buildDOMTree(connectionResolver, saName, saDescription, casaDocument);
             dd.writeToFile(conFileLoc);
             
+            if (jbiDocument == null) {
+              return;
+            }
             NodeList sas = jbiDocument.getElementsByTagName("service-assembly");
             if ((sas != null) && (sas.getLength() > 0)) {
                 Element sa = (Element) sas.item(0);

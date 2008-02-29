@@ -73,7 +73,6 @@
     
     <service name="service1">
         <port name="port1" binding="tns:binding1">
-            <documentation/>
             <soap:address location="http://localhost:18181/SynchronousSample"/>
         </port>
     </service>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,12 +40,19 @@
  */
 package org.netbeans.modules.ruby.platform;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.JComboBox;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -82,7 +89,7 @@ public final class Util {
         int index = 0;
         int max = line.length();
         while (index < max) {
-            int nextEscape = line.indexOf("\033[", index);
+            int nextEscape = line.indexOf("\033[", index); // NOI18N
             if (nextEscape == -1) {
                 nextEscape = line.length();
             }
@@ -170,6 +177,16 @@ public final class Util {
         return null;
     }
 
+    public static void preselectPlatform(final JComboBox platforms, final String preferencePlatformIDKey) {
+        String lastPlatformID = Util.getPreferences().get(preferencePlatformIDKey, null);
+        if (lastPlatformID != null) {
+            RubyPlatform platform = RubyPlatformManager.getPlatformByID(lastPlatformID);
+            if (platform != null) {
+                platforms.setSelectedItem(platform);
+            }
+        }
+    }
+
     public static void notifyLocalized(Class aClass, String resName, int type, Object... params) {
         String message = NbBundle.getMessage(aClass, resName, params);
         if (type == NotifyDescriptor.ERROR_MESSAGE) {
@@ -182,6 +199,13 @@ public final class Util {
         notifyLocalized(aClass, resName, NotifyDescriptor.INFORMATION_MESSAGE, params);
     }
 
+    /** Returns whether the user confirmed the question or not. */
+    public static boolean confirmLocalized(Class aClass, String resName, Object... params) {
+        String message = NbBundle.getMessage(aClass, resName, params);
+        Object result = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(message, NotifyDescriptor.Confirmation.OK_CANCEL_OPTION));
+        return result.equals(NotifyDescriptor.OK_OPTION);
+    }
+
     public static void setFirstPlatformTouch(boolean b) {
         Util.getPreferences().putBoolean(FIRST_TIME_KEY, b);
     }
@@ -189,4 +213,15 @@ public final class Util {
     static boolean isFirstPlatformTouch() {
         return Util.getPreferences().getBoolean(FIRST_TIME_KEY, true);
     }
+    
+    public static String readAsString(final InputStream is) throws IOException {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            FileUtil.copy(is, baos);
+            return baos.toString("UTF-8"); // NOI18N
+        } finally {
+            is.close();
+        }
+    }
+    
 }

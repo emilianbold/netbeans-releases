@@ -85,7 +85,7 @@ public class EditorOptions {
     public static final String sharpAtStartLine = "sharpAtStartLine"; //NOI18N
     public static final boolean sharpAtStartLineDefault = true;
     public static final String indentCasesFromSwitch = "indentCasesFromSwitch"; //NOI18N
-    public static final boolean indentCasesFromSwitchDefault = false;
+    public static final boolean indentCasesFromSwitchDefault = true;
 
     //BracesPlacement
     public static final String newLineBeforeBraceNamespace = "newLineBeforeBraceNamespace"; //NOI18N
@@ -256,16 +256,15 @@ public class EditorOptions {
     public static final String addLeadingStarInComment = "addLeadingStarInComment"; // NOI18N
     public static final Boolean addLeadingStarInCommentDefault = true;
     
+    private static final String APACHE_PROFILE = "Apache"; // NOI18N
+    private static final String CUSTOM_PROFILE = "Custom"; // NOI18N
+    private static final String DEFAULT_PROFILE = "Default"; // NOI18N
 
-    private static final Preferences preferences = NbPreferences.forModule(EditorOptions.class);
-
-    public static final String DEFAULT_PROFILE = "Default"; // NOI18N
-    public static final String APACHE_PROFILE = "Apache"; // NOI18N
+    public static final String[] PREDEFINED_STYLES = new String[]
+                              {DEFAULT_PROFILE, APACHE_PROFILE, CUSTOM_PROFILE};
 
     private static Map<String,Object> defaults;
     private static Map<String,Map<String,Object>> namedDefaults;
-    
-    static Preferences lastValues;
     
     static {
         createDefaults();
@@ -374,30 +373,41 @@ public class EditorOptions {
 //          the * character (e.g., "(char *)i" instead of "(char*)i")
         Map<String,Object> apache = new HashMap<String,Object>();
         namedDefaults.put(APACHE_PROFILE, apache);
+        apache.put(indentCasesFromSwitch, false);
+// Placeholder for custom style        
+        Map<String,Object> custom = new HashMap<String,Object>();
+        namedDefaults.put(CUSTOM_PROFILE, custom);
     }
 
     public static Object getDefault(CodeStyle.Language language, String styleId, String id){
+        Map<String,Object> map = namedDefaults.get(styleId);
+        if (map != null){
+            Object res = map.get(id);
+            if (res != null){
+                return res;
+            }
+        }
         return defaults.get(id);
     }
     
     public static String getCurrentProfileId(CodeStyle.Language language) {
         switch(language){
             case C:
-                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("C_Style", DEFAULT_PROFILE);
+                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("C_Style", DEFAULT_PROFILE); // NOI18N
             case CPP:
             default:
-                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("CPP_Style", DEFAULT_PROFILE);
+                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("CPP_Style", DEFAULT_PROFILE); // NOI18N
         }
     }
 
     public static void setCurrentProfileId(CodeStyle.Language language, String style) {
         switch(language){
             case C:
-                NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put("C_Style", style);
+                NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put("C_Style", style); // NOI18N
                 break;
             case CPP:
             default:
-                NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put("CPP_Style", style);
+                NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put("CPP_Style", style); // NOI18N
                 break;
         }
     }
@@ -405,16 +415,16 @@ public class EditorOptions {
     public static Preferences getPreferences(CodeStyle.Language language, String profileId) {
         switch(language){
             case C:
-                return NbPreferences.forModule(CodeStyle.class).node("C_CodeStyles").node(profileId);
+                return NbPreferences.forModule(CodeStyle.class).node("C_CodeStyles").node(profileId); // NOI18N
             case CPP:
             default:
-                return NbPreferences.forModule(CodeStyle.class).node("CPP_CodeStyles").node(profileId);
+                return NbPreferences.forModule(CodeStyle.class).node("CPP_CodeStyles").node(profileId); // NOI18N
         }
     }
 
 
     public static int getGlobalIndentSize(CodeStyle.Language language) {
-        Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter");
+        Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter"); // NOI18N
         if (f != null) {
             return f.getShiftWidth();
         }
@@ -447,6 +457,19 @@ public class EditorOptions {
 
     public static Preferences getPreferences(CodeStyle codeStyle){
         return codeStyleFactory.getPreferences(codeStyle);
+    }
+
+    public static void resetToDefault(CodeStyle codeStyle){
+        Preferences preferences = getPreferences(codeStyle);
+        for(Map.Entry<String,Object> entry : defaults.entrySet()){
+            if (entry.getValue() instanceof Boolean){
+                preferences.putBoolean(entry.getKey(), (Boolean)entry.getValue());
+            } else if (entry.getValue() instanceof Integer){
+                preferences.putInt(entry.getKey(), (Integer)entry.getValue());
+            } else {
+                preferences.put(entry.getKey(), entry.getValue().toString());
+            }
+        }
     }
 
     public static void setPreferences(CodeStyle codeStyle, Preferences preferences){

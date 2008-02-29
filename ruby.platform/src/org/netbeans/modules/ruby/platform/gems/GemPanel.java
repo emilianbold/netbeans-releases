@@ -44,6 +44,7 @@ package org.netbeans.modules.ruby.platform.gems;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,6 +52,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.DefaultListModel;
@@ -70,7 +73,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.platform.Util;
@@ -88,14 +90,14 @@ import org.openide.util.RequestProcessor;
  * @todo Use a table instead of a list for the gem lists, use checkboxes to choose
  *   items to be uninstalled, and show the installation date (based
  *   on file timestamps)
- *
- * @author  Tor Norbye
  */
 public final class GemPanel extends JPanel implements Runnable {
 
+    private static final Logger LOGGER = Logger.getLogger(GemPanel.class.getName());
+    
     private static final String LAST_GEM_DIRECTORY = "lastLocalGemDirectory"; // NOI18N
 
-    private static final String LAST_PLATFORM_ID = "gemPanellastPlatformID"; // NOI18N
+    private static final String LAST_PLATFORM_ID = "gemPanelLastPlatformID"; // NOI18N
 
     static enum TabIndex { UPDATED, INSTALLED, NEW; }
     
@@ -111,16 +113,8 @@ public final class GemPanel extends JPanel implements Runnable {
     
     public GemPanel(String availableFilter) {
         initComponents();
-
-        RubyPlatform platform = null;
-        String lastPlatformID = Util.getPreferences().get(LAST_PLATFORM_ID, null);
-        if (lastPlatformID != null) {
-            platform = RubyPlatformManager.getPlatformByID(lastPlatformID);
-        }
-        if (platform == null) {
-            platform = RubyPlatformManager.getDefaultPlatform();
-        }
-        platforms.setSelectedItem(platform);
+        Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
+        
         RubyPlatform selPlatform = getSelectedPlatform();
         if (selPlatform != null) {
             this.gemManager = selPlatform.getGemManager();
@@ -178,7 +172,7 @@ public final class GemPanel extends JPanel implements Runnable {
                     setEnabledGUI(false);
                 } else {
                     gemHomeValue.setText(gemManager.getGemHome());
-                    gemHomeValue.setForeground(UIManager.getColor("Label.foreground"));
+                    gemHomeValue.setForeground(UIManager.getColor("Label.foreground")); // NOI18N
                     setEnabledGUI(false);
                     refreshUpdated();
                 }
@@ -807,11 +801,13 @@ public final class GemPanel extends JPanel implements Runnable {
 
         gemsTab.addTab(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.settingsPanel.TabConstraints.tabTitle"), settingsPanel); // NOI18N
 
+        rubyPlatformLabel.setLabelFor(platforms);
         org.openide.awt.Mnemonics.setLocalizedText(rubyPlatformLabel, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.rubyPlatformLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(manageButton, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.manageButton.text")); // NOI18N
         manageButton.addActionListener(formListener);
 
+        gemHome.setLabelFor(gemHomeValue);
         org.openide.awt.Mnemonics.setLocalizedText(gemHome, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.gemHome.text")); // NOI18N
 
         gemHomeValue.setEditable(false);
@@ -866,6 +862,13 @@ public final class GemPanel extends JPanel implements Runnable {
         );
 
         gemsTab.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.gemsTab.AccessibleContext.accessibleName")); // NOI18N
+        gemsTab.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.gemsTab.AccessibleContext.accessibleDescription")); // NOI18N
+        platforms.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.platforms.AccessibleContext.accessibleName")); // NOI18N
+        platforms.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.platforms.AccessibleContext.accessibleDescription")); // NOI18N
+        manageButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.manageButton.AccessibleContext.accessibleDescription")); // NOI18N
+        gemHomeValue.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.gemHomeValue.AccessibleContext.accessibleName")); // NOI18N
+        gemHomeValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.gemHomeValue.AccessibleContext.accessibleDescription")); // NOI18N
+        browseGemHome.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.browseGemHome.AccessibleContext.accessibleDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.AccessibleContext.accessibleDescription")); // NOI18N
@@ -1079,8 +1082,18 @@ public final class GemPanel extends JPanel implements Runnable {
             if (GemManager.isValidGemHome(gemHomeF)) {
                 return gemHomeF;
             }
-            // XXX if not a valid repo, offer to create/initialize it there
-            Util.notifyLocalized(GemPanel.class, "GemPanel.invalid.gemHome", gemHomeF.getAbsolutePath());
+            if (!gemHomeF.exists() || (gemHomeF.isDirectory() && gemHomeF.list().length == 0)) {
+                if (Util.confirmLocalized(GemPanel.class, "GemPanel.empty.create.gemrepo", gemHomeF.getAbsolutePath())) { // NOI18N
+                    try {
+                        GemManager.initializeRepository(gemHomeF);
+                        return gemHomeF;
+                    } catch (IOException ioe) {
+                        LOGGER.log(Level.SEVERE, ioe.getLocalizedMessage(), ioe);
+                    }
+                }
+            } else {
+                Util.notifyLocalized(GemPanel.class, "GemPanel.invalid.gemHome", gemHomeF.getAbsolutePath()); // NOI18N
+            }
         }
         return null;
     }
@@ -1148,7 +1161,7 @@ public final class GemPanel extends JPanel implements Runnable {
         for (String error : errors) {
             sb.append(error);
         }
-        Util.notifyLocalized(GemPanel.class, "GemPanel.NoNetwork", NotifyDescriptor.ERROR_MESSAGE, sb.toString());
+        Util.notifyLocalized(GemPanel.class, "GemPanel.NoNetwork", NotifyDescriptor.ERROR_MESSAGE, sb.toString()); // NOI18N
     }
 
     private void refreshGemLists() {

@@ -58,7 +58,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.GenericResourceBean;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.rest.model.api.RestConstants;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
@@ -73,7 +73,7 @@ import org.openide.util.NbBundle;
  * @author nam
  */
 public class GenericResourceGenerator extends AbstractGenerator {
-    public static final String RESOURCE_TEMPLATE = "Templates/WebServices/GenericResource.java"; //NOI18N
+    public static final String RESOURCE_TEMPLATE = TEMPLATES_SAAS+"GenericResource.java"; //NOI18N
     public static final String COMMENT_END_OF_GET = "TODO return proper representation object";
     
     private FileObject destDir;
@@ -167,7 +167,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
                     JavaSourceHelper.addImports(copy, getJsr311AnnotationImports(bean));
                     if (bean.isGenerateUriTemplate()) {
                         JavaSourceHelper.addClassAnnotation(copy,
-                                new String[] { RestConstants.PATH_ANNOTATION  },
+                                new String[] { Constants.PATH_ANNOTATION  },
                                 new Object[] { bean.getUriTemplate() });
                     }
                     
@@ -190,22 +190,22 @@ public class GenericResourceGenerator extends AbstractGenerator {
     public static String[] getJsr311AnnotationImports(GenericResourceBean rbean) {
         HashSet<String> result = new HashSet<String>();
         if (rbean.isGenerateUriTemplate()) {
-            result.add(RestConstants.PATH);
+            result.add(Constants.PATH);
         }
         if (rbean.getUriParams().length > 0) {
-            result.add(RestConstants.URI_PARAM);
+            result.add(Constants.URI_PARAM);
         }
         for (HttpMethodType m : rbean.getMethodTypes()) {
             result.add(m.getAnnotationType());
             if (m == HttpMethodType.GET) {
-                result.add(RestConstants.PRODUCE_MIME);
+                result.add(Constants.PRODUCE_MIME);
             }
             if (m == HttpMethodType.POST || m == HttpMethodType.PUT) {
-                result.add(RestConstants.CONSUME_MIME);
+                result.add(Constants.CONSUME_MIME);
             }
         }
         if (rbean.getQueryParameters().size() > 0) {
-            result.add(RestConstants.QUERY_PARAM);
+            result.add(Constants.QUERY_PARAM);
         }
         return result.toArray(new String[result.size()]);
     }
@@ -238,8 +238,8 @@ public class GenericResourceGenerator extends AbstractGenerator {
         Modifier[] modifiers = Constants.PUBLIC;
         
         String[] annotations = new String[] {
-            RestConstants.GET_ANNOTATION,
-            RestConstants.PRODUCE_MIME_ANNOTATION};
+            Constants.GET_ANNOTATION,
+            Constants.PRODUCE_MIME_ANNOTATION};
         
         Object[] annotationAttrs = new Object[] {
             null,
@@ -274,9 +274,9 @@ public class GenericResourceGenerator extends AbstractGenerator {
         Modifier[] modifiers = Constants.PUBLIC;
         
         String[] annotations = new String[] {
-            RestConstants.POST_ANNOTATION,
-            RestConstants.CONSUME_MIME_ANNOTATION,
-            RestConstants.PRODUCE_MIME_ANNOTATION
+            Constants.POST_ANNOTATION,
+            Constants.CONSUME_MIME_ANNOTATION,
+            Constants.PRODUCE_MIME_ANNOTATION
         };
         
         Object[] annotationAttrs = new Object[] {
@@ -310,8 +310,8 @@ public class GenericResourceGenerator extends AbstractGenerator {
         Modifier[] modifiers = Constants.PUBLIC;
         
         String[] annotations = new String[] {
-            RestConstants.PUT_ANNOTATION,
-            RestConstants.CONSUME_MIME_ANNOTATION
+            Constants.PUT_ANNOTATION,
+            Constants.CONSUME_MIME_ANNOTATION
         };
         
         Object[] annotationAttrs = new Object[] {
@@ -346,7 +346,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         Modifier[] modifiers = Constants.PUBLIC;
         
         String[] annotations = new String[] {
-            RestConstants.DELETE_ANNOTATION,
+            Constants.DELETE_ANNOTATION,
         };
         
         Object[] annotationAttrs = new Object[] { null };
@@ -376,7 +376,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         String methodName = "get" + subBean.getName();  //NOI18N
         
         String[] annotations = new String[] {
-            RestConstants.PATH_ANNOTATION
+            Constants.PATH_ANNOTATION
         
         };
         
@@ -448,7 +448,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         }
         String[] annos = new String [allParamCount];
         for (int i=0; i<uriParamCount; i++) {
-            annos[i] = RestConstants.URI_PARAM_ANNOTATION;
+            annos[i] = Constants.URI_PARAM_ANNOTATION;
         }
         for (int i=uriParamCount; i<allParamCount; i++) {
             annos[i] = null;
@@ -460,18 +460,18 @@ public class GenericResourceGenerator extends AbstractGenerator {
         ArrayList<String[]> annos = new ArrayList<String[]>();
      
         for (String uriParam : bean.getUriParams()) {
-            annos.add(new String[] {RestConstants.URI_PARAM_ANNOTATION});
+            annos.add(new String[] {Constants.URI_PARAM_ANNOTATION});
         }
         
         String[] annotations = null;
         for (ParameterInfo param : queryParams) {
             if (param.getDefaultValue() != null) {
                 annotations = new String[] {
-                    RestConstants.QUERY_PARAM_ANNOTATION,
-                       RestConstants.DEFAULT_VALUE_ANNOTATION
+                    Constants.QUERY_PARAM_ANNOTATION,
+                       Constants.DEFAULT_VALUE_ANNOTATION
                 };
             } else {
-                annotations = new String[] {RestConstants.QUERY_PARAM_ANNOTATION};
+                annotations = new String[] {Constants.QUERY_PARAM_ANNOTATION};
             }
             annos.add(annotations);
         }
@@ -555,7 +555,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         for (ParameterInfo param : params) {
             Object defaultValue = null;
             
-            if (!param.isQueryParam()) {
+            if (param.getStyle() != ParamStyle.QUERY) {
                 defaultValue = param.getDefaultValue();
             }
             

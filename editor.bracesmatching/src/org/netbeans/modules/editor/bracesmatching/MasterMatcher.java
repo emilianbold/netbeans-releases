@@ -48,11 +48,9 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
-import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
@@ -298,6 +296,7 @@ public final class MasterMatcher {
     private static void navigateAreas(
         int [] origin, 
         int [] matches,
+        int caretOffset,
         Object caretBias,
         Caret caret,
         boolean select
@@ -322,8 +321,20 @@ public final class MasterMatcher {
             
             if (newDotBackwardIdx != -1) {
                 if (select) {
-                    caret.setDot(origin[0]);
-                    caret.moveDot(matches[2 * newDotBackwardIdx + 1]);
+                    int set, move;
+                    
+                    if (caretOffset < origin[1]) {
+                        set = origin[0];
+                        move = matches[2 * newDotBackwardIdx + 1];
+                    } else {
+                        set = origin[1];
+                        move = matches[2 * newDotBackwardIdx];
+                    }
+
+                    if (caret.getDot() == caret.getMark() || (move <= caret.getMark() && caret.getMark() <= set)) {
+                        caret.setDot(set);
+                    }
+                    caret.moveDot(move);
                 } else {
                     if (B_BACKWARD.equalsIgnoreCase(caretBias.toString())) {
                         caret.setDot(matches[2 * newDotBackwardIdx + 1]);
@@ -333,8 +344,20 @@ public final class MasterMatcher {
                 }
             } else if (newDotForwardIdx != -1) {
                 if (select) {
-                    caret.setDot(origin[1]);
-                    caret.moveDot(matches[2 * newDotForwardIdx]);
+                    int set, move;
+
+                    if (caretOffset > origin[0]) {
+                        set = origin[1];
+                        move = matches[2 * newDotForwardIdx];
+                    } else {
+                        set = origin[0];
+                        move = matches[2 * newDotForwardIdx + 1];
+                    }
+                    
+                    if (caret.getDot() == caret.getMark() || (set <= caret.getMark() && caret.getMark() <= move)) {
+                        caret.setDot(set);
+                    }
+                    caret.moveDot(move);
                 } else {
                     if (B_BACKWARD.equalsIgnoreCase(caretBias.toString())) {
                         caret.setDot(matches[2 * newDotForwardIdx + 1]);
@@ -541,7 +564,7 @@ public final class MasterMatcher {
             }
 
             for(Object [] job : navigationJobs) {
-                navigateAreas(origin, matches, caretBias, (Caret) job[0], (Boolean) job[1]);
+                navigateAreas(origin, matches, caretOffset, caretBias, (Caret) job[0], (Boolean) job[1]);
             }
         }
         
@@ -610,7 +633,9 @@ public final class MasterMatcher {
                         break;
                     }
                 }
-
+            }
+            
+            if (matcher[0] != null) {
                 // Find the original area
                 int [] origin = null;
                 try {
@@ -627,13 +652,13 @@ public final class MasterMatcher {
                         if (LOG.isLoggable(Level.WARNING)) {
                             LOG.warning("Invalid BracesMatcher implementation, " + //NOI18N
                                 "findOrigin() should return nothing or offset pairs. " + //NOI18N
-                                "Offending BracesMatcher: " + matcher); //NOI18N
+                                "Offending BracesMatcher: " + matcher[0]); //NOI18N
                         }
                         origin = null;
                     } else if (origin[0] < 0 || origin[1] > document.getLength() || origin[0] > origin[1]) {
                         if (LOG.isLoggable(Level.WARNING)) {
                             LOG.warning("Invalid origin offsets [" + origin[0] + ", " + origin[1] + "]. " + //NOI18N
-                                "Offending BracesMatcher: " + matcher); //NOI18N
+                                "Offending BracesMatcher: " + matcher[0]); //NOI18N
                         }
                         origin = null;
                     } else {
@@ -645,7 +670,7 @@ public final class MasterMatcher {
                                         "caretOffset = " + caretOffset + //NOI18N
                                         ", lookahead = " + lookahead + //NOI18N
                                         ", searching backwards. " + //NOI18N
-                                        "Offending BracesMatcher: " + matcher); //NOI18N
+                                        "Offending BracesMatcher: " + matcher[0]); //NOI18N
                                 }
                                 origin = null;
                             }
@@ -657,7 +682,7 @@ public final class MasterMatcher {
                                         "caretOffset = " + caretOffset + //NOI18N
                                         ", lookahead = " + lookahead + //NOI18N
                                         ", searching forward. " + //NOI18N
-                                        "Offending BracesMatcher: " + matcher); //NOI18N
+                                        "Offending BracesMatcher: " + matcher[0]); //NOI18N
                                 }
                                 origin = null;
                             }

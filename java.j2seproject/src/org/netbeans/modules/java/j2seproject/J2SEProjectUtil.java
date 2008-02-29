@@ -44,9 +44,8 @@ package org.netbeans.modules.java.j2seproject;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -102,6 +101,14 @@ public class J2SEProjectUtil {
             return false;
         }
         return !SourceUtils.getMainClasses(fo).isEmpty();
+    }
+    
+    public static Collection<ElementHandle<TypeElement>> getMainMethods (final FileObject fo) {
+        // support for unit testing
+        if (fo == null || MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
+            return Collections.<ElementHandle<TypeElement>>emptySet();
+        }
+        return SourceUtils.getMainClasses(fo);
     }
 
         

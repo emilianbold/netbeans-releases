@@ -112,7 +112,6 @@ public class AbstractGlassPaneButton extends JToggleButton implements ActionList
                 }
             });
         }
-        
     }
     
     private DesignView getDesignView() {

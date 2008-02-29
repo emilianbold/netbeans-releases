@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -48,9 +48,7 @@ import java.util.Set;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.RubyTestBase;
-import org.netbeans.api.ruby.platform.RubyTestBase.IFL;
 import org.netbeans.api.ruby.platform.TestUtil;
-import org.netbeans.junit.MockServices;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
@@ -59,7 +57,6 @@ public class GemManagerTest extends RubyTestBase {
 
     public GemManagerTest(final String testName) {
         super(testName);
-        MockServices.setServices(IFL.class);
         TestUtil.getXTestJRubyHome();
     }
 
@@ -110,7 +107,7 @@ public class GemManagerTest extends RubyTestBase {
     }
     
     public void testGetRepositories() throws Exception {
-        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
         Set<? extends File> paths = gemManager.getRepositories();
         assertEquals("one path element", 1, paths.size());
@@ -119,7 +116,7 @@ public class GemManagerTest extends RubyTestBase {
     }
     
     public void testAddRemoveRepository() throws Exception {
-        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
         File dummyRepo = new File(getWorkDirPath(), "/a");
         gemManager.addGemPath(dummyRepo);
@@ -131,7 +128,7 @@ public class GemManagerTest extends RubyTestBase {
     }
     
     public void testAddTheSameRepositoryTwice() {
-        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
         File dummyRepo = new File(getWorkDirPath(), "/a");
         assertTrue("successfuly added", gemManager.addGemPath(dummyRepo));
@@ -144,8 +141,14 @@ public class GemManagerTest extends RubyTestBase {
         GemManager.isValidGemHome(FileUtil.toFile(gemRepo));
     }
     
+    public void testInitializeRepositoryFile() throws Exception {
+        File gemRepo = new File(getWorkDir(), "gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        GemManager.isValidGemHome(gemRepo);
+    }
+    
     public void testGetVersionForPlatform() throws IOException {
-        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
         FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
@@ -227,7 +230,7 @@ public class GemManagerTest extends RubyTestBase {
     }
     
     public void testInstallLocal() throws IOException {
-        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
         FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");

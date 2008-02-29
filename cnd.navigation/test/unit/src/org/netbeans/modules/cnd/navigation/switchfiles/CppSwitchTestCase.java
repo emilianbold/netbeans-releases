@@ -62,14 +62,15 @@ public class CppSwitchTestCase extends TraceModelTestBase {
         performTest("", source + ".dat", source + ".err"); // NOI18N
     }
 
-    protected @Override void postTest(String[] args) {
+    protected @Override void postTest(String[] args, Object... params) {
         CsmProject project = getCsmProject();
         Collection<CsmFile> files = project.getAllFiles();
         assert files.size() > 0;
         for (CsmFile csmFile : files) {
             if (csmFile.getAbsolutePath().toString().indexOf("welcome.cc")!=-1) { //NOI18N
                 CsmFile f = CppSwitchAction.findHeader(csmFile);
-                assert f!=null && f.getAbsolutePath().toString().indexOf("dir1" + File.separator +"welcome.h")!=-1; //NOI18N
+                assertNotNull("Correspondent header not found", f);
+                assertNotSame("Wrong header was found", f.getAbsolutePath().toString().indexOf("dir1" + File.separator +"welcome.h"), -1);
             } else if (csmFile.getAbsolutePath().toString().indexOf("welcome.h")!=-1) { //NOI18N
                 CsmFile f = CppSwitchAction.findSource(csmFile);
                 assert f!=null && f.getAbsolutePath().toString().indexOf("welcome.cc")!=-1; //NOI18N

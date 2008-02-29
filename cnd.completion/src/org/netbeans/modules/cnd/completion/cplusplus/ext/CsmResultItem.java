@@ -187,7 +187,9 @@ public abstract class CsmResultItem
 
     public int getPreferredWidth(Graphics g, Font defaultFont) {
         Component renderComponent = getPaintComponent(false);
-        return renderComponent.getPreferredSize().width;
+        renderComponent.setFont(defaultFont);
+        int width = renderComponent.getPreferredSize().width;
+        return width;
     }
 
     public void render(Graphics g, Font defaultFont, Color defaultColor,
@@ -564,6 +566,16 @@ public abstract class CsmResultItem
         }
     }
     
+    public static class FileLocalFunctionResultItem extends MethodResultItem {
+        public FileLocalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity) {
+            super(mtd, substituteExp, priotity);
+        }
+        
+        protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent(){
+            return new CsmPaintComponent.FileLocalFunctionPaintComponent();
+        }
+    }
+    
     public static class GlobalFunctionResultItem extends MethodResultItem {
         public GlobalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity) {
             super(mtd, substituteExp, priotity);
@@ -757,12 +769,13 @@ public abstract class CsmResultItem
             return ret;
         }
         
+        @Override
         public boolean substituteText(JTextComponent c, int offset, int len, boolean shift) {
             
             if (true) {
-            BaseDocument doc = (BaseDocument)c.getDocument();
-            String text = null;
-            boolean addParams = true;
+                BaseDocument doc = (BaseDocument) c.getDocument();
+                String text = null;
+                boolean addParams = true;
 //            CsmCompletionExpression exp = substituteExp;
 //            while(exp != null) {
 ////                if (exp.getExpID() == CsmCompletionExpression.IMPORT) {
@@ -772,306 +785,156 @@ public abstract class CsmResultItem
 //                exp = exp.getParent();
 //            }
 
-            switch ((substituteExp != null) ? substituteExp.getExpID() : -1) {
-            case CsmCompletionExpression.METHOD:
-                // no subst
-                break;
+                switch ((substituteExp != null) ? substituteExp.getExpID() : -1) {
+                    case CsmCompletionExpression.METHOD:
+                        // no subst
+                        break;
 
-            case CsmCompletionExpression.METHOD_OPEN:
-                int parmsCnt = params.size();
-                if (parmsCnt == 0) {
-                    if (getActiveParameterIndex() == -1) { // not showing active parm
-                        try {
-                            int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
-                            if (fnwpos > -1 && doc.getChars(fnwpos, 1)[0] == ')') { // NOI18N
-                                text = doc.getText(offset + len, fnwpos + 1 - offset - len);
-                                len = fnwpos + 1 - offset;
-                            }
-                        } catch (BadLocationException e) {
-                        }
-                        if (text == null)
-                            text = ")"; // NOI18N
-                    }
-
-                } else { // one or more parameters
-                    int activeParamIndex = getActiveParameterIndex();
-                    if (activeParamIndex != -1) { // Active parameter being shown
-                        boolean substed = false;
-                        if (activeParamIndex < parmsCnt) {
-                            String paramName = ((ParamStr)params.get(activeParamIndex)).getName();
-                            if (paramName != null) {
-                                try {
-                                    // Fill in the parameter's name
-                                    doc.insertString(c.getCaretPosition(), paramName, null);
-                                    substed = true;
-                                } catch (BadLocationException e) {
-                                    // Can't insert
-                                }
-                            }
-                        }
-                        return substed;
-                    }
-                    int ind = substituteExp.getParameterCount() - 1;
-                    boolean addSpace = CodeStyle.getDefault(doc).spaceAfterComma();
-                    try {
-                        if (addSpace && (ind == 0 || (offset > 0 && Character.isWhitespace(DocumentUtilities.getText(doc, offset - 1, 1).charAt(0))))) {
-                            addSpace = false;
-                        }
-                    } catch (BadLocationException e) {
-                    }
-
-                    boolean isVarArg = parmsCnt > 0 ? ((ParamStr)params.get(parmsCnt - 1)).isVarArg() : false;
-                    if (ind < parmsCnt || isVarArg) {
-                        text = addSpace ? " " : ""; // NOI18N
-                    }
-                }
-                break;
-
-            default:
-                text = getItemText();
-                boolean addSpace = CodeStyle.getDefault(doc).spaceBeforeMethodCallParen();//getFormatSpaceBeforeParenthesis();
-                boolean addClosingParen = false;
-                Formatter f = doc.getFormatter();
-                if (f instanceof ExtFormatter) {
-                    Object o = ((ExtFormatter)f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
-                    o = Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION);
-                    if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
-                        addClosingParen = true;
-                    }
-                }
-
-                if (addParams) {
-                    String paramsText = null;
-                    try {
-                        int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
-                        if (fnwpos > -1 && fnwpos <= Utilities.getRowEnd(doc, offset + len) && doc.getChars(fnwpos, 1)[0] == '(') { // NOI18N
-                            paramsText = doc.getText(offset + len, fnwpos + 1 - offset - len);
-                            if (addSpace && paramsText.length() < 2)
-                                text += ' '; // NOI18N
-                            len = fnwpos + 1 - offset;
-                            text += paramsText;
-                            toAdd = null; // do not add '.', ',', ';'
-                        }
-                    } catch (BadLocationException e) {
-                    }
-                    if (paramsText == null) {
-                        if (addSpace) {
-                            text += ' '; // NOI18N
-                        }
-                        text += '('; // NOI18N
-                        if (params.size() > 0) {
-                            selectionStartOffset = selectionEndOffset = text.length();
-                            Completion completion = Completion.get();
-                            completion.hideCompletion();
-                            completion.hideDocumentation();
-                            completion.showToolTip();
-                        }
-                        if (addClosingParen)
-                            text += ")"; // NOI18N
-                    } else {
-                        try {
-                            int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
-                            if (fnwpos > -1 && doc.getChars(fnwpos, 1)[0] == ')') { // NOI18N
-                                paramsText = doc.getText(offset + len, fnwpos + 1 - offset - len);
-                                len = fnwpos + 1 - offset;
-                                if (params.size() > 0) {
-                                    selectionStartOffset = selectionEndOffset = text.length();
-                                }
-                                text += paramsText;
-                            }
-                        } catch (BadLocationException e) {
-                        }
-                    }
-                }
-                break;
-            }
-
-            if (text != null) {
-                if (toAdd != null && !toAdd.equals("\n") && !"(".equals(toAdd)) // NOI18N
-                    text += toAdd;
-                // Update the text
-                doc.atomicLock();
-                try {
-                    CharSequence textToReplace = DocumentUtilities.getText(doc, offset, len);
-                    if (CharSequenceUtilities.textEquals(text, textToReplace)) {
-                        c.setCaretPosition(offset + len);
-                        return false;
-                    }
-                    doc.remove(offset, len);
-                    doc.insertString(offset, text, null);
-                    if (selectionStartOffset >= 0) {
-                        c.select(offset + selectionStartOffset,
-                        offset + selectionEndOffset);
-                    } else if ("(".equals(toAdd)) { // NOI18N
-                        int index = text.lastIndexOf(')');
-                        if (index > -1) {
-                            c.setCaretPosition(offset + index);
-                        }
-                    }
-                } catch (BadLocationException e) {
-                    // Can't update
-                } finally {
-                    doc.atomicUnlock();
-                }
-                return true;
-            } else {
-                return false;
-            }
-            }
-            if (false) {
-            String text = null ;
-            BaseDocument doc = (BaseDocument)c.getDocument();
-            
-            int selectionStartOffset = -1;
-            int selectionEndOffset = -1;
-            
-            switch ((substituteExp != null) ? substituteExp.getExpID() : -1) {
-                case CsmCompletionExpression.METHOD:
-                    // no subst
-                    break;
-                    
-                case CsmCompletionExpression.METHOD_OPEN:
-                    CsmParameter[] parms = (CsmParameter[]) ctr.getParameters().toArray(new CsmParameter[0]);
-                    if (parms.length == 0) {
-                        try {
-                            int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
-                            if (fnwpos > -1 && doc.getChars(fnwpos, 1)[0] == ')') { // NOI18N
-                                text = doc.getText(offset + len, fnwpos + 1 - offset - len);
-                                len = fnwpos + 1 - offset;
-                            }
-                        } catch (BadLocationException e) {
-                        }
-                        if (text == null)
-                            text = ")"; // NOI18N
-                    } else { // one or more parameters
-                        int ind = substituteExp.getParameterCount() - 1;
-                        boolean addSpace = CodeStyle.getDefault(doc).spaceAfterComma();
-                        boolean addClosingParen = false;
-                        Formatter f = doc.getFormatter();
-                        if (f instanceof ExtFormatter) {
-                            // XXX CPP settings
-                            Object o = ((ExtFormatter)f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
-                            if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
-                                addClosingParen = true;
-                            }
-                        }
-                        
-                        try {
-                            if (addSpace && (ind == 0 || (offset > 0
-                                    && Character.isWhitespace(doc.getText(offset - 1, 1).charAt(0))))
-                                    ) {
-                                addSpace = false;
-                            }
-                        } catch (BadLocationException e) {
-                        }
-                        
-                        if (ind < parms.length) {
-                            text = addSpace ? " " : ""; // NOI18N
-                            selectionStartOffset = text.length();
-                            text += parms[ind].getName();
-                            selectionEndOffset = text.length();
-                            if (addClosingParen && ind == parms.length - 1) {
-                                String paramsText = null;
+                    case CsmCompletionExpression.METHOD_OPEN:
+                        int parmsCnt = params.size();
+                        if (parmsCnt == 0) {
+                            if (getActiveParameterIndex() == -1) { // not showing active parm
                                 try {
                                     int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
                                     if (fnwpos > -1 && doc.getChars(fnwpos, 1)[0] == ')') { // NOI18N
-                                        paramsText = doc.getText(offset + len, fnwpos + 1 - offset - len);
-                                        text += paramsText;
+                                        text = doc.getText(offset + len, fnwpos + 1 - offset - len);
                                         len = fnwpos + 1 - offset;
                                     }
                                 } catch (BadLocationException e) {
                                 }
-                                if (paramsText == null)
-                                    text += ')'; // NOI18N
+                                if (text == null) {
+                                    text = ")";
+                                } // NOI18N
+                            }
+
+                        } else { // one or more parameters
+                            int activeParamIndex = getActiveParameterIndex();
+                            if (activeParamIndex != -1) { // Active parameter being shown
+                                boolean substed = false;
+                                if (activeParamIndex < parmsCnt) {
+                                    String paramName = ((ParamStr) params.get(activeParamIndex)).getName();
+                                    if (paramName != null) {
+                                        try {
+                                            // Fill in the parameter's name
+                                            doc.insertString(c.getCaretPosition(), paramName, null);
+                                            substed = true;
+                                        } catch (BadLocationException e) {
+                                            // Can't insert
+                                        }
+                                    }
+                                }
+                                return substed;
+                            }
+                            int ind = substituteExp.getParameterCount() - 1;
+                            boolean addSpace = CodeStyle.getDefault(doc).spaceAfterComma();
+                            try {
+                                if (addSpace && (ind == 0 || (offset > 0 && Character.isWhitespace(DocumentUtilities.getText(doc, offset - 1, 1).charAt(0))))) {
+                                    addSpace = false;
+                                }
+                            } catch (BadLocationException e) {
+                            }
+
+                            boolean isVarArg = parmsCnt > 0 ? ((ParamStr) params.get(parmsCnt - 1)).isVarArg() : false;
+                            if (ind < parmsCnt || isVarArg) {
+                                text = addSpace ? " " : ""; // NOI18N
                             }
                         }
-                    }
-                    break;
-                    
-                default:
-                    text = getItemText();
-                    boolean addSpace = CodeStyle.getDefault(doc).spaceBeforeMethodCallParen();//getFormatSpaceBeforeParenthesis();
-                    boolean addClosingParen = false;
-                    Formatter f = doc.getFormatter();
-                    if (f instanceof ExtFormatter) {
-                        Object o =Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION);
-//                        o = ((ExtFormatter)f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
-                        if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
-                            addClosingParen = true;
+                        break;
+
+                    default:
+                        text = getItemText();
+                        boolean addSpace = CodeStyle.getDefault(doc).spaceBeforeMethodCallParen();//getFormatSpaceBeforeParenthesis();
+                        boolean addClosingParen = false;
+                        Formatter f = doc.getFormatter();
+                        if (f instanceof ExtFormatter) {
+                            Object o = ((ExtFormatter) f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
+                            o = Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION);
+                            if ((o instanceof Boolean) && ((Boolean) o).booleanValue()) {
+                                addClosingParen = true;
+                            }
                         }
+
+                        if (addParams) {
+                            String paramsText = null;
+                            try {
+                                int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
+                                if (fnwpos > -1 && fnwpos <= Utilities.getRowEnd(doc, offset + len) && doc.getChars(fnwpos, 1)[0] == '(') { // NOI18N
+                                    paramsText = doc.getText(offset + len, fnwpos + 1 - offset - len);
+                                    if (addSpace && paramsText.length() < 2) {
+                                        text += ' ';
+                                    } // NOI18N
+                                    len = fnwpos + 1 - offset;
+                                    text += paramsText;
+                                    toAdd = null; // do not add '.', ',', ';'
+                                }
+                            } catch (BadLocationException e) {
+                            }
+                            if (paramsText == null) {
+                                if (addSpace) {
+                                    text += ' '; // NOI18N
+                                }
+                                text += '('; // NOI18N
+                                if (params.size() > 0) {
+                                    selectionStartOffset = selectionEndOffset = text.length();
+                                    Completion completion = Completion.get();
+                                    completion.hideCompletion();
+                                    completion.hideDocumentation();
+                                    completion.showToolTip();
+                                }
+                                if (addClosingParen) {
+                                    text += ")";
+                                } // NOI18N
+                            } else {
+                                try {
+                                    int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
+                                    if (fnwpos > -1 && doc.getChars(fnwpos, 1)[0] == ')') { // NOI18N
+                                        paramsText = doc.getText(offset + len, fnwpos + 1 - offset - len);
+                                        len = fnwpos + 1 - offset;
+                                        if (params.size() > 0) {
+                                            selectionStartOffset = selectionEndOffset = text.length();
+                                        }
+                                        text += paramsText;
+                                    }
+                                } catch (BadLocationException e) {
+                                }
+                            }
+                        }
+                        break;
+                }
+
+                if (text != null) {
+                    if (toAdd != null && !toAdd.equals("\n") && !"(".equals(toAdd)) // NOI18N
+                    {
+                        text += toAdd;
                     }
-                    
-                    String paramsText = null;
+                    // Update the text
+                    doc.atomicLock();
                     try {
-                        int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
-                        if (fnwpos > -1 && doc.getChars(fnwpos, 1)[0] == '(') { // NOI18N
-                            paramsText = doc.getText(offset + len, fnwpos + 1 - offset - len);
-                            if (addSpace && paramsText.length() < 2)
-                                text += ' '; // NOI18N
-                            len = fnwpos + 1 - offset;
-                            text += paramsText;
+                        CharSequence textToReplace = DocumentUtilities.getText(doc, offset, len);
+                        if (CharSequenceUtilities.textEquals(text, textToReplace)) {
+                            c.setCaretPosition(offset + len);
+                            return false;
+                        }
+                        doc.remove(offset, len);
+                        doc.insertString(offset, text, null);
+                        if (selectionStartOffset >= 0) {
+                            c.select(offset + selectionStartOffset,
+                                    offset + selectionEndOffset);
+                        } else if ("(".equals(toAdd)) { // NOI18N
+                            int index = text.lastIndexOf(')');
+                            if (index > -1) {
+                                c.setCaretPosition(offset + index);
+                            }
                         }
                     } catch (BadLocationException e) {
-                    }
-                    parms = (CsmParameter[]) ctr.getParameters().toArray(new CsmParameter[0]);
-                    if (paramsText == null) {
-                        if (addSpace) {
-                            text += ' ';
-                        }
-                        text += '(';
-                        
-                        if (parms.length > 0) {
-                            selectionStartOffset = text.length();
-                            text += parms[0].getName();
-                            selectionEndOffset = text.length();
-                        }
-                        if (parms.length == 0 || (addClosingParen && parms.length == 1)) {
-                            text += ")"; // NOI18N
-                        }
-                    } else {
-                        try {
-                            int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
-                            if (fnwpos > -1 && doc.getChars(fnwpos, 1)[0] == ')') { // NOI18N
-                                paramsText = doc.getText(offset + len, fnwpos + 1 - offset - len);
-                                len = fnwpos + 1 - offset;
-                                if (parms.length > 0) {
-                                    selectionStartOffset = text.length();
-                                    text += parms[0].getName();
-                                    selectionEndOffset = text.length();
-                                }
-                                text += paramsText;
-                            }
-                        } catch (BadLocationException e) {
-                        }
-                    }
-                    break;
-            }
-            
-            
-            if (text != null) {
-                // Update the text
-                doc.atomicLock();
-                try {
-                    String textToReplace = doc.getText(offset, len);
-                    if (text.equals(textToReplace)) {
-                        c.setCaretPosition(offset + len);
-                        return false;
-                    }
-                    doc.remove(offset, len);
-                    doc.insertString(offset, text, null);
-                    if (selectionStartOffset >= 0) {
-                        c.select(offset + selectionStartOffset,
-                                offset + selectionEndOffset);
+                        // Can't update
+                    } finally {
+                        doc.atomicUnlock();
                     }
                     return true;
-                } catch (BadLocationException e) {
-                    // Can't update
-                } finally {
-                    doc.atomicUnlock();
+                } else {
+                    return false;
                 }
-            }
-            
-            return false;
             }
             return false;
         }

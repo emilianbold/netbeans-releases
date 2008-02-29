@@ -51,7 +51,7 @@ public class BooleanNodeProp extends PropertySupport.ReadWrite<Boolean> {
     private boolean state;
 
     public BooleanNodeProp(CodeStyle.Language language, PreviewPreferences preferences, String optionID) {
-        super(optionID, Boolean.class, getString("LBL_" + optionID), getString("HINT_" + optionID));
+        super(optionID, Boolean.class, getString("LBL_" + optionID), getString("HINT_" + optionID)); // NOI18N
         this.language = language;
         this.optionID = optionID;
         this.preferences = preferences;
@@ -78,7 +78,7 @@ public class BooleanNodeProp extends PropertySupport.ReadWrite<Boolean> {
     @Override
     public String getHtmlDisplayName() {
         if (!isDefaultValue()) {
-            return "<b>" + getDisplayName();
+            return "<b>" + getDisplayName(); // NOI18N
         }
         return null;
     }

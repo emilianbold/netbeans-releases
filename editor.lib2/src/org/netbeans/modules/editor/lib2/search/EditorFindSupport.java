@@ -675,7 +675,7 @@ public final class EditorFindSupport {
         if (c != null) {
             String s = (String)props.get(FIND_REPLACE_WITH);
             Caret caret = c.getCaret();
-            if (caret.isSelectionVisible()){
+            if (caret.isSelectionVisible() && caret.getDot() != caret.getMark()){
                 int dotPos = caret.getDot();
                 Object dp = props.get(FIND_BACKWARD_SEARCH);
                 boolean direction = (dp != null) ? ((Boolean)dp).booleanValue() : false;

@@ -42,8 +42,6 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -60,6 +58,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.ActiveEditorDrop;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -91,7 +90,7 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
         return false;
     }
     
-    private boolean doHandleTransfer(JTextComponent targetComponent) {
+    private boolean doHandleTransfer(final JTextComponent targetComponent) {
         FileObject targetSource = NbEditorUtilities.getFileObject(targetComponent.getDocument());
         Project targetProject = FileOwnerQuery.getOwner(targetSource);
         Method m = method.getWadlMethod();
@@ -106,29 +105,30 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
         final List<Exception> errors = new ArrayList<Exception>();
        
         final ProgressDialog dialog = new ProgressDialog(
-                NbBundle.getMessage(JaxRsEditorDrop.class, "LBL_RestComponentProgress", 
+                NbBundle.getMessage(JaxRsEditorDrop.class, "LBL_CodeGenProgress", 
                 displayName));
 
         generatorTask = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
                 try {
-                    JaxRsCodeGenerator codegen = codegen = new JaxRsCodeGenerator(targetFO, method);
+                    JaxRsCodeGenerator codegen = codegen = 
+                        JaxRsCodeGeneratorFactory.create(targetComponent, targetFO, method);
                 
                     WadlSaasBean bean = codegen.getBean();
-                    boolean wrapperResourceExists = codegen.wrapperResourceExists();
+                    boolean showParams = codegen.canShowParam();
                     List<ParameterInfo> allParams = new ArrayList<ParameterInfo>(bean.getHeaderParameters());
-                    if (! wrapperResourceExists) {
+                    if (showParams && bean.getInputParameters() != null) {
                         allParams.addAll(bean.getInputParameters());
                     }
                     JaxRsCodeSetupPanel panel = new JaxRsCodeSetupPanel(
                             codegen.getSubresourceLocatorUriTemplate(),
                             bean.getQualifiedClassName(), 
                             allParams,
-                            wrapperResourceExists);
+                            codegen.canShowResourceInfo(), showParams);
 
                     DialogDescriptor desc = new DialogDescriptor(panel, 
                             NbBundle.getMessage(JaxRsEditorDrop.class,
-                            "LBL_CustomizeComponent", displayName));
+                            "LBL_CustomizeSaasService", displayName));
                     Object response = DialogDisplayer.getDefault().notify(desc);
                     
                     if (response.equals(NotifyDescriptor.YES_OPTION)) {
@@ -154,9 +154,7 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
         dialog.open();
 
         if (errors.size() > 0) {
-            for (Exception e : errors) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, "handleTransfer", e);
-            }
+            Exceptions.printStackTrace(errors.get(0));
             return false;
         }
         return true;

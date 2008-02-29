@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.completion.csm;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -185,6 +186,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         Collection fileLocalVars  = null;
         Collection fileLocalEnumerators = null;
         Collection fileLocalMacros = null;
+        Collection fileLocalFunctions = null;
 
         Collection fileProjectMacros = null;
 
@@ -244,11 +246,6 @@ public class CompletionResolverImpl implements CompletionResolver {
                 }                   
             }
 
-            // file local variables
-            if (needFileLocalVars(context, offset)) {
-                fileLocalVars = contResolver.getFileLocalVariables(context, strPrefix, match);
-            }
-
             if (needClassElements(context, offset)) {
                 CsmClass clazz = CsmBaseUtilities.getFunctionClass(fun);
                 if (clazz != null) {
@@ -293,6 +290,14 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (needFileLocalMacros(context, offset)) {
             fileLocalMacros = contResolver.getFileLocalMacros(context, strPrefix, match);
         }
+        if (needFileLocalFunctions(context, offset)) {
+            fileLocalFunctions = getFileLocalFunctions(context, strPrefix, match);
+        }            
+        // file local variables
+        if (needFileLocalVars(context, offset)) {
+            fileLocalVars = contResolver.getFileLocalVariables(context, strPrefix, match);
+        }
+        
         if (needFileIncludedMacros(context, offset)) {
             fileProjectMacros = contResolver.getFileIncludedProjectMacros(context, strPrefix, match);
         }
@@ -340,7 +345,8 @@ public class CompletionResolverImpl implements CompletionResolver {
                 localVars, 
                 classFields, classEnumerators, classMethods, classesEnumsTypedefs, 
                 fileLocalVars, fileLocalEnumerators, 
-                fileLocalMacros, fileProjectMacros, 
+                fileLocalMacros, fileLocalFunctions,
+                fileProjectMacros, 
                 globVars, globEnumerators, globProjectMacros, globFuns, 
                 globProjectNSs, projectNsAliases,
                 libClasses, 
@@ -407,7 +413,8 @@ public class CompletionResolverImpl implements CompletionResolver {
     private static Result buildResult(CsmContext context,
             Collection localVars, 
             Collection classFields, Collection classEnumerators, Collection classMethods, Collection classesEnumsTypedefs, 
-            Collection fileLocalVars, Collection fileLocalEnumerators, Collection fileLocalMacros, Collection fileProjectMacros, 
+            Collection fileLocalVars, Collection fileLocalEnumerators, Collection fileLocalMacros, Collection fileLocalFunctions, 
+            Collection fileProjectMacros, 
             Collection globVars, Collection globEnumerators, 
             Collection globProjectMacros, Collection globFuns, 
             Collection globProjectNSs, Collection projectNsAliases,
@@ -430,6 +437,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (DEBUG || STAT_COMPLETION) { fullSize += trace(fileLocalVars, "File Local Variables");} //NOI18N
         if (DEBUG || STAT_COMPLETION) { fullSize += trace(fileLocalEnumerators, "File Local Enumerators");} //NOI18N
         if (DEBUG || STAT_COMPLETION) { fullSize += trace(fileLocalMacros, "File Local Macros");} //NOI18N
+        if (DEBUG || STAT_COMPLETION) { fullSize += trace(fileLocalFunctions, "File Local Functions");} //NOI18N
         // remove local macros from project included macros
         remove(fileProjectMacros, fileLocalMacros);
         if (DEBUG || STAT_COMPLETION) { fullSize += trace(fileProjectMacros, "File Included Project Macros");} //NOI18N
@@ -472,7 +480,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                     localVars,
                     classFields, classEnumerators, classMethods, classesEnumsTypedefs, 
                     fileLocalVars, fileLocalEnumerators, 
-                    fileLocalMacros, fileProjectMacros,
+                    fileLocalMacros, fileLocalFunctions, fileProjectMacros,
                     globVars, globEnumerators, globProjectMacros, globFuns, 
                     globProjectNSs, projectNsAliases,
                     libClasses,
@@ -566,6 +574,11 @@ public class CompletionResolverImpl implements CompletionResolver {
         return out;
     }
     
+    private Collection getFileLocalFunctions(CsmContext context, String strPrefix, boolean match) {
+        Collection res = contResolver.getFileLocalFunctions(context, strPrefix, match);
+        return res;
+    }
+
     private Collection getGlobalNamespaces(CsmContext context, CsmProject prj, String strPrefix, boolean match, int offset) {
         Collection<CsmNamespace> namespaces = getNamespacesToSearch(context,this.file, offset, strPrefix.length() == 0);
         LinkedHashSet out = new LinkedHashSet(1024);
@@ -646,6 +659,8 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resolveTypes |= RESOLVE_GLOB_VARIABLES;
                 resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
                 resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
+                resolveTypes |= RESOLVE_FILE_LOCAL_FUNCTIONS;
+                resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
                 resolveTypes |= RESOLVE_GLOB_NAMESPACES;
                 resolveTypes |= RESOLVE_LIB_CLASSES;
                 resolveTypes |= RESOLVE_LIB_VARIABLES;
@@ -671,13 +686,15 @@ public class CompletionResolverImpl implements CompletionResolver {
             resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
             resolveTypes |= RESOLVE_CLASS_NESTED_CLASSIFIERS;
         }
-        if (CsmContextUtilities.isInFunctionBody(context, offset)) {
+        if (CsmContextUtilities.isInFunctionBodyOrInitializerList(context, offset)) {
             // some other info to remember in this context
             resolveTypes |= RESOLVE_GLOB_VARIABLES;
             resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
             resolveTypes |= RESOLVE_LIB_VARIABLES;
             resolveTypes |= RESOLVE_LIB_ENUMERATORS;
             resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
+            resolveTypes |= RESOLVE_FILE_LOCAL_FUNCTIONS;
+            resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
             resolveTypes |= RESOLVE_GLOB_NAMESPACES;
             resolveTypes |= RESOLVE_LIB_CLASSES;
             resolveTypes |= RESOLVE_LIB_FUNCTIONS;
@@ -686,7 +703,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
     
     private boolean needFileLocalVars(CsmContext context, int offset) {
-        if ((hideTypes & resolveTypes & RESOLVE_FILE_LOCAL_VARIABLES) == RESOLVE_LOCAL_VARIABLES) {
+        if ((hideTypes & resolveTypes & RESOLVE_FILE_LOCAL_VARIABLES) == RESOLVE_FILE_LOCAL_VARIABLES) {
             return true;
         }
         boolean need = false;
@@ -802,6 +819,13 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         return false;
     }
+
+    private boolean needFileLocalFunctions(CsmContext context, int offset) {
+        if ((hideTypes & resolveTypes & RESOLVE_FILE_LOCAL_FUNCTIONS) == RESOLVE_FILE_LOCAL_FUNCTIONS) {
+            return true;
+        }
+        return false;
+    }
     
     private boolean needFileIncludedMacros(CsmContext context, int offset) {
         if ((hideTypes & resolveTypes & RESOLVE_FILE_PRJ_MACROS) == RESOLVE_FILE_PRJ_MACROS) {
@@ -899,6 +923,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         private final Collection fileLocalVars;
         private final Collection fileLocalEnumerators;
         private final Collection fileLocalMacros;
+        private final Collection fileLocalFunctions;
 
         private final Collection fileProjectMacros;
 
@@ -930,6 +955,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                     Collection fileLocalVars,
                     Collection fileLocalEnumerators,
                     Collection fileLocalMacros,
+                    Collection fileLocalFunctions,
 
                     Collection fileProjectMacros,
 
@@ -960,6 +986,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             this.fileLocalVars = fileLocalVars;
             this.fileLocalEnumerators = fileLocalEnumerators;
             this.fileLocalMacros = fileLocalMacros;
+            this.fileLocalFunctions = fileLocalFunctions;
             
             this.fileProjectMacros = fileProjectMacros;
             
@@ -1011,6 +1038,10 @@ public class CompletionResolverImpl implements CompletionResolver {
 
         public Collection getFileLocalMacros() {
             return maskNull(fileLocalMacros);
+        }
+
+        public Collection getFileLocalFunctions() {
+            return maskNull(fileLocalFunctions);
         }
 
         public Collection getInFileIncludedProjectMacros() {
@@ -1099,6 +1130,8 @@ public class CompletionResolverImpl implements CompletionResolver {
 
                 size += getFileLocalMacros().size();
 
+                size += getFileLocalFunctions().size();
+                
                 size += getInFileIncludedProjectMacros().size();
 
                 size += getGlobalVariables().size();
@@ -1160,6 +1193,10 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
 
         public Collection getFileLocalMacros() {
+            return Collections.EMPTY_LIST;
+        }
+
+        public Collection getFileLocalFunctions() {
             return Collections.EMPTY_LIST;
         }
 
@@ -1253,6 +1290,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         merge(dest, result.fileLocalVars);
         merge(dest, result.fileLocalEnumerators);
         merge(dest, result.fileLocalMacros);
+        merge(dest, result.fileLocalFunctions);
         merge(dest, result.fileProjectMacros);
         // add global variables
         merge(dest, result.globVars);

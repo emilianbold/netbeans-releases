@@ -49,7 +49,6 @@ import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -68,11 +67,9 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
-import org.openide.windows.TopComponent;
 
 
 /**
@@ -123,8 +120,7 @@ public class NbUtilities {
         return null;
     }
 
-    public static FileObject findFileObject(JTextComponent target) {
-        Document doc = target.getDocument();
+    public static FileObject findFileObject(Document doc) {
         DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
 
         if (dobj == null) {
@@ -132,6 +128,11 @@ public class NbUtilities {
         }
 
         return dobj.getPrimaryFile();
+    }
+    
+    public static FileObject findFileObject(JTextComponent target) {
+        Document doc = target.getDocument();
+        return findFileObject(doc);
     }
 
     // Copied from UiUtils. Shouldn't this be in a common library somewhere?
@@ -283,5 +284,47 @@ public class NbUtilities {
         String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N        
         
         return doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY) == Boolean.TRUE;
+    }
+
+    public static BaseDocument getBaseDocument(FileObject fileObject, boolean forceOpen) {
+        DataObject dobj;
+
+        try {
+            dobj = DataObject.find(fileObject);
+
+            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+
+            if (ec == null) {
+                throw new IOException("Can't open " + fileObject.getNameExt());
+            }
+
+            Document document;
+
+            if (forceOpen) {
+                document = ec.openDocument();
+            } else {
+                document = ec.getDocument();
+            }
+
+            if (document instanceof BaseDocument) {
+                return ((BaseDocument)document);
+            } else {
+                // Must be testsuite execution
+                try {
+                    Class c = Class.forName("org.netbeans.modules.ruby.RubyTestBase");
+                    if (c != null) {
+                        @SuppressWarnings("unchecked")
+                        java.lang.reflect.Method m = c.getMethod("getDocumentFor", new Class[] { FileObject.class });
+                        return (BaseDocument) m.invoke(null, (Object[])new FileObject[] { fileObject });
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+
+        return null;
     }
 }

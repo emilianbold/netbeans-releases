@@ -54,7 +54,7 @@ public class PreviewPreferences extends AbstractPreferences {
     private final String styleId;
 
     public PreviewPreferences(Preferences master, CodeStyle.Language language, String styleId) {
-        super(null, "");
+        super(null, ""); // NOI18N
         this.language = language;
         this.styleId = styleId;
         try {
@@ -94,7 +94,7 @@ public class PreviewPreferences extends AbstractPreferences {
     }
 
     protected void removeNodeSpi() throws BackingStoreException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     protected String[] keysSpi() throws BackingStoreException {
@@ -103,18 +103,18 @@ public class PreviewPreferences extends AbstractPreferences {
     }
 
     protected String[] childrenNamesSpi() throws BackingStoreException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     protected AbstractPreferences childSpi(String name) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     protected void syncSpi() throws BackingStoreException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     protected void flushSpi() throws BackingStoreException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 }
