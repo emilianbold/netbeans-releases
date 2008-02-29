@@ -41,6 +41,9 @@
 
 package gui;
 
+import gui.window.RailsGeneratorDialog;
+import gui.window.RubyGemsDialog;
+import gui.window.RubyPropertiesDialog;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -50,6 +53,10 @@ import org.netbeans.junit.NbTestSuite;
 public class ScriptingMeasureDialogs {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new RubyPropertiesDialog("testRubyProjectProperties","test Ruby Project Properties dialog"));
+        suite.addTest(new RubyPropertiesDialog("testRailsProjectProperties","test ROR Project Properties dialog"));        
+        suite.addTest(new RailsGeneratorDialog("doMeasurement","test Rails generator dialog"));
+        suite.addTest(new RubyGemsDialog("doMeasurement","test Gems Dialog"));
         return suite;
     }
 

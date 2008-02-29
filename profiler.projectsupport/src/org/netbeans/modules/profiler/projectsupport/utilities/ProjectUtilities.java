@@ -37,7 +37,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.profiler.projectsupport.utilities;
 
 import org.netbeans.api.java.classpath.ClassPath;
@@ -70,13 +69,20 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.lib.profiler.common.filters.SimpleFilter;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -84,11 +90,19 @@ import javax.swing.ImageIcon;
  */
 public class ProjectUtilities {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
     private static final Logger LOGGER = Logger.getLogger(ProjectUtilities.class.getName());
+    private static final String PROFILE_PROJECT_CLASSES_STRING = NbBundle.getMessage(ProjectUtilities.class,
+            "ProjectUtilities_ProfileProjectClassesString"); // NOI18N
+    private static final String PROFILE_PROJECT_SUBPROJECT_CLASSES_STRING = NbBundle.getMessage(ProjectUtilities.class,
+            "ProjectUtilities_ProfileProjectSubprojectClassesString"); // NOI18N
+    public static final SimpleFilter FILTER_PROJECT_ONLY = new SimpleFilter(PROFILE_PROJECT_CLASSES_STRING,
+            SimpleFilter.SIMPLE_FILTER_INCLUSIVE,
+            "{$project.classes.only}"); // NOI18N
+    public static final SimpleFilter FILTER_PROJECT_SUBPROJECTS_ONLY = new SimpleFilter(PROFILE_PROJECT_SUBPROJECT_CLASSES_STRING,
+            SimpleFilter.SIMPLE_FILTER_INCLUSIVE,
+            "{$project.subprojects.classes.only}"); // NOI18N
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
-
     public static ClasspathInfo getClasspathInfo(final Project project) {
         return getClasspathInfo(project, true);
     }
@@ -98,7 +112,7 @@ public class ProjectUtilities {
     }
 
     public static ClasspathInfo getClasspathInfo(final Project project, final boolean includeSubprojects,
-                                                 final boolean includeSources, final boolean includeLibraries) {
+            final boolean includeSources, final boolean includeLibraries) {
         FileObject[] sourceRoots = getSourceRoots(project, includeSubprojects);
         Set<FileObject> srcRootSet = new HashSet<FileObject>(sourceRoots.length);
         java.util.List<URL> urlList = new ArrayList<URL>();
@@ -132,7 +146,7 @@ public class ProjectUtilities {
         cpCompile = ClassPathSupport.createClassPath(urlList.toArray(new URL[urlList.size()]));
 
         return ClasspathInfo.create(includeLibraries ? ClassPath.getClassPath(sourceRoots[0], ClassPath.BOOT) : cpEmpty,
-                                    includeLibraries ? cpCompile : cpEmpty, includeSources ? cpSource : cpEmpty);
+                includeLibraries ? cpCompile : cpEmpty, includeSources ? cpSource : cpEmpty);
     }
 
     /**
@@ -146,9 +160,56 @@ public class ProjectUtilities {
         return OpenProjects.getDefault().getOpenProjects();
     }
 
+    public static Project[] getSortedProjects(Project[] projects) {
+        ArrayList projectsArray = new ArrayList(projects.length);
+
+        for (int i = 0; i < projects.length; i++) {
+            projectsArray.add(projects[i]);
+        }
+
+        try {
+            Collections.sort(projectsArray,
+                    new Comparator() {
+
+                        public int compare(Object o1, Object o2) {
+                            Project p1 = (Project) o1;
+                            Project p2 = (Project) o2;
+
+                            return ProjectUtils.getInformation(p1).getDisplayName().toLowerCase().compareTo(ProjectUtils.getInformation(p2).getDisplayName().toLowerCase());
+                        }
+                    });
+        } catch (Exception e) {
+            ErrorManager.getDefault().log(ErrorManager.ERROR, e.getMessage()); // just in case ProjectUtils doesn't provide expected information
+        }
+
+        ;
+
+        projectsArray.toArray(projects);
+
+        return projects;
+    }
+
+    public static boolean hasAction(Project project, String actionName) {
+        ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+
+        if (ap == null) {
+            return false; // return false if no ActionProvider available
+        }
+
+        String[] actions = ap.getSupportedActions();
+
+        for (int i = 0; i < actions.length; i++) {
+            if ((actions[i] != null) && actionName.equals(actions[i])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static FileObject getOrCreateBuildFolder(Project project, String buildDirProp) {
         FileObject buildDir = FileUtil.toFileObject(PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()),
-                                                                              buildDirProp));
+                buildDirProp));
 
         if (buildDir == null) {
             try {
@@ -156,7 +217,7 @@ public class ProjectUtilities {
                 buildDir = FileUtil.createFolder(project.getProjectDirectory(), buildDirProp);
             } catch (IOException e) {
                 MessageFormat.format(NbBundle.getMessage(ProjectUtilities.class, "FailedCreateOutputFolderMsg"),
-                                     new Object[] { e.getMessage() }); // NOI18N
+                        new Object[]{e.getMessage()                        }); // NOI18N
 
                 ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
 
@@ -196,12 +257,26 @@ public class ProjectUtilities {
 
         try {
             return new String(data, "UTF-8" //NOI18N
-            ); // According to Issue 65557, build.xml uses UTF-8, not default encoding!
+                    ); // According to Issue 65557, build.xml uses UTF-8, not default encoding!
         } catch (UnsupportedEncodingException ex) {
             ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
 
             return null;
         }
+    }
+
+    public static java.util.List<SimpleFilter> getProjectDefaultInstrFilters(Project project) {
+        java.util.List<SimpleFilter> v = new ArrayList<SimpleFilter>();
+
+        if (ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA).length > 0) {
+            v.add(FILTER_PROJECT_ONLY);
+        }
+
+        if (hasSubprojects(project)) {
+            v.add(FILTER_PROJECT_SUBPROJECTS_ONLY);
+        }
+
+        return v;
     }
 
     public static ClientUtils.SourceCodeSelection[] getProjectDefaultRoots(Project project, String[][] projectPackagesDescr) {
@@ -306,6 +381,131 @@ public class ProjectUtilities {
         }
     }
 
+    public static SimpleFilter computeProjectOnlyInstrumentationFilter(Project project, SimpleFilter predefinedInstrFilter,
+            String[][] projectPackagesDescr) {
+        // TODO: projectPackagesDescr[1] should only contain packages from subprojects, currently contains also toplevel project packages
+        if (FILTER_PROJECT_ONLY.equals(predefinedInstrFilter)) {
+            computeProjectPackages(project, false, projectPackagesDescr);
+
+            StringBuffer projectPackages = new StringBuffer();
+
+            for (int i = 0; i < projectPackagesDescr[0].length; i++) {
+                projectPackages.append("".equals(projectPackagesDescr[0][i]) ? getDefaultPackageClassNames(project)
+                        : (projectPackagesDescr[0][i] + ". ")); //NOI18N
+            }
+
+            return new SimpleFilter(PROFILE_PROJECT_CLASSES_STRING, SimpleFilter.SIMPLE_FILTER_INCLUSIVE,
+                    projectPackages.toString().trim());
+        } else if (FILTER_PROJECT_SUBPROJECTS_ONLY.equals(predefinedInstrFilter)) {
+            computeProjectPackages(project, true, projectPackagesDescr);
+
+            StringBuffer projectPackages = new StringBuffer();
+
+            for (int i = 0; i < projectPackagesDescr[1].length; i++) {
+                projectPackages.append("".equals(projectPackagesDescr[1][i]) ? getDefaultPackageClassNames(project)
+                        : (projectPackagesDescr[1][i] + ". ")); //NOI18N // TODO: default packages need to be processed also for subprojects!!!
+            }
+
+            return new SimpleFilter(PROFILE_PROJECT_SUBPROJECT_CLASSES_STRING, SimpleFilter.SIMPLE_FILTER_INCLUSIVE,
+                    projectPackages.toString().trim());
+        }
+
+        return null;
+    }
+
+    public static String getDefaultPackageClassNames(Project project) {
+        Collection<String> classNames = SourceUtils.getDefaultPackageClassNames(project);
+        StringBuffer classNamesBuf = new StringBuffer();
+
+        for (String className : classNames) {
+            classNamesBuf.append(className).append(" "); //NOI18N
+        }
+
+        return classNamesBuf.toString();
+    }
+
+    public static void computeProjectPackages(final Project project, boolean subprojects, String[][] storage) {
+        if ((storage == null) || (storage.length != 2)) {
+            throw new IllegalArgumentException("Storage must be a non-null String[2][] array"); // NOI18N
+        }
+
+        if (storage[0] == null) {
+            Collection<String> packages1 = new ArrayList<String>();
+
+            for (FileObject root : getSourceRoots(project, false)) {
+                addSubpackages(packages1, "", root); //NOI18N
+            }
+
+            storage[0] = packages1.toArray(new String[0]);
+        }
+
+        if (subprojects && (storage[1] == null)) {
+            FileObject[] srcRoots2 = getSourceRoots(project, true); // TODO: should be computed based on already known srcRoots1
+            ArrayList<String> packages2 = new ArrayList<String>();
+
+            for (FileObject root : srcRoots2) {
+                addSubpackages(packages2, "", root); //NOI18N
+            }
+
+            storage[1] = packages2.toArray(new String[0]);
+        }
+    }
+
+    /**
+     * Will find
+     * Copied from JUnit module implementation in 4.1 and modified
+     */
+    public static FileObject findTestForFile(final FileObject selectedFO) {
+        if ((selectedFO == null) || !selectedFO.getExt().equalsIgnoreCase("java")) {
+            return null; // NOI18N
+        }
+
+        ClassPath cp = ClassPath.getClassPath(selectedFO, ClassPath.SOURCE);
+
+        if (cp == null) {
+            return null;
+        }
+
+        FileObject packageRoot = cp.findOwnerRoot(selectedFO);
+
+        if (packageRoot == null) {
+            return null; // not a file in the source dirs - e.g. generated class in web app
+        }
+
+        URL[] testRoots = UnitTestForSourceQuery.findUnitTests(packageRoot);
+        FileObject fileToOpen = null;
+
+        for (int j = 0; j < testRoots.length; j++) {
+            fileToOpen = findUnitTestInTestRoot(cp, selectedFO, testRoots[j]);
+
+            if (fileToOpen != null) {
+                return fileToOpen;
+            }
+        }
+
+        return null;
+    }
+
+    public static void invokeAction(Project project, String s) {
+        ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+
+        if (ap == null) {
+            return; // fail early
+        }
+
+        ap.invokeAction(s, Lookup.getDefault());
+    }
+
+        // Returns true if the project contains any Java sources (does not check subprojects!)
+    public static boolean isJavaProject(Project project) {
+        if (project == null) return false;
+        
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+
+        return sourceGroups.length > 0;
+    }
+    
     private static void getSourceRoots(final Project project, final boolean traverse, Set<Project> projects, Set<FileObject> roots) {
         final Sources sources = ProjectUtils.getSources(project);
 
@@ -363,30 +563,92 @@ public class ProjectUtilities {
         }
     }
 
-    private static void computeProjectPackages(final Project project, boolean subprojects, String[][] storage) {
-        if ((storage == null) || (storage.length != 2)) {
-            throw new IllegalArgumentException("Storage must be a non-null String[2][] array"); // NOI18N
+    private static boolean hasSubprojects(Project project) {
+        SubprojectProvider spp = project.getLookup().lookup(SubprojectProvider.class);
+
+        if (spp == null) {
+            return false;
         }
 
-        if (storage[0] == null) {
-            Collection<String> packages1 = new ArrayList<String>();
+        return spp.getSubprojects().size() > 0;
+    }
 
-            for (FileObject root : getSourceRoots(project, false)) {
-                addSubpackages(packages1, "", root); //NOI18N
+    /**
+     * Copied from JUnit module implementation in 4.1 and modified
+     */
+    private static FileObject findUnitTestInTestRoot(ClassPath cp, FileObject selectedFO, URL testRoot) {
+        ClassPath testClassPath = null;
+
+        if (testRoot == null) { //no tests, use sources instead
+            testClassPath = cp;
+        } else {
+            try {
+                List<PathResourceImplementation> cpItems = new ArrayList<PathResourceImplementation>();
+                cpItems.add(ClassPathSupport.createResource(testRoot));
+                testClassPath = ClassPathSupport.createClassPath(cpItems);
+            } catch (IllegalArgumentException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                testClassPath = cp;
             }
-
-            storage[0] = packages1.toArray(new String[0]);
         }
 
-        if (subprojects && (storage[1] == null)) {
-            FileObject[] srcRoots2 = getSourceRoots(project, true); // TODO: should be computed based on already known srcRoots1
-            ArrayList<String> packages2 = new ArrayList<String>();
+        String testName = getTestName(cp, selectedFO);
 
-            for (FileObject root : srcRoots2) {
-                addSubpackages(packages2, "", root); //NOI18N
-            }
+        return testClassPath.findResource(testName + ".java"); // NOI18N
+    }
 
-            storage[1] = packages2.toArray(new String[0]);
+    /**
+     * Copied from JUnit module implementation in 4.1 and modified
+     */
+    private static String getTestName(ClassPath cp, FileObject selectedFO) {
+        String resource = cp.getResourceName(selectedFO, '/', false); //NOI18N
+        String testName = null;
+
+        if (selectedFO.isFolder()) {
+            //find Suite for package
+            testName = convertPackage2SuiteName(resource);
+        } else {
+            // find Test for class
+            testName = convertClass2TestName(resource);
         }
+
+        return testName;
+    }
+
+    /**
+     * Copied from JUnit module implementation in 4.1 and modified
+     * Hardcoded test name prefix/suffix.
+     */
+    private static String convertClass2TestName(String classFileName) {
+        if ((classFileName == null) || "".equals(classFileName)) {
+            return ""; //NOI18N
+        }
+
+        int index = classFileName.lastIndexOf('/'); //NOI18N
+        String pkg = (index > -1) ? classFileName.substring(0, index) : ""; // NOI18N
+        String clazz = (index > -1) ? classFileName.substring(index + 1) : classFileName;
+        clazz = clazz.substring(0, 1).toUpperCase() + clazz.substring(1);
+
+        if (pkg.length() > 0) {
+            pkg += "/"; // NOI18N
+        }
+
+        return pkg + clazz + "Test"; // NOI18N
+    }
+
+    /**
+     * Copied from JUnit module implementation in 4.1 and modified
+     * Hardcoded test name prefix/suffix.
+     */
+    private static String convertPackage2SuiteName(String packageFileName) {
+        if ((packageFileName == null) || "".equals(packageFileName)) {
+            return ""; //NOI18N
+        }
+
+        int index = packageFileName.lastIndexOf('/'); //NOI18N
+        String pkg = (index > -1) ? packageFileName.substring(index + 1) : packageFileName;
+        pkg = pkg.substring(0, 1).toUpperCase() + pkg.substring(1);
+
+        return packageFileName + "/" + pkg + "Test"; // NOI18N
     }
 }

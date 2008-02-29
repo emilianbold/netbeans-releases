@@ -57,6 +57,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -88,6 +89,10 @@ public final class Modifications {
         } else {
             differences.add(difference);
         }
+    }
+
+    public Set<? extends FileObject> getModifiedFileObjects() {
+        return diffs.keySet();
     }
 
     /**

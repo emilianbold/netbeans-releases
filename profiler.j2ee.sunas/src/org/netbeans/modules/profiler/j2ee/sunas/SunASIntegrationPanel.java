@@ -40,11 +40,6 @@
 
 package org.netbeans.modules.profiler.j2ee.sunas;
 
-import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
-import org.netbeans.modules.profiler.ui.wizards.AttachWizardContext;
-import org.netbeans.modules.profiler.ui.wizards.panels.AttachWizardPanel;
-import org.netbeans.modules.profiler.ui.wizards.providers.TargetPlatform;
-import org.netbeans.modules.profiler.ui.wizards.providers.ValidationResult;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import java.util.Iterator;
@@ -52,6 +47,10 @@ import java.util.List;
 import java.util.Vector;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
+import org.netbeans.modules.profiler.attach.panels.AttachWizardPanel;
+import org.netbeans.modules.profiler.attach.providers.TargetPlatform;
+import org.netbeans.modules.profiler.attach.providers.ValidationResult;
+import org.netbeans.modules.profiler.attach.wizard.AttachWizardContext;
 
 
 /**
