@@ -105,9 +105,9 @@ final class WatchProjects {
             f.set(null, null);
         }
         
-        //System.setProperty("assertgc.paths", "20");
-        // disabled due to issue 124038
-        Log.assertInstances("Checking if all projects are really garbage collected");
+        System.setProperty("assertgc.paths", "5");
+        // disabled due to issue 121855
+        // Log.assertInstances("Checking if all projects are really garbage collected");
     }
     
     private static void resetJTreeUIs(Component[] arr) {
