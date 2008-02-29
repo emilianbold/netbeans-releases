@@ -39,17 +39,20 @@
 
 package org.netbeans.junit;
 
+import java.io.IOException;
 import java.util.Set;
+import java.util.TreeSet;
 import junit.framework.Test;
 import junit.framework.TestCase;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-public class NbModuleSuiteTest extends TestCase {
+public class NbModuleSuiteAddModuleTest extends TestCase {
     
-    public NbModuleSuiteTest(String testName) {
+    public NbModuleSuiteAddModuleTest(String testName) {
         super(testName);
     }            
 
@@ -67,58 +70,26 @@ public class NbModuleSuiteTest extends TestCase {
      * Test of run method, of class NbModuleSuite.
      */
     public void testRun() {
-        Test instance = NbModuleSuite.create(T.class, "", null);
+        Test instance = NbModuleSuite.create(T.class, "", "org\\.netbeans.*window.*");
         junit.textui.TestRunner.run(instance);
         
-        assertEquals("OK", System.getProperty("t.one"));
-    }
-    
-    public void testModulesForCL() throws Exception {
-        Set<String> s = NbModuleSuite.S.findEnabledModules(ClassLoader.getSystemClassLoader());
-        assertEquals("Three modules: " + s, 3, s.size());
-        
-        assertTrue("Util: " + s, s.contains("org.openide.util"));
-        assertTrue("nbjunit: " + s, s.contains("org.netbeans.modules.nbjunit"));
-        assertTrue("insane: " + s, s.contains("org.netbeans.insane"));
-    }
-    
-    public void testIfOneCanLoadFromToolsJarOneShallDoThatInTheFrameworkAsWell() throws Exception {
-        
-        Class<?> vmm;
-        try {
-            vmm = ClassLoader.getSystemClassLoader().loadClass("com.sun.jdi.VirtualMachineManager");
-        } catch (ClassNotFoundException ex) {
-            vmm = null;
-            //throw ex;
-        }
-        Class<?> own;
-        try {
-            own = Thread.currentThread().getContextClassLoader().loadClass("com.sun.jdi.VirtualMachineManager");
-        } catch (ClassNotFoundException ex) {
-            //own = null;
-            throw ex;
-        }
-        
-        //assertEquals(vmm, own);
+        String m = System.getProperty("modules");
+        assertNotNull("Test called", m);
+        assertTrue("Contains the right module", m.contains("org.netbeans.core.windows"));
         
     }
-
-    public void testModulesForMe() throws Exception {
-        Set<String> s = NbModuleSuite.S.findEnabledModules(getClass().getClassLoader());
-        assertEquals("Three modules: " + s, 3, s.size());
-        
-        assertTrue("Util: " + s, s.contains("org.openide.util"));
-        assertTrue("nbjunit: " + s, s.contains("org.netbeans.modules.nbjunit"));
-        assertTrue("insanse: " + s, s.contains("org.netbeans.insane"));
-    }
-    
     public static class T extends TestCase {
         public T(String t) {
             super(t);
         }
 
         public void testOne() {
-            System.setProperty("t.one", "OK");
+            try {
+                Object o = NbModuleSuite.S.findEnabledModules(Thread.currentThread().getContextClassLoader());
+                System.setProperty("modules", o.toString());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
     

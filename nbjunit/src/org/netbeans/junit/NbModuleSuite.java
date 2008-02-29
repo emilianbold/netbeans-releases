@@ -96,24 +96,26 @@ public final class NbModuleSuite extends Object {
      * @param clazz the class with bunch of testXYZ methods
      * @param clustersRegExp regexp to apply to name of cluster to find out if it is supposed to be included
      *    in the runtime container setup or not
+     * @param moduleRegExp by default all modules on classpath are turned on,
+     *    however this regular expression can specify additional ones. If not
+     *    null, the specified cluster will be searched for modules with such
+     *    codenamebase and those will be turned on
      * @return runtime container ready test
      */
-    public static Test create(Class<? extends Test> clazz, String clustersRegExp) {
-        return new S(clazz, clustersRegExp);
+    public static Test create(Class<? extends Test> clazz, String clustersRegExp, String moduleRegExp) {
+        return new S(clazz, clustersRegExp, moduleRegExp);
     }
 
     static final class S extends NbTestSuite {
         private final Class<?> clazz;
         private final String clusterRegExp;
+        private final String moduleRegExp;
 
-        public S(Class<?> aClass) {
-            this(aClass, "");
-        }
-
-        public S(Class<?> aClass, String clusterRegExp) {
+        public S(Class<?> aClass, String clusterRegExp, String moduleRegExp) {
             super();
             this.clazz = aClass;
             this.clusterRegExp = clusterRegExp;
+            this.moduleRegExp = moduleRegExp;
         }
 
         @Override
@@ -165,12 +167,12 @@ public final class NbModuleSuite extends Object {
             modules.remove("org.netbeans.insane");
             modules.add("org.netbeans.core.startup");
             modules.add("org.netbeans.bootstrap");
-            turnModules(ud, modules, platform);
+            turnModules(ud, modules, moduleRegExp, platform);
 
             StringBuilder sb = new StringBuilder();
             String sep = "";
             for (File f : findClusters()) {
-                turnModules(ud, modules, f);
+                turnModules(ud, modules, moduleRegExp, f);
                 sb.append(sep);
                 sb.append(f.getPath());
                 sep = File.pathSeparator;
@@ -316,10 +318,11 @@ public final class NbModuleSuite extends Object {
 
         private static Pattern ENABLED = Pattern.compile("<param name=[\"']enabled[\"']>([^<]*)</param>", Pattern.MULTILINE);
 
-        private static void turnModules(File ud, TreeSet<String> modules, File... clusterDirs) throws IOException {
+        private static void turnModules(File ud, TreeSet<String> modules, String regExp, File... clusterDirs) throws IOException {
             File config = new File(new File(ud, "config"), "Modules");
             config.mkdirs();
 
+            Pattern modPattern = regExp == null ? null : Pattern.compile(regExp);
             for (File c : clusterDirs) {
                 File modulesDir = new File(new File(c, "config"), "Modules");
                 for (File m : modulesDir.listFiles()) {
@@ -335,6 +338,9 @@ public final class NbModuleSuite extends Object {
 
                     boolean found = matcherEnabled.find();
                     boolean contains = modules.contains(n);
+                    if (!contains && modPattern != null) {
+                        contains = modPattern.matcher(n).matches();
+                    }
                     boolean enabled = found && "true".equals(matcherEnabled.group(1));
                     if (contains == enabled) {
                         continue;
