@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -98,9 +99,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     // The following are constants so I can do == rather than "equals"
     private final String MAKE_NAME = "make"; // NOI18N
     private final String GDB_NAME = "gdb"; // NOI18N
-    private final String C_NAME = "C"; // NOI18N
-    private final String Cpp_NAME = "C++"; // NOI18N
-    private final String FORTRAN_NAME = "Fortran"; // NOI18N
+//    private final String C_NAME = "C"; // NOI18N
+//    private final String Cpp_NAME = "C++"; // NOI18N
+//    private final String FORTRAN_NAME = "Fortran"; // NOI18N
     
     private static final String DIRECTORY_MOVE_UP = "Up"; // NOI18N
     private static final String DIRECTORY_MOVE_DOWN = "Down"; // NOI18N
@@ -112,7 +113,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private boolean changingCompilerSet;
     private boolean updating;
     private boolean valid;
-    private ArrayList<String> dirlist;
+    private static ArrayList<String> dirlist = null;
     private ToolsPanelModel model = null;
     private Color tfColor = null;
     private boolean gdbEnabled;
@@ -163,7 +164,12 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             jLabel1.setVisible(false); // Required Tools label!
             jPanel1.setVisible(false); // Required Tools panel!
         }
-        dirlist = model.getPath();
+        if (dirlist == null) {
+            // Take a copy ...
+            dirlist = new ArrayList<String>();
+            dirlist.addAll(Path.getPath());
+        }
+//        dirlist = model.getPath();
         if (csm == null) {
             csm = CompilerSetManager.getDefault();
         }
@@ -665,21 +671,21 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             changed = false;
             
             CompilerSetManager.setDefault(csm);
-            model.setPath(dirlist);
+//            model.setPath(dirlist);
             model.setMakeName(tfMakeCommand.getText());
             model.setMakePath(tfMakePath.getText());
             model.setGdbName(tfGdbCommand.getText());
             model.setGdbPath(tfGdbPath.getText());
             model.setCompilerSetName(cs.getName());
-            if (cSelections.get(cs.getName()) != null) {
-                model.setCCompilerName(cSelections.get(cs.getName()));
-            }
-            if (cppSelections.get(cs.getName()) != null) {
-                model.setCppCompilerName(cppSelections.get(cs.getName()));
-            }
-            if (fortranSelections.get(cs.getName()) != null) {
-                model.setFortranCompilerName(fortranSelections.get(cs.getName()));
-            }
+//            if (cSelections.get(cs.getName()) != null) {
+//                model.setCCompilerName(cSelections.get(cs.getName()));
+//            }
+//            if (cppSelections.get(cs.getName()) != null) {
+//                model.setCppCompilerName(cppSelections.get(cs.getName()));
+//            }
+//            if (fortranSelections.get(cs.getName()) != null) {
+//                model.setFortranCompilerName(fortranSelections.get(cs.getName()));
+//            }
             currentCompilerSet = cs;
             fireCompilerSetChange();
             fireCompilerSetModified();

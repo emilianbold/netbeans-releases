@@ -189,9 +189,12 @@ final class Attribute extends Dialog
     else if (myZoomHeight.isEnabled()) {
       zoom = Percent.createZoomHeight(zoomHeight);
     }
+    else if (myFitToPage.isSelected()) {
+      zoom = 0.0;
+    }
     Option.getDefault().setZoom(zoom);
     myPreview.updated();
-//out("SAVE.zoom: " + zoom);
+//out("SET zoom: " + zoom);
 
     return true;
   }
@@ -634,14 +637,15 @@ final class Attribute extends Dialog
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
     ButtonGroup group = new ButtonGroup();
-    c.anchor = GridBagConstraints.WEST;
     double zoom = Option.getDefault().getZoom();
+    c.anchor = GridBagConstraints.WEST;
 //out("GET ZOOM: " + zoom);
 
     // (o) Fit width to
     c.gridy++;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-    JRadioButton buttonWidth = createRadioButton(i18n("LBL_Fit_Width_to")); // NOI18N
+    JRadioButton buttonWidth = createRadioButton(
+      i18n("LBL_Fit_Width_to"), i18n("TLT_Fit_Width_to")); // NOI18N
     buttonWidth.addItemListener(createItemListener(true, false, false));
     panel.add(buttonWidth, c);
     group.add(buttonWidth);
@@ -658,30 +662,32 @@ final class Attribute extends Dialog
 
     // (o) Zoom to
     c.weightx = 0.0;
-    c.anchor = GridBagConstraints.EAST;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-    JRadioButton buttonFactor = createRadioButton(i18n("LBL_Zoom_to")); // NOI18N
+    JRadioButton buttonFactor = createRadioButton(
+      i18n("LBL_Zoom_to"), i18n("TLT_Zoom_to")); // NOI18N
     buttonFactor.addItemListener(createItemListener(false, false, true));
     panel.add(buttonFactor, c);
     group.add(buttonFactor);
 
     // [zoom]
-    c.anchor = GridBagConstraints.WEST;
     c.insets = new Insets(SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
+//out("ZOOM:"  + Percent.getZoomFactor(zoom, 1.0));
     myZoomFactor = new Percent(
       this,
       Percent.getZoomFactor(zoom, 1.0),
       PERCENTS,
       0,
-      new String [] { i18n("LBL_Fit_to_Page") }, // NOI18N
+      null,
       i18n("TLT_Print_Zoom") // NOI18N
     );
     panel.add(myZoomFactor, c);
-
+    
     // (o) Fit height to
     c.gridy++;
+    c.weightx = 0.0;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-    JRadioButton buttonHeight = createRadioButton(i18n("LBL_Fit_Height_to")); // NOI18N
+    JRadioButton buttonHeight = createRadioButton(
+      i18n("LBL_Fit_Height_to"), i18n("TLT_Fit_Height_to")); // NOI18N
     buttonHeight.addItemListener(createItemListener(false, true, false));
     panel.add(buttonHeight, c);
     group.add(buttonHeight);
@@ -695,9 +701,19 @@ final class Attribute extends Dialog
     // page(s)
     panel.add(createLabel(i18n("LBL_Pages")), c); // NOI18N
 
+    // (o) Fit to page
+    c.weightx = 0.0;
+    c.insets = new Insets(SMALL_INSET, 0, 0, 0);
+    myFitToPage = createRadioButton(
+      i18n("LBL_Fit_to_Page"), i18n("TLT_Fit_to_Page")); // NOI18N
+    myFitToPage.addItemListener(createItemListener(false, false, false));
+    panel.add(myFitToPage, c);
+    group.add(myFitToPage);
+    
     buttonFactor.setSelected(Percent.isZoomFactor(zoom));
     buttonWidth.setSelected(Percent.isZoomWidth(zoom));
     buttonHeight.setSelected(Percent.isZoomHeight(zoom));
+    myFitToPage.setSelected(Percent.isZoomPage(zoom));
 //  panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
 
     return panel;
@@ -940,6 +956,7 @@ final class Attribute extends Dialog
   private JTextField myZoomWidth;
   private JTextField myZoomHeight;
   private JTextField mySelectedField;
+  private JRadioButton myFitToPage;
 
   private Preview myPreview;
   private DialogDescriptor myDescriptor;
@@ -953,5 +970,6 @@ final class Attribute extends Dialog
   private static final double SPACING_MAX = 10.0;
   private static final double SPACING_STP =  0.1;
   private static final double SPACING_FTR = 1.15;
-  private static final int [] PERCENTS = new int [] { 25, 50, 75, 100, 125, 150 };
+  private static final int [] PERCENTS =
+    new int [] { 25, 50, 75, 100, 125, 150, 200, 300, 500 };
 }

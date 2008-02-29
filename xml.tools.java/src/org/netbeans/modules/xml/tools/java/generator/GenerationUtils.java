@@ -161,6 +161,20 @@ public final class GenerationUtils {
         return classFO;
     }
 
+    /**
+     * Creates a new Java class based on the default template for interfaces.
+     *
+     * @param  targetFolder the folder the new interface should be created in;
+     *         cannot be null.
+     * @param  interfaceName the name of the new interface (a valid Java identifier);
+     *         cannot be null.
+     * @param  javadoc the new interface's Javadoc; can be null.
+     * @return the FileObject for the new Java interface; never null.
+     * @throws IOException if an error occurred while creating the class.
+     */
+    public static FileObject createInterface(FileObject targetFolder, String interfaceName, final String javadoc) throws IOException{
+        return createClass(INTERFACE_TEMPLATE, targetFolder, interfaceName, javadoc, Collections.emptyMap());
+    }
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Non-public static methods">
@@ -310,6 +324,19 @@ public final class GenerationUtils {
                 body.toString());
     }
 
+    public MethodTree createConstructor(ModifiersTree modifiersTree, String constructorName, List parameters, String body) {
+        Parameters.notNull("modifiersTree", modifiersTree);
+        Parameters.javaIdentifier("constructorName", constructorName); // NOI18N
+        Parameters.notNull("parameters", parameters); // NOI18N
+
+        TreeMaker make = getTreeMaker();
+        return make.Constructor(
+                modifiersTree,
+                Collections.emptyList(),
+                parameters,
+                Collections.emptyList(),
+                body);
+    }
     /**
      * Creates a new field.
      *
@@ -443,12 +470,19 @@ public final class GenerationUtils {
 
     }
 
-    private ExpressionTree createQualIdent(String typeName) {
+    public ExpressionTree createQualIdent(String typeName) {
         ExpressionTree qualIdent = tryCreateQualIdent(typeName);
         if (qualIdent == null) {
             throw new IllegalArgumentException("Cannot create a QualIdent for " + typeName); // NOI18N
         }
         return qualIdent;
+    }
+    
+    public ExpressionTree makeQualIdent(String typeClass) {
+        TypeElement type =  copy.getElements().getTypeElement(typeClass);// NOI18N
+        ExpressionTree tree = getTreeMaker().QualIdent(type);
+        
+        return tree;
     }
 
     

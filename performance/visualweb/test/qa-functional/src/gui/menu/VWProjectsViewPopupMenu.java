@@ -43,6 +43,7 @@ package gui.menu;
 
 import org.netbeans.jellytools.nodes.Node;
 
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -70,12 +71,18 @@ public class VWProjectsViewPopupMenu extends ProjectsViewPopupMenu {
     }
     
     public void testVWProjectNodePopupMenuProjects() {
+        long oldTimeout = JemmyProperties.getCurrentTimeout("");
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 120000);
         testNode(getProjectNode("HugeApp"));
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", oldTimeout);
     }
     
     public void testVWApplicationBeanPopupMenuProjects(){
+        long oldTimeout = JemmyProperties.getCurrentTimeout("");
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 120000);        
         String nodePath = gui.Utilities.SOURCE_PACKAGES+"|"+"hugeapp"+"|"+"ApplicationBean1.java"; // NOI18N
         testNode(new Node(getProjectNode("HugeApp"), nodePath)); // NOI18N
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", oldTimeout);        
     }
     
 

@@ -104,6 +104,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="added.EditorStyleConstants.xxxBorderLineColor">
+            <summary>Added border related constants to EditorStyleConstants</summary>
+            <version major="1" minor="16"/>
+            <date day="28" month="2" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+            <p>
+                Several new constants were added to <code>EditorStyleConstants</code> to
+                support drawing rectangular boxes around text in the editor.
+            </p>
+            </description>
+            <issue number="108161"/>
+        </change>
+
         <change id="added.CodeTemplateDescription.getMimePath">
             <summary>Added CodeTemplateDescription.getMimePath</summary>
             <version major="1" minor="15"/>
