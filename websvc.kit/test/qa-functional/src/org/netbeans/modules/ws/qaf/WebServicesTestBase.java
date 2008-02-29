@@ -460,14 +460,11 @@ public abstract class WebServicesTestBase extends JellyTestCase {
                 jcboVersion.selectItem(javaeeVersion.toString());
             }
         }
-        if (ProjectType.SAMPLE.equals(type) || ProjectType.JAVASE_APPLICATION.equals(type)) {
-            op.finish();
-        } else {
+        if (!(ProjectType.SAMPLE.equals(type) || ProjectType.JAVASE_APPLICATION.equals(type))) {
             //second panel in Web, Ejb and Ear is now mandatory
             op.next();
-            WizardOperator wo = new WizardOperator("New Project");
-            wo.finish();
         }
+        op.finish();
         // Opening Projects
         String openingProjectsTitle = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");
         waitDialogClosed(openingProjectsTitle);
