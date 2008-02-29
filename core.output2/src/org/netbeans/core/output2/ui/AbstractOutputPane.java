@@ -409,11 +409,12 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 //***********************Listener implementations*****************************
 
     public void stateChanged(ChangeEvent e) {
-        if (e.getSource() instanceof JViewport) {
+        /*if (e.getSource() instanceof JViewport) { // #78191
             if (locked) {
                 ensureCaretPosition();
             }
-        } else if (e.getSource() == getVerticalScrollBar().getModel()) {
+        } else*/
+        if (e.getSource() == getVerticalScrollBar().getModel()) {
             if (!locked) { //XXX check if doc is still being written?
                 BoundedRangeModel mdl = getVerticalScrollBar().getModel();
                 if (mdl.getValue() + mdl.getExtent() == mdl.getMaximum()) {
