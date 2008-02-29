@@ -220,6 +220,10 @@ public final class NbModuleSuite extends Object {
         }
 
         private File[] findClusters() {
+            if (clusterRegExp == null) {
+                return new File[0];
+            }
+            
             List<File> clusters = new ArrayList<File>();
             File plat = findPlatform();
 

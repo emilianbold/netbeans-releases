@@ -67,7 +67,7 @@ public class NbModuleSuiteTest extends TestCase {
      * Test of run method, of class NbModuleSuite.
      */
     public void testRun() {
-        Test instance = NbModuleSuite.create(T.class, "", null);
+        Test instance = NbModuleSuite.create(T.class, null, null);
         junit.textui.TestRunner.run(instance);
         
         assertEquals("OK", System.getProperty("t.one"));
