@@ -154,7 +154,7 @@ function redirect() {
 }
 
 function write_download_header() {
-	document.write('<p id="download_link_p">');
+	document.write('<p>');
 	document.write(AUTOMATIC_DOWNLOAD_MESSAGE.replace('{0}',url));
 	document.write('</p>');
 }
@@ -199,7 +199,7 @@ function write_download_info() {
 
 	if (platform_display_name!="" && lang_display_name!="" && filename!="") {
 		 var info = INFO_MESSAGE.
-				replace('{0}', PRODUCT_NAME).
+				replace('{0}', PRODUCT_NAME.replace('{0}',BUILD_DISPLAY_VERSION)).
 		 		replace('{1}', ((option_display_name != "") ? (' ' + option_display_name) : '')).
 		 		replace('{2}', ((platform_id == 'zip') ? (platform_display_name) : (INSTALLER_MESSAGE.replace('{0}',platform_display_name)))).
 		 		replace('{3}', lang_display_name).
@@ -212,25 +212,4 @@ function write_download_info() {
 		document.write(NOFILE_MESSAGE);
 	}
 	document.write('</p>');
-}
-
-function omniture_download_link() {
-    var anchorElement = document.getElementById("download_link_p").getElementsByTagName("a")[0];//there is only one anchor in that paragraph
-    if(option_id!="" && platform_id!="" && lang_id!="") {
-    if(s_siteid) { // this variable is defined only if s_code_remote.js was downloaded
-        s_linkType = "d";
-        s_linkName = s_siteid + option_id;
-        s_events   = "event7";
-        s_products = "Downloaded Products;NetBeans IDE " + BUILD_DISPLAY_VERSION_SHORT + " | " + platform_id + " | " + option_id;
-        s_eVar3    = "netbeans";
-        s_eVar8    = option_id;
-        s_prop19   = platform_id;
-        s_prop20   = lang_id;
-        s_prop21   = BUILD_DISPLAY_VERSION_SHORT;
-        s_linkTrackVars   = "events,products,eVar3,eVar8,prop19,prop20,prop21";
-        s_linkTrackEvents = "event7";
-        s_lnk=s_co(anchorElement);
-        s_gs(s_account); 
-    }
-    }
 }
