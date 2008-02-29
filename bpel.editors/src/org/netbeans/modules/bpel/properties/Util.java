@@ -64,9 +64,9 @@ import org.openide.util.Lookup;
  */
 public class Util {
     
-    public static final String FORWARD_SLASH = "/";
-    public static final String UP_REL_FOLDER = "../";
-    public static final String CUR_REL_FOLDER = "./";
+    public static final String FORWARD_SLASH = "/"; //NOI18N
+    public static final String UP_REL_FOLDER = "../"; //NOI18N
+    public static final String CUR_REL_FOLDER = "./"; //NOI18N
     // too light - very difficult to see
     //    private static String GRAY_COLOR = "!controlShadow";
     

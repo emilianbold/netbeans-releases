@@ -45,6 +45,6 @@ made subject to such option by the copyright holder.
 <settings version="1.0">
     <module name="org.netbeans.modules.bpel.search/1" spec="1.1"/>
     <instanceof class="org.openide.windows.TopComponent"/>
-    <instanceof class="org.netbeans.modules.bpel.search.impl.ui.View"/>
-    <instance class="org.netbeans.modules.bpel.search.impl.ui.View"/>
+    <instanceof class="org.netbeans.modules.bpel.search.impl.output.View"/>
+    <instance class="org.netbeans.modules.bpel.search.impl.output.View"/>
 </settings>
