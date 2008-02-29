@@ -590,6 +590,7 @@ public class ConfiguredTest extends TestCase {
         }
         
         System.out.print("Test " + inputDirName + "\\" + testPropertiesFileName);
+        System.out.flush();
         
         try {
             if (logDetails) {
@@ -781,10 +782,10 @@ public class ConfiguredTest extends TestCase {
                 System.out.println(result);
             }
         } catch (Exception ex) {
-            System.out.println(" Failed.");
+            System.out.println(" Failed. (Destination: " + destination + ")");
             throw ex;
         } catch (Error er) {
-            System.out.println(" Failed.");
+            System.out.println(" Failed. (Destination: " + destination + ")");
             throw er;
         }
     }
@@ -1932,7 +1933,7 @@ public class ConfiguredTest extends TestCase {
             String expectedHttpStatus, 
             String expectedHttpWarning, 
             String soapAction) throws SOAPException, Exception {
-        
+                         
         // Add soapAction if not null
         if (soapAction != null) {
             MimeHeaders hd = message.getMimeHeaders();
