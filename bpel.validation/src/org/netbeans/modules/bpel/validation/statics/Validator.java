@@ -127,7 +127,7 @@ public final class Validator extends BpelValidator {
         if((p.getMyRole() == null || p.getMyRole().equals("")) &&
                 (p.getPartnerRole() == null || p.getPartnerRole().equals(""))) 
         {
-            getHelper().addError( FIX_PARTNER_LINK_ERROR, p );
+            addError( FIX_PARTNER_LINK_ERROR, p );
         }
         
         // Rule: The initializePartnerRole attribute MUST NOT be used on a partnerLink
@@ -137,7 +137,7 @@ public final class Validator extends BpelValidator {
                     (!p.getInitializePartnerRole().equals(
                     TBoolean.INVALID))) 
             {
-                getHelper().addError( FIX_INITIALISE_PARTNER_ROLE, p );
+                addError( FIX_INITIALISE_PARTNER_ROLE, p );
             }
         }
     }
@@ -326,7 +326,7 @@ public final class Validator extends BpelValidator {
         boolean isInsideFaultHandlers = Utils.hasAscendant( reThrow , 
                 FaultHandlers.class ); 
         if ( !isInsideFaultHandlers ){
-            getHelper().addError( FIX_RETHROW_OCCURANCE, reThrow );
+            addError( FIX_RETHROW_OCCURANCE, reThrow );
         }
     }
     
@@ -353,8 +353,7 @@ public final class Validator extends BpelValidator {
              *  permitted when the partnerLink specifies the attribute myRole.
              */
             if ( !referenceHasMyRole ) {
-                getHelper().addError( FIX_ENDPOINT_REFRENCE, from, 
-                        Roles.MY_ROLE.toString());
+                addError( FIX_ENDPOINT_REFRENCE, from, Roles.MY_ROLE.toString());
             }
         }
         else if ( Roles.PARTNER_ROLE.equals(roles) ){
@@ -368,8 +367,7 @@ public final class Validator extends BpelValidator {
              * partnerRole.
              */
             if ( !referenceHasPartnerRole ) {
-                getHelper().addError( FIX_ENDPOINT_REFRENCE, from, 
-                        Roles.PARTNER_ROLE.toString() );
+                addError( FIX_ENDPOINT_REFRENCE, from, Roles.PARTNER_ROLE.toString() );
             }
         }
     }
@@ -412,8 +410,7 @@ public final class Validator extends BpelValidator {
         if ((query != null && !SUPPORTED_LANGAGE.equals(query))
                 || (expression != null && !SUPPORTED_LANGAGE.equals(expression)))
         {
-            getHelper().addError(FIX_SUPPORTED_LANGUAGE, process,
-                    SUPPORTED_LANGAGE);
+            addError(FIX_SUPPORTED_LANGUAGE, process, SUPPORTED_LANGAGE);
         }
     }
 
@@ -429,9 +426,13 @@ public final class Validator extends BpelValidator {
         if ( TBoolean.YES.equals( isolated ) ) {
             List<Component> collection = new LinkedList<Component>();
             getHelper().collectIsolatedScopes( scope , collection );
+
             if ( collection.size() >0 ){
                 collection.add( scope );
-                getHelper().addError( FIX_ISOLATED_SCOPES , collection );
+
+                for(Component component : collection) {
+                    addError(FIX_ISOLATED_SCOPES, component);
+                }
             }
         }
     }
@@ -456,8 +457,6 @@ public final class Validator extends BpelValidator {
         getHelper().addErrorForNamed( map , FIX_MULTIPLE_NAMED_LINKS );
     }
 
-
-    
     @Override
     public void visit( SourceContainer container ) {
         /*
@@ -474,7 +473,7 @@ public final class Validator extends BpelValidator {
         for (Source source : sources) {
             getHelper().addNamedToMap( source, map, Helper.LazyHolder.SOURCE_LINK_NAME_ACCESS );
         }
-        getHelper().addErrorForNamed(  map , FIX_MULTIPLE_SOURCE_LINK_REFERENCES );
+        getHelper().addErrorForNamed(map, FIX_MULTIPLE_SOURCE_LINK_REFERENCES );
     }
     
     
@@ -495,8 +494,7 @@ public final class Validator extends BpelValidator {
         for (Target target : targets) {
             getHelper().addNamedToMap( target, map , Helper.LazyHolder.TARGET_LINK_NAME_ACCESS );
         }
-        getHelper().addErrorForNamed(  map ,  
-                FIX_MULTIPLE_TARGET_LINK_REFERENCES );
+        getHelper().addErrorForNamed(map, FIX_MULTIPLE_TARGET_LINK_REFERENCES );
     }
     
     @Override
@@ -526,8 +524,10 @@ public final class Validator extends BpelValidator {
                 Collection<Component> collection = new ArrayList<Component>(2);
                 collection.add( forEach );
                 collection.add( variable );
-                getHelper().addError( FIX_DUPLICATE_COUNTER_NAME , collection,
-                        counterName );
+
+                for (Component component : collection) {
+                  addError(FIX_DUPLICATE_COUNTER_NAME, component, counterName);
+                }
                 break;
             }
         }
@@ -549,7 +549,7 @@ public final class Validator extends BpelValidator {
                  onEvent.getMessageType() == null && 
                  onEvent.getElement() == null )
         {
-            getHelper().addError( FIX_ON_EVENT_VARAIBLE , onEvent );
+            addError(FIX_ON_EVENT_VARAIBLE, onEvent);
         }
         
         /*
@@ -605,7 +605,7 @@ public final class Validator extends BpelValidator {
          * or <onAlarm>  element.
          */
         if ( handlers.sizeOfOnAlarms() == 0 && handlers.sizeOfOnEvents() == 0 ) {
-            getHelper().addError( FIX_EVENT_HANDLERS , handlers );
+            addError( FIX_EVENT_HANDLERS , handlers );
         }
     }
 
@@ -626,13 +626,13 @@ public final class Validator extends BpelValidator {
         Outcome item = null;
 
         if (faultVariable != null && element == null && message == null) {
-            getHelper().addError(FIX_FAULT_VARIABLE_TYPE, catc);
+            addError(FIX_FAULT_VARIABLE_TYPE, catc);
         }
         if (element != null && message != null && item == null) {
-            getHelper().addError(FIX_FAULT_VARIABLE_TYPE, catc);
+            addError(FIX_FAULT_VARIABLE_TYPE, catc);
         }
         if (faultVariable == null && ( element != null || message != null)) {
-            getHelper().addError(FIX_ODD_FAULT_TYPE, catc);
+            addError(FIX_ODD_FAULT_TYPE, catc);
         }
         // Check fault variable name
         checkVariableName( catc);
@@ -645,7 +645,7 @@ public final class Validator extends BpelValidator {
          * within a <faultHandlers> element.
          */
         if ( handlers.sizeOfCathes() == 0 && handlers.getCatchAll() == null ) {
-            getHelper().addError( FIX_FAULT_HANDLERS, handlers );
+            addError( FIX_FAULT_HANDLERS, handlers );
         }
         
         /*
@@ -675,7 +675,7 @@ public final class Validator extends BpelValidator {
              * This requirement MUST be statically enforced.
              */
             if ( ns != null ){
-                getHelper().addError( FIX_ABSENT_NAMESPACE_IN_IMPORT , imp );
+                addError( FIX_ABSENT_NAMESPACE_IN_IMPORT , imp );
             }
         }
         else {
@@ -685,7 +685,7 @@ public final class Validator extends BpelValidator {
              * This requirement MUST be statically enforced.
              */
             if ( !namespace.equals( ns ) ){
-                getHelper().addError( FIX_BAD_NAMESPACE_IN_IMPORT , imp );
+                addError( FIX_BAD_NAMESPACE_IN_IMPORT , imp );
             }
         }
         
@@ -711,7 +711,7 @@ public final class Validator extends BpelValidator {
         count+=variable.getMessageType()==null?0:1;
         count+=variable.getElement()==null?0:1;
         if ( count != 1) {
-            getHelper().addError( FIX_VARIABLE_TYPES , variable );
+            addError( FIX_VARIABLE_TYPES , variable );
         }
     }
 
@@ -722,7 +722,10 @@ public final class Validator extends BpelValidator {
         {
                 Collection<Component> collection = 
                     Arrays.asList( (Component[])pick.getOnAlarms());
-                getHelper().addError( FIX_PICK_MESSAGES , collection );
+                
+                for (Component component : collection) {
+                  addError(FIX_PICK_MESSAGES, component);
+                }
         }
         
         /*
@@ -800,7 +803,7 @@ public final class Validator extends BpelValidator {
                 if ( typeRef == null || 
                         !(typeRef.get() instanceof GlobalSimpleType)) 
                 {
-                    getHelper().addError( FIX_BAD_CORRELATION_PROPERTY_TYPE , set );
+                    addError( FIX_BAD_CORRELATION_PROPERTY_TYPE , set );
                 }
             }
         }
@@ -836,7 +839,7 @@ public final class Validator extends BpelValidator {
             pattern == null && operation instanceof RequestResponseOperation;
         boolean flag = oneWayOperationPatternExist || twoWayOperationPatternAbsent;
         if  ( flag ) {
-            getHelper().addError( FIX_BAD_USAGE_PATTERN_ATTRIBUTE , invoke);
+            addError( FIX_BAD_USAGE_PATTERN_ATTRIBUTE , invoke);
         }
     }
 
@@ -940,7 +943,7 @@ public final class Validator extends BpelValidator {
                 if (ns == null) {
                     ns = "";
                 }
-                getHelper().addError(FIX_UNSUPPORTED_EXTENSION, extension, ns);
+                addError(FIX_UNSUPPORTED_EXTENSION, extension, ns);
             }
         }
     }      
@@ -956,7 +959,7 @@ public final class Validator extends BpelValidator {
     private void checkVariableName( VariableDeclaration declaration ) {
         String name = declaration.getVariableName();
         if ( name!= null && name.indexOf('.')!= -1 ){
-            getHelper().addError( FIX_BAD_VARIABLE_NAME , declaration );
+            addError( FIX_BAD_VARIABLE_NAME , declaration );
         }
     }
     

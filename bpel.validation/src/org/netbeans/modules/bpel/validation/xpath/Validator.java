@@ -103,13 +103,14 @@ import org.netbeans.modules.xml.schema.model.LocalComplexType;
 import org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
+import org.netbeans.modules.bpel.model.api.support.ValidationVisitor;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2008.02.08
  */
-public final class Validator extends BpelValidator {
+public final class Validator extends BpelValidator implements ValidationVisitor {
 
   @Override
   public void visit(Copy copy) {

@@ -8,4 +8,4 @@ AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/websvc/wsdl/config/WsCompileConfigDataLoader.class
 OpenIDE-Module-Class: Loader
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject

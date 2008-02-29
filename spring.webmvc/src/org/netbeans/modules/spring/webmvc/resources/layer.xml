@@ -51,6 +51,11 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="spring-webmvc-2.5.xml" url="spring-webmvc-2.5.xml"/>
+        </folder>
+    </folder>
     <folder name="Projects">
         <folder name="org-codehaus-mevenide-netbeans">
             <folder name="Lookup">
