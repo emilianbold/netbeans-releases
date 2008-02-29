@@ -8,4 +8,4 @@ AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/xml/wsdl/ui/netbeans/module/WSDLDataLoader.class
 OpenIDE-Module-Class: Loader
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject

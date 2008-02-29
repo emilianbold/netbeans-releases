@@ -407,6 +407,9 @@ public abstract class JBIComponentContainerNode
                 }
             } catch (Exception ex) {
                 logger.severe(ex.getMessage());
+                NotifyDescriptor d = new NotifyDescriptor.Message(ex.getMessage(),
+                    NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
             }
 
             return installationService.installComponent(
