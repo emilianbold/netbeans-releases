@@ -14,9 +14,6 @@
 
 
     <folder name="Actions">        
-        <folder name="Build">            
-            <file name="org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.instance"/>            
-        </folder>        
         <folder name="Window">
             <file name="org-netbeans-modules-asm-core-ui-top-NavigatorAction.instance"/>                          
         </folder>
@@ -102,10 +99,6 @@
                     <file name="sep-1_1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="140"/>
-                    </file>
-                    <file name="org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.instance"/>
-                        <attr name="position" intvalue="150"/>
                     </file>
                     <file name="sep-1_2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

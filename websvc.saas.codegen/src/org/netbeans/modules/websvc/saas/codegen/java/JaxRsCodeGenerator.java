@@ -279,8 +279,12 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             String authTemplate = null;
             if(getBean().getAuthenticationType() == SaasAuthenticationType.API_KEY)
                 authTemplate = TEMPLATES_SAAS+"ApiKeyAuthenticator.java";
-            if(getBean().getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
+            else if(getBean().getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
                 authTemplate = TEMPLATES_SAAS+"HttpBasicAuthenticator.java";
+            else if(getBean().getAuthenticationType() == SaasAuthenticationType.SIGNED_URL)
+                authTemplate = TEMPLATES_SAAS+"SignedUrlAuthenticator.java";
+            else if(getBean().getAuthenticationType() == SaasAuthenticationType.SESSION_KEY)
+                authTemplate = TEMPLATES_SAAS+"SessionKeyAuthenticator.java";
             if(authTemplate != null) {
                 saasAuthJS = JavaSourceHelper.createJavaSource(authTemplate,targetFolder, pkg, authFileName);
                 Set<FileObject> files = new HashSet<FileObject>(saasAuthJS.getFileObjects());
@@ -289,9 +293,15 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 }
             }
             //Also copy profile.properties
-            try {
-                Util.createDataObjectFromTemplate("SaaSServices/"+getGroupName()+"/profile.properties", targetFolder, null);
-            } catch(Exception ex) {} //ignore
+            String authProfile = getBean().getAuthenticationProfile();
+            if (authProfile != null && !authProfile.trim().equals("")) {
+                Util.createDataObjectFromTemplate(authProfile, targetFolder, null);
+            } else {
+                try {
+                    Util.createDataObjectFromTemplate("SaaSServices/" + getGroupName() + "/profile.properties", targetFolder, null);
+                } catch (Exception ex) {
+                } //ignore
+            }
         }
     }
     

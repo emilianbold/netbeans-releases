@@ -117,7 +117,11 @@ public class EditorContextBridge {
     }
     
     public static boolean showDis(CallStackFrame csf) {
-        int line = Disassembly.getCurrent().getAddressLine(csf.getAddr());
+        Disassembly dis = Disassembly.getCurrent();
+        if (dis == null) {
+            return false;
+        }
+        int line = dis.getAddressLine(csf.getAddr());
         if (line != -1) {
             FileObject fo = Disassembly.getFileObject();
             if (fo != null) {
@@ -210,7 +214,11 @@ public class EditorContextBridge {
     }
     
     public static Object annotateDis(CallStackFrame csf, String annotationType) {
-        int line = Disassembly.getCurrent().getAddressLine(csf.getAddr());
+        Disassembly dis = Disassembly.getCurrent();
+        if (dis == null) {
+            return null;
+        }
+        int line = dis.getAddressLine(csf.getAddr());
         if (line != -1) {
             FileObject fo = Disassembly.getFileObject();
             if (fo != null) {
