@@ -121,6 +121,7 @@ public final class ServerUtilities {
      * 
      * @deprecated
      */
+    @Deprecated
     public static InstantiatingIterator getAddInstanceIterator() {
         return new ServerWizardIterator();
     }
