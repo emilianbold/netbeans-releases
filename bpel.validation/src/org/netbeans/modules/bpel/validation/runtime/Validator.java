@@ -166,10 +166,6 @@ public final class Validator extends BpelValidator {
       addWarning("FIX_Correlating_Activity", container);
     }
 
-    private boolean isCreateInstanceYes(CreateInstanceActivity activity) {
-      return activity != null && activity.getCreateInstance() == TBoolean.YES;
-    }
-
     private CreateInstanceActivity getCreateInstanceActivity(Component component) {
       if (component instanceof CreateInstanceActivity) {
         return (CreateInstanceActivity) component;
@@ -181,25 +177,25 @@ public final class Validator extends BpelValidator {
     }
 
     @Override
-    public void visit( Process process ) {
+    public void visit(Process process) {
         String queryLang = process.getQueryLanguage();
 
-        if ( queryLang != null ) {
+        if (queryLang != null) {
             addAttributeWarning( Process.QUERY_LANGUAGE, process );
         }
         String expression = process.getExpressionLanguage();
         
-        if ( expression != null ) {
+        if (expression != null) {
             addAttributeWarning( Process.EXPRESSION_LANGUAGE, process );
         }
         TBoolean value = process.getSuppressJoinFailure();
         
-        if ( value != null ) {
+        if (value != null) {
             addAttributeWarning( Process.SUPPRESS_JOIN_FAILURE, process );
         }
         value = process.getExitOnStandardFault();
         
-        if ( value != null ) {
+        if (value != null) {
             addAttributeWarning( Process.EXIT_ON_STANDART_FAULT, process );
         }
         // check whether the URI is valid.
@@ -208,12 +204,12 @@ public final class Validator extends BpelValidator {
     }
     
     @Override
-    public void visit( Validate validate ) {
-        addElementError( validate );
+    public void visit(Validate validate) {
+        addElementError(validate);
     }
     
     @Override
-    public void visit( PartnerLink partnerLink ) {
+    public void visit(PartnerLink partnerLink) {
         if ( partnerLink.getInitializePartnerRole() != null ) {
             addAttributeWarning( PartnerLink.INITIALIZE_PARTNER_ROLE, partnerLink);
         }
@@ -233,47 +229,48 @@ public final class Validator extends BpelValidator {
     }
     
     @Override
-    public void visit( SourceContainer container ) {
-        addElementError( container );
+    public void visit(SourceContainer container) {
+        addElementError(container);
     }
     
     @Override
-    public void visit( Invoke invoke ) {
+    public void visit(Invoke invoke) {
         super.visit(invoke);
         Catch[] catches = invoke.getCatches();
-        if ( catches!= null && catches.length >0 ) {
-            addElementsInParentError(invoke, (BpelEntity[])catches);
+
+        if (catches != null && catches.length > 0) {
+            addElementsInParentError(invoke, (BpelEntity[]) catches);
         }
         CatchAll catchAll = invoke.getCatchAll();
 
-        if ( catchAll != null ) {
-            addElementsInParentError( invoke, catchAll );
+        if (catchAll != null ) {
+            addElementsInParentError(invoke, catchAll);
         }
         // Rule: <fromPart>, <toPart> is not supported.
-        if (invoke.getFromPartContaner() != null ) {
+        if (invoke.getFromPartContaner() != null) {
             addElementsInParentError(invoke, FROM_PARTS);
         }
-        if (invoke.getToPartContaner() != null ) {
+        if (invoke.getToPartContaner() != null) {
             addElementsInParentError(invoke, TO_PARTS);
         }
     }
     
     @Override
-    public void visit( ExtensibleAssign extensibleAssign ) {
+    public void visit(ExtensibleAssign extensibleAssign) {
         addElementError(extensibleAssign);
     }
     
     @Override
-    public void visit( Assign assign ) {
+    public void visit(Assign assign) {
         super.visit(assign);
 
         if (assign.getValidate() != null) {
-            addAttributeWarning( Assign.VALIDATE, assign );
+            addAttributeWarning(Assign.VALIDATE, assign);
         }
     }
     
     @Override
-    public void visit( From from ) {
+    public void visit(From from) {
         Documentation[] docs = from.getDocumentations();
 
         if (docs!= null && docs.length > 0) {

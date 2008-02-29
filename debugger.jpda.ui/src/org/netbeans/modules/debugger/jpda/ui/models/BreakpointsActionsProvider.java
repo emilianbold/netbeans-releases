@@ -45,7 +45,6 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 
 import org.netbeans.api.debugger.Breakpoint;
@@ -57,11 +56,9 @@ import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
-import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.viewmodel.Models;
 
-import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.*;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
@@ -77,18 +74,6 @@ import org.openide.util.NbBundle;
  */
 public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
     
-    private static final Action GO_TO_SOURCE_ACTION = Models.createAction (
-        loc("CTL_Breakpoint_GoToSource_Label"), // NOI18N
-        new Models.ActionPerformer () {
-            public boolean isEnabled (Object node) {
-                return true;
-            }
-            public void perform (Object[] nodes) {
-                goToSource ((LineBreakpoint) nodes [0]);
-            }
-        },
-        Models.MULTISELECTION_TYPE_EXACTLY_ONE
-    );
     private static final Action CUSTOMIZE_ACTION = Models.createAction (
         loc("CTL_Breakpoint_Customize_Label"), // NOI18N
         new Models.ActionPerformer () {
@@ -112,14 +97,6 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
             return original.getActions (node);
         
         Action[] oas = original.getActions (node);
-        if (node instanceof LineBreakpoint) {
-            Action[] as = new Action [oas.length + 3];
-            as [0] = GO_TO_SOURCE_ACTION;
-            as [1] = null;
-            System.arraycopy (oas, 0, as, 2, oas.length);
-            as [as.length - 1] = CUSTOMIZE_ACTION;
-            return as;
-        }
         Action[] as = new Action [oas.length + 1];
         System.arraycopy (oas, 0, as, 0, oas.length);
         as [as.length - 1] = CUSTOMIZE_ACTION;
@@ -127,19 +104,10 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
     }
     
     public void performDefaultAction (NodeActionsProvider original, Object node) throws UnknownTypeException {
-        if (node instanceof LineBreakpoint) 
-            goToSource ((LineBreakpoint) node);
-        else
-        if (node instanceof JPDABreakpoint) 
+        if (node instanceof ThreadBreakpoint) 
             customize ((Breakpoint) node);
         else
             original.performDefaultAction (node);
-    }
-
-    public void addModelListener (ModelListener l) {
-    }
-
-    public void removeModelListener (ModelListener l) {
     }
 
     public static void customize (Breakpoint b) {
@@ -204,7 +172,4 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         d.setVisible (true);
     }
     
-    private static void goToSource (LineBreakpoint b) {
-        EditorContextBridge.showSource (b, null);
-    }
 }
