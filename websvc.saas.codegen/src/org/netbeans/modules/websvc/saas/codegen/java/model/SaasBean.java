@@ -66,6 +66,7 @@ public abstract class SaasBean extends GenericResourceBean {
     private String resourceTemplate;
     private SaasAuthenticationType authType;
     private SaasBean.SaasAuthentication auth;
+    private String authProfile;
 
     public SaasBean(String name, String packageName, String uriTemplate, MimeType[] mediaTypes, String[] representationTypes, HttpMethodType[] methodTypes) {
         super(name, packageName, uriTemplate, mediaTypes, representationTypes, methodTypes);
@@ -168,6 +169,15 @@ public abstract class SaasBean extends GenericResourceBean {
         this.auth = auth;
     }
     
+    
+    public String getAuthenticationProfile() {
+        return this.authProfile;
+    }
+    
+    private void setAuthenticationProfile(String profile) {
+        this.authProfile = profile;
+    }
+    
     public void findAuthentication(SaasMethod m) {
         Authentication auth2 = m.getSaas().getSaasMetadata().getAuthentication();
         if(auth2.getHttpBasic() != null) {
@@ -179,9 +189,17 @@ public abstract class SaasBean extends GenericResourceBean {
         } else if(auth2.getApiKey() != null) {
             setAuthenticationType(SaasAuthenticationType.API_KEY);
             setAuthentication(new ApiKeyAuthentication(auth2.getApiKey().getId()));
+        } else if(auth2.getSignedUrl() != null) {
+            setAuthenticationType(SaasAuthenticationType.SIGNED_URL);
+            setAuthentication(new SignedUrlAuthentication());
+        } else if(auth2.getSessionKey() != null) {
+            setAuthenticationType(SaasAuthenticationType.SESSION_KEY);
+            setAuthentication(new SessionKeyAuthentication());
         } else {
             setAuthenticationType(SaasAuthenticationType.PLAIN);
         }
+        if(auth2.getProfile() != null)
+            setAuthenticationProfile(auth2.getProfile());
     }
     
     public class SaasAuthentication {
@@ -205,6 +223,18 @@ public abstract class SaasBean extends GenericResourceBean {
         
         public String getApiKeyName() {
             return keyName;
+        }
+    }
+    
+    public class SignedUrlAuthentication extends SaasAuthentication {
+        public SignedUrlAuthentication() {
+            
+        }
+    }
+    
+    public class SessionKeyAuthentication extends SaasAuthentication {
+        public SessionKeyAuthentication() {
+            
         }
     }
     

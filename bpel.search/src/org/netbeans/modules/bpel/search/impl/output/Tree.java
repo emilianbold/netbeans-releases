@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.search.impl.ui;
+package org.netbeans.modules.bpel.search.impl.output;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -79,6 +79,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.modules.bpel.search.api.SearchElement;
 
+import org.netbeans.modules.bpel.search.impl.ui.Export;
 import org.netbeans.modules.bpel.search.impl.util.Util;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
