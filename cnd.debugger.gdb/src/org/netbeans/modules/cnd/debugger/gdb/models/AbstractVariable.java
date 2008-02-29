@@ -125,8 +125,11 @@ public class AbstractVariable implements LocalVariable, Customizer {
         return tinfo;
     }
     
-    protected void resetTypeInfo() {
+    protected void resetVariable() {
         tinfo = null;
+        type = "";
+        value = "";
+        fields = new Field[0];
     }
     
     /**
