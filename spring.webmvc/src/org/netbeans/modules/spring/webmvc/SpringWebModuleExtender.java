@@ -173,12 +173,6 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         return new HelpCtx(SpringWebModuleExtender.class);
     }
 
-    public void readSettings(Object settings) {
-    }
-
-    public void storeSettings(Object settings) {
-    }
-
     public final void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
