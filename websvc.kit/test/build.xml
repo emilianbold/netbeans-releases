@@ -70,8 +70,10 @@ made subject to such option by the copyright holder.
         <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-saas-ui.jar"/>
         <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-utilities.jar"/>
         <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-websvcapi.jar"/>
+<!--
         <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-wsitconf.jar"/>
         <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-wsitmodelext.jar"/>
+-->        
     </path>
 
     <path id="ws.kit.src.path">
@@ -92,8 +94,10 @@ made subject to such option by the copyright holder.
         <pathelement location="../../websvc.saas.ui/src"/>
         <pathelement location="../../websvc.utilities/src"/>
         <pathelement location="../../websvc.websvcapi/src"/>
+<!--
         <pathelement location="../../websvc.wsitconf/src"/>
         <pathelement location="../../websvc.wsitmodelext/src"/>
+-->
     </path>
 
     <target name="emma-init-coverage-path-module" unless="coverage.kit">
