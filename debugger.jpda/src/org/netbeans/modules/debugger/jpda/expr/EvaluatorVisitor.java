@@ -218,6 +218,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
         }
         List<? extends TypeMirror> paramTypes = null;
+        String enclosingClass = null;
         if (elm != null) {
             TypeMirror typeMirror = elm.asType();
             TypeKind kind = typeMirror.getKind();
@@ -231,6 +232,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 ExecutableType execTypeMirror = (ExecutableType) typeMirror;
                 paramTypes = execTypeMirror.getParameterTypes();
                 isStatic = methodElement.getModifiers().contains(Modifier.STATIC);
+                Element enclosing = methodElement.getEnclosingElement();
+                if (enclosing.getKind() == ElementKind.CLASS) {
+                    TypeElement enclosingClassElement = (TypeElement) enclosing;
+                    enclosingClass = ElementUtilities.getBinaryName(enclosingClassElement);
+                }
             }
         }
         
@@ -276,17 +282,26 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 type = (ReferenceType) ((ObjectReference) object).type();
             } else {
                 type = evaluationContext.getFrame().location().declaringType();
+                if (enclosingClass != null) {
+                    ReferenceType dt = findEnclosingType(type, enclosingClass);
+                    if (dt != null) type = dt;
+                }
             }
         } else {
             if (object != null) {
                 objectReference = (ObjectReference) object;
+                type = objectReference.referenceType();
             } else {
                 objectReference = evaluationContext.getFrame().thisObject();
+                type = evaluationContext.getFrame().location().declaringType();
+                if (enclosingClass != null) {
+                    ReferenceType dt = findEnclosingType(type, enclosingClass);
+                    if (dt != null) type = dt;
+                }
             }
             if (objectReference == null) {
                 Assert2.error(arg0, "methodCallOnNull", methodName);
             }
-            type = objectReference.referenceType();
         }
         ClassType cType;
         if (type instanceof ArrayType) {
@@ -2233,6 +2248,17 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 value = type.invokeMethod(evaluationThread, method, argVals,
                                           ObjectReference.INVOKE_SINGLE_THREADED);
             } else {
+                if (type != null) {
+                    if (method.isPrivate()) {
+                        ObjectReference to = findEnclosedObject(objectReference, type);
+                        if (to != null) objectReference = to;
+                    } else {
+                        if (!instanceOf(objectReference.referenceType(), type)) {
+                            ObjectReference to = findEnclosedObject(objectReference, type);
+                            if (to != null) objectReference = to;
+                        }
+                    }
+                }
                 value = objectReference.invokeMethod(evaluationThread, method,
                                                      argVals,
                                                      ObjectReference.INVOKE_SINGLE_THREADED);
