@@ -238,7 +238,6 @@ public class CloneWSDLPortAction extends NodeAction {
         try {
             DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = fact.newDocumentBuilder();
-            Document dstDoc = builder.parse(dstCat);
             Document srcDoc = builder.parse(srcCat);
 
             // filter and convert URI...
@@ -257,22 +256,28 @@ public class CloneWSDLPortAction extends NodeAction {
                 }
             }
 
-            // merge catalogs...
-            Element dstRoot = dstDoc.getDocumentElement();
-            Element srcRoot = srcDoc.getDocumentElement();
-            NodeList childNodes = srcRoot.getChildNodes();
-            for (int i = 0; i < childNodes.getLength(); i++) {
-                org.w3c.dom.Node childNode = childNodes.item(i);
+            DOMSource src = null;
+            if (dstCat.exists()) {
+                Document dstDoc = builder.parse(dstCat);
+                // merge catalogs...
+                Element dstRoot = dstDoc.getDocumentElement();
+                Element srcRoot = srcDoc.getDocumentElement();
+                NodeList childNodes = srcRoot.getChildNodes();
+                for (int i = 0; i < childNodes.getLength(); i++) {
+                    org.w3c.dom.Node childNode = childNodes.item(i);
 
-                // todo: Need to check for duplicated entries...
-                childNode = dstDoc.importNode(childNode, true);
-                dstRoot.appendChild(childNode);
+                    // todo: Need to check for duplicated entries...
+                    childNode = dstDoc.importNode(childNode, true);
+                    dstRoot.appendChild(childNode);
+                }
+
+                // write catalog
+                dstCat.createNewFile();
+                src = new DOMSource(dstDoc);
+            } else {
+                src = new DOMSource(srcDoc);                
             }
 
-            // write catalog
-            dstCat.createNewFile();
-
-            DOMSource src = new DOMSource(dstDoc);
             FileOutputStream fos = new FileOutputStream(dstCat);
             StreamResult rest = new StreamResult(fos);
             TransformerFactory transFact = TransformerFactory.newInstance();
