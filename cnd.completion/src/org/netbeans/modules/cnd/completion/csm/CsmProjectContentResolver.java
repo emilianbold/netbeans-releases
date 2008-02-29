@@ -686,13 +686,15 @@ public final class CsmProjectContentResolver {
             CsmMember member = (CsmMember) it.next();
             if (isKindOf(member.getKind(), kinds) &&
                     (!staticOnly || member.isStatic()) &&
-                    matchVisibility(member, minVisibility) &&
-                    ((matchName(member.getName().toString(), strPrefix, match)) ||
-                    (member.getName().toString().equals("") && strPrefix.equals("") && returnUnnamedMembers))) {
-                if (CsmKindUtilities.isFunction(member)) {
-                    res.put(((CsmFunction)member).getSignature().toString(), member);
-                } else {
-                    res.put(member.getQualifiedName().toString(), member);
+                    matchVisibility(member, minVisibility)) {
+                CharSequence memberName = member.getName();
+                if ((matchName(memberName.toString(), strPrefix, match)) ||
+                        (memberName.length() == 0 && returnUnnamedMembers)) {
+                    if (CsmKindUtilities.isFunction(member)) {
+                        res.put(((CsmFunction) member).getSignature().toString(), member);
+                    } else {
+                        res.put(member.getQualifiedName().toString(), member);
+                    }
                 }
             }
         }
