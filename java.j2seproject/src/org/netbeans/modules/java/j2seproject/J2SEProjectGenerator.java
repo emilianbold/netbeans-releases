@@ -323,6 +323,7 @@ public class J2SEProjectGenerator {
         if (!h.isSharableProject()) {
             return; 
         }
+        //TODO: mkleint: this hardwiring of libraries is potencially source of problems
         if (rh.getProjectLibraryManager().getLibrary("junit") == null) {
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit")); // NOI18N
         }
