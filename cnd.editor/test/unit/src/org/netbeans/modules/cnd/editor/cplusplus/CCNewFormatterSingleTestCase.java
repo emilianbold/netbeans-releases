@@ -138,5 +138,39 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        );
 //    }
 //
+
+    public void testIdentFunctionDefinition2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "getcmdline(int firstc)\n" +
+            "{\n" +
+            "    if (firstc == '/')\n" +
+            "    {\n" +
+            "#ifdef USE_IM_CONTROL\n" +
+            "	im_set_active(*b_im_ptr == B_IMODE_IM);\n" +
+            "#endif\n" +
+            "    }\n" +
+            "#ifdef USE_IM_CONTROL\n" +
+            "    else if (p_imcmdline)\n" +
+            "	im_set_active(TRUE);\n" +
+            "#endif\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing function definition",
+            "getcmdline(int firstc)\n" +
+            "{\n" +
+            "    if (firstc == '/') {\n" +
+            "#ifdef USE_IM_CONTROL\n" +
+            "        im_set_active(*b_im_ptr == B_IMODE_IM);\n" +
+            "#endif\n" +
+            "    }\n" +
+            "#ifdef USE_IM_CONTROL\n" +
+            "    else if (p_imcmdline)\n" +
+            "        im_set_active(TRUE);\n" +
+            "#endif\n" +
+            "}\n"
+        );
+    }
     
 }
