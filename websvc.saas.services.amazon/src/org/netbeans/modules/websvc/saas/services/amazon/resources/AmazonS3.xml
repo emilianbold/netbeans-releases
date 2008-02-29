@@ -48,7 +48,7 @@
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://developer.amazonwebservices.com/connect/kbcategory.jspa?categoryID=46"
-               url="org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3BucketWadl.xml">
+               url="org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3BucketsWadl.xml">
 
     <description>AmazonS3 Service</description>
     
@@ -68,10 +68,7 @@
     </saas-metadata>
 
     <methods>
-        <method name="getBucket" href="#amazons3.getBucket"/>
-        <method name="getObject" href="#amazons3.getObject"/>
-        <method name="putObject" href="#amazons3.putObject"/>
-        <method name="deleteObject" href="#amazons3.deleteObject"/>
+        <method name="getBuckets" href="#amazons3.getBuckets"/>
     </methods>
 
 </saas-services>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <!--
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -41,37 +41,31 @@
  made subject to such option by the copyright holder.
 -->
 
-<saas-services xmlns="http://xml.netbeans.org/websvc/saas/services/1.0"
-               xmlns:tns="http://xml.netbeans.org/websvc/saas/services/1.0/amazon"
-               xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
-               xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
-                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
-               type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://developer.amazonwebservices.com/connect/kbcategory.jspa?categoryID=46"
-               url="org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3BucketWadl.xml">
-
-    <description>AmazonS3 Service</description>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+             xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
+             ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+             xmlns="http://research.sun.com/wadl/2006/10">
     
-    <display-name>AmazonS3</display-name>
-
-    <saas-metadata>
-
-        <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
-
-        <group name="Amazon">
-        </group>
-
-        <authentication profile="Templates/WebServices/profile.properties">
-            <api-key id="dev_id"/>
-        </authentication>
-
-    </saas-metadata>
-
-    <methods>
-        <method name="getBucket" href="#amazons3.getBucket"/>
-        <method name="getObject" href="#amazons3.getObject"/>
-        <method name="putObject" href="#amazons3.putObject"/>
-        <method name="deleteObject" href="#amazons3.deleteObject"/>
-    </methods>
-
-</saas-services>
+    <grammars/>
+    <resources base="http://s3.amazonaws.com">
+        <!--
+            API documentation:
+        
+            http://developer.amazonwebservices.com/connect/kbcategory.jspa?categoryID=46
+            
+            This is a single WADL method for a all 3 methods of Amazon S3 services.
+        -->	
+        <resource path="/">
+            <method name="GET" id="amazons3.getBuckets">
+                <request>
+                    <param name="Authorization" type="xsd:string" style="header" required="true"/>
+                </request>
+                <response>
+                    <representation mediaType="application/xml"/>
+                </response>
+            </method>
+        </resource>
+    </resources>
+    
+</application>
