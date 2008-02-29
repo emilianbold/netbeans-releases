@@ -531,7 +531,7 @@ public class GroovyParser implements Parser {
                 }
             }
 
-            if (!ignoreErrors) {
+            if (!ignoreErrors && isRealError(errorMessage)) {
                 notifyError(context, null, Severity.ERROR, errorMessage, localizedMessage, offset, sanitizing);
             }
         }
@@ -605,12 +605,14 @@ public class GroovyParser implements Parser {
                 for (Object object : errors) {
                     if (object instanceof SyntaxErrorMessage) {
                         SyntaxException ex = ((SyntaxErrorMessage)object).getCause();
-                        String sourceLocator = ex.getSourceLocator();
-                        String name = moduleNode != null ? moduleNode.getContext().getName() : null;
-                        if (sourceLocator != null && name != null && sourceLocator.equals(name)) {
-                            int startOffset = AstUtilities.getOffset(context.document, ex.getStartLine(), ex.getStartColumn());
-                            int endOffset = AstUtilities.getOffset(context.document, ex.getLine(), ex.getEndColumn());
-                            notifyError(context, null, Severity.ERROR, ex.getMessage(), null, startOffset, endOffset, sanitizing);
+                        if (isRealError(ex.getMessage())) {
+                            String sourceLocator = ex.getSourceLocator();
+                            String name = moduleNode != null ? moduleNode.getContext().getName() : null;
+                            if (sourceLocator != null && name != null && sourceLocator.equals(name)) {
+                                int startOffset = AstUtilities.getOffset(context.document, ex.getStartLine(), ex.getStartColumn());
+                                int endOffset = AstUtilities.getOffset(context.document, ex.getLine(), ex.getEndColumn());
+                                notifyError(context, null, Severity.ERROR, ex.getMessage(), null, startOffset, endOffset, sanitizing);
+                            }
                         }
                     } else if (object instanceof SimpleMessage) {
                         String message = ((SimpleMessage)object).getMessage();
@@ -621,6 +623,17 @@ public class GroovyParser implements Parser {
                 }
             }
         }
+    }
+    
+    /**
+     * Hack to remove errors about unresolved class,
+     * we don't have integration with Java yet, so it's just less evil
+     */
+    private static boolean isRealError(String errorMessage) {
+        if (errorMessage.startsWith("unable to resolve class ")) { // NOI18N
+            return false;
+        }
+        return true;
     }
     
     private static ASTNode find(ASTNode oldRoot, ASTNode oldObject, ASTNode newRoot) {
