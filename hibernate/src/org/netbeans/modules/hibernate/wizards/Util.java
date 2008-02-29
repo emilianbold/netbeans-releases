@@ -115,14 +115,14 @@ public class Util {
         
         
     };
-    private static Map dialectMap = new HashMap();
+    private static Map<String, String> dialectMap = new HashMap<String, String>();
 
     static {
         for (int i = 0; i < dialects.length; i++) {
             dialectMap.put(dialectCodes[i], dialects[i]);
         }
     }
-    private static Map driverMap = new HashMap();
+    private static Map<String, String> driverMap = new HashMap<String, String>();
 
     static {
         driverMap.put(dialectCodes[0], drivers[0]);        
@@ -141,7 +141,7 @@ public class Util {
         driverMap.put(dialectCodes[21], drivers[13]);
        
     }
-    private static Map urlConnectionMap = new HashMap();
+    private static Map<String, String> urlConnectionMap = new HashMap<String, String>();
 
     static {
         urlConnectionMap.put(dialectCodes[0], urlConnections[0]);
