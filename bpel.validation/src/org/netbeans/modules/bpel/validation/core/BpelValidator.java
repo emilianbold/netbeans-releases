@@ -67,7 +67,7 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  */
 public abstract class BpelValidator extends CoreValidator {
 
-  public ValidationResult validate(Model model, Validation validation, ValidationType type) {
+  public synchronized ValidationResult validate(Model model, Validation validation, ValidationType type) {
     setParam(validation, type);
     init();
 
