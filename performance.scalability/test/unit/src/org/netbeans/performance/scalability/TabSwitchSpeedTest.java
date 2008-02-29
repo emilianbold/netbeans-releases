@@ -44,6 +44,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.rmi.activation.ActivateFailedException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
@@ -159,12 +160,13 @@ public class TabSwitchSpeedTest extends NbTestCase {
     private void doSwitchTest() throws Exception {
         Thread.sleep(5000);
         
-        final TopComponent[][] ref = new TopComponent[1][0];
-        SwingUtilities.invokeAndWait(new Runnable() {
+        class Activate implements Runnable {
+            int index;
+            long time;
 
             public void run() {
-                TopComponent tc = TopComponent.getRegistry().getActivated();
-                Mode mode = WindowManager.getDefault().findMode(tc);
+                time = System.currentTimeMillis();
+                openTC[index].requestActive();
                 ref[0] = mode.getTopComponents();
             }
             
@@ -179,17 +181,22 @@ public class TabSwitchSpeedTest extends NbTestCase {
                 public void run() {
                     time[0] = System.currentTimeMillis();
                     openedComponents[index].requestActive();
-                }
-            });
+        }
+        Activate activate = new Activate();
+        for (int i = openTC.length - 1; i > 0; i--) {
+            activate.index = i;
+            SwingUtilities.invokeLater(activate);
             Thread.sleep(SWITCH_LIMIT);
         }
         long a = System.currentTimeMillis();
-        
+        class Wait implements Runnable {
         SwingUtilities.invokeAndWait(new Runnable() {
 
             public void run() {
             }
-        });
+        }
+        Wait w = new Wait();
+        SwingUtilities.invokeAndWait(w);
         long time = System.currentTimeMillis() - a;
         System.err.println("Result time: " + time);
         if (time > 300) {
