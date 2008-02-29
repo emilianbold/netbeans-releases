@@ -204,6 +204,33 @@ public class Canvas extends MapperPanel implements VertexCanvas,
     }
 
     @Override
+    protected void printComponent(Graphics g) {
+        System.out.println(getWidth());
+        int w = getWidth();
+        int h = getHeight();
+        getViewport().setSize(getWidth(), getHeight());
+        Rectangle r = getViewport().getViewRect();
+        System.out.println(getWidth());
+//        System.out.println(getWidth());
+//        System.out.println(getHeight());
+        scrollRectToVisible(new Rectangle(0, 0, getWidth() - 1, getHeight() - 1));
+//        System.out.println(getViewport().getViewRect());
+//        Graphics g2 = g.create(r.x, r.y, r.width, r.height);
+//        setGraphViewPositionX(0);
+//                invalidate();
+//        getScrollPane().validate();
+  //      paintImmediately(r);
+        paintComponent(g);
+ //       setSize(w, h);
+        //getViewport().setSize(w - 100, h - 100);
+        //super.printComponent(g);
+        
+//        g2.dispose();
+//        scrollRectToVisible(r);
+//        System.out.println(r);
+    }
+    
+    @Override
     public void setLocation(int x, int y) {
         int step = getStep();
 
