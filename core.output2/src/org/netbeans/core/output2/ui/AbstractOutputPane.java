@@ -612,12 +612,21 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             postPopupMenu (p, this);
         }
     }
-    
+
     public void keyPressed(KeyEvent keyEvent) {
-        if (keyEvent.getKeyCode() == KeyEvent.VK_END) {
-            lockScroll();
-        } else {
-            unlockScroll();
+        switch (keyEvent.getKeyCode()) {
+            case KeyEvent.VK_END:
+                lockScroll();
+                break;
+            case KeyEvent.VK_UP:
+            case KeyEvent.VK_DOWN:
+            case KeyEvent.VK_LEFT:
+            case KeyEvent.VK_RIGHT:
+            case KeyEvent.VK_HOME:
+            case KeyEvent.VK_PAGE_UP:
+            case KeyEvent.VK_PAGE_DOWN:
+                unlockScroll();
+                break;
         }
     }
 
