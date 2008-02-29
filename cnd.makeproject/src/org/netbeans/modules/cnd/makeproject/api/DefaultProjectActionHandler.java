@@ -356,7 +356,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                         }
                     }
                     if (!gotpath) {
-                        env1[i] = pathname + csdirs + File.pathSeparator + CppSettings.getDefault().getPath();
+                        env1[i] = pathname + csdirs + File.pathSeparator + Path.getPathAsString();
                     }
                     env = env1;
                 }

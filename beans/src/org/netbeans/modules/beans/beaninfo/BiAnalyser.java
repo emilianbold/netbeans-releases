@@ -152,6 +152,7 @@ public final class BiAnalyser {
     private int defaultEventIndex = -1;
     private boolean useSuperClass = false;
     private boolean isModified = false;
+    private boolean isUpdateMode;
     
     private int getIndexOfMethod(List<BiFeature.Method> al, ElementHandle<ExecutableElement> method) {
         if (method == null) return -1;
@@ -181,13 +182,13 @@ public final class BiAnalyser {
         
         // Fill Descriptor list (only in case we have new templates)
         descriptor = new ArrayList<BiFeature.Descriptor>();
-        descriptor.add(new BiFeature.Descriptor(classElement));
+        descriptor.add(new BiFeature.Descriptor(classElement, this));
 
         // Fill methods list (only in case we have new templates)
         methods = new  ArrayList<BiFeature.Method>();
         if (!olderVersion) {
             for (ExecutableElement method : ElementFilter.methodsIn(classElement.getEnclosedElements())) {
-                methods.add(new BiFeature.Method(method, pa, javac));
+                methods.add(new BiFeature.Method(method, pa, javac, this));
             }
         }
 
@@ -195,7 +196,7 @@ public final class BiAnalyser {
         List<PropertyPattern> propertyPatterns = pa.getPropertyPatterns();
         properties = new  ArrayList<BiFeature.Property>(propertyPatterns.size());
         for (PropertyPattern pp : propertyPatterns) {
-            properties.add(new BiFeature.Property(pp, javac));
+            properties.add(new BiFeature.Property(pp, javac, this));
             for (int i = 0; i < methods.size(); i ++) {
                 if ((index = getIndexOfMethod(methods, pp.getGetterMethod())) != -1) methods.remove(index);
                 if ((index = getIndexOfMethod(methods, pp.getSetterMethod())) != -1) methods.remove(index);
@@ -212,7 +213,7 @@ public final class BiAnalyser {
                 continue;
             }
 
-            idxProperties.add(new BiFeature.IdxProperty(ipp, javac));
+            idxProperties.add(new BiFeature.IdxProperty(ipp, javac, this));
             if ((index = getIndexOfMethod(methods, ipp.getGetterMethod())) != -1) methods.remove(index);
             if ((index = getIndexOfMethod(methods, ipp.getSetterMethod())) != -1) methods.remove(index);
             if ((index = getIndexOfMethod(methods, ipp.getIndexedGetterMethod())) != -1) methods.remove(index);
@@ -223,12 +224,17 @@ public final class BiAnalyser {
         List<EventSetPattern> eventSetPatterns = pa.getEventSetPatterns();
         eventSets = new  ArrayList<BiFeature.EventSet>(eventSetPatterns.size());
         for (EventSetPattern esp : eventSetPatterns) {
-            eventSets.add(new BiFeature.EventSet(esp, javac));
+            eventSets.add(new BiFeature.EventSet(esp, javac, this));
             if ((index = getIndexOfMethod(methods, esp.getRemoveListenerMethod())) != -1) methods.remove(index);
             if ((index = getIndexOfMethod(methods, esp.getAddListenerMethod())) != -1) methods.remove(index);
         }
 
-        analyzeBeanInfoSource( );
+        try {
+            isUpdateMode = false;
+            analyzeBeanInfoSource();
+        } finally {
+            isUpdateMode = true;
+        }
 
     }
     
@@ -406,10 +412,13 @@ public final class BiAnalyser {
             throw new IllegalStateException();
         }
         
+        DataObject dataObject = bis.getDataObject();
+        EditorCookie editor = dataObject.getLookup().lookup(EditorCookie.class);
+        final StyledDocument doc = editor.getDocument();
         Runnable task = new Runnable() {
 
                 public void run() {
-                    regenerateSourceImpl();
+                    regenerateSourceImpl(doc);
                 }
             };
             
@@ -426,10 +435,7 @@ public final class BiAnalyser {
         }
     }
     
-    void regenerateSourceImpl() {
-        DataObject dataObject = bis.getDataObject();
-        EditorCookie editor = dataObject.getLookup().lookup(EditorCookie.class);
-        StyledDocument doc = editor.getDocument();
+    void regenerateSourceImpl(StyledDocument doc) {
         NbDocument.runAtomic(doc, new Runnable() {
                 public void run()  {
                     regenerateBeanDescriptor();
@@ -1136,8 +1142,12 @@ public final class BiAnalyser {
         sb.append(NOI18N_COMMENT);
     }
     
-    private void setModified() {
-        this.isModified = true;
+    void setModified() {
+        if (isUpdateMode) {
+            this.isModified = true;
+            BIEditorSupport editor = this.bis.getDataObject().getLookup().lookup(BIEditorSupport.class);
+            editor.notifyModified();
+        }
     }
     
     public boolean isModified() {

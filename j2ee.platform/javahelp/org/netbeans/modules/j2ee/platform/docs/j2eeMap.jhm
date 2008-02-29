@@ -30,6 +30,7 @@
 	<mapID target="create_ws_from_scratch" url="webservice/create/create_ws_from_scratch.html" />
 	<mapID target="create_ws_from_java" url="webservice/create/create_ws_from_java.html" />
         <mapID target="create_ws_from_wsdl" url="webservice/create/create_ws_from_wsdl.html" />
+		<mapID target="create_axis" url="webservice/create/create_axis.html" />
 	<mapID target="create_wsdl_file" url="webservice/create/create_wsdl_file.html" />
 	<mapID target="add_ws_operation" url="webservice/create/add_ws_operation.html" />
 	<!-- End of "Create" section -->
@@ -47,6 +48,10 @@
 	<mapID target="test_ws" url="webservice/expose/test_ws.html" />
         <mapID target="test_rest" url="webservice/expose/test_rest.html" />
 	<mapID target="expose_ws" url="webservice/expose/expose_ws.html" />
+	<mapID target="deploy_test_axis" url="webservice/expose/deploy_test_axis.html" />
+	<mapID target="as_setup" url="webservice/expose/as_setup_axis.html" />
+	<mapID target="deploy_axis" url="webservice/expose/deploy_axis.html" />
+	<mapID target="test_axis" url="webservice/expose/test_axis.html" />
         <mapID target="glassfish_tester-ws" url="webservice/expose/glassfish_tester-ws.html" />
 	<!-- End of "Expose" section -->
 	<!-- Start of "Consume" section -->

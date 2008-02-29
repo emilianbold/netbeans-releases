@@ -55,7 +55,10 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.CreateInstanceActivity;
 import org.netbeans.modules.bpel.model.api.Process;
+import org.netbeans.modules.bpel.model.api.support.Initiate;
+import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -66,6 +69,7 @@ public abstract class BpelValidator extends CoreValidator {
 
   public ValidationResult validate(Model model, Validation validation, ValidationType type) {
     setParam(validation, type);
+    init();
 
     if ( !(model instanceof BpelModel)) {
       return null;
@@ -93,5 +97,9 @@ public abstract class BpelValidator extends CoreValidator {
 //out();
 //out();
     return new ValidationResult(getResultItems(), Collections.singleton(model));
+  }
+
+  protected final boolean isCreateInstanceYes(CreateInstanceActivity activity) {
+    return activity != null && activity.getCreateInstance() == TBoolean.YES;
   }
 }
