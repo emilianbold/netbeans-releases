@@ -373,6 +373,8 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         private final ProjectWebModule pwm;
         private final HashSet keys;
         private final java.util.Comparator comparator = new NodeComparator();
+        // Need to hold the conf dir strongly, otherwise it can be garbage-collected.
+        private FileObject confDir;
 
         private final FileChangeListener webInfListener = new FileChangeAdapter() {
 
@@ -531,18 +533,18 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         }
 
         private void addConfDirectoryFiles() {
-            FileObject conf = pwm.getConfDir();
-            if (conf == null) {
+            confDir = pwm.getConfDir();
+            if (confDir == null) {
                 return;
             }
-            FileObject[] children = conf.getChildren();
+            FileObject[] children = confDir.getChildren();
             for (int i = 0; i < children.length; i++) {
                 if (VisibilityQuery.getDefault().isVisible(children[i])) {
                     keys.add(children[i]);
                 }
             }
 
-            conf.addFileChangeListener(anyFileListener);
+            confDir.addFileChangeListener(anyFileListener);
         }
 
         private void addServerSpecificFiles() {
@@ -584,9 +586,8 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             if (webInf != null) {
                 pwm.getWebInf().removeFileChangeListener(webInfListener);
             }
-            FileObject conf = pwm.getConfDir();
-            if (conf != null) {
-                conf.removeFileChangeListener(anyFileListener);
+            if (confDir != null) {
+                confDir.removeFileChangeListener(anyFileListener);
             }
         }
 
