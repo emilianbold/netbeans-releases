@@ -264,7 +264,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * for quiet period of time after this call.</p>
      */
     public void measureTime() {
-        String exceptionDuringMeasurement = null;
+        Exception exceptionDuringMeasurement = null;
 
         long wait_after_open_heuristic = WAIT_AFTER_OPEN;
 
@@ -350,7 +350,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     log("------- [ "+i+" ] ---------------- Exception rises while measuring performance :"+exc.getMessage());
                     exc.printStackTrace(getLog());
                     getScreenshot("exception_during_open");
-                    exceptionDuringMeasurement = exc.getMessage();
+                    exceptionDuringMeasurement = exc;
                     // throw new JemmyException("Exception arises during measurement:"+exc.getMessage());
                 }finally{ // finally for prepare(), open()
                     try{
@@ -367,7 +367,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                         log("------- [ "+i+" ] ---------------- Exception rises while closing tested component :"+e.getMessage());
                         e.printStackTrace(getLog());
                         getScreenshot("exception_during_close");
-                        exceptionDuringMeasurement = e.getMessage();
+                        exceptionDuringMeasurement = e;
                         //throw new JemmyException("Exception arises while closing tested component :"+e.getMessage());
                     }finally{ // finally for close()
                         tr.connectToAWT(false);
@@ -384,14 +384,14 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             e.printStackTrace(getLog());
             getScreenshot("exception_during_init_or_shutdown");
             // throw new JemmyException("Exception rises while shuting down :"+e.getMessage());
-            exceptionDuringMeasurement = e.getMessage();
+            exceptionDuringMeasurement = e;
         }finally{ // finally for initialize(), shutdown(), closeAllDialogs()
             repaintManager().resetRegionFilters();
         }
 
         dumpLog();
         if(exceptionDuringMeasurement!=null)
-            throw new Error("Exception {" + exceptionDuringMeasurement+ "} rises during measurement, look at appropriate log file for stack trace(s).");
+            throw new Error("Exception {" + exceptionDuringMeasurement.getMessage() + "} rises during measurement.", exceptionDuringMeasurement);
 
         compare(measuredTime);
 

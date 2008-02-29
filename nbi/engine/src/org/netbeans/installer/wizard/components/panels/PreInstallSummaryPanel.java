@@ -178,6 +178,7 @@ public class PreInstallSummaryPanel extends ErrorMessagePanel {
         // protected ////////////////////////////////////////////////////////////////
         @Override
         protected void initializeContainer() {
+            super.initializeContainer();
             container.getNextButton().setText(
                     panel.getProperty(INSTALL_BUTTON_TEXT_PROPERTY));
         }

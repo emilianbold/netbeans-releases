@@ -48,17 +48,15 @@ import java.util.logging.Logger;
 
 import javax.swing.Action;
 
-import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.db.explorer.*;
-import org.netbeans.modules.db.explorer.actions.*;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
-public class DatabaseNode extends AbstractNode implements Node.Cookie {
+public class DatabaseNode extends AbstractNode implements Node.Cookie, Comparable {
 
     /** Cookie */
     protected DatabaseNodeInfo info;
@@ -330,6 +328,12 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie {
             return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_IndexList"); //NOI18N
         else
             return ""; //NOI18N
+    }
+
+    public int compareTo(Object arg0) {
+        Node other = (Node)arg0;
+        return this.getDisplayName().compareTo(
+            other == null ? null : other.getDisplayName());
     }
 
 }

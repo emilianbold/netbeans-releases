@@ -1162,8 +1162,9 @@ public class J2MEProjectGenerator {
     }
     
     protected static void setSourceRoot(final AntProjectHelper helper, final ReferenceHelper refHelper, final String srcRoot) {
+        String ref = refHelper.createForeignFileReference(helper.resolveFile(srcRoot), "anyfile");
         final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.put(DefaultPropertiesDescriptor.SRC_DIR, refHelper.createForeignFileReference(helper.resolveFile(srcRoot), "anyfile")); //NOI18N
+        ep.put(DefaultPropertiesDescriptor.SRC_DIR, ref); //NOI18N
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         refreshProject(helper.getProjectDirectory(), helper.resolveFileObject(srcRoot));
     }

@@ -41,99 +41,18 @@
 
 package org.netbeans.modules.asm.core.dataobjects;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Formatter;
 
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
 
 
 public class AsmDataNode extends DataNode {
 
     private static final String IMAGE_ICON_BASE = 
                 "org/netbeans/modules/asm/core/resources/file_asm_16.png";
-    
-    private static String INITAL_COMMAND = "/set/mars/dist/intel-S2/bin/cc";
-    private static String INITAL_ARGS = "/%s";
-
-    private String command;
-    private String args;      
 
     public AsmDataNode(AsmDataObject obj) {
         super(obj, Children.LEAF);
-        args = (new Formatter()).format(INITAL_ARGS, obj.getPrimaryFile().getPath()).
-                                          toString();
-
-        command = INITAL_COMMAND;
-
         setIconBaseWithExtension(IMAGE_ICON_BASE);
-
     }
-
-    
-
-    public String getCommand() {
-        return command;
-    }
-
-    public String getArgs() {
-        return args;
-    }
-
-    @Override
-    protected Sheet createSheet() {
-        Sheet s = super.createSheet();
-        Sheet.Set ss = s.get(Sheet.PROPERTIES);
-
-        if (ss == null) {
-            ss = Sheet.createPropertiesSet();
-            s.put(ss);
-       }
-
-
-
-       PropertySupport<String> result = new PropertySupport.ReadWrite<String> (
-                    "Compile command",
-                    String.class,
-                    "Compile command",
-                    "Compile command"
-                ) {
-
-                    public String getValue() {
-                        return command; 
-                        //return Utilities.escapeParameters(args);
-                    }
-
-                    public void setValue (String val) throws InvocationTargetException {
-                       command = val;                        
-                    }                 
-                };
-
-       result.setValue("oneline", Boolean.TRUE);
-       ss.put(result);
-
-       
-       result = new PropertySupport.ReadWrite<String> (
-                    "Compile arguments",
-                    String.class,
-                    "Compile arguments",
-                    "Compile arguments"
-                ) {
-                    public String getValue() {                        
-                        return args;
-                    }
-
-                    public void setValue (String val) throws InvocationTargetException {                      
-                        args = val;                                            
-                    }                 
-                };
-
-       result.setValue("oneline", Boolean.TRUE);
-
-       ss.put(result);
-       return s;
-    }   
 }
-
