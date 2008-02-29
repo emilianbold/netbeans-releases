@@ -95,7 +95,7 @@ public class CppSettings extends SharedClassObject {
     /** The resource bundle for the form editor */
     public static ResourceBundle bundle;
     
-    private String path = null;
+//    private String path = null;
 
     private static CppSettings cppSettings = null;
 
@@ -117,25 +117,25 @@ public class CppSettings extends SharedClassObject {
         return cppSettings;
     }
     
-    /**
-     * Return the local version of $PATH. This masquerades as a property but isn't!
-     * The reason it isn't is that we don't want persistance beyond the existing IDE
-     * session.
-     *
-     * @returns Current value of the path (as a String)
-     */
-    public String getPath() {
-        if (path == null) {
-            path = Path.getPathAsString();
-        }
-        return path;
-    }
-    
-    public void setPath(String p) {
-        if (!p.equals(path) && p.length() > 0) {
-            path = p;
-        }
-    }
+//    /**
+//     * Return the local version of $PATH. This masquerades as a property but isn't!
+//     * The reason it isn't is that we don't want persistance beyond the existing IDE
+//     * session.
+//     *
+//     * @returns Current value of the path (as a String)
+//     */
+//    public String getPath() {
+//        if (path == null) {
+//            path = Path.getPathAsString();
+//        }
+//        return path;
+//    }
+//    
+//    public void setPath(String p) {
+//        if (!p.equals(path) && p.length() > 0) {
+//            path = p;
+//        }
+//    }
     
     public String getCompilerSetName() {
         //String name = (String) getProperty(PROP_COMPILER_SET_NAME);
@@ -201,7 +201,7 @@ public class CppSettings extends SharedClassObject {
             //String name = (String) getProperty(PROP_MAKE_NAME);
             String name = getPreferences().get(PROP_MAKE_NAME, null);
             if (name != null) {
-                StringTokenizer tok = new StringTokenizer(getPath(), File.pathSeparator);
+                StringTokenizer tok = new StringTokenizer(Path.getPathAsString(), File.pathSeparator);
                 while (tok.hasMoreTokens()) {
                     String d = tok.nextToken();
                     File file = new File(d, name);

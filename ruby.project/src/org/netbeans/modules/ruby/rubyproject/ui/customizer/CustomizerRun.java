@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -82,13 +82,12 @@ import org.openide.util.Utilities;
 
 public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     
-    private RubyProject project;
+    private final RubyProject project;
     
-    private JTextField[] data;
-    private JLabel[] dataLabels;
-    private String[] keys;
-    private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
-    RubyProjectProperties uiProperties;
+    private final JTextField[] data;
+    private final String[] keys;
+    private final Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
+    private final RubyProjectProperties uiProperties;
     private PlatformComponentFactory.PlatformChangeListener platformListener;
 
     public CustomizerRun(RubyProjectProperties uiProperties) {
@@ -106,7 +105,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             jTextWorkingDirectory,
             rakeTextField
         };
-        dataLabels = new JLabel[] {
+        JLabel[] dataLabels = new JLabel[]{
             jLabelMainClass,
             jLabelArgs,
             jLabelVMOptions,
@@ -133,7 +132,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                     label = null;
                 } else if (config.length() > 0) {
                     Map<String,String> m = configs.get(config);
-                    label = m != null ? m.get("$label") : /* temporary? */ null;
+                    label = m != null ? m.get("$label") : /* temporary? */ null; // NOI18N
                     if (label == null) {
                         label = config;
                     }
@@ -181,7 +180,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                         config = null;
                     }
                     String def = configs.get(null).get(prop);
-                    label.setFont(config != null && !Utilities.compareObjects(v != null ? v : "", def != null ? def : "") ? boldfont : basefont);
+                    label.setFont(config != null && !Utilities.compareObjects(v != null ? v : "", def != null ? def : "") ? boldfont : basefont); // NOI18N
                 }
             });
         }
@@ -351,6 +350,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jTextVMOptions.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.jTextVMOptions.AccessibleContext.accessibleName")); // NOI18N
         jTextVMOptions.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizeRun_Run_VM_Options")); // NOI18N
         jLabelVMOptionsExample.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_CustomizeRun_Run_VM_Options_Example")); // NOI18N
+        rakeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.rakeLabel.AccessibleContext.accessibleDescription")); // NOI18N
         rakeTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.rakeTextField.AccessibleContext.accessibleName")); // NOI18N
 
         rubyPlatformLabel.setLabelFor(platforms);
@@ -366,7 +366,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         configLabel.setLabelFor(configCombo);
         org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configLabel")); // NOI18N
 
-        configCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default>" }));
+        configCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default>" })); // NOI18N
         configCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 configComboActionPerformed(evt);
@@ -577,14 +577,11 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JLabel rubyPlatformLabel;
     // End of variables declaration//GEN-END:variables
     
-    
-    // Innercasses -------------------------------------------------------------------------
-    
     private class MainClassListener implements ActionListener /*, DocumentListener */ {
         
         private final JButton okButton;
-        private SourceRoots sourceRoots;
-        private JTextField mainClassTextField;
+        private final SourceRoots sourceRoots;
+        private final JTextField mainClassTextField;
         
         MainClassListener( SourceRoots sourceRoots, JTextField mainClassTextField ) {            
             this.sourceRoots = sourceRoots;
@@ -593,14 +590,9 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             this.okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (CustomizerRun.class, "AD_ChooseMainClass_OK"));
         }
         
-        // Implementation of ActionListener ------------------------------------
-        
-        /** Handles button events
-         */        
+        /** Handles button events */        
         public void actionPerformed( ActionEvent e ) {
-            
             // only chooseMainClassButton can be performed
-            
             final MainClassChooser panel = new MainClassChooser (sourceRoots.getRoots());
             Object[] options = new Object[] {
                 okButton,
