@@ -50,10 +50,10 @@ import org.openide.filesystems.FileObject;
  */
 public class HibernateCfgMetadata {
     private static final HibernateCfgMetadata DEFAULT = new HibernateCfgMetadata();
-    private Map ddMap;
+    private Map<FileObject,HibernateConfiguration> ddMap;
     
     private HibernateCfgMetadata() {
-        ddMap = new WeakHashMap(5);
+        ddMap = new WeakHashMap<FileObject,HibernateConfiguration>(5);
     }
     
     /**

@@ -43,11 +43,11 @@ package org.netbeans.modules.hibernate.loaders.cfg.multiview;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import org.netbeans.api.project.SourceGroup;
@@ -152,12 +152,14 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         protected void addNotify() {
             super.addNotify();
             setKeys(getKeys());
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
             super.removeNotify();
@@ -199,8 +201,13 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
                 return Arrays.asList(groups);
             } else {
                 FileObject files[] = fo.getChildren();
-                Arrays.sort(files, new BrowseFolders.FileObjectComparator());
-                ArrayList children = new ArrayList(files.length);
+                Arrays.sort(files, new Comparator<FileObject>(){
+                    public int compare(FileObject f1, FileObject f2) {
+                        return f1.getName().compareTo( f2.getName());
+                    }
+                });
+                
+                ArrayList<Key> children = new ArrayList<Key>(files.length);
 
                 for (int i = 0; i < files.length; i++) {
                     if (group.contains(files[i]) && files[i].isFolder()) {
@@ -216,7 +223,6 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
 
                 return children;
             }
-
         }
 
         private class Key {
@@ -228,15 +234,6 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
                 this.folder = folder;
                 this.group = group;
             }
-        }
-    }
-
-    private class FileObjectComparator implements java.util.Comparator {
-
-        public int compare(Object o1, Object o2) {
-            FileObject fo1 = (FileObject) o1;
-            FileObject fo2 = (FileObject) o2;
-            return fo1.getName().compareTo(fo2.getName());
         }
     }
 
@@ -277,13 +274,8 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         }
 
         @Override
-        public org.openide.util.actions.SystemAction[] getActions() {
+        public org.openide.util.actions.SystemAction[] getActions(boolean context) {
             return new org.openide.util.actions.SystemAction[]{};
-        }
-
-        @Override
-        public org.openide.util.actions.SystemAction getDefaultAction() {
-            return null;
         }
     }
 
