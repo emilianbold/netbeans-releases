@@ -270,12 +270,16 @@ table.components_table .title {
 }
 
 .special_message_number {
-	margin: 0px 0px 0px 22px;
+	margin: 0px 0px 0px 0px;
         color:            #FF5E08; 
 }
 .special_message_text {
-	width: 95%; 
-        margin: 0px auto 0px 8px;
 }
 
 .bold {font-weight:bold;}
+
+.legal_box {
+     padding: 0px 5px 10px 10px;
+     margin-right: 25px;
+     background-color:#E6F6FE;
+}
