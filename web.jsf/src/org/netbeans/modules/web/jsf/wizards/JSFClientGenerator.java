@@ -55,6 +55,7 @@ import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,7 +72,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -89,7 +89,9 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Formatter;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
@@ -301,10 +303,11 @@ public class JSFClientGenerator {
             final String managedBean, String linkToIndex, final String fieldName, String idProperty, BaseDocument doc) throws FileStateInvalidException, IOException {
         FileSystem fs = jsfRoot.getFileSystem();
         final StringBuffer listSb = new StringBuffer();
-        listSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"UTF-8\"%>\n"
+        Charset encoding = FileEncodingQuery.getDefaultEncoding();
+        listSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
-                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
+                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
                 + "<title>Listing " + simpleEntityName + "s</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
         listSb.append("<h1>Listing " + simpleEntityName + "s</h1>\n");
@@ -346,7 +349,10 @@ public class JSFClientGenerator {
         try {
             doc.remove(0, doc.getLength());
             doc.insertString(0, listSb.toString(), null);
-            doc.getFormatter().reformat(doc, 0, doc.getLength());
+            Formatter formatter = doc.getFormatter();
+            formatter.reformatLock();
+            formatter.reformat(doc, 0, doc.getLength());
+            formatter.reformatUnlock();
             listSb.replace(0, listSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
             Logger.getLogger("global").log(Level.INFO, null, e);
@@ -373,10 +379,11 @@ public class JSFClientGenerator {
     private static void generateNewJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, String fieldName, 
             List<ElementHandle<ExecutableElement>> toOneRelMethods, boolean fieldAccess, String linkToIndex, BaseDocument doc, final FileObject jsfRoot) throws FileStateInvalidException, IOException {
         StringBuffer newSb = new StringBuffer();
-        newSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"UTF-8\"%>\n"
+        Charset encoding = FileEncodingQuery.getDefaultEncoding();
+        newSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
-                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
+                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
                 + "<title>New " + simpleEntityName + "</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
         newSb.append("<h1>New " + simpleEntityName + "</h1>\n");
@@ -432,7 +439,10 @@ public class JSFClientGenerator {
         try {
             doc.remove(0, doc.getLength());
             doc.insertString(0, newSb.toString(), null);
-            doc.getFormatter().reformat(doc, 0, doc.getLength());
+            Formatter formatter = doc.getFormatter();
+            formatter.reformatLock();
+            formatter.reformat(doc, 0, doc.getLength());
+            formatter.reformatUnlock();
             newSb.replace(0, newSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
             Logger.getLogger("global").log(Level.INFO, null, e);
@@ -459,10 +469,11 @@ public class JSFClientGenerator {
     private static void generateEditJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, String fieldName, 
             String linkToIndex, BaseDocument doc, final FileObject jsfRoot) throws FileStateInvalidException, IOException {
         StringBuffer editSb = new StringBuffer();
-        editSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"UTF-8\"%>\n"
+        Charset encoding = FileEncodingQuery.getDefaultEncoding();
+        editSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
-                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
+                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
                 + "<title>Editing " + simpleEntityName + "</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
         editSb.append("<h1>Editing " + simpleEntityName + "</h1>\n");
@@ -485,7 +496,10 @@ public class JSFClientGenerator {
         try {
             doc.remove(0, doc.getLength());
             doc.insertString(0, editSb.toString(), null);
-            doc.getFormatter().reformat(doc, 0, doc.getLength());
+            Formatter formatter = doc.getFormatter();
+            formatter.reformatLock();
+            formatter.reformat(doc, 0, doc.getLength());
+            formatter.reformatUnlock();
             editSb.replace(0, editSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
             Logger.getLogger("global").log(Level.INFO, null, e);
@@ -513,10 +527,11 @@ public class JSFClientGenerator {
     private static void generateDetailJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, 
             String fieldName, String idProperty, boolean isInjection, String linkToIndex, BaseDocument doc, final FileObject jsfRoot) throws FileStateInvalidException, IOException {
         StringBuffer detailSb = new StringBuffer();
-        detailSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"UTF-8\"%>\n"
+        Charset encoding = FileEncodingQuery.getDefaultEncoding();
+        detailSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
-                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
+                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
                 + "<title>" + simpleEntityName + " Detail</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
         detailSb.append("<h1>" + simpleEntityName + " Detail</h1>\n");
@@ -543,7 +558,10 @@ public class JSFClientGenerator {
         try {
             doc.remove(0, doc.getLength());
             doc.insertString(0, detailSb.toString(), null);
-            doc.getFormatter().reformat(doc, 0, doc.getLength());
+            Formatter formatter = doc.getFormatter();
+            formatter.reformatLock();
+            formatter.reformat(doc, 0, doc.getLength());
+            formatter.reformatUnlock();
             detailSb.replace(0, detailSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
             Logger.getLogger("global").log(Level.INFO, null, e);

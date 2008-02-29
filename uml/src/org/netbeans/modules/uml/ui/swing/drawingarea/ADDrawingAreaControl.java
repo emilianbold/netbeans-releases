@@ -8056,7 +8056,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
     /**
      * Save this diagram.
      */
-    public void save()
+    public synchronized void save()
     {
         if (getIsDirty())
         {
@@ -10714,7 +10714,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
         UMLLogger.logMessage(logger, "preCommit() is no longer needed. Used commit() instead.", Level.FINE); // NOI18N
     }
     
-    public void commit()
+    public synchronized void commit()
     {
         if (m_isDirty)
         {
