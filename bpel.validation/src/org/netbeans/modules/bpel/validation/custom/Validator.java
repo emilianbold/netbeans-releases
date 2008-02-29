@@ -305,7 +305,7 @@ public final class Validator extends BpelValidator {
     }
   }
 
-  // vlv # 93078
+  // # 93078
   @Override
   public void visit(Branches branches) {
     String content = branches.getContent();
@@ -321,7 +321,7 @@ public final class Validator extends BpelValidator {
     }
   }
 
-  // vlv # 81404
+  // # 81404
   @Override
   public void visit(Process process) {
     List<Reply> replies = new ArrayList<Reply>();

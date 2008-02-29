@@ -756,7 +756,7 @@ final class LibrariesNode extends AbstractNode {
                     if (fileFilter.accept(fl)) {
                         URL u = LibrariesSupport.convertFilePathToURL(files[i]);
                         u = FileUtil.getArchiveRoot(u);
-                        cpMod.handleRoots(new URL[]{u}, propName, J2SEProjectClassPathModifier.ADD);
+                        cpMod.handleRoots(new URL[]{u}, propName, J2SEProjectClassPathModifier.ADD, false);
                     }
                 } catch (IOException ioe) {
                     ErrorManager.getDefault().notify(ioe);

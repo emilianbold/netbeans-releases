@@ -315,7 +315,7 @@ final class CompilationInfoImpl {
      */
     synchronized JavacTaskImpl getJavacTask() {	
         if (javacTask == null) {
-            javacTask = javaSource.createJavacTask(new DiagnosticListenerImpl(this.jfo));
+            javacTask = javaSource.createJavacTask(new DiagnosticListenerImpl(this.jfo), null);
         }
 	return javacTask;
     }

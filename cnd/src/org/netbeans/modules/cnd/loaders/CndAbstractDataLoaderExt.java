@@ -70,7 +70,7 @@ public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader
 
     @Override
     public void setExtensions(ExtensionList ext) {
-        super.setExtensions(ext);
+        ExtensionsSettings.getInstance(this).setExtensionList(ext);
     }
 
     protected static ExtensionList arrayToExtensionList(String[] ar) {
