@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -25,7 +25,7 @@ your own identifying information:
 
 Contributor(s):
 
-The Original srCode is NetBeans. The Initial Developer of the Original
+The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 
@@ -40,21 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
-<project name="core/windows/test-unit" basedir="." default="all">
-
-   <!-- imports default-compiler which have all dependent jars on classpath.
-        Other required jars add to nbproject/project.properties -->
-   <import file="../../nbbuild/templates/xtest-unit.xml"/>
-
-    <!-- ================ -->
-    <!-- Executors -->
-    <!-- ================ -->
-
-    <target name="runidetest">
-        <property name="xtest.ide.use.classloader" value="org.netbeans.core.windows"/>
-        <executeTests  pluginName="ide">
-            <classpath/>
-        </executeTests>
-    </target>
+<project name="org.netbeans.performance.scalability" default="netbeans" basedir=".">
+    <description>Builds, tests, and runs the project org.netbeans.performance.scalability.</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>
