@@ -168,6 +168,10 @@ public class GlassfishInstance implements ServerInstanceImplementation {
         return commonInstance;
     }
         
+    public CommonServerSupport getCommonSupport() {
+        return commonSupport;
+    }
+    
     public String getDeployerUri() {
         return commonSupport.getDeployerUri();
     }

@@ -246,9 +246,12 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 instanceFO = dir.createData(name);
             }
 
+            CommonServerSupport css = instance.getCommonSupport();
             instanceFO.setAttribute(GlassfishModule.URL_ATTR, instance.getDeployerUri());
             instanceFO.setAttribute(GlassfishModule.HOME_FOLDER_ATTR, homeFolder);
             instanceFO.setAttribute(GlassfishModule.DISPLAY_NAME_ATTR, instance.getDisplayName());
+            instanceFO.setAttribute(GlassfishModule.HTTPPORT_ATTR, css.getHttpPort());
+            instanceFO.setAttribute(GlassfishModule.ADMINPORT_ATTR, css.getAdminPort());
         }
     }
 
