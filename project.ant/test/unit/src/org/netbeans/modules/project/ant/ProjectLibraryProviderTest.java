@@ -436,6 +436,10 @@ public class ProjectLibraryProviderTest extends NbTestCase {
      * Test of copyLibrary method, of class LibrariesSupport.
      */
     public void testCopyLibrary() throws Exception {
+        // disable all collocation queries:
+        MockLookup.setLookup(Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), libraryProvider),
+                // Filter out standard CQIs since they are bogus.
+                Lookups.exclude(Lookups.metaInfServices(ProjectLibraryProviderTest.class.getClassLoader()), CollocationQueryImplementation.class));
         File f = new File(this.getWorkDir(), "bertie.jar");
         createFakeJAR(f, "smth");
         File f1 = new File(this.getWorkDir(), "dog.jar");
@@ -446,6 +450,9 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         new File(this.getWorkDir(), "libraries").mkdir();
         File f3 = new File(this.getWorkDir(), "libraries/libs.properties");
         f3.createNewFile();
+        new File(this.getWorkDir(), "libraries2").mkdir();
+        File f4 = new File(this.getWorkDir(), "libraries2/libs.properties");
+        f4.createNewFile();
         FileUtil.toFileObject(getWorkDir()).refresh();
         LibraryImplementation l1 = LibrariesSupport.createLibraryImplementation("j2test", new String[]{"jars", "sources"});
         l1.setName("vino");
@@ -470,6 +477,18 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         //assertNotNull(LibrariesSupport.resolveLibraryEntryFileObject(u, result.getContent("sources").get(0)));
         assertEquals(new File(this.getWorkDir(), "libraries/vino/bertie-2.jar").getPath(), 
                 FileUtil.toFile(LibrariesSupport.resolveLibraryEntryFileObject(u, FileUtil.getArchiveFile(result.getRawContent("sources").get(0)))).getPath());
+        // enable test collocation query:
+        MockLookup.setLookup(Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir()), libraryProvider),
+                // Filter out standard CQIs since they are bogus.
+                Lookups.exclude(Lookups.metaInfServices(ProjectLibraryProviderTest.class.getClassLoader()), CollocationQueryImplementation.class));
+        u = f4.toURI().toURL();
+        result = ProjectLibraryProvider.copyLibrary(l, u, false);
+        assertNotNull(result);
+        assertEquals(u, result.getManager().getLocation());
+        assertEquals(Arrays.asList(new URL("jar:file:../bertie.jar!/"),
+                new URL("jar:file:../dog.jar!/")), result.getRawContent("jars"));
+        assertEquals(Arrays.asList(new URL("jar:file:../sources/bertie.jar!/docs/api/")), result.getRawContent("sources"));
+        
     }
     
     private void createFakeJAR(File f, String content) throws IOException {
