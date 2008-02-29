@@ -44,10 +44,13 @@ package org.netbeans.modules.asm.core.ui.top;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import java.util.Map;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -68,9 +71,10 @@ import org.netbeans.modules.asm.core.assistance.RegisterChooserListener;
 import org.netbeans.modules.asm.core.assistance.RegisterChooser;
 import org.netbeans.modules.asm.model.AsmModel;
 import org.netbeans.modules.asm.model.lang.Register;
+import org.netbeans.modules.cnd.debugger.gdb.disassembly.RegisterValuesProvider;
 
 public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
-                                          RegisterUsageAccesor {
+                                          RegisterUsageAccesor, PropertyChangeListener {
         
     private AsmModel model;
     private final DefaultTableModel tableModel;  
@@ -87,7 +91,7 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
     }
         
     private RegisterUsagesPanel() {
-        initComponents();        
+        initComponents();
         
         tableModel = new RegisterTableModel();
         TableSorter tmpModel = new TableSorter(tableModel);
@@ -101,6 +105,8 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
         jRegisterTable.setModel(tmpModel); 
         
         jRegisterTable.getSelectionModel().addListSelectionListener(new RegisterSelectionListener());
+        
+        RegisterValuesProvider.getInstance().addPropertyChangeListener(this);
     }
 
     @Override
@@ -126,12 +132,56 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
         chooserListener = (RegisterChooserListener) 
                 doc.getProperty(RegisterChooserListener.class);
         setRegisters();
+        updateRegisterValues();
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        // register values updated
+        updateRegisterValues();
+    }
+    
+    private void updateRegisterValues() {
+        Map<String, String> res = RegisterValuesProvider.getInstance().getRegisterValues();
+        if (res == null) {
+            clearValues();
+        } else {
+            for (String name : res.keySet()) {
+                setRegisterValue(name, res.get(name));
+            }
+        }
+    }
+    
+    private static boolean isTheSame(Register reg, String name) {
+        if (reg.getName().equals(name)) {
+            return true;
+        }
+        for (Register child : reg.getChildren()) {
+            if (child.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public void setRegisterValue(String reg, String value) {
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            Register curReg = (Register)tableModel.getValueAt(i, RegisterTableModel.COLUMN_REGISTER);
+            if (isTheSame(curReg, reg)) {
+                try {
+                    value += " (" + Integer.decode(value)  + ")";
+                } catch (NumberFormatException nfe) {
+                    // do nothing
+                }
+                tableModel.setValueAt(value, i, RegisterTableModel.COLUMN_VALUE);
+                return;
+            }
+        }
     }
     
     public void setRegisterStatus(Register reg, RegisterStatus status) {        
         for (int i = 0; i < tableModel.getRowCount(); i++) {
-            if (reg == tableModel.getValueAt(i, 0)) {
-                tableModel.setValueAt(status, i, 1);
+            if (reg == tableModel.getValueAt(i, RegisterTableModel.COLUMN_REGISTER)) {
+                tableModel.setValueAt(status, i, RegisterTableModel.COLUMN_USAGE);
                 return;
             }
         }                  
@@ -139,15 +189,21 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
     
     public void setRegisterStatus(Collection<Register> regs, RegisterStatus status) {
         for (int i = 0; i < tableModel.getRowCount(); i++) {
-            if (regs.contains(tableModel.getValueAt(i, 0))) {
-                tableModel.setValueAt(status, i, 1);                
+            if (regs.contains(tableModel.getValueAt(i, RegisterTableModel.COLUMN_REGISTER))) {
+                tableModel.setValueAt(status, i, RegisterTableModel.COLUMN_USAGE);
             }
         }         
     }
     
     public void clearStatuses() {
         for (int i = 0; i < tableModel.getRowCount(); i++) {
-            tableModel.setValueAt("", i, 1);                            
+            tableModel.setValueAt("", i, RegisterTableModel.COLUMN_USAGE);
+        } 
+    }
+    
+    public void clearValues() {
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            tableModel.setValueAt("", i, RegisterTableModel.COLUMN_VALUE);
         } 
     }
     
@@ -156,7 +212,7 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
         
         for (Register reg : model.getRegisterSet()) {
             if (reg.getDirectParent() == null) {
-                tableModel.addRow(new Object[] { reg, "" } );               
+                tableModel.addRow(new Object[] { reg, "", "" } );               
             }
         }                
     }
@@ -225,16 +281,20 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
     }
     
     private static class RegisterTableModel extends DefaultTableModel {
-          
+        public static final int COLUMN_REGISTER=0;
+        public static final int COLUMN_USAGE=1;
+        public static final int COLUMN_VALUE=2;
+        
         private Class[] types; 
          
         public RegisterTableModel() {
              super(new Object [][]  { },
                    new String [] { 
                         NbBundle.getMessage(RegisterUsagesPanel.class, "LBL_REGUSAGE_REGISTER"),
-                        NbBundle.getMessage(RegisterUsagesPanel.class, "LBL_REGUSAGE_USAGE")});
+                        NbBundle.getMessage(RegisterUsagesPanel.class, "LBL_REGUSAGE_USAGE"),
+                        NbBundle.getMessage(RegisterUsagesPanel.class, "LBL_REGUSAGE_VALUE")});
              
-             types = new Class [] { Register.class, RegisterStatus.class };
+             types = new Class [] { Register.class, RegisterStatus.class, String.class };
          }
                
         @Override
