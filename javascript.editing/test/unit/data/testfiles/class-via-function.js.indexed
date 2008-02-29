@@ -16,9 +16,5 @@ Indexed:
   fqn : jmaki.dosomething;;JMaki.doSomething|DOCUMENTED|FUNCTION|;0;63;;;
   fqn : jmaki;;JMaki|CONSTRUCTOR|;;0;;;;
   fqn : jmaki;;jmaki|GLOBAL|;;0;;;JMaki;
-  lcbase : doanotherthing;;doAnotherThing|DOCUMENTED|FUNCTION|;0;b9;;;
-  lcbase : dosomething;JMaki;doSomething|DOCUMENTED|FUNCTION|;0;63;;;
-  lcbase : jmaki;;JMaki|CONSTRUCTOR|;;0;;;;
-  lcbase : jmaki;;jmaki|GLOBAL|;;0;;;JMaki;
 
 Not Indexed:

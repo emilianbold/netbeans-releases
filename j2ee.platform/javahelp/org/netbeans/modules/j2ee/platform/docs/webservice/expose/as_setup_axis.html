@@ -1,52 +1,51 @@
-<!-- * Copyright © 2007 Sun Microsystems,
+<!-- * Copyright ï¿½ 2007 Sun Microsystems,
 Inc.  All rights reserved.  
 Use is subject to license terms.  *--> 
 <html> 
-    <head> 
-        <title>Setting Up Axis2 WS Deployment</title>
-        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-    </head> 
-    <body>
+<head> 
+    <title>Setting Up Axis2 WS Deployment</title>
+    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head> 
+<body>
 
-        <h2>Setting Up Axis2 Web Service Deployment</h2>
+<h2>Setting Up Axis2 Web Service Deployment</h2>
 
-        <p> <small><a href="#seealso">See Also</a>&nbsp; </small>        
-    <ul class="note">
-            <li>For a full tutorial that shows how to
-                work with Axis2 web services in the NetBeans IDE,
-                see:
-                <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-                    <param name="content" value="http://www.netbeans.org/kb/61/websvc/gs-axis.html">
-                    <param name="text" value="<html><u>Getting Started with Apache Axis2 Web Services</u></html>">
-                    <param name="textFontSize" value="medium">
-                    <param name="textColor" value="blue">
-                </object>
-            </li>
-    </ul>
-        
-		<p>In order to deploy Axis2 web services to an application server, that server has to deploy a copy of an <tt>axis2.war</tt> file. For the IDE to deploy Axis2 web services, it has to have the application server's <tt>axis2.war</tt> file on its path. </p>
-		<p>To set up Axis2 web service deployment: </p>
-		<ol>
-		  <li>Navigate to your Axis2 installation /webapps directory. Open a command prompt and run ant in that directory. This creates a <tt>/dist</tt> directory containing <tt>axis2.war</tt> in your Axis2 installation directory.</li>
-          <li>Copy <tt>axis2.war</tt> to your application server.
-		<ul>
-		  <li> For Tomcat, copy the file to your Catalina base <tt>/webapps</tt> directory.</li>
-          <li>For GlassFish, copy the file to your GlassFish domain <tt>/autodeploy</tt> directory.</li>
-		  </ul>
-          </li>
-          <li>In the IDE, open Tools -&gt; Options and click the Axis2 icon.</li>
-	      <li>Type or browse to the location of the application server's <tt>axis2.war</tt> file or the directory where that file will be unpacked.
-		<ul>
-		  <li> For Tomcat, set the location as your Catalina base <tt>/webapps/axis2</tt> folder. This is where <tt>axis2.war</tt> is unpacked. You will have to run Tomcat to generate this file if it does not yet exist.</li>
-          <li>For GlassFish, set the location as your GlassFish domain <tt>/autodeploy/axis2.war</tt> file.</li>
-		  </ul>
-	      </li>
-          <li>Make certain that the Axis2 URL is set to the correct port number for your server.</li>
-	      <li>If you are using Tomcat, select Use Tomcat Manager for deployment and type the username and password of a user with manager privileges. By default, username &quot;tomcat&quot; password &quot;tomcat&quot; has these privileges. </li>
-	</ol>
-		<dl>
-            <dt><a name="seealso">See Also</a></dt>
-            <dd><a href="../about/about_ws.html">About Web Services</a></dd>
-            <dd><a href="../create/create_axis.html">Creating Axis2 Web Services</a></dd>
-        </dl>
-    
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>        
+<ul class="note">
+    <li>For a full tutorial that shows how to
+        work with Axis2 web services in the NetBeans IDE,
+        see:
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://www.netbeans.org/kb/61/websvc/gs-axis.html">
+            <param name="text" value="<html><u>Getting Started with Apache Axis2 Web Services</u></html>">
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+        </object>
+    </li>
+</ul>
+
+<p>In order to deploy Axis2 web services to an application server, that server has to deploy a copy of an <tt>axis2.war</tt> file. For the IDE to deploy Axis2 web services, it has to have the application server's <tt>axis2.war</tt> file on its path. </p>
+<p>To set up Axis2 web service deployment: </p>
+<ol>
+    <li>Navigate to your Axis2 installation /webapps directory. Open a command prompt and run ant in that directory. This creates a <tt>/dist</tt> directory containing <tt>axis2.war</tt> in your Axis2 installation directory.</li>
+    <li>Copy <tt>axis2.war</tt> to your application server.
+        <ul>
+            <li> For Tomcat, copy the file to your Catalina base <tt>/webapps</tt> directory.</li>
+            <li>For GlassFish, copy the file to your GlassFish domain <tt>/autodeploy</tt> directory.</li>
+        </ul>
+    </li>
+    <li>In the IDE, open Tools -&gt; Options and click the Axis2 icon.</li>
+    <li>Type or browse to the location of the application server's <tt>axis2.war</tt> file or the directory where that file will be unpacked.
+        <ul>
+            <li> For Tomcat, set the location as your Catalina base <tt>/webapps/axis2</tt> folder. This is where <tt>axis2.war</tt> is unpacked. You will have to run Tomcat to generate this file if it does not yet exist.</li>
+            <li>For GlassFish, set the location as your GlassFish domain <tt>/autodeploy/axis2.war</tt> file.</li>
+        </ul>
+    </li>
+    <li>Make certain that the Axis2 URL is set to the correct port number for your server.</li>
+    <li>If you are using Tomcat, select Use Tomcat Manager for deployment and type the username and password of a user with manager privileges. By default, username &quot;tomcat&quot; password &quot;tomcat&quot; has these privileges. </li>
+</ol>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="../about/about_ws.html">About Web Services</a></dd>
+    <dd><a href="../create/create_axis.html">Creating Axis2 Web Services</a></dd>
+</dl>

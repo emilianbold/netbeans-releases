@@ -42,6 +42,10 @@
 package org.netbeans.modules.spring.beans.refactoring;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.refactoring.spi.BackupFacility;
+import org.netbeans.modules.refactoring.spi.BackupFacility.Handle;
 import org.netbeans.modules.refactoring.spi.Transaction;
 import org.openide.util.Exceptions;
 
@@ -52,20 +56,38 @@ import org.openide.util.Exceptions;
 public class ModificationTransaction implements Transaction {
 
     private final Modifications mods;
+    private final List<Handle> handles = new ArrayList<Handle>();
+    private boolean committed;
 
     public ModificationTransaction(Modifications mods) {
         this.mods = mods;
     }
 
     public void commit() {
-        try {
-            mods.commit();
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
+        if (committed) {
+            restore();
+        } else {
+            try {
+                handles.add(BackupFacility.getDefault().backup(mods.getModifiedFileObjects()));
+                mods.commit();
+                committed = true;
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
         }
     }
 
     public void rollback() {
-        // XXX not implemented yet.
+        restore();
+    }
+
+    private void restore() {
+        for (Handle handle : handles) {
+            try {
+                handle.restore();
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
     }
 }
