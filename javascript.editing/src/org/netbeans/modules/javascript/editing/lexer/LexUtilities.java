@@ -471,21 +471,30 @@ public class LexUtilities {
             default:
                 return OffsetRange.NONE;
         }
-        int offset = ts.offset();
+        
+        boolean eolFound = false;
+        int lastEolOffset = ts.offset();
         
         // skip whitespaces and comments
-        if (id == JsTokenId.WHITESPACE || id == JsTokenId.LINE_COMMENT || id == JsTokenId.BLOCK_COMMENT) {
+        if (id == JsTokenId.WHITESPACE || id == JsTokenId.LINE_COMMENT || id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.EOL) {
+            if (ts.token().id() == JsTokenId.EOL) {
+                lastEolOffset = ts.offset();
+                eolFound = true;
+            }
             while (ts.moveNext() && (
                     ts.token().id() == JsTokenId.WHITESPACE ||
                     ts.token().id() == JsTokenId.LINE_COMMENT ||
+                    ts.token().id() == JsTokenId.EOL ||
                     ts.token().id() == JsTokenId.BLOCK_COMMENT)) {
-                offset = ts.offset();
+                if (ts.token().id() == JsTokenId.EOL) {
+                    lastEolOffset = ts.offset();
+                    eolFound = true;
+                }
             }
         }
-        offset = ts.offset();
         // if we found end of sequence or end of line
-        if (ts.token() == null || (ts.token().id() == JsTokenId.EOL)) {
-            return new OffsetRange(startOffset, offset);
+        if (ts.token() == null || (ts.token().id() != JsTokenId.LBRACE && eolFound)) {
+            return new OffsetRange(startOffset, lastEolOffset);
         }
         return  OffsetRange.NONE;
     }

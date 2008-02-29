@@ -6,6 +6,6 @@ OpenIDE-Module-Specification-Version: 1.1
 AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/javawebstart/JnlpDataLoader.class
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
 OpenIDE-Module-Class: Loader
 
