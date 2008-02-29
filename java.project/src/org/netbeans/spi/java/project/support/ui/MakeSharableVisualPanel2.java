@@ -322,6 +322,8 @@ final class MakeSharableVisualPanel2 extends JPanel {
                 String action = ACTION_COPY;
                 //TODO when library contents inside the same SCM or relative to new library location,
                 // use the relative path as default..
+                // (#128743) similarly when the library jars are on different drive than the definition/project, don't show relative path option
+                
                 if (newLib != null) {
                     action = ACTION_USE_LOCAL_LIBRARY;
                 }
