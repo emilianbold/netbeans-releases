@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
@@ -68,7 +69,7 @@ import org.openide.windows.WindowManager;
 public class TabSwitchSpeedTest extends NbTestCase {
 
     private static final long SWITCH_LIMIT = 100; // ms
-    private static TopComponent[] openTC;
+    private TopComponent[] openTC;
     
     
     public TabSwitchSpeedTest(String name) {
@@ -81,22 +82,64 @@ public class TabSwitchSpeedTest extends NbTestCase {
 
     @Override
     public void setUp() throws Exception {
-        if (openTC == null) {
-            FileObject root = FileUtil.toFileObject(getWorkDir());
-            assertNotNull("Cannot find dir for " + getWorkDir() + " exists: " + getWorkDir().exists(), root);
+        FileObject root = FileUtil.toFileObject(getWorkDir());
+        assertNotNull("Cannot find dir for " + getWorkDir() + " exists: " + getWorkDir().exists(), root);
 
-            FileObject[] openFiles = new FileObject[30];
-            for (int i = 0; i < openFiles.length; i++) {
-                openFiles[i] = FileUtil.createData(root, "empty" + i + ".txt");
+        FileObject[] openFiles = new FileObject[30];
+        for (int i = 0; i < openFiles.length; i++) {
+            openFiles[i] = FileUtil.createData(root, "empty" + i + ".txt");
+        }
+
+        openTC = new TopComponent[openFiles.length];
+        for (int i = 0; i < openFiles.length; i++) {
+            DataObject dobj = DataObject.find(openFiles[i]);
+            final EditorCookie cookie = dobj.getLookup().lookup(EditorCookie.class);
+            cookie.open();
+            class Q implements Runnable {
+                JEditorPane[] arr;
+                
+                public Q() {
+                    SwingUtilities.invokeLater(this);
+                }
+                
+                public synchronized void run() {
+                    arr = cookie.getOpenedPanes();
+                    if (arr == null) {
+                        SwingUtilities.invokeLater(this);
+                    } else {
+                        notifyAll();
+                    }
+                }
+                
+                public synchronized void await() throws InterruptedException {
+                    while (arr == null) {
+                        wait();
+                    }
+                    assertNotNull(arr);
+                    assertEquals("One " + arr.length, 1, arr.length);
+                }
             }
+            Q q = new Q();
+            q.await();
+            openTC[i] = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, q.arr[0]);
+            assertNotNull("Component found for " + q.arr[0], openTC);
+        }
+    }
+    
+    private void waitAWT() throws Exception {
+    }
 
-            openTC = new TopComponent[openFiles.length];
-            for (int i = 0; i < openFiles.length; i++) {
-                DataObject dobj = DataObject.find(openFiles[i]);
-                EditorCookie cookie = dobj.getLookup().lookup(EditorCookie.class);
-                cookie.open();
+    @Override
+    public void tearDown() throws Exception {
+        class Q implements Runnable {
+            public void run() {
+                for (int i = 0; i < openTC.length; i++) {
+                    openTC[i].close();
+                }
             }
         }
+        Q q = new Q();
+        SwingUtilities.invokeAndWait(q);
     }
 
     public void testSimpleSwitch() throws Exception {
