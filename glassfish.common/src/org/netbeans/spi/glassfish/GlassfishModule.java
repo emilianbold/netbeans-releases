@@ -148,6 +148,22 @@ public interface GlassfishModule {
     public Future<OperationState> deploy(OperationStateListener stateListener, File application, String name);
 
     /**
+     * Deploy the specified directory or application archive onto the server.
+     * 
+     * @param stateListener listener to listen message describing the deploy 
+     *   process as it progresses.  Can be null.
+     * @param application either the root folder of the application (directory
+     *   deployment) or the application archive (e.g. war file, etc.)
+     * @param name name to deploy this application under.
+     * @param contextRoot to use for this application on deploy.
+     * 
+     * @return Future instance that finishes when the deploy command has been
+     *   completed.
+     */
+    
+    public Future<OperationState> deploy(OperationStateListener stateListener, File application, String name, String contextRoot);
+    
+    /**
      * Undeploy the named application.
      * 
      * @param stateListener listener to listen message describing the undeploy 

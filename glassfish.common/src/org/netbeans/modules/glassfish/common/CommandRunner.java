@@ -130,10 +130,14 @@ public class CommandRunner extends BasicTask<OperationState> {
     }
     
     public Future<OperationState> deploy(File dir) {
-        return deploy(dir, dir.getParentFile().getName());
+        return deploy(dir, dir.getParentFile().getName(), null);
+    }
+
+    public Future<OperationState> deploy(File dir, String moduleName) {
+        return deploy(dir, moduleName, null);
     }
     
-    public Future<OperationState> deploy(File dir, String moduleName)  {
+    public Future<OperationState> deploy(File dir, String moduleName, String contextRoot)  {
 //        try {
 //            //file is someting like /Users/ludo/WebApplication91/build/web
 //            String docBaseURI = URLEncoder.encode(dir.getAbsoluteFile().toURI().toASCIIString(),"UTF-8");
@@ -158,7 +162,7 @@ public class CommandRunner extends BasicTask<OperationState> {
 //            fireOperationStateChanged(null, new Status(ActionType.EXECUTE, serverCmd, msg, StateType.FAILED));
 //        }
         
-        ServerCommand.DeployCommand cmd = new ServerCommand.DeployCommand(dir.getAbsolutePath(), moduleName);
+        ServerCommand.DeployCommand cmd = new ServerCommand.DeployCommand(dir.getAbsolutePath(), moduleName, contextRoot);
         serverCmd = cmd;
         return executor().submit(this);
     }

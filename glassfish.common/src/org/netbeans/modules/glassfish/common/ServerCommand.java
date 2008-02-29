@@ -259,14 +259,12 @@ public abstract class ServerCommand {
         
         private final String path;
         private final String name;
+        private final String contextRoot;
         
-        public DeployCommand(final String path) {
-            this(path, null);
-        }
-        
-        public DeployCommand(final String path, final String name) {
+        public DeployCommand(final String path, final String name, final String contextRoot) {
             this.path = path;
             this.name = name;
+            this.contextRoot = contextRoot;
         }
         
         @Override
@@ -277,6 +275,10 @@ public abstract class ServerCommand {
             if(name != null && name.length() > 0) {
                 cmd.append("?name="); // NOI18N
                 cmd.append(name);
+            }
+            if(contextRoot != null && contextRoot.length() > 0) {
+                cmd.append("?contextroot="); // NOI18N
+                cmd.append(contextRoot);
             }
             return cmd.toString();
         } 

@@ -199,6 +199,11 @@ public class CommonServerSupport implements GlassfishModule {
     
     public Future<OperationState> deploy(final OperationStateListener stateListener, 
             final File application, final String name) {
+        return deploy(stateListener, application, name, null);
+    }
+
+    public Future<OperationState> deploy(final OperationStateListener stateListener, 
+            final File application, final String name, final String contextRoot) {
         OperationStateListener deployListener = new OperationStateListener() {
             public void operationStateChanged(OperationState newState, String message) {
                 System.out.println(newState.toString() + ": " + message);
@@ -206,9 +211,9 @@ public class CommonServerSupport implements GlassfishModule {
         };
         
         CommandRunner mgr = new CommandRunner(getInstanceProperties(), deployListener, stateListener);
-        return mgr.deploy(application, name);
+        return mgr.deploy(application, name, contextRoot);
     }
-
+    
     public Future<OperationState> undeploy(final OperationStateListener stateListener, final String name) {
         OperationStateListener undeployListener = new OperationStateListener() {
             public void operationStateChanged(OperationState newState, String message) {
