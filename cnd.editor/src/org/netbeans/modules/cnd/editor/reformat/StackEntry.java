@@ -216,6 +216,10 @@ class StackEntry {
         return likeToFunction;
     }
 
+    public void setLikeToFunction(boolean likeToFunction) {
+        this.likeToFunction = likeToFunction;
+    }
+
     public boolean isLikeToArrayInitialization() {
         return likeToArrayInitialization;
     }

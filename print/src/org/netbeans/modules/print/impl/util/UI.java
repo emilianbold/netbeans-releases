@@ -99,11 +99,9 @@ public final class UI {
   }
 
   public static boolean isCtrl(int modifiers) {
-    return isModifier(modifiers, KeyEvent.CTRL_MASK);
-  }
-
-  public static boolean isMeta(int modifiers) {
-    return isModifier(modifiers, KeyEvent.META_MASK);
+    return
+      isModifier(modifiers, KeyEvent.CTRL_MASK) ||
+      isModifier(modifiers, KeyEvent.META_MASK);
   }
 
   private static boolean isModifier(int modifiers, int mask) {

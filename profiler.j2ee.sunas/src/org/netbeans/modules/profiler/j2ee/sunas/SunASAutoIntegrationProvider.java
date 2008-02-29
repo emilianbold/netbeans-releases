@@ -41,19 +41,6 @@
 package org.netbeans.modules.profiler.j2ee.sunas;
 
 import org.netbeans.lib.profiler.common.AttachSettings;
-import org.netbeans.lib.profiler.common.integration.*;
-import org.netbeans.lib.profiler.common.integration.exceptions.*;
-import org.netbeans.modules.profiler.ui.wizards.AttachWizard;
-import org.netbeans.modules.profiler.ui.wizards.framework.steps.SimpleWizardStep;
-import org.netbeans.modules.profiler.ui.wizards.providers.IDESettingsPersistor;
-import org.netbeans.modules.profiler.ui.wizards.providers.SettingsPersistor;
-import org.netbeans.modules.profiler.ui.wizards.providers.ValidationResult;
-import org.netbeans.modules.profiler.ui.wizards.providers.scripted.AbstractScriptIntegrationProvider;
-import org.netbeans.modules.profiler.ui.wizards.providers.scripted.ProfilerScriptModifier;
-import org.netbeans.modules.profiler.ui.wizards.providers.scripted.ScriptHeaderModifier;
-import org.netbeans.modules.profiler.ui.wizards.providers.scripted.ScriptModificationException;
-import org.netbeans.modules.profiler.ui.wizards.providers.scripted.TextScriptHeaderModifier;
-import org.netbeans.modules.profiler.ui.wizards.providers.scripted.XmlScriptHeaderModifier;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -78,6 +65,20 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
+import org.netbeans.modules.profiler.attach.AttachWizard;
+import org.netbeans.modules.profiler.attach.providers.IDESettingsPersistor;
+import org.netbeans.modules.profiler.attach.providers.SettingsPersistor;
+import org.netbeans.modules.profiler.attach.providers.ValidationResult;
+import org.netbeans.modules.profiler.attach.providers.scripted.AbstractScriptIntegrationProvider;
+import org.netbeans.modules.profiler.attach.providers.scripted.ProfilerScriptModifier;
+import org.netbeans.modules.profiler.attach.providers.scripted.ScriptHeaderModifier;
+import org.netbeans.modules.profiler.attach.providers.scripted.ScriptModificationException;
+import org.netbeans.modules.profiler.attach.providers.scripted.TextScriptHeaderModifier;
+import org.netbeans.modules.profiler.attach.providers.scripted.XmlScriptHeaderModifier;
+import org.netbeans.modules.profiler.attach.spi.IntegrationProvider;
+import org.netbeans.modules.profiler.attach.spi.ModificationException;
+import org.netbeans.modules.profiler.attach.wizard.steps.SimpleWizardStep;
 
 
 /**
@@ -143,7 +144,7 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
 
     public SunASAutoIntegrationProvider() {
         super();
-        this.attachedWizard = new SimpleWizardStep(NbBundle.getMessage(AttachWizard.class,
+        this.attachedWizard = new SimpleWizardStep(NbBundle.getMessage(SunASAutoIntegrationProvider.class,
                                                                        "AttachWizard_LocateRequiredFilesString"),
                                                    new SunASIntegrationPanel()); // NOI18N
         this.persistor = new IDESettingsPersistor() {

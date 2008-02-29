@@ -284,6 +284,23 @@ public class DatabaseNodeChildren extends Children.Array {
         return subnode;
     }
     
+        public void replaceNodes(Node[] nodes) {
+        if ( isInitialized()) {
+            synchronized (additionalNodes)
+            {        
+                if ( initialized ) {
+                    this.remove(this.getNodes());
+                    this.add(nodes);
+                } else {
+                    additionalNodes.clear();
+                    for ( Node node : nodes ) {
+                        additionalNodes.add(node);
+                    }
+                }
+            }
+        }
+    }
+    
     private void showException(final Exception e) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
