@@ -59,8 +59,10 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -76,6 +78,7 @@ import org.openide.util.MutexException;
 public final class ClassPathModifier extends ProjectClassPathModifierImplementation {
     
     public static final int ADD = 1;
+    public static final int ADD_NO_HEURISTICS = 3;
     public static final int REMOVE = 2;
     
     private final Project project;
@@ -87,6 +90,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     private ClassPathModifier.Callback cpModifierCallback;
     private ClassPathSupport.Callback cpSupportCallback;
     private ClassPathUiSupport.Callback cpUiSupportCallback;
+    private String[] libUpdaterProperties;
     
     private static final Logger LOG = Logger.getLogger(ClassPathModifier.class.getName());
 
@@ -95,11 +99,13 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
             final PropertyEvaluator eval, final ReferenceHelper refHelper, 
             ClassPathSupport.Callback cpSupportCallback, 
             ClassPathModifier.Callback cpModifierCallback,
-            ClassPathUiSupport.Callback cpUiSupportCallback) {
+            ClassPathUiSupport.Callback cpUiSupportCallback,
+            String[] libUpdaterProperties) {
         assert project != null;
         assert helper != null;
         assert eval != null;
         assert refHelper != null;
+        assert libUpdaterProperties != null && libUpdaterProperties.length > 0;
         this.project = project;
         this.helper = helper;
         this.eval = eval;
@@ -110,9 +116,10 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
         this.cpModifierCallback = cpModifierCallback;
         this.cpSupportCallback = cpSupportCallback;
         this.cpUiSupportCallback = cpUiSupportCallback;
+        this.libUpdaterProperties = libUpdaterProperties;
     }
     
-    protected SourceGroup[] getExtensibleSourceGroups() {
+    public SourceGroup[] getExtensibleSourceGroups() {
         Sources s = project.getLookup().lookup(Sources.class);
         assert s != null;
         return s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -131,6 +138,10 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     }
 
     protected boolean addRoots (final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {        
+        return addRoots(classPathRoots, sourceGroup, type, ADD);
+    }
+    
+    public boolean addRoots (final URL[] classPathRoots, final SourceGroup sourceGroup, final String type, int operation) throws IOException, UnsupportedOperationException {        
         String classPathProperty = cpModifierCallback.getClassPathProperty(sourceGroup, type);
         return handleRoots (classPathRoots, classPathProperty, cpModifierCallback.getElementName(classPathProperty), ADD);
     }
@@ -148,11 +159,20 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
                             boolean changed = false;
                             File projectFolderFile = FileUtil.toFile(project.getProjectDirectory());
                             for (int i=0; i< classPathRoots.length; i++) {
-                                String filePath = ClassPathModifier.this.performSharabilityHeuristics(classPathRoots[i], antHelper);
+                                String filePath;
+                                if (ADD_NO_HEURISTICS == operation || REMOVE == operation) {
+                                    URL toAdd = FileUtil.getArchiveFile(classPathRoots[i]);
+                                    if (toAdd == null) {
+                                        toAdd = classPathRoots[i];
+                                    }
+                                    filePath =  LibrariesSupport.convertURLToFilePath(toAdd);
+                                } else {
+                                    filePath = ClassPathModifier.this.performSharabilityHeuristics(classPathRoots[i], antHelper);
+                                }
                                 File f = antHelper.resolveFile(filePath);
                                 ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath, projectFolderFile, null);
                                 cpUiSupportCallback.initItem(item);
-                                if (operation == ADD && !resources.contains(item)) {
+                                if ((operation == ADD || operation == ADD_NO_HEURISTICS) && !resources.contains(item)) {
                                     resources.add (item);
                                     changed = true;
                                 } else if (operation == REMOVE) {
@@ -274,7 +294,9 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
             cpUiSupportCallback.initItem(item);
             items.add(item);
         }
-        return handleLibraryClassPathItems(items, classPathProperty, projectXMLElementName, operation, true);
+        boolean res = handleLibraryClassPathItems(items, classPathProperty, projectXMLElementName, operation, true);
+        ProjectProperties.storeLibrariesLocations(project, antHelper, cs, libUpdaterProperties);
+        return res;
     }
     
     public static Library checkLibrarySharability(Project project, AntProjectHelper antHelper, ReferenceHelper refHelper, Library lib) throws IOException {

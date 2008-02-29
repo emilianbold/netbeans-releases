@@ -42,10 +42,7 @@
 
 package org.netbeans.modules.cnd.ui.options;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
@@ -53,23 +50,23 @@ import org.openide.util.Lookup;
 /** Manage the data for the ToolsPanel */
 public abstract class ToolsPanelModel {
     
-    protected ArrayList getPath() {
-        ArrayList<String> path = new ArrayList();
-        StringTokenizer tok = new StringTokenizer(CppSettings.getDefault().getPath(), File.pathSeparator);
-        while (tok.hasMoreTokens()) {
-            path.add(tok.nextToken());
-        }
-        return path;
-    }
-    
-    protected void setPath(ArrayList<String> list) {
-        StringBuffer path = new StringBuffer();
-        for (String dir : list) {
-            path.append(dir);
-            path.append(File.pathSeparator);
-        }
-        CppSettings.getDefault().setPath(path.toString());
-    }
+//    protected ArrayList getPath() {
+//        ArrayList<String> path = new ArrayList();
+//        StringTokenizer tok = new StringTokenizer(CppSettings.getDefault().getPath(), File.pathSeparator);
+//        while (tok.hasMoreTokens()) {
+//            path.add(tok.nextToken());
+//        }
+//        return path;
+//    }
+//    
+//    protected void setPath(ArrayList<String> list) {
+//        StringBuffer path = new StringBuffer();
+//        for (String dir : list) {
+//            path.append(dir);
+//            path.append(File.pathSeparator);
+//        }
+//        CppSettings.getDefault().setPath(path.toString());
+//    }
     
     protected String getMakeName() {
         return CppSettings.getDefault().getMakeName();
@@ -137,11 +134,11 @@ public abstract class ToolsPanelModel {
     
     public abstract String getCompilerSetName();
     
-    protected abstract void setCCompilerName(String name);
-    
-    protected abstract void setCppCompilerName(String name);
-    
-    protected abstract void setFortranCompilerName(String name);
+//    protected abstract void setCCompilerName(String name);
+//    
+//    protected abstract void setCppCompilerName(String name);
+//    
+//    protected abstract void setFortranCompilerName(String name);
     
     public abstract boolean showRequiredTools();
 }

@@ -486,6 +486,8 @@ public final class EarProjectProperties {
         deleted.removeAll(newContent);
         Set<ClassPathSupport.Item> added = new HashSet<ClassPathSupport.Item>(newContent);
         added.removeAll(oldContent);
+        Set<ClassPathSupport.Item> needsUpdate = new HashSet<ClassPathSupport.Item>(newContent);
+        needsUpdate.removeAll(added);
         
         boolean saveNeeded = false;
         // delete the old entries out of the application
@@ -496,6 +498,13 @@ public final class EarProjectProperties {
         // add the new stuff "back"
         for (ClassPathSupport.Item item : added) {
             addItemToAppDD(project, app,item);
+            saveNeeded = true;
+        }
+        for (ClassPathSupport.Item item : needsUpdate) {
+            ClassPathSupport.Item old = oldContent.get(oldContent.indexOf(item));
+            // #76008 - PATH_IN_DEPLOYMENT could have changed; remove old one and save new one:
+            removeItemFromAppDD(project, app, old, props);
+            addItemToAppDD(project, app, item);
             saveNeeded = true;
         }
         
@@ -714,7 +723,7 @@ public final class EarProjectProperties {
             if (null != jmp) {
                 J2eeModule jm = jmp.getJ2eeModule();
                 if (null != jm) {
-                    String path = item.getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT);
+                    String path = getCompletePathInArchive(project, item);
                     mods.put(path, jmp);
                 }
             }
@@ -926,7 +935,7 @@ public final class EarProjectProperties {
         newArtifacts.addAll(ClassPathUiSupport.getList( EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()));
 
         updateContentDependency(project,
-            cs.itemsList(projectProperties.get(JAR_CONTENT_ADDITIONAL)), 
+            cs.itemsList(projectProperties.get(JAR_CONTENT_ADDITIONAL), TAG_WEB_MODULE__ADDITIONAL_LIBRARIES), 
             ClassPathUiSupport.getList( EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()),
             projectProperties);
         

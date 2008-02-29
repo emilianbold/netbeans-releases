@@ -61,6 +61,8 @@
         <ant dir="../websvc.saas.services.yahoo"/>
         <ant dir="../websvc.saas.services.youtube"/>
         <ant dir="../websvc.saas.services.zillow"/>
+        <ant dir="../websvc.saas.services.weatherbug"/>
+        <ant dir="../websvc.saas.services.zvents"/>
         <ant dir="../websvc.restkit" target="all-rest"/>
     </target>
 

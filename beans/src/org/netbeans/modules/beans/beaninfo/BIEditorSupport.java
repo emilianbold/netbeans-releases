@@ -40,8 +40,11 @@
 package org.netbeans.modules.beans.beaninfo;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.BeanInfo;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,6 +58,7 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
+import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -90,6 +94,7 @@ import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
@@ -106,6 +111,13 @@ final class BIEditorSupport extends DataEditorSupport
     private BIGES guardedEditor;
     private GuardedSectionsProvider guardedProvider;
     private GenerateBeanInfoAction.BeanInfoWorker worker;
+    
+    /**
+     * The embracing multiview TopComponent (holds the form designer and
+     * java editor) - we remeber the last active TopComponent (not all clones)
+     */
+    private CloneableTopComponent multiviewTC;
+    private TopComponentsListener topComponentsListener;
 
     public BIEditorSupport(DataObject obj, CookieSet cookieSet) {
         super(obj, new Environment(obj, cookieSet));
@@ -163,12 +175,22 @@ final class BIEditorSupport extends DataEditorSupport
             super.saveFromKitToStream(doc, kit, stream);
         }
     }
+
+    @Override
+    public void saveDocument() throws IOException {
+        if (worker != null && worker.isModelModified()) {
+            worker.generateSources();
+            worker.waitFinished();
+        }
+        super.saveDocument();
+    }
     
     @Override
     protected boolean notifyModified() {
         if (!super.notifyModified())
             return false;
         ((Environment)this.env).addSaveCookie();
+        updateMVTCName();
         return true;
     }
 
@@ -177,6 +199,17 @@ final class BIEditorSupport extends DataEditorSupport
     protected void notifyUnmodified() {
         super.notifyUnmodified();
         ((Environment)this.env).removeSaveCookie();
+        updateMVTCName();
+    }
+
+    @Override
+    protected void notifyClosed() {
+        super.notifyClosed();
+        worker = null;
+        if (topComponentsListener != null) {
+            TopComponent.getRegistry().removePropertyChangeListener(topComponentsListener);
+            topComponentsListener = null;
+        }
     }
 
     @Override
@@ -187,6 +220,53 @@ final class BIEditorSupport extends DataEditorSupport
         };
         return (Pane) MultiViewFactory.createCloneableMultiView(
                 descs, descs[0], new CloseHandler(getDataObject()));
+    }
+    
+    /** This is called by the multiview elements whenever they are created
+     * (and given a observer knowing their multiview TopComponent). It is
+     * important during deserialization and clonig the multiview - i.e. during
+     * the operations we have no control over. But anytime a multiview is
+     * created, this method gets called.
+     */
+    private void setTopComponent(TopComponent topComp) {
+        multiviewTC = (CloneableTopComponent)topComp;
+        updateMVTCName();
+
+        if (topComponentsListener == null) {
+            topComponentsListener = new TopComponentsListener();
+            TopComponent.getRegistry().addPropertyChangeListener(topComponentsListener);
+        }
+    }
+    
+    private void updateMVTCName() {
+        Runnable task = new Runnable() {
+            public void run() {
+                updateMVTCNameInAwt();
+            }
+        };
+        
+        if (EventQueue.isDispatchThread()) {
+            task.run();
+        } else {
+            EventQueue.invokeLater(task);
+        }
+    }
+    
+    private void updateMVTCNameInAwt() {
+        CloneableTopComponent topComp = multiviewTC;
+        if (topComp != null) {
+            String htmlname = messageHtmlName();
+            String name = messageName();
+            String tip = messageToolTip();
+            for (CloneableTopComponent o : NbCollections.
+                    iterable(topComp.getReference().getComponents())) {
+                
+                topComp.setHtmlDisplayName(htmlname);
+                topComp.setDisplayName(name);
+                topComp.setName(name);
+                topComp.setToolTipText(tip);
+            }
+        }
     }
     
     static boolean isLastView(TopComponent tc) {
@@ -346,7 +426,8 @@ final class BIEditorSupport extends DataEditorSupport
 
         public void setMultiViewCallback(MultiViewElementCallback callback) {
             this.callback = callback;
-            callback.updateTitle(getDisplayName());
+            BIEditorSupport editor = (BIEditorSupport) cloneableEditorSupport();
+            editor.setTopComponent(callback.getTopComponent());
         }
 
         public CloseOperationState canCloseElement() {
@@ -387,6 +468,11 @@ final class BIEditorSupport extends DataEditorSupport
             // XXX copied from form module see issue 55818
             super.canClose(null, true);
             super.componentClosed();
+        }
+        
+        @Override
+        protected boolean closeLast() {
+            return true;
         }
 
         @Override
@@ -443,6 +529,8 @@ final class BIEditorSupport extends DataEditorSupport
 
         public void setMultiViewCallback(MultiViewElementCallback callback) {
             this.callback = callback;
+            BIEditorSupport editor = findEditor(dataObject);
+            editor.setTopComponent(callback.getTopComponent());
         }
 
         public CloseOperationState canCloseElement() {
@@ -495,7 +583,7 @@ final class BIEditorSupport extends DataEditorSupport
             
             FileObject biFile = dataObject.getPrimaryFile();
             String name = biFile.getName();
-            name = name.substring(0, name.length() - "BeanInfo".length());
+            name = name.substring(0, name.length() - "BeanInfo".length()); // NOI18N
             FileObject javaFile = biFile.getParent().getFileObject(name, biFile.getExt());
             BIEditorSupport editor = findEditor(dataObject);
             if (javaFile != null) {
@@ -503,7 +591,8 @@ final class BIEditorSupport extends DataEditorSupport
                 editor.worker.analyzePatterns();
                 editor.worker.updateUI();
             } else {
-                // XXX notify missing source file
+                // notify missing source file
+                biPanel.setContext(BiNode.createNoSourceNode(biFile));
             }
         }
 
@@ -541,10 +630,6 @@ final class BIEditorSupport extends DataEditorSupport
         private final class SaveSupport implements SaveCookie {
             public void save() throws java.io.IOException {
                 DataObject dobj = getDataObject();
-                BIEditorSupport editor = findEditor(dobj);
-                if (editor.worker != null && editor.worker.isModelModified()) {
-                    editor.worker.generateSources();
-                }
                 ((DataEditorSupport) findCloneableOpenSupport()).saveDocument();
                 dobj.setModified(false);
             }
@@ -585,6 +670,34 @@ final class BIEditorSupport extends DataEditorSupport
                 javaData.setModified(false);
             }
         }
+    }
+    
+    private class TopComponentsListener implements PropertyChangeListener {
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (TopComponent.Registry.PROP_OPENED.equals(evt.getPropertyName())) {
+                // Check closed top components
+                @SuppressWarnings("unchecked")
+                Set<TopComponent> closed = (Set<TopComponent>) evt.getOldValue();
+                closed.removeAll((Set) evt.getNewValue());
+                for (TopComponent o : closed) {
+                    if (o instanceof CloneableTopComponent) {
+                        final CloneableTopComponent topComponent = (CloneableTopComponent) o;
+                        Enumeration en = topComponent.getReference().getComponents();
+                        if (multiviewTC == topComponent) {
+                            if (en.hasMoreElements()) {
+                                // Remember next cloned top component
+                                multiviewTC = (CloneableTopComponent) en.nextElement();
+                            } else {
+                                // All cloned top components are closed
+                                notifyClosed();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
     }
 
 }

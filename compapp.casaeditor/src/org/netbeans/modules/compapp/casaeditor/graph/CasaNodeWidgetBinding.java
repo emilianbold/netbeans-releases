@@ -272,7 +272,9 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
     
     public void regenerateVerticalTextBarImage() {
         String displayedText = mVertTextBarText;
-        if (mVertTextBarText.length() > VERT_TEXT_BAR_MAX_CHAR) {
+        if (mVertTextBarText == null) {
+            displayedText = ""; // NOI18N
+        } else if (mVertTextBarText.length() > VERT_TEXT_BAR_MAX_CHAR) {
             displayedText = displayedText.substring(0, VERT_TEXT_BAR_MAX_CHAR) + NbBundle.getMessage(getClass(), "ELLIPSIS");
         }
         

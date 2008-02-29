@@ -101,10 +101,10 @@ class ProjectNode extends AbstractNode {
     private Image cachedIcon;
 
     ProjectNode (AntArtifact antArtifact, URI artifactLocation, UpdateHelper helper, 
-            PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, 
-            String entryId, String webModuleElementName, ClassPathSupport cs) {
-        super (Children.LEAF, createLookup (antArtifact, artifactLocation, helper, eval, 
-                refHelper, classPathId, entryId, webModuleElementName, cs));
+            String classPathId, 
+            String entryId, String webModuleElementName, ClassPathSupport cs, String[] libUpdaterProperties) {
+        super (Children.LEAF, createLookup (antArtifact, artifactLocation, 
+                helper, classPathId, entryId, webModuleElementName, cs, libUpdaterProperties));
         this.antArtifact = antArtifact;
         this.artifactLocation = artifactLocation;
     }
@@ -167,9 +167,9 @@ class ProjectNode extends AbstractNode {
     }
     
     private static Lookup createLookup (AntArtifact antArtifact, URI artifactLocation, 
-            UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, 
+            UpdateHelper helper, 
             String classPathId, String entryId, String webModuleElementName,
-            ClassPathSupport cs) {
+            ClassPathSupport cs, String[] libUpdaterProperties) {
         Project p = antArtifact.getProject();
         Object[] content;
         if (p == null) {
@@ -180,7 +180,7 @@ class ProjectNode extends AbstractNode {
             content[1] = new JavadocProvider(antArtifact, artifactLocation);
             content[2] = p;
         }
-        content[0] = new Removable(helper, eval, refHelper, classPathId, entryId, webModuleElementName, cs);        
+        content[0] = new Removable(helper, classPathId, entryId, webModuleElementName, cs, libUpdaterProperties);        
         Lookup lkp = Lookups.fixed(content);
         return lkp;
     }
@@ -290,21 +290,21 @@ class ProjectNode extends AbstractNode {
     private static class Removable implements RemoveClassPathRootAction.Removable {
 
         private final UpdateHelper helper;
-        private final ReferenceHelper refHelper;
         private final String classPathId;
         private final String entryId;
         private final String webModuleElementName;
+        private String[] libUpdaterProperties;
 
         private final ClassPathSupport cs;
 
-        Removable (UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, 
+        Removable (UpdateHelper helper, 
                 String classPathId, String entryId, String webModuleElementName,
-                ClassPathSupport cs) {
+                ClassPathSupport cs, String[] libUpdaterProperties) {
             this.helper = helper;
-            this.refHelper = refHelper;
             this.classPathId = classPathId;
             this.entryId = entryId;
             this.webModuleElementName = webModuleElementName;
+            this.libUpdaterProperties = libUpdaterProperties;
             
             this.cs = cs;
 
@@ -335,15 +335,18 @@ class ProjectNode extends AbstractNode {
                 String[] itemRefs = cs.encodeToStrings(resources, webModuleElementName);
                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                 props.setProperty (classPathId, itemRefs);
-                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-
-                String ref = "${" + entryId + "}"; //NOI18N
-                if (!RemoveClassPathRootAction.isReferenced (new EditableProperties[] {
-                    props,
-                    helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH)}, ref)) {
-                    refHelper.destroyReference(ref);
+                
+                if (libUpdaterProperties != null) {
+                    // update library properties:
+                    HashSet set = new HashSet();
+                    for (String property : libUpdaterProperties) {
+                        List wmLibs = cs.itemsList(props.getProperty(property),  null);
+                        set.addAll(wmLibs);
+                    }
+                    ProjectProperties.storeLibrariesLocations(set.iterator(), props, helper.getAntProjectHelper().getProjectDirectory());
                 }
-
+                
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                 return FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
             } else {
                 return null;
