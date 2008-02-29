@@ -49,7 +49,6 @@ made subject to such option by the copyright holder.
         <type>classpath</type>
         <resource>jar:nbinst://org.netbeans.modules.spring.beans/modules/ext/spring/commons-logging-1.1.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.spring.beans/modules/ext/spring/spring-2.5.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.spring.beans/modules/ext/spring/spring-webmvc-2.5.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
@@ -61,6 +60,5 @@ made subject to such option by the copyright holder.
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
         <resource>http://repo1.maven.org/maven2/org/springframework/spring/2.5/spring-2.5.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-webmvc/2.5/spring-webmvc-2.5.pom</resource>
     </volume>
 </library>

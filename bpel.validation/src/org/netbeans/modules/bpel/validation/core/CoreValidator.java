@@ -111,20 +111,22 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
     myResultItems = new HashSet<ResultItem>();
   }
 
-  protected final void addWarning(String key, Component component) {
+  public final void addWarning(String key, Component component) {
     addMessage(i18n(getClass(), key), ResultType.WARNING, component);
   }
 
-  protected final void addError(String key, Component component) {
+  public final void addError(String key, Component component) {
 //out("add error: " + key + " " + component);
     addMessage(i18n(getClass(), key), ResultType.ERROR, component);
   }
 
-  protected final void addError(String key, Component component, String param) {
+  public final void addError(String key, Component component, String param) {
     addMessage(i18n(getClass(), key, param), ResultType.ERROR, component);
   }
 
-  protected final void addError(String key, Component component, String param1, String param2) {
+  public final void addError(String key, Component component, String param1, String param2) {
+//out("add error: " + key + " " + param1 + " " + param2);
+//out("      msg: " + i18n(getClass(), key, param1, param2));
     addMessage(i18n(getClass(), key, param1, param2), ResultType.ERROR, component);
   }
 
