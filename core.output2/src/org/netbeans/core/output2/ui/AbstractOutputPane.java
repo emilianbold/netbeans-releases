@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -409,11 +409,12 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 //***********************Listener implementations*****************************
 
     public void stateChanged(ChangeEvent e) {
-        if (e.getSource() instanceof JViewport) {
+        /*if (e.getSource() instanceof JViewport) { // #78191
             if (locked) {
                 ensureCaretPosition();
             }
-        } else if (e.getSource() == getVerticalScrollBar().getModel()) {
+        } else*/
+        if (e.getSource() == getVerticalScrollBar().getModel()) {
             if (!locked) { //XXX check if doc is still being written?
                 BoundedRangeModel mdl = getVerticalScrollBar().getModel();
                 if (mdl.getValue() + mdl.getExtent() == mdl.getMaximum()) {
@@ -611,12 +612,21 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             postPopupMenu (p, this);
         }
     }
-    
+
     public void keyPressed(KeyEvent keyEvent) {
-        if (keyEvent.getKeyCode() == KeyEvent.VK_END) {
-            lockScroll();
-        } else {
-            unlockScroll();
+        switch (keyEvent.getKeyCode()) {
+            case KeyEvent.VK_END:
+                lockScroll();
+                break;
+            case KeyEvent.VK_UP:
+            case KeyEvent.VK_DOWN:
+            case KeyEvent.VK_LEFT:
+            case KeyEvent.VK_RIGHT:
+            case KeyEvent.VK_HOME:
+            case KeyEvent.VK_PAGE_UP:
+            case KeyEvent.VK_PAGE_DOWN:
+                unlockScroll();
+                break;
         }
     }
 

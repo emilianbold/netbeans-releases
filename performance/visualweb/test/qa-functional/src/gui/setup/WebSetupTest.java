@@ -83,6 +83,9 @@ public class WebSetupTest extends IDESetupTest {
         VWPUtilities.waitForPendingBackgroundTasks();
         VWPUtilities.verifyAndResolveMissingWebServer("UltraLargeWA", "GlassFish V2");
         VWPUtilities.waitForPendingBackgroundTasks();
+        
+        VWPUtilities.verifyAndResolveMissingWebServer("HugeApp", "GlassFish V2");
+        VWPUtilities.waitForPendingBackgroundTasks();        
     }
     
     public void setupAppServer() {

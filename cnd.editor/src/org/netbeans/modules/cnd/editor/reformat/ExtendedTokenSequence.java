@@ -46,6 +46,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.editor.reformat.DiffLinkedList.DiffResult;
+import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
 import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
@@ -123,6 +124,7 @@ public class ExtendedTokenSequence {
                     case NEW_LINE:
                     case PREPROCESSOR_DIRECTIVE:
                          return column;
+                    case DOXYGEN_COMMENT:
                     case BLOCK_COMMENT:
                         String text = ts.token().text().toString();
                         int i = text.lastIndexOf('\n');
@@ -153,6 +155,7 @@ public class ExtendedTokenSequence {
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                         break;
                     default:
@@ -176,6 +179,7 @@ public class ExtendedTokenSequence {
                     case NEW_LINE:
                         return null;
                     case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
                         if (ts.token().text().toString().indexOf('\n')>=0) {
                             return null;
                         }
@@ -215,6 +219,7 @@ public class ExtendedTokenSequence {
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                         break;
                     default:
@@ -303,6 +308,7 @@ public class ExtendedTokenSequence {
                     case NEW_LINE:
                         return null;
                     case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
                         if (ts.token().text().toString().indexOf('\n')>=0) {
                             return null;
                         }
@@ -329,6 +335,7 @@ public class ExtendedTokenSequence {
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                         break;
                     default:
@@ -351,6 +358,7 @@ public class ExtendedTokenSequence {
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                         break;
                     default:
@@ -400,8 +408,8 @@ public class ExtendedTokenSequence {
                 }
                 DiffResult diff = diffs.getDiffs(this, 0);
                 if (diff != null){
-                    if (diff.before != null){
-                        if (diff.before.hasNewLine()) {
+                    if (diff.after != null){
+                        if (diff.after.hasNewLine()) {
                             return true;
                         }
                     }
@@ -533,6 +541,44 @@ public class ExtendedTokenSequence {
 
     @Override
     public String toString() {
-        return ts.toString();
+        //return ts.toString();
+        return apply(diffs, this);
+    }
+
+    /*package local*/ static String apply(DiffLinkedList diffs, ExtendedTokenSequence ts) {
+        int index = ts.index();
+        StringBuilder buf = new StringBuilder();
+        try {
+            ts.moveStart();
+            while(ts.moveNext()){
+                buf.append(ts.token().text());
+            }
+            int startOffset = 0;
+            int endOffset = buf.length();
+            for (Diff diff : diffs.getStorage()) {
+                int start = diff.getStartOffset();
+                int end = diff.getEndOffset();
+                String text = diff.getText();
+                if (startOffset > end || endOffset < start) {
+                    continue;
+                }
+                if (endOffset < end) {
+                    if (text != null && text.length() > 0) {
+                        text = end - endOffset >= text.length() ? null : text.substring(0, text.length() - end + endOffset);
+                    }
+                    end = endOffset;
+                }
+                if (end - start > 0) {
+                    buf.delete(start, end);
+                }
+                if (text != null && text.length() > 0) {
+                    buf.insert(start, text);
+                }
+            }
+            return buf.toString();
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
     }
 }

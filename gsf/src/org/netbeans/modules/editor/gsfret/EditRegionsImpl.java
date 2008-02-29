@@ -27,23 +27,13 @@
  */
 package org.netbeans.modules.editor.gsfret;
 
-import java.util.HashSet;
-import java.util.Set;
 import javax.swing.SwingUtilities;
-import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.EditRegions;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.openide.cookies.EditorCookie;
@@ -109,19 +99,7 @@ public class EditRegionsImpl extends EditRegions {
         }
 
         if ((regions != null) && (regions.size() > 0)) {
-            Set<Highlight> changePoints = new HashSet<Highlight>(regions.size() * 2);
-
-            for (OffsetRange range : regions) {
-                //ColoringAttributes colors = highlights.get(range);
-                Collection<ColoringAttributes> c = Collections.singletonList(ColoringAttributes.LOCAL_VARIABLE);
-                Highlight h = org.netbeans.modules.gsfret.editor.semantic.Utilities.createHighlight(language, doc, range.getStart(), range.getEnd(), c, null);
-
-                if (h != null) {
-                    changePoints.add(h);
-                }
-            }
-
-            InstantRenamePerformer.performInstantRename(pane, changePoints, caretOffset);
+            InstantRenamePerformer.performInstantRename(pane, regions, caretOffset);
         }
     }
 }

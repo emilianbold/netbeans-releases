@@ -1,64 +1,396 @@
 Results for alert('foo2 with queryType=COMPLETION and nameKind=PREFIX
-------------------------------------
+CONSTRUCTO Array(arrayLength)                         Core JS
+CONSTRUCTO Array(element0, element1, elem             Core JS
+CONSTRUCTO Boolean(val)                               Core JS
+CONSTRUCTO Boolean(value)                             Core JS
+CONSTRUCTO Date()                                     Core JS
+CONSTRUCTO Date(dateString)                           Core JS
+CONSTRUCTO Date(milliseconds)                         Core JS
+CONSTRUCTO Date(yr_num, mo_num, day_num)              Core JS
+CONSTRUCTO Date(yr_num, mo_num, day_num,              Core JS
+CONSTRUCTO Error()                                    Core JS
+CONSTRUCTO Error(message)                             Core JS
+CONSTRUCTO Function(arg1, arg2, argN, fun             Core JS
+CONSTRUCTO Infinity()                                 Core JS
+CONSTRUCTO JavaClass()                                Core JS
+CONSTRUCTO JavaPackage()                              Core JS
+CONSTRUCTO NaN()                                      Core JS
+CONSTRUCTO Number(val)                                Core JS
+CONSTRUCTO Number(value)                              Core JS
+CONSTRUCTO Object()                                   Core JS
+CONSTRUCTO RegExp(pattern)                            Core JS
+CONSTRUCTO RegExp(pattern, flags)                     Core JS
+CONSTRUCTO String(string)                             Core JS
+CONSTRUCTO String(val)                                Core JS
+CONSTRUCTO XMLHttpRequest()                           DOM
+PACKAGE    AbstractView                               DOM
+PACKAGE    Arguments                                  Core JS
 PACKAGE    Array                                      Core JS
-PACKAGE    Array                                      Core JS
+PACKAGE    Attr                                       DOM
 PACKAGE    Boolean                                    Core JS
-PACKAGE    Boolean                                    Core JS
-PACKAGE    CssRule                                    DOM
-PACKAGE    Date                                       Core JS
-PACKAGE    Date                                       Core JS
+PACKAGE    CSS2Properties                             DOM
+PACKAGE    CSSCharsetRule                             DOM
+PACKAGE    CSSFontFaceRule                            DOM
+PACKAGE    CSSImportRule                              DOM
+PACKAGE    CSSMediaRule                               DOM
+PACKAGE    CSSPageRule                                DOM
+PACKAGE    CSSPrimitiveValue                          DOM
+PACKAGE    CSSRule                                    DOM
+PACKAGE    CSSRuleList                                DOM
+PACKAGE    CSSStyleDeclaration                        DOM
+PACKAGE    CSSStyleRule                               DOM
+PACKAGE    CSSStyleSheet                              DOM
+PACKAGE    CSSValue                                   DOM
+PACKAGE    CSSValueList                               DOM
+PACKAGE    CharacterData                              DOM
+PACKAGE    Counter                                    DOM
+PACKAGE    DOMConfiguration                           DOM
+PACKAGE    DOMError                                   DOM
+PACKAGE    DOMException                               DOM
+PACKAGE    DOMImplementation                          DOM
+PACKAGE    DOMImplementationCSS                       DOM
+PACKAGE    DOMImplementationList                      DOM
+PACKAGE    DOMImplementationRegistry                  DOM
+PACKAGE    DOMImplementationSource                    DOM
+PACKAGE    DOMLocator                                 DOM
+PACKAGE    DOMStringList                              DOM
 PACKAGE    Date                                       Core JS
 PACKAGE    Document                                   DOM
-PACKAGE    Document                                   DOM
+PACKAGE    DocumentCSS                                DOM
+PACKAGE    DocumentEvent                              DOM
+PACKAGE    DocumentRange                              DOM
+PACKAGE    DocumentStyle                              DOM
+PACKAGE    DocumentTraversal                          DOM
+PACKAGE    DocumentType                               DOM
+PACKAGE    DocumentView                               DOM
 PACKAGE    Element                                    DOM
-PACKAGE    Element                                    DOM
-PACKAGE    Error                                      Core JS
+PACKAGE    ElementCSSInlineStyle                      DOM
+PACKAGE    Entity                                     DOM
 PACKAGE    Error                                      Core JS
 PACKAGE    EvalError                                  Core JS
 PACKAGE    Event                                      DOM
-PACKAGE    Event                                      DOM
-PACKAGE    Form                                       DOM
+PACKAGE    EventException                             DOM
+PACKAGE    EventTarget                                DOM
 PACKAGE    Form                                       DOM
 PACKAGE    Function                                   Core JS
-PACKAGE    Function                                   Core JS
+PACKAGE    HTMLAnchorElement                          DOM
+PACKAGE    HTMLAppletElement                          DOM
+PACKAGE    HTMLAreaElement                            DOM
+PACKAGE    HTMLBRElement                              DOM
+PACKAGE    HTMLBaseElement                            DOM
+PACKAGE    HTMLBaseFontElement                        DOM
+PACKAGE    HTMLBlockquoteElement                      DOM
+PACKAGE    HTMLBodyElement                            DOM
+PACKAGE    HTMLButtonElement                          DOM
+PACKAGE    HTMLCollection                             DOM
+PACKAGE    HTMLDListElement                           DOM
+PACKAGE    HTMLDirectoryElement                       DOM
+PACKAGE    HTMLDivElement                             DOM
+PACKAGE    HTMLDocument                               DOM
+PACKAGE    HTMLElement                                DOM
+PACKAGE    HTMLFieldSetElement                        DOM
+PACKAGE    HTMLFontElement                            DOM
+PACKAGE    HTMLFormElement                            DOM
+PACKAGE    HTMLFrameElement                           DOM
+PACKAGE    HTMLFrameSetElement                        DOM
+PACKAGE    HTMLHRElement                              DOM
+PACKAGE    HTMLHeadElement                            DOM
+PACKAGE    HTMLHeadingElement                         DOM
+PACKAGE    HTMLHtmlElement                            DOM
+PACKAGE    HTMLIFrameElement                          DOM
+PACKAGE    HTMLImageElement                           DOM
+PACKAGE    HTMLInputElement                           DOM
+PACKAGE    HTMLIsIndexElement                         DOM
+PACKAGE    HTMLLIElement                              DOM
+PACKAGE    HTMLLabelElement                           DOM
+PACKAGE    HTMLLegendElement                          DOM
+PACKAGE    HTMLLinkElement                            DOM
+PACKAGE    HTMLMapElement                             DOM
+PACKAGE    HTMLMenuElement                            DOM
+PACKAGE    HTMLMetaElement                            DOM
+PACKAGE    HTMLModElement                             DOM
+PACKAGE    HTMLOListElement                           DOM
+PACKAGE    HTMLObjectElement                          DOM
+PACKAGE    HTMLOptGroupElement                        DOM
+PACKAGE    HTMLOptionElement                          DOM
+PACKAGE    HTMLOptionsCollection                      DOM
+PACKAGE    HTMLParagraphElement                       DOM
+PACKAGE    HTMLParamElement                           DOM
+PACKAGE    HTMLPreElement                             DOM
+PACKAGE    HTMLQuoteElement                           DOM
+PACKAGE    HTMLScriptElement                          DOM
+PACKAGE    HTMLSelectElement                          DOM
+PACKAGE    HTMLStyleElement                           DOM
+PACKAGE    HTMLTableCaptionElement                    DOM
+PACKAGE    HTMLTableCellElement                       DOM
+PACKAGE    HTMLTableColElement                        DOM
+PACKAGE    HTMLTableElement                           DOM
+PACKAGE    HTMLTableRowElement                        DOM
+PACKAGE    HTMLTableSectionElement                    DOM
+PACKAGE    HTMLTextAreaElement                        DOM
+PACKAGE    HTMLTitleElement                           DOM
+PACKAGE    HTMLUListElement                           DOM
 PACKAGE    JavaArray                                  Core JS
+PACKAGE    LinkStyle                                  DOM
 PACKAGE    Math                                       Core JS
-PACKAGE    Math                                       Core JS
+PACKAGE    MediaList                                  DOM
+PACKAGE    MouseEvent                                 DOM
+PACKAGE    MutationEvent                              DOM
+PACKAGE    NameList                                   DOM
+PACKAGE    NamedNodeMap                               DOM
 PACKAGE    Navigator                                  DOM
-PACKAGE    Navigator                                  DOM
+PACKAGE    Node                                       DOM
+PACKAGE    NodeFilter                                 DOM
+PACKAGE    NodeIterator                               DOM
+PACKAGE    NodeList                                   DOM
+PACKAGE    Notation                                   DOM
 PACKAGE    Number                                     Core JS
-PACKAGE    Number                                     Core JS
-PACKAGE    Object                                     Core JS
 PACKAGE    Object                                     Core JS
 PACKAGE    Packages                                   Core JS
-PACKAGE    Range                                      DOM
+PACKAGE    ProcessingInstruction                      DOM
+PACKAGE    RGBColor                                   DOM
 PACKAGE    Range                                      DOM
 PACKAGE    RangeError                                 Core JS
+PACKAGE    RangeException                             DOM
+PACKAGE    Rect                                       DOM
 PACKAGE    ReferenceError                             Core JS
-PACKAGE    RegExp                                     Core JS
 PACKAGE    RegExp                                     Core JS
 PACKAGE    Screen                                     DOM
 PACKAGE    Selection                                  DOM
-PACKAGE    Selection                                  DOM
-PACKAGE    String                                     Core JS
 PACKAGE    String                                     Core JS
 PACKAGE    Style                                      DOM
-PACKAGE    Stylesheet                                 DOM
+PACKAGE    StyleSheet                                 DOM
+PACKAGE    StyleSheetList                             DOM
 PACKAGE    Stylesheet                                 DOM
 PACKAGE    SyntaxError                                Core JS
 PACKAGE    Table                                      DOM
-PACKAGE    Table                                      DOM
 PACKAGE    TableRow                                   DOM
+PACKAGE    Text                                       DOM
 PACKAGE    TreeWalker                                 DOM
 PACKAGE    TypeError                                  Core JS
+PACKAGE    TypeInfo                                   DOM
+PACKAGE    UIEvent                                    DOM
 PACKAGE    URIError                                   Core JS
+PACKAGE    ViewCSS                                    DOM
 PACKAGE    Window                                     DOM
-PACKAGE    Window                                     DOM
+PACKAGE    XMLHttpRequest                             DOM
+METHOD     decodeURI(encodedURI)                      Core JS
+METHOD     decodeURIComponent(encodedURI)             Core JS
+METHOD     encodeURI(URI)                             Core JS
+METHOD     encodeURIComponent(String)                 Core JS
+METHOD     eval(string, object)                       Core JS
+METHOD     isFinite(number)                           Core JS
+METHOD     isNaN(testValue)                           Core JS
+METHOD     parseFloat(string)                         Core JS
+METHOD     parseInt(string, radix)                    Core JS
+METHOD     undefined()                                Core JS
+VARIABLE   arguments                                  null
 VARIABLE   bar2                                       
 VARIABLE   element2                                   
 VARIABLE   foo2                                       
 VARIABLE   options2                                   
 VARIABLE   update2                                    
+GLOBAL     AbstractView                               DOM
+GLOBAL     Arguments                                  Core JS
+GLOBAL     Array                                      Core JS
+GLOBAL     Attr                                       DOM
+GLOBAL     Boolean                                    Core JS
+GLOBAL     CDATASection                               DOM
+GLOBAL     CSS                                        DOM
+GLOBAL     CSS2Properties                             DOM
+GLOBAL     CSSCharsetRule                             DOM
+GLOBAL     CSSFontFaceRule                            DOM
+GLOBAL     CSSImportRule                              DOM
+GLOBAL     CSSMediaRule                               DOM
+GLOBAL     CSSPageRule                                DOM
+GLOBAL     CSSPrimitiveValue                          DOM
+GLOBAL     CSSRule                                    DOM
+GLOBAL     CSSRuleList                                DOM
+GLOBAL     CSSStyleDeclaration                        DOM
+GLOBAL     CSSStyleRule                               DOM
+GLOBAL     CSSStyleSheet                              DOM
+GLOBAL     CSSUnknownRule                             DOM
+GLOBAL     CSSValue                                   DOM
+GLOBAL     CSSValueList                               DOM
+GLOBAL     CharacterData                              DOM
+GLOBAL     Comment                                    DOM
+GLOBAL     Counter                                    DOM
+GLOBAL     DOMConfiguration                           DOM
+GLOBAL     DOMError                                   DOM
+GLOBAL     DOMErrorHandler                            DOM
+GLOBAL     DOMException                               DOM
+GLOBAL     DOMImplementation                          DOM
+GLOBAL     DOMImplementationCSS                       DOM
+GLOBAL     DOMImplementationList                      DOM
+GLOBAL     DOMImplementationRegistry                  DOM
+GLOBAL     DOMImplementationSource                    DOM
+GLOBAL     DOMLocator                                 DOM
+GLOBAL     DOMStringList                              DOM
+GLOBAL     Date                                       Core JS
+GLOBAL     DecodeURI                                  Core JS
+GLOBAL     DecodeURIComponent                         Core JS
+GLOBAL     Document                                   DOM
+GLOBAL     DocumentCSS                                DOM
+GLOBAL     DocumentEvent                              DOM
+GLOBAL     DocumentFragment                           DOM
+GLOBAL     DocumentRange                              DOM
+GLOBAL     DocumentStyle                              DOM
+GLOBAL     DocumentTraversal                          DOM
+GLOBAL     DocumentType                               DOM
+GLOBAL     DocumentView                               DOM
+GLOBAL     Element                                    DOM
+GLOBAL     ElementCSSInlineStyle                      DOM
+GLOBAL     EncodeURI                                  Core JS
+GLOBAL     EncodeURIComponent                         Core JS
+GLOBAL     Entity                                     DOM
+GLOBAL     EntityReference                            DOM
+GLOBAL     Error                                      Core JS
+GLOBAL     Eval                                       Core JS
+GLOBAL     EvalError                                  Core JS
+GLOBAL     Event                                      DOM
+GLOBAL     EventException                             DOM
+GLOBAL     EventListener                              DOM
+GLOBAL     EventTarget                                DOM
+GLOBAL     ExceptionCode                              DOM
+GLOBAL     Form                                       DOM
+GLOBAL     Function                                   Core JS
+GLOBAL     HTMLAnchorElement                          DOM
+GLOBAL     HTMLAppletElement                          DOM
+GLOBAL     HTMLAreaElement                            DOM
+GLOBAL     HTMLBRElement                              DOM
+GLOBAL     HTMLBaseElement                            DOM
+GLOBAL     HTMLBaseFontElement                        DOM
+GLOBAL     HTMLBlockquoteElement                      DOM
+GLOBAL     HTMLBodyElement                            DOM
+GLOBAL     HTMLButtonElement                          DOM
+GLOBAL     HTMLCollection                             DOM
+GLOBAL     HTMLDListElement                           DOM
+GLOBAL     HTMLDirectoryElement                       DOM
+GLOBAL     HTMLDivElement                             DOM
+GLOBAL     HTMLDocument                               DOM
+GLOBAL     HTMLElement                                DOM
+GLOBAL     HTMLFieldSetElement                        DOM
+GLOBAL     HTMLFontElement                            DOM
+GLOBAL     HTMLFormElement                            DOM
+GLOBAL     HTMLFrameElement                           DOM
+GLOBAL     HTMLFrameSetElement                        DOM
+GLOBAL     HTMLHRElement                              DOM
+GLOBAL     HTMLHeadElement                            DOM
+GLOBAL     HTMLHeadingElement                         DOM
+GLOBAL     HTMLHtmlElement                            DOM
+GLOBAL     HTMLIFrameElement                          DOM
+GLOBAL     HTMLImageElement                           DOM
+GLOBAL     HTMLInputElement                           DOM
+GLOBAL     HTMLIsIndexElement                         DOM
+GLOBAL     HTMLLIElement                              DOM
+GLOBAL     HTMLLabelElement                           DOM
+GLOBAL     HTMLLegendElement                          DOM
+GLOBAL     HTMLLinkElement                            DOM
+GLOBAL     HTMLMapElement                             DOM
+GLOBAL     HTMLMenuElement                            DOM
+GLOBAL     HTMLMetaElement                            DOM
+GLOBAL     HTMLModElement                             DOM
+GLOBAL     HTMLOListElement                           DOM
+GLOBAL     HTMLObjectElement                          DOM
+GLOBAL     HTMLOptGroupElement                        DOM
+GLOBAL     HTMLOptionElement                          DOM
+GLOBAL     HTMLOptionsCollection                      DOM
+GLOBAL     HTMLParagraphElement                       DOM
+GLOBAL     HTMLParamElement                           DOM
+GLOBAL     HTMLPreElement                             DOM
+GLOBAL     HTMLQuoteElement                           DOM
+GLOBAL     HTMLScriptElement                          DOM
+GLOBAL     HTMLSelectElement                          DOM
+GLOBAL     HTMLStyleElement                           DOM
+GLOBAL     HTMLTableCaptionElement                    DOM
+GLOBAL     HTMLTableCellElement                       DOM
+GLOBAL     HTMLTableColElement                        DOM
+GLOBAL     HTMLTableElement                           DOM
+GLOBAL     HTMLTableRowElement                        DOM
+GLOBAL     HTMLTableSectionElement                    DOM
+GLOBAL     HTMLTextAreaElement                        DOM
+GLOBAL     HTMLTitleElement                           DOM
+GLOBAL     HTMLUListElement                           DOM
+GLOBAL     Infinity                                   Core JS
+GLOBAL     IsFinite                                   Core JS
+GLOBAL     IsNaN                                      Core JS
+GLOBAL     Java                                       Core JS
+GLOBAL     JavaArray                                  Core JS
+GLOBAL     JavaClass                                  Core JS
+GLOBAL     JavaObject                                 Core JS
+GLOBAL     JavaPackage                                Core JS
+GLOBAL     LinkStyle                                  DOM
+GLOBAL     Math                                       Core JS
+GLOBAL     MediaList                                  DOM
+GLOBAL     MouseEvent                                 DOM
+GLOBAL     MutationEvent                              DOM
+GLOBAL     NaN                                        Core JS
+GLOBAL     NameList                                   DOM
+GLOBAL     NamedNodeMap                               DOM
+GLOBAL     Navigator                                  DOM
+GLOBAL     Netscape                                   Core JS
+GLOBAL     Node                                       DOM
+GLOBAL     NodeFilter                                 DOM
+GLOBAL     NodeIterator                               DOM
+GLOBAL     NodeList                                   DOM
+GLOBAL     Notation                                   DOM
+GLOBAL     Number                                     Core JS
+GLOBAL     Object                                     Core JS
+GLOBAL     Packages                                   Core JS
+GLOBAL     ParseFloat                                 Core JS
+GLOBAL     ParseInt                                   Core JS
+GLOBAL     ProcessingInstruction                      DOM
+GLOBAL     RGBColor                                   DOM
+GLOBAL     Range                                      DOM
+GLOBAL     RangeError                                 Core JS
+GLOBAL     RangeException                             DOM
+GLOBAL     Rect                                       DOM
+GLOBAL     ReferenceError                             Core JS
+GLOBAL     RegExp                                     Core JS
+GLOBAL     Screen                                     DOM
+GLOBAL     Selection                                  DOM
+GLOBAL     Storage                                    DOM
+GLOBAL     String                                     Core JS
+GLOBAL     Style                                      DOM
+GLOBAL     StyleSheet                                 DOM
+GLOBAL     StyleSheetList                             DOM
+GLOBAL     Stylesheet                                 DOM
+GLOBAL     Sun                                        Core JS
+GLOBAL     SyntaxError                                Core JS
+GLOBAL     Table                                      DOM
+GLOBAL     TableRow                                   DOM
+GLOBAL     Text                                       DOM
+GLOBAL     TreeWalker                                 DOM
+GLOBAL     TypeError                                  Core JS
+GLOBAL     TypeInfo                                   DOM
+GLOBAL     UIEvent                                    DOM
+GLOBAL     URIError                                   Core JS
+GLOBAL     Undefined                                  Core JS
+GLOBAL     UserDataHandler                            DOM
+GLOBAL     ViewCSS                                    DOM
+GLOBAL     Window                                     DOM
+GLOBAL     XMLHttpRequest                             DOM
+GLOBAL     cssRule                                    DOM
+GLOBAL     form                                       DOM
+GLOBAL     navigator                                  DOM
+GLOBAL     screen                                     DOM
+GLOBAL     selection                                  DOM
+GLOBAL     style                                      DOM
+GLOBAL     stylesheet                                 DOM
+GLOBAL     table                                      DOM
+GLOBAL     tableRow                                   DOM
+GLOBAL     window                                     DOM
+------------------------------------
+METHOD     eval(string)                               Object
+METHOD     hasOwnProperty(prop)                       Object
+METHOD     isPrototypeOf(object)                      Object
+METHOD     propertyIsEnumerable(prop)                 Object
+METHOD     toLocaleString()                           Object
+METHOD     toSource()                                 Object
+METHOD     toString()                                 Object
+METHOD     unwatch(prop)                              Object
+METHOD     valueOf()                                  Object
+METHOD     watch(prop, handler)                       Object
 KEYWORD    abstract                                   null
 KEYWORD    boolean                                    null
 KEYWORD    break                                      null
@@ -119,64 +451,5 @@ KEYWORD    void                                       null
 KEYWORD    volatile                                   null
 KEYWORD    while                                      null
 KEYWORD    with                                       null
-GLOBAL     Array                                      Core JS
-GLOBAL     Boolean                                    Core JS
-GLOBAL     CSS                                        DOM
-GLOBAL     CssRule                                    DOM
-GLOBAL     Date                                       Core JS
-GLOBAL     Document                                   DOM
-GLOBAL     Element                                    DOM
-GLOBAL     Error                                      Core JS
-GLOBAL     EvalError                                  Core JS
-GLOBAL     Event                                      DOM
-GLOBAL     EventTarget                                DOM
-GLOBAL     Form                                       DOM
-GLOBAL     Function                                   Core JS
-GLOBAL     Java                                       Core JS
-GLOBAL     JavaArray                                  Core JS
-GLOBAL     JavaClass                                  Core JS
-GLOBAL     JavaObject                                 Core JS
-GLOBAL     JavaPackage                                Core JS
-GLOBAL     Math                                       Core JS
-GLOBAL     Navigator                                  DOM
-GLOBAL     Netscape                                   Core JS
-GLOBAL     Node                                       DOM
-GLOBAL     Number                                     Core JS
-GLOBAL     Object                                     Core JS
-GLOBAL     Packages                                   Core JS
-GLOBAL     Range                                      DOM
-GLOBAL     RangeError                                 Core JS
-GLOBAL     ReferenceError                             Core JS
-GLOBAL     RegExp                                     Core JS
-GLOBAL     Screen                                     DOM
-GLOBAL     Selection                                  DOM
-GLOBAL     Storage                                    DOM
-GLOBAL     String                                     Core JS
-GLOBAL     Style                                      DOM
-GLOBAL     Stylesheet                                 DOM
-GLOBAL     Sun                                        Core JS
-GLOBAL     SyntaxError                                Core JS
-GLOBAL     Table                                      DOM
-GLOBAL     TableRow                                   DOM
-GLOBAL     TreeWalker                                 DOM
-GLOBAL     TypeError                                  Core JS
-GLOBAL     URIError                                   Core JS
-GLOBAL     WRONG_DOCUMENT_ERR_note                    DOM
-GLOBAL     Window                                     DOM
-GLOBAL     cssRule                                    DOM
-GLOBAL     document                                   DOM
-GLOBAL     element                                    DOM
-GLOBAL     event                                      DOM
-GLOBAL     form                                       DOM
-GLOBAL     java                                       Core JS
-GLOBAL     navigator                                  DOM
-GLOBAL     netscape                                   Core JS
-GLOBAL     range                                      DOM
-GLOBAL     screen                                     DOM
-GLOBAL     style                                      DOM
-GLOBAL     stylesheet                                 DOM
-GLOBAL     sun                                        Core JS
-GLOBAL     table                                      DOM
-GLOBAL     tableRow                                   DOM
-GLOBAL     treeWalker                                 DOM
-GLOBAL     window                                     DOM
+PROPERTY   constructor                                Object
+PROPERTY   prototype                                  Object

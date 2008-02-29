@@ -47,6 +47,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 
@@ -82,15 +83,16 @@ public class EPFootprintUtilities extends gui.EPUtilities{
             new JCheckBoxOperator(wizard_location,"Create Application Client module:").setSelected(true);
         }
         
-        // if the project exists, try to generate new name
-        for (int i = 0; i < 5 && !wizard.btFinish().isEnabled(); i++) {
-            pname = pname+"1";
-            wizard_location.txtProjectName().clearText();
-            wizard_location.txtProjectName().typeText(pname);
-        }
+        pname = pname + "_" + System.currentTimeMillis();
+        wizard_location.txtProjectName().clearText();
+        wizard_location.txtProjectName().typeText(pname);
+        
+        wizard.next();
+        
+        new EventTool().waitNoEvent(1000);
         wizard.finish();
 
-        // wait 10 seconds
+        // wait 30 seconds
         waitForProjectCreation(30000, wait);
         
         return pname;

@@ -42,7 +42,6 @@ package org.netbeans.modules.gsf.api;
 
 import java.util.List;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 
 /**

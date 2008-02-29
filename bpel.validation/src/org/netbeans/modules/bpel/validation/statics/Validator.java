@@ -1,20 +1,42 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.validation.statics;
 
@@ -105,7 +127,7 @@ public final class Validator extends BpelValidator {
         if((p.getMyRole() == null || p.getMyRole().equals("")) &&
                 (p.getPartnerRole() == null || p.getPartnerRole().equals(""))) 
         {
-            getHelper().addError( FIX_PARTNER_LINK_ERROR, p );
+            addError( FIX_PARTNER_LINK_ERROR, p );
         }
         
         // Rule: The initializePartnerRole attribute MUST NOT be used on a partnerLink
@@ -115,7 +137,7 @@ public final class Validator extends BpelValidator {
                     (!p.getInitializePartnerRole().equals(
                     TBoolean.INVALID))) 
             {
-                getHelper().addError( FIX_INITIALISE_PARTNER_ROLE, p );
+                addError( FIX_INITIALISE_PARTNER_ROLE, p );
             }
         }
     }
@@ -304,7 +326,7 @@ public final class Validator extends BpelValidator {
         boolean isInsideFaultHandlers = Utils.hasAscendant( reThrow , 
                 FaultHandlers.class ); 
         if ( !isInsideFaultHandlers ){
-            getHelper().addError( FIX_RETHROW_OCCURANCE, reThrow );
+            addError( FIX_RETHROW_OCCURANCE, reThrow );
         }
     }
     
@@ -331,8 +353,7 @@ public final class Validator extends BpelValidator {
              *  permitted when the partnerLink specifies the attribute myRole.
              */
             if ( !referenceHasMyRole ) {
-                getHelper().addError( FIX_ENDPOINT_REFRENCE, from, 
-                        Roles.MY_ROLE.toString());
+                addError( FIX_ENDPOINT_REFRENCE, from, Roles.MY_ROLE.toString());
             }
         }
         else if ( Roles.PARTNER_ROLE.equals(roles) ){
@@ -346,8 +367,7 @@ public final class Validator extends BpelValidator {
              * partnerRole.
              */
             if ( !referenceHasPartnerRole ) {
-                getHelper().addError( FIX_ENDPOINT_REFRENCE, from, 
-                        Roles.PARTNER_ROLE.toString() );
+                addError( FIX_ENDPOINT_REFRENCE, from, Roles.PARTNER_ROLE.toString() );
             }
         }
     }
@@ -390,8 +410,7 @@ public final class Validator extends BpelValidator {
         if ((query != null && !SUPPORTED_LANGAGE.equals(query))
                 || (expression != null && !SUPPORTED_LANGAGE.equals(expression)))
         {
-            getHelper().addError(FIX_SUPPORTED_LANGUAGE, process,
-                    SUPPORTED_LANGAGE);
+            addError(FIX_SUPPORTED_LANGUAGE, process, SUPPORTED_LANGAGE);
         }
     }
 
@@ -407,9 +426,13 @@ public final class Validator extends BpelValidator {
         if ( TBoolean.YES.equals( isolated ) ) {
             List<Component> collection = new LinkedList<Component>();
             getHelper().collectIsolatedScopes( scope , collection );
+
             if ( collection.size() >0 ){
                 collection.add( scope );
-                getHelper().addError( FIX_ISOLATED_SCOPES , collection );
+
+                for(Component component : collection) {
+                    addError(FIX_ISOLATED_SCOPES, component);
+                }
             }
         }
     }
@@ -434,8 +457,6 @@ public final class Validator extends BpelValidator {
         getHelper().addErrorForNamed( map , FIX_MULTIPLE_NAMED_LINKS );
     }
 
-
-    
     @Override
     public void visit( SourceContainer container ) {
         /*
@@ -452,7 +473,7 @@ public final class Validator extends BpelValidator {
         for (Source source : sources) {
             getHelper().addNamedToMap( source, map, Helper.LazyHolder.SOURCE_LINK_NAME_ACCESS );
         }
-        getHelper().addErrorForNamed(  map , FIX_MULTIPLE_SOURCE_LINK_REFERENCES );
+        getHelper().addErrorForNamed(map, FIX_MULTIPLE_SOURCE_LINK_REFERENCES );
     }
     
     
@@ -473,8 +494,7 @@ public final class Validator extends BpelValidator {
         for (Target target : targets) {
             getHelper().addNamedToMap( target, map , Helper.LazyHolder.TARGET_LINK_NAME_ACCESS );
         }
-        getHelper().addErrorForNamed(  map ,  
-                FIX_MULTIPLE_TARGET_LINK_REFERENCES );
+        getHelper().addErrorForNamed(map, FIX_MULTIPLE_TARGET_LINK_REFERENCES );
     }
     
     @Override
@@ -504,8 +524,10 @@ public final class Validator extends BpelValidator {
                 Collection<Component> collection = new ArrayList<Component>(2);
                 collection.add( forEach );
                 collection.add( variable );
-                getHelper().addError( FIX_DUPLICATE_COUNTER_NAME , collection,
-                        counterName );
+
+                for (Component component : collection) {
+                  addError(FIX_DUPLICATE_COUNTER_NAME, component, counterName);
+                }
                 break;
             }
         }
@@ -527,7 +549,7 @@ public final class Validator extends BpelValidator {
                  onEvent.getMessageType() == null && 
                  onEvent.getElement() == null )
         {
-            getHelper().addError( FIX_ON_EVENT_VARAIBLE , onEvent );
+            addError(FIX_ON_EVENT_VARAIBLE, onEvent);
         }
         
         /*
@@ -583,7 +605,7 @@ public final class Validator extends BpelValidator {
          * or <onAlarm>  element.
          */
         if ( handlers.sizeOfOnAlarms() == 0 && handlers.sizeOfOnEvents() == 0 ) {
-            getHelper().addError( FIX_EVENT_HANDLERS , handlers );
+            addError( FIX_EVENT_HANDLERS , handlers );
         }
     }
 
@@ -604,13 +626,13 @@ public final class Validator extends BpelValidator {
         Outcome item = null;
 
         if (faultVariable != null && element == null && message == null) {
-            getHelper().addError(FIX_FAULT_VARIABLE_TYPE, catc);
+            addError(FIX_FAULT_VARIABLE_TYPE, catc);
         }
         if (element != null && message != null && item == null) {
-            getHelper().addError(FIX_FAULT_VARIABLE_TYPE, catc);
+            addError(FIX_FAULT_VARIABLE_TYPE, catc);
         }
         if (faultVariable == null && ( element != null || message != null)) {
-            getHelper().addError(FIX_ODD_FAULT_TYPE, catc);
+            addError(FIX_ODD_FAULT_TYPE, catc);
         }
         // Check fault variable name
         checkVariableName( catc);
@@ -623,7 +645,7 @@ public final class Validator extends BpelValidator {
          * within a <faultHandlers> element.
          */
         if ( handlers.sizeOfCathes() == 0 && handlers.getCatchAll() == null ) {
-            getHelper().addError( FIX_FAULT_HANDLERS, handlers );
+            addError( FIX_FAULT_HANDLERS, handlers );
         }
         
         /*
@@ -653,7 +675,7 @@ public final class Validator extends BpelValidator {
              * This requirement MUST be statically enforced.
              */
             if ( ns != null ){
-                getHelper().addError( FIX_ABSENT_NAMESPACE_IN_IMPORT , imp );
+                addError( FIX_ABSENT_NAMESPACE_IN_IMPORT , imp );
             }
         }
         else {
@@ -663,7 +685,7 @@ public final class Validator extends BpelValidator {
              * This requirement MUST be statically enforced.
              */
             if ( !namespace.equals( ns ) ){
-                getHelper().addError( FIX_BAD_NAMESPACE_IN_IMPORT , imp );
+                addError( FIX_BAD_NAMESPACE_IN_IMPORT , imp );
             }
         }
         
@@ -689,7 +711,7 @@ public final class Validator extends BpelValidator {
         count+=variable.getMessageType()==null?0:1;
         count+=variable.getElement()==null?0:1;
         if ( count != 1) {
-            getHelper().addError( FIX_VARIABLE_TYPES , variable );
+            addError( FIX_VARIABLE_TYPES , variable );
         }
     }
 
@@ -700,7 +722,10 @@ public final class Validator extends BpelValidator {
         {
                 Collection<Component> collection = 
                     Arrays.asList( (Component[])pick.getOnAlarms());
-                getHelper().addError( FIX_PICK_MESSAGES , collection );
+                
+                for (Component component : collection) {
+                  addError(FIX_PICK_MESSAGES, component);
+                }
         }
         
         /*
@@ -778,7 +803,7 @@ public final class Validator extends BpelValidator {
                 if ( typeRef == null || 
                         !(typeRef.get() instanceof GlobalSimpleType)) 
                 {
-                    getHelper().addError( FIX_BAD_CORRELATION_PROPERTY_TYPE , set );
+                    addError( FIX_BAD_CORRELATION_PROPERTY_TYPE , set );
                 }
             }
         }
@@ -814,7 +839,7 @@ public final class Validator extends BpelValidator {
             pattern == null && operation instanceof RequestResponseOperation;
         boolean flag = oneWayOperationPatternExist || twoWayOperationPatternAbsent;
         if  ( flag ) {
-            getHelper().addError( FIX_BAD_USAGE_PATTERN_ATTRIBUTE , invoke);
+            addError( FIX_BAD_USAGE_PATTERN_ATTRIBUTE , invoke);
         }
     }
 
@@ -918,7 +943,7 @@ public final class Validator extends BpelValidator {
                 if (ns == null) {
                     ns = "";
                 }
-                getHelper().addError(FIX_UNSUPPORTED_EXTENSION, extension, ns);
+                addError(FIX_UNSUPPORTED_EXTENSION, extension, ns);
             }
         }
     }      
@@ -934,7 +959,7 @@ public final class Validator extends BpelValidator {
     private void checkVariableName( VariableDeclaration declaration ) {
         String name = declaration.getVariableName();
         if ( name!= null && name.indexOf('.')!= -1 ){
-            getHelper().addError( FIX_BAD_VARIABLE_NAME , declaration );
+            addError( FIX_BAD_VARIABLE_NAME , declaration );
         }
     }
     

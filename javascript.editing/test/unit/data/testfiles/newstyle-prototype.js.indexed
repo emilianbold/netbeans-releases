@@ -20,11 +20,5 @@ Indexed:
   fqn : person;;Person|DOCUMENTED|GLOBAL|;;0;62;;;
   fqn : pirate.say;;Pirate.say|DOCUMENTED|FUNCTION|,message;0;19e;;;
   fqn : pirate;;Pirate|DOCUMENTED|GLOBAL|;;0;138;;;
-  lcbase : initialize;Person;initialize|CONSTRUCTOR|;name;0;;;;
-  lcbase : john;;john|GLOBAL|;;0;;;Pirate;
-  lcbase : person;;Person|DOCUMENTED|GLOBAL|;;0;62;;;
-  lcbase : pirate;;Pirate|DOCUMENTED|GLOBAL|;;0;138;;;
-  lcbase : say;Person;say|FUNCTION|message;0;;;;
-  lcbase : say;Pirate;say|DOCUMENTED|FUNCTION|,message;0;19e;;;
 
 Not Indexed:

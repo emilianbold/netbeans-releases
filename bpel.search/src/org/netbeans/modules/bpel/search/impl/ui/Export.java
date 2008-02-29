@@ -73,9 +73,9 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2006.12.21
  */
-class Export extends Dialog {
+public class Export extends Dialog {
 
-  void show(List<List<String>> descriptions, String title) {
+  public void show(List<List<String>> descriptions, String title) {
     myDescriptions = descriptions;
     myTitle = title;
     show();

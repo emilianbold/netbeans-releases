@@ -59,7 +59,10 @@ import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
+import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
+import java.awt.event.ActionListener;
+import java.awt.Dialog;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
@@ -89,7 +92,7 @@ public class ImportDiffAction extends ContextAction {
 
     private static void importDiff(VCSContext ctx) {
         final File root = HgUtils.getRootFile(ctx);
-        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(ImportDiffAction.class, "ACSD_ImportBrowseFolder"), null);   // NO I18N
+        final JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(ImportDiffAction.class, "ACSD_ImportBrowseFolder"), null);   // NO I18N
         fileChooser.setDialogTitle(NbBundle.getMessage(ImportDiffAction.class, "ImportBrowse_title"));                                            // NO I18N
         fileChooser.setMultiSelectionEnabled(false);
         FileFilter[] old = fileChooser.getChoosableFileFilters();
@@ -98,23 +101,35 @@ public class ImportDiffAction extends ContextAction {
             fileChooser.removeChoosableFileFilter(fileFilter);
 
         }
-       fileChooser.setCurrentDirectory(new File(HgModuleConfig.getDefault().getImportFolder()));
+        fileChooser.setApproveButtonMnemonic(NbBundle.getMessage(ImportDiffAction.class, "OK_Button").charAt(0));                      // NO I18N
+        fileChooser.setApproveButtonText(NbBundle.getMessage(ImportDiffAction.class, "OK_Button"));                                        // NO I18N
+        fileChooser.setCurrentDirectory(new File(HgModuleConfig.getDefault().getImportFolder()));
 
-        if (fileChooser.showDialog(null, NbBundle.getMessage(ImportDiffAction.class, "OK_Button")) == JFileChooser.APPROVE_OPTION) { // NO I18N
-            final File patchFile = fileChooser.getSelectedFile();
+        DialogDescriptor dd = new DialogDescriptor(fileChooser, NbBundle.getMessage(ImportDiffAction.class, "Browse_title"));              // NO I18N
+        dd.setOptions(new Object[0]);
+        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        fileChooser.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String state = e.getActionCommand();
+                if (state.equals(JFileChooser.APPROVE_SELECTION)) {
+                    final File patchFile = fileChooser.getSelectedFile();
 
-            HgModuleConfig.getDefault().setImportFolder(patchFile.getParent());
-            if (patchFile != null) {
-                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
-                HgProgressSupport support = new HgProgressSupport() {
-                    public void perform() {
-                        OutputLogger logger = getLogger();
-                        performImport(root, patchFile, logger);
+                    HgModuleConfig.getDefault().setImportFolder(patchFile.getParent());
+                    if (patchFile != null) {
+                        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
+                        HgProgressSupport support = new HgProgressSupport() {
+                            public void perform() {
+                                OutputLogger logger = getLogger();
+                                performImport(root, patchFile, logger);
+                            }
+                        };
+                        support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ImportDiffAction.class, "LBL_ImportDiff_Progress")); // NOI18N
                     }
-                };
-                support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ImportDiffAction.class, "LBL_ImportDiff_Progress")); // NOI18N
+                }
+                dialog.dispose();
             }
-        }
+        });
+        dialog.setVisible(true);
     }
 
     private static void performImport(File repository, File patchFile, OutputLogger logger) {

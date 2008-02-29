@@ -1,20 +1,42 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.validation.statics;
 
@@ -141,8 +163,7 @@ public final class Helper {
         Collection<Operation> operations = portType.get().getOperations();
         for(Operation operation: operations) {
             if(operation instanceof NotificationOperation) {
-                addError( FIX_WSDLOPERATION_SOLICIT_RESPONSE_NOTIFICATION,
-                        bpelEntity );
+                addError( FIX_WSDLOPERATION_SOLICIT_RESPONSE_NOTIFICATION, bpelEntity );
             }
         }
     }
@@ -155,8 +176,7 @@ public final class Helper {
         Collection<Operation> operations = portType.get().getOperations();
         for(Operation operation: operations) {
             if(operation instanceof SolicitResponseOperation) {
-                addError( FIX_WSDLOPERATION_SOLICIT_RESPONSE_NOTIFICATION ,
-                        bpelEntity );
+                addError( FIX_WSDLOPERATION_SOLICIT_RESPONSE_NOTIFICATION , bpelEntity );
             }
         }
     }
@@ -183,8 +203,7 @@ public final class Helper {
             if(invoke.getToPartContaner()!=null && 
                     invoke.getToPartContaner().sizeOfToParts()!=0) 
             {
-                addError( FIX_INPUTVARIABLE_TOPART_COMBINATION ,
-                    invoke );
+                addError( FIX_INPUTVARIABLE_TOPART_COMBINATION , invoke );
             }
     }
     
@@ -466,36 +485,37 @@ public final class Helper {
                     getPortTypeRef( partnerLinkRef , (Component)portTypeReference );
             if ( portTypeRef == null ||
                     !Utils.equals( portTypeDirectRef.get() , portTypeRef.get())) {
-                addError( FIX_DIFFERENT_PORT_TYPES ,
-                        (BpelEntity)portTypeReference );
+                addError( FIX_DIFFERENT_PORT_TYPES , (BpelEntity)portTypeReference );
             }
         }
     }
     
-    void addNamedToMap( BpelEntity named,
-            Map<String, Collection<Component>> map  ) {
+    void addNamedToMap( BpelEntity named, Map<String, Collection<Component>> map  ) {
         addNamedToMap(named, map, DEFAULT_NAME_ACESS);
     }
     
-    void addErrorForNamed( Map<String, Collection<Component>> map,
-            String bundleKey ) {
+    void addErrorForNamed( Map<String, Collection<Component>> map, String key) {
         for( Entry<String, Collection<Component>> entry : map.entrySet()) {
             String name = entry.getKey();
             assert name != null;
             Collection<Component> collection = entry.getValue();
-            if ( collection!= null && collection.size() > 1 ) {
-                addError( bundleKey , collection , name );
+
+            if (collection!= null && collection.size() > 1 ) {
+                for (Component component : collection) {
+                    addError(key, component);
+                }
             }
         }
     }
     
-    void addNamedToMap( BpelEntity entity, Map<String, Collection<Component>> map,
-            NameAccess access ) {
+    void addNamedToMap( BpelEntity entity, Map<String, Collection<Component>> map, NameAccess access ) {
         String name = access.getName(entity);
-        if ( name== null ) {
+
+        if (name== null) {
             return;
         }
         Collection<Component> collection =  map.get( name );
+        
         if ( collection == null ) {
             collection = new LinkedList<Component>();
             map.put( name, collection );
@@ -504,8 +524,7 @@ public final class Helper {
     }
     
     void addCompensateError(  Activity compensate ) {
-        addError( FIX_COMPENSATE_OCCURANCE , compensate,
-                compensate.getPeer().getLocalName());
+        addError( FIX_COMPENSATE_OCCURANCE , compensate, compensate.getPeer().getLocalName());
     }
     
     void checkCompensateOccurance( Activity compensate ) {
@@ -571,7 +590,7 @@ public final class Helper {
                 Collection<Component> collection = new ArrayList<Component>( 2 );
                 collection.add( (Activity)activity );
                 collection.add( beforeOrSimultaneously );
-                addError( FIX_START_ACTIVITY_IS_NOT_FIRST_EXECUTED , collection );
+                addError(FIX_START_ACTIVITY_IS_NOT_FIRST_EXECUTED, collection);
             }
         }
     }
@@ -610,18 +629,17 @@ public final class Helper {
                 }
             }
             if ( collection.size() >0 ){
-                addError( FIX_EXIT_ON_STANDART_FAULT , collection );
+                addError(FIX_EXIT_ON_STANDART_FAULT, collection);
             }
         }
     }
     
-    void collectActivitiesInScope( BpelContainer container,
-            Map<String,Collection<Component>> map ) {
+    void collectActivitiesInScope( BpelContainer container, Map<String,Collection<Component>> map ) {
         List<BpelEntity> children = container.getChildren();
         for (BpelEntity entity : children) {
             addNamedActivity( entity, map );
             if ( entity instanceof BaseScope ) {
-                // we don't need to go further in scope for searching activities with duplicate names.
+                // we do not need to go further in scope for searching activities with duplicate names.
                 continue;
             }
             if ( entity instanceof BpelContainer ) {
@@ -641,8 +659,7 @@ public final class Helper {
     void checkInstantiableActivities( Process process ) {
         Collection<Activity> collection = getInstantiableActivities( process );
         if ( collection.size() ==0 ){
-                addError( FIX_NO_PICK_OR_RECEIVE_WITH_CREATE_INSTANCE ,
-                        process );
+                addError( FIX_NO_PICK_OR_RECEIVE_WITH_CREATE_INSTANCE , process );
         }
         
         if ( collection.size() >0 ) {
@@ -664,7 +681,7 @@ public final class Helper {
         } else {
             SchemaReference<GlobalElement> elementRef = onEvent.getElement();
             if ( elementRef == null ){
-                // don't need to do anything. Both messageType and element attributes could be absent.
+                // do not need to do anything. Both messageType and element attributes could be absent.
                 return;
             }
             if ( !checkElementInOnEvent( elementRef, operation) ){
@@ -801,45 +818,28 @@ public final class Helper {
         }
     }
 
-    void addError( String bundleKey , Collection<Component> collection, 
-            Object... values )
-    {
-        String str = i18n(Helper.class, bundleKey);
-
-        if ( values!= null && values.length >0 ) {
-            str = MessageFormat.format(str, values );
-        }
-        for(Component component: collection) {
-            getValidator().getResultItems().add(new Outcome(getValidator(), ResultType.ERROR, component, str));
-        }
-    }
-    
-    void addError( String bundleKey, BpelEntity entity, String value) {
-        addError( bundleKey , Collections.singleton( (Component) entity), value);
-    }
-    
-    void addError( String bundleKey, BpelEntity entity ) {
-        addError( bundleKey, entity, null);
-    }
-
     // vlv
-    void addWarning(String bundleKey, Collection<Component> collection, Object... values) {
-        String str = i18n(Helper.class, bundleKey);
+    private void addError(String key, Collection<Component> collection) {
+      for (Component component : collection) {
+        addError(key, component);
+      }
+    }
 
-        if ( values!= null && values.length >0 ) {
-            str = MessageFormat.format(str, values );
-        }
-        for(Component component: collection) {
-            getValidator().getResultItems().add(new Outcome(getValidator(), ResultType.WARNING, component, str));
-        }
+    private void addError(String key, Component component) {
+      getValidator().addError(key, component);
     }
-    
-    void addWarning(String bundleKey, BpelEntity entity , String value ) {
-        addWarning(bundleKey, Collections.singleton((Component) entity), value);
+
+    private void addError(String key, Component component, String param) {
+      getValidator().addError(key, component, param);
     }
-    
-    void addWarning(String bundleKey, BpelEntity entity) {
-        addWarning(bundleKey, entity, null);
+
+    private void addError(String key, Component component, String param1, String param2) {
+//out("add error: " + key + " " + param1 + " " + param2);
+      getValidator().addError(key, component, param1, param2);
+    }
+
+    private void addWarning(String key, Component component) {
+      getValidator().addWarning(key, component);
     }
 
     void checkFCTScope( BpelContainer container ) {
@@ -850,8 +850,7 @@ public final class Helper {
                         new ArrayList<Component>( 2 );
                 collection.add( container );
                 collection.add( scope );
-                addError( FIX_SCOPE_INSIDE_FCT_CONTAINS_COMPENSATION_HANDLER,
-                        collection  );
+                addError(FIX_SCOPE_INSIDE_FCT_CONTAINS_COMPENSATION_HANDLER, collection);
             }
         }
     }
@@ -859,7 +858,7 @@ public final class Helper {
     void checkPropertyAliasMultiplicity( Process process ) {
         Collection<PropertyAlias> aliases = 
             getPropertyAliases( null , null, process.getBpelModel() );
-        Set<Pair<QName>> qNames = new HashSet<Pair<QName>>();   // # 80412
+        Set<Pair<QName>> qNames = new HashSet<Pair<QName>>(); // # 80412
         for (PropertyAlias alias : aliases) {
             NamedComponentReference<CorrelationProperty> propRef = 
                 alias.getPropertyName();
@@ -882,12 +881,9 @@ public final class Helper {
                 }
             }
         }
-        
     }
     
-    void checkPropertyUsageInInputMessage( OperationReference reference, 
-            BaseCorrelation[] correlations ) 
-    {
+    void checkPropertyUsageInInputMessage( OperationReference reference, BaseCorrelation[] correlations) {
         if ( correlations.length == 0) {
             return;
         }
@@ -1070,6 +1066,7 @@ public final class Helper {
             return;
         }
         CorrelationSet set = setRef.get();
+
         if ( set == null ) {
             return;
         }
@@ -1081,21 +1078,16 @@ public final class Helper {
             if ( reference == null ) {
                 continue;
             }
-            Collection<PropertyAlias> collection = getPropertyAliases( 
-                    reference.getQName() , message , correlation.getBpelModel() );
-            if ( collection.size() == 0 ) {
-                ArrayList<Component> componentList = new ArrayList<Component>();
-                componentList.add(correlation);
-                addError( FIX_ABSENT_PROPERTY_ALIAS_FOR_MESSAGE , componentList ,
-                        reference.getQName().toString(), setRef.get().getName() );
+            Collection<PropertyAlias> collection = getPropertyAliases(reference.getQName(), message, correlation.getBpelModel());
+
+            if (collection.size() == 0) {
+                addError("FIX_AbsentPropertyAliasForMessage", correlation, reference.get().getName(), set.getName());
             }
         }
     }
 
     @SuppressWarnings("unchecked")
-    private Set<PropertyAlias> getPropertyAliases( QName name, 
-            Message message , BpelModel model ) 
-    {
+    private Set<PropertyAlias> getPropertyAliases(QName name, Message message, BpelModel model) {
         Import[] imports = model.getProcess().getImports();
         if ( imports.length == 0 ) {
             return Collections.EMPTY_SET;
@@ -1109,9 +1101,7 @@ public final class Helper {
         }
     }
 
-    private void collectPropertyAliases( QName name, Message message, Import imp,
-            Set<PropertyAlias> list ) 
-    {
+    private void collectPropertyAliases( QName name, Message message, Import imp, Set<PropertyAlias> list) {
         WSDLModel model = ImportHelper.getWsdlModel(imp);
 
         if (model == null) {
@@ -1256,7 +1246,7 @@ public final class Helper {
         if (message == null) {
             return false;
         }
-        // vlv # 109292
+        // # 109292
         if (message.getParts().size() == 0 && invoke.getInputVariable() != null) {
           addWarning("FIX_MentionedInputVariableForOneWayOp", invoke); // NOI18N
           return false;
@@ -1281,7 +1271,7 @@ public final class Helper {
         if (message == null) {
             return false;
         }
-        // vlv # 109292
+        // # 109292
         if (message.getParts().size() == 0 && reply.getVariable() != null) {
           addWarning("FIX_MentionedInputVariable", reply); // NOI18N
           return false;
@@ -1306,7 +1296,7 @@ public final class Helper {
         if (message == null) {
             return false;
         }
-        // vlv # 109292
+        // # 109292
         if (message.getParts().size() == 0 && invoke.getOutputVariable() != null) {
           addWarning("FIX_MentionedInputOutputVariables", invoke); // NOI18N
           return false;
@@ -1331,7 +1321,7 @@ public final class Helper {
         if (message == null) {
             return false;
         }
-        // vlv # 109292
+        // # 109292
         if (message.getParts().size() == 0 && receive.getVariable() != null) {
           addWarning("FIX_MentionedOutputVariable", receive); // NOI18N
           return false;
@@ -1565,8 +1555,7 @@ public final class Helper {
         }
         if ( collection.size() >0 ){
             collection.add( link );
-            //collection.add( link.getParent().getParent() );
-            addError( FIX_LINK_CROSS_BOUNDARY_REPEATABLE_CONSTRUCT , collection );
+            addError(FIX_LINK_CROSS_BOUNDARY_REPEATABLE_CONSTRUCT, collection);
         }
     }
     
@@ -1608,7 +1597,7 @@ public final class Helper {
             collection.add( target );
             collection.add( source );
             collection.add( link );
-            addError( FIX_BAD_HANDLERS_LINK_BOUNDARIES , collection );
+            addError(FIX_BAD_HANDLERS_LINK_BOUNDARIES, collection);
         }
     }
     
@@ -1704,13 +1693,13 @@ public final class Helper {
     {
         /*
          * We are trying to find here unacceptable activity inside flow that 
-         * don't have target at all.
+         * do not have target at all.
          * If there is some activity with target then it precede some other
          * activity ( may be situated inside ascendant flow, not this flow ),
          * so when we appear in appropriate flow we find this preceding
          * activity. If it has "acceptable" activity then all ok, because
          * all following ( by links order ) activity will be after
-         * "acceptable". If it doesn't have acceptable activity then we will
+         * "acceptable". If it does not have acceptable activity then we will
          * find it on this step. 
          */
         List<Activity> children = activity.getChildren( Activity.class );
@@ -1881,7 +1870,7 @@ public final class Helper {
     /**
      * This class allow collect instances that needs to be lazy initialized
      * ( this is the safe way to do this if we care about thread-safe ,
-     * but may be here we don't need to care about thread-safety ).
+     * but may be here we do not need to care about thread-safety ).
      * @author ads
      *
      */
@@ -2022,9 +2011,6 @@ public final class Helper {
     
     static final String FIX_ABSENT_SHARED_JOINED_CORRELATION_SET =
         "FIX_AbsentSharedJoinedCorrelationSet";                             // NOI18N
-    
-    static final String FIX_ABSENT_PROPERTY_ALIAS_FOR_MESSAGE =
-        "FIX_AbsentPropertyAliasForMessage";                                // NOI18N
     
     static final String FIX_MULTIPLE_PROPERTY_ALIAS_FOR_PROPERTY =
         "FIX_MultiplePropertyAliasForProperty";                             // NOI18N
