@@ -37,7 +37,7 @@ import java.util.logging.Logger;
  */
 public class TestData implements Serializable {
     
-    private static final String NB_DOWNLOAD_PAGE = "http://bits.netbeans.org/netbeans/6.0/nightly/latest/";
+    //private static final String NB_DOWNLOAD_PAGE = "http://bits.netbeans.org/netbeans/6.0/nightly/latest/";
 
     private File installerFile = null;
     private File uninstallerFile = null;
@@ -68,7 +68,7 @@ public class TestData implements Serializable {
     }
     
     public String getNetbeansDownloadPage() {
-        return NB_DOWNLOAD_PAGE;
+        return System.getProperty("test.installer.url.prefix");
     }
 
     public String getInstallerURL() {

@@ -233,6 +233,7 @@ public enum CppTokenId implements TokenId {
     PREPROCESSOR_INCLUDE("include", "preprocessor-keyword-directive"),
     PREPROCESSOR_INCLUDE_NEXT("include_next", "preprocessor-keyword-directive"),
     PREPROCESSOR_LINE("line", "preprocessor-keyword-directive"),
+    PREPROCESSOR_IDENT("ident", "preprocessor-keyword-directive"),
     PREPROCESSOR_PRAGMA("pragma", "preprocessor-keyword-directive"),
     PREPROCESSOR_WARNING("warning", "preprocessor-keyword-directive"),
     PREPROCESSOR_ERROR("error", "preprocessor-keyword-directive"),

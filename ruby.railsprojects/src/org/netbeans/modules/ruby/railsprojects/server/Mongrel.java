@@ -197,6 +197,14 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
         return this.platform.equals(platform);
     }
 
+    public String getContextRoot(String applicationName) {
+        return ""; // NOI18N
+    }
+
+    public int getRailsPort() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {

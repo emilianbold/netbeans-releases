@@ -241,7 +241,7 @@ public class EarProjectTest extends NbTestCase {
             if (from.getName().equals("CVS")) {
                 return;
             }
-            to.mkdir();
+            FileUtil.createFolder(to);
             String[] kids = from.list();
             for (int i = 0; i < kids.length; i++) {
                 doCopy(new File(from, kids[i]), new File(to, kids[i]));

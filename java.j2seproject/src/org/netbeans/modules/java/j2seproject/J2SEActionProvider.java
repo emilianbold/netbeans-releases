@@ -155,7 +155,7 @@ class J2SEActionProvider implements ActionProvider {
     };
 
     // Project
-    J2SEProject project;
+    final J2SEProject project;
 
     // Ant project helper of the project
     private UpdateHelper updateHelper;
@@ -203,16 +203,9 @@ class J2SEActionProvider implements ActionProvider {
         ));
 
         this.updateHelper = updateHelper;
-        this.project = project;
-
-        try {
-            FileSystem fs = project.getProjectDirectory().getFileSystem();
-            // XXX would be more efficient to only listen while DO_DEPEND=false (though this is the default)
-            fs.addFileChangeListener(FileUtil.weakFileChangeListener(modificationListener, fs));
-        } catch (FileStateInvalidException x) {
-            Exceptions.printStackTrace(x);
-        }
+        this.project = project;        
     }
+    
     private final FileChangeListener modificationListener = new FileChangeAdapter() {
         public @Override void fileChanged(FileEvent fe) {
             modification(fe.getFile());
@@ -230,6 +223,18 @@ class J2SEActionProvider implements ActionProvider {
             }
         }
     };
+    
+    
+    void startFSListener () {
+        //Listener has to be started when the project's lookup is initialized
+        try {
+            FileSystem fs = project.getProjectDirectory().getFileSystem();
+            // XXX would be more efficient to only listen while DO_DEPEND=false (though this is the default)
+            fs.addFileChangeListener(FileUtil.weakFileChangeListener(modificationListener, fs));
+        } catch (FileStateInvalidException x) {
+            Exceptions.printStackTrace(x);
+        }
+    }
 
     private void modification(FileObject f) {
         final Iterable <? extends FileObject> roots = getRoots();
@@ -890,7 +895,7 @@ class J2SEActionProvider implements ActionProvider {
         }
         if (sourcesRoots.length > 0) {
             ClassPath bootPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.BOOT);        //Single compilation unit
-            ClassPath compilePath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.COMPILE);
+            ClassPath compilePath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.EXECUTE);
             ClassPath sourcePath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.SOURCE);
             if (J2SEProjectUtil.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
                 return MainClassStatus.SET_AND_VALID;
@@ -900,7 +905,7 @@ class J2SEActionProvider implements ActionProvider {
             ClassPathProviderImpl cpProvider = project.getClassPathProvider();
             if (cpProvider != null) {
                 ClassPath bootPath = cpProvider.getProjectSourcesClassPath(ClassPath.BOOT);
-                ClassPath compilePath = cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE);
+                ClassPath compilePath = cpProvider.getProjectSourcesClassPath(ClassPath.EXECUTE);
                 ClassPath sourcePath = cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE);   //Empty ClassPath
                 if (J2SEProjectUtil.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
                     return MainClassStatus.SET_AND_VALID;

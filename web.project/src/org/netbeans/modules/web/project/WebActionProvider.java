@@ -697,13 +697,17 @@ class WebActionProvider implements ActionProvider {
         String fileClass = dir + '/' + filePath + ".class"; //NOI18N
         String fileJava = dir + '/' + filePath + ".java"; //NOI18N
         
-        File fC = updateHelper.getAntProjectHelper().resolveFile(fileClass);
-        File fJ = updateHelper.getAntProjectHelper().resolveFile(fileJava);
-        if ((fJ != null) && (fJ.exists())) {
-            fJ.delete();
-        }
-        if ((fC != null) && (fC.exists())) {
-            fC.delete();
+        FileObject fC = FileUtil.toFileObject(updateHelper.getAntProjectHelper().resolveFile(fileClass));
+        FileObject fJ = FileUtil.toFileObject(updateHelper.getAntProjectHelper().resolveFile(fileJava));
+        try {
+            if ((fJ != null) && (fJ.isValid())) {
+                fJ.delete();
+            }
+            if ((fC != null) && (fC.isValid())) {
+                fC.delete();
+            }
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
         }
     }
     

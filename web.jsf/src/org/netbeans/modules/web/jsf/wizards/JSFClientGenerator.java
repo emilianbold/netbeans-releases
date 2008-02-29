@@ -55,6 +55,7 @@ import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,7 +72,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -89,7 +89,9 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Formatter;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
@@ -301,10 +303,11 @@ public class JSFClientGenerator {
             final String managedBean, String linkToIndex, final String fieldName, String idProperty, BaseDocument doc) throws FileStateInvalidException, IOException {
         FileSystem fs = jsfRoot.getFileSystem();
         final StringBuffer listSb = new StringBuffer();
-        listSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"UTF-8\"%>\n"
+        Charset encoding = FileEncodingQuery.getDefaultEncoding();
+        listSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
-                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
+                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
                 + "<title>Listing " + simpleEntityName + "s</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
         listSb.append("<h1>Listing " + simpleEntityName + "s</h1>\n");
@@ -346,7 +349,10 @@ public class JSFClientGenerator {
         try {
             doc.remove(0, doc.getLength());
             doc.insertString(0, listSb.toString(), null);
-            doc.getFormatter().reformat(doc, 0, doc.getLength());
+            Formatter formatter = doc.getFormatter();
+            formatter.reformatLock();
+            formatter.reformat(doc, 0, doc.getLength());
+            formatter.reformatUnlock();
             listSb.replace(0, listSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
             Logger.getLogger("global").log(Level.INFO, null, e);
@@ -373,10 +379,11 @@ public class JSFClientGenerator {
     private static void generateNewJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, String fieldName, 
             List<ElementHandle<ExecutableElement>> toOneRelMethods, boolean fieldAccess, String linkToIndex, BaseDocument doc, final FileObject jsfRoot) throws FileStateInvalidException, IOException {
         StringBuffer newSb = new StringBuffer();
-        newSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"UTF-8\"%>\n"
+        Charset encoding = FileEncodingQuery.getDefaultEncoding();
+        newSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
-                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
+                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
                 + "<title>New " + simpleEntityName + "</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
         newSb.append("<h1>New " + simpleEntityName + "</h1>\n");
@@ -432,7 +439,10 @@ public class JSFClientGenerator {
         try {
             doc.remove(0, doc.getLength());
             doc.insertString(0, newSb.toString(), null);
-            doc.getFormatter().reformat(doc, 0, doc.getLength());
+            Formatter formatter = doc.getFormatter();
+            formatter.reformatLock();
+            formatter.reformat(doc, 0, doc.getLength());
+            formatter.reformatUnlock();
             newSb.replace(0, newSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
             Logger.getLogger("global").log(Level.INFO, null, e);
@@ -459,10 +469,11 @@ public class JSFClientGenerator {
     private static void generateEditJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, String fieldName, 
             String linkToIndex, BaseDocument doc, final FileObject jsfRoot) throws FileStateInvalidException, IOException {
         StringBuffer editSb = new StringBuffer();
-        editSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"UTF-8\"%>\n"
+        Charset encoding = FileEncodingQuery.getDefaultEncoding();
+        editSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
-                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
+                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
                 + "<title>Editing " + simpleEntityName + "</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
         editSb.append("<h1>Editing " + simpleEntityName + "</h1>\n");
@@ -485,7 +496,10 @@ public class JSFClientGenerator {
         try {
             doc.remove(0, doc.getLength());
             doc.insertString(0, editSb.toString(), null);
-            doc.getFormatter().reformat(doc, 0, doc.getLength());
+            Formatter formatter = doc.getFormatter();
+            formatter.reformatLock();
+            formatter.reformat(doc, 0, doc.getLength());
+            formatter.reformatUnlock();
             editSb.replace(0, editSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
             Logger.getLogger("global").log(Level.INFO, null, e);
@@ -513,10 +527,11 @@ public class JSFClientGenerator {
     private static void generateDetailJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, 
             String fieldName, String idProperty, boolean isInjection, String linkToIndex, BaseDocument doc, final FileObject jsfRoot) throws FileStateInvalidException, IOException {
         StringBuffer detailSb = new StringBuffer();
-        detailSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"UTF-8\"%>\n"
+        Charset encoding = FileEncodingQuery.getDefaultEncoding();
+        detailSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
-                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
+                + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
                 + "<title>" + simpleEntityName + " Detail</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
         detailSb.append("<h1>" + simpleEntityName + " Detail</h1>\n");
@@ -543,7 +558,10 @@ public class JSFClientGenerator {
         try {
             doc.remove(0, doc.getLength());
             doc.insertString(0, detailSb.toString(), null);
-            doc.getFormatter().reformat(doc, 0, doc.getLength());
+            Formatter formatter = doc.getFormatter();
+            formatter.reformatLock();
+            formatter.reformat(doc, 0, doc.getLength());
+            formatter.reformatUnlock();
             detailSb.replace(0, detailSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
             Logger.getLogger("global").log(Level.INFO, null, e);
@@ -1172,25 +1190,48 @@ public class JSFClientGenerator {
                             }
                             
                             String relTypeInstanceName = relTypeReference.substring(0,1).toLowerCase() + relTypeReference.substring(1);
+                            if (multiplicity == JsfForm.REL_TO_MANY && otherSideMultiplicity == JsfForm.REL_TO_ONE){
+                                modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "java.util.ArrayList");
+                                updateRelatedInCreate.append("Map<" + simpleEntityName + ",List<" + relTypeReference + ">> " + relTypeInstanceName + "sToRemove = new HashMap<" + simpleEntityName + ",List<" + relTypeReference + ">>();\n");
+                            }
                             updateRelatedInCreate.append("\n//update property " + relFieldName + " of entity " + fieldName + "\n" + //mbohm: why doesn't this show
                                                         (isCollection ? "for(" + relTypeReference + " " + relTypeInstanceName + " : " + fieldName + "." + mName + "()){\n" :
                                                             relTypeReference + " " + relTypeInstanceName + "=" + fieldName + "." + mName +"();\n" +
                                                             "if (" + relTypeInstanceName + " != null) {\n"));
                                                             //if 1:1, be sure to orphan the related entity's current related entity
-                            if (multiplicity == JsfForm.REL_TO_ONE && otherSideMultiplicity == JsfForm.REL_TO_ONE){
-                                String relrelInstanceName = "old" + simpleEntityName;
-                                String relrelGetterName = otherName;
-                                updateRelatedInCreate.append(simpleEntityName + " " + relrelInstanceName + " = " + relTypeInstanceName + "." + relrelGetterName + "();\n" + 
-                                        "if (" + relrelInstanceName + " != null) {\n" + 
-                                        relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" + 
+                            String relrelInstanceName = "old" + simpleEntityName;
+                            String relrelGetterName = otherName;
+                            if (otherSideMultiplicity == JsfForm.REL_TO_ONE){
+                                updateRelatedInCreate.append(simpleEntityName + " " + relrelInstanceName + " = " + relTypeInstanceName + "." + relrelGetterName + "();\n");
+                                if (multiplicity == JsfForm.REL_TO_ONE) {
+                                        updateRelatedInCreate.append("if (" + relrelInstanceName + " != null) {\n" + 
                                         relrelInstanceName + ".s" + mName.substring(1) + "(null);\n" + 
                                         relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" + 
-                                        "}\n");                                        
+                                        "}\n");    
+                                }
                             }
-                            updateRelatedInCreate.append(relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n" +
-                                                        ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + ".s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
+                            updateRelatedInCreate.append( ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + ".s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
                                                             relTypeInstanceName + "." + otherName + "().add(" + fieldName +");\n") +
-                                                        relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n}\n\n");
+                                                        relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n");
+                            if (multiplicity == JsfForm.REL_TO_MANY && otherSideMultiplicity == JsfForm.REL_TO_ONE){
+                                String relTypeListName = relTypeInstanceName + "List";
+                                updateRelatedInCreate.append("if " + relrelInstanceName + " != null) {\n" +
+                                        "List<" + relTypeReference + "> " + relTypeListName + " = " + relTypeInstanceName + "sToRemove.get(" + relrelInstanceName + ");\n" +
+                                        "if " + relTypeListName + " == null) {\n" +
+                                        relTypeListName + " = new ArrayList<" + relTypeReference + ">();\n" +
+                                        relTypeInstanceName + "sToRemove.put(" + relrelInstanceName + ", " + relTypeListName + ");\n" +
+                                        "}\n" +
+                                        relTypeListName + ".add(" + relTypeInstanceName + ");\n" +
+                                        "}\n}\n" +
+                                        "for (" + simpleEntityName + " " + relrelInstanceName + " : " + relTypeInstanceName + "sToRemove.keySet()) {\n" +
+                                        "List<" + relTypeReference + "> " + relTypeListName + " = " + relTypeInstanceName + "sToRemove.get(" + relrelInstanceName + ");\n" +
+                                        "for (" + relTypeReference + " " + relTypeInstanceName + " : " + relTypeListName + ") {\n" +
+                                        relrelInstanceName + "." + mName + "().remove(" + relTypeInstanceName + ");\n" +
+                                        "}\n" +
+                                        relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n");
+                                        
+                            }
+                            updateRelatedInCreate.append("}\n");
                             
 //                    if (isCollection) {
 //                        updateRelatedInEditPre.append("\n Collection<" + relTypeReference + "> " + relFieldName + "sOld = em.find("
@@ -1225,26 +1266,52 @@ public class JSFClientGenerator {
                                     simpleEntityName + ".class, " + fieldName + "." + idGetterName[0] + "())." + mName + "();\n");
                                 updateRelatedInEditPost.append("\n//update property " + relTypeInstanceName + " of entity " + fieldName + "\n" + //mbohm: why doesn't this show up
                                     "Collection <" + relTypeReference + "> " + relTypeInstanceName + "sNew = " + fieldName + "." + mName + "();\n" +
-                                    "for(" + relTypeReference + " " + relTypeInstanceName + "New : " + relTypeInstanceName + "sNew) {\n" +
-                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + "New.s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
-                                        relTypeInstanceName + "New." + otherName + "().add(" + fieldName +");\n") +
-                                    relTypeInstanceName + "New=em.merge(" + relTypeInstanceName +"New);\n}\n" +
                                     "for(" + relTypeReference + " " + relTypeInstanceName + "Old : " + relTypeInstanceName + "sOld) {\n" +
                                     ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + "Old.s" + otherName.substring(1) + "(null);\n" :
                                         relTypeInstanceName + "Old." + otherName + "().remove(" + fieldName +");\n") +
                                     relTypeInstanceName + "Old = em.merge(" + relTypeInstanceName +"Old);\n}\n");
+                                    if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
+                                       updateRelatedInEditPost.append("Map<" + simpleEntityName + ",List<" + relTypeReference + ">> " + relTypeInstanceName + "sToRemove = new HashMap<" + simpleEntityName + ",List<" + relTypeReference + ">>();\n"); 
+                                    }
+                                    updateRelatedInEditPost.append("for(" + relTypeReference + " " + relTypeInstanceName + "New : " + relTypeInstanceName + "sNew) {\n" +
+                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? simpleEntityName + " " + relrelInstanceName + " = " + relTypeInstanceName + "New." + relrelGetterName + "();\n" +
+                                        relTypeInstanceName + "New.s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
+                                        relTypeInstanceName + "New." + otherName + "().add(" + fieldName +");\n") +
+                                    relTypeInstanceName + "New=em.merge(" + relTypeInstanceName +"New);\n");
+                                    String relTypeListName = relTypeInstanceName + "List";
+                                    if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
+                                        updateRelatedInEditPost.append("if " + relrelInstanceName + " != null) {\n" +
+                                            "List<" + relTypeReference + "> " + relTypeListName + " = " + relTypeInstanceName + "sToRemove.get(" + relrelInstanceName + ");\n" +
+                                            "if " + relTypeListName + " == null) {\n" +
+                                            relTypeListName + " = new ArrayList<" + relTypeReference + ">();\n" +
+                                            relTypeInstanceName + "sToRemove.put(" + relrelInstanceName + ", " + relTypeListName + ");\n" +
+                                            "}\n" +
+                                            relTypeListName + ".add(" + relTypeInstanceName + "New);\n" +
+                                            "}\n");
+                                    }
+                                    updateRelatedInEditPost.append("}\n");
+                                    if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
+                                            updateRelatedInEditPost.append("for (" + simpleEntityName + " " + relrelInstanceName + " : " + relTypeInstanceName + "sToRemove.keySet()) {\n" +
+                                            "List<" + relTypeReference + "> " + relTypeListName + " = " + relTypeInstanceName + "sToRemove.get(" + relrelInstanceName + ");\n" +
+                                            "for (" + relTypeReference + " " + relTypeInstanceName + " : " + relTypeListName + ") {\n" +
+                                            relrelInstanceName + "." + mName + "().remove(" + relTypeInstanceName + ");\n" +
+                                            "}\n" +
+                                            relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n}\n");
+                                    }
                             } else {
                                 updateRelatedInEditPre.append("\n" + relTypeReference + " " + relFieldName + "Old = em.find("
                                     + entityReferenceName +".class, " + fieldName + "." + idGetterName[0] + "())." + mName + "();\n");
                                 updateRelatedInEditPost.append("\n//update property " + relFieldName + " of entity " + simpleRelType + "\n" +
                                     relTypeReference + " " + relFieldName + "New = " + fieldName + "." + mName +"();\n" +
-                                    "if(" + relFieldName + "New != null) {\n");
+                                    
+                                    "if(" + relFieldName + "Old != null && !" + relFieldName + "Old.equals(" + relFieldName + "New)) {\n" +
+                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relFieldName + "Old.s" + otherName.substring(1) + "(null);\n" :
+                                        relFieldName + "Old." + otherName + "().remove(" + fieldName +");\n") +
+                                    relFieldName + "Old = em.merge(" + relFieldName +"Old);\n}\n" +
+                                    "if(" + relFieldName + "New != null && !" + relFieldName + "New.equals(" + relFieldName + "Old)) {\n");
                                 if (multiplicity == JsfForm.REL_TO_ONE && otherSideMultiplicity == JsfForm.REL_TO_ONE){
-                                    String relrelInstanceName = "old" + simpleEntityName;
-                                    String relrelGetterName = otherName;
                                     updateRelatedInEditPost.append(simpleEntityName + " " + relrelInstanceName + " = " + relFieldName + "New." + relrelGetterName + "();\n" + 
                                             "if (" + relrelInstanceName + " != null) {\n" + 
-                                            relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" + 
                                             relrelInstanceName + ".s" + mName.substring(1) + "(null);\n" + 
                                             relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" + 
                                             "}\n");
@@ -1252,11 +1319,8 @@ public class JSFClientGenerator {
                                 updateRelatedInEditPost.append(
                                     ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relFieldName + "New.s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
                                         relFieldName + "New." + otherName + "().add(" + fieldName +");\n") +
-                                    relFieldName + "New=em.merge(" + relFieldName +"New);\n}\n" +
-                                    "if(" + relFieldName + "Old != null) {\n" +
-                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relFieldName + "Old.s" + otherName.substring(1) + "(null);\n" :
-                                        relFieldName + "Old." + otherName + "().remove(" + fieldName +");\n") +
-                                    relFieldName + "Old = em.merge(" + relFieldName +"Old);\n}\n");
+                                    relFieldName + "New=em.merge(" + relFieldName +"New);\n}\n"
+                                    );
                             } 
                             
 //                    updateRelatedInDestroy.append("\n//update property " + relFieldName + " of entity " + simpleRelType + "\n" +
@@ -1270,7 +1334,6 @@ public class JSFClientGenerator {
                             updateRelatedInDestroy.append("\n//update property " + relFieldName + " of entity " + fieldName + "\n" +    //mbohm: why doesn't this show up
                                     (isCollection ? "Collection<" + relTypeReference + "> " + relTypeInstanceName + "s" : relTypeReference + " " + relTypeInstanceName) + " = " + fieldName + "." + mName +"();\n" +
                                     (isCollection ? "for(" + relTypeReference + " " + relTypeInstanceName + " : " + relTypeInstanceName + "s" : "if (" + relTypeInstanceName + " != null") + ") {\n" +
-                                    relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n" +
                                     ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + ".s" + otherName.substring(1) + "(null);\n" :
                                         relTypeInstanceName + "." + otherName + "().remove(" + fieldName +");\n") +
                                     relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n}\n\n");
@@ -1613,7 +1676,7 @@ public class JSFClientGenerator {
                     bodyText += "EntityManager em = getEntityManager();\n" + 
                             "try {\n " + BEGIN + "\n em.persist(" + fieldName + ");\n" + updateRelatedInCreate.toString() + COMMIT + "\n" +   //NOI18N
                             "addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
-                            "} catch (Exception ex) {\n try {\n addErrorMessage(ex.getLocalizedMessage());\n" + ROLLBACK + "\n } catch (Exception e) {\n addErrorMessage(e.getLocalizedMessage());\n" + 
+                            "} catch (Exception ex) {\n try {\n ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" + ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
                             "}\nreturn null;\n} " +   //NOI18N
                             "finally {\n em.close();\n }\n" + 
                             "return listSetup();";
@@ -1700,7 +1763,19 @@ public class JSFClientGenerator {
                         fieldName + " = em.merge(" + fieldName + ");\n " + 
                         updateRelatedInEditPost.toString() + COMMIT + "\n" +   //NOI18N
                         "addSuccessMessage(\"" + simpleEntityName + " was successfully updated.\");\n" +   //NOI18N
-                        "} catch (Exception ex) {\n try {\n addErrorMessage(ex.getLocalizedMessage());\n" + ROLLBACK + "\n } catch (Exception e) {\n addErrorMessage(e.getLocalizedMessage());\n" + 
+                        "} catch (Exception ex) {\n try {\n String msg = ex.getLocalizedMessage();\n" + 
+                        "if (msg != null && msg.length() > 0) {\n" +
+                        "addErrorMessage(msg);\n" +
+                        "}\n" +
+                        "else if (" + getFromReqParamMethod + "() == null) {\n" +
+                        "addErrorMessage(\"The " + fieldName + " with id \" + current" + simpleEntityName + "String + \" no longer exists.\");\n" +
+                        ROLLBACK +
+                        "\nreturn listSetup();\n" +
+                        "}\n" +
+                        "else {\n" +
+                        "addErrorMessage(\"A persistence error occurred.\");\n" +
+                        "}\n" +
+                        ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
                         "}\nreturn null;\n} " +   //NOI18N
                         "finally {\n em.close();\n }\n" +  //NOI18N
                         "return detailSetup();";
@@ -1709,8 +1784,8 @@ public class JSFClientGenerator {
                     
                     bodyText = fieldName + " = " + getFromReqParamMethod + "();\n" +
                             "if (" + fieldName + " == null) {\n" +
-                            "String request" + simpleEntityName + "String = getRequestParameter(\"jsfcrud.current" + simpleEntityName + "\");\n" +
-                            "addErrorMessage(\"The " + fieldName + " with id \" + request" + simpleEntityName + "String + \" no longer exists.\");\n" +
+                            "String current" + simpleEntityName + "String = getRequestParameter(\"jsfcrud.current" + simpleEntityName + "\");\n" +
+                            "addErrorMessage(\"The " + fieldName + " with id \" + current" + simpleEntityName + "String + \" no longer exists.\");\n" +
                             relatedControllerOutcomeSwath + 
                             "return listSetup();\n" +
                             "}\n";                    
@@ -1719,7 +1794,7 @@ public class JSFClientGenerator {
                         fieldName + " = em.merge(" + fieldName + ");\n" + updateRelatedInDestroy.toString() + 
                         "em.remove(" + fieldName + ");\n " + COMMIT + "\n" +   //NOI18N
                         "addSuccessMessage(\"" + simpleEntityName + " was successfully deleted.\");\n" +   //NOI18N
-                        "} catch (Exception ex) {\n try {\n addErrorMessage(ex.getLocalizedMessage());\n" + ROLLBACK + "\n } catch (Exception e) {\n addErrorMessage(e.getLocalizedMessage());\n" + 
+                        "} catch (Exception ex) {\n try {\n ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" + ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
                         "}\nreturn null;\n} " +   //NOI18N
                         "finally {\n em.close();\n }\n" +  //NOI18N
                         relatedControllerOutcomeSwath + 
@@ -1821,6 +1896,16 @@ public class JSFClientGenerator {
 //            Parameter idParameter = JMIGenerationUtil.createParameter(javaClass, "id", idPropertyType);
 //            findById.getParameters().add(idParameter);
 //            javaClass.getFeatures().add(findById);
+                    
+                    bodyText = "String msg = ex.getLocalizedMessage();\n" +
+                            "if (msg != null && msg.length() > 0) {\n" +
+                            "addErrorMessage(msg);\n" +
+                            "}\n" +
+                            "else {\n" +
+                            "addErrorMessage(defaultMsg);\n" +
+                            "}\n";
+                    methodInfo = new MethodInfo("ensureAddErrorMessage", privateModifier, "void", null, new String[]{"java.lang.Exception", "java.lang.String"}, new String[]{"ex", "defaultMsg"}, bodyText, null, null);
+                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
 
                     bodyText = "FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg);\n" + //NOI18N
                         "FacesContext.getCurrentInstance().addMessage(null, facesMsg);"; //NOI18N
