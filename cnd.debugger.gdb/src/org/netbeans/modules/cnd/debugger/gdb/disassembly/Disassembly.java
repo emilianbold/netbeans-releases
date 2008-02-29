@@ -96,68 +96,81 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     public void update(String msg) {
         assert msg.startsWith(RESPONSE_HEADER) : "Invalid asm response message"; // NOI18N
-        lines.clear();
-        int pos = RESPONSE_HEADER.length();
-        try {
-            DataObject dobj = DataObject.find(getFileObject());
-            functionName = debugger.getCurrentCallStackFrame().getFunctionName();
-            dobj.getNodeDelegate().setDisplayName(getHeader());
-            Document doc = ((DataEditorSupport)dobj.getCookie(OpenCookie.class)).getDocument();
-            if (doc != null) {
-                doc.removeDocumentListener(this);
-                doc.addDocumentListener(this);
-            }
-            
-            OutputStreamWriter writer = new OutputStreamWriter(getFileObject().getOutputStream());
+        synchronized (lines) {
+            lines.clear();
+            int pos = RESPONSE_HEADER.length();
 
-            // Dis is opened - write to document
-            //if (doc != null) {
-                //doc.remove(0, doc.getLength());
-                //doc.insertString(doc.getLength(), debugger.getCurrentCallStackFrame().getFunctionName() + "()\n", null);
-                writer.write(functionName + "()\n");
-                int idx = 2;
-                
-                /*int combinedPos = msg.indexOf(COMBINED_HEADER, pos);
-                while (combinedPos != -1) {
-                    int lineIdx = Integer.valueOf(readValue(LINE_HEADER, msg, pos));
-                    String fileStr = readValue(FILE_HEADER, msg, pos);
-                    doc.insertString(doc.getLength(), "// file:" + fileStr + ", line " + lineIdx + "\n", null);
-                    idx++;
-                    /*FileObject fobj = URLMapper.findFileObject(new URL(fileStr));
-                    DataObject srcdobj = DataObject.find(fobj);
-                    org.openide.text.Line srcLine = srcdobj.getCookie(LineCookie.class).getLineSet().getOriginal(lineIdx);
-                    doc.insertString(doc.getLength(), "//" + srcLine.getText() + "\n", null);*/
-                    
-                    //combinedPos = msg.indexOf(COMBINED_HEADER, combinedPos + COMBINED_HEADER.length());
-                    int combinedPos = -1;
-                    
-                    // read instructions in this line
-                    int start = msg.indexOf(ADDRESS_HEADER, pos);
-                    while (start != -1 && (combinedPos == -1 || start < combinedPos)) {
-                        pos = start;
-                        Line line = new Line(msg, start, idx++);
+            OutputStreamWriter writer = null;
+
+            try {
+                DataObject dobj = DataObject.find(getFileObject());
+                functionName = debugger.getCurrentCallStackFrame().getFunctionName();
+                dobj.getNodeDelegate().setDisplayName(getHeader());
+                Document doc = ((DataEditorSupport)dobj.getCookie(OpenCookie.class)).getDocument();
+                if (doc != null) {
+                    doc.removeDocumentListener(this);
+                    doc.addDocumentListener(this);
+                }
+
+                writer = new OutputStreamWriter(getFileObject().getOutputStream());
+
+                // Dis is opened - write to document
+                //if (doc != null) {
+                    //doc.remove(0, doc.getLength());
+                    //doc.insertString(doc.getLength(), debugger.getCurrentCallStackFrame().getFunctionName() + "()\n", null);
+                    writer.write(functionName + "()\n");
+                    int idx = 2;
+
+                    /*int combinedPos = msg.indexOf(COMBINED_HEADER, pos);
+                    while (combinedPos != -1) {
+                        int lineIdx = Integer.valueOf(readValue(LINE_HEADER, msg, pos));
+                        String fileStr = readValue(FILE_HEADER, msg, pos);
+                        doc.insertString(doc.getLength(), "// file:" + fileStr + ", line " + lineIdx + "\n", null);
+                        idx++;
+                        /*FileObject fobj = URLMapper.findFileObject(new URL(fileStr));
+                        DataObject srcdobj = DataObject.find(fobj);
+                        org.openide.text.Line srcLine = srcdobj.getCookie(LineCookie.class).getLineSet().getOriginal(lineIdx);
+                        doc.insertString(doc.getLength(), "//" + srcLine.getText() + "\n", null);*/
+
+                        //combinedPos = msg.indexOf(COMBINED_HEADER, combinedPos + COMBINED_HEADER.length());
+                        int combinedPos = -1;
+
+                        // read instructions in this line
+                        int start = msg.indexOf(ADDRESS_HEADER, pos);
+                        while (start != -1 && (combinedPos == -1 || start < combinedPos)) {
+                            pos = start;
+                            Line line = new Line(msg, start, idx++);
+                            if (functionName.equals(line.function)) {
+                                lines.add(line);
+                                writer.write(line + "\n");
+                            }
+                            //doc.insertString(doc.getLength(), line.toString() + "\n", null);
+                            start = msg.indexOf(ADDRESS_HEADER, start+1);
+                        }
+                    //}
+            //}
+                 /*else {
+                    // Dis is not opened - write to file
+                    OutputStreamWriter writer = new OutputStreamWriter(getFileObject().getOutputStream());
+                    int start = msg.indexOf(ONLY_HEADER, pos);
+                    while (start != -1) {
+                        Line line = new Line(msg, start);
                         lines.add(line);
                         writer.write(line + "\n");
-                        //doc.insertString(doc.getLength(), line.toString() + "\n", null);
-                        start = msg.indexOf(ADDRESS_HEADER, start+1);
+                        start = msg.indexOf(ONLY_HEADER, start+1);
                     }
-                //}
-            writer.close();
-        //}
-             /*else {
-                // Dis is not opened - write to file
-                OutputStreamWriter writer = new OutputStreamWriter(getFileObject().getOutputStream());
-                int start = msg.indexOf(ONLY_HEADER, pos);
-                while (start != -1) {
-                    Line line = new Line(msg, start);
-                    lines.add(line);
-                    writer.write(line + "\n");
-                    start = msg.indexOf(ONLY_HEADER, start+1);
+                    writer.close();
+                }*/
+            } catch (Exception ioe) {
+                ioe.printStackTrace();
+            }
+            try {
+                if (writer != null) {
+                    writer.close();
                 }
-                writer.close();
-            }*/
-        } catch (Exception ioe) {
-            ioe.printStackTrace();
+            } catch (IOException ioe) {
+                // do nothing
+            }
         }
     }
 
@@ -187,12 +200,20 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        // stack is updated, reload disassembler if needed
-        // TODO: there may be functions with the same name called one from the other, we need to check that too
-        CallStackFrame frame = debugger.getCurrentCallStackFrame();
-        if (lastFrame == null || !lastFrame.getFunctionName().equals(frame.getFunctionName())) {
-            debugger.getGdbProxy().data_disassemble(frame.getFileName(), frame.getLineNumber());
-            lastFrame = frame;
+        if (GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(evt.getPropertyName())) {
+            // stack is updated, reload disassembler if needed
+            // TODO: there may be functions with the same name called one from the other, we need to check that too
+            CallStackFrame frame = debugger.getCurrentCallStackFrame();
+            if (lastFrame == null || !lastFrame.getFunctionName().equals(frame.getFunctionName())) {
+                String filename = frame.getFileName();
+                if (filename != null && filename.length() > 0) {
+                    debugger.getGdbProxy().data_disassemble(filename, frame.getLineNumber());
+                } else {
+                    // if filename is not known - just disassemble using address
+                    debugger.getGdbProxy().data_disassemble(1000);
+                }
+                lastFrame = frame;
+            }
         }
     }
     
@@ -209,12 +230,14 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     public String getLineAddress(int idx) {
         //TODO : can use binary search
-        for (Line line : lines) {
-            if (line.idx == idx) {
-                return line.address;
+        synchronized (lines) {
+            for (Line line : lines) {
+                if (line.idx == idx) {
+                    return line.address;
+                }
             }
+            return "";
         }
-        return "";
     }
     
     public static Disassembly getCurrent() {
@@ -239,12 +262,14 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     public int getAddressLine(String address) {
         //TODO : can use binary search
-        for (Line line : lines) {
-            if (line.address.equals(address)) {
-                return line.idx;
+        synchronized (lines) {
+            for (Line line : lines) {
+                if (line.address.equals(address)) {
+                    return line.idx;
+                }
             }
+            return -1;
         }
-        return -1;
     }
     
     public static int getAddressLine(Disassembly dis, String address) {
@@ -282,7 +307,13 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         public Line(String msg, int pos, int idx) {
             this.address = readValue(ADDRESS_HEADER, msg, pos);
             this.function = readValue(FUNCTION_HEADER, msg, pos);
-            this.offset = Integer.valueOf(readValue(OFFSET_HEADER, msg, pos));
+            int tmpoffset = 0;
+            try {
+                tmpoffset = Integer.valueOf(readValue(OFFSET_HEADER, msg, pos));
+            } catch (Exception e) {
+                //do nothing
+            }
+            this.offset = tmpoffset;
             this.instruction = readValue(INSTR_HEADER, msg, pos);
             this.idx = idx;
         }

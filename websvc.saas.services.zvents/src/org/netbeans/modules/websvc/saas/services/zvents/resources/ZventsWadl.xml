@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+	     xmlns="http://research.sun.com/wadl/2006/10">
+    <grammars/>    
+    <resources base="http://www.zvents.com/rest">
+        <resource path="search">
+            <method name="GET" id="zvents.searchGet">
+                <doc xml:lang="en">
+                    Search for events based on the type indicated in the &quot;what&quot; parameter.
+                    API documentation :  http://corporate.zvents.com/developers/documentation/search.html  
+                </doc>
+                <request>
+                    <param name="key" type="xsd:string" required="true" style="query">
+                    </param>
+                    <param name="what" type="xsd:string" required="false" style="query">
+                        <doc xml:lang="en">
+                            A string indicating the type of event, such as &quot;parade&quot;
+                            or &quot;dancing&quot;.
+                        </doc>
+                    </param>
+                    <param name="where" type="xsd:string" required="false" style="query">
+                        <doc xml:lang="en">
+                            A string describing a location around which the search results will be 
+                            restricted. (e.g., san francisco, ca or 94131). You can also specify a 
+                            location using a longitude/latitude coordinate pair using the notation -74.0:BY:40.9
+                        </doc>
+                    </param>
+                    <param name="when" type="xsd:string" required="false" style="query">
+                        <doc xml:lang="en">
+                            A string specifying a date range for the search (e.g., today, this week, next week, 
+                            friday, etc.). Explicit date ranges can be specified by separating two dates with the word 
+                            "to" (e.g., monday to thursday, 10/30/2007 to 11/4/2007). Leave this string blank to search all future events.
+                        </doc>
+                    </param>
+                    <param name="radius" type="xsd:string" required="false" style="query">
+                        <doc xml:lang="en">
+                            The number of miles around the location (specified in the where field) to search. 
+                            If this field is left blank, a default radius is supplied. The default raidus varies 
+                            according to the location specified in the where field.
+                        </doc>
+                    </param>
+                    <param name="limit" type="xsd:string" required="false" style="query">
+                        <doc xml:lang="en">
+                            The maximum number of matching events to return. The default is 10 and maximum is 25.
+                        </doc>
+                    </param>
+                    <param name="offset" type="xsd:string" required="false" style="query">
+                        <doc xml:lang="en">
+                            The number of events to skip from the beginning of the search results. 
+                            If a search matches 1000 events, returning 25 events starting at offset 100 will
+                            return event numbers 100-125 that match the search..
+                        </doc>
+                    </param>
+                    <param name="trim" type="xsd:string" required="false" style="query">
+                        <doc xml:lang="en">
+                            Set to 1 if repeating events should be trimmed from the search results. 
+                            Set to 0 to return repeating events. If the trim option is enabled, only 1 
+                            event will be returned from each repeating series that matches the search. 
+                            The number of events within the series that match the search is returned in the
+                            series_count response parameter. Defaults to 1.
+                        </doc>
+                    </param>
+                    <param name="sort" type="xsd:string" required="false" style="query">
+                        <doc xml:lang="en">
+                           Set to 1 to sort search results by time. Set to 0 to sort search results by relevance. Defaults to 0.
+                        </doc>
+                    </param>
+                    <param name="cat" type="xsd:string" required="false" style="query">
+                        <doc xml:lang="en">
+                            Restrict your search to items that belong to a specific category. 
+                            You must provide a category identifier which can be determined using the categories API call.
+                        </doc>
+                    </param>
+                    <param name="catex" type="xsd:string" required="false" style="query">
+                        <doc xml:lang="en">
+                            Exclude items from a specific category from the search. 
+                            You must provide a category identifier which can be determined using the categories API call.
+                        </doc>
+                    </param>
+                    <param name="cc" type="xsd:string" required="false" style="query">
+                        <doc xml:lang="en">
+                            Set to 1 to include category information in the search results. This will 
+                            give you the list of categories within the search result set. You can search 
+                            within a specific category using the cat option. Defaults to 0.
+                        </doc>
+                    </param>
+                    <param name="rec" type="xsd:string" required="false" style="query">
+                        <doc xml:lang="en">
+                           Set to 1 to include a list of events within the same repeat series that 
+                           occur within the time range of the search. Defaults to 0.
+                        </doc>
+                    </param>		
+                </request>
+                <response>
+                </response>
+            </method>
+        </resource>
+    </resources>
+
+</application>

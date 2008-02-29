@@ -245,9 +245,6 @@ final class Wrapper extends JPanel {
       if (isAlt(modifiers)) {
         return;
       }
-      if (isMeta(modifiers)) {
-        return;
-      }
       myTextField.setText(String.valueOf(c));
       showPanel();
       event.consume();
