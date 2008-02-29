@@ -268,7 +268,8 @@ public abstract class IndexedElement extends JsElement {
                         List<String> comments = new ArrayList<String>();
                         for (int i = 0, n = lines.length; i < n; i++) {
                             String line = lines[i];
-                            if (i == n-1 && line.trim().endsWith("*/")) {
+                            line = line.trim();
+                            if (i == n-1 && line.endsWith("*/")) {
                                 line = line.substring(0,line.length()-2);
                             }
                             if (line.startsWith("/**")) {
