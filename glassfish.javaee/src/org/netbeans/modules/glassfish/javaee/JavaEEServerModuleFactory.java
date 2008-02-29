@@ -40,8 +40,6 @@
 package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
