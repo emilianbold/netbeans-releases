@@ -76,7 +76,7 @@ made subject to such option by the copyright holder.
         <folder name="MIMEResolver">
             <file name="casaResolver.xml" url="casaResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.casaeditor.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/compapp/casaeditor/resources/casa16.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/compapp/casaeditor/resources/service_composition_16.png"/>
                 <attr name="position" intvalue="445"/>
             </file>
         </folder>

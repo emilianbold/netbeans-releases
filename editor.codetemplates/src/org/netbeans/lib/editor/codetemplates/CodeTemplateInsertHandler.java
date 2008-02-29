@@ -41,6 +41,7 @@
 
 package org.netbeans.lib.editor.codetemplates;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -62,9 +63,12 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
@@ -83,7 +87,7 @@ import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
-import org.netbeans.spi.editor.highlighting.support.PositionsBag;
+import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.ErrorManager;
 
 /**
@@ -175,6 +179,12 @@ implements DocumentListener, KeyListener {
      * Whether currently synchronizing the document changes.
      */
     private boolean syncingDocModification;
+
+    private AttributeSet attribs = null;
+    private AttributeSet attribsLeft = null;
+    private AttributeSet attribsRight = null;
+    private AttributeSet attribsMiddle = null;
+    private AttributeSet attribsAll = null;
     
     public CodeTemplateInsertHandler(
         CodeTemplate codeTemplate,
@@ -516,6 +526,8 @@ implements DocumentListener, KeyListener {
             syncInsert(evt);
             syncingDocModification = false;
         }
+        
+        requestRepaint();
     }
     
     public void removeUpdate(DocumentEvent evt) {
@@ -524,6 +536,8 @@ implements DocumentListener, KeyListener {
             syncRemove(evt);
             syncingDocModification = false;
         }
+        
+        requestRepaint();
     }
     
     public void changedUpdate(DocumentEvent evt) {
@@ -623,20 +637,57 @@ implements DocumentListener, KeyListener {
     
     private void requestRepaint() {
         if (released) {
-            PositionsBag bag = getBag(doc);
+            OffsetsBag bag = getBag(doc);
             bag.clear();
+            attribs = null;
         } else {
             CodeTemplateParameterImpl ctpi = getActiveMasterImpl();
             if (ctpi != null) {
-                PositionsBag nue = new PositionsBag(doc);
-                SyncDocumentRegion sdr = ctpi.getRegion();
+                // Compute attributes
+                if (attribs == null) {
+                    attribs = getSyncedTextBlocksHighlight();
+                    Color foreground = (Color) attribs.getAttribute(StyleConstants.Foreground);
+                    Color background = (Color) attribs.getAttribute(StyleConstants.Background);
+                    attribsLeft = AttributesUtilities.createImmutable(
+                            StyleConstants.Background, background,
+                            EditorStyleConstants.LeftBorderLineColor, foreground, 
+                            EditorStyleConstants.TopBorderLineColor, foreground, 
+                            EditorStyleConstants.BottomBorderLineColor, foreground
+                    );
+                    attribsRight = AttributesUtilities.createImmutable(
+                            StyleConstants.Background, background,
+                            EditorStyleConstants.RightBorderLineColor, foreground, 
+                            EditorStyleConstants.TopBorderLineColor, foreground, 
+                            EditorStyleConstants.BottomBorderLineColor, foreground
+                    );
+                    attribsMiddle = AttributesUtilities.createImmutable(
+                            StyleConstants.Background, background,
+                            EditorStyleConstants.TopBorderLineColor, foreground, 
+                            EditorStyleConstants.BottomBorderLineColor, foreground
+                    );
+                    attribsAll = AttributesUtilities.createImmutable(
+                            StyleConstants.Background, background,
+                            EditorStyleConstants.LeftBorderLineColor, foreground, 
+                            EditorStyleConstants.RightBorderLineColor, foreground,
+                            EditorStyleConstants.TopBorderLineColor, foreground, 
+                            EditorStyleConstants.BottomBorderLineColor, foreground
+                    );
+                }
                 
-                for(int i = 0; i < sdr.getRegionCount(); i++) {
-                    PositionRegion reqion = sdr.getSortedRegion(i);
-                    nue.addHighlight(reqion.getStartPosition(), reqion.getEndPosition(), getSyncedTextBlocksHighlight());
+                OffsetsBag nue = new OffsetsBag(doc);
+                PositionRegion region = ctpi.getPositionRegion();
+                int size = region.getEndOffset() - region.getStartOffset();
+                if (size == 1) {
+                    nue.addHighlight(region.getStartOffset(), region.getEndOffset(), attribsAll);
+                } else if (size > 1) {
+                    nue.addHighlight(region.getStartOffset(), region.getStartOffset() + 1, attribsLeft);
+                    nue.addHighlight(region.getEndOffset() - 1, region.getEndOffset(), attribsRight);
+                    if (size > 2) {
+                        nue.addHighlight(region.getStartOffset() + 1, region.getEndOffset() - 1, attribsMiddle);
+                    }
                 }
 
-                PositionsBag bag = getBag(doc);
+                OffsetsBag bag = getBag(doc);
                 bag.setHighlights(nue);
             }
         }
@@ -780,11 +831,11 @@ implements DocumentListener, KeyListener {
         return parametrizedTextParser.buildInsertText(allParameters);
     }
 
-    private static synchronized PositionsBag getBag(Document document) {
-        String propName = CodeTemplateInsertHandler.class.getName() + "-PositionsBag"; //NOI18N
-        PositionsBag bag = (PositionsBag) document.getProperty(propName);
+    private static synchronized OffsetsBag getBag(Document document) {
+        String propName = CodeTemplateInsertHandler.class.getName() + "-OffsetsBag"; //NOI18N
+        OffsetsBag bag = (OffsetsBag) document.getProperty(propName);
         if (bag == null) {
-            bag = new PositionsBag(document);
+            bag = new OffsetsBag(document);
             document.putProperty(propName, bag);
         }
         return bag;
@@ -792,7 +843,7 @@ implements DocumentListener, KeyListener {
 
     private static AttributeSet getSyncedTextBlocksHighlight() {
         FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
-        AttributeSet as = fcs.getFontColors("synchronized-text-blocks"); //NOI18N
+        AttributeSet as = fcs.getFontColors("synchronized-text-blocks-ext"); //NOI18N
         return as == null ? SimpleAttributeSet.EMPTY : as;
     }
     

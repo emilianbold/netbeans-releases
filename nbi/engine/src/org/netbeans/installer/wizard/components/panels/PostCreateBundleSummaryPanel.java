@@ -87,6 +87,7 @@ public class PostCreateBundleSummaryPanel extends WizardPanel {
         setProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY, DEFAULT_COMPONENTS_LIST_SEPARATOR);
         
         setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
+        setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
     }
     
     @Override
@@ -406,4 +407,7 @@ public class PostCreateBundleSummaryPanel extends WizardPanel {
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(PostCreateBundleSummaryPanel.class,
             "PoCBSP.dialog.title"); // NOI18N
+    public static final String DEFAULT_DESCRIPTION =
+            ResourceUtils.getString(PostCreateBundleSummaryPanel.class,
+            "PoCBSP.dialog.description"); // NOI18N
 }

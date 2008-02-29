@@ -87,8 +87,10 @@ public class CssEditorSupport {
     private static CssEditorSupport INSTANCE;
     private TopComponent current;
     private JEditorPane editorPane;
+    private Document document;
     private FileObject fileObject;
     private CssModel model;
+    private boolean caretListenerRegistered = false;
 
     public static synchronized CssEditorSupport getDefault() {
         if (INSTANCE == null) {
@@ -100,7 +102,7 @@ public class CssEditorSupport {
     private PropertyChangeListener CSS_STYLE_DATA_LISTENER = new PropertyChangeListener() {
 
         public void propertyChange(final PropertyChangeEvent evt) {
-            final NbEditorDocument doc = (NbEditorDocument) getDocument();
+            final NbEditorDocument doc = (NbEditorDocument) document;
             if (doc != null) {
                 doc.runAtomic(new Runnable() {
 
@@ -189,6 +191,57 @@ public class CssEditorSupport {
             }
         }
     };
+    private final PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(CssModel.MODEL_UPDATED)) {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        if (editorPane == null) {
+                            //it may happen that the TC gets deactivated after this Runnable
+                            //being posted and the model listener was unregistered.
+                            return;
+                        }
+                        updateSelectedRule(editorPane.getCaret().getDot());
+                        if (!caretListenerRegistered) {
+                            editorPane.addCaretListener(CARET_LISTENER);
+                            caretListenerRegistered = true;
+                        }
+                    }
+                });
+            } else {
+                //either MODEL_INVALID or MODEL_PARSING fired
+                final boolean invalid = evt.getPropertyName().equals(CssModel.MODEL_INVALID);
+                //disable editing on the StyleBuilder
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        //remove the CssStyleData listener to disallow StyleBuilder editing
+                        //until the parser finishes parsing. If I do not do that, the parsed
+                        //data from the CssModel are inaccurate and hence,
+                        //when user uses StyleBuilder, the source may become broken.
+                        if (selected != null) {
+                            selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
+                            selected = null;
+                        }
+                        if (caretListenerRegistered) {
+                            editorPane.removeCaretListener(CARET_LISTENER);
+                            caretListenerRegistered = false;
+                        }
+                        if (invalid) {
+                            //model invalid - switch the stylebuilder UI to an error panel
+                            StyleBuilderTopComponent.findInstance().setPanelMode(StyleBuilderTopComponent.MODEL_ERROR);
+                            firePreviewableDeactivated();
+                        } else {
+                            //model is about the be updated - just disable the SB editing
+                            StyleBuilderTopComponent.findInstance().setPanelMode(StyleBuilderTopComponent.MODEL_UPDATING);
+                        }
+                    }
+                });
+            }
+        }
+    };
 
     private String makeIndentString(int level) {
         StringBuffer sb = new StringBuffer();
@@ -208,87 +261,74 @@ public class CssEditorSupport {
         }
     };
 
+    //always called fro AWT, no need to explicit synch with cssTCDeactivated
     public void cssTCActivated(TopComponent tc) {
-        if (current == tc) {
-            return;
+        if (current != null) {
+            if (current == tc) {
+                return;
+            } else {
+                //deactivate the old editor
+                cssTCDeactivated();
+            }
         }
 
         this.current = tc;
         this.editorPane = getEditorPane(tc);
-        
-        if(editorPane == null) {
+
+        if (editorPane == null) {
             return;
         }
-        
+        this.document = editorPane.getDocument();
+        if (document == null) {
+            return;
+        }
+
         this.fileObject = tc.getLookup().lookup(FileObject.class);
-        this.model = CssModel.get(getDocument());
+        this.model = CssModel.get(document);
 
-        //attach parser listener
-        model.addPropertyChangeListener(new PropertyChangeListener() {
+        if (!caretListenerRegistered) {
+            editorPane.addCaretListener(CARET_LISTENER);
+        }
 
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(CssModel.MODEL_UPDATED)) {
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        public void run() {
-                            updateSelectedRule(editorPane.getCaret().getDot());
-                            editorPane.addCaretListener(CARET_LISTENER);
-                        }
-                    });
-                } else {
-                    //either MODEL_INVALID or MODEL_PARSING fired
-                    final boolean invalid = evt.getPropertyName().equals(CssModel.MODEL_INVALID);
-                    //disable editing on the StyleBuilder
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        public void run() {
-                            //remove the CssStyleData listener to disallow StyleBuilder editing
-                            //until the parser finishes parsing. If I do not do that, the parsed
-                            //data from the CssModel are inaccurate and hence,
-                            //when user uses StyleBuilder, the source may become broken.
-                            if (selected != null) {
-                                selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
-                                selected = null;
-                            }
-                            editorPane.removeCaretListener(CARET_LISTENER);
-                            if (invalid) {
-                                //model invalid - switch the stylebuilder UI to an error panel
-                                StyleBuilderTopComponent.findInstance().setPanelMode(StyleBuilderTopComponent.MODEL_ERROR);
-                                firePreviewableDeactivated();
-                            } else {
-                                //model is about the be updated - just disable the SB editing
-                                StyleBuilderTopComponent.findInstance().setPanelMode(StyleBuilderTopComponent.MODEL_UPDATING);
-                            }
-                        }
-                    });
-                }
-            }
-        });
-
+        //attach css model listener
+        model.addPropertyChangeListener(MODEL_LISTENER);
 
         //we need to refresh the StyleBuilder content when switching between more css files
         if (selected != null) {
             selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
             selected = null;
         }
+        
+                //select the first rule if the caret in on zero offset
+        if(editorPane.getCaret().getDot() == 0) {
+            if(model.rules().size() > 0) {
+                editorPane.getCaret().setDot(model.rules().get(0).getRuleNameOffset());
+            }
+        }
+        
         updateSelectedRule(editorPane.getCaret().getDot());
     }
 
     public void cssTCDeactivated() {
+        //cancel scheduled rule update task if scheduled
+        RULE_UPDATE_TASK.cancel();
+
+        this.model.removePropertyChangeListener(MODEL_LISTENER);
+        this.model = null;
+
         if (selected != null) {
             selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
             selected = null;
         }
         this.current = null;
+
+        if (caretListenerRegistered) {
+            editorPane.removeCaretListener(CARET_LISTENER);
+            caretListenerRegistered = false;
+        }
+
         this.editorPane = null;
         this.fileObject = null;
-        this.model.removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
-        this.model = null;
-
-    }
-
-    private Document getDocument() {
-        return editorPane == null ? null : editorPane.getDocument();
     }
 
     private JEditorPane getEditorPane(TopComponent tc) {
@@ -303,13 +343,10 @@ public class CssEditorSupport {
     }
 
     private synchronized void updateSelectedRule(int dotPos) {
-        Document document = getDocument();
         if (document == null) {
             //document unloaded, just return
             return;
         }
-
-        CssModel model = CssModel.get(document);
 
         LOGGER.log(Level.FINE, "updateSelectedRule(" + dotPos + ")");
         if (model.rules() == null) {
@@ -373,19 +410,6 @@ public class CssEditorSupport {
 
     public void removeListener(Listener l) {
         previewableListeners.remove(l);
-    }
-
-    public CssRuleContext content() {
-        Document document = getDocument();
-        if (document == null) {
-            //already unloaded
-            return null;
-        }
-        if (selected == null) {
-            return null;
-        } else {
-            return new CssRuleContext(selected, CssModel.get(document), document, fileObject);
-        }
     }
 
     private void firePreviewableActivated(CssRuleContext content) {

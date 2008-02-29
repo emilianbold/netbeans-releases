@@ -52,6 +52,7 @@
 
 package org.netbeans.modules.cnd.api.model.xref;
 
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.xref.impl.ReferenceSupportImpl;
 
@@ -68,5 +69,9 @@ public class CsmReferenceSupport {
     
     public static CsmReference createObjectReference(CsmOffsetable obj) {
         return impl.createObjectReference(obj);
+    }
+
+    public static CsmReference createObjectReference(CsmObject target, CsmOffsetable owner) {
+        return impl.createObjectReference(target, owner);
     }
 }
