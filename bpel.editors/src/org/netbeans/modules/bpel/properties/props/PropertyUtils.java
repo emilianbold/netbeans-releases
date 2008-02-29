@@ -497,10 +497,12 @@ public final class PropertyUtils {
             boolean methodFound = false;
             if (methodName != null) {
                 for (Class targetClass : targetClassesArr) {
-                    try {
-                        result = targetClass.getMethod(methodName, params);
-                    } catch (NoSuchMethodException ex) {
-                        // do nothing
+                    if (targetClass != null) {
+                        try {
+                            result = targetClass.getMethod(methodName, params);
+                        } catch (NoSuchMethodException ex) {
+                            // do nothing
+                        }
                     }
                     if (result != null) {
                         methodFound = true;
