@@ -357,8 +357,7 @@ public final class JsfForm implements ActiveEditorDrop {
                 if (attributes.iterator().hasNext()) {
                     AnnotationValue annotationValue = attributes.iterator().next();
                     if (annotationValue != null) {
-                        //TODO: RETOUCHE annotation attribute value
-                        return null;//annotationValue.getValue();
+                        return annotationValue.getValue().toString();
                     }
                 }
             }
