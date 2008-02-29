@@ -51,16 +51,22 @@ import org.netbeans.modules.gsf.api.ElementKind;
  */
 public class KeywordElement extends JsElement {
     private final String name;
+    private ElementKind kind = ElementKind.KEYWORD;
 
     public KeywordElement(String name) {
         this.name = name;
     }
 
+    public KeywordElement(String name, ElementKind kind) {
+        this(name);
+        this.kind = kind;
+    }
+    
     public String getName() {
         return name;
     }
 
     public ElementKind getKind() {
-        return ElementKind.KEYWORD;
+        return kind;
     }
 }

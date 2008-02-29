@@ -91,7 +91,7 @@ public class JsIndexerTest extends JsTestBase {
         if (value == null) {
             return value;
         }
-        if (JsIndexer.FIELD_BASE.equals(key) || JsIndexer.FIELD_BASE_LOWER.equals(key) ||
+        if (JsIndexer.FIELD_BASE.equals(key) ||
                 JsIndexer.FIELD_FQN.equals(key)) {
             // Decode the attributes
             int attributeIndex = 0;
@@ -336,7 +336,7 @@ public class JsIndexerTest extends JsTestBase {
     public void testRestore3() throws Exception {
         List<IndexDocument> docs = indexFile("testfiles/stub_dom_Window.js");
         JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
-        IndexedElement element = findElement(docs, JsIndexer.FIELD_BASE_LOWER, "opendialog", index);
+        IndexedElement element = findElement(docs, JsIndexer.FIELD_BASE, "opendialog", index);
         assertNotNull(element);
         assertEquals("openDialog", element.getName());
         assertEquals("Window", element.getIn());
