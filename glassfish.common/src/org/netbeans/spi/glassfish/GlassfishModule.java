@@ -46,11 +46,14 @@ import javax.swing.event.ChangeListener;
 
 
 /**
+ * Interface implemented by common serve support.  Always available in server
+ * instance lookup.
  *
  * @author Peter Williams
  */
 public interface GlassfishModule {
     
+    // Attribute keys for InstanceProperties map
     public static final String URL_ATTR = "url"; // NOI18N
     public static final String HOME_FOLDER_ATTR = "homefolder"; // NOI18N
     public static final String DISPLAY_NAME_ATTR = "displayName"; // NOI18N
@@ -84,24 +87,107 @@ public interface GlassfishModule {
     }
     
 
+    /**
+     * Returns a read-only map of the current instance properties.  Use the 
+     * attribute constants defined in this file to locate specific properties.
+     * 
+     * @return read-only map containing all current instance properties
+     */
     public Map<String, String> getInstanceProperties();
     
+    /**
+     * Sets a property in the instance properties map, if that property has not
+     * been set yet.
+     * 
+     * @param name key for this map entry. 
+     * @param value value for this key.
+     * 
+     * @return the current value of this key, if present in the map already.
+     *   Otherwise, returns the new value being set.
+     */
     public String setEnvironmentProperty(String name, String value);
     
+    /**
+     * Start the server.
+     * 
+     * @param stateListener listener to listen message describing the startup 
+     *   process as it progresses.  Can be null.
+     * 
+     * @return Future instance that finishes when the server startup has
+     *   completed (or failed).
+     */
     public Future<OperationState> startServer(OperationStateListener stateListener);
 
+    /**
+     * Stop the server.
+     *
+     * @todo returned Future instance shouldn't "finish" until server vm has
+     *   terminated (or been killed if it hangs).
+     * 
+     * @param stateListener listener to listen message describing the shutdown 
+     *   process as it progresses.  Can be null.
+     * 
+     * @return Future instance that finishes when the server shutdown message
+     *   has been acknowledged.
+     * 
+     */
     public Future<OperationState> stopServer(OperationStateListener stateListener);
 
+    /**
+     * Deploy the specified directory or application archive onto the server.
+     * 
+     * @param stateListener listener to listen message describing the deploy 
+     *   process as it progresses.  Can be null.
+     * @param application either the root folder of the application (directory
+     *   deployment) or the application archive (e.g. war file, etc.)
+     * @param name name to deploy this application under.
+     * 
+     * @return Future instance that finishes when the deploy command has been
+     *   completed.
+     */
     public Future<OperationState> deploy(OperationStateListener stateListener, File application, String name);
 
+    /**
+     * Undeploy the named application.
+     * 
+     * @param stateListener listener to listen message describing the undeploy 
+     *   process as it progresses.  Can be null.
+     * @param name name of application to undeploy.
+     * 
+     * @return Future instance that finishes when the deploy command has been
+     *   completed.
+     */
     public Future<OperationState> undeploy(OperationStateListener stateListener, String name);
     
+    /**
+     * List the applications currently deployed on the server.
+     * 
+     * @return array of application names current deployed.
+     */
     public String [] getModuleList();
     
+    /**
+     * Returns the current server state (stopped, running, etc.)
+     * 
+     * @return current server state as an enum.  See enum declaration for 
+     *   possible states.
+     */
     public ServerState getServerState();
     
+    /**
+     * Adds a listener that is notified when the server state changes.  Call
+     * <code>getServerState()</code> in the listener's method body to find out
+     * the current server state.
+     * 
+     * @param listener listener to add.
+     */
     public void addChangeListener(ChangeListener listener);
     
+    /**
+     * Removes a server state change listener previously added.
+     * 
+     * @param listener listener to remove.
+     */
     public void removeChangeListener(ChangeListener listener);
 
 }
