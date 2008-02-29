@@ -1368,6 +1368,7 @@ public final class WebProject implements Project, AntProjectListener {
                             return;
                         }
                         FileObject destFile = ensureDestinationFileExists(webBuildBase, path, fo.isFolder());
+                        assert destFile != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + fo.isFolder();
                         if (!fo.isFolder()) {
                             InputStream is = null;
                             OutputStream os = null;
@@ -1404,18 +1405,23 @@ public final class WebProject implements Project, AntProjectListener {
             while (st.hasMoreTokens()) {
                 String pathItem = st.nextToken();
                 FileObject newCurrent = current.getFileObject(pathItem);
+                assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                 if (newCurrent == null) {
                     // need to create it
                     if (isFolder || st.hasMoreTokens()) {
                         // create a folder
                         newCurrent = FileUtil.createFolder(current, pathItem);
+                        assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                     }
                     else {
                         newCurrent = FileUtil.createData(current, pathItem);
+                        assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                     }
                 }
+                assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                 current = newCurrent;
             }
+            assert current != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
             return current;
         }
     }
