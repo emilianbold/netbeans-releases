@@ -41,38 +41,52 @@
 
 package org.netbeans.modules.cnd.highlight.semantic;
 
-import java.io.File;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.highlight.semantic.MarkOccurrencesHighlighter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 
 /**
  *
- * @author sg155630
+ * @author Sergey Grinev
  */
-public abstract class SemanticHighlightingTestBase  extends TraceModelTestBase {
-    
-    public SemanticHighlightingTestBase(String name) {
-        super(name);
+public class MarkOccurencesTest extends SemanticHighlightingTestBase {
+
+    public MarkOccurencesTest(String testName) {
+        super(testName);
     }
-    
-    protected abstract Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset);
-    
-    protected @Override void postTest(String[] args, Object... params) {
-        FileImpl file = getFileImpl(new File(args[0]));
-        int offset = -1;
-        if (params != null && params.length > 0) {
-            offset = params[0] instanceof Integer ? (Integer)params[0] : -1;
-        }
-        Collection<? extends CsmOffsetable> out = getBlocks(file, offset);
-        assert out != null;
-        int i = 1;
-        for (CsmOffsetable b : out) {
-            System.out.println( "Block " + (i++) + ": Lines " +
-                    file.getLineColumn(b.getStartOffset())[0] + "-" + file.getLineColumn(b.getEndOffset())[0] +
-                    "\tOffsets " +
-                    b.getStartOffset() + "-" + b.getEndOffset());
-        }
+
+    private static String source = "markocc.cc"; // NOI18N
+
+    private void doTest(String name, int pos) throws Exception {
+        performTest(source, source + "." + name + ".dat", source + ".err", new Integer(pos)); // NOI18N
+    }
+
+    public void testMacro() throws Exception {
+        doTest("macro", 214); // FOO
+    }
+
+    public void testLocalVariable() throws Exception {
+        doTest("localvar", 236); // int moo
+    }
+
+    public void testField() throws Exception {
+        doTest("field", 122); //boo
+    }
+
+    public void testCtor() throws Exception {
+        doTest("ctor", 115); // Foo()
+    }
+
+    public void testCtor2() throws Exception {
+        doTest("ctor2", 138); // Foo(int)
+    }
+
+    public void testClassName() throws Exception {
+        doTest("classname", 110); // class Foo
+    }
+
+    protected Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
+        return MarkOccurrencesHighlighter.getOccurences(testFile, offset);
     }
 }
