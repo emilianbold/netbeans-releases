@@ -700,7 +700,20 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             List<int[]> currentHighlights = new ArrayList<int[]>();
             
             for (ErrorDescription e : filteredDescriptions) {
-                int[] h = new int[] {e.getRange().getBegin().getPosition().getOffset(), e.getRange().getEnd().getPosition().getOffset()};
+                int beginOffset = e.getRange().getBegin().getPosition().getOffset();
+                int endOffset   = e.getRange().getEnd().getPosition().getOffset();
+                
+                if (endOffset < beginOffset) {
+                    //see issue #112566
+                    int swap = endOffset;
+                    
+                    endOffset = beginOffset;
+                    beginOffset = swap;
+                    
+                    Logger.getLogger(AnnotationHolder.class.getName()).warning("Incorrect highlight in ErrorDescription, attach your messages.log to issue #112566: " + e.toString());
+                }
+                
+                int[] h = new int[] {beginOffset, endOffset};
                 
                 OUT: for (Iterator<int[]> it = currentHighlights.iterator(); it.hasNext() && h != null; ) {
                     int[] hl = it.next();

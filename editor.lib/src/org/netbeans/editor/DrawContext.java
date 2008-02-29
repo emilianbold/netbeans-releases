@@ -87,6 +87,46 @@ public interface DrawContext {
     /** Set current underline color */
     public void setStrikeThroughColor(Color strikeThroughColor);
 
+    /** Get current top border color 
+     * @since 1.22
+     */
+    public Color getTopBorderLineColor();
+
+    /** Set current top border color 
+     * @since 1.22
+     */
+    public void setTopBorderLineColor(Color topBorderLineColor);
+
+    /** Get current right border color 
+     * @since 1.22
+     */
+    public Color getRightBorderLineColor();
+
+    /** Set current right border color 
+     * @since 1.22
+     */
+    public void setRightBorderLineColor(Color rightBorderLineColor);
+
+    /** Get current bottom border color 
+     * @since 1.22
+     */
+    public Color getBottomBorderLineColor();
+
+    /** Set current bottom border color 
+     * @since 1.22
+     */
+    public void setBottomBorderLineColor(Color bottomBorderLineColor);
+
+    /** Get current left border color 
+     * @since 1.22
+     */
+    public Color getLeftBorderLineColor();
+
+    /** Set current left border color 
+     * @since 1.22
+     */
+    public void setLeftBorderLineColor(Color leftBorderLineColor);
+
     /** Get current font */
     public Font getFont();
 
