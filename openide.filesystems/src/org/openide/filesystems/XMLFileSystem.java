@@ -616,6 +616,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
             if (!isFolder) {
                 throw new IllegalArgumentException("not a folder"); // NOI18N
             }
+            assert name != null && name.indexOf("/") == -1:(child.isFolder ? "<folder name=":"<file name=")+name+" ...";//NOI18N
 
             ResourceElem retVal = child;
             int idx = names.indexOf(name);
