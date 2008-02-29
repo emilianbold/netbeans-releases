@@ -215,11 +215,11 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
             } finally {
                 textView.setCursor (cursor);
             }
-            /*if (val) { #78191
+            if (val) {
                 getViewport().addChangeListener(this);
             } else {
                 getViewport().removeChangeListener(this);
-            }*/
+            }
             
             //Don't try to set the caret position until the view has
             //been fully readjusted to its new dimensions, scroll bounds, etc.
