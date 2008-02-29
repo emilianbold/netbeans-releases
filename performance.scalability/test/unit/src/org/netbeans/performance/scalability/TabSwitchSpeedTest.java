@@ -51,6 +51,7 @@ import javax.swing.SwingUtilities;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -77,7 +78,11 @@ public class TabSwitchSpeedTest extends NbTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(TabSwitchSpeedTest.class, ".*");
+        NbTestSuite s = new NbTestSuite();
+    //    s.addTest(NbModuleSuite.create(TabSwitchSpeedTest.class, null, ".*"));
+    //    s.addTest(NbModuleSuite.create(TabSwitchSpeedTest.class, "ide[0-9]*|java[0-9]*", ".*"));
+        s.addTest(NbModuleSuite.create(TabSwitchSpeedTest.class, ".*", ".*"));
+        return s;
     }
 
     @Override
@@ -87,7 +92,7 @@ public class TabSwitchSpeedTest extends NbTestCase {
 
         FileObject[] openFiles = new FileObject[30];
         for (int i = 0; i < openFiles.length; i++) {
-            openFiles[i] = FileUtil.createData(root, "empty" + i + ".txt");
+            openFiles[i] = FileUtil.createData(root, "empty" + i + ".java");
         }
 
         openTC = new TopComponent[openFiles.length];
@@ -145,12 +150,12 @@ public class TabSwitchSpeedTest extends NbTestCase {
     public void testSimpleSwitch() throws Exception {
         doSwitchTest();
     }
-    
+    /*
     public void testAllPlatform() throws Exception {
         enableModulesFromCluster(".*");
         doSwitchTest();
     }
-    
+    */
     private void doSwitchTest() throws Exception {
         Thread.sleep(5000);
         
