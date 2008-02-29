@@ -565,7 +565,8 @@ class MapperNode implements GraphListener {
 
 
     Dimension getLabelSize() {
-        return getRightTree().getCellRendererComponent(this).getPreferredSize();
+        Dimension d = getRightTree().getCellRendererComponent(this).getPreferredSize();
+        return new Dimension(Math.max(16, d.width), Math.max(16, d.height));
     }
     
     
@@ -587,7 +588,7 @@ class MapperNode implements GraphListener {
     
     public boolean mustDrawLine() {
         MapperNode nextNode = getNextVisibleNode(this);
-        // graph or nextGraph is not Empty
+        // graph or nextGraph is not Empty or One Link
         if (this.getGraph() != null && !this.getGraph().isEmptyOrOneLink() ||
                     (nextNode != null && nextNode.getGraph() != null &&
                     !nextNode.getGraph().isEmptyOrOneLink() )) 
@@ -663,16 +664,14 @@ class MapperNode implements GraphListener {
             } else {
                 result = getNextVisibleNode(node.getParent());
             }
-        } else {
-            if (node == this) {
+        } else if (node == this && node.getChildCount() > 0) {
             result = node.getChild(0);
+        } else {
+            int index = node.getParent().getChildIndex(node);
+            if (index + 1 < node.getParent().getChildCount()) {
+                result = node.getParent().getChild(index + 1);
             } else {
-                int index = node.parent.children.indexOf(node);
-                if (index + 1 < node.parent.getChildCount()) {
-                    result = node.parent.getChild(index + 1);
-                } else {
-                    result = getNextVisibleNode(node.parent);    
-                }  
+                result = getNextVisibleNode(node.getParent());
             }
         }
         return result;

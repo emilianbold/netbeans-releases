@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -112,7 +113,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private boolean changingCompilerSet;
     private boolean updating;
     private boolean valid;
-    private ArrayList<String> dirlist;
+    private static ArrayList<String> dirlist = null;
     private ToolsPanelModel model = null;
     private Color tfColor = null;
     private boolean gdbEnabled;
@@ -163,7 +164,12 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             jLabel1.setVisible(false); // Required Tools label!
             jPanel1.setVisible(false); // Required Tools panel!
         }
-        dirlist = model.getPath();
+        if (dirlist == null) {
+            // Take a copy ...
+            dirlist = new ArrayList<String>();
+            dirlist.addAll(Path.getPath());
+        }
+//        dirlist = model.getPath();
         if (csm == null) {
             csm = CompilerSetManager.getDefault();
         }
@@ -665,7 +671,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             changed = false;
             
             CompilerSetManager.setDefault(csm);
-            model.setPath(dirlist);
+//            model.setPath(dirlist);
             model.setMakeName(tfMakeCommand.getText());
             model.setMakePath(tfMakePath.getText());
             model.setGdbName(tfGdbCommand.getText());

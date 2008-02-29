@@ -47,6 +47,7 @@ import java.lang.reflect.InvocationTargetException;
 import javax.swing.Action;
 import javax.swing.GrayFilter;
 import org.netbeans.api.java.source.SourceUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -70,7 +71,8 @@ public final class BiNode extends AbstractNode {
 
     private static String ICON_BASE = "org/netbeans/modules/beans/resources/beanInfo.gif"; // NOI18N
     private static String ICON_BASE_PATTERNS = "org/netbeans/modules/beans/resources/patternGroup.gif"; // NOI18N
-    private static String WAIT_ICON_BASE = "org/openide/src/resources/wait.gif"; // NOI18N
+    private static String WAIT_ICON_BASE = "org/netbeans/modules/beans/resources/wait.gif"; // NOI18N
+    private static String WARNING_ICON_BASE = "org/netbeans/modules/beans/resources/warning.gif"; // NOI18N
 
     private static String PROP_NULL_DESCRIPTOR = "nullDescriptor"; // NOI18N
     private static String PROP_NULL_PROPERTIES = "nullProperties"; // NOI18N
@@ -532,6 +534,39 @@ public final class BiNode extends AbstractNode {
             setDisplayName( SourceUtils.isScanInProgress()? NbBundle.getBundle( BiNode.class ).getString( "CTL_NODE_WaitScan" ) : NbBundle.getBundle( BiNode.class ).getString( "CTL_NODE_Wait" ) );
             setIconBaseWithExtension( WAIT_ICON_BASE );
 
+        }
+    }
+
+    private static final class Error extends AbstractNode {
+
+        Error (String name) {
+
+            super( Children.LEAF );
+            setDisplayName(name);
+            setIconBaseWithExtension( WARNING_ICON_BASE );
+
+        }
+    }
+    
+    public static Node createNoSourceNode(FileObject bi) {
+        String name = bi.getName();
+        name = name.substring(0, name.length() - "BeanInfo".length()); // NOI18N
+        String ext = bi.getExt();
+        if (ext.length() > 0) {
+            name += '.' + ext;
+        }
+        String msg = NbBundle.getMessage(BiNode.class, "CTL_NODE_MissingBeanFile", name);
+        return new Error(msg);
+    }
+    
+    public static Node createBiNode(BiAnalyser bia) {
+        if (!bia.bis.isNbBeanInfo()) {
+            String msg = NbBundle.getMessage(BiNode.class, "CTL_NODE_UnknownBeanInfoFormat");
+            return new Error(msg);
+        } else if (bia.bis.getSourceDataObject() == null) {
+            return createNoSourceNode(bia.bis.getDataObject().getPrimaryFile());
+        } else {
+            return new BiNode(bia);
         }
     }
     
