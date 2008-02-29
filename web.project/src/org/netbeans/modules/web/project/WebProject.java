@@ -1405,7 +1405,6 @@ public final class WebProject implements Project, AntProjectListener {
             while (st.hasMoreTokens()) {
                 String pathItem = st.nextToken();
                 FileObject newCurrent = current.getFileObject(pathItem);
-                assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                 if (newCurrent == null) {
                     // need to create it
                     if (isFolder || st.hasMoreTokens()) {
