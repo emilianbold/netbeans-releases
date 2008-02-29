@@ -631,43 +631,4 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             }
         }
     }
-
-    private static class ConfFilesRefreshAction extends CookieAction {
-
-        protected Class[] cookieClasses() {
-            return new Class[]{RefreshCookie.class};
-        }
-
-        protected boolean enable(Node[] activatedNodes) {
-            return true;
-        }
-
-        protected int mode() {
-            return CookieAction.MODE_EXACTLY_ONE;
-        }
-
-        protected boolean asynchronous() {
-            return false;
-        }
-
-        public String getName() {
-            return NbBundle.getMessage(ConfFilesNodeFactory.class, "LBL_Refresh"); //NOI18N
-        }
-
-        public HelpCtx getHelpCtx() {
-            return HelpCtx.DEFAULT_HELP;
-        }
-
-        public void performAction(Node[] selectedNodes) {
-            for (int i = 0; i < selectedNodes.length; i++) {
-                RefreshCookie cookie = (RefreshCookie) selectedNodes[i].getCookie(RefreshCookie.class);
-                cookie.refresh();
-            }
-        }
-
-        private static interface RefreshCookie extends Node.Cookie {
-
-            public void refresh();
-        }
-    }
 }
