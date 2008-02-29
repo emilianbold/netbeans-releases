@@ -1184,16 +1184,36 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 if (fieldName.equals("this")) {
                     return evaluationContext.getFrame().thisObject();
                 }
-                Field field = evaluationContext.getFrame().location().declaringType().fieldByName(fieldName);
+                Element enclosing = ve.getEnclosingElement();
+                String enclosingClass = null;
+                if (enclosing.getKind() == ElementKind.CLASS) {
+                    TypeElement enclosingClassElement = (TypeElement) enclosing;
+                    enclosingClass = ElementUtilities.getBinaryName(enclosingClassElement);
+                }
+                ReferenceType declaringType = evaluationContext.getFrame().location().declaringType();
+                if (enclosingClass != null) {
+                    ReferenceType dt = findEnclosingType(declaringType, enclosingClass);
+                    if (dt != null) declaringType = dt;
+                }
+                Field field = declaringType.fieldByName(fieldName);
                 if (field == null) {
                     Assert2.error(arg0, "unknownVariable", fieldName);
                 }
                 if (field.isStatic()) {
                     evaluationContext.getVariables().put(arg0, new VariableInfo(field));
-                    return field.declaringType().getValue(field);
+                    return declaringType.getValue(field);
                 }
                 ObjectReference thisObject = evaluationContext.getFrame().thisObject();
                 if (thisObject != null) {
+                    if (field.isPrivate()) {
+                        ObjectReference to = findEnclosedObject(thisObject, declaringType);
+                        if (to != null) thisObject = to;
+                    } else {
+                        if (!instanceOf(thisObject.referenceType(), declaringType)) {
+                            ObjectReference to = findEnclosedObject(thisObject, declaringType);
+                            if (to != null) thisObject = to;
+                        }
+                    }
                     evaluationContext.getVariables().put(arg0, new VariableInfo(field, thisObject));
                     return thisObject.getValue(field);
                 } else {
@@ -1248,6 +1268,44 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         arg0.getName();
         throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+    }
+    
+    private ReferenceType findEnclosingType(ReferenceType type, String name) {
+        if (type.name().equals(name)) {
+            return type;
+        }
+        List<ReferenceType> classes = type.virtualMachine().classesByName(name);
+        if (classes.size() == 1) {
+            return classes.get(0);
+        }
+        for (ReferenceType clazz : classes) {
+            if (isNestedOf(clazz, type)) {
+                return clazz;
+            }
+        }
+        return null;
+    }
+    
+    private boolean isNestedOf(ReferenceType nested, ReferenceType type) {
+        if (nested.equals(type)) {
+            return true;
+        }
+        for (ReferenceType n : nested.nestedTypes()) {
+            if (isNestedOf(n, type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private ObjectReference findEnclosedObject(ObjectReference object, ReferenceType type) {
+        if (object.referenceType().equals(type)) {
+            return object;
+        }
+        Field outerRef = object.referenceType().fieldByName("this$0");
+        if (outerRef == null) return null;
+        object = (ObjectReference) object.getValue(outerRef);
+        return findEnclosedObject(object, type);
     }
 
     @Override
