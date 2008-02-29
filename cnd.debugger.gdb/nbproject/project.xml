@@ -37,7 +37,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-			<release-version>1</release-version>
+                        <release-version>1</release-version>
                         <specification-version>1.3</specification-version>
                     </run-dependency>
                 </dependency>
@@ -167,7 +167,9 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.modules.cnd.debugger.gdb.disassembly</package>
+            </public-packages>
         </data>
     </configuration>
 </project>

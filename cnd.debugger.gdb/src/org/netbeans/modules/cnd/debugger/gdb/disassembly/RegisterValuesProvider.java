@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,59 +31,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.qnavigator.navigator;
+package org.netbeans.modules.cnd.debugger.gdb.disassembly;
 
-import org.openide.nodes.Node;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.Map;
 
 /**
  *
- * @author Alexander Simon
+ * @author eu155513
  */
-public class IndexOffsetNode implements Comparable<IndexOffsetNode>{
-    private Node node;
-    private long startOffset;
-    private long endOffset;
-    private IndexOffsetNode scope;
-    /** Creates a new instance of IndexOffsetNode */
-    public IndexOffsetNode(Node node, long startOffset, long endOffset) {
-        this.node = node;
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
-    }
-
-    public long getStartOffset(){
-        return startOffset;
-    }
-
-    public long getEndOffset(){
-        return endOffset;
-    }
-
-    public IndexOffsetNode getScope(){
-        return scope;
-    }
-
-    public void setScope(IndexOffsetNode scope){
-        this.scope = scope;
-    }
-
-    public Node getNode(){
-        return node;
-    }
+public class RegisterValuesProvider {
+    public static final String VALUES_UPDATED = "register values updated";// NOI18N
+    public static final String VALUES_CLEAR = "register values clear";// NOI18N
     
-    public int compareTo(IndexOffsetNode o) {
-        if (getStartOffset() < o.getStartOffset()){
-            return -1;
-        } else if (getStartOffset() > o.getStartOffset()) {
-            return 1;
+    private static RegisterValuesProvider instance = null;
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    
+    public static RegisterValuesProvider getInstance() {
+        if (instance == null) {
+            instance = new RegisterValuesProvider();
         }
-        return 0;
+        return instance;
     }
     
-    @Override
-    public String toString(){
-        return ""+startOffset+node.getDisplayName();
+    public Map<String,String> getRegisterValues() {
+        Disassembly dis = Disassembly.getCurrent();
+        if (dis != null) {
+            return dis.getRegisterValues();
+        } else {
+            return null;
+        }
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
+    }
+    
+    public void fireRegisterValuesChanged() {
+        pcs.firePropertyChange(VALUES_UPDATED, 0, 1);
+    }
+    
+    public void fireRegisterValuesClear() {
+        pcs.firePropertyChange(VALUES_CLEAR, 0, 1);
     }
 }

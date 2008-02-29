@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,57 +39,54 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.qnavigator.navigator;
+package org.netbeans.modules.cnd.highlight.semantic;
 
-import org.openide.nodes.Node;
+import java.util.Collection;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.highlight.semantic.MarkOccurrencesHighlighter;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 /**
  *
- * @author Alexander Simon
+ * @author Sergey Grinev
  */
-public class IndexOffsetNode implements Comparable<IndexOffsetNode>{
-    private Node node;
-    private long startOffset;
-    private long endOffset;
-    private IndexOffsetNode scope;
-    /** Creates a new instance of IndexOffsetNode */
-    public IndexOffsetNode(Node node, long startOffset, long endOffset) {
-        this.node = node;
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
+public class MarkOccurencesTest extends SemanticHighlightingTestBase {
+
+    public MarkOccurencesTest(String testName) {
+        super(testName);
     }
 
-    public long getStartOffset(){
-        return startOffset;
+    private static String source = "markocc.cc"; // NOI18N
+
+    private void doTest(String name, int pos) throws Exception {
+        performTest(source, source + "." + name + ".dat", source + ".err", new Integer(pos)); // NOI18N
     }
 
-    public long getEndOffset(){
-        return endOffset;
+    public void testMacro() throws Exception {
+        doTest("macro", 214); // FOO
     }
 
-    public IndexOffsetNode getScope(){
-        return scope;
+    public void testLocalVariable() throws Exception {
+        doTest("localvar", 236); // int moo
     }
 
-    public void setScope(IndexOffsetNode scope){
-        this.scope = scope;
+    public void testField() throws Exception {
+        doTest("field", 122); //boo
     }
 
-    public Node getNode(){
-        return node;
+    public void testCtor() throws Exception {
+        doTest("ctor", 115); // Foo()
     }
-    
-    public int compareTo(IndexOffsetNode o) {
-        if (getStartOffset() < o.getStartOffset()){
-            return -1;
-        } else if (getStartOffset() > o.getStartOffset()) {
-            return 1;
-        }
-        return 0;
+
+    public void testCtor2() throws Exception {
+        doTest("ctor2", 138); // Foo(int)
     }
-    
-    @Override
-    public String toString(){
-        return ""+startOffset+node.getDisplayName();
+
+    public void testClassName() throws Exception {
+        doTest("classname", 110); // class Foo
+    }
+
+    protected Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
+        return MarkOccurrencesHighlighter.getOccurences(testFile, offset);
     }
 }
