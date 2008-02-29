@@ -97,7 +97,6 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
             if (number != null) {
                 breakpointNumber = Integer.parseInt(number);
                 setState(BPSTATE_VALIDATED);
-                breakpoint.setValid();
                 if (!breakpoint.isEnabled()) {
                     getDebugger().getGdbProxy().break_disable(breakpointNumber);
                 }
@@ -116,6 +115,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                     } catch (Exception ex) {
                     }
                 }
+                breakpoint.setValid();
             } else {
                 breakpoint.setInvalid(err);
                 setState(BPSTATE_VALIDATION_FAILED);

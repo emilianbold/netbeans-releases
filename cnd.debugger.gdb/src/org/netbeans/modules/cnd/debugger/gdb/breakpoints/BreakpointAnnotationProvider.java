@@ -109,10 +109,10 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
                     if (!annotatedBreakpoints.contains(b)) {
                         b.addPropertyChangeListener (this);
                         breakpointToAnnotations.put(b, new Annotation[] {});
-//                        if (b instanceof LineBreakpoint) {
-//                            LineBreakpoint lb = (LineBreakpoint) b;
-//                            LineTranslations.getTranslations().registerForLineUpdates(lb);
-//                        }
+                        if (b instanceof LineBreakpoint) {
+                            LineBreakpoint lb = (LineBreakpoint) b;
+                            LineTranslations.getTranslations().registerForLineUpdates(lb);
+                        }
                     }
                     addAnnotationTo(b, fo);
                 }
@@ -130,16 +130,16 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
         if (isAnnotatable(breakpoint)) {
             GdbBreakpoint b = (GdbBreakpoint) breakpoint;
             synchronized (breakpointToAnnotations) {
-                b.addPropertyChangeListener (this);
+                b.addPropertyChangeListener(this);
                 breakpointToAnnotations.put(b, new Annotation[] {});
                 for (FileObject fo : annotatedFiles) {
                     addAnnotationTo(b, fo);
                 }
             }
-//            if (b instanceof LineBreakpoint) {
-//                LineBreakpoint lb = (LineBreakpoint) b;
-//                LineTranslations.getTranslations().registerForLineUpdates(lb);
-//            }
+            if (b instanceof LineBreakpoint) {
+                LineBreakpoint lb = (LineBreakpoint) b;
+                LineTranslations.getTranslations().registerForLineUpdates(lb);
+            }
         }
     }
 
@@ -147,14 +147,14 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
         if (isAnnotatable(breakpoint)) {
             GdbBreakpoint b = (GdbBreakpoint) breakpoint;
             synchronized (breakpointToAnnotations) {
-                b.removePropertyChangeListener (this);
+                b.removePropertyChangeListener(this);
                 removeAnnotations(b);
                 breakpointToAnnotations.remove(b);
             }
-//            if (b instanceof LineBreakpoint) {
-//                LineBreakpoint lb = (LineBreakpoint) b;
-//                LineTranslations.getTranslations().unregisterFromLineUpdates(lb);
-//            }
+            if (b instanceof LineBreakpoint) {
+                LineBreakpoint lb = (LineBreakpoint) b;
+                LineTranslations.getTranslations().unregisterFromLineUpdates(lb);
+            }
         }
     }
 
@@ -171,6 +171,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
              (!GdbBreakpoint.PROP_LINE_NUMBER.equals(propertyName))) {        
             return;
         }
+        
         GdbBreakpoint b = (GdbBreakpoint) evt.getSource();
         synchronized (breakpointToAnnotations) {
             removeAnnotations(b);
@@ -230,26 +231,32 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             return null;
         } else if (b instanceof FunctionBreakpoint) {
             FunctionBreakpoint fb = (FunctionBreakpoint) b;
-            try {
-                if (fo.getURL().equals(new URL(fb.getURL()))) {
-                    return new int[] { fb.getLineNumber() };
+            String url = fb.getURL();
+            if (url.length() > 0) {
+                try {
+                    if (fo.getURL().equals(new URL(url))) {
+                        return new int[] { fb.getLineNumber() };
+                    }
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
             }
             return null;
         } else if (b instanceof AddressBreakpoint) {
             AddressBreakpoint ab = (AddressBreakpoint) b;
-            try {
-                if (fo.getURL().equals(new URL(ab.getURL()))) {
-                    return new int[] { ab.getLineNumber() };
+            String url = ab.getURL();
+            if (url.length() > 0) {
+                try {
+                    if (fo.getURL().equals(new URL(ab.getURL()))) {
+                        return new int[] { ab.getLineNumber() };
+                    }
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
             }
             return null;
         } else {

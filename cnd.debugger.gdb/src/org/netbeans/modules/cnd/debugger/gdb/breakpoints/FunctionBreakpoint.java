@@ -146,9 +146,9 @@ public class FunctionBreakpoint extends GdbBreakpoint {
         
         public int compareTo(Object o) {
             if (o instanceof FunctionBreakpointComparable) {
-                FunctionBreakpoint lbthis = this;
-                FunctionBreakpoint lb = (FunctionBreakpoint) o;
-                return lbthis.function.compareTo(lb.function);
+                FunctionBreakpoint fbthis = this;
+                FunctionBreakpoint fb = (FunctionBreakpoint) o;
+                return fbthis.function.compareTo(fb.function);
             } else {
                 return -1;
             }
