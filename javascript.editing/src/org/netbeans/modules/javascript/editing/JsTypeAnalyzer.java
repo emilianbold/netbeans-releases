@@ -86,6 +86,7 @@ import org.openide.filesystems.FileObject;
  * </pre>
  * 
  * @todo Handle type unions (of the form Foo|Bar|Baz) - queries need to look at all.
+ * @todo Document should be of type HTMLDocument
  * 
  * 
  *

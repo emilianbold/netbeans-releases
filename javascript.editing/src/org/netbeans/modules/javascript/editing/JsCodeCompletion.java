@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -251,6 +252,11 @@ public class JsCodeCompletion implements Completable {
 
     public List<CompletionProposal> complete(CompilationInfo info, int lexOffset, String prefix,
             NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
+        // Temporary: case insensitive matches don't work very well for JavaScript
+        if (kind == NameKind.CASE_INSENSITIVE_PREFIX) {
+            kind = NameKind.PREFIX;
+        }
+        
         if (prefix == null) {
             prefix = "";
         }
@@ -368,6 +374,20 @@ public class JsCodeCompletion implements Completable {
                 if (nodeList != null && nodeList.size() > 0) {
                     AstElement element = AstElement.getElement(request.info, nodeList.get(0));
                     proposals.add(new PlainItem(element, request));
+                }
+            }
+        }
+        
+                
+        // Add in "arguments" local variable which is available to all functions
+        String ARGUMENTS = "arguments"; // NOI18N
+        if (startsWith(ARGUMENTS, prefix)) {
+            // Make sure we're in a function before adding the arguments property
+            for (Node n = node; n != null; n = n.getParentNode()) {
+                if (n.getType() == org.mozilla.javascript.Token.FUNCTION) {
+                    KeywordElement element = new KeywordElement(ARGUMENTS, ElementKind.VARIABLE);
+                    proposals.add(new PlainItem(element, request));
+                    break;
                 }
             }
         }
@@ -829,14 +849,13 @@ public class JsCodeCompletion implements Completable {
         Set<IndexedElement> matches;
         if (fqn != null) {
             matches = index.getElements(prefix, fqn, kind, JsIndex.ALL_SCOPE, result);
-            // Also add in non-fqn-prefixed elements
-            Set<IndexedElement> top = index.getElements(prefix, null, kind, JsIndex.ALL_SCOPE, result);
-            if (top.size() > 0) {
-                matches.addAll(top);
-            }
-            
         } else {
             matches = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
+        }
+        // Also add in non-fqn-prefixed elements
+        Set<IndexedElement> top = index.getElements(prefix, null, kind, JsIndex.ALL_SCOPE, result);
+        if (top.size() > 0) {
+            matches.addAll(top);
         }
 
         for (IndexedElement element : matches) {
@@ -964,6 +983,13 @@ public class JsCodeCompletion implements Completable {
                         elements = m;
                     }
                 }
+            } else if (lhs != null && lhs.length() > 0) {
+                // No type but an LHS - perhaps it's a type?
+                Set<IndexedElement> m = index.getElements(prefix, lhs, kind, JsIndex.ALL_SCOPE, result);
+
+                if (m.size() > 0) {
+                    elements = m;
+                }
             }
 
             // Try just the method call (e.g. across all classes). This is ignoring the 
@@ -1071,11 +1097,37 @@ public class JsCodeCompletion implements Completable {
                 }
 
                 if (token.id() == JsTokenId.NEW) {
-                    Set<IndexedFunction> methods = index.getConstructors(prefix, kind, JsIndex.ALL_SCOPE);
+                    Set<IndexedElement> elements = index.getConstructors(prefix, kind, JsIndex.ALL_SCOPE);
+                    String lhs = request.call.getLhs();
+                    if (lhs != null && lhs.length() > 0) {
+                        Set<IndexedElement> m = index.getElements(prefix, lhs, kind, JsIndex.ALL_SCOPE, null);
+                        if (m.size() > 0) {
+                            if (elements.size() == 0) {
+                                elements = new HashSet<IndexedElement>();
+                            }
+                            for (IndexedElement f : m) {
+                                if (f.getKind() == ElementKind.CONSTRUCTOR || f.getKind() == ElementKind.PACKAGE) {
+                                    elements.add(f);
+                                }
+                            }
+                        }
+                    } else if (prefix.length() > 0) {
+                        Set<IndexedElement> m = index.getElements(prefix, null, kind, JsIndex.ALL_SCOPE, null);
+                        if (m.size() > 0) {
+                            if (elements.size() == 0) {
+                                elements = new HashSet<IndexedElement>();
+                            }
+                            for (IndexedElement f : m) {
+                                if (f.getKind() == ElementKind.CONSTRUCTOR || f.getKind() == ElementKind.PACKAGE) {
+                                    elements.add(f);
+                                }
+                            }
+                        }
+                    }
 
-                    for (IndexedFunction method : methods) {
+                    for (IndexedElement element : elements) {
                         // Hmmm, is this necessary? Filtering should happen in the getInheritedMEthods call
-                        if ((prefix.length() > 0) && !method.getName().startsWith(prefix)) {
+                        if ((prefix.length() > 0) && !element.getName().startsWith(prefix)) {
                             continue;
                         }
 
@@ -1091,7 +1143,12 @@ public class JsCodeCompletion implements Completable {
                         // If a method is an "initialize" method I should do something special so that
                         // it shows up as a "constructor" (in a new() statement) but not as a directly
                         // callable initialize method (it should already be culled because it's private)
-                        FunctionItem item = new FunctionItem(method, request);
+                        JsCompletionItem item;
+                        if (element instanceof IndexedFunction) {
+                            item = new FunctionItem((IndexedFunction)element, request);
+                        } else {
+                            item = new PlainItem(request, element);
+                        }
                         // Exact matches
 //                        item.setSmart(method.isSmart());
                         proposals.add(item);
@@ -1696,7 +1753,7 @@ public class JsCodeCompletion implements Completable {
             ElementKind kind = getKind();
             HtmlFormatter formatter = request.formatter;
             formatter.reset();
-            boolean emphasize = indexedElement != null ? !indexedElement.isInherited() : false;
+            boolean emphasize = (kind != ElementKind.PACKAGE && indexedElement != null) ? !indexedElement.isInherited() : false;
             if (emphasize) {
                 formatter.emphasis(true);
             }
@@ -1722,19 +1779,21 @@ public class JsCodeCompletion implements Completable {
             } else if (element instanceof IndexedElement) {
                 IndexedElement ie = (IndexedElement)element;
                 String filename = ie.getFilenameUrl();
-                if (filename != null && filename.indexOf("jsstubs") == -1) { // NOI18N
-                    int index = filename.lastIndexOf('/');
-                    if (index != -1) {
-                        filename = filename.substring(index+1);
+                if (filename != null) {
+                    if (filename.indexOf("jsstubs") == -1) { // NOI18N
+                        int index = filename.lastIndexOf('/');
+                        if (index != -1) {
+                            filename = filename.substring(index+1);
+                        }
+                        formatter.appendText(filename);
+                        return formatter.getText();
+                    } else if (filename.indexOf("/stub_core_") != -1) { // NOI18N
+                        formatter.appendText("Core JS");
+                        return formatter.getText();
+                    } else if (filename.indexOf("/stub_") != -1) { // NOI18N
+                        formatter.appendText("DOM");
+                        return formatter.getText();
                     }
-                    formatter.appendText(filename);
-                    return formatter.getText();
-                } else if (filename.indexOf("/stub_dom_") != -1) {
-                    formatter.appendText("DOM");
-                    return formatter.getText();
-                } else if (filename.indexOf("/stub_core_") != -1) {
-                    formatter.appendText("Core JS");
-                    return formatter.getText();
                 }
                 
                 return null;

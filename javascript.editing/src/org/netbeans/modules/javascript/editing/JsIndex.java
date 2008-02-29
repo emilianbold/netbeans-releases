@@ -76,7 +76,6 @@ public class JsIndex {
     
     private static final Set<String> TERMS_FQN = Collections.singleton(JsIndexer.FIELD_FQN);
     private static final Set<String> TERMS_BASE = Collections.singleton(JsIndexer.FIELD_BASE);
-    private static final Set<String> TERMS_LCBASE = Collections.singleton(JsIndexer.FIELD_BASE_LOWER);
     private static final Set<String> TERMS_EXTEND = Collections.singleton(JsIndexer.FIELD_EXTEND);
     
     private final Index index;
@@ -157,10 +156,10 @@ public class JsIndex {
     }
     
     @SuppressWarnings("unchecked")
-    public Set<IndexedFunction> getConstructors(final String name, NameKind kind,
+    public Set<IndexedElement> getConstructors(final String name, NameKind kind,
         Set<Index.SearchScope> scope) {
         // TODO - search by the FIELD_CLASS thingy
-        return (Set<IndexedFunction>)(Set)getUnknownFunctions(name, kind, scope, true, null, true, false);
+        return getUnknownFunctions(name, kind, scope, true, null, true, false);
     }
     
     @SuppressWarnings("unchecked")
@@ -225,11 +224,6 @@ public class JsIndex {
             kind = NameKind.PREFIX;
         }
         
-        if (kind == NameKind.CASE_INSENSITIVE_PREFIX || kind == NameKind.CASE_INSENSITIVE_REGEXP) {
-            field = JsIndexer.FIELD_BASE_LOWER;
-            terms = TERMS_LCBASE;
-        }
-
         String lcname = name.toLowerCase();
         search(field, lcname, kind, result, scope, terms);
 
@@ -291,9 +285,7 @@ public class JsIndex {
                     String elementName = null;
                     int nameEndIdx = signature.indexOf(';');
                     assert nameEndIdx != -1;
-                    if (field != JsIndexer.FIELD_BASE_LOWER) {
-                        elementName = signature.substring(0, nameEndIdx);
-                    }
+                    elementName = signature.substring(0, nameEndIdx);
                     nameEndIdx++;
 
                     String funcIn = null;
@@ -310,6 +302,11 @@ public class JsIndex {
                     if (inEndIdx > startCs) {
                         // Compute the case sensitive name
                         elementName = signature.substring(startCs, inEndIdx);
+                        if (kind == NameKind.PREFIX && !elementName.startsWith(name)) {
+                            continue;
+                        } else if (kind == NameKind.EXACT_NAME && !elementName.equals(name)) {
+                            continue;
+                        }
                     }
                     inEndIdx++;
                     
@@ -434,9 +431,7 @@ public class JsIndex {
                         String elementName = null;
                         int nameEndIdx = signature.indexOf(';');
                         assert nameEndIdx != -1;
-                        if (field != JsIndexer.FIELD_BASE_LOWER) {
-                            elementName = signature.substring(0, nameEndIdx);
-                        }
+                        elementName = signature.substring(0, nameEndIdx);
                         nameEndIdx++;
 
                         String funcIn = null;
@@ -450,6 +445,11 @@ public class JsIndex {
                         if (inEndIdx > startCs) {
                             // Compute the case sensitive name
                             elementName = signature.substring(startCs, inEndIdx);
+                            if (kind == NameKind.PREFIX && !elementName.startsWith(fqn)) {
+                                continue;
+                            } else if (kind == NameKind.EXACT_NAME && !elementName.equals(fqn)) {
+                                continue;
+                            }
                         }
                         inEndIdx++;
 
@@ -569,6 +569,9 @@ public class JsIndex {
                     int nameEndIdx = signature.indexOf(';');
                     assert nameEndIdx != -1;
                     elementName = signature.substring(0, nameEndIdx);
+                    if (!elementName.startsWith(symbol)) {
+                        continue;
+                    }
                     nameEndIdx++;
 
                     String funcIn = null;
