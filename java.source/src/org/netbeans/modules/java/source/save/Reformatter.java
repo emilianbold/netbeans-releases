@@ -174,7 +174,7 @@ public class Reformatter implements ReformatTask {
             int start = diff.getStartOffset();
             int end = diff.getEndOffset();
             String text = diff.getText();
-            if (startOffset > end || endOffset < start || embeddingOffset >= start)
+            if (startOffset > end || endOffset <= start || embeddingOffset >= start)
                 continue;
             if (startOffset > start) {
                 if (text != null && text.length() > 0) {
@@ -2027,8 +2027,14 @@ public class Reformatter implements ReformatTask {
             Token<JavaTokenId> lastWSToken = null;
             int after = 0;
             do {
-                if (tokens.offset() >= endPos)
+                if (tokens.offset() >= endPos) {
+                    if (lastWSToken != null) {
+                        lastBlankLines = 0;
+                        lastBlankLinesTokenIndex = tokens.index() - 1;
+                        lastBlankLinesDiff = diffs.isEmpty() ? null : diffs.getFirst();
+                    }
                     return null;
+                }
                 JavaTokenId id = tokens.token().id();
                 if (tokenIds.contains(id)) {
                     String spaces = after == 1 //after line comment
@@ -2466,8 +2472,6 @@ public class Reformatter implements ReformatTask {
                             }
                             lastToken = null;
                         }
-                        if (count != 0)
-                            count--;
                         after = 1;
                         break;
                     default:

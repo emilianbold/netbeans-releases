@@ -3,7 +3,7 @@ schemaNode:GLOBAL:[]:ESCAPED{schemaNode}:
 Spry.XML.Schema:CLASS:[]:ESCAPED{Spry.XML.Schema}:
   Node:CONSTRUCTOR:[]:ESCAPED{Node}(PARAMETERS{ESCAPED{nodeName}}):
   mapElementIntoSchemaNode:METHOD:[]:ESCAPED{mapElementIntoSchemaNode}(PARAMETERS{ESCAPED{ele}, ESCAPED{schemaNode}}):
-Spry.XML.Schema.Node:CLASS:[]:ESCAPED{Spry.XML.Schema.Node}:
+Spry.XML.Schema.Node.prototype:CLASS:[]:ESCAPED{Spry.XML.Schema.Node.prototype}:
   toString:METHOD:[]:ESCAPED{toString}(PARAMETERS{ESCAPED{indentStr}}):
 Spry.XML:CLASS:[]:ESCAPED{Spry.XML}:
   getSchema:METHOD:[]:ESCAPED{getSchema}(PARAMETERS{ESCAPED{xmlDoc}}):

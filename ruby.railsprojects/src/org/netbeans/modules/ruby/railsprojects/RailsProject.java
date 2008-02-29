@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -468,11 +468,12 @@ public class RailsProject implements Project, RakeProjectListener {
     }
         
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
+        
         RecommendedTemplatesImpl (UpdateHelper helper) {
             this.helper = helper;
         }
         
-        private UpdateHelper helper;
+        private final UpdateHelper helper;
         
         // List of primarily supported templates
         
@@ -490,7 +491,6 @@ public class RailsProject implements Project, RakeProjectListener {
             "Templates/Ruby/test.rb", // NOI18N
             "Templates/Ruby/class.rb", // NOI18N
             "Templates/Ruby/module.rb", // NOI18N
-            "Templates/Ruby/Rakefile", // NOI18N
             "Templates/Ruby/rspec.rb", // NOI18N
             "Templates/Ruby/empty.rjs", // NOI18N
         };

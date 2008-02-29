@@ -49,7 +49,6 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
-import java.util.Iterator;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -90,6 +89,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
                     !propertyName.equals(LineBreakpoint.PROP_URL) &&
                     !propertyName.equals(LineBreakpoint.PROP_LINE_NUMBER) &&
                     !propertyName.equals(GdbBreakpoint.PROP_ENABLED) &&
+                    !propertyName.equals(AddressBreakpoint.PROP_ADDRESS_VALUE) &&
                     !propertyName.equals(AddressBreakpoint.PROP_REFRESH))) {
                 return;
             }
@@ -185,8 +185,8 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
         // remove old annotation
         Object annotation = breakpointToAnnotation.get(b);
         if (annotation != null) {
-            EditorContextBridge.getContext().removeAnnotation(annotation);
-        }
+                EditorContextBridge.getContext().removeAnnotation(annotation);
+            }
         if (b.isHidden()) {
             return;
         }
@@ -225,15 +225,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
     
     private void update(GdbBreakpoint b, Object timeStamp) {
         Object annotation = breakpointToAnnotation.get(b);
-        //check dis annotations
-        if (b instanceof AddressBreakpoint) {
-            // try to reannotate
-            listen = false;
-            annotation = EditorContextBridge.annotate(b);
-            breakpointToAnnotation.put(b, annotation);
-            listen = true;
-        }
-        if (annotation != null) {
+        if (annotation != null && !(b instanceof AddressBreakpoint)) {
             int ln = EditorContextBridge.getContext().getLineNumber(annotation, timeStamp);
             listen = false;
             b.setLineNumber(ln);

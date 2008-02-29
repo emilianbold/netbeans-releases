@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -77,6 +78,7 @@ import org.openide.util.MutexException;
 public final class ClassPathModifier extends ProjectClassPathModifierImplementation {
     
     public static final int ADD = 1;
+    public static final int ADD_NO_HEURISTICS = 3;
     public static final int REMOVE = 2;
     
     private final Project project;
@@ -117,7 +119,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
         this.libUpdaterProperties = libUpdaterProperties;
     }
     
-    protected SourceGroup[] getExtensibleSourceGroups() {
+    public SourceGroup[] getExtensibleSourceGroups() {
         Sources s = project.getLookup().lookup(Sources.class);
         assert s != null;
         return s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -136,6 +138,10 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     }
 
     protected boolean addRoots (final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {        
+        return addRoots(classPathRoots, sourceGroup, type, ADD);
+    }
+    
+    public boolean addRoots (final URL[] classPathRoots, final SourceGroup sourceGroup, final String type, int operation) throws IOException, UnsupportedOperationException {        
         String classPathProperty = cpModifierCallback.getClassPathProperty(sourceGroup, type);
         return handleRoots (classPathRoots, classPathProperty, cpModifierCallback.getElementName(classPathProperty), ADD);
     }
@@ -153,11 +159,20 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
                             boolean changed = false;
                             File projectFolderFile = FileUtil.toFile(project.getProjectDirectory());
                             for (int i=0; i< classPathRoots.length; i++) {
-                                String filePath = ClassPathModifier.this.performSharabilityHeuristics(classPathRoots[i], antHelper);
+                                String filePath;
+                                if (ADD_NO_HEURISTICS == operation || REMOVE == operation) {
+                                    URL toAdd = FileUtil.getArchiveFile(classPathRoots[i]);
+                                    if (toAdd == null) {
+                                        toAdd = classPathRoots[i];
+                                    }
+                                    filePath =  LibrariesSupport.convertURLToFilePath(toAdd);
+                                } else {
+                                    filePath = ClassPathModifier.this.performSharabilityHeuristics(classPathRoots[i], antHelper);
+                                }
                                 File f = antHelper.resolveFile(filePath);
                                 ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath, projectFolderFile, null);
                                 cpUiSupportCallback.initItem(item);
-                                if (operation == ADD && !resources.contains(item)) {
+                                if ((operation == ADD || operation == ADD_NO_HEURISTICS) && !resources.contains(item)) {
                                     resources.add (item);
                                     changed = true;
                                 } else if (operation == REMOVE) {
