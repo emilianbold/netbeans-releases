@@ -152,9 +152,8 @@ public class JBIComponentConfigurationDescriptor {
     }
 
     public boolean showDisplayAtInstallation() {
-//        return SHOWDISPLAY_INSTALLATION.equals(showDisplay) ||
-//                SHOWDISPLAY_ALL.equals(showDisplay);
-        return false;
+        return SHOWDISPLAY_INSTALLATION.equals(showDisplay) ||
+                SHOWDISPLAY_ALL.equals(showDisplay);
     }
     
     /**
