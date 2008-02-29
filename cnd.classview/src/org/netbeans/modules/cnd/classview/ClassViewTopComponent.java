@@ -52,6 +52,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmModelStateListener;
@@ -205,11 +206,11 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
 
     private void addRemoveModelListeners(boolean add) {
         if (add) {
-            CsmModelAccessor.getModel().addModelListener(this);
-            CsmModelAccessor.getModel().addModelStateListener(this);
+            CsmListeners.getDefault().addModelListener(this);
+            CsmListeners.getDefault().addModelStateListener(this);
         } else {
-            CsmModelAccessor.getModel().removeModelListener(this);
-            CsmModelAccessor.getModel().removeModelStateListener(this);
+            CsmListeners.getDefault().removeModelListener(this);
+            CsmListeners.getDefault().removeModelStateListener(this);
         }
     }
 

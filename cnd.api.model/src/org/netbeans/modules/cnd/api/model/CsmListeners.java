@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,65 +39,58 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.api.model.util;
+package org.netbeans.modules.cnd.api.model;
 
-import java.lang.ref.WeakReference;
-import java.util.*;
+import org.openide.util.Lookup;
 
 /**
- * A list that keeps weak references to its elements
+ * Maintains lists of model listeners of different kind
  * @author Vladimir Kvashin
  */
-public class WeakList<T> implements Iterable<T> {
-    
-    private List<WeakReference<T>> list = new ArrayList<WeakReference<T>>();
-    
-    /**
-     * Adds a weak reference to the given element to this list
-     */
-    public synchronized void add(T element) {
-        list.add(new WeakReference<T>(element));
-    }
+public abstract class CsmListeners {
 
-    /**
-     * Adds all weak references frim the given iterator to this list
-     */
-    public synchronized void addAll(Iterator<T> elements) {
-	while( elements.hasNext() ) {
-	    list.add(new WeakReference<T>(elements.next()));
+    private static CsmListeners DEFAULT;
+    
+    private static final CsmListeners EMPTY = new Empty();
+	    
+    public abstract void addModelListener(CsmModelListener listener);
+
+    public abstract void removeModelListener(CsmModelListener listener);
+    
+    public abstract void addProgressListener(CsmProgressListener listener);
+    
+    public abstract void removeProgressListener(CsmProgressListener listener);
+    
+    public abstract void addModelStateListener(CsmModelStateListener listener);
+    
+    public abstract void removeModelStateListener(CsmModelStateListener listener);
+    
+    public static CsmListeners getDefault() {
+	if( DEFAULT == null ) {
+	    DEFAULT = Lookup.getDefault().lookup(CsmListeners.class);
 	}
+	return (DEFAULT == null) ? EMPTY : DEFAULT;
     }
     
-    /*
-     * Removes all references to the given element from this list
-     */
-    public synchronized void remove(T element) {
-	for (Iterator<WeakReference<T>> it = list.iterator(); it.hasNext();) {
-	    WeakReference<T> ref = it.next();
-            if( ref.get() == element ) {
-                it.remove();
-            }
-        }
-    }
+    private static class Empty extends CsmListeners {
+
+	@Override
+	public void addModelListener(CsmModelListener listener) {}
+
+	@Override
+	public void addProgressListener(CsmProgressListener listener) {}
+
+	@Override
+	public void removeModelListener(CsmModelListener listener) {}
+
+	@Override
+	public void removeProgressListener(CsmProgressListener listener) {}
+	
+	@Override
+	public void addModelStateListener(CsmModelStateListener listener) {}
     
-    /** Removes all elements */
-    public synchronized void clear() {
-	list.clear();
-    }
-    
-    /** 
-     * Returns an iterator of non-null references.
-     * NB: it iterates over a snapshot made at the moment of the call
-     */
-    public synchronized Iterator<T> iterator() {
-        List<T> result = new ArrayList<T>();
-        for (Iterator<WeakReference<T>> it = list.iterator(); it.hasNext();) {
-            WeakReference<T> ref = it.next();
-            T element = ref.get();
-            if( element != null ) {
-                result.add(element);
-            }
-        }    
-        return result.iterator();
+	@Override
+	public void removeModelStateListener(CsmModelStateListener listener) {}
+	
     }
 }

@@ -39,81 +39,76 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.api.model;
+package org.netbeans.modules.cnd.modelimpl.util;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import org.openide.util.Lookup;
+import java.lang.ref.WeakReference;
+import java.util.*;
 
 /**
- * utility class to access Csm model
- * @author Vladimir Voskresensky
+ * A list that keeps weak references to its elements
+ * @author Vladimir Kvashin
  */
-public final class CsmModelAccessor {
-
-    // singleton instance of model
-    private static CsmModel model;
-    private static CsmModel dummy;
+public class WeakList<T> implements Iterable<T> {
     
-   
-    private static class StateListener implements CsmModelStateListener {
-        public void modelStateChanged(CsmModelState newState, CsmModelState oldState) {
-            if( newState == CsmModelState.UNLOADED ) {
-                model = null;
-            }
-        }
-    };
+    private List<WeakReference<T>> list = new ArrayList<WeakReference<T>>();
     
-    private static class ModelStub implements CsmModel {
-	
-	public Collection<CsmProject> projects() {
-	    return Collections.<CsmProject>emptyList();
-	}
-	
-	public CsmProject getProject(Object id) {
-	    return null;
-	}
-	
-	public CsmFile findFile(CharSequence absPath) {
-	    return null;
-	}
-        
-        public CsmModelState getState() {
-            return CsmModelState.UNLOADED;
-        }
-
-	public void enqueue(Runnable task) {}
-
-	public void enqueue(Runnable task, CharSequence name) {}
-	
-    }
-    
-    /** Creates a new instance of CsmModelAccessor */
-    private CsmModelAccessor() {
+    /**
+     * Adds a weak reference to the given element to this list
+     */
+    public synchronized void add(T element) {
+        list.add(new WeakReference<T>(element));
     }
 
     /**
-     * Gets CsmModel using Lookup
+     * Adds all weak references frim the given iterator to this list
      */
-    public static CsmModel getModel() {
-        if( model == null ) {
-            synchronized(CsmModel.class ) {
-                if( model == null ) {
-                    model = (CsmModel) Lookup.getDefault().lookup(CsmModel.class);
-		    if( model == null ) {
-			return getStub();
-		    }
-                }
+    public synchronized void addAll(Iterator<T> elements) {
+	while( elements.hasNext() ) {
+	    list.add(new WeakReference<T>(elements.next()));
+	}
+    }
+    
+    /*
+     * Removes all references to the given element from this list
+     */
+    public synchronized void remove(T element) {
+	for (Iterator<WeakReference<T>> it = list.iterator(); it.hasNext();) {
+	    WeakReference<T> ref = it.next();
+            if( ref.get() == element ) {
+                it.remove();
             }
         }
-        return model;
-    }    
-
-    private static CsmModel getStub() {
-	if( dummy == null ) {
-	    dummy = new ModelStub();
-	}
-	return dummy;
+    }
+    
+    /** Removes all elements */
+    public synchronized void clear() {
+	list.clear();
+    }
+    
+    /** 
+     * Returns an iterator of non-null references.
+     * NB: it iterates over a snapshot made at the moment of the call
+     */
+    public synchronized Iterator<T> iterator() {
+        List<T> result = new ArrayList<T>();
+	addTo(result);
+        return result.iterator();
+    }
+    
+    public synchronized Collection<T> join(Collection<? extends T> collection) {
+        List<T> result = new ArrayList<T>(collection.size() + list.size());
+	result.addAll(collection);
+	addTo(result);
+        return result;
+    }
+    
+    private void addTo(Collection<T> collection) {
+        for (Iterator<WeakReference<T>> it = list.iterator(); it.hasNext();) {
+            WeakReference<T> ref = it.next();
+            T element = ref.get();
+            if( element != null ) {
+                collection.add(element);
+            }
+        }    
     }
 }

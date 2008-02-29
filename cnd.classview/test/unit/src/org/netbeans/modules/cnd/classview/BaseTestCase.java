@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.classview;
 import java.io.File;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -85,7 +86,7 @@ public class BaseTestCase extends TraceModelTestBase implements CsmModelListener
         CsmNamespace globalNamespace = project.getGlobalNamespace();
         NamespaceKeyArray global = new NamespaceKeyArray(childrenUpdater, globalNamespace);
         dump(global,"", !isReparsed);
-        getModel().addModelListener(this);
+        CsmListeners.getDefault().addModelListener(this);
         for(CsmFile file : project.getHeaderFiles()){
             reparseFile(file);
         }

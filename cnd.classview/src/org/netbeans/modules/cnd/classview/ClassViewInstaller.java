@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.classview;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -79,11 +80,11 @@ public class ClassViewInstaller extends ModuleInstall {
         }
 
         private void shutdown() {
-            CsmModelAccessor.getModel().removeModelListener(this);
+            CsmListeners.getDefault().removeModelListener(this);
         }
 
         private void startup() {
-            CsmModelAccessor.getModel().addModelListener(this);
+            CsmListeners.getDefault().addModelListener(this);
         }
 
         private boolean isDefaultBehavior(){

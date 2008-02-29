@@ -138,11 +138,6 @@ public class ModelSupport implements PropertyChangeListener {
         this.model = model;
 	
 	if (! ModelImpl.isStandalone()) {
-	    Collection<? extends CsmProgressListener> listeners = Lookup.getDefault().lookupAll(CsmProgressListener.class);
-	    for (CsmProgressListener csmProgressListener : listeners) {
-		model.addProgressListener(csmProgressListener);
-	    }
-	    
 	    openedProjects = new HashSet<Project>();
 	    if (TRACE_STARTUP) System.out.println("Model support: Inited"); // NOI18N
 

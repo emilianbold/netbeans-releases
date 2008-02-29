@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.api.model.util.WeakList;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.modelimpl.Installer;
 
@@ -80,7 +79,7 @@ import org.openide.util.RequestProcessor;
  * CsmModel implementation
  * @author Vladimir Kvashin
  */
-public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startupable, CsmModelAccessor.CsmModelEx {
+public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startupable  {
 
     public ModelImpl() {
         ModelSupport.instance().init(this);
@@ -212,7 +211,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                 }
             }
 	    if( fireOpened ) {
-		fireProjectOpened(prj);
+		ListenersImpl.getImpl().fireProjectOpened(prj);
 	    }
         } else {
             disabledProjects.add(id);
@@ -230,7 +229,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
             }
             putProject2Map(id, prj);
         }
-        fireProjectOpened(prj);
+        ListenersImpl.getImpl().fireProjectOpened(prj);
         return prj;
     }
 
@@ -328,7 +327,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         CharSequence name = prj.getName();
         if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("dispose project " + name);
         prj.setDisposed();
-        fireProjectClosed(prj);
+        ListenersImpl.getImpl().fireProjectClosed(prj);
         ParserThreadManager.instance().waitEmptyProjectQueue(prj);
         prj.dispose(cleanRepository);
         if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("project closed " + name);
@@ -348,91 +347,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         return out;
     }
     
-    public void addModelListener(CsmModelListener listener) {
-        modelListeners.add(listener);
-    }
-    
-    public void removeModelListener(CsmModelListener listener) {
-        modelListeners.remove(listener);
-    }
-
-    public void addModelStateListener(CsmModelStateListener listener) {
-        modelStateListeners.add(listener);
-    }
-
-    public void removeModelStateListener(CsmModelStateListener listener) {
-        modelStateListeners.remove(listener);
-    }
-    
-    public void addProgressListener(CsmProgressListener listener) {
-        ProgressSupport.instance().addProgressListener(listener);
-    }
-    
-    public void removeProgressListener(CsmProgressListener listener) {
-        ProgressSupport.instance().removeProgressListener(listener);
-    }
-
-    public Iterator<CsmModelStateListener> getModelStateListeners() {
-	return modelStateListeners.iterator();
-    }
-    
-    public Iterator<CsmProgressListener> getProgressListeners() {
-	return ProgressSupport.instance().getProgressListeners();
-    }
-    
-    public Iterator<CsmModelListener> getModelListeners() {
-	return modelListeners.iterator();
-    }
-    
-    /*package-local*/ void fireProjectOpened(final ProjectBase csmProject) {
-        csmProject.onAddedToModel();
-        for ( CsmModelListener listener : modelListeners ) {
-            try {
-                listener.projectOpened(csmProject);
-            } catch (AssertionError ex){
-                DiagnosticExceptoins.register(ex);
-            } catch (Exception ex) {
-                DiagnosticExceptoins.register(ex);
-            }
-        }
-    }
-    
-    private void fireProjectClosed(CsmProject csmProject) {
-        for ( CsmModelListener listener : modelListeners ) {
-            try {
-                listener.projectClosed(csmProject);
-            } catch (AssertionError ex){
-                DiagnosticExceptoins.register(ex);
-            } catch (Exception ex) {
-                DiagnosticExceptoins.register(ex);
-            }
-        }
-    }
-    
-    /**  */
-    void fireModelChanged(CsmChangeEvent e) {
-        for ( CsmModelListener listener : modelListeners ) {
-            try {
-                listener.modelChanged(e);
-            } catch (AssertionError ex){
-                DiagnosticExceptoins.register(ex);
-            } catch (Exception ex) {
-                DiagnosticExceptoins.register(ex);
-            }
-        }
-    }
-    
-    void fireModelStateChanged(CsmModelState newState, CsmModelState oldState) {
-        for ( CsmModelStateListener listener : modelStateListeners ) {
-            try {
-                listener.modelStateChanged(newState, oldState);
-            } catch (AssertionError ex){
-                DiagnosticExceptoins.register(ex);
-            } catch (Exception ex) {
-                DiagnosticExceptoins.register(ex);
-            }
-        }
-    }
     
     // used only in a couple of functions below
     private final String clientTaskPrefix = "Code Model Client Request"; // NOI18N
@@ -608,7 +522,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         if( newState != state ) {
             CsmModelState oldState = state;
             state = newState;
-            fireModelStateChanged(newState, oldState);
+            ListenersImpl.getImpl().fireModelStateChanged(newState, oldState);
         }
     }
     
@@ -758,9 +672,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     /** maps platform project to project */
     private Map<Object, CsmUID<CsmProject>> platf2csm = new HashMap<Object, CsmUID<CsmProject>>();
 
-    private WeakList<CsmModelListener> modelListeners = new WeakList<CsmModelListener>();
-    private WeakList<CsmModelStateListener> modelStateListeners = new WeakList<CsmModelStateListener>();
-    
     private CsmModelState state;
 
     private double warningThreshold = 0.98;
