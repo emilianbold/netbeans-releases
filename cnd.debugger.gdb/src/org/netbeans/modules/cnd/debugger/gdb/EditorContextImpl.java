@@ -499,8 +499,6 @@ public class EditorContextImpl extends EditorContext {
      * @return The MIME type of the current file
      */
     public String getCurrentMIMEType() {
-        FileObject fo;
-        
         synchronized (currentLock) {
             DataObject[] nodes = (DataObject[]) resDataObject.allInstances().toArray(new DataObject[0]);
 
@@ -513,11 +511,7 @@ public class EditorContextImpl extends EditorContext {
                 dobj = ((DataShadow) dobj).getOriginal();
             }
 
-            try {
-                fo = URLMapper.findFileObject(dobj.getPrimaryFile().getURL());
-            } catch (FileStateInvalidException ex) {
-                fo = null;
-            }
+            FileObject fo = dobj.getPrimaryFile();
 
             return fo != null ? fo.getMIMEType() : ""; // NOI18N
         }
@@ -552,12 +546,11 @@ public class EditorContextImpl extends EditorContext {
 			if (dobj instanceof DataShadow) {
 			    dobj = ((DataShadow) dobj).getOriginal();
 			}
-			try {
-			    FileObject fo = URLMapper.findFileObject(dobj.getPrimaryFile().getURL());
-			    mime = fo.getMIMEType();
-			    break;
-			} catch (FileStateInvalidException ex) {
-			}
+                        FileObject fo = dobj.getPrimaryFile();
+                        if (fo != null) {
+                            mime = fo.getMIMEType();
+                            break;
+                        }
 		    }
 		}
 	    }

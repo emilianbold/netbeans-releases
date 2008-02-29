@@ -246,11 +246,6 @@ public class CompletionResolverImpl implements CompletionResolver {
                 }                   
             }
 
-            // file local variables
-            if (needFileLocalVars(context, offset)) {
-                fileLocalVars = contResolver.getFileLocalVariables(context, strPrefix, match);
-            }
-
             if (needClassElements(context, offset)) {
                 CsmClass clazz = CsmBaseUtilities.getFunctionClass(fun);
                 if (clazz != null) {
@@ -297,7 +292,12 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         if (needFileLocalFunctions(context, offset)) {
             fileLocalFunctions = getFileLocalFunctions(context, strPrefix, match);
+        }            
+        // file local variables
+        if (needFileLocalVars(context, offset)) {
+            fileLocalVars = contResolver.getFileLocalVariables(context, strPrefix, match);
         }
+        
         if (needFileIncludedMacros(context, offset)) {
             fileProjectMacros = contResolver.getFileIncludedProjectMacros(context, strPrefix, match);
         }
@@ -660,6 +660,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
                 resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
                 resolveTypes |= RESOLVE_FILE_LOCAL_FUNCTIONS;
+                resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
                 resolveTypes |= RESOLVE_GLOB_NAMESPACES;
                 resolveTypes |= RESOLVE_LIB_CLASSES;
                 resolveTypes |= RESOLVE_LIB_VARIABLES;
@@ -693,6 +694,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             resolveTypes |= RESOLVE_LIB_ENUMERATORS;
             resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
             resolveTypes |= RESOLVE_FILE_LOCAL_FUNCTIONS;
+            resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
             resolveTypes |= RESOLVE_GLOB_NAMESPACES;
             resolveTypes |= RESOLVE_LIB_CLASSES;
             resolveTypes |= RESOLVE_LIB_FUNCTIONS;
@@ -701,7 +703,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
     
     private boolean needFileLocalVars(CsmContext context, int offset) {
-        if ((hideTypes & resolveTypes & RESOLVE_FILE_LOCAL_VARIABLES) == RESOLVE_LOCAL_VARIABLES) {
+        if ((hideTypes & resolveTypes & RESOLVE_FILE_LOCAL_VARIABLES) == RESOLVE_FILE_LOCAL_VARIABLES) {
             return true;
         }
         boolean need = false;

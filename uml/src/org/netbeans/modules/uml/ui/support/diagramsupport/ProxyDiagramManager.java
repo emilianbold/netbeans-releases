@@ -287,7 +287,11 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
                     try {
                         FileObject parentFolder = etldFO.getParent();
                         String fileNameWihoutExt = etldFO.getName();
-                        FileObject destFolderFO = parentFolder.createFolder("DiagramBackup");
+                        FileObject destFolderFO = parentFolder.getFileObject("DiagramBackup");
+                        if (destFolderFO == null) 
+                        {
+                            destFolderFO = parentFolder.createFolder("DiagramBackup");
+                        }
 
                         // move *.etld and *.etlp to the DiagramBackup folder
                         FileUtil.moveFile(etldFO, destFolderFO, fileNameWihoutExt);

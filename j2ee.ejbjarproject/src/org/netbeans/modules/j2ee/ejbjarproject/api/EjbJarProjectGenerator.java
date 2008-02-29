@@ -308,7 +308,7 @@ public class EjbJarProjectGenerator {
                     } else {
                         for (int i=0; i<testFolders.length; i++) {
                             if (!testFolders[i].exists()) {
-                                testFolders[i].mkdirs();
+                                FileUtil.createFolder(testFolders[i]);
                             }
                             String propName = "test.src.dir" + (i == 0 ? "" : Integer.toString(i+1)); //NOI18N
                             String testReference = refHelper.createForeignFileReference(testFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);

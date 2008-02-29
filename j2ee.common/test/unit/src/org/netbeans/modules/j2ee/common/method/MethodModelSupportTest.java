@@ -93,7 +93,7 @@ public class MethodModelSupportTest extends NbTestCase {
         clearWorkDir();
         
         File file = new File(getWorkDir(),"cache");	//NOI18N
-        file.mkdirs();
+        FileUtil.createFolder(file);
         IndexUtil.setCacheFolder(file);
 
         FileObject workDir = FileUtil.toFileObject(getWorkDir());

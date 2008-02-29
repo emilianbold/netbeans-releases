@@ -98,7 +98,7 @@ public class ManageComponentLibrariesDialog  extends org.netbeans.performance.te
     public ComponentOperator open() {
         log(":: open");
         manageComponentLibsButton.pushNoBlock();
-        dialog = new NbDialogOperator("Component Library Manager"); // NOI18N
+        dialog = new NbDialogOperator("Component Library"); // NOI18N
         return dialog;
     }
 
