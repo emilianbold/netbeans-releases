@@ -92,6 +92,10 @@ import org.openide.util.NbBundle;
 /**
  * Code completion provider - delegates to language plugin for actual population of result set.
  * Based on JavaCompletionProvider by Dusan Balek.
+ * 
+ * @todo I may be able to rip out the code I had in here to work around the
+ *   automatic completion vs "No Suggestions" issue; see 
+ *    http://hg.netbeans.org/main?cmd=changeset;node=6740db8e6988
  *
  * @author Tor Norbye
  */
@@ -140,7 +144,7 @@ public class GsfCompletionProvider implements CompletionProvider {
                 case NONE: return 0;
                 case STOP: {
                     isAutoQuery = false;
-                    Completion.get().hideCompletion();
+                    Completion.get().hideAll();
                     return 0;
                 }
                 case COMPLETION: return COMPLETION_QUERY_TYPE;
@@ -237,6 +241,7 @@ public class GsfCompletionProvider implements CompletionProvider {
         private JToolTip toolTip;
         private CompletionDocumentation documentation;
         private int anchorOffset;
+        //private int toolTipOffset;
         private JTextComponent component;
         private int queryType;
         private int caretOffset;
@@ -445,6 +450,12 @@ public class GsfCompletionProvider implements CompletionProvider {
                     int index = info.getCurrentIndex();
                     anchorOffset = info.getAnchorOffset();
                     toolTip = new MethodParamsTipPaintComponent(parameterList, index, component);
+                    //startPos = (int)sourcePositions.getEndPosition(env.getRoot(), mi.getMethodSelect());
+                    //String text = controller.getText().substring(startPos, offset);
+                    //anchorOffset = startPos + controller.getPositionConverter().getOriginalPosition(text.indexOf('(')); //NOI18N
+                    //toolTipOffset = startPos + controller.getPositionConverter().getOriginalPosition(text.lastIndexOf(',')); //NOI18N
+                    //if (toolTipOffset < anchorOffset)
+                    //    toolTipOffset = anchorOffset;
                     return;
 
                 }

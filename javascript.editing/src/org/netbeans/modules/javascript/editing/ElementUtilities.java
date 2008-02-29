@@ -108,6 +108,9 @@ public class ElementUtilities {
         }
         
         Node node = getNode(info, element);
+        if (node == null) {
+            return null;
+        }
 
         // Initially, I implemented this by using JsParserResult.getCommentNodes.
         // However, I -still- had to rely on looking in the Document itself, since
@@ -173,10 +176,10 @@ public class ElementUtilities {
             
                 if (indexedElement != null) {
                     String url = indexedElement.getFilenameUrl();
-                    if (url.indexOf("jsstubs/stub_dom_") != -1) { // NOI18N
-                        sb.append(" (DOM)");
-                    } else if (url.indexOf("jsstubs/stub_core_") != -1) { // NOI18N
+                    if (url.indexOf("jsstubs/stub_core_") != -1) { // NOI18N
                         sb.append(" (Core JavaScript)");
+                    } else if (url.indexOf("jsstubs/stub_") != -1) { // NOI18N
+                        sb.append(" (DOM)");
                     }
                 }
 
