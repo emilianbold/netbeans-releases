@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
+import org.openide.util.UserQuestionException;
 
 /**
  * implementation of references resolver
@@ -97,7 +98,12 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
                 CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);
                 StyledDocument doc = null;
                 try {
-                    doc = cookie.openDocument();
+                    try {
+                        doc = cookie.openDocument();
+                    } catch (UserQuestionException ex) {
+                        ex.confirmed();
+                        doc = cookie.openDocument();
+                    }
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
                 }

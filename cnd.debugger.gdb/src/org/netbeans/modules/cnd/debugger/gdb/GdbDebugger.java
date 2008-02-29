@@ -241,6 +241,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.gdb_show("language"); // NOI18N
             gdb.gdb_set("print repeat",  // NOI18N
                     Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold()));
+            gdb.data_list_register_names("");
             if (pae.getID() == DEBUG_ATTACH) {
                 programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
                 CommandBuffer cb = new CommandBuffer();
@@ -473,6 +474,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             } else if (evt.getNewValue() == STATE_STOPPED) {
                 updateLocalVariables(0);
+                gdb.data_list_register_values("");
             } else if (evt.getNewValue() == STATE_SILENT_STOP) {
                 interrupt();
             } else if (evt.getNewValue() == STATE_RUNNING && 
@@ -485,6 +487,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else if (evt.getPropertyName().equals(PROP_CURRENT_THREAD)) {
             updateCurrentCallStack();
             updateLocalVariables(0);
+            gdb.data_list_register_values("");
         }
     }
     
@@ -730,8 +733,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (cb != null) {
                 cb.done();
             }
-        } else if (msg.startsWith(Disassembly.RESPONSE_HEADER)) { // NOI18N
+        } else if (msg.startsWith(Disassembly.RESPONSE_HEADER)) {
             disassembly.update(msg);
+        } else if (msg.startsWith(Disassembly.REGISTER_NAMES_HEADER)) {
+            disassembly.updateRegNames(msg);
+        } else if (msg.startsWith(Disassembly.REGISTER_VALUES_HEADER)) {
+            disassembly.updateRegValues(msg);
         } else if (msg.equals("^done") && getState().equals(STATE_SILENT_STOP)) { // NOI18N
             log.fine("GD.resultRecord[" + token + "]: Got \"^done\" in silent stop");
             setRunning();
