@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.actions.BuildToolsAction;
 
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.PropertySupport;
 
@@ -146,7 +147,7 @@ public class GdbProfile implements ConfigurationAuxObject {
                 return file.getAbsolutePath();
             }
         } else {
-            StringTokenizer tok = new StringTokenizer(CppSettings.getDefault().getPath(), File.pathSeparator);
+            StringTokenizer tok = new StringTokenizer(Path.getPathAsString(), File.pathSeparator);
             while (tok.hasMoreTokens()) {
                 String d = tok.nextToken();
                 file = new File(d, name);

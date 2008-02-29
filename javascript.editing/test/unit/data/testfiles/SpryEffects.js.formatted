@@ -57,7 +57,7 @@ Spry.Effect.Registry.prototype.getRegisteredEffect = function(element, effect)
   var eleIdx = this.getIndexOfElement(element);
 
   if (eleIdx == -1)
-    {
+  {
     var addedElement = new Spry.Effect.AnimatedElement(element);
     this.elements[this.elements.length] = addedElement;
     eleIdx = this.elements.length - 1;
@@ -65,11 +65,11 @@ Spry.Effect.Registry.prototype.getRegisteredEffect = function(element, effect)
 
   var foundEffectArrayIdx = -1;
   for (var i = 0; i < this.elements[eleIdx].effectArray.length; i++) 
-    {
+  {
     if (this.elements[eleIdx].effectArray[i])
-      {
+    {
       if (this.effectsAreTheSame(this.elements[eleIdx].effectArray[i], effect))
-        {
+      {
         foundEffectArrayIdx = i;
         this.elements[eleIdx].effectArray[i].reset(); // bb
         this.elements[eleIdx].currentEffect = i;
@@ -86,7 +86,7 @@ Spry.Effect.Registry.prototype.getRegisteredEffect = function(element, effect)
   }
 
   if (foundEffectArrayIdx == -1) 
-    {
+  {
     var currEffectIdx = this.elements[eleIdx].effectArray.length;
     this.elements[eleIdx].effectArray[currEffectIdx] = effect;
     this.elements[eleIdx].currentEffect = currEffectIdx;
@@ -100,7 +100,7 @@ Spry.Effect.Registry.prototype.getIndexOfElement = function(element)
 {
   var registryIndex = -1;
   for (var i = 0; i < this.elements.length; i++)
-    {
+  {
     if (this.elements[i]) {
       if (this.elements[i].element == element)
         registryIndex = i;
@@ -117,15 +117,15 @@ Spry.Effect.Registry.prototype.effectsAreTheSame = function(effectA, effectB)
   //if(effectA.queue != null) xxx
 
   if(effectA.effectsArray != null) // cluster effect
-    {
+  {
     for (var i = 0; i < effectA.effectsArray.length; i++)
-      {
+    {
       if(!Spry.Effect.Utils.optionsAreIdentical(effectA.effectsArray[i].effect.options, effectB.effectsArray[i].effect.options))
         return false;
     }
   }
   else // single effect
-    {
+  {
     if(!Spry.Effect.Utils.optionsAreIdentical(effectA.options, effectB.options))
       return false;
   }
@@ -241,11 +241,11 @@ Spry.Effect.Utils.getPixelValue = function(value)
 Spry.Effect.Utils.getFirstChildElement = function(node)
 {
   if (node)
-    {
+  {
     var childCurr = node.firstChild;
 
     while (childCurr)
-      {
+    {
       if (childCurr.nodeType == 1) // Node.ELEMENT_NODE
         return childCurr;
 
@@ -262,7 +262,7 @@ Spry.Effect.Utils.optionsAreIdentical = function(optionsA, optionsB)
     return true;
 
   if(optionsA != null && optionsB != null)
-    {
+  {
     var objectCountA = 0;
     var objectCountB = 0;
 
@@ -274,7 +274,7 @@ Spry.Effect.Utils.optionsAreIdentical = function(optionsA, optionsB)
 
     for (var prop in optionsA)
       if((optionsB[prop] === undefined) || (optionsA[prop] != optionsB[prop]))
-      return false;
+        return false;
 
     return true;
   }
@@ -309,7 +309,7 @@ Spry.Effect.getStyleProp = function(element, prop)
   {
     value = element.style[Spry.Effect.Utils.camelize(prop)];
     if (!value)
-      {
+    {
       if (document.defaultView && document.defaultView.getComputedStyle) {
         var css = document.defaultView.getComputedStyle(element, null);
         value = css ? css.getPropertyValue(prop) : null;
@@ -373,7 +373,7 @@ Spry.Effect.cleanWhitespace = function(element)
   for (var i = 0; i < element.childNodes.length; i++) {
     var node = element.childNodes[i];
     if (node.nodeType == 3 && !/\S/.test(node.nodeValue))
-      {
+    {
       try
       {
         element.parentNode.removeChild(element);
@@ -387,7 +387,7 @@ Spry.Effect.getDimensions = function(element)
 {
   dimensions = new Spry.Effect.Utils.Rectangle;
   if (Spry.Effect.getStyleProp(element, 'display') != 'none')
-    {
+  {
     dimensions.width = element.offsetWidth;
     dimensions.height = element.offsetHeight;
   }
@@ -415,11 +415,11 @@ Spry.Effect.getOffsetPosition = function(element)
 {
   var position = new Spry.Effect.Utils.Position;
   if (element.offsetTop != null)
-    {
+  {
     position.y = element.offsetTop;
   }
   if (element.offsetLeft != null)
-    {
+  {
     position.x = element.offsetLeft;
   }
   return position;
@@ -469,7 +469,7 @@ Spry.Effect.Animator.prototype.start = function(queue)
   var self = this;
 
   if (this.options.setup)
-    {
+  {
     try
     {
       this.options.setup(this.element, this);
@@ -493,13 +493,13 @@ Spry.Effect.Animator.prototype.stop = function()
   this.startMilliseconds = 0;
 
   if (this.queue != null)
-    {
+  {
     this.queue.startNextEffect();
   }
   else 
-    {
+  {
     if (this.options.finish)
-      {
+    {
       try
       {
         this.options.finish(this.element, this);
@@ -534,15 +534,15 @@ Spry.Effect.Animator.prototype.drawEffect = function()
     position = 1.0;
   } else {
     if (this.options.transition == Spry.sinusoidalTransition)
-      {
+    {
       position = (-Math.cos(position*Math.PI)/2) + 0.5;
     }
     else if (this.options.transition == Spry.linearTransition)
-      {
+    {
       // default: linear
     }
     else
-      {
+    {
       alert('unknown transition');
     }
 		
@@ -627,7 +627,7 @@ Spry.Effect.Move.prototype.animate = function(position)
 Spry.Effect.Move.prototype.reset = function()
 {
   if(!this.isFinished)
-    {
+  {
     this.cancel();
     this.startX = this.startX;
     this.startY = this.startY;
@@ -680,7 +680,7 @@ Spry.Effect.MoveSlide.prototype.animate = function(position)
 Spry.Effect.MoveSlide.prototype.reset = function()
 {
   if(!this.isFinished)
-    {
+  {
     this.cancel();
     this.startX = this.startX;
     this.startY = this.startY;
@@ -710,28 +710,28 @@ Spry.Effect.Size = function(element, fromRect, toRect, options)
   this.stopHeight = toRect.height;
 
   if (Spry.Effect.Utils.isPercentValue(this.startWidth))
-    {
+  {
     var startWidthPercent = Spry.Effect.Utils.getPercentValue(this.startWidth);
     //var originalRect = Spry.Effect.getDimensions(element);
     this.startWidth = originalRect.width * (startWidthPercent / 100);
   }
 
   if (Spry.Effect.Utils.isPercentValue(this.startHeight))
-    {
+  {
     var startHeightPercent = Spry.Effect.Utils.getPercentValue(this.startHeight);
     //var originalRect = Spry.Effect.getDimensions(element);
     this.startHeight = originalRect.height * (startHeightPercent / 100);
   }
 
   if (Spry.Effect.Utils.isPercentValue(this.stopWidth))
-    {
+  {
     var stopWidthPercent = Spry.Effect.Utils.getPercentValue(this.stopWidth);
     var originalRect = Spry.Effect.getDimensions(element);
     this.stopWidth = originalRect.width * (stopWidthPercent / 100);
   }
 
   if (Spry.Effect.Utils.isPercentValue(this.stopHeight))
-    {
+  {
     var stopHeightPercent = Spry.Effect.Utils.getPercentValue(this.stopHeight);
     var originalRect = Spry.Effect.getDimensions(element);
     this.stopHeight = originalRect.height * (stopHeightPercent / 100);
@@ -772,7 +772,7 @@ Spry.Effect.Size.prototype.animate = function(position)
 Spry.Effect.Size.prototype.reset = function()
 {
   if(!this.isFinished)
-    {
+  {
     this.cancel();
     this.startWidth = this.startWidth;
     this.startHeight = this.startHeight;
@@ -819,7 +819,7 @@ Spry.Effect.Opacity.prototype.animate = function(position)
 Spry.Effect.Opacity.prototype.reset = function()
 {
   if(!this.isFinished)
-    {
+  {
     this.cancel();
     this.startOpacity = this.startOpacity;
   }
@@ -878,7 +878,7 @@ Spry.Effect.Color.prototype.animate = function(position)
 Spry.Effect.Color.prototype.reset = function()
 {
   if(!this.isFinished)
-    {
+  {
     this.cancel();
     this.startColor = this.startColor;
     this.startRedColor = Spry.Effect.Utils.hexToInt(startColor.substr(1,2));
@@ -928,12 +928,12 @@ Spry.Effect.Cluster.prototype.addParallelEffect = function(effect)
 Spry.Effect.Cluster.prototype.getNextEffect = function()
 {
   if ((this.currIdx + 1) < (this.effectsArray.length))
-    {
+  {
     this.currIdx = this.currIdx + 1;
     return this.effectsArray[this.currIdx].effect;
   }
   else
-    {
+  {
     return null;
   }
 }
@@ -947,7 +947,7 @@ Spry.Effect.Cluster.prototype.start = function()
 {
   // before queue starts possible setup callback action is executed
   if (this.setup) 
-    {
+  {
     try
     {
       this.setup(this.effectsArray[0].effect.element, this.effectsArray);
@@ -957,21 +957,21 @@ Spry.Effect.Cluster.prototype.start = function()
   this.currIdx = 0;
   var quit = false;
   while (quit == false)
-    {
+  {
     this.effectsArray[this.currIdx].effect.start(this);
     if ((this.currIdx + 1) < (this.effectsArray.length))
-      {
+    {
       if (this.effectsArray[this.currIdx].kind == "queue")
-        {
+      {
         quit = true;
       }
     }
     else
-      {
+    {
       quit = true;
     }
     if (quit == false) 
-      {
+    {
       this.currIdx++;
     }
   }
@@ -980,13 +980,13 @@ Spry.Effect.Cluster.prototype.start = function()
 Spry.Effect.Cluster.prototype.startNextEffect = function()
 {
   if ((this.currIdx + 1) < (this.effectsArray.length))
-    {
+  {
     this.currIdx++;
     this.effectsArray[this.currIdx].effect.start(this);
   } else {
     // time for finish callback
     if (this.finish) 
-      {
+    {
       try
       {
         this.finish(this.effectsArray[0].effect.element, this.effectsArray);
@@ -1013,10 +1013,10 @@ Spry.Effect.Cluster.prototype.doToggle = function()
 	
     // toggle all effects of the cluster, too
     for (var i = 0; i < this.effectsArray.length; i++) 
-      {
+    {
       if (this.effectsArray[i].effect.options && (this.effectsArray[i].effect.options.toggle != null)) {
         if (this.effectsArray[i].effect.options.toggle == true)
-          {
+        {
           this.effectsArray[i].effect.doToggle();
         }
       }
@@ -1028,7 +1028,7 @@ Spry.Effect.Cluster.prototype.reset = function()
 {
   if (this.currIdx == -1) return;
   for (var i = 0; i < this.effectsArray.length; i++) 
-    {	
+  {	
     if (!this.effectsArray[i].effect.isFinished)
       this.effectsArray[i].effect.reset();
   }
@@ -1037,7 +1037,7 @@ Spry.Effect.Cluster.prototype.reset = function()
 Spry.Effect.Cluster.prototype.cancel = function()
 {
   for (var i = 0; i < this.effectsArray.length; i++)
-    {
+  {
     if (this.effectsArray[i].effect.timer != null) 
       this.effectsArray[i].effect.cancel();
   }
@@ -1091,7 +1091,7 @@ Spry.Effect.AppearFade = function (element, options)
 	
 
   if (options)
-    {
+  {
     if (options.duration != null) durationInMilliseconds = options.duration;
     if (options.from != null) fromOpacity = options.from;
     if (options.to != null) toOpacity = options.to;
@@ -1140,27 +1140,27 @@ Spry.Effect.Blind = function (element, options)
 	
 
   if (options)
-    {
+  {
     if (options.duration != null) durationInMilliseconds = options.duration;
     if (options.from != null)
-      {
+    {
       if (Spry.Effect.Utils.isPercentValue(options.from))
-        {
+      {
         fromHeight = Spry.Effect.Utils.getPercentValue(options.from);
       }
       else
-        {
+      {
         fromHeight = (Spry.Effect.Utils.getPixelValue(options.from) / startHeightPx) * 100;
       }
     }
     if (options.to != null)
-      {
+    {
       if (Spry.Effect.Utils.isPercentValue(options.to))
-        {
+      {
         toHeight = Spry.Effect.Utils.getPercentValue(options.to);
       }
       else
-        {
+      {
         toHeight = (Spry.Effect.Utils.getPixelValue(options.to) / startHeightPx) * 100;
       }
     }
@@ -1224,7 +1224,7 @@ Spry.Effect.Highlight = function (element, options)
 	
 
   if (options)
-    {
+  {
     if (options.duration != null) durationInMilliseconds = options.duration;
     if (options.from != null) fromColor = options.from;
     if (options.to != null) toColor = options.to;
@@ -1262,10 +1262,10 @@ Spry.Effect.Slide = function (element, options)
 
   // for IE 6 on win: check if position is static or fixed -> not supported and would cause trouble
   if(/MSIE 6.0/.test(navigator.userAgent) && /Windows NT 5.1/.test(navigator.userAgent))
-    {
+  {
     var pos = Spry.Effect.getStyleProp(element, 'position');
     if(pos && (pos == 'static' || pos == 'fixed'))
-      {
+    {
       Spry.Effect.setStyleProp(element, 'position', 'relative');
       Spry.Effect.setStyleProp(element, 'top', '');
       Spry.Effect.setStyleProp(element, 'left', '');
@@ -1273,7 +1273,7 @@ Spry.Effect.Slide = function (element, options)
   }
 
   if(firstChildElt)
-    {
+  {
     Spry.Effect.makePositioned(firstChildElt);
     Spry.Effect.makeClipping(firstChildElt);
   }
@@ -1299,11 +1299,11 @@ Spry.Effect.Slide = function (element, options)
   var optionTo   = options.to;
 
   if (options)
-    {
+  {
     if (options.duration != null) durationInMilliseconds = options.duration;
 
     if (options.from != null)
-      {
+    {
       if (Spry.Effect.Utils.isPercentValue(options.from))
         fromPos.y = verticalMovePx * Spry.Effect.Utils.getPercentValue(options.from) / 100;
       else
@@ -1311,7 +1311,7 @@ Spry.Effect.Slide = function (element, options)
     }
 
     if (options.to != null)
-      {
+    {
       if (Spry.Effect.Utils.isPercentValue(options.to))
         toPos.y = verticalMovePx * Spry.Effect.Utils.getPercentValue(options.to) / 100;
       else
@@ -1375,30 +1375,30 @@ Spry.Effect.GrowShrink = function (element, options)
 	
 
   if (options)
-    {
+  {
     if (options.duration != null) durationInMilliseconds = options.duration;
     if (options.from != null) 
-      {
+    {
       if (Spry.Effect.Utils.isPercentValue(options.from))
-        {
+      {
         fromRect.width = originalWidth * (Spry.Effect.Utils.getPercentValue(options.from) / 100);
         fromRect.height = originalHeight * (Spry.Effect.Utils.getPercentValue(options.from) / 100);
       }
       else
-        {
+      {
         fromRect.width = Spry.Effect.Utils.getPixelValue(options.from);
         fromRect.height = Spry.Effect.Utils.getPixelValue(options.from);
       }
     }
     if (options.to != null) 
-      {
+    {
       if (Spry.Effect.Utils.isPercentValue(options.to))
-        {
+      {
         toRect.width = originalWidth * (Spry.Effect.Utils.getPercentValue(options.to) / 100);
         toRect.height = originalHeight * (Spry.Effect.Utils.getPercentValue(options.to) / 100);
       }
       else
-        {
+      {
         toRect.width = Spry.Effect.Utils.getPixelValue(options.to);
         toRect.height = Spry.Effect.Utils.getPixelValue(options.to);
       }
@@ -1450,7 +1450,7 @@ Spry.Effect.Shake = function (element, options)
   var finishCallback = null;
 
   if (options)
-    {
+  {
     if (options.setup != null) setupCallback = options.setup;
     if (options.finish != null) finishCallback = options.finish;
   }
@@ -1557,7 +1557,7 @@ Spry.Effect.Squish = function (element, options)
 	
 
   if (options)
-    {
+  {
     if (options.duration != null) durationInMilliseconds = options.duration;
     if (options.toggle != null) doToggle = options.toggle;
     if (options.setup != null) setupCallback = options.setup;
@@ -1607,7 +1607,7 @@ Spry.Effect.Pulsate = function (element, options)
   var finishCallback = null;
 
   if (options)
-    {
+  {
     if (options.duration != null) durationInMilliseconds = options.duration;
     if (options.from != null) fromOpacity = options.from;
     if (options.to != null) toOpacity = options.to;
@@ -1649,7 +1649,7 @@ Spry.Effect.Puff = function (element, options)
   var finishCallback = null;
 
   if (options)
-    {
+  {
     if (options.setup != null) setupCallback = options.setup;
     if (options.finish != null) finishCallback = options.finish;
   }
@@ -1718,7 +1718,7 @@ Spry.Effect.DropOut = function (element, options)
   var finishCallback = null;
 
   if (options)
-    {
+  {
     if (options.setup != null) setupCallback = options.setup;
     if (options.finish != null) finishCallback = options.finish;
   }

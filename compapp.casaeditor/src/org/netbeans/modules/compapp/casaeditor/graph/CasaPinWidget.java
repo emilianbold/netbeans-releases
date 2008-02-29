@@ -44,15 +44,12 @@ package org.netbeans.modules.compapp.casaeditor.graph;
 import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageProducer;
@@ -60,6 +57,7 @@ import java.awt.image.RescaleOp;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.GrayFilter;
 import javax.swing.ImageIcon;
@@ -68,6 +66,7 @@ import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.openide.util.Utilities;
 
@@ -156,7 +155,7 @@ public abstract class CasaPinWidget extends ErrableWidget {
         }
     }
 
-    private void hoverConnections() {
+    public Set<CasaComponent> getConnections() {
         CasaModelGraphScene scene = (CasaModelGraphScene) getScene();
         CasaEndpointRef pinObject = (CasaEndpointRef) scene.findObject(this);
         Collection<CasaComponent> edges = scene.getEdges();
@@ -170,6 +169,13 @@ public abstract class CasaPinWidget extends ErrableWidget {
                 pinConnections.add(edge);
             }
         }
+        
+        return pinConnections;
+    } 
+    
+    private void hoverConnections() {
+        CasaModelGraphScene scene = (CasaModelGraphScene) getScene();
+        Set<CasaComponent> pinConnections = getConnections();
         scene.setHighlightedObjects(pinConnections);
     }
     

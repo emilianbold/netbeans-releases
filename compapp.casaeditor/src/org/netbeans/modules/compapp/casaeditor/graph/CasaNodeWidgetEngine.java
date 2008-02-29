@@ -47,21 +47,18 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.*;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.border.LineBorder;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.model.StateModel;
-import org.netbeans.api.visual.widget.LabelWidget.Alignment;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularPainter;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularProvider;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.InnerGlowBorderDrawer;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.Painter;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.PainterWidget;
-import org.netbeans.modules.compapp.casaeditor.nodes.actions.GoToSourceAction;
-import org.openide.util.actions.SystemAction;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 
 /**
  *
@@ -213,11 +210,25 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
     }
 
     public void setMinimized(boolean isMinimized) {
+        ObjectScene scene = (ObjectScene) getScene();
+        
         for (Widget child : mContainerWidget.getChildren()) {
             if (child instanceof CasaMinimizable) {
                 ((CasaMinimizable) child).setMinimized(isMinimized);
             }
+            
+            if (child instanceof CasaPinWidget) {
+                CasaPinWidget pinWidget = (CasaPinWidget) child;
+                for (CasaComponent connection : pinWidget.getConnections()) {
+                    CasaConnectionWidget connectionWidget = 
+                            (CasaConnectionWidget) scene.findWidget(connection);
+                    if (connectionWidget instanceof CasaMinimizable) {
+                        ((CasaMinimizable)connectionWidget).setMinimized(isMinimized);
+                    }
+                }
+            }
         }
+        
         mContainerWidget.setPreferredBounds(isMinimized ? mTitleWidget.getPreferredBounds() : null);
         getScene().validate();
     }
