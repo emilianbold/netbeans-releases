@@ -187,11 +187,19 @@ public class EditorContextImpl extends EditorContext {
      * @param timeStamp a time stamp to be used
      */
     public boolean showSource (String url, int lineNumber, Object timeStamp) {
+        Line l = showSourceLine(url, lineNumber, timeStamp);
+        if (l != null) {
+            addPositionToJumpList(url, l, 0);
+        }
+        return l != null;
+    }
+    
+    static Line showSourceLine (String url, int lineNumber, Object timeStamp) {
         Line l = LineTranslations.getTranslations().getLine (url, lineNumber, timeStamp); // false = use original ln
         if (l == null) {
             ErrorManager.getDefault().log(ErrorManager.WARNING,
                     "Show Source: Have no line for URL = "+url+", line number = "+lineNumber);
-            return false;
+            return null;
         }
         if ("true".equalsIgnoreCase(fronting) || Utilities.isWindows()) {
             l.show (Line.SHOW_REUSE);
@@ -199,8 +207,7 @@ public class EditorContextImpl extends EditorContext {
         } else {
             l.show (Line.SHOW_REUSE);
         }
-        addPositionToJumpList(url, l, 0);
-        return true;
+        return l;
     }
     
     /**
