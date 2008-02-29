@@ -544,6 +544,13 @@ public class LayerUtils {
          */
         private String newLayerPath() {
             NbModuleProvider module = project.getLookup().lookup(NbModuleProvider.class);
+            FileObject manifest = module.getManifestFile();
+            if (manifest != null) {
+                String bundlePath = ManifestManager.getInstance(Util.getManifest(manifest), false).getLocalizingBundle();
+                if (bundlePath != null) {
+                    return bundlePath.replaceFirst("/[^/]+$", "/layer.xml"); // NOI18N
+                }
+            }
             return module.getCodeNameBase().replace('.', '/') + "/layer.xml"; // NOI18N
         }
 

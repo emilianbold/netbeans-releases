@@ -40,8 +40,8 @@
  */
 package org.netbeans.modules.ruby;
 
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.Index;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.ruby.elements.CommentElement;
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -75,20 +75,20 @@ import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.Completable;
-import org.netbeans.fpi.gsf.CompletionProposal;
-import org.netbeans.fpi.gsf.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CompletionProposal;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.ruby.elements.Element;
-import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.netbeans.fpi.gsf.HtmlFormatter;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.ruby.elements.IndexedField;
-import static org.netbeans.fpi.gsf.Index.*;
-import org.netbeans.fpi.gsf.Modifier;
-import org.netbeans.fpi.gsf.NameKind;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.ParameterInfo;
+import static org.netbeans.modules.gsf.api.Index.*;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -106,6 +106,7 @@ import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.elements.KeywordElement;
+import org.netbeans.modules.ruby.elements.RubyElement;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.Call;
 import org.netbeans.modules.ruby.lexer.RubyStringTokenId;
@@ -2357,7 +2358,7 @@ public class CodeCompleter implements Completable {
                 Node node = variables.get(variable);
 
                 if (!overlapsLine(node, astLineBegin, astLineEnd)) {
-                    AstVariableElement co = new AstVariableElement(node, variable);
+                    AstVariableElement co = new AstVariableElement(info, node, variable);
                     PlainItem item = new PlainItem(co, anchor, request);
                     item.setSmart(true);
 
@@ -2379,7 +2380,7 @@ public class CodeCompleter implements Completable {
                     continue;
                 }
 
-                Element co = new AstFieldElement(node);
+                Element co = new AstFieldElement(info, node);
                 FieldItem item = new FieldItem(co, anchor, request);
                 item.setSmart(true);
 
@@ -2402,7 +2403,7 @@ public class CodeCompleter implements Completable {
                     continue;
                 }
 
-                AstElement co = new AstVariableElement(node, variable);
+                AstElement co = new AstVariableElement(info, node, variable);
                 PlainItem item = new PlainItem(co, anchor, request);
                 item.setSmart(true);
 
@@ -2434,7 +2435,7 @@ public class CodeCompleter implements Completable {
                 //                } else {
                 //                    co = new DefaultComVariable(variable, false, -1, -1);
                 //                    ((DefaultComVariable)co).setNode(node);
-                AstElement co = new AstVariableElement(node, variable);
+                AstElement co = new AstVariableElement(info, node, variable);
                 PlainItem item = new PlainItem(co, anchor, request);
                 item.setSmart(true);
 
@@ -2545,11 +2546,7 @@ public class CodeCompleter implements Completable {
         Set<IndexedClass> classes = new HashSet<IndexedClass>();
 
         for (CompletionProposal proposal : proposals) {
-//            Element e = proposal.getElement();
-// XXX TODO Shudder shudder this is a sucky hack            
-            ElementHandle h = proposal.getElement();
-            Element e = RubyParser.resolveHandle(info, h);
-            
+            RubyElement e = (RubyElement) proposal.getElement();
 
             if (e instanceof IndexedElement) {
                 IndexedElement ie = (IndexedElement)e;
@@ -2575,10 +2572,10 @@ public class CodeCompleter implements Completable {
         // for File, not the standard one defined elsewhere.
         for (CompletionProposal candidate : candidates) {
             // See if the candidate corresponds to the caret position
-//            IndexedElement e = (IndexedElement)candidate.getElement();
-// XXX TODO Shudder shudder this is a sucky hack            
-            ElementHandle h = candidate.getElement();
-            Element re = RubyParser.resolveHandle(info, h);
+            RubyElement re = (RubyElement) candidate.getElement();
+            if (!(re instanceof IndexedElement)) {
+                continue;
+            }
             IndexedElement e = (IndexedElement)re;
             String signature = e.getSignature();
             Node node = AstUtilities.findBySignature(root, signature);
@@ -3520,10 +3517,6 @@ public class CodeCompleter implements Completable {
         }
 
         public ElementHandle getElement() {
-            return RubyParser.createHandle(request.info, element);
-        }
-
-        public Element getUnresolvedElement() {
             return element;
         }
 
@@ -3962,7 +3955,7 @@ public class CodeCompleter implements Completable {
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return RubyParser.createHandle(request.info, new KeywordElement(keyword));
+            return new KeywordElement(keyword);
         }
     }
 

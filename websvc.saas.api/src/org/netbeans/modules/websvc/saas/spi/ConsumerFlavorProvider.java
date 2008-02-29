@@ -29,6 +29,7 @@ package org.netbeans.modules.websvc.saas.spi;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
@@ -53,6 +54,9 @@ public interface ConsumerFlavorProvider {
             
     public static final DataFlavor WADL_METHOD_FLAVOR = new DataFlavor(WadlSaasMethod.class, "SaaS WADL Method"); //NOI18N
     public static final DataFlavor WADL_METHOD_NODE_FLAVOR = new DataFlavor(Node.class, "SaaS WADL Method Node"); //NOI18N
+    
+    public static final DataFlavor CUSTOM_METHOD_FLAVOR = new DataFlavor(CustomSaasMethod.class, "SaaS Custom Method"); //NOI18N
+    public static final DataFlavor CUSTOM_METHOD_NODE_FLAVOR = new DataFlavor(Node.class, "SaaS Custom Method Node"); //NOI18N
     /**
      * Add DataFlavors specific to a web service consumer to the base <code>Transferable</code>.
      * This method must not modify existing <code>DataFlavor</code> to data mappings.

@@ -51,10 +51,11 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.project.JavaAntLogger;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.WebModule;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
@@ -75,7 +76,7 @@ public class IdeEnvironmentTest extends NbTestCase {
         clearWorkDir();
 
         File userdir = new File(getWorkDir(), "userdir");
-        userdir.mkdirs();
+        FileUtil.createFolder(userdir);
         System.setProperty("netbeans.user", userdir.getPath());
 
         File platformCluster = new File(Lookup.class.getProtectionDomain().getCodeSource().getLocation().toURI())
@@ -89,7 +90,6 @@ public class IdeEnvironmentTest extends NbTestCase {
         System.setProperty("netbeans.home", platformCluster.getPath());
         System.setProperty("netbeans.dirs", javaCluster.getPath() + File.pathSeparator + enterCluster.getPath()
                 + File.pathSeparator + ideCluster.getPath());
-        System.setProperty("org.netbeans.modules.jspparser.debug", "1");
 
         Logger.getLogger("org.netbeans.core.startup.ModuleList").setLevel(Level.OFF);
 
@@ -103,7 +103,7 @@ public class IdeEnvironmentTest extends NbTestCase {
         removeLibrary("emptyWebProject", "jstl11");
 
         FileObject jspFo = TestUtil.getProjectFile(this, "emptyWebProject", "web/index.jsp");
-        JspParserAPI.WebModule wm = TestUtil.getWebModule(jspFo);
+        WebModule wm = TestUtil.getWebModule(jspFo);
         Map library = JspParserFactory.getJspParser().getTaglibMap(wm);
         assertNull("The JSTL library should not be present.", library.get("http://java.sun.com/jsp/jstl/fmt"));
 

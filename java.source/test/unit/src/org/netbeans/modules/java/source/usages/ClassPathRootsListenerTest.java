@@ -46,6 +46,7 @@ import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,6 +56,7 @@ import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.usages.ClassPathRootsListener.ClassPathRootsChangedListener;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupport;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -108,13 +110,13 @@ public class ClassPathRootsListenerTest extends NbTestCase {
         
         final AtomicInteger counter = new AtomicInteger();
         
-        PropertyChangeListener l = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+        ClassPathRootsChangedListener l = new ClassPathRootsChangedListener() {
+            public void rootsChanged(Collection<ClassPath> forCPs) {
                 counter.incrementAndGet();
             }
         };
         
-        ClassPathRootsListener.getDefault().addPropertyChangeListener(cp, false, l);
+        ClassPathRootsListener.getDefault().addClassPathRootsListener(cp, false, l);
         
         assertNotNull(FileUtil.createFolder(b));
         

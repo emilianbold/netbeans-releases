@@ -52,18 +52,18 @@ made subject to such option by the copyright holder.
                 <attr name="useCustomEditorKit" boolvalue="true"/>
                 
                 <file name="language.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.GsfLanguage"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.gsf.JspLanguage"/>
                 </file>
                 
                 <!-- we need the parser and the StructureScanner to enable navigator of embedded languages -->
                 <file name="parser.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.Parser"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Parser"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.gsf.JspGSFParser"/>
                 </file>
                 
                 <file name="structure.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.StructureScanner"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.StructureScanner"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.gsf.JspStructureScanner"/>
                 </file>
             </folder>
@@ -75,38 +75,38 @@ made subject to such option by the copyright holder.
                 <attr name="useCustomEditorKit" boolvalue="true"/>
                 
                 <file name="language.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.GsfLanguage"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.gsf.JspLanguage"/>
                 </file>
                 
                 <!-- we need the parser and the StructureScanner to enable navigator of embedded languages -->
                 <file name="parser.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.Parser"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Parser"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.gsf.JspGSFParser"/>
                 </file>
                 
                 <file name="structure.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.StructureScanner"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.StructureScanner"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.gsf.JspStructureScanner"/>
                 </file>
                 
                 <!--<file name="completion.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.Completable"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Completable"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlCompleter"/>
                 </file>-->
                 
                 <!--<file name="renamer.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.InstantRenamer"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.InstantRenamer"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RenameHandler"/>
                 </file>
                 
                 <file name="declarationfinder.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.DeclarationFinder"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.DeclarationFinder"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlFinder"/>
                 </file>
                 
                 <file name="bracket.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.BracketCompletion"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.BracketCompletion"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.BracketCompleter"/>
                 </file>
                 -->
@@ -115,7 +115,7 @@ made subject to such option by the copyright holder.
 
                 Don't index rhtml files - there's usually nothing interesting (new classes, methods) there
                 <file name="indexer.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.Indexer"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Indexer"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyIndexer"/>
                 </file>
                 <folder name="extensions">

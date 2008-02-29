@@ -45,7 +45,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
-import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;

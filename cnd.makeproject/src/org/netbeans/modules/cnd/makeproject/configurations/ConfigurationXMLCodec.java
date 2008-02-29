@@ -310,11 +310,20 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
             ((MakeConfiguration) currentConf).getCompilerSet().setValue(currentText);
         } else if (element.equals(C_REQUIRED_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getCRequired().setValue(currentText.equals(TRUE_VALUE));
+            if (descriptorVersion <= 41) {
+                return; // ignore
+            }
+            ((MakeConfiguration) currentConf).getCRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
         } else if (element.equals(CPP_REQUIRED_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getCppRequired().setValue(currentText.equals(TRUE_VALUE));
+            if (descriptorVersion <= 41) {
+                return; // ignore
+            }
+            ((MakeConfiguration) currentConf).getCppRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
         } else if (element.equals(FORTRAN_REQUIRED_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getFortranRequired().setValue(currentText.equals(TRUE_VALUE));
+            if (descriptorVersion <= 41) {
+                return; // ignore
+            }
+            ((MakeConfiguration) currentConf).getFortranRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
         } else if (element.equals(PLATFORM_ELEMENT)) {
             int set = new Integer(currentText).intValue();
             if (descriptorVersion <= 37 && set == 4) {

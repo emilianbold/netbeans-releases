@@ -65,7 +65,7 @@ public class SourceGroupTreeElement implements TreeElement {
     private Icon icon;
     private String displayName;
     
-    private static String PACKAGE_BADGE = "org/netbeans/modules/javascript/editing/rubyproject/ui/packageBadge.gif"; // NOI18N
+    private static String PACKAGE_BADGE = "org/netbeans/modules/refactoring/javascript/ui/tree/packageBadge.gif"; // NOI18N
 
     SourceGroupTreeElement(SourceGroup sg) {
         this.sg = new WeakReference<SourceGroup>(sg);

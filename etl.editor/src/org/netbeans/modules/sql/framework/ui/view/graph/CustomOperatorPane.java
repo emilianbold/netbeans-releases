@@ -196,6 +196,7 @@ public class CustomOperatorPane extends JPanel {
         this.setLayout(new GridBagLayout());
         String nbBundle1 = mLoc.t("PRSR001: Function Name");
         JLabel nameLabel = new JLabel(Localizer.parse(nbBundle1)); //NOI18N
+        nameLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle1));
         this.add(nameLabel,
                 new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                 GridBagConstraints.WEST,
@@ -207,20 +208,26 @@ public class CustomOperatorPane extends JPanel {
                 GridBagConstraints.WEST,
                 GridBagConstraints.HORIZONTAL,
                 new Insets(5, 5, 5, 5), 0, 0));
-        JButton addButton = new JButton("Add");
+        String nbBundle4 = mLoc.t("PRSR001: Add");
+        JButton addButton = new JButton(Localizer.parse(nbBundle4));
+        addButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle4));
         this.add(addButton,
                 new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
                 GridBagConstraints.WEST,
                 GridBagConstraints.HORIZONTAL,
                 new Insets(5, 5, 5, 5), 0, 0));
 
-        JButton removeButton = new JButton("Remove");
+        String nbBundle2 = mLoc.t("PRSR001: Remove");
+        JButton removeButton = new JButton(Localizer.parse(nbBundle2));
+        removeButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle2));
         this.add(removeButton,
                 new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
                 GridBagConstraints.WEST,
                 GridBagConstraints.NONE,
                 new Insets(5, 5, 5, 5), 0, 0));
-        JLabel argLabel = new JLabel("Arguments");
+        String nbBundle3 = mLoc.t("PRSR001: Arguments");
+        JLabel argLabel = new JLabel(Localizer.parse(nbBundle3));
+        argLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle3));
 
         this.add(argLabel,
                 new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,

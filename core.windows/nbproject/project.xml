@@ -191,7 +191,10 @@ made subject to such option by the copyright holder.
                     <name>qa-functional</name>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.core.nativeaccess</friend>
+                <package>org.netbeans.core.windows.nativeaccess</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

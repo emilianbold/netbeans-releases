@@ -48,11 +48,11 @@ import java.util.Set;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.TranslatedSource;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -251,6 +251,54 @@ public class LexUtilities {
         return 0;
     }
 
+    /**
+     * Tries to skip parenthesis 
+     */
+    static boolean skipParenthesis(TokenSequence<?extends JsTokenId> ts) {
+        int balance = 0;
+
+        Token<?extends JsTokenId> token = ts.token();
+        if (token == null) {
+            return false;
+        }
+
+        TokenId id = token.id();
+            
+//        // skip whitespaces
+//        if (id == JsTokenId.WHITESPACE) {
+//            while (ts.moveNext() && ts.token().id() == JsTokenId.WHITESPACE) {}
+//        }
+        if (id == JsTokenId.WHITESPACE || id == JsTokenId.EOL) {
+            while (ts.moveNext() && (ts.token().id() == JsTokenId.WHITESPACE || ts.token().id() == JsTokenId.EOL)) {}
+        }
+
+        // if current token is not left parenthesis
+        if (ts.token().id() != JsTokenId.LPAREN) {
+            return false;
+        }
+
+        do {
+            token = ts.token();
+            id = token.id();
+
+            if (id == JsTokenId.LPAREN) {
+                balance++;
+            } else if (id == JsTokenId.RPAREN) {
+                if (balance == 0) {
+                    return false;
+                } else if (balance == 1) {
+                    int length = ts.offset() + token.length();
+                    ts.moveNext();
+                    return true;
+                }
+
+                balance--;
+            }
+        } while (ts.moveNext());
+
+        return false;
+    }
+    
     /** Search forwards in the token sequence until a token of type <code>down</code> is found */
     public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends JsTokenId> ts, TokenId up,
         TokenId down) {
@@ -390,8 +438,7 @@ public class LexUtilities {
 //        if (id == JsTokenId.DO) {
 //            return isEndmatchingDo(doc, offset);
 //        }
-//        return END_PAIRS.contains(id);
-        return false;
+        return END_PAIRS.contains(id);
     }
 
     /**
@@ -404,6 +451,58 @@ public class LexUtilities {
         return false;
     }
 
+    private static OffsetRange findMultilineRange(TokenSequence<? extends JsTokenId> ts) {
+        int startOffset = ts.offset();
+        JsTokenId id = ts.token().id();
+        switch (id) {
+            case ELSE:
+                ts.moveNext();
+                id = ts.token().id();
+                break;
+            case IF:
+            case FOR:
+            case WHILE:
+                ts.moveNext();
+                if (!skipParenthesis(ts)) {
+                    return OffsetRange.NONE;
+                }
+                id = ts.token().id();
+                break;
+            default:
+                return OffsetRange.NONE;
+        }
+        
+        boolean eolFound = false;
+        int lastEolOffset = ts.offset();
+        
+        // skip whitespaces and comments
+        if (id == JsTokenId.WHITESPACE || id == JsTokenId.LINE_COMMENT || id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.EOL) {
+            if (ts.token().id() == JsTokenId.EOL) {
+                lastEolOffset = ts.offset();
+                eolFound = true;
+            }
+            while (ts.moveNext() && (
+                    ts.token().id() == JsTokenId.WHITESPACE ||
+                    ts.token().id() == JsTokenId.LINE_COMMENT ||
+                    ts.token().id() == JsTokenId.EOL ||
+                    ts.token().id() == JsTokenId.BLOCK_COMMENT)) {
+                if (ts.token().id() == JsTokenId.EOL) {
+                    lastEolOffset = ts.offset();
+                    eolFound = true;
+                }
+            }
+        }
+        // if we found end of sequence or end of line
+        if (ts.token() == null || (ts.token().id() != JsTokenId.LBRACE && eolFound)) {
+            return new OffsetRange(startOffset, lastEolOffset);
+        }
+        return  OffsetRange.NONE;
+    }
+    
+    public static OffsetRange getMultilineRange(BaseDocument doc, int offset) {
+        TokenSequence<? extends JsTokenId> ts = getPositionedSequence(doc, offset);
+        return findMultilineRange(ts);
+    }
     
     /**
      * Return true iff the given token is a token that should be matched
@@ -411,8 +510,7 @@ public class LexUtilities {
      * etc.
      */
     public static boolean isBeginToken(TokenId id, BaseDocument doc, TokenSequence<?extends JsTokenId> ts) {
-//        if (id == JsTokenId.DO) {
-//            return isEndmatchingDo(doc, ts.offset());
+//        if (id == JsTokenId.IF) {
 //        }
 //        return END_PAIRS.contains(id);
         return false;

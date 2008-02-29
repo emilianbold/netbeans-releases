@@ -66,7 +66,6 @@ import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportFactory;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -118,6 +117,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.classpath.LibrariesLocationUpdater;
+import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -185,6 +185,7 @@ public final class WebProject implements Project, AntProjectListener {
     private final WebProjectLibrariesModifierImpl libMod;
     private final ClassPathProviderImpl cpProvider;
     private LibrariesLocationUpdater librariesLocationUpdater;
+    private ClassPathUiSupport.Callback classPathUiSupportCallback;
     
     private AntBuildExtender buildExtender;
             
@@ -322,7 +323,8 @@ public final class WebProject implements Project, AntProjectListener {
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
         enterpriseResourceSupport = new WebContainerImpl(this, refHelper, helper);
         cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
-            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback());
+            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), getClassPathUiSupportCallback(),
+                                    new String[]{ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.WAR_CONTENT_ADDITIONAL});
         libMod = new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper);
         classPathExtender = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
         librariesLocationUpdater = new LibrariesLocationUpdater(this, updateHelper, eval, cpMod.getClassPathSupport(),
@@ -354,6 +356,32 @@ public final class WebProject implements Project, AntProjectListener {
                 return null;
             }
         };        
+    }
+    
+    public synchronized ClassPathUiSupport.Callback getClassPathUiSupportCallback() {
+        if (classPathUiSupportCallback == null) {
+            classPathUiSupportCallback = new ClassPathUiSupport.Callback() {
+                public void initItem(ClassPathSupport.Item item) {
+                    switch (item.getType()) {
+                        case ClassPathSupport.Item.TYPE_JAR:
+                            item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, 
+                                    item.getResolvedFile().isDirectory() ? 
+                                        ClassPathSupportCallbackImpl.PATH_IN_WAR_DIR : 
+                                        ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);
+                            break;
+                        case ClassPathSupport.Item.TYPE_LIBRARY:
+                            if (item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
+                                break;
+                            }
+                        default:
+                            item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, 
+                                    ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);
+                    }
+                }
+            };
+            
+        }
+        return classPathUiSupportCallback;
     }
 
     public UpdateProjectImpl getUpdateImplementation() {
@@ -578,8 +606,13 @@ public final class WebProject implements Project, AntProjectListener {
                 if (evt.getPropertyName().equals(J2eePlatform.PROP_CLASSPATH)) {
                     ProjectManager.mutex().writeAccess(new Mutex.Action() {
                         public Object run() {
-                            EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                            if (!Boolean.parseBoolean(ep.getProperty(WebProjectProperties.J2EE_PLATFORM_SHARED))) {
+                            EditableProperties ep = helper.getProperties(
+                                    AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                            EditableProperties projectProps = helper.getProperties(
+                                    AntProjectHelper.PROJECT_PROPERTIES_PATH);
+
+                            if (!ProjectProperties.isUsingServerLibrary(projectProps,
+                                    WebProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
                                 String classpath = Utils.toClasspathString(platform.getClasspathEntries());
                                 ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                             }
@@ -826,8 +859,8 @@ public final class WebProject implements Project, AntProjectListener {
             
             GsfClassPathProviderImpl gsfCpProvider = getLookup().lookup(GsfClassPathProviderImpl.class);
             if (gsfCpProvider != null) {
-                org.netbeans.fpi.gsfpath.classpath.GlobalPathRegistry.getDefault().register(org.netbeans.fpi.gsfpath.classpath.ClassPath.BOOT, gsfCpProvider.getProjectClassPaths(org.netbeans.fpi.gsfpath.classpath.ClassPath.BOOT));
-                org.netbeans.fpi.gsfpath.classpath.GlobalPathRegistry.getDefault().register(org.netbeans.fpi.gsfpath.classpath.ClassPath.SOURCE, gsfCpProvider.getProjectClassPaths(org.netbeans.fpi.gsfpath.classpath.ClassPath.SOURCE));
+                org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().register(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT));
+                org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().register(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE));
             }
                     
             // initialize the server configuration
@@ -969,9 +1002,9 @@ public final class WebProject implements Project, AntProjectListener {
             // unregister project's classpaths to GlobalPathRegistry
             GsfClassPathProviderImpl gsfCpProvider = lookup.lookup(GsfClassPathProviderImpl.class);
             if (gsfCpProvider != null) {
-                //org.netbeans.fpi.gsfpath.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.fpi.gsfpath.classpath.ClassPath.BOOT, gsfCpProvider.getProjectClassPaths(org.netbeans.fpi.gsfpath.classpath.ClassPath.BOOT));
-                org.netbeans.fpi.gsfpath.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.fpi.gsfpath.classpath.ClassPath.SOURCE, gsfCpProvider.getProjectClassPaths(org.netbeans.fpi.gsfpath.classpath.ClassPath.SOURCE));
-                //org.netbeans.fpi.gsfpath.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.fpi.gsfpath.classpath.ClassPath.COMPILE, gsfCpProvider.getProjectClassPaths(org.netbeans.fpi.gsfpath.classpath.ClassPath.COMPILE));
+                //org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT));
+                org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE));
+                //org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.COMPILE, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.COMPILE));
             }
 
             webPagesFileWatch.reset();
@@ -987,7 +1020,7 @@ public final class WebProject implements Project, AntProjectListener {
             
             // unregister the property change listener on the prop evaluator
             if (librariesLocationUpdater != null) {
-                librariesLocationUpdater.unregister();
+                librariesLocationUpdater.destroy();
             }
 
             // remove ServiceListener from jaxWsModel            
@@ -1335,6 +1368,7 @@ public final class WebProject implements Project, AntProjectListener {
                             return;
                         }
                         FileObject destFile = ensureDestinationFileExists(webBuildBase, path, fo.isFolder());
+                        assert destFile != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + fo.isFolder();
                         if (!fo.isFolder()) {
                             InputStream is = null;
                             OutputStream os = null;
@@ -1376,13 +1410,17 @@ public final class WebProject implements Project, AntProjectListener {
                     if (isFolder || st.hasMoreTokens()) {
                         // create a folder
                         newCurrent = FileUtil.createFolder(current, pathItem);
+                        assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                     }
                     else {
                         newCurrent = FileUtil.createData(current, pathItem);
+                        assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                     }
                 }
+                assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                 current = newCurrent;
             }
+            assert current != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
             return current;
         }
     }

@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.api.model.xref;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -79,41 +80,41 @@ public abstract class CsmReferenceRepository {
      * look for references of target object in project
      * @param target target object to find references
      * @param project project as scope where to search
-     * @param includeSelfDeclarations flag indicating wether or not to include 
+     * @param kinds flag indicating wether or not to include 
      *      self declaration object in collection
      * @return references for target object, empty collection if not found
      */
-    public abstract Collection<CsmReference> getReferences(CsmObject target, CsmProject project, boolean includeSelfDeclarations);
+    public abstract Collection<CsmReference> getReferences(CsmObject target, CsmProject project, EnumSet<CsmReferenceKind> kinds);
 
     /**
      * look for references of target object in project
      * @param target target object to find references
      * @param file file as scope where to search
-     * @param includeSelfDeclarations flag indicating wether or not to include 
+     * @param kinds flag indicating wether or not to include 
      *      self declaration object in collection
      * @return references for target object, empty collection if not found
      */
-    public abstract Collection<CsmReference> getReferences(CsmObject target, CsmFile file, boolean includeSelfDeclarations);
+    public abstract Collection<CsmReference> getReferences(CsmObject target, CsmFile file, EnumSet<CsmReferenceKind> kinds);
     
     /**
      * look for references of target objects in project
      * @param targets target objects to find references
      * @param project project as scope where to search
-     * @param includeSelfDeclarations flag indicating wether or not to include 
+     * @param kinds flag indicating wether or not to include 
      *      self declaration object in collection
      * @return references for target object, empty collection if not found
      */
-    //public abstract Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmProject project, boolean includeSelfDeclarations);
+    //public abstract Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmProject project, EnumSet<CsmReferenceKind> kinds);
 
     /**
-     * look for references of target object in project
-     * @param target target object to find references
+     * look for references of target objects in file
+     * @param targets target objects to find references
      * @param file file as scope where to search
-     * @param includeSelfDeclarations flag indicating wether or not to include 
-     *      self declaration object in collection
-     * @return references for target object, empty collection if not found
+     * @param kinds kind of references to search
+     * @return references for target objects in file sorted from beginning, 
+     *          empty collection if no references
      */
-    //public abstract Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmFile file, boolean includeSelfDeclarations);
+    public abstract Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, EnumSet<CsmReferenceKind> kinds);
     
     //
     // Implementation of the default Repository
@@ -122,20 +123,20 @@ public abstract class CsmReferenceRepository {
         Empty() {
         }
 
-        public Collection<CsmReference> getReferences(CsmObject target, CsmProject project, boolean includeSelfDeclarations) {
+        public Collection<CsmReference> getReferences(CsmObject target, CsmProject project, EnumSet<CsmReferenceKind> kinds) {
             return Collections.<CsmReference>emptyList();
         }
 
-        public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmProject project, boolean includeSelfDeclarations) {
+        public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmProject project, EnumSet<CsmReferenceKind> kinds) {
             return Collections.<CsmObject, Collection<CsmReference>>emptyMap();
         }
 
-        public Collection<CsmReference> getReferences(CsmObject target, CsmFile file, boolean includeSelfDeclarations) {
+        public Collection<CsmReference> getReferences(CsmObject target, CsmFile file, EnumSet<CsmReferenceKind> kinds) {
             return Collections.<CsmReference>emptyList();
         }
 
-        public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmFile file, boolean includeSelfDeclarations) {
-            return Collections.<CsmObject, Collection<CsmReference>>emptyMap();
+        public Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, EnumSet<CsmReferenceKind> kinds) {
+            return Collections.<CsmReference>emptyList();
         }
     }    
 }

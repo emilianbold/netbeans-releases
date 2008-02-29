@@ -44,8 +44,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.Document;
-import org.netbeans.fpi.gsf.EmbeddingModel;
-import org.netbeans.fpi.gsf.TranslatedSource;
+import org.netbeans.modules.gsf.api.EmbeddingModel;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.editor.html.HTMLKit;
 
 
@@ -57,11 +57,13 @@ public class HtmlEmbeddingModel implements EmbeddingModel {
 //    // Depend on RhtmlTokenId?
     static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
+    static final String JSP_TAG_MIME_TYPE = "text/x-tag"; // NOI18N
     final Set<String> sourceMimeTypes = new HashSet<String>();
 
     public HtmlEmbeddingModel() {
         sourceMimeTypes.add(JSP_MIME_TYPE);
         sourceMimeTypes.add(RHTML_MIME_TYPE);
+        sourceMimeTypes.add(JSP_TAG_MIME_TYPE);
     }
     
     public String getTargetMimeType() {

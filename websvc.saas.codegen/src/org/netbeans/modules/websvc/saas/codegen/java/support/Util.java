@@ -44,6 +44,7 @@ package org.netbeans.modules.websvc.saas.codegen.java.support;
 import java.awt.Component;
 import javax.swing.JLabel;
 import java.awt.Container;
+import java.io.IOException;
 import javax.swing.JComponent;
 import java.util.Vector;
 import java.util.Iterator;
@@ -73,11 +74,17 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
+import org.netbeans.modules.websvc.saas.codegen.java.model.GenericResourceBean;
+import org.netbeans.modules.websvc.saas.codegen.java.model.JaxwsOperationInfo;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.util.Lookup;
@@ -516,5 +523,41 @@ public class Util {
 
     public static FileObject findBuildXml(Project project) {
         return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+    }
+    
+    public static DataObject createDataObjectFromTemplate(String template, 
+            FileObject targetFolder, String targetName) throws IOException {
+        assert template != null;
+        assert targetFolder != null;
+        
+        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
+        FileObject templateFO = defaultFS.findResource(template);
+        DataObject templateDO = DataObject.find(templateFO);
+        DataFolder dataFolder = DataFolder.findFolder(targetFolder);
+
+        return templateDO.createFromTemplate(dataFolder, targetName);
+    }
+ 
+    public static String deriveResourceName(final String name) {
+        return Inflector.getInstance().camelize(normailizeName(name) + GenericResourceBean.RESOURCE_SUFFIX);
+    }
+
+    public static String deriveUriTemplate(final String name) {
+        return Inflector.getInstance().camelize(normailizeName(name), true) + "/"; //NOI18N
+    }
+    
+    public static MimeType[] deriveMimeTypes(JaxwsOperationInfo[] operations) {
+        if (String.class.getName().equals(operations[operations.length-1].getOperation().getReturnTypeName())) {
+            return new MimeType[] { MimeType.HTML };
+        } else {
+            return new MimeType[] { MimeType.XML };//TODO  MimeType.JSON };
+        }
+    }
+    
+    public static String normailizeName(final String name) {
+        String normalized = name;
+        normalized = normalized.replaceAll("\\p{Punct}", "_");
+        normalized = normalized.replaceAll("\\p{Space}", "_");
+        return normalized;
     }
 }

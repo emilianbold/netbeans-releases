@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor.java;
 
 import javax.swing.Action;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
 /**
@@ -58,11 +59,11 @@ import javax.swing.text.JTextComponent;
         super(name, originalAction);
     }
 
-    protected int newOffset(JTextComponent textComponent) {
+    protected int newOffset(JTextComponent textComponent) throws BadLocationException {
         return CamelCaseOperations.nextCamelCasePosition(textComponent);
     }
 
-    protected void moveToNewOffset(JTextComponent textComponent, int offset) {
+    protected void moveToNewOffset(JTextComponent textComponent, int offset) throws BadLocationException {
         textComponent.setCaretPosition(offset);
     }
 }

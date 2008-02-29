@@ -43,7 +43,7 @@ package org.netbeans.modules.gsfret.source;
 
 import java.io.IOException;
 import org.netbeans.napi.gsfret.source.ParserTaskImpl;
-import org.netbeans.fpi.gsf.CancellableTask;
+import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.Phase;

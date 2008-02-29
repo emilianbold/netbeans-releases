@@ -71,8 +71,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
-import org.netbeans.modules.j2ee.common.sharability.PanelSharability;
-import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
@@ -187,7 +187,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));       
         createData.setWebInfFolder(webInf);
         
-        createData.setLibrariesDefinition(SharabilityUtilities.getLibraryLocation((String)wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES)));
+        createData.setLibrariesDefinition(SharabilityUtility.getLibraryLocation((String)wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES)));
         createData.setServerLibraryName((String) wiz.getProperty(PanelSharability.WIZARD_SERVER_LIBRARY));
         
         WebProjectUtilities.importProject(createData);       
@@ -382,7 +382,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         }
 
         public boolean isFinishPanel() {
-            return true;
+            return false;
         }
 
     }

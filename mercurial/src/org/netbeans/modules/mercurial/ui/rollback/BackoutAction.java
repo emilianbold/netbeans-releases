@@ -46,15 +46,14 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
-import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.FileStatusCache;
-import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -85,14 +84,29 @@ public class BackoutAction extends ContextAction {
     }
     
     public static void backout(final VCSContext ctx){
-        final File root = HgUtils.getRootFile(ctx);
+        backout(ctx, null);
+    }
+    public static void backout(final RepositoryRevision repoRev){
+        backout(null, repoRev);
+    }
+
+    public static void backout(final VCSContext ctx, final RepositoryRevision repoRev){
+        final File root;        
+        if(repoRev != null){
+            if(repoRev.getRepositoryRootUrl() == null || repoRev.getRepositoryRootUrl().equals("")){
+                return;
+            }
+            root = new File(repoRev.getRepositoryRootUrl());
+        }else{
+            root = HgUtils.getRootFile(ctx);
+        }
         if (root == null) return;
-        String repository = root.getAbsolutePath();
+        final String repository = root.getAbsolutePath();
          
         String rev = null;
         String commitMsg = null;
 
-        final Backout backout = new Backout(root);
+        final Backout backout = new Backout(root, repoRev);
         if (!backout.showDialog()) {
             return;
         }
@@ -107,17 +121,18 @@ public class BackoutAction extends ContextAction {
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
                 
+                OutputLogger logger = getLogger();
                 try {
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                                 NbBundle.getMessage(BackoutAction.class,
                                 "MSG_BACKOUT_TITLE")); // NOI18N
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                                 NbBundle.getMessage(BackoutAction.class,
                                 "MSG_BACKOUT_TITLE_SEP")); // NOI18N
-                    HgUtils.outputMercurialTab(
+                    logger.output(
                                 NbBundle.getMessage(BackoutAction.class,
                                 "MSG_BACKOUT_INFO_SEP", revStr, root.getAbsolutePath())); // NOI18N
-                    List<String> list = HgCommand.doBackout(root, revStr, doMerge, commitMsgStr);
+                    List<String> list = HgCommand.doBackout(root, revStr, doMerge, commitMsgStr, logger);
                     
                     if(list != null && !list.isEmpty()){ 
                         boolean bMergeNeededDueToBackout = HgCommand.isBackoutMergeNeededMsg(list.get(list.size() - 1));
@@ -125,20 +140,20 @@ public class BackoutAction extends ContextAction {
                             list.remove(list.size() - 1);
                             list.remove(list.size() - 1);
                         }
-                        HgUtils.outputMercurialTab(list);                            
+                        logger.output(list);                            
                         
                         if(HgCommand.isUncommittedChangesBackout(list.get(0))){
-                            HgUtils.outputMercurialTabInRed(
+                            logger.outputInRed(
                                     NbBundle.getMessage(BackoutAction.class,
                                     "MSG_UNCOMMITTED_CHANGES_BACKOUT"));     // NOI18N           
                             return;
                         } else if(HgCommand.isMergeChangesetBackout(list.get(0))){
-                            HgUtils.outputMercurialTabInRed(
+                            logger.outputInRed(
                                     NbBundle.getMessage(BackoutAction.class,
                                     "MSG_MERGE_CSET_BACKOUT",revStr));     // NOI18N        
                             return;
                         } else if(HgCommand.isNoRevStrip(list.get(0))){
-                            HgUtils.outputMercurialTabInRed(
+                            logger.outputInRed(
                                     NbBundle.getMessage(BackoutAction.class,
                                     "MSG_NO_REV_BACKOUT",revStr));     // NOI18N        
                             return;
@@ -151,16 +166,20 @@ public class BackoutAction extends ContextAction {
                                     BackoutAction.class, "MSG_BACKOUT_MERGE_CONFIRM_TITLE", "MSG_BACKOUT_MERGE_CONFIRM_QUERY"); // NOI18N
                         }
                         if (bConfirmMerge) {
-                            HgUtils.outputMercurialTab(""); // NOI18N
-                            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(BackoutAction.class, "MSG_BACKOUT_MERGE_DO")); // NOI18N
-                            MergeAction.doMergeAction(root, null);
+                            logger.output(""); // NOI18N
+                            logger.outputInRed(NbBundle.getMessage(BackoutAction.class, "MSG_BACKOUT_MERGE_DO")); // NOI18N
+                            MergeAction.doMergeAction(root, null, logger);
                         } else {
                             List<String> headRevList = HgCommand.getHeadRevisions(root);
                             if (headRevList != null && headRevList.size() > 1) {
-                                MergeAction.printMergeWarning(headRevList);
+                                MergeAction.printMergeWarning(headRevList, logger);
                             }
-                        }  
-                        HgUtils.forceStatusRefreshProject(ctx);
+                        }
+                        if(ctx != null){
+                            HgUtils.forceStatusRefreshProject(ctx);
+                        }else if(repoRev != null){
+                            HgUtils.forceStatusRefresh(root);
+                        }
                         // refresh filesystem to take account of deleted files.
                         FileObject rootObj = FileUtil.toFileObject(root);
                         try {
@@ -172,10 +191,10 @@ public class BackoutAction extends ContextAction {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
                 } finally {
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                                 NbBundle.getMessage(BackoutAction.class,
                                 "MSG_BACKOUT_DONE")); // NOI18N
-                    HgUtils.outputMercurialTab(""); // NOI18N
+                    logger.output(""); // NOI18N
                 }
             }
         };

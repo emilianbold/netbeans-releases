@@ -36,11 +36,11 @@
 
 var AUTOMATIC_DOWNLOAD_MESSAGE  = "Your download should start automatically.<br>If not, <a href=\"{0}\" class=\"download_link\">download it here</a>.<br>";
 
-var PRODUCT_NAME      = "NetBeans {build.display.version}";
+var PRODUCT_NAME      = "NetBeans {0}";
 var INSTALLER_MESSAGE = "Installer for {0}";
 var NOFILE_MESSAGE    = "No file requested" ;
 
-var NETBEANS_DOWNLOAD_STARTED_HEADER = "NetBeans IDE {build.display.version} Download Started";
+var NETBEANS_DOWNLOAD_STARTED_HEADER = "NetBeans IDE {0} Download Started";
 var LICENSE_NOTES_LABEL = "License Notices";
 var RELEASE_NOTES_LABEL = "Release Notes";
 var INSTALL_NOTES_LABEL = "Installation Instructions";
@@ -53,17 +53,6 @@ var TRAINING_LABEL = "Training";
 var TRAINING_DESCRIPTION = "Courses to help you improve your skills.";
 var SUPPORT_LABEL        = "Support";
 var SUPPORT_DESCRIPTION  = "Flexible support options to help you stay focused on innovation.";
-
-var RELEASE_NOTES_LINK  = "http://www.netbeans.org/community/releases/60/relnotes.html";
-var INSTALL_NOTES_LINK  = "http://www.netbeans.org/community/releases/60/install.html";
-var LICENSE_NOTES_LINK  = "http://www.netbeans.org/about/legal/product-licences.html";
-
-var LEGAL_INFO_HEADER = "Important Legal Information:";
-
-var CDDL_GPLV2_LINK = "http://www.netbeans.org/cddl-gplv2.html";
-var LICENSE_DETAILS_LINK = "http://www.netbeans.org/about/legal/code_dependency_matrix.html";
-
-var LEGAL_INFO_MESSAGE = "The majority of the NetBeans IDE {build.display.version.short} code is available under a <a href=\"{0}\">dual license consisting of the Common Development and Distribution License (CDDL) v1.0 and the GNU General Public License (GPL) v2</a>. See <a href=\"{1}\">details about the components in NetBeans</a> and the licenses under which they are covered.<br><br>Read the <a href=\"{2}\">License Notice</a>.";
 
 // $PRODUCT_NAME $TYPE (Installer for $PLATFORM/Zip)/$Language ($Language_ID) $filename ($SIZE) MD5: $MD5
 var INFO_MESSAGE = "{0}{1} {2}/{3} ({4})<br>{5} ({6} MB)<br>MD5: {7}";

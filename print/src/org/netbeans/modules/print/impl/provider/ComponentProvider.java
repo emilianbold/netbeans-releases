@@ -40,9 +40,7 @@
  */
 package org.netbeans.modules.print.impl.provider;
 
-import java.awt.Dimension;
 import java.awt.Rectangle;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
@@ -59,10 +57,13 @@ import org.netbeans.modules.print.impl.util.Percent;
  */
 public class ComponentProvider implements PrintProvider {
 
-  public ComponentProvider(JComponent component, String name, Date modified) {
+  public ComponentProvider(List<JComponent> components, String name, Date modified) {
     myName = name;
-    myComponent = component;
     myLastModifiedDate = modified;
+
+    if (components != null) {
+      myComponent = new ComponentPanel(components);
+    }
   }
 
   protected JComponent getComponent() {
@@ -73,24 +74,9 @@ public class ComponentProvider implements PrintProvider {
     List<ComponentPage> pages = new ArrayList<ComponentPage>();
     JComponent component = getComponent();
 
-    if (component == null) {
-      return null;
-    }
     int componentWidth = component.getWidth();
     int componentHeight = component.getHeight();
 
-    Object object = component.getClientProperty(Dimension.class);
-
-    if (object instanceof Dimension) {
-      Dimension dimension = (Dimension) object;
-
-      if (dimension.width > 0) {
-        componentWidth = dimension.width;
-      }
-      if (dimension.height > 0) {
-        componentHeight = dimension.height;
-      }
-    }
     double zoom =
       getZoom(pageZoom, pageWidth, pageHeight, componentWidth, componentHeight);
 
@@ -141,6 +127,9 @@ public class ComponentProvider implements PrintProvider {
 
     if (0 < factor) {
       return factor;
+    }
+    if (Percent.isZoomPage(zoom)) {
+      factor = 0.0;
     }
     int zoomWidth = Percent.getZoomWidth(zoom, -1);
     int zoomHeight = Percent.getZoomHeight(zoom, -1);

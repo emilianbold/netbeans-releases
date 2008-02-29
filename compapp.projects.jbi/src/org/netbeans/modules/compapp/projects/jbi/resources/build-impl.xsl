@@ -604,16 +604,17 @@ made subject to such option by the copyright holder.
                     <pathelement path="${{java.module.install.dir}}/ext/jaxws21/api/saaj-api.jar"/>
                     <pathelement path="${{java.module.install.dir}}/ext/jaxws21/saaj-impl.jar"/>
                     <pathelement path="${{java.module.install.dir}}/ext/jaxws21/FastInfoset.jar"/>
-                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-xdm.jar"/>
-                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-xam.jar"/>
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-editor-lib.jar"/>
-                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-text.jar"/>
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-editor.jar"/>
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-editor-util.jar"/>
-                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-core.jar"/>
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-editor-lib2.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-editor-indent.jar"/>
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-lexer.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-core.jar"/>
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-lexer.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-text.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-xdm.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-xam.jar"/>
                     <pathelement path="${{netbeans.home}}/lib/org-openide-modules.jar"/>
                     <pathelement path="${{netbeans.home}}/lib/org-openide-util.jar"/>
                     <pathelement path="${{netbeans.home}}/modules/org-openide-options.jar"/>
@@ -799,7 +800,9 @@ made subject to such option by the copyright holder.
                         <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/</xsl:text>${<xsl:value-of select="$subproj"/>.su.name}</xsl:attribute>
                         <patternset>
                             <include name="**/*.wsdl"/>
+                            <include name="**/*.WSDL"/>
                             <include name="**/*.xsd"/>
+                            <include name="**/*.XSD"/>
                             <include name="META-INF/jbi.xml"/>
                             <include name="META-INF/catalog.xml"/>
                         </patternset>
@@ -903,7 +906,9 @@ made subject to such option by the copyright holder.
                     <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/</xsl:text>${<xsl:value-of select="$subproj"/>.su.name}</xsl:attribute>
                     <patternset>
                         <include name="**/*.wsdl"/>
+                        <include name="**/*.WSDL"/>
                         <include name="**/*.xsd"/>
+                        <include name="**/*.XSD"/>
                         <include name="META-INF/jbi.xml"/>
                     </patternset>
                 </unzip>  

@@ -85,6 +85,8 @@ import org.netbeans.modules.visualweb.propertyeditors.binding.nodes.PropertyTarg
 import org.netbeans.modules.visualweb.propertyeditors.binding.nodes.ResultSetTargetNodeFactory;
 import org.netbeans.modules.visualweb.propertyeditors.binding.nodes.UIDataVarNode;
 import org.netbeans.modules.visualweb.propertyeditors.util.Bundle;
+import com.sun.data.provider.DataProvider;
+import javax.sql.RowSet;
 
 public class BindingTargetPanel extends JPanel {
     JLabel targetLabel = new JLabel();
@@ -192,10 +194,19 @@ public class BindingTargetPanel extends JPanel {
             DesignContext[] acs = getDesignContexts(context);
             acs = sortContexts(acs);
             for (int i = 0; acs != null && i < acs.length; i++) {
+                 
                 //System.out.println("ADDING NEW CONTEXT: " + context.getDisplayName());
-                BindingTargetNode node = new ContextTargetNode(rootNode, acs[i]);
-                expands.add(new TreePath(new Object[] {rootNode, node}));
-                rootNode.add(node);
+                if ((acs[i].getBeans() != null) && (acs[i].getRootContainer().getChildBeans().length > 0)) {
+                    DesignBean[] dpKids = acs[i].getBeansOfType(DataProvider.class);
+                    DesignBean[] rsKids = acs[i].getBeansOfType(RowSet.class);
+                    // Do not show the data provider in the object binding dialog.
+                    // We have explicit data provider binding dialog
+                    if (acs[i].getRootContainer().getChildBeans().length > (dpKids.length + rsKids.length)) {
+                        BindingTargetNode node = new ContextTargetNode(rootNode, acs[i]);
+                        expands.add(new TreePath(new Object[]{rootNode, node}));
+                        rootNode.add(node);
+                    }
+                }
             }
         }
         treeModel.reload();

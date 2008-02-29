@@ -61,7 +61,6 @@ import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
@@ -459,6 +458,10 @@ public abstract class WebServicesTestBase extends JellyTestCase {
                 JComboBoxOperator jcboVersion = new JComboBoxOperator(op, type.getServerVersionComboBoxIndex());
                 jcboVersion.selectItem(javaeeVersion.toString());
             }
+        }
+        if (!(ProjectType.SAMPLE.equals(type) || ProjectType.JAVASE_APPLICATION.equals(type))) {
+            //second panel in Web, Ejb and Ear is now mandatory
+            op.next();
         }
         op.finish();
         // Opening Projects

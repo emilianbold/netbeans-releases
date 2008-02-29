@@ -90,8 +90,6 @@
     <xsd:complexType name="SaasMetadata">
         <xsd:sequence>
             <xsd:element name="localizing-bundle" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="icon16" type="xsd:string" minOccurs="1" maxOccurs="1"/>
-            <xsd:element name="icon32" type="xsd:string" minOccurs="0" maxOccurs="1"/>
             <xsd:element ref="saas:group"  minOccurs="1" maxOccurs="1"/>
             <xsd:element name="code-gen" minOccurs="0">
                 <xsd:complexType>
@@ -110,9 +108,11 @@
                                 <xsd:attribute name="id" type="xsd:string"/>
                             </xsd:complexType>
                         </xsd:element>
+                        <xsd:element name="signed-url"/>
+                        <xsd:element name="session-key"/>
                         <xsd:element name="custom"/>
                     </xsd:choice>
-                    <xsd:attribute name="profile" type="xsd:string" default="Templates/WebServices/profile.properties"/>
+                    <xsd:attribute name="profile" type="xsd:string" default="Templates/SaaSServices/profile.properties"/>
                 </xsd:complexType>
             </xsd:element>
         </xsd:sequence>

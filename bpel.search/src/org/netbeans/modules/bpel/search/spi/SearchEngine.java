@@ -78,10 +78,9 @@ public interface SearchEngine {
   void addSearchListener(SearchListener listener);
 
   /**
-   * Removes search listener.
-   * @param listener to be removed
+   * Removes all search listeners.
    */
-  void removeSearchListener(SearchListener listener);
+  void removeSearchListeners();
 
   /**
    * Returns display name of engine.
@@ -95,31 +94,23 @@ public interface SearchEngine {
    */
   String getShortDescription();
 
-  /**
-   * Releases all resources.
-   */
-  void release();
-
   // ----------------------------------------------------
   public abstract class Adapter implements SearchEngine {
+
+    public Adapter() {
+      removeSearchListeners();
+    }
 
     public Object [] getTargets() {
       return new Object [] {};
     }
 
     public synchronized void addSearchListener(SearchListener listener) {
-      if (mySearchListeners == null) {
-        mySearchListeners = new ArrayList<SearchListener>();
-      }
       mySearchListeners.add(listener);
     }
 
-    public synchronized void removeSearchListener(SearchListener listener) {
-      mySearchListeners.remove(listener);
-    }
-
-    public synchronized void release() {
-      mySearchListeners = null;
+    public synchronized void removeSearchListeners() {
+      mySearchListeners = new ArrayList<SearchListener>();
     }
 
     protected synchronized void fireSearchStarted(SearchOption option)

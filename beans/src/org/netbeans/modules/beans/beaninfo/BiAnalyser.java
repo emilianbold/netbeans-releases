@@ -42,18 +42,35 @@
 package org.netbeans.modules.beans.beaninfo;
 
 import java.io.IOException;
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.SwingUtilities;
-import javax.jmi.reflect.JmiException;
-
-import org.netbeans.modules.beans.*;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.jmi.javamodel.Array;
+import javax.swing.text.StyledDocument;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.beans.EventSetPattern;
+import org.netbeans.modules.beans.GenerateBeanException;
+import org.netbeans.modules.beans.IdxPropertyPattern;
+import org.netbeans.modules.beans.PatternAnalyser;
+import org.netbeans.modules.beans.PropertyPattern;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.nodes.Node;
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /** Analyses the ClassElement trying to find source code patterns i.e.
  * properties or event sets;
@@ -61,7 +78,7 @@ import org.openide.nodes.Node;
  * @author Petr Hrebejk, Petr Suchomel
  */
 
-public final class BiAnalyser extends Object implements Node.Cookie {
+public final class BiAnalyser {
 
     private static final String TAB = "    "; // NOI18N
     private static final String TABx2 = TAB +TAB;
@@ -78,19 +95,19 @@ public final class BiAnalyser extends Object implements Node.Cookie {
     private static final String DEFAULT_EVENT_INDEX = "defaultEventIndex"; // NOI18N
 
     /** Holds Bean descriptor */
-    List descriptor;
+    List<BiFeature.Descriptor> descriptor;
     
     /** Holds all properties */
-    List properties;
+    List<BiFeature.Property> properties;
 
     /** Holds all indexed properties */
-    List idxProperties;
+    List<BiFeature.IdxProperty> idxProperties;
 
     /** Holds all events sets */
-    List eventSets;
+    List<BiFeature.EventSet> eventSets;
 
     /** Holds all methods */
-    List methods;
+    List<BiFeature.Method> methods;
 
     /** Object representing source code of associated BeanInfo */
     BeanInfoSource bis;
@@ -125,7 +142,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
     private boolean superClassVersion=true;
 
     /* Holds the class for which the bean info is generated */
-    JavaClass classElement;
+    private String classfqn;
 
     private String iconC16;
     private String iconM16;
@@ -134,59 +151,52 @@ public final class BiAnalyser extends Object implements Node.Cookie {
     private int defaultPropertyIndex = -1;
     private int defaultEventIndex = -1;
     private boolean useSuperClass = false;
+    private boolean isModified = false;
+    private boolean isUpdateMode;
     
-    private int getIndexOfMethod(List al, Method method) throws JmiException {
+    private int getIndexOfMethod(List<BiFeature.Method> al, ElementHandle<ExecutableElement> method) {
         if (method == null) return -1;
         
-        assert JMIUtils.isInsideTrans();
-        Method method2;
-        
         int i = 0;
-        
-        for (Iterator it = al.iterator(); it.hasNext(); i++) {
-            BiFeature.Method bifMethod = (BiFeature.Method) it.next();
-            method2 = bifMethod.getElement();
-            if (method.equals(method2)) {
+        for (BiFeature.Method bifMethod : al) {
+            if (method.equals(bifMethod.getElement())) {
                 return i;
             }
+            ++i;
         }
         
         return -1;
     }
     /** Creates Bean Info analyser which contains all patterns from PatternAnalyser
     */
-    BiAnalyser ( PatternAnalyser pa, JavaClass classElement ) throws GenerateBeanException {
-        Collection col;
+    BiAnalyser ( PatternAnalyser pa, CompilationInfo javac ) throws GenerateBeanException {
         int index;
-        this.classElement = classElement;
 
         // Try to find and analyse existing bean info
-        bis = new BeanInfoSource( classElement );
+        bis = new BeanInfoSource( pa.getFileObject() );
         olderVersion = (bis.isNbBeanInfo() && bis.getMethodsSection() == null);
         superClassVersion = (bis.isNbSuperclass() || !bis.exists());
         
+        TypeElement classElement = pa.getClassElementHandle().resolve(javac);
+        this.classfqn = classElement.getQualifiedName().toString();
+        
         // Fill Descriptor list (only in case we have new templates)
-        descriptor = new ArrayList();
-        descriptor.add(new BiFeature.Descriptor(pa.getClassElementpa.getClassElementHandle()));
+        descriptor = new ArrayList<BiFeature.Descriptor>();
+        descriptor.add(new BiFeature.Descriptor(classElement, this));
 
         // Fill methods list (only in case we have new templates)
-        methods = new ArrayList();
+        methods = new  ArrayList<BiFeature.Method>();
         if (!olderVersion) {
-            JavaClass superClass = pa.getClassElementHandle();
-            List/*<Method>*/ meMethods = JMIUtils.getMethods(superClass);
-            for (Iterator it = meMethods.iterator(); it.hasNext();) {
-                Method method = (Method) it.next();
-                methods.add(new BiFeature.Method(method, pa));
+            for (ExecutableElement method : ElementFilter.methodsIn(classElement.getEnclosedElements())) {
+                methods.add(new BiFeature.Method(method, pa, javac, this));
             }
         }
 
         // Fill properties list
-
-        col = pa.getPropertyPatterns();
-        properties = new ArrayList( col.size() );
-        for (Iterator it = col.iterator(); it.hasNext();) {
-            PropertyPattern pp = (PropertyPattern) it.next();
-            properties.add( new BiFeature.Property( pp ) );
+        List<PropertyPattern> propertyPatterns = pa.getPropertyPatterns();
+        properties = new  ArrayList<BiFeature.Property>(propertyPatterns.size());
+        for (PropertyPattern pp : propertyPatterns) {
+            properties.add(new BiFeature.Property(pp, javac, this));
             for (int i = 0; i < methods.size(); i ++) {
                 if ((index = getIndexOfMethod(methods, pp.getGetterMethod())) != -1) methods.remove(index);
                 if ((index = getIndexOfMethod(methods, pp.getSetterMethod())) != -1) methods.remove(index);
@@ -194,18 +204,16 @@ public final class BiAnalyser extends Object implements Node.Cookie {
         }
 
         // Fill indexed properties list
-
-        col = pa.getIdxPropertyPatterns();
-        idxProperties = new ArrayList( col.size() );
-        for (Iterator it = col.iterator(); it.hasNext();) {
-            IdxPropertyPattern ipp = (IdxPropertyPattern)it.next();
-            Type type = ipp.getType();
-            if ( type != null && ( !(type instanceof Array) ||
-                    !((Array) type).getType().equals( ipp.getIndexedType() ) ) ) {
+        List<IdxPropertyPattern> idxPropertyPatterns = pa.getIdxPropertyPatterns();
+        idxProperties = new  ArrayList<BiFeature.IdxProperty>(idxPropertyPatterns.size());
+        for (IdxPropertyPattern ipp : idxPropertyPatterns) {
+            TypeMirror type = ipp.getType().resolve(javac);
+            TypeMirror idxtype = ipp.getIndexedType().resolve(javac);
+            if (type.getKind() != TypeKind.ARRAY || !javac.getTypes().isSameType(((ArrayType) type).getComponentType(), idxtype)) {
                 continue;
             }
 
-            idxProperties.add( new BiFeature.IdxProperty( ipp ) );
+            idxProperties.add(new BiFeature.IdxProperty(ipp, javac, this));
             if ((index = getIndexOfMethod(methods, ipp.getGetterMethod())) != -1) methods.remove(index);
             if ((index = getIndexOfMethod(methods, ipp.getSetterMethod())) != -1) methods.remove(index);
             if ((index = getIndexOfMethod(methods, ipp.getIndexedGetterMethod())) != -1) methods.remove(index);
@@ -213,37 +221,40 @@ public final class BiAnalyser extends Object implements Node.Cookie {
         }
 
         // Fill event sets list
-
-        col = pa.getEventSetPatterns();
-        eventSets = new ArrayList( col.size() );
-        for (Iterator it = col.iterator(); it.hasNext();) {
-            EventSetPattern esp = (EventSetPattern) it.next();
-            eventSets.add( new BiFeature.EventSet( esp ) );
+        List<EventSetPattern> eventSetPatterns = pa.getEventSetPatterns();
+        eventSets = new  ArrayList<BiFeature.EventSet>(eventSetPatterns.size());
+        for (EventSetPattern esp : eventSetPatterns) {
+            eventSets.add(new BiFeature.EventSet(esp, javac, this));
             if ((index = getIndexOfMethod(methods, esp.getRemoveListenerMethod())) != -1) methods.remove(index);
             if ((index = getIndexOfMethod(methods, esp.getAddListenerMethod())) != -1) methods.remove(index);
         }
 
-        analyzeBeanInfoSource( );
+        try {
+            isUpdateMode = false;
+            analyzeBeanInfoSource();
+        } finally {
+            isUpdateMode = true;
+        }
 
     }
     
-    Collection getDescriptor() {
+    List<BiFeature.Descriptor> getDescriptor() {
         return descriptor;
     }
     
-    Collection getProperties() {
+    List<BiFeature.Property> getProperties() {
         return properties;
     }
 
-    Collection getIdxProperties() {
+    List<BiFeature.IdxProperty> getIdxProperties() {
         return idxProperties;
     }
 
-    Collection getEventSets() {
+    List<BiFeature.EventSet> getEventSets() {
         return eventSets;
     }
 
-    Collection getMethods() {
+    List<BiFeature.Method> getMethods() {
         return methods;
     }
 
@@ -261,6 +272,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
     public void setIconC16(String iconC16) {
         this.iconC16 = iconC16;
+        setModified();
     }
 
     public String getIconM16() {
@@ -269,6 +281,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
     public void setIconM16(String iconM16) {
         this.iconM16 = iconM16;
+        setModified();
     }
 
     public String getIconC32() {
@@ -277,6 +290,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
     public void setIconC32(String iconC32) {
         this.iconC32 = iconC32;
+        setModified();
     }
 
     public String getIconM32() {
@@ -285,6 +299,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
     public void setIconM32(String iconM32) {
         this.iconM32 = iconM32;
+        setModified();
     }
 
     public int getDefaultPropertyIndex() {
@@ -293,6 +308,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
     public void setDefaultPropertyIndex(int defaultPropertyIndex) {
         this.defaultPropertyIndex = defaultPropertyIndex;
+        setModified();
     }
 
     public int getDefaultEventIndex() {
@@ -301,6 +317,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
     public void setDefaultEventIndex(int defaultEventIndex) {
         this.defaultEventIndex = defaultEventIndex;
+        setModified();
     }
 
     /** Getter for property useSuperClass.
@@ -315,6 +332,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
      */
     public void setUseSuperClass(boolean useSuperClass) {
         this.useSuperClass = useSuperClass;
+        setModified();
     }
     
     boolean isNullDescriptor() {
@@ -331,14 +349,17 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
     void setNullDescriptor( boolean nullDescriptor ) {
         this.nullDescriptor = nullDescriptor;
+        setModified();
     }
 
     void setNullProperties( boolean nullProperties ) {
         this.nullProperties = nullProperties;
+        setModified();
     }
 
     void setNullMethods( boolean nullMethods ) {
         this.nullMethods = nullMethods;
+        setModified();
     }
 
     boolean isNullEventSets() {
@@ -347,6 +368,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
     void setNullEventSets( boolean nullEventSets ) {
         this.nullEventSets = nullEventSets;
+        setModified();
     }
 
     public boolean isLazyDescriptor() {
@@ -363,14 +385,17 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
     public void setLazyDescriptor( boolean lazyDescriptor ) {
         this.lazyDescriptor = lazyDescriptor;
+        setModified();
     }
 
     public void setLazyProperties( boolean lazyProperties ) {
         this.lazyProperties = lazyProperties;
+        setModified();
     }
 
     public void setLazyMethods( boolean lazyMethods ) {
         this.lazyMethods = lazyMethods;
+        setModified();
     }
 
     public boolean isLazyEventSets() {
@@ -379,9 +404,55 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
     public void setLazyEventSets( boolean lazyEventSets ) {
         this.lazyEventSets = lazyEventSets;
+        setModified();
     }
     
     void regenerateSource() {
+        if ( bis.exists() && !bis.isNbBeanInfo()) {
+            throw new IllegalStateException();
+        }
+        
+        DataObject dataObject = bis.getDataObject();
+        EditorCookie editor = dataObject.getLookup().lookup(EditorCookie.class);
+        final StyledDocument doc = editor.getDocument();
+        Runnable task = new Runnable() {
+
+                public void run() {
+                    regenerateSourceImpl(doc);
+                }
+            };
+            
+        if (SwingUtilities.isEventDispatchThread()) {
+            task.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(task);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
+    void regenerateSourceImpl(StyledDocument doc) {
+        NbDocument.runAtomic(doc, new Runnable() {
+                public void run()  {
+                    regenerateBeanDescriptor();
+                    regenerateProperties();
+                    regenerateEvents();
+                    if (!olderVersion) {
+                        regenerateMethods();
+                    }
+                    regenerateIcons();
+                    regenerateDefaultIdx();
+                    regenerateSuperclass();
+                    isModified = false;
+                }
+        } );
+    }
+    
+    void openSource() {
 
         if ( bis.exists() ) {
 
@@ -404,65 +475,33 @@ public final class BiAnalyser extends Object implements Node.Cookie {
                     return;
                 }
                 bis.createFromTemplate(iconBlockRequired());
-            }
-            else if ( !bis.isNbBeanInfoDescriptor() ) {
-                try {
-                    bis.delete();
-                }
-                catch ( IOException e ) {
-                    String mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoCantDelete" );  // NOI18N
-                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
-                    nd = new NotifyDescriptor.Message ( mssg );
-                    DialogDisplayer.getDefault().notify( nd );
-                    return;
-                }
-                
-                bis.createFromTemplate(iconBlockRequired());
-            }
-            else {
-                if( (!iconBlockRequired() && bis.hasIconInfo()) || (iconBlockRequired() && !bis.hasIconInfo()) ){
-                    try {
-                        bis.delete();
-                    }
-                    catch ( IOException e ) {
-                        String mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoCantDelete" );  // NOI18N
-                        NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
-                        nd = new NotifyDescriptor.Message ( mssg );
-                        DialogDisplayer.getDefault().notify( nd );
-                        return;
-                    }
-                    bis.createFromTemplate(iconBlockRequired());
-                }
+                regenerateSource();
             }
         }
         else {
-            
+            // notify user about missing beaninfo and ask if generate new one.
+            String mssg = NbBundle.getMessage(BiAnalyser.class, "MSG_BeanInfoNotExists");
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
+            DialogDisplayer.getDefault().notify( nd );
+            if ( !nd.getValue().equals ( NotifyDescriptor.YES_OPTION ) ) {
+                return;
+            }
             bis.createFromTemplate(iconBlockRequired());
+            regenerateSource();
 
             if ( !bis.isNbBeanInfo() ) {
+                // XXX notify user about wrong template
                 return;
             }
 
         }
+        
+        bis.open();
 
-        SwingUtilities.invokeLater( new Runnable() {
-                                                    public void run()  {
-                                                        bis.open();
-                                                        regenerateBeanDescriptor();
-                                                        regenerateProperties();
-                                                        regenerateEvents();
-                                                        if (!olderVersion) {
-                                                            regenerateMethods();
-                                                        }
-                                                        regenerateIcons();
-                                                        regenerateDefaultIdx();
-                                                        regenerateSuperclass();
-                                                    }
-                                                } );
     }
 
     private void regenerateBeanDescriptor() {
-        StringBuffer sb = new StringBuffer( 512 );
+        StringBuilder sb = new StringBuilder( 512 );
                 
         if ( nullDescriptor ) {
             sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullDescriptor" ) );  // NOI18N
@@ -472,13 +511,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
             return;
         }
         
-        // Make common list of bean descriptor, in allDescriptor  will be the only one
-        ArrayList allDescriptor = new ArrayList( getMethods().size());
-        allDescriptor.addAll( getDescriptor() );
-
-        Iterator it = allDescriptor.iterator();
-        while( it.hasNext() ) {
-            BiFeature bif = ( BiFeature )it.next();
+        for (BiFeature.Descriptor bif : getDescriptor()) {
             if( bif.isIncluded() ){
                 sb.append( TAB + GenerateBeanInfoAction.getString("COMMENT_BeanDescriptor" ));   // NOI18N
                 if( !lazyDescriptor ){
@@ -504,11 +537,9 @@ public final class BiAnalyser extends Object implements Node.Cookie {
                     sb.append( '\n' ); // NOI18N
                 }
                 
-                Collection cs = bif.getCustomizationStrings();
-                Iterator csit = cs.iterator();
-                while( csit.hasNext() ) {
+                for (String line : bif.getCustomizationStrings()) {
                     sb.append( TABx2 + "beanDescriptor."); // NOI18N
-                    sb.append( (String)csit.next() ).append( ";\n" ); // NOI18N
+                    sb.append( line ).append( ";\n" ); // NOI18N
                 }
                 if( !lazyDescriptor ){
                     bis.setDescriptorSection( sb.toString(), "}\n"); // NOI18N
@@ -522,7 +553,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
     
     /** Regenerates the property section of BeanInfo */
     private void regenerateProperties() {
-        StringBuffer sb = new StringBuffer( 512 );
+        StringBuilder sb = new StringBuilder(512);
         int propertyCount = 0;
 
         if ( nullProperties ) {
@@ -534,14 +565,12 @@ public final class BiAnalyser extends Object implements Node.Cookie {
         }
 
         // Make common list of all properites
-        Collection allProperties = new TreeSet(getProperties());
+        Set<BiFeature.Property> allProperties = new  TreeSet<BiFeature.Property>(getProperties());
         allProperties.addAll(getIdxProperties());
 
         sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_PropertyIdentifiers" ) );  // NOI18N
 
-        Iterator it = allProperties.iterator();
-        while ( it.hasNext() ) {
-            BiFeature bif = ( BiFeature )it.next();
+        for (BiFeature.Property bif : allProperties) {
 
             if ( bif.isIncluded() ) {
                 sb.append( TAB + "private static final int " ); // NOI18N
@@ -576,9 +605,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
             }
         }
         
-        it = allProperties.iterator();
-        for ( int i = 0; it.hasNext(); i++ ) {
-            BiFeature bif = ( BiFeature )it.next();
+        for (BiFeature.Property bif : allProperties) {
 
             if ( bif.isIncluded() ) {
                 sb.append( TABx3 + "properties[PROPERTY_" ).append( bif.getName() ).append("] = "); // NOI18N
@@ -587,11 +614,9 @@ public final class BiAnalyser extends Object implements Node.Cookie {
                 appendNoi18nText(sb);
                 sb.append('\n');
 
-                Collection cs = bif.getCustomizationStrings();
-                Iterator csit = cs.iterator();
-                while( csit.hasNext() ) {
+                for (String line : bif.getCustomizationStrings()) {
                     sb.append( TABx3 + "properties[PROPERTY_" ).append( bif.getName() ).append("]."); // NOI18N
-                    sb.append( (String)csit.next() ).append( ";\n" ); // NOI18N
+                    sb.append( line ).append( ";\n" ); // NOI18N
                 }
             }
         }
@@ -609,7 +634,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
     /** Regenerates the method section of BeanInfo */
     private void regenerateMethods() {
-        StringBuffer sb = new StringBuffer( 512 );
+        StringBuilder sb = new StringBuilder( 512 );
         int methodCount = 0;
 
 
@@ -622,14 +647,11 @@ public final class BiAnalyser extends Object implements Node.Cookie {
         }
 
         // Make common list of all methods
-        Collection allMethods = new TreeSet( getMethods() );
+        Set<BiFeature.Method> allMethods = new  TreeSet<BiFeature.Method>( getMethods() );
 
         sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_MethodIdentifiers" ) );  // NOI18N
 
-        Iterator it = allMethods.iterator();
-        while ( it.hasNext() ) {
-            BiFeature bif = ( BiFeature )it.next();
-
+        for (BiFeature.Method bif : allMethods) {
             if ( bif.isIncluded() ) {
                 sb.append( TAB + "private static final int " ); // NOI18N
                 sb.append( "METHOD_" + bif.getName() + methodCount ); // NOI18N
@@ -664,10 +686,10 @@ public final class BiAnalyser extends Object implements Node.Cookie {
             }
         }
 
-        it = allMethods.iterator();
+        Iterator<BiFeature.Method> it = allMethods.iterator();
         
         for ( int i = 0, lCurMethodCount = 0; it.hasNext(); ) {
-            BiFeature bif = ( BiFeature )it.next();
+            BiFeature bif = it.next();
 
             if ( bif.isIncluded() ) {
                 sb.append( TABx3 + "methods[METHOD_" ).append( bif.getName() ).append(lCurMethodCount++ + "] = "); // NOI18N
@@ -676,11 +698,9 @@ public final class BiAnalyser extends Object implements Node.Cookie {
                 appendNoi18nText(sb);
                 sb.append('\n');
 
-                Collection cs = bif.getCustomizationStrings();
-                Iterator csit = cs.iterator();
-                while( csit.hasNext() ) {
+                for (String line : bif.getCustomizationStrings()) {
                     sb.append( TABx3 + "methods[METHOD_" ).append( bif.getName() ).append(i + "]."); // NOI18N
-                    sb.append( (String)csit.next() ).append( ";\n" ); // NOI18N
+                    sb.append( line ).append( ";\n" ); // NOI18N
                 }
                 i++;
             }
@@ -699,7 +719,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
     /** Regenerates the event set section of BeanInfo */
     private void regenerateEvents() {
-        StringBuffer sb = new StringBuffer( 512 );
+        StringBuilder sb = new StringBuilder( 512 );
         int eventCount = 0;
 
         if ( nullEventSets ) {
@@ -712,11 +732,8 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
         sb.append( TAB + GenerateBeanInfoAction.getString("COMMENT_EventSetsIdentifiers") );  // NOI18N
 
-        Collection events = new TreeSet(eventSets);
-        Iterator it = events.iterator();
-        while ( it.hasNext() ) {
-            BiFeature bif = ( BiFeature )it.next();
-
+        Set<BiFeature.EventSet> events = new  TreeSet<BiFeature.EventSet>(eventSets);
+        for (BiFeature.EventSet bif : events) {
             if ( bif.isIncluded() ) {
                 sb.append( TAB + "private static final int " ); // NOI18N
                 sb.append( "EVENT_" + bif.getName() ); // NOI18N
@@ -750,9 +767,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
             }
         }
 
-        it = events.iterator();
-        for ( int i = 0; it.hasNext(); i++ ) {
-            BiFeature bif = ( BiFeature )it.next();
+        for (BiFeature.EventSet bif : events) {
             if ( bif.isIncluded() ) {
                 // the index prefix MUST be consistent w/ BiFeature.EventSet analyser.
                 sb.append( TABx3 + "eventSets[EVENT_" ).append( bif.getName() ).append("] = "); // NOI18N
@@ -761,11 +776,9 @@ public final class BiAnalyser extends Object implements Node.Cookie {
                 appendNoi18nText(sb);
                 sb.append('\n');
 
-                Collection cs = bif.getCustomizationStrings();
-                Iterator csit = cs.iterator();
-                while( csit.hasNext() ) {
+                for (String line : bif.getCustomizationStrings()) {
                     sb.append( TABx3 + "eventSets[EVENT_" ).append( bif.getName() ).append("]."); // NOI18N
-                    sb.append( (String)csit.next() ).append( ";\n" ); // NOI18N
+                    sb.append( line ).append( ";\n" ); // NOI18N
                 }
             }
         }
@@ -784,7 +797,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
     /** Generate image icon section */
     private void regenerateIcons() {
         if(  iconBlockRequired() ) {
-            StringBuffer sb = new StringBuffer( 200 );
+            StringBuilder sb = new StringBuilder( 200 );
 
             sb.append( getIconDeclaration( ICONNAME_C16, iconC16 ));
             sb.append( getIconDeclaration( ICONNAME_C32, iconC32 ));
@@ -800,7 +813,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
     }
     
     private static String getIconDeclaration( String name, String resource ) {
-        StringBuffer sb = new StringBuffer( 80 );
+        StringBuilder sb = new StringBuilder( 80 );
 
         sb.append( TAB + "private static String " ).append( name ).append( " = "); // NOI18N
         if ( resource == null || resource.trim().length() == 0 )
@@ -811,7 +824,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
     }
 
     private void regenerateDefaultIdx() {
-        StringBuffer sb = new StringBuffer(100);
+        StringBuilder sb = new StringBuilder(100);
 
         sb.append( TAB + "private static final int " + DEFAULT_PROPERTY_INDEX + " = ").append( defaultPropertyIndex ).append( ";\n"); // NOI18N
         sb.append( TAB + "private static final int " + DEFAULT_EVENT_INDEX + " = ").append( defaultEventIndex ).append( ";\n"); // NOI18N
@@ -820,10 +833,10 @@ public final class BiAnalyser extends Object implements Node.Cookie {
     }
 
     private void regenerateSuperclass() {
-        StringBuffer sb = new StringBuffer(100);
+        StringBuilder sb = new StringBuilder(100);
         if( this.isUseSuperClass() ){
             sb.append( TAB + "public BeanInfo[] getAdditionalBeanInfo() {\n");  // NOI18N
-            sb.append( TABx2 + "Class superclass = " + classElement.getName() + ".class.getSuperclass();\n");  // NOI18N
+            sb.append( TABx2 + "Class superclass = " + classfqn + ".class.getSuperclass();\n");  // NOI18N
             sb.append( TABx2 + "BeanInfo sbi = null;\n");  // NOI18N
             sb.append( TABx2 + "try {\n");  // NOI18N
             sb.append( TABx2 + TAB + "sbi = Introspector.getBeanInfo(superclass);\n");  // NOI18N
@@ -842,7 +855,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
             return;
 
         String section = bis.getIconsSection();
-        Collection code = normalizeText( section );
+        List<String> code = normalizeText( section );
         setIconsFromBeanInfo( code );
 
         section = bis.getDefaultIdxSection();
@@ -893,10 +906,10 @@ public final class BiAnalyser extends Object implements Node.Cookie {
      * @param code String containg the java source code
      * @return Normalized code as collection of string.
      */
-    static Collection normalizeText( String code ) {
+    static List<String> normalizeText( String code ) {
 
-        ArrayList result = new ArrayList();
-        StringBuffer sb = new StringBuffer( 100 );
+        List<String> result = new  ArrayList<String>();
+        StringBuilder sb = new StringBuilder( 100 );
 
         final int IN_TEXT = 0;
         final int IN_WHITE = 1;
@@ -1019,12 +1032,8 @@ public final class BiAnalyser extends Object implements Node.Cookie {
     }
 
     /** test if initializer is lazy */    
-    static boolean isLazy( Collection code, String name ) {
-
-        Iterator it = code.iterator();
-
-        while( it.hasNext() ) {
-            String statement = (String)it.next();
+    static boolean isLazy( List<String> code, String name ) {
+        for (String statement : code) {
             if ( statement.indexOf( name ) != -1 ){
                 if( statement.indexOf( "/*lazy " + name + "*/" ) != -1 ){  // NOI18N
                     return true;
@@ -1034,14 +1043,10 @@ public final class BiAnalyser extends Object implements Node.Cookie {
         return false;
     }
 
-    static boolean hasSuperClass( Collection code ) {
-
-        Iterator it = code.iterator();
-
-        while( it.hasNext() ) {
-            String statement = (String)it.next();
+    static boolean hasSuperClass( List<String> code ) {
+        for (String statement : code) {
             //System.out.println(statement);
-            if ( statement.indexOf( "public BeanInfo[]getAdditionalBeanInfo()" ) != -1 ){  // NOI18N
+            if ( statement.indexOf( "public BeanInfo[] getAdditionalBeanInfo()" ) != -1 ){  // NOI18N
                     return true;
             }
         }
@@ -1062,12 +1067,8 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
 
     /** Let's the collection of features check for it's properties in BeanInfo */
-    boolean setPropertiesFromBeanInfo( Collection features, Collection code, String name ) throws GenerateBeanException {
-
-        Iterator it = code.iterator();
-
-        while( it.hasNext() ) {
-            String statement = (String)it.next();
+    boolean setPropertiesFromBeanInfo( List<? extends BiFeature> features, List<String> code, String name ) throws GenerateBeanException {
+        for (String statement : code) {
             if ( statement.indexOf( name ) != -1 )
                 
                 if ( "null".equals(getInitializer( statement ))  ){ // NOI18N 
@@ -1077,11 +1078,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
                     break;  //others f.e. null/*lazy*/
         }
 
-        it = features.iterator();
-
-        
-        while( it.hasNext() ) {
-            BiFeature bif = ((BiFeature) it.next());
+        for (BiFeature bif : features) {
             bif.setBrackets(bif.getBrackets());
             bif.analyzeCustomization( code );            
         }
@@ -1091,13 +1088,8 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
     /** Analyze icons properties from bean info */
 
-    void setIconsFromBeanInfo ( Collection code ) {
-
-
-        Iterator it = code.iterator();
-        while( it.hasNext() ) {
-            String statement = ( String ) it.next();
-
+    void setIconsFromBeanInfo ( List<String> code ) {
+        for (String statement : code) {
             if ( statement.indexOf( ICONNAME_C16 ) != -1 ) {
                 iconC16 = removeQuotation( getInitializer( statement ) );
                 continue;
@@ -1120,11 +1112,8 @@ public final class BiAnalyser extends Object implements Node.Cookie {
 
     /** Analyze default section  */
 
-    void setDefaultIdxFromBeanInfo( Collection code ) {
-        Iterator it = code.iterator();
-        while( it.hasNext() ) {
-            String statement = ( String ) it.next();
-
+    void setDefaultIdxFromBeanInfo( List<String> code ) {
+        for (String statement : code) {
             if ( statement.indexOf( DEFAULT_PROPERTY_INDEX ) != -1 ) {
                 try {
                     defaultPropertyIndex = Integer.parseInt( getInitializer( statement ) );
@@ -1149,7 +1138,19 @@ public final class BiAnalyser extends Object implements Node.Cookie {
         }
     }
     
-    private void appendNoi18nText(StringBuffer sb) {
+    private void appendNoi18nText(StringBuilder sb) {
         sb.append(NOI18N_COMMENT);
+    }
+    
+    void setModified() {
+        if (isUpdateMode) {
+            this.isModified = true;
+            BIEditorSupport editor = this.bis.getDataObject().getLookup().lookup(BIEditorSupport.class);
+            editor.notifyModified();
+        }
+    }
+    
+    public boolean isModified() {
+        return this.isModified;
     }
 }

@@ -61,6 +61,7 @@ import org.netbeans.modules.bpel.search.api.SearchMatch;
 import org.netbeans.modules.bpel.search.api.SearchOption;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
+import org.netbeans.modules.bpel.search.impl.output.View;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -77,7 +78,9 @@ public final class Search extends Dialog {
     mySource = source;
     myTargets = targets;
     mySearchEngine = engines.get(0);
-    mySearchEngine.addSearchListener(new Tree());
+
+    mySearchEngine.removeSearchListeners();
+    mySearchEngine.addSearchListener(new View());
     mySearchEngine.addSearchListener(new Progress());
 
     show();
@@ -128,7 +131,7 @@ public final class Search extends Dialog {
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
-    myName = new TextField(ASTERISK);
+    myName = new Field(ASTERISK);
     setWidth(myName.getUIComponent(), TEXT_WIDTH);
     label.setLabelFor(myName.getUIComponent());
     panel.add(myName.getUIComponent(), c);
@@ -288,7 +291,7 @@ public final class Search extends Dialog {
   }
 
   private Object mySource;
-  private TextField myName;
+  private Field myName;
   private JButton mySearchButton;
   private JComboBox myTarget;
   private JCheckBox myMatchCase;

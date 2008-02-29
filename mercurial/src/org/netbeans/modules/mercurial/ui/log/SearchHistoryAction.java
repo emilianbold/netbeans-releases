@@ -49,6 +49,7 @@ import javax.swing.*;
 import java.io.File;
 import java.util.*;
 import org.netbeans.modules.mercurial.FileInformation;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -94,33 +95,35 @@ public class SearchHistoryAction extends ContextAction {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (context == null) return;
-                HgUtils.outputMercurialTabInRed(
-                        NbBundle.getMessage(SearchHistoryAction.class,
-                        "MSG_Log_Title")); // NOI18N
-                HgUtils.outputMercurialTabInRed(
-                        NbBundle.getMessage(SearchHistoryAction.class,
-                        "MSG_Log_Title_Sep")); // NOI18N
-                File[] files = context.getFiles().toArray(new File[0]);
-                HgUtils.outputMercurialTab(
-                        NbBundle.getMessage(SearchHistoryAction.class,
-                        "MSG_LOG_CONTEXT_SEP")); // NOI18N
-                for(File f: files){
-                    HgUtils.outputMercurialTab(f.getAbsolutePath());
-                }
-                HgUtils.outputMercurialTabInRed(""); // NOI18N
-                 SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context);
+                outputSearchContextTab(context, "MSG_Log_Title");
+                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context);
                 tc.setDisplayName(title);
                 tc.open();
                 tc.requestActive();
-                /* Stub out for now - on Large Repositories this initial search of the whole
-                 * repo can take some time, better for user to initiate search
-                File [] files = context.getRootFiles().toArray(new File[0]);
-                if (files != null && files.length > 0) {
-                    tc.search();
-                }*/
             }
         });
     }
+
+    private static void outputSearchContextTab(VCSContext context, String title) {
+        File root = HgUtils.getRootFile(context);
+        OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
+        logger.outputInRed(
+                NbBundle.getMessage(SearchHistoryAction.class,
+                title));
+        logger.outputInRed(
+                NbBundle.getMessage(SearchHistoryAction.class,
+                "MSG_Log_Title_Sep")); // NOI18N
+        File[] files = context.getFiles().toArray(new File[0]);
+        logger.output(
+                NbBundle.getMessage(SearchHistoryAction.class,
+                "MSG_LOG_CONTEXT_SEP")); // NOI18N
+        for (File f : files) {
+            logger.output(f.getAbsolutePath());
+        }
+        logger.outputInRed(""); // NOI18N
+        logger.closeLog();
+    }
+
     /**
      * Opens the Seach History panel to view Mercurial Incoming Changesets that will be sent on next Pull from remote repo
      * using: hg incoming - to get the data
@@ -133,6 +136,8 @@ public class SearchHistoryAction extends ContextAction {
     public static void openIncoming(final VCSContext context, final String title) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                if (context == null) return;
+                outputSearchContextTab(context, "MSG_LogIncoming_Title");
                 SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context);
                 tc.setDisplayName(title);
                 tc.open();
@@ -153,6 +158,8 @@ public class SearchHistoryAction extends ContextAction {
     public static void openOut(final VCSContext context, final String title) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                if (context == null) return;
+                outputSearchContextTab(context, "MSG_LogOut_Title");
                 SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context);
                 tc.setDisplayName(title);
                 tc.open();

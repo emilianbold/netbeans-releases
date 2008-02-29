@@ -70,7 +70,7 @@ public final class CommonServerUIs {
      */
     public static void showCustomizer(ServerInstance instance) {
         assert SwingUtilities.isEventDispatchThread() : "Invocation of the UI dialog outside of the EDT"; // NOI18N
-        
+
         ServerManagerPanel customizer = new ServerManagerPanel(instance);
 
         JButton close = new JButton(NbBundle.getMessage(CommonServerUIs.class, "CTL_Close"));

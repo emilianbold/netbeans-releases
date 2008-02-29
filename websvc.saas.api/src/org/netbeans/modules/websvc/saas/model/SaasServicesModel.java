@@ -68,6 +68,8 @@ public class SaasServicesModel {
     public static final String WEBSVC_HOME = System.getProperty("netbeans.user") + 
             File.separator + "config" + File.separator + "WebServices"; // NOI18N
     public static final String SERVICE_GROUP_XML = "service-groups.xml";
+    public static final String PROFILE_PROPERTIES_FILE = "profile.properties";
+    
     private SaasGroup rootGroup;
     private State state = State.UNINITIALIZED;
     private PropertyChangeSupport pps = new PropertyChangeSupport(this);
@@ -104,9 +106,10 @@ public class SaasServicesModel {
             return;
         }
         setState(State.INITIALIZING);
-        loadUserDefinedGroups();
+        getInitialRootGroup();
         loadFromDefaultFileSystem();
         loadFromWebServicesHome();
+        WsdlUtil.ensureImportExisting60Services();
         setState(State.READY);
     }
 
@@ -128,7 +131,7 @@ public class SaasServicesModel {
 
     private void loadFromDefaultFileSystem() {
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject f = sfs.findResource("SaasServices"); // NOI18N
+        FileObject f = sfs.findResource("SaaSServices"); // NOI18N
         if (f != null && f.isFolder()) {
             Enumeration<? extends FileObject> en = f.getFolders(false);
             while (en.hasMoreElements()) {
@@ -137,13 +140,21 @@ public class SaasServicesModel {
                     if (fo.isFolder()) {
                         continue;
                     }
+                    if (PROFILE_PROPERTIES_FILE.equals(fo.getNameExt())) {
+                        continue;
+                    }
                     loadSaasServiceFile(fo, false);
+                }
+                SaasGroup g = rootGroup.getChildGroup(groupFolder.getName());
+                if (g != null) {
+                    g.setIcon16Path((String)groupFolder.getAttribute("icon16"));
+                    g.setIcon32Path((String)groupFolder.getAttribute("icon32"));
                 }
             }
         }
     }
 
-    private void saveRootGroup() {
+    public void saveRootGroup() {
         try {
             SaasUtil.saveSaasGroup(rootGroup, new File(WEBSVC_HOME, SERVICE_GROUP_XML));
         } catch (Exception ex) {
@@ -182,6 +193,7 @@ public class SaasServicesModel {
             SaasServices ss = SaasUtil.loadSaasServices(saasFile);
             Group g = ss.getSaasMetadata().getGroup();
             SaasGroup parent = rootGroup;
+            SaasGroup topGroup = new SaasGroup(parent, g);
             while (g != null) {
                 SaasGroup child = parent.getChildGroup(g.getName());
                 if (child == null) {
@@ -199,6 +211,7 @@ public class SaasServicesModel {
                     } else {
                         service = new CustomSaas(parent, ss);
                     }
+                    service.setTopLevelGroup(topGroup);
                     child.addService(service);
                     service.setUserDefined(userDefined);
                     break;
@@ -258,6 +271,10 @@ public class SaasServicesModel {
      * @param parent
      * @param child
      */
+    public synchronized SaasGroup createTopGroup(String groupName) {
+        return createGroup(getInitialRootGroup(), groupName);
+    }
+    
     public synchronized SaasGroup createGroup(SaasGroup parent, String groupName) {
         initRootGroup();
         SaasGroup group = parent.createGroup(groupName);

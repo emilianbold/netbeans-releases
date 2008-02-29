@@ -218,16 +218,26 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
         }
         List<? extends TypeMirror> paramTypes = null;
+        String enclosingClass = null;
         if (elm != null) {
             TypeMirror typeMirror = elm.asType();
             TypeKind kind = typeMirror.getKind();
-            if (kind != TypeKind.EXECUTABLE) {
-                Assert2.error(arg0, "noSuchMethod", elm.getSimpleName().toString(), elm.getEnclosingElement().getSimpleName().toString());
+            if (kind == TypeKind.ERROR) { // In case of error type resolution we do not know parameter types
+                elm = null;
+            } else {
+                if (kind != TypeKind.EXECUTABLE) {
+                    Assert2.error(arg0, "noSuchMethod", elm.getSimpleName().toString(), elm.getEnclosingElement().getSimpleName().toString());
+                }
+                ExecutableElement methodElement = (ExecutableElement) elm;
+                ExecutableType execTypeMirror = (ExecutableType) typeMirror;
+                paramTypes = execTypeMirror.getParameterTypes();
+                isStatic = methodElement.getModifiers().contains(Modifier.STATIC);
+                Element enclosing = methodElement.getEnclosingElement();
+                if (enclosing.getKind() == ElementKind.CLASS) {
+                    TypeElement enclosingClassElement = (TypeElement) enclosing;
+                    enclosingClass = ElementUtilities.getBinaryName(enclosingClassElement);
+                }
             }
-            ExecutableElement methodElement = (ExecutableElement) elm;
-            ExecutableType execTypeMirror = (ExecutableType) typeMirror;
-            paramTypes = execTypeMirror.getParameterTypes();
-            isStatic = methodElement.getModifiers().contains(Modifier.STATIC);
         }
         
         List<? extends ExpressionTree> args = arg0.getArguments();
@@ -272,17 +282,26 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 type = (ReferenceType) ((ObjectReference) object).type();
             } else {
                 type = evaluationContext.getFrame().location().declaringType();
+                if (enclosingClass != null) {
+                    ReferenceType dt = findEnclosingType(type, enclosingClass);
+                    if (dt != null) type = dt;
+                }
             }
         } else {
             if (object != null) {
                 objectReference = (ObjectReference) object;
+                type = objectReference.referenceType();
             } else {
                 objectReference = evaluationContext.getFrame().thisObject();
+                type = evaluationContext.getFrame().location().declaringType();
+                if (enclosingClass != null) {
+                    ReferenceType dt = findEnclosingType(type, enclosingClass);
+                    if (dt != null) type = dt;
+                }
             }
             if (objectReference == null) {
                 Assert2.error(arg0, "methodCallOnNull", methodName);
             }
-            type = objectReference.referenceType();
         }
         ClassType cType;
         if (type instanceof ArrayType) {
@@ -291,15 +310,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         } else {
             cType = (ClassType) type;
         }
-        Method method;
-        if (paramTypes != null) {
-            method = getConcreteMethod(type, methodName, paramTypes);
-        } else {
-            method = getConcreteMethod2(type, methodName, argTypes);
-        }
-        if (method == null) {
-            Assert2.error(arg0, "noSuchMethod", methodName, type.name());
-        }
+        Method method = getConcreteMethodAndReportProblems(arg0, type, methodName, null, paramTypes, argTypes);
         return invokeMethod(arg0, method, isStatic, cType, objectReference, argVals, evaluationContext);
     }
     
@@ -314,26 +325,70 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         return null;
     }*/
 
-    private static Method getConcreteMethod(ReferenceType type, String methodName, List<? extends TypeMirror> typeArguments) {
+    private static Method getConcreteMethodAndReportProblems(Tree arg0, ReferenceType type, String methodName, String firstParamSignature, List<? extends TypeMirror> paramTypes, List<? extends Type> argTypes) {
+        Method method;
+        try {
+            if (paramTypes != null) {
+                method = getConcreteMethod(type, methodName, firstParamSignature, paramTypes);
+            } else {
+                method = getConcreteMethod2(type, methodName, argTypes);
+            }
+        } catch (UnsuitableArgumentsException uaex) {
+            StringBuilder methodArgs = new StringBuilder("(");
+            if (paramTypes != null) {
+                 for (TypeMirror paramType : paramTypes) {
+                     if (methodArgs.length() > 1) methodArgs.append(", ");
+                     methodArgs.append(paramType.toString());
+                 }
+            } else {
+                for (Type argType : argTypes) {
+                    if (methodArgs.length() > 1) methodArgs.append(", ");
+                     methodArgs.append(argType.name());
+                }
+            }
+            methodArgs.append(")");
+            if ("<init>".equals(methodName)) {
+                Assert2.error(arg0, "noSuchConstructorWithArgs", type.name(), methodArgs.toString());
+            }
+            if (methodArgs.length() == 2) {
+                Assert2.error(arg0, "noSuchMethod", methodName+methodArgs, type.name());
+            } else {
+                Assert2.error(arg0, "noSuchMethodWithArgs", methodName, type.name(), methodArgs.toString());
+            }
+            method = null;
+        }
+        if (method == null) {
+            Assert2.error(arg0, "noSuchMethod", methodName, type.name());
+        }
+        return method;
+    }
+    
+    private static Method getConcreteMethod(ReferenceType type, String methodName, List<? extends TypeMirror> typeArguments) throws UnsuitableArgumentsException {
         return getConcreteMethod(type, methodName, null, typeArguments);
     }
     
-    private static Method getConcreteMethod(ReferenceType type, String methodName, String firstParamSignature, List<? extends TypeMirror> typeArguments) {
+    private static Method getConcreteMethod(ReferenceType type, String methodName, String firstParamSignature, List<? extends TypeMirror> typeArguments) throws UnsuitableArgumentsException {
         List<Method> methods = type.methodsByName(methodName);
         String signature = createSignature(firstParamSignature, typeArguments);
+        boolean constructor = "<init>".equals(methodName);
         for (Method method : methods) {
-            if (!method.isAbstract() && egualMethodSignatures(method.signature(), signature)) {
+            if (!method.isAbstract() &&
+                (!constructor || type.equals(method.declaringType())) &&
+                egualMethodSignatures(method.signature(), signature)) {
                 return method;
             }
         }
+        if (methods.size() > 0) throw new UnsuitableArgumentsException();
         return null;
     }
 
-    private static Method getConcreteMethod2(ReferenceType type, String methodName, List<? extends Type> typeArguments) {
+    private static Method getConcreteMethod2(ReferenceType type, String methodName, List<? extends Type> typeArguments) throws UnsuitableArgumentsException {
         List<Method> methods = type.methodsByName(methodName);
         List<Method> possibleMethods = new ArrayList<Method>();
+        boolean constructor = "<init>".equals(methodName);
         for (Method method : methods) {
-            if (!method.isAbstract()) {
+            if (!method.isAbstract() &&
+                (!constructor || type.equals(method.declaringType()))) {
                 try {
                     if (equalTypes(method.argumentTypes(), typeArguments)) {
                         return method;
@@ -349,6 +404,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
         }
         if (possibleMethods.size() == 0) {
+            if (methods.size() > 0) throw new UnsuitableArgumentsException();
             return null;
         }
         return possibleMethods.get(0);
@@ -387,15 +443,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     
     private static boolean extendsType(Type argType, Type methodType) {
         if (methodType instanceof ReferenceType && argType instanceof ReferenceType) {
-            if (!extendsType((ReferenceType) argType, (ReferenceType) methodType)) {
-                return false;
-            }
+            return extendsType((ReferenceType) argType, (ReferenceType) methodType);
         } else if (methodType instanceof PrimitiveType && argType instanceof PrimitiveType) {
-            if (!extendsType((PrimitiveType) argType, (PrimitiveType) methodType)) {
-                return false;
-            }
+            return extendsType((PrimitiveType) argType, (PrimitiveType) methodType);
         }
-        return true;
+        return false;
     }
     
     /** @return true if t1 extends t2 */
@@ -1085,6 +1137,18 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (name.equals("this")) {
             return evaluationContext.getFrame().thisObject();
         }
+        if (name.equals("super")) {
+            ReferenceType thisType = evaluationContext.getFrame().location().declaringType();
+            if (thisType instanceof ClassType) {
+                ClassType superClass = ((ClassType) thisType).superclass();
+                ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+                if (thisObject == null) {
+                    return superClass;
+                } else {
+                    return thisObject;
+                }
+            }
+        }
         Field field = evaluationContext.getFrame().location().declaringType().fieldByName(name);
         if (field != null) {
             if (field.isStatic()) {
@@ -1147,16 +1211,48 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 if (fieldName.equals("this")) {
                     return evaluationContext.getFrame().thisObject();
                 }
-                Field field = evaluationContext.getFrame().location().declaringType().fieldByName(fieldName);
+                if (fieldName.equals("super")) {
+                    ReferenceType thisType = evaluationContext.getFrame().location().declaringType();
+                    if (thisType instanceof ClassType) {
+                        ClassType superClass = ((ClassType) thisType).superclass();
+                        ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+                        if (thisObject == null) {
+                            return superClass;
+                        } else {
+                            return thisObject;
+                        }
+                    }
+                }
+                Element enclosing = ve.getEnclosingElement();
+                String enclosingClass = null;
+                if (enclosing.getKind() == ElementKind.CLASS) {
+                    TypeElement enclosingClassElement = (TypeElement) enclosing;
+                    enclosingClass = ElementUtilities.getBinaryName(enclosingClassElement);
+                }
+                ReferenceType declaringType = evaluationContext.getFrame().location().declaringType();
+                if (enclosingClass != null) {
+                    ReferenceType dt = findEnclosingType(declaringType, enclosingClass);
+                    if (dt != null) declaringType = dt;
+                }
+                Field field = declaringType.fieldByName(fieldName);
                 if (field == null) {
                     Assert2.error(arg0, "unknownVariable", fieldName);
                 }
                 if (field.isStatic()) {
                     evaluationContext.getVariables().put(arg0, new VariableInfo(field));
-                    return field.declaringType().getValue(field);
+                    return declaringType.getValue(field);
                 }
                 ObjectReference thisObject = evaluationContext.getFrame().thisObject();
                 if (thisObject != null) {
+                    if (field.isPrivate()) {
+                        ObjectReference to = findEnclosedObject(thisObject, declaringType);
+                        if (to != null) thisObject = to;
+                    } else {
+                        if (!instanceOf(thisObject.referenceType(), declaringType)) {
+                            ObjectReference to = findEnclosedObject(thisObject, declaringType);
+                            if (to != null) thisObject = to;
+                        }
+                    }
                     evaluationContext.getVariables().put(arg0, new VariableInfo(field, thisObject));
                     return thisObject.getValue(field);
                 } else {
@@ -1211,6 +1307,44 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         arg0.getName();
         throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+    }
+    
+    private ReferenceType findEnclosingType(ReferenceType type, String name) {
+        if (type.name().equals(name)) {
+            return type;
+        }
+        List<ReferenceType> classes = type.virtualMachine().classesByName(name);
+        if (classes.size() == 1) {
+            return classes.get(0);
+        }
+        for (ReferenceType clazz : classes) {
+            if (isNestedOf(clazz, type)) {
+                return clazz;
+            }
+        }
+        return null;
+    }
+    
+    private boolean isNestedOf(ReferenceType nested, ReferenceType type) {
+        if (nested.equals(type)) {
+            return true;
+        }
+        for (ReferenceType n : nested.nestedTypes()) {
+            if (isNestedOf(n, type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private ObjectReference findEnclosedObject(ObjectReference object, ReferenceType type) {
+        if (object.referenceType().equals(type)) {
+            return object;
+        }
+        Field outerRef = object.referenceType().fieldByName("this$0");
+        if (outerRef == null) return null;
+        object = (ObjectReference) object.getValue(outerRef);
+        return findEnclosedObject(object, type);
     }
 
     @Override
@@ -1446,11 +1580,15 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 // Unresolved class
                 Assert2.error(arg0, "unknownType", arg0.getIdentifier());
             }
-            if (elm.getKind() != ElementKind.CONSTRUCTOR) {
-                throw new IllegalStateException("Element "+elm+" is of "+elm.getKind()+" kind. Tree = "+arg0);
+            if (elm.asType().getKind() == TypeKind.ERROR) {
+                cType = null;
+            } else {
+                if (elm.getKind() != ElementKind.CONSTRUCTOR) {
+                    throw new IllegalStateException("Element "+elm+" is of "+elm.getKind()+" kind. Tree = "+arg0);
+                }
+                ExecutableElement cElem = (ExecutableElement) elm;
+                cType = cElem.asType();
             }
-            ExecutableElement cElem = (ExecutableElement) elm;
-            cType = cElem.asType();
         } else {
             cType = null;
         }
@@ -1476,7 +1614,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             if (thisObject != null) {
                 List<ReferenceType> nestedTypes = ((ReferenceType) thisObject.type()).nestedTypes();
                 for (ReferenceType nested : nestedTypes) {
-                    if (nested.equals(classType)) {
+                    if (!nested.isStatic() && nested.equals(classType)) {
                         argVals.add(0, thisObject);
                         firstParamSignature = thisObject.type().signature();
                     }
@@ -1495,7 +1633,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             if (thisObject != null) {
                 List<ReferenceType> nestedTypes = ((ReferenceType) thisObject.type()).nestedTypes();
                 for (ReferenceType nested : nestedTypes) {
-                    if (nested.equals(classType)) {
+                    if (!nested.isStatic() && nested.equals(classType)) {
                         argVals.add(0, thisObject);
                         argTypes.add(0, thisObject.type());
                     }
@@ -1507,15 +1645,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 loggerMethod.fine("STARTED : "+classType+"."+"<init>"+" ("+argVals+") in thread "+evaluationContext.getFrame().thread());
             }
             evaluationContext.methodToBeInvoked();
-            Method constructorMethod;
-            if (paramTypes != null) {
-                constructorMethod = getConcreteMethod(classType, "<init>", firstParamSignature, paramTypes);
-            } else {
-                constructorMethod = getConcreteMethod2(classType, "<init>", argTypes);
-            }
-            if (constructorMethod == null) {
-                Assert2.error(arg0, "noSuchMethod", "<init>", classType.name());
-            }
+            Method constructorMethod = getConcreteMethodAndReportProblems(arg0, classType, "<init>", firstParamSignature, paramTypes, argTypes);
             return classType.newInstance(evaluationContext.getFrame().thread(),
                                          constructorMethod,
                                          argVals,
@@ -2142,6 +2272,17 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 value = type.invokeMethod(evaluationThread, method, argVals,
                                           ObjectReference.INVOKE_SINGLE_THREADED);
             } else {
+                if (type != null) {
+                    if (method.isPrivate()) {
+                        ObjectReference to = findEnclosedObject(objectReference, type);
+                        if (to != null) objectReference = to;
+                    } else {
+                        if (!instanceOf(objectReference.referenceType(), type)) {
+                            ObjectReference to = findEnclosedObject(objectReference, type);
+                            if (to != null) objectReference = to;
+                        }
+                    }
+                }
                 value = objectReference.invokeMethod(evaluationThread, method,
                                                      argVals,
                                                      ObjectReference.INVOKE_SINGLE_THREADED);
@@ -2483,7 +2624,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         ObjectReference ov = (ObjectReference) v;
         // Call toString() method:
         List<? extends TypeMirror> typeArguments = Collections.emptyList();
-        Method method = getConcreteMethod((ReferenceType) ov.type(), "toString", typeArguments);
+        Method method;
+        try {
+            method = getConcreteMethod((ReferenceType) ov.type(), "toString", typeArguments);
+        } catch (UnsuitableArgumentsException uaex) {
+            throw new IllegalStateException(uaex);
+        }
         ((ClassType) ov.type()).methodsByName("toString");
         List<Value> argVals = Collections.emptyList();
         Value sv = invokeMethod(arg0, method, false, null, ov, argVals, evaluationContext);
@@ -2493,5 +2639,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             throw new IllegalStateException("Result of toString() call on "+ov+" is not a String, but: "+sv);
         }
     }
-
+    
+    private static final class UnsuitableArgumentsException extends Exception {
+        public UnsuitableArgumentsException() {}
+    }
+    
 }

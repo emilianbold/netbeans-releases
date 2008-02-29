@@ -92,7 +92,7 @@ public final class HDataLoader extends CndAbstractDataLoaderExt {
         for (String name : newExt) {
             newList.addExtension(name);
         }   
-        putProperty(PROP_EXTENSIONS, newList, true);
+        setExtensions(newList);
     }
     
     protected String getMimeType(){
@@ -125,5 +125,13 @@ public final class HDataLoader extends CndAbstractDataLoaderExt {
 
     public ExtensionList getDefaultExtensionList() {
         return arrayToExtensionList(hdrExtensions);
+    }
+
+    public String getDisplayNameForExtensionList() {
+	return NbBundle.getMessage(HDataLoader.class, "HDataLoader_Name_ForExtList"); // NOI18N
+    }
+
+    public String getDefaultDefaultExtension() {
+        return hdrExtensions[0];
     }
 }

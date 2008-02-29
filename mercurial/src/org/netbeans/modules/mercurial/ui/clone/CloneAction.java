@@ -55,6 +55,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -66,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -140,10 +142,11 @@ public class CloneAction extends ContextAction {
         final File clonePrjFile = cloneProjFile;
         
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(source);
-        HgProgressSupport support = new HgProgressSupport() {
+        final HgProgressSupport support = new HgProgressSupport() {
             Runnable doOpenProject = new Runnable () {
                 public void run()  {
                     // Open and set focus on the cloned project if possible
+                    OutputLogger logger = getLogger();
                     try {
                         FileObject cloneProj = FileUtil.toFileObject(clonePrjFile);
                         Project prj = null;
@@ -154,7 +157,7 @@ public class CloneAction extends ContextAction {
                             hg.versionedFilesChanged();
                             hg.refreshAllAnnotations();
                         }else{
-                            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(CloneAction.class,
+                            logger.outputInRed( NbBundle.getMessage(CloneAction.class,
                                     "MSG_EXTERNAL_CLONE_PRJ_NOT_FOUND_CANT_SETASMAIN")); // NOI18N
                         }
             
@@ -162,43 +165,44 @@ public class CloneAction extends ContextAction {
                         NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(new HgException(ex.toString()));
                         DialogDisplayer.getDefault().notifyLater(e);
                     } finally{
-                       HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
-                       HgUtils.outputMercurialTab(""); // NOI18N
+                       logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
+                       logger.output(""); // NOI18N
                     }
                 }
             };
             public void perform() {
+                OutputLogger logger = getLogger();
                 try {
                     // TODO: We need to annotate the cloned project 
                     // See http://qa.netbeans.org/issues/show_bug.cgi?id=112870
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                             NbBundle.getMessage(CloneAction.class,
                             "MSG_CLONE_TITLE")); // NOI18N
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                             NbBundle.getMessage(CloneAction.class,
                             "MSG_CLONE_TITLE_SEP")); // NOI18N
-                    List<String> list = HgCommand.doClone(source, target);
+                    List<String> list = HgCommand.doClone(source, target, logger);
                     if(list != null && !list.isEmpty()){
                         HgUtils.createIgnored(cloneFolder);
-                        HgUtils.outputMercurialTab(list);
+                        logger.output(list);
                
                         if (prjName != null) {
-                            HgUtils.outputMercurialTabInRed(
+                            logger.outputInRed(
                                     NbBundle.getMessage(CloneAction.class,
                                     "MSG_CLONE_FROM", prjName, source)); // NOI18N
-                            HgUtils.outputMercurialTabInRed(
+                            logger.outputInRed(
                                     NbBundle.getMessage(CloneAction.class,
                                     "MSG_CLONE_TO", prjName, target)); // NOI18N
                         } else {
-                            HgUtils.outputMercurialTabInRed(
+                            logger.outputInRed(
                                     NbBundle.getMessage(CloneAction.class,
                                     "MSG_EXTERNAL_CLONE_FROM", source)); // NOI18N
-                            HgUtils.outputMercurialTabInRed(
+                            logger.outputInRed(
                                     NbBundle.getMessage(CloneAction.class,
                                     "MSG_EXTERNAL_CLONE_TO", target)); // NOI18N
 
                         }
-                        HgUtils.outputMercurialTab(""); // NOI18N
+                        logger.output(""); // NOI18N
 
                         if (isLocalClone){
                             SwingUtilities.invokeLater(doOpenProject);
@@ -214,6 +218,12 @@ public class CloneAction extends ContextAction {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
                 }finally {
+                    //#121581: Work around for ini4j bug on Windows not handling single '\' correctly
+                    // hg clone creates the default hgrc, we just overwrite it's contents with 
+                    // default path contianing '\\'
+                    if(isLocalClone && Utilities.isWindows()){ 
+                        fixLocalPullPushPathsOnWindows(cloneFolder.getAbsolutePath());
+                    }
                     // #125835 - Push to default was not being set automatically by hg after Clone
                     // but was after you opened the Mercurial -> Properties, inconsistent
                     HgConfigFiles hg = new HgConfigFiles(cloneFolder);
@@ -224,19 +234,28 @@ public class CloneAction extends ContextAction {
                     hg.setProperty(HgProperties.HGPROPNAME_DEFAULT_PULL, defaultPull);
                     hg.setProperty(HgProperties.HGPROPNAME_DEFAULT_PUSH, defaultPush);
                         
-                    //#121581: Work around for ini4j bug on Windows not handling single '\' correctly
-                    // hg clone creates the default hgrc, we just overwrite it's contents with 
-                    // default path contianing '\\'
-                    if(isLocalClone && Utilities.isWindows()){ 
-                        fixLocalPullPushPathsOnWindows(cloneFolder.getAbsolutePath(), defaultPull, defaultPush);
-                    }
                     if(!isLocalClone){
-                        HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
-                        HgUtils.outputMercurialTab(""); // NOI18N
+                        logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
+                        logger.output(""); // NOI18N
                     }
                 }
             }
         };
+        support.setRepositoryRoot(source);
+        support.setCancellableDelegate(new Cancellable(){
+            public boolean cancel() {
+                if(!Utilities.isWindows()) 
+                    return true;
+                
+                OutputLogger logger = support.getLogger();
+                logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_CANCEL_ATTEMPT")); // NOI18N
+                JOptionPane.showMessageDialog(null,
+                    NbBundle.getMessage(CloneAction.class, "MSG_CLONE_CANCEL_NOT_SUPPORTED"),// NOI18N
+                    NbBundle.getMessage(CloneAction.class, "MSG_CLONE_CANCEL_NOT_SUPPORTED_TITLE"),// NOI18N
+                    JOptionPane.INFORMATION_MESSAGE);
+                return false;
+            }
+        });
         support.start(rp, source, org.openide.util.NbBundle.getMessage(CloneAction.class, "LBL_Clone_Progress", source)); // NOI18N
     }
 
@@ -245,7 +264,7 @@ public class CloneAction extends ContextAction {
     }
    
     private static final String HG_PATHS_SECTION_ENCLOSED = "[" + HgConfigFiles.HG_PATHS_SECTION + "]";// NOI18N
-    private static void fixLocalPullPushPathsOnWindows(String root, String defaultPull, String defaultPush) {
+    private static void fixLocalPullPushPathsOnWindows(String root) {
         File hgrcFile = null;
         File tempFile = null;
         BufferedReader br = null;
@@ -255,9 +274,6 @@ public class CloneAction extends ContextAction {
             hgrcFile = new File(root + File.separator + HgConfigFiles.HG_REPO_DIR, HgConfigFiles.HG_RC_FILE);
             if (!hgrcFile.isFile() || !hgrcFile.canWrite()) return;
             
-            String defaultPullWinStr = HgConfigFiles.HG_DEFAULT_PULL_VALUE + " = " + defaultPull.replace("\\", "\\\\") + "\n"; // NOI18N
-            String defaultPushWinStr = HgConfigFiles.HG_DEFAULT_PUSH_VALUE + " = " + defaultPush.replace("\\", "\\\\") + "\n"; // NOI18N
-
             tempFile = new File(hgrcFile.getAbsolutePath() + ".tmp"); // NOI18N
             if (tempFile == null) return;
             
@@ -277,14 +293,14 @@ public class CloneAction extends ContextAction {
                 }
 
                 if (bInPaths && !bPullDone && line.startsWith(HgConfigFiles.HG_DEFAULT_PULL_VALUE) && 
-                        !line.startsWith(HgConfigFiles.HG_DEFAULT_PUSH_VALUE)) {
-                    pw.println(defaultPullWinStr);
+                        !line.startsWith(HgConfigFiles.HG_DEFAULT_PUSH_VALUE)) {                    
+                    pw.println(line.replace("\\", "\\\\"));
                     bPullDone = true;
                 } else if (bInPaths && !bPullDone && line.startsWith(HgConfigFiles.HG_DEFAULT_PULL)) {
-                    pw.println(defaultPullWinStr);
+                    pw.println(line.replace("\\", "\\\\"));
                     bPullDone = true;
                 } else if (bInPaths && !bPushDone && line.startsWith(HgConfigFiles.HG_DEFAULT_PUSH_VALUE)) {
-                    pw.println(defaultPushWinStr);
+                    pw.println(line.replace("\\", "\\\\"));
                     bPushDone = true;
                 } else {
                     pw.println(line);

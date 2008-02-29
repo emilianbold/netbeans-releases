@@ -138,57 +138,57 @@
                 </folder>
                 
                 <file name="language.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.GsfLanguage"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyLanguage"/>
                 </file>
                 
                 <file name="parser.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.Parser"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Parser"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyParser"/>
                 </file>
                 
                 <file name="renamer.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.InstantRenamer"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.InstantRenamer"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RenameHandler"/>
                 </file>
                 
                 <file name="declarationfinder.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.DeclarationFinder"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.DeclarationFinder"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.DeclarationFinder"/>
                 </file>
                 
                 <file name="formatter.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.Formatter"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Formatter"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.Formatter"/>
                 </file>
                 
                 <file name="bracket.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.BracketCompletion"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.BracketCompletion"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.BracketCompleter"/>
                 </file>
                 
                 <file name="completion.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.Completable"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Completable"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.CodeCompleter"/>
                 </file>
                 
                 <file name="indexer.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.Indexer"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Indexer"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyIndexer"/>
                 </file>
                 
                 <file name="semantic.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.SemanticAnalyzer"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.SemanticAnalyzer"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.SemanticAnalysis"/>
                 </file>
                 
                 <file name="occurrences.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.OccurrencesFinder"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.OccurrencesFinder"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.OccurrencesFinder"/>
                 </file>
                 
                 <file name="structure.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.StructureScanner"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.StructureScanner"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.StructureAnalyzer"/>
                 </file>
             </folder>

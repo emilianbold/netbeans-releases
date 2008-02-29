@@ -136,6 +136,9 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
         } else if (b instanceof FunctionBreakpoint) {
             breakpointToImpl.put(b, new FunctionBreakpointImpl(
 			(FunctionBreakpoint) b, breakpointsReader, debugger, session));
+        } else if (b instanceof AddressBreakpoint) {
+            breakpointToImpl.put(b, new AddressBreakpointImpl(
+			(AddressBreakpoint) b, breakpointsReader, debugger, session));
         }
     }
     

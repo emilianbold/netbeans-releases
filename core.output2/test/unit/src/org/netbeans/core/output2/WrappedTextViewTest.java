@@ -43,6 +43,8 @@ package org.netbeans.core.output2;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.io.File;
 import java.util.ArrayList;
@@ -72,6 +74,7 @@ public class WrappedTextViewTest extends TestCase {
     private NbIO io;
     private OutWriter out = null;
     JFrame jf = null;
+    static int testNum;
 
     protected void setUp() throws Exception {
         jf = new JFrame();
@@ -80,7 +83,7 @@ public class WrappedTextViewTest extends TestCase {
         jf.getContentPane().setLayout (new BorderLayout());
         jf.getContentPane().add (win, BorderLayout.CENTER);
         jf.setBounds (20, 20, 700, 300);
-        io = (NbIO) new NbIOProvider().getIO ("Test", false);
+        io = (NbIO) new NbIOProvider().getIO ("Test" + testNum++, false);
         SwingUtilities.invokeAndWait (new Shower());
         sleep();
         io.getOut().println ("Test line 1");
@@ -127,6 +130,21 @@ public class WrappedTextViewTest extends TestCase {
         public void run() {
             jf.setVisible(true);
         }
+    }
+    
+    /**
+     * tests if caret position is computed correctly correctly (see issue #122492)
+     */
+    public void testViewToModel() throws InterruptedException {
+        Graphics g = win.getSelectedTab().getOutputPane().getGraphics();
+        FontMetrics fm = g.getFontMetrics(win.getSelectedTab().getOutputPane().getTextView().getFont());
+        int charWidth = fm.charWidth('m');
+        int charHeight = fm.getHeight();
+        int fontDescent = fm.getDescent();
+        float x = charWidth * 50;
+        float y = charHeight * 1 + fontDescent;
+        int charPos = win.getSelectedTab().getOutputPane().getTextView().getUI().getRootView(null).viewToModel(x, y, new Rectangle(), new Position.Bias[]{});
+        assertTrue("viewToModel returned wrong value (it would result in bad caret position)!", charPos == 45);
     }
     
     public void testModelToView() throws Exception {

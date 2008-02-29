@@ -129,7 +129,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                 HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {
                         try {
-                            HgCommand.doRemove(root, file);
+                            HgCommand.doRemove(root, file, this.getLogger());
                             // We need to cache the status of all deleted files
                             Map<File, FileInformation> interestingFiles = HgCommand.getInterestingStatus(root, file);
                             if (!interestingFiles.isEmpty()){
@@ -173,7 +173,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                 HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {
                         try {
-                            HgCommand.doRemove(root, file);
+                            HgCommand.doRemove(root, file, this.getLogger());
                             cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                         } catch (HgException ex) {
                             Mercurial.LOG.log(Level.FINE, "fileDeletedImpl(): File: {0} {1}", new Object[] {file.getAbsolutePath(), ex.toString()}); // NOI18N
@@ -236,6 +236,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private void hgMoveImplementation(final File srcFile, final File dstFile) throws IOException {
         final Mercurial hg = Mercurial.getInstance();
         final File root = hg.getTopmostManagedParent(srcFile);
+        final File dstRoot = hg.getTopmostManagedParent(dstFile);
         if (root == null) return;
 
         RequestProcessor rp = hg.getRequestProcessor(root.getAbsolutePath());
@@ -245,9 +246,10 @@ public class MercurialInterceptor extends VCSInterceptor {
         srcFile.renameTo(dstFile);
         Runnable moveImpl = new Runnable() {
             public void run() {
+                OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
                 try {
-                    if (dstFile.isDirectory()) {
-                        HgCommand.doRenameAfter(root, srcFile, dstFile);
+                    if (dstFile.isDirectory() && root.equals(dstRoot)) {
+                        HgCommand.doRenameAfter(root, srcFile, dstFile, logger);
                         return;
                     }
                     int status = HgCommand.getSingleStatus(root, srcFile.getParent(), srcFile.getName()).getStatus();
@@ -255,13 +257,19 @@ public class MercurialInterceptor extends VCSInterceptor {
                     if (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY ||
                         status == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
                     } else if (status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
-                        HgCommand.doRemove(root, srcFile);
-                        HgCommand.doAdd(root, dstFile);
+                        HgCommand.doRemove(root, srcFile, logger);
+                        if (dstRoot != null) {
+                            HgCommand.doAdd(dstRoot, dstFile, logger);
+                        }
                     } else {
-                        HgCommand.doRenameAfter(root, srcFile, dstFile);
+                        if (root.equals(dstRoot)) {
+                            HgCommand.doRenameAfter(root, srcFile, dstFile, logger);
+                        }
                     }
                 } catch (HgException e) {
                     Mercurial.LOG.log(Level.FINE, "Mercurial failed to rename: File: {0} {1}", new Object[] {srcFile.getAbsolutePath(), dstFile.getAbsolutePath()}); // NOI18N
+                } finally {
+                    logger.closeLog();
                 }
             }
         };

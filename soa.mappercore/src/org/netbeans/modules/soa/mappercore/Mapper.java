@@ -62,6 +62,7 @@ import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -153,6 +154,12 @@ public class Mapper extends JPanel {
                 }
             }
         });
+
+    
+        getAccessibleContext().setAccessibleName(NbBundle
+                .getMessage(Mapper.class, "ACSN_Mapper")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle
+                .getMessage(Mapper.class, "ACSD_Mapper")); // NOI18N
     }
 
     public void addRightTreeExpansionListener(TreeExpansionListener listener) {

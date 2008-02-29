@@ -46,6 +46,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbTestSuite;
@@ -66,10 +67,11 @@ public class CleanAndBuildProject extends org.netbeans.performance.test.utilitie
     
     public CleanAndBuildProject(String testName) {
         super(testName);
+        this.expectedTime = 10000;
     }
     public CleanAndBuildProject(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        
+        this.expectedTime = 10000;        
     }
     
     public void testCleanAndBuildSingleOpenedPageProject() {
@@ -80,7 +82,7 @@ public class CleanAndBuildProject extends org.netbeans.performance.test.utilitie
     
     public void testCleanAndBuildMultipleOpenedPagesProject() {
         targetProject = "UltraLargeWA";
-        pagesToOpen = new String[] {"Page1", "Page2"};
+        pagesToOpen = new String[] {"Page1", "Page1_1"};
         doMeasurement();
        
     }
@@ -89,10 +91,15 @@ public class CleanAndBuildProject extends org.netbeans.performance.test.utilitie
         log("::initialize");  
         EditorOperator.closeDiscardAll();
         pto = ProjectsTabOperator.invoke();
+        long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitStateTimeout");
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 120000);
         for(String namme: pagesToOpen) {
-            new OpenAction().perform(new Node(pto.getProjectRootNode(targetProject),gui.VWPUtilities.WEB_PAGES + "|"+namme+".jsp"));
+            System.out.println("Opening page "+namme);
+            Node docNode = new Node(pto.getProjectRootNode(targetProject),gui.VWPUtilities.WEB_PAGES + "|"+namme+".jsp");
+            new OpenAction().performAPI(docNode);                                        
             WebFormDesignerOperator.findWebFormDesignerOperator(namme);
         }
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", oldTimeout);
     }
     
     public void prepare() {
@@ -180,7 +187,7 @@ public class CleanAndBuildProject extends org.netbeans.performance.test.utilitie
     /** Creates suite from particular test cases. You can define order of testcases here. */
     public static NbTestSuite suite() { 
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CleanAndBuildProject("CleanAndBuildSingleOpenedPageProject"));
+        suite.addTest(new CleanAndBuildProject("testCleanAndBuildSingleOpenedPageProject"));
         return suite;        
     }
     

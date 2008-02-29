@@ -258,6 +258,7 @@ final class MakeSharableVisualPanel2 extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblJars, org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel2.class, "MakeSharableVisualPanel2.lblJars.text")); // NOI18N
 
         jScrollPane1.setViewportView(tblJars);
+        tblJars.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel2.class, "ACSD_lblJars")); // NOI18N
 
         lblDetails.setLabelFor(taDetails);
         org.openide.awt.Mnemonics.setLocalizedText(lblDetails, org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel2.class, "MakeSharableVisualPanel2.lblDetails.text")); // NOI18N
@@ -265,6 +266,7 @@ final class MakeSharableVisualPanel2 extends JPanel {
         taDetails.setColumns(20);
         taDetails.setRows(5);
         jScrollPane2.setViewportView(taDetails);
+        taDetails.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel2.class, "ACSD_lblDetails")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

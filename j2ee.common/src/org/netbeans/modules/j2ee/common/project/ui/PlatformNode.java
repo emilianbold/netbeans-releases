@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.common.project.ui;
 
 
+import org.netbeans.modules.j2ee.common.project.ui.ShowJavadocAction;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
@@ -194,7 +195,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
 
         protected Node[] createNodes(Object key) {
             SourceGroup sg = (SourceGroup) key;
-            return new Node[] {ActionFilterNode.create(PackageView.createPackageView(sg), null,null,null,null,null,null, cs)};
+            return new Node[] {ActionFilterNode.create(PackageView.createPackageView(sg), null,null,null,null,null,null)};
         }
 
         private List getKeys () {            

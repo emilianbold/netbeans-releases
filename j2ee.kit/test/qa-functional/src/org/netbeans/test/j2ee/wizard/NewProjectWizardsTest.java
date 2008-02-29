@@ -91,10 +91,12 @@ public class NewProjectWizardsTest extends JellyTestCase {
         this.version = version;
     }
     
+    @Override
     public void setUp() throws Exception {
         reporter = Reporter.getReporter((NbTestCase)this);
     }
     
+    @Override
     public void tearDown() throws Exception {
         reporter.close();
     }
@@ -121,6 +123,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
         WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_EJB, version);
+        wiz.next();
         wiz.finish();
         checkProjectStructure(EJB);
         checkProjectNodes();
@@ -137,6 +140,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
         WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_EJB, version);
+        wiz.next();
         wiz.finish();
         checkProjectStructure(EJB);
         checkProjectNodes();
@@ -155,6 +159,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
         WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_CAR, version);
+        wiz.next();
         wiz.finish();
         checkProjectStructure(APP_CLIENT_DEFAULT);
         checkProjectNodes();
@@ -172,8 +177,8 @@ public class NewProjectWizardsTest extends JellyTestCase {
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
         WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_WAR, version);
+        wiz.next();
         wiz.finish();
-        Thread.sleep(1000);
         checkProjectStructure(WEB);
         checkProjectNodes();
     }
@@ -190,6 +195,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
         WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_EAR, version);
+        wiz.next();
         wiz.finish();
         checkProjectStructure(J2EE_DEFAULT);
         Node root = checkProjectNodes();

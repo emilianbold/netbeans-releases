@@ -144,7 +144,12 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
         add(scrollPane, constraints);
 
         JButton addButton = new JButton();
-        Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(ResourceEditorPanel.class, "LBL_ADD_COMPONENT")); // NOI18N
+        Mnemonics.setLocalizedText(addButton, 
+                NbBundle.getMessage(ResourceEditorPanel.class, "LBL_ADD_COMPONENT")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(ResourceEditorPanel.class, "ACSN_ADD_COMPONENT")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(ResourceEditorPanel.class, "ACSD_ADD_COMPONENT")); // NOI18N
         addButton.setActionCommand(ACTION_ADD_RESOURCE);
         addButton.addActionListener(this);
         constraints.insets = new Insets(6, 0, 0, 12);
@@ -158,7 +163,12 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
         add(addButton, constraints);
 
         JButton removeButton = new JButton();
-        Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(ResourceEditorPanel.class, "LBL_REMOVE_COMPONENT")); // NOI18N
+        Mnemonics.setLocalizedText(removeButton, 
+                NbBundle.getMessage(ResourceEditorPanel.class, "LBL_REMOVE_COMPONENT")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(ResourceEditorPanel.class, "ACSN_REMOVE_COMPONENT")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(ResourceEditorPanel.class, "ACSD_REMOVE_COMPONENT")); // NOI18N
         removeButton.setActionCommand(ACTION_REMOVE_RESOURCE);
         removeButton.addActionListener(this);
         constraints.insets = new Insets(6, 0, 0, 12);

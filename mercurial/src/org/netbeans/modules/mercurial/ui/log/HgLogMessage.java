@@ -46,6 +46,7 @@ import java.util.List;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatus;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgUtils;
 
 /**
@@ -120,8 +121,10 @@ public class HgLogMessage {
         FileInformation fi = Mercurial.getInstance().getFileStatusCache().getStatus(file);
         FileStatus fs = fi != null? fi.getStatus(file): null;
         if (fs != null && fs.isCopied()) {
-            HgUtils.outputMercurialTabInRed("*** Copied: " + s + " : " +
-                    fs.getFile() != null ? fs.getFile().getAbsolutePath() : "no filepath");
+            OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
+            
+            logger.outputInRed("*** Copied: " + s + " : " + fs.getFile() != null ? fs.getFile().getAbsolutePath() : "no filepath");
+            logger.closeLog();
         }
     }
     

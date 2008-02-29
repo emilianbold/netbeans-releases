@@ -94,7 +94,7 @@ public class EarProjectTest extends NbTestCase {
     public void testEarWithoutDDOpeningJavaEE() throws Exception {
         File prjDirF = new File(getWorkDir(), "TestEarProject_15");
         EarProjectGenerator.createProject(prjDirF, "test-project",
-                J2eeModule.JAVA_EE_5, serverID, "1.5");
+                J2eeModule.JAVA_EE_5, serverID, "1.5", null, null);
         File dirCopy = copyFolder(prjDirF);
         File ddF = new File(dirCopy, "src/conf/application.xml");
         assertFalse("has no deployment descriptor", ddF.isFile());
@@ -107,7 +107,7 @@ public class EarProjectTest extends NbTestCase {
     public void testEarWithoutDDOpeningJ2EE() throws Exception { // #75586
         File prjDirF = new File(getWorkDir(), "TestEarProject_14");
         EarProjectGenerator.createProject(prjDirF, "test-project",
-                J2eeModule.J2EE_14, serverID, "1.4");
+                J2eeModule.J2EE_14, serverID, "1.4", null, null);
         File dirCopy = copyFolder(prjDirF);
         File ddF = new File(dirCopy, "src/conf/application.xml");
         assertTrue("has deployment descriptor", ddF.isFile());
@@ -241,7 +241,7 @@ public class EarProjectTest extends NbTestCase {
             if (from.getName().equals("CVS")) {
                 return;
             }
-            to.mkdir();
+            FileUtil.createFolder(to);
             String[] kids = from.list();
             for (int i = 0; i < kids.length; i++) {
                 doCopy(new File(from, kids[i]), new File(to, kids[i]));

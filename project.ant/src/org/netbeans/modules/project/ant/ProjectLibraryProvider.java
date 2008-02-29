@@ -282,11 +282,14 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             listening = true;
         }
         LP lp = getLibraries(area);
-        lp.recalculate();
+        boolean fire = delta(lp.libraries, calculate(area));
         ProjectLibraryImplementation impl = lp.getLibrary(name);
         assert impl != null : name + " not found in " + f;
         for (Map.Entry<String,List<URL>> entry : contents.entrySet()) {
             impl.setContent(entry.getKey(), entry.getValue());
+        }
+        if (fire) {
+            lp.pcs.firePropertyChange(LibraryProvider.PROP_LIBRARIES, null, null);
         }
         return impl;
     }
@@ -588,6 +591,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             if (path.equals(getContent(volumeType))) {
                 return;
             }
+            contents.put(volumeType, new ArrayList<URL>(path));
             List<String> value = new ArrayList<String>();
             for (URL entry : path) {
                 String jarFolder = null;
@@ -623,6 +627,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             } catch (IOException x) {
                 throw new IllegalArgumentException(x);
             }
+            pcs.firePropertyChange(LibraryImplementation.PROP_CONTENT, null, null);
         }
 
         public void setLocalizingBundle(String resourceName) {
@@ -914,6 +919,9 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             sharedLibFolder = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<FileObject>() {
                 public FileObject run() throws IOException {
                     FileObject lf = FileUtil.toFileObject(libBaseFolder);
+                    if (lf == null) {
+                        lf = FileUtil.createFolder(libBaseFolder);
+                    }
                     return lf.createFolder(getUniqueName(lf, lib.getName(), null));
                 }
             });
@@ -1001,6 +1009,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
      * @return new file name without extension
      */
     private static String getUniqueName(FileObject baseFolder, String nameFileName, String extension) {
+        assert baseFolder != null;
         int suffix = 2;
         String name = nameFileName;  //NOI18N
         while (baseFolder.getFileObject(name + (extension != null ? "." + extension : "")) != null) {

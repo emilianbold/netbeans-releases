@@ -104,12 +104,14 @@
                         <!-- Top header -->
                         <table class="top_header">
                               <tr>
-                                  <td class="title"><script type="text/javascript">message(NETBEANS_DOWNLOAD_HEADER)</script></td>
+                                  <td class="title"><script type="text/javascript">message(NETBEANS_DOWNLOAD_HEADER.replace('{0}',BUILD_DISPLAY_VERSION))</script></td>
                                   <td class="menu">
-                                      <a href="http://download.netbeans.org/netbeans/6.0/final/">6.0.1</a> |
-                                      <a href="http://bits.netbeans.org/download/6.1/m1/latest/">6.1M1</a>|
-                                      <script type="text/javascript">message(DEVELOPMENT_TITLE)</script> |
-                                      <a href="http://www.netbeans.info/downloads/dev.php"><script type="text/javascript">message(ARCHIVE_TITLE)</script></a>
+                                      <script type="text/javascript">
+				          add_download_tab("6.0.1", "http://download.netbeans.org/netbeans/6.0/final/");
+                                          add_download_tab("6.1M1","http://bits.netbeans.org/download/6.1/m1/latest/");
+                                          add_download_tab(DEVELOPMENT_TITLE /*,DEVELOPMENT_BUILDS_LINK*/);
+                                          add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
+				     </script>
                                   </td>
                               </tr>
                         </table>
@@ -130,7 +132,7 @@
                         </noscript>
 
 
-                        <table class="subscription_selects" align="center">
+                        <table class="subscription_selects b-bottom-dashed" align="center">
 				<td class="valign-top">
 					<table class="subscription">
 						<tr>
@@ -176,7 +178,6 @@
 				</td>
                         </table>
 
-
                         <table class="components_table" id="components_table" align="center">
 			    <script type="text/javascript">initialize()</script>
                             <script type="text/javascript">write_table_header()</script>
@@ -187,42 +188,63 @@
                         </table>
                         
                         <br/>
-                        <div id="mobility_end2end_message"><br></div>
-                        
-                        <div class="b-top-dashed b-bottom-dashed" style="margin:0px 20px 0px 20px;padding:10px 0px 0px 0px;">
-                            <p>
-                                <span style="color: #FF8E00; margin: 0px 4px 0px 1px; font-weight: bold">*</span>
-                                <span style="width: 95%; margin: 0px auto 0px auto">
-                                    <script type="text/javascript">message(PLUGIN_MANAGER_LABEL)</script>
-                                </span>	
-                                <span style="width: 95%; margin: 0px 17px 0px 17px" id="jdk_note"></span>
-                                <br>
-				<span style="width: 95%; margin: 0px 0px 0px 17px">
-				    <script type="text/javascript">message(JAVATOOLSBUNDLE_LABEL)</script>				    
-				</span>
-                            </p>
-                            <p style="width: 95%; margin: 0px 17px 0px 17px">							                                
-                                <!--NetBeans Platform is part of NetBeans IDE. If you need it separately, you can <a href="zip/">download the platform</a>.<br/>-->
-                                <!--NetBeans is an open source project. You can build it yourself if you <a href="http://www.netbeans.org/community/sources/">download the sources</a>.-->
-                                <script type="text/javascript">message(SOURCE_BINARY_LABEL)</script>
-				<script type="text/javascript">message(BUILD_WIKI_LABEL)</script>                                
-                            </p>
-                            <!--
-                        <p style="width: 95%; margin: 0px auto 0px auto">
-                            NetBeans source code and binary builds without bundled runtimes are 
-                            also available in <a href="zip/">zip file format</a>.<br>
-                            Instructions on how to build the IDE from sources are documented in
-                            <a href="http://wiki.netbeans.org/wiki/view/WorkingWithNetBeansSources">NetBeans wiki</a>.
-                        </p>
-						-->
-                        </div>
-                        <br/>
-                        
-                        <div class="align-center">
-                            <script type="text/javascript">writeUrl(LICENSE_NOTICE_LINK,LICENSE_NOTICE_LABEL)</script> | 
-                            <script type="text/javascript">writeUrl(INSTALL_NOTES_LINK,INSTALL_NOTES_LABEL)</script>
-                        </div>
-                        
+			<table>
+				<td width="60%" style="padding-right:5px;padding-left:30px">	
+				     <table>
+					<td style="vertical-align:top" width="10px">
+						<div id="mobility_end2end_number"><br></div>
+					</td>
+					<td>
+			                        <div id="mobility_end2end_message"><br></div>
+                          		        
+			                        <div style="margin:0px 0px 0px 0px;padding:10px 0px 0px 0px;">
+                          		            <p>
+			                                <span style="width: 95%">
+                          		                    <script type="text/javascript">message(PLUGIN_MANAGER_LABEL)</script>
+                                          		</span>	
+			                                <span style="width: 95%" id="jdk_note"></span>
+							<span style="width: 95%">
+							    <script type="text/javascript">message(JAVATOOLSBUNDLE_LABEL)</script>				    
+							</span>
+                          		            </p>
+			                            <p style="width: 95%">							                                
+			                                <!--NetBeans Platform is part of NetBeans IDE. If you need it separately, you can <a href="zip/">download the platform</a>.<br/>-->
+                          		                <!--NetBeans is an open source project. You can build it yourself if you <a href="http://www.netbeans.org/community/sources/">download the sources</a>.-->
+                                          		<script type="text/javascript">message(SOURCE_BINARY_LABEL)</script>
+							<script type="text/javascript">message(BUILD_WIKI_LABEL.replace("{0}",INSTALL_NOTES_LINK))</script>                                
+                          		            </p>
+			                            <!--
+                		                    <p style="width: 95%; margin: 0px auto 0px auto">
+                          		            NetBeans source code and binary builds without bundled runtimes are 
+                                  		    also available in <a href="zip/">zip file format</a>.<br>
+			                            Instructions on how to build the IDE from sources are documented in
+                		                    <a href="http://wiki.netbeans.org/wiki/view/WorkingWithNetBeansSources">NetBeans wiki</a>.
+	  	                	            </p>
+						    -->
+                          	        	</div>
+                                  		<br/>
+					</td>
+				    </table>
+				</td>
+				<td style="vertical-align:top;">
+					<div class="black legal_box">
+						<div class="bold">
+                                			<script type="text/javascript">message(LEGAL_INFO_HEADER)</script>
+							<br><br>
+						</div>
+						<div>
+	                        	    		<script type="text/javascript">
+								message(LEGAL_INFO_MESSAGE.
+								replace("{0}",BUILD_DISPLAY_VERSION_SHORT).
+								replace("{1}",CDDL_GPLV2_LINK).
+								replace("{2}",LICENSE_DETAILS_LINK).
+								replace("{3}",LICENSE_NOTES_LINK))
+							</script>
+						</div>
+                                        </div>
+
+				</td>
+			</table>
                         <br/><br/>
                         
                         <script type="text/javascript">

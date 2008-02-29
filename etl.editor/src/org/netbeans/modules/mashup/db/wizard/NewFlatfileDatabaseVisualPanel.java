@@ -120,6 +120,7 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
         setPreferredSize(new java.awt.Dimension(10, 4));
         String nbBundle7 = mLoc.t("PRSR001: Database Name");
         jLabel1.setDisplayedMnemonic(Localizer.parse(nbBundle7).charAt(0));
+        jLabel1.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle7));
 
         String nbBundle2 = mLoc.t("PRSR001: Database name should start with an alphabet.");
         dbName.setToolTipText(Localizer.parse(nbBundle2));
@@ -127,10 +128,10 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
         String nbBundle3 = mLoc.t("PRSR001: Location");
         String nbBundle4 = mLoc.t("PRSR001: Driver Class");
         jLabel2.setDisplayedMnemonic(Localizer.parse(nbBundle3).charAt(0));
+        jLabel2.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle3));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, Localizer.parse(nbBundle3));
-
+        driver.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle4));
         org.openide.awt.Mnemonics.setLocalizedText(driver, Localizer.parse(nbBundle4));
-
         org.openide.awt.Mnemonics.setLocalizedText(driverClass, "org.axiondb.jdbc.AxionDriver");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);

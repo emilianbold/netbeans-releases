@@ -49,8 +49,8 @@ import java.util.*;
 import java.io.File;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgCommand;
-import org.netbeans.modules.mercurial.util.HgUtils;
 
 /**
  * Executes searches in Search History panel.
@@ -86,25 +86,10 @@ class SearchExecutor implements Runnable {
         filterUsername = criteria.getUsername() != null;
         filterMessage = criteria.getCommitMessage() != null;
         
-        if (master.isIncomingSearch()) {
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(SearchHistoryAction.class,
-                "MSG_LogIncoming_Title")); // NOI18N
-        }else if (master.isOutSearch()) {
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(SearchHistoryAction.class,
-                "MSG_LogOut_Title")); // NOI18N
-        } else {
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(SearchHistoryAction.class,
-                "MSG_Log_Title")); // NOI18N
-        }
-        HgUtils.outputMercurialTabInRed( NbBundle.getMessage(SearchHistoryAction.class,
-                "MSG_Log_Title_Sep")); // NOI18N
-        HgUtils.outputMercurialTab( NbBundle.getMessage(SearchHistoryAction.class,
-                "MSG_LOG_EXEC_CONTEXT_SEP")); // NOI18N
         pathToRoot = new HashMap<String, File>(); 
         if (searchingUrl()) {
             String rootPath = Mercurial.getInstance().getTopmostManagedParent(master.getRoots()[0]).toString();
             pathToRoot.put(rootPath, master.getRoots()[0]);
-            HgUtils.outputMercurialTab(rootPath);
         } else {
              workFiles = new HashMap<String, Set<File>>();
             for (File file : master.getRoots()) {
@@ -116,10 +101,8 @@ class SearchExecutor implements Runnable {
                     workFiles.put(rootPath, set);
                 }
                 set.add(file);
-                HgUtils.outputMercurialTab(file.getAbsolutePath());
             }
         } 
-        HgUtils.outputMercurialTab(""); // NOI18N
 
     }    
         
@@ -133,7 +116,8 @@ class SearchExecutor implements Runnable {
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(master.getRepositoryUrl());
             HgProgressSupport support = new HgProgressSupport() {
                 public void perform() {                    
-                    search(master.getRepositoryUrl(), null, fromRevision, toRevision, this);
+                    OutputLogger logger = getLogger();
+                    search(master.getRepositoryUrl(), null, fromRevision, toRevision, this, logger);
                 }
             };
             support.start(rp, master.getRepositoryUrl(), NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
@@ -144,7 +128,8 @@ class SearchExecutor implements Runnable {
                 RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(rootUrl);
                 HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {                    
-                        search(rootUrl, files, fromRevision, toRevision, this);
+                        OutputLogger logger = getLogger();                        
+                        search(rootUrl, files, fromRevision, toRevision, this, logger);
                     }
                 };
                 support.start(rp, rootUrl, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
@@ -152,7 +137,8 @@ class SearchExecutor implements Runnable {
         }
     }
 
-    private void search(String rootUrl, Set<File> files, String fromRevision, String toRevision, HgProgressSupport progressSupport) {
+    private void search(String rootUrl, Set<File> files, String fromRevision, 
+            String toRevision, HgProgressSupport progressSupport, OutputLogger logger) {
         if (progressSupport.isCanceled()) {
             searchCanceled = true;
             return;
@@ -160,11 +146,12 @@ class SearchExecutor implements Runnable {
         
         HgLogMessage[] messages;
         if (master.isIncomingSearch()) {
-            messages = HgCommand.getIncomingMessages(rootUrl);
+            messages = HgCommand.getIncomingMessages(rootUrl, toRevision, master.isShowMerges(), logger);
         }else if (master.isOutSearch()) {
-            messages = HgCommand.getOutMessages(rootUrl);
+            messages = HgCommand.getOutMessages(rootUrl, toRevision, master.isShowMerges(), logger);
         } else {
-            messages = HgCommand.getLogMessages(rootUrl, files, fromRevision, toRevision);
+            messages = HgCommand.getLogMessages(rootUrl, files, fromRevision, toRevision,  
+                    master.isShowMerges(), logger);
         }
         appendResults(rootUrl, messages);
     }

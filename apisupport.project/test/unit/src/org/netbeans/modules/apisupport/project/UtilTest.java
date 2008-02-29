@@ -85,8 +85,8 @@ public class UtilTest extends TestBase {
     }
     
     public void testFindLocalizedBundleInfoFromNetBeansOrgModule() throws Exception {
-        FileObject dir = nbCVSRoot().getFileObject("apisupport/project");
-        assertNotNull("have apisupport/project checked out", dir);
+        FileObject dir = nbRoot().getFileObject("apisupport.project");
+        assertNotNull("have apisupport.project checked out", dir);
         NbModuleProject apisupport = (NbModuleProject) ProjectManager.getDefault().findProject(dir);
         LocalizedBundleInfo info = Util.findLocalizedBundleInfo(
                 apisupport.getSourceDirectory(), apisupport.getManifest());
@@ -94,7 +94,7 @@ public class UtilTest extends TestBase {
     }
     
     public void testFindLocalizedBundleInfoFromSourceDirectory() throws Exception {
-        LocalizedBundleInfo info = Util.findLocalizedBundleInfo(file("apisupport/project"));
+        LocalizedBundleInfo info = Util.findLocalizedBundleInfo(file("apisupport.project"));
         assertApiSupportInfo(info);
     }
     

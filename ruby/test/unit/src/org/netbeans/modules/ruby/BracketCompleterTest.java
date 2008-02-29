@@ -45,8 +45,8 @@ import java.util.List;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -958,6 +958,14 @@ public class BracketCompleterTest extends RubyTestBase {
     
     public void testReplaceSelection4() throws Exception {
         insertChar("x = 'foo^bar'", '#', "x = '#^bar'", "foo");
+    }
+
+    public void testReplaceSelection5() throws Exception {
+        insertChar("'(^position:absolute;'", '{', "'{^position:absolute;'", "(");
+    }
+
+    public void testReplaceSelection6() throws Exception {
+        insertChar("'position^:absolute;'", '{', "'pos{^:absolute;'", "ition");
     }
 
     public void testReplaceSelectionChangeType1() throws Exception {

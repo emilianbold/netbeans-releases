@@ -128,16 +128,14 @@ public final class WebServiceManager {
         boolean dataInModel = listModel.webServiceExists(wsData);
 
         if (model == null) {
-            removeWebService(wsData);
+            wsData.setResolved(false);
+            removeWebService(wsData, true, false);
 
             Throwable exc = wsdlModeler.getCreationException();
             String cause = (exc != null) ? exc.getLocalizedMessage() : null;
             String excString = (exc != null) ? exc.getClass().getName() + " - " + cause : null;
-
             String message = NbBundle.getMessage(WebServiceManager.class, "WS_MODELER_ERROR") + "\n\n" + excString; // NOI18N
-
-            NotifyDescriptor d = new NotifyDescriptor.Message(message);
-            DialogDisplayer.getDefault().notify(d);
+            Exceptions.printStackTrace(Exceptions.attachLocalizedMessage(exc, message));
             return;
         } else if (model.getServices().isEmpty()) {
             // If there are no services in the WSDL, warn the user
@@ -212,7 +210,7 @@ public final class WebServiceManager {
     }
 
     public void refreshWebService(WebServiceData wsData) throws IOException {
-        removeWebService(wsData, false);
+        removeWebService(wsData, false, true);
         wsData.setWsdlFile(null);
         wsData.setState(WebServiceData.State.WSDL_UNRETRIEVED);
         wsData.setCatalog(null);
@@ -226,7 +224,7 @@ public final class WebServiceManager {
     }
 
     public void resetWebService(WebServiceData wsData) {
-        removeWebService(wsData, false);
+        removeWebService(wsData, false, true);
 
         wsData.setWsdlFile(null);
         wsData.setState(WebServiceData.State.WSDL_UNRETRIEVED);
@@ -263,10 +261,10 @@ public final class WebServiceManager {
      * @param wsData the WebService to remove
      */
     public void removeWebService(WebServiceData wsData) {
-        removeWebService(wsData, true);
+        removeWebService(wsData, true, true);
     }
 
-    private void removeWebService(WebServiceData wsData, boolean removeFromModel) {
+    private void removeWebService(WebServiceData wsData, boolean removeFromModel, boolean deleteWsdl) {
         if (removeFromModel) {
             WebServiceListModel.getInstance().removeWebService(wsData.getId());
         }
@@ -295,7 +293,10 @@ public final class WebServiceManager {
             return;
         }
 
-        boolean deleteWsdl = true;
+        if (! deleteWsdl) {
+            return;
+        }
+        
         WebServiceListModel model = WebServiceListModel.getInstance();
         for (WebServiceData data : model.getWebServiceSet()) {
             if (data != wsData && wsData.getWsdlFile().equals(data.getWsdlFile())) {
@@ -399,8 +400,8 @@ public final class WebServiceManager {
         } finally {
             if (catalogFile.exists() && !success) {
                 rmDir(catalogFile.getParentFile());
-            }
         }
+    }
     }
 
     public static synchronized void compileService(WebServiceData wsData) {

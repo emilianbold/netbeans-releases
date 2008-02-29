@@ -50,6 +50,7 @@ import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.FileStatusCache;
@@ -99,31 +100,32 @@ public class StripAction extends ContextAction {
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
                 
+                OutputLogger logger = getLogger();
                 try {
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                                 NbBundle.getMessage(StripAction.class,
                                 "MSG_STRIP_TITLE")); // NOI18N
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                                 NbBundle.getMessage(StripAction.class,
                                 "MSG_STRIP_TITLE_SEP")); // NOI18N
-                    HgUtils.outputMercurialTab(
+                    logger.output(
                                 NbBundle.getMessage(StripAction.class,
                                 "MSG_STRIP_INFO_SEP", revStr, root.getAbsolutePath())); // NOI18N
-                    List<String> list = HgCommand.doStrip(root, revStr, false, doBackup);
+                    List<String> list = HgCommand.doStrip(root, revStr, false, doBackup, logger);
                     
                     if(list != null && !list.isEmpty()){                      
-                        HgUtils.outputMercurialTab(list);
+                        logger.output(list);
                         
                         if(HgCommand.isNoRevStrip(list.get(0))){
-                            HgUtils.outputMercurialTabInRed(
+                            logger.outputInRed(
                                     NbBundle.getMessage(StripAction.class,
                                     "MSG_NO_REV_STRIP",revStr));     // NOI18N                       
                         }else if(HgCommand.isLocalChangesStrip(list.get(0))){
-                            HgUtils.outputMercurialTabInRed(
+                            logger.outputInRed(
                                     NbBundle.getMessage(StripAction.class,
                                     "MSG_LOCAL_CHANGES_STRIP"));     // NOI18N                       
                         }else if(HgCommand.isMultipleHeadsStrip(list.get(0))){
-                            HgUtils.outputMercurialTabInRed(
+                            logger.outputInRed(
                                     NbBundle.getMessage(StripAction.class,
                                     "MSG_MULTI_HEADS_STRIP"));     // NOI18N                       
                         }else{
@@ -139,10 +141,10 @@ public class StripAction extends ContextAction {
                             savingTo = savingTo != null? savingTo.substring(HG_STIP_SAVE_BUNDLE.length()): null;
                             File savingFile = new File(savingTo);
                             if(savingFile != null && savingFile.exists() && savingFile.canRead()){
-                                HgUtils.outputMercurialTabInRed(
+                                logger.outputInRed(
                                         NbBundle.getMessage(StripAction.class,
                                         "MSG_STRIP_RESTORE_INFO")); // NOI18N                                
-                                HgUtils.outputMercurialTab(
+                                logger.output(
                                         NbBundle.getMessage(StripAction.class,
                                         "MSG_STRIP_RESTORE_INFO2", savingFile.getAbsoluteFile())); // NOI18N                                
                             }
@@ -152,10 +154,10 @@ public class StripAction extends ContextAction {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
                 } finally {
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                                 NbBundle.getMessage(StripAction.class,
                                 "MSG_STRIP_DONE")); // NOI18N
-                    HgUtils.outputMercurialTab(""); // NOI18N
+                    logger.output(""); // NOI18N
                 }
             }
         };

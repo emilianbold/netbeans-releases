@@ -41,9 +41,12 @@
 package org.netbeans.modules.j2ee.common.project.ui;
 
 
+import org.netbeans.modules.j2ee.common.project.ui.RemoveClassPathRootAction;
+import org.netbeans.modules.j2ee.common.project.ui.ShowJavadocAction;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import javax.swing.Action;
@@ -68,8 +71,6 @@ import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
@@ -104,15 +105,14 @@ class ActionFilterNode extends FilterNode {
      * the node should not have the {@link RemoveClassPathRootAction}
      * @return ActionFilterNode
      */
-    static ActionFilterNode create (Node original, UpdateHelper helper, PropertyEvaluator eval, 
-            ReferenceHelper refHelper, String classPathId, String entryId, String webModuleElementName,
-            ClassPathSupport cs) {
+    static ActionFilterNode create (Node original, UpdateHelper helper, String classPathId, String entryId, String webModuleElementName,
+            ClassPathSupport cs, String[] libUpdaterProperties) {
         DataObject dobj = (DataObject) original.getLookup().lookup(DataObject.class);
         assert dobj != null;
         FileObject root =  dobj.getPrimaryFile();
         Lookup lkp = new ProxyLookup (new Lookup[] {original.getLookup(), helper == null ?
             Lookups.singleton (new JavadocProvider(root,root)) :
-            Lookups.fixed (new Object[] {new Removable (helper, eval, refHelper, classPathId, entryId, webModuleElementName, cs),
+            Lookups.fixed (new Object[] {new Removable (helper, classPathId, entryId, webModuleElementName, cs, libUpdaterProperties),
             new JavadocProvider(root,root)})});
         return new ActionFilterNode (original, helper == null ? MODE_PACKAGE : MODE_ROOT, root, lkp);
     }
@@ -266,14 +266,16 @@ class ActionFilterNode extends FilterNode {
        private final String entryId;
        private final String webModuleElementName;
        private final ClassPathSupport cs;
+       private String[] libUpdaterProperties;
 
-       Removable (UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, 
-               String classPathId, String entryId, String webModuleElementName, ClassPathSupport cs) {
+       Removable (UpdateHelper helper, String classPathId, String entryId, 
+               String webModuleElementName, ClassPathSupport cs, String[] libUpdaterProperties) {
            this.helper = helper;
            this.classPathId = classPathId;
            this.entryId = entryId;
            this.webModuleElementName = webModuleElementName;
            this.cs = cs;
+           this.libUpdaterProperties = libUpdaterProperties;
        }
 
 
@@ -305,6 +307,17 @@ class ActionFilterNode extends FilterNode {
                 String[] itemRefs = cs.encodeToStrings(resources, webModuleElementName);
                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                 props.setProperty (classPathId, itemRefs);
+                
+                if (libUpdaterProperties != null) {
+                    // update library properties:
+                    HashSet set = new HashSet();
+                    for (String property : libUpdaterProperties) {
+                        List wmLibs = cs.itemsList(props.getProperty(property),  null);
+                        set.addAll(wmLibs);
+                    }
+                    ProjectProperties.storeLibrariesLocations(set.iterator(), props, helper.getAntProjectHelper().getProjectDirectory());
+                }
+                
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                return FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
            } else {

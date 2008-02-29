@@ -76,7 +76,6 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.project.ui.SetExecutionUriAction;
-import org.netbeans.modules.web.project.parser.ParserWebModule;
 import org.netbeans.modules.web.project.parser.JspNameUtil;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
@@ -698,13 +697,17 @@ class WebActionProvider implements ActionProvider {
         String fileClass = dir + '/' + filePath + ".class"; //NOI18N
         String fileJava = dir + '/' + filePath + ".java"; //NOI18N
         
-        File fC = updateHelper.getAntProjectHelper().resolveFile(fileClass);
-        File fJ = updateHelper.getAntProjectHelper().resolveFile(fileJava);
-        if ((fJ != null) && (fJ.exists())) {
-            fJ.delete();
-        }
-        if ((fC != null) && (fC.exists())) {
-            fC.delete();
+        FileObject fC = FileUtil.toFileObject(updateHelper.getAntProjectHelper().resolveFile(fileClass));
+        FileObject fJ = FileUtil.toFileObject(updateHelper.getAntProjectHelper().resolveFile(fileJava));
+        try {
+            if ((fJ != null) && (fJ.isValid())) {
+                fJ.delete();
+            }
+            if ((fC != null) && (fC.isValid())) {
+                fC.delete();
+            }
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
         }
     }
     
@@ -714,7 +717,7 @@ class WebActionProvider implements ActionProvider {
         boolean modified = false;
         WebModule wm = WebModule.getWebModule(jsp);
         JspParserAPI jspParser = JspParserFactory.getJspParser();
-        JspParserAPI.ParseResult result = jspParser.analyzePage(jsp, new ParserWebModule(wm), JspParserAPI.ERROR_IGNORE);
+        JspParserAPI.ParseResult result = jspParser.analyzePage(jsp, wm, JspParserAPI.ERROR_IGNORE);
         if (!result.isParsingSuccess()) {
             modified = true;
         } else {

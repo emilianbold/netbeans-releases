@@ -48,7 +48,8 @@ made subject to such option by the copyright holder.
                 xmlns:ear2="http://www.netbeans.org/ns/j2ee-earproject/2"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
                 xmlns:projdeps2="http://www.netbeans.org/ns/ant-project-references/2"
-                exclude-result-prefixes="xalan p ear projdeps projdeps2">
+                xmlns:libs="http://www.netbeans.org/ns/ant-project-libraries/1"
+                exclude-result-prefixes="xalan p ear projdeps projdeps2 libs">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
 
@@ -93,23 +94,48 @@ is divided into following sections:
                 <property file="nbproject/private/private.properties"/>
             </target>
 
+            <xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">
+                <target name="-init-libraries" depends="pre-init,init-private">
+                    <xsl:for-each select="/p:project/p:configuration/libs:libraries/libs:definitions">
+                        <property name="libraries.{position()}.path" location="{.}"/>
+                        <dirname property="libraries.{position()}.dir.nativedirsep" file="${{libraries.{position()}.path}}"/>
+                        <!-- Do not want \ on Windows, since it would act as an escape char: -->
+                        <pathconvert property="libraries.{position()}.dir" dirsep="/">
+                            <path path="${{libraries.{position()}.dir.nativedirsep}}"/>
+                        </pathconvert>
+                        <basename property="libraries.{position()}.basename" file="${{libraries.{position()}.path}}" suffix=".properties"/>
+                        <touch file="${{libraries.{position()}.dir}}/${{libraries.{position()}.basename}}-private.properties"/> <!-- has to exist, yuck -->
+                        <loadproperties srcfile="${{libraries.{position()}.dir}}/${{libraries.{position()}.basename}}-private.properties">
+                            <filterchain>
+                                <replacestring from="$${{base}}" to="${{libraries.{position()}.dir}}"/>
+                            </filterchain>
+                        </loadproperties>
+                        <loadproperties srcfile="${{libraries.{position()}.path}}">
+                            <filterchain>
+                                <replacestring from="$${{base}}" to="${{libraries.{position()}.dir}}"/>
+                            </filterchain>
+                        </loadproperties>
+                    </xsl:for-each>
+                </target>
+            </xsl:if>
+
             <target name="init-userdir">
-                <xsl:attribute name="depends">pre-init,init-private</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if></xsl:attribute>
                 <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
             </target>
 
             <target name="init-user">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,init-userdir</xsl:attribute>
                 <property file="${{user.properties.file}}"/>
             </target>
 
             <target name="init-project">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,init-userdir,init-user</xsl:attribute>
                 <property file="nbproject/project.properties"/>
             </target>
 
             <target name="do-init">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,init-userdir,init-user,init-project</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
                     <!--Setting java and javac default location -->
                     <property name="platforms.${{platform.active}}.javac" value="${{platform.home}}/bin/javac"/>
@@ -189,7 +215,7 @@ is divided into following sections:
             </target>
 
             <target name="init-check">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,init-userdir,init-user,init-project,do-init</xsl:attribute>
                 <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
                 <!-- Note that if the properties were defined in project.xml that would be easy -->
                 <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
@@ -198,6 +224,7 @@ is divided into following sections:
                 <fail unless="dist.dir">Must set dist.dir</fail>
                 <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
                 <fail unless="dist.jar">Must set dist.jar</fail>
+                <!-- No j2ee.platform.classpath here as it is used only for app client runtime -->
             </target>
 
             <target name="init">

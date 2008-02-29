@@ -56,7 +56,6 @@ import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetMouseEvent;
 import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.graph.WaitMessageHandler;
@@ -64,13 +63,14 @@ import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetEngine;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaPinWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaRegionWidget;
+import org.netbeans.modules.compapp.casaeditor.graph.CasaProcessTitleWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities;
 import org.netbeans.modules.compapp.casaeditor.graph.layout.CasaCollisionCollector;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
@@ -285,21 +285,22 @@ public class CasaModelGraphUtilities {
         CasaNodeWidgetEngine sesuWidget = (CasaNodeWidgetEngine) scene.addNode(su);
         
         // mapping process names to endpoint lists
-        Map<String, List<CasaEndpointRef>> process2EndpointMap =
+        Map<String, List<CasaEndpointRef>> process2EndpointRefMap =
                 new HashMap<String, List<CasaEndpointRef>>();
                 
-        buildProcess2EndpointMap(process2EndpointMap, su.getProvides());
-        buildProcess2EndpointMap(process2EndpointMap, su.getConsumes());
+        buildProcess2EndpointMap(process2EndpointRefMap, su.getProvides());
+        buildProcess2EndpointMap(process2EndpointRefMap, su.getConsumes());
         
-        for (String processName : process2EndpointMap.keySet()) {
+        for (String processName : process2EndpointRefMap.keySet()) {
             if (!processName.equals(NULL_PROCESS_NAME)) {
-                // add process name as a separate widget
-                sesuWidget.addGroupWidget(processName);
+                List<CasaEndpointRef> endpointRefs = process2EndpointRefMap.get(processName);
+                CasaEndpoint endpoint = endpointRefs.get(0).getEndpoint().get();
+                createProcess(su, endpoint, scene, false);
             }
             
-            List<CasaEndpointRef> endpoints = process2EndpointMap.get(processName);
-            for (CasaEndpointRef endpoint : endpoints) {
-                createPin(su, endpoint, endpoint.getDisplayName(), scene, false);
+            List<CasaEndpointRef> endpointRefs = process2EndpointRefMap.get(processName);
+            for (CasaEndpointRef endpointRef : endpointRefs) {
+                createPin(su, endpointRef, endpointRef.getDisplayName(), scene, false);
             }
         }        
         sesuWidget.doneAddingWidget();
@@ -398,28 +399,23 @@ public class CasaModelGraphUtilities {
 
         if (doUpdate) {
             scene.validate();
-//            CasaNodeWidget nodeWidget = (CasaNodeWidget) scene.findWidget(node);
         }
         return pinWidget;
     }
    
-    public static LabelWidget createGroup (
-            CasaComponent node,
-            String name,
+    public static CasaProcessTitleWidget createProcess (
+            CasaServiceEngineServiceUnit sesu,
+            CasaEndpoint endpoint,
             CasaModelGraphScene scene,
             boolean doUpdate)
     {
-        LabelWidget labelWidget = new LabelWidget(scene);
-        labelWidget.setLabel(name);
-//        CasaPinWidget pinWidget = (CasaPinWidget) scene.addPin(node, pin);
-//        pinWidget.setProperties(name);
-//        pinWidget.setToolTipText(getToolTipName(node, pin, scene.getModel()));
-
+        CasaProcessTitleWidget processWidget = 
+                (CasaProcessTitleWidget) scene.addProcess(sesu, endpoint);
+        
         if (doUpdate) {
             scene.validate();
-//            CasaNodeWidget nodeWidget = (CasaNodeWidget) scene.findWidget(node);
         }
-        return labelWidget;
+        return processWidget;
     }
    
 

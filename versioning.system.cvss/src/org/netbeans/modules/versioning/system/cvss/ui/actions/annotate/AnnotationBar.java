@@ -423,7 +423,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     String message = (String) commitMessages.get(al.getRevision());
                     File file = getCurrentFile();
                     Project project = Utils.getProject(file);                
-                    Context context = Utils.getProjectsContext(new Project[] { project });
+                    Context context = Utils.getProjectContext(project, file);
                     SearchHistoryAction.openSearch(
                             context, 
                             ProjectUtils.getInformation(project).getDisplayName(),

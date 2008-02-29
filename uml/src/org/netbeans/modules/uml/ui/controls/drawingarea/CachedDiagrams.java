@@ -136,7 +136,7 @@ public class CachedDiagrams implements FileExtensions, IProductArchiveDefinition
             }
             if ( retVal != null)  //TODO: delete this if block after done debugging
             {
-                logger.info("** getInfo: load diagram detail from file. " +
+                logger.fine("** getInfo: load diagram detail from file. " +
                         "Diagram alias|name= "+ retVal.getDiagramAlias() + "|" + retVal.getName());
             }
          } 

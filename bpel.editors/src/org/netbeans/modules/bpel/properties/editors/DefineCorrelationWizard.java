@@ -161,6 +161,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
@@ -634,10 +635,10 @@ public class DefineCorrelationWizard implements WizardProperties {
             WizardDefineCorrelationPanel wizardDefineCorrelationPanel = 
                 ((WizardDefineCorrelationPanel) wizardPanels[1]);
             if (previousSelectedActivity == null) { // this panel is shown for the 1st time
-                wizardDefineCorrelationPanel.buildCorrelationMapper(mainBpelEntity, currentSelectedActivity);
+                wizardDefineCorrelationPanel.buildCorrelationMapper(currentSelectedActivity, mainBpelEntity);
             } else { // this panel is shown after clicking of the button "Back"
                 if (! previousSelectedActivity.equals(currentSelectedActivity)) {
-                    wizardDefineCorrelationPanel.buildCorrelationMapper(null, currentSelectedActivity);
+                    wizardDefineCorrelationPanel.buildCorrelationMapper(currentSelectedActivity, null);
                 }
             }
         }
@@ -677,10 +678,9 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
     }
     //========================================================================//
-    public class WizardDefineCorrelationPanel extends WizardAbstractPanel {
+    public class WizardDefineCorrelationPanel extends WizardAbstractPanel 
+        implements WizardConstants {
         private final String ACTION_KEY_DELETE = "ACTION_KEY_DELETE";
-        private final String CORRELATION_PROPERTY_NAME_PREFIX = "wzrd_prop_";
-        private final String CORRELATION_SET_NAME_PREFIX = "wzrd_set_";
             
         private Mapper correlationMapper;
         
@@ -929,12 +929,14 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
 
         private CorrelationSet createCorrelationSet(List<CorrelationLinker> linkerList) {
+            if ((linkerList == null) || (linkerList.isEmpty())) return null;
             BpelModel bpelModel = mainBpelEntity.getBpelModel();
             BaseScope scopeEntity = bpelModel.getProcess();
             if (scopeEntity == null) {
                 return null;
             }
-            String correlationSetName = getUniqueCorrelationSetName(scopeEntity);
+            String correlationSetName = getUniqueCorrelationSetName(linkerList.get(0), 
+                scopeEntity);
 
             BPELElementsBuilder elementBuilder = bpelModel.getBuilder();
             CorrelationSet correlationSet = elementBuilder.createCorrelationSet();
@@ -980,27 +982,15 @@ public class DefineCorrelationWizard implements WizardProperties {
             }
         }
         
-        private String getUniqueCorrelationSetName(BaseScope scopeEntity) {
-            String baseCorrelationSetName = CORRELATION_SET_NAME_PREFIX;
-            if ((mainBpelEntity instanceof OnMessage) || (mainBpelEntity instanceof OnEvent)) {
-                BpelEntityComplexName compositeName = (mainBpelEntity instanceof OnMessage) ?
-                    new OnMessageComplexName((OnMessage) mainBpelEntity) :
-                    new OnEventComplexName((OnEvent) mainBpelEntity);
-                String 
-                    entityName = compositeName.getFirstName(),
-                    relatedObjName = compositeName.getMiddleName(),
-                    operationName = compositeName.getLastName();
-                String
-                    namePattern = NbBundle.getMessage(DefineCorrelationWizard.class, 
-                    (mainBpelEntity instanceof OnMessage) ? 
-                    "LBL_Correlation_Set_Name_OnMessage_Pattern" :
-                    "LBL_Correlation_Set_Name_OnEvent_Pattern");
-                    baseCorrelationSetName += MessageFormat.format(namePattern, 
-                        new Object[] {entityName, relatedObjName, operationName});
-            } else {
-                baseCorrelationSetName += 
-                    mainBpelEntity.getAttribute(BpelAttributes.NAME);
-            }
+        private String getUniqueCorrelationSetName(CorrelationLinker correlationLinker, 
+            BaseScope scopeEntity) {
+            BpelEntity leftBpelEntity = correlationLinker.getSource().getActivity(),
+                       rightBpelEntity = correlationLinker.getTarget().getActivity();
+            
+            String baseCorrelationSetName = CORRELATION_SET_NAME_PREFIX + 
+                WizardUtils.getCorrelationSetBpelEntityName(leftBpelEntity) + "_" + 
+                WizardUtils.getCorrelationSetBpelEntityName(rightBpelEntity);
+
             CorrelationSetContainer container = scopeEntity.getCorrelationSetContainer();
             if (container == null) return baseCorrelationSetName;
             CorrelationSet[] correlationSets = container.getCorrelationSets();
@@ -1248,7 +1238,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                     BpelReference<CorrelationSet> correlationSetRef = correlation.createReference(
                     correlationSet, CorrelationSet.class);
                     correlation.setSet(correlationSetRef);
-                    correlation.setInitiate(Initiate.NO);
+                    setCorrelationInitiateValue(correlation);
                     if (correlation instanceof PatternedCorrelation) {
                         Pattern pattern = defineInvokeCorrelationPattern(activity);
                         if (pattern != null) {
@@ -1261,6 +1251,20 @@ public class DefineCorrelationWizard implements WizardProperties {
                 return correlation;
             }
 
+            /** The Rule:
+             *  - for a CORRELATED activity, on which a pop-up menu has been invoked
+             *    and which is related to the RIGHT mapper tree, the value "no" is used
+             *    <correlation ... initiate="no"/>
+             *  - for an INITIATED activity, which is related to the LEFT mapper tree, 
+             *    the value "yes" is used
+             *    <correlation ... initiate="yes"/>
+             */
+            private void setCorrelationInitiateValue(BaseCorrelation correlation) {
+                correlation.setInitiate(mainBpelEntity.equals(activity) ? // is this activity CORRELATED
+                    Initiate.NO :  // for CORRELATED activity
+                    Initiate.YES); // for INITIATED activity
+            }
+            
             private Pattern defineInvokeCorrelationPattern(BpelEntity bpelEntity) {
                 assert (bpelEntity != null);
                 Operation operation = WizardUtils.getBpelEntityOpration(bpelEntity);
@@ -1333,7 +1337,9 @@ public class DefineCorrelationWizard implements WizardProperties {
                         parentObj = (CorrelationMapperTreeNode) parentObj.getParent();
                         userObj = parentObj.getUserObject();
                     } while (! (userObj instanceof Part)); 
-                    String strQueryAbsPath = WizardUtils.makeLocationPath(wizardWsdlModel, queryComponents);
+                    WizardUtils.importRequiredSchemas(wizardWsdlModel, queryComponents);
+                    String strQueryAbsPath = WizardUtils.makeLocationPath(wizardWsdlModel, 
+                        queryComponents);
                     if (strQueryAbsPath.length() > 0) {
                         Query query = (Query) wizardWsdlModel.getFactory().create(
                             propertyAlias, BPELQName.QUERY.getQName());
@@ -1343,7 +1349,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                 }
                 return null;
             }
-            
+                
             public NamedComponentReference<GlobalType> getGlobalTypeReference() throws WizardValidationException {
                 String typeName = getTypeNameIgnoreNamespace();
 
@@ -1961,6 +1967,33 @@ class CorrelationWizardWSDLWrapper {
 }
 //============================================================================//
 class WizardUtils implements WizardConstants {
+    public static String getCorrelationSetBpelEntityName(BpelEntity bpelEntity) {
+        String onMessageOnEventNamePattern = null;
+        if ((bpelEntity instanceof OnMessage) || (bpelEntity instanceof OnEvent)) {
+            onMessageOnEventNamePattern = NbBundle.getMessage(DefineCorrelationWizard.class, 
+                (bpelEntity instanceof OnMessage) ? 
+                "LBL_Correlation_Set_Name_OnMessage_Pattern" :
+                "LBL_Correlation_Set_Name_OnEvent_Pattern");
+        }
+        return getBpelEntityName(bpelEntity, onMessageOnEventNamePattern);
+    }
+
+    public static String getBpelEntityName(BpelEntity bpelEntity, String onMessageOnEventNamePattern) {
+        if ((bpelEntity instanceof OnMessage) || (bpelEntity instanceof OnEvent)) {
+            assert (onMessageOnEventNamePattern != null);
+            BpelEntityComplexName compositeName = (bpelEntity instanceof OnMessage) ?
+                new OnMessageComplexName((OnMessage) bpelEntity) :
+                new OnEventComplexName((OnEvent) bpelEntity);
+            String 
+                entityName = compositeName.getFirstName(),
+                relatedObjName = compositeName.getMiddleName(),
+                operationName = compositeName.getLastName();
+            return MessageFormat.format(onMessageOnEventNamePattern, new Object[] {
+                entityName, relatedObjName, operationName});
+        }
+        return bpelEntity.getAttribute(BpelAttributes.NAME);
+    }
+    
     public static NamedComponentReference<? extends GlobalType> getSchemaComponentTypeRef(SchemaComponent schemaComponent) {
         NamedComponentReference<? extends GlobalType> typeRef = null;
         try {
@@ -2013,6 +2046,20 @@ class WizardUtils implements WizardConstants {
             return dataWithNamespace.substring(index + 1);
         }
         return dataWithNamespace;
+    }
+
+    public static void importRequiredSchemas(WSDLModel wsdlModel, 
+        List<SchemaComponent> schemaComponents) {
+        try {
+            wsdlModel.startTransaction();
+            for (SchemaComponent schemaComponent : schemaComponents) {
+                Utility.addSchemaImport(schemaComponent, wsdlModel);
+            }
+        } catch(Exception e) {
+            ErrorManager.getDefault().notify(e);
+        } finally {
+            wsdlModel.endTransaction();
+        }
     }
     
     public static void importWsdlIntoWsdl(WSDLModel baseWsdlModel, WSDLModel importedWsdlModel) {
@@ -2228,6 +2275,8 @@ class OnEventComplexName implements BpelEntityComplexName {
 //============================================================================//
 interface WizardConstants {
     String 
+        CORRELATION_PROPERTY_NAME_PREFIX = "wzrd_prop_", // NOI18N
+        CORRELATION_SET_NAME_PREFIX = "wzrd_set_", // NOI18N
         SCHEMA_COMPONENT_ATTRIBUTE_BASE = "base", // NOI18N
         DEFAULT_NS_PREFIX = "ns"; // NOI18N
 }
