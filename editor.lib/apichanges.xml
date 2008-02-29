@@ -105,6 +105,27 @@ is the proper place.
 
     <changes>
 
+        <change id="DrawContext.and.DrawGraphics.enhanced">
+            <summary>Adding methods to DrawContext and DrawGraphics</summary>
+            <version major="1" minor="22"/>
+            <date day="28" month="2" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="incompatible" source="compatible" semantic="compatible" addition="yes" deprecation="no"/>
+            <description>
+                <p>Adding:</p>
+                <ul>
+                    <li><code>DrawContext.get{set}TopBorderLineColor</code></li>
+                    <li><code>DrawContext.get{set}RightBorderLineColor</code></li>
+                    <li><code>DrawContext.get{set}BottomBorderLineColor</code></li>
+                    <li><code>DrawContext.get{set}LeftBorderLineColor</code></li>
+                    <li><code>DrawGraphics.setTopBorderLineColor</code></li>
+                    <li><code>DrawGraphics.setRightBorderLineColor</code></li>
+                    <li><code>DrawGraphics.setBottomBorderLineColor</code></li>
+                    <li><code>DrawGraphics.setLeftBorderLineColor</code></li>
+                </ul>
+            </description>
+        </change>
+        
         <change id="LineSeparatorConversion.deprecated">
             <summary>Deprecating LineSeparatorConversion</summary>
             <version major="1" minor="20"/>

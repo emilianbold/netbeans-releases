@@ -6,4 +6,4 @@ AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/xml/schema/SchemaDataLoader.class
 OpenIDE-Module-Class: Loader
-Install-Before: org.netbeans.modules.xml.core.XMLDataObject
+Install-Before: org.netbeans.modules.xml.XMLDataObject

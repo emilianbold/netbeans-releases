@@ -62,10 +62,16 @@ public class AddressBreakpoint extends GdbBreakpoint implements Comparable {
         return address;
     }
 
-    public void setAddress(String address) {
+    public void setAddress(String newAddress) {
+        String old;
         synchronized (this) {
-            this.address = address;
+            if (newAddress.equals(address)) {
+                return;
+            }
+            old = address;
+            address = newAddress;
         }
+        firePropertyChange(PROP_ADDRESS_VALUE, old, newAddress);
     }
 
     @Override

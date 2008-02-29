@@ -75,10 +75,10 @@ public class NewSchemaBasedConfigPropertySupportFactory {
         List<JBIComponentConfigurationConstraint> constraints =
                 descriptor.getConstraints();
 
-        if (descriptor.isApplicationConfiguration()) {
+        if (descriptor instanceof JBIComponentConfigurationDescriptor.ApplicationConfiguration) {
             return new ApplicationConfigurationsPropertySupport(
                     propertySheetOwner, attr, info);
-        } else if (descriptor.isApplicationVariable()) {
+        } else if (descriptor instanceof JBIComponentConfigurationDescriptor.ApplicationVariable) {
             return new ApplicationVariablesPropertySupport(
                     propertySheetOwner, attr, info);
         } else if (JBIComponentConfigurationDescriptor.XSD_STRING.equals(typeQName)) {

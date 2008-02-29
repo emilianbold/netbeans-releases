@@ -120,6 +120,10 @@ public class GuardBlockState {
         return null;
     }
 
+    public Token getGuard() {
+        return guard;
+    }
+
     public void write(DataOutput output) throws IOException {
         output.writeInt(guardBlockState);
         output.writeBoolean(guard != null);
