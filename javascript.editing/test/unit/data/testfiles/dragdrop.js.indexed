@@ -43,7 +43,7 @@ Indexed:
   base : enddrag;Draggable;endDrag|FUNCTION|event;0;;;;
   base : enddrag;Draggables;endDrag|FUNCTION|event;0;;;;
   base : endeffect;options;endeffect|FUNCTION|element;0;;;;
-  base : findchildren;Element;findChildren|FUNCTION|element,only,recursive,tagName;0;;;;
+  base : findchildren;Element;findChildren|FUNCTION|STATIC|;element,only,recursive,tagName;0;;;;
   base : finddeepestchild;Droppables;findDeepestChild|FUNCTION|drops;0;;;;
   base : findelements;Sortable;findElements|DOCUMENTED|FUNCTION|element,options;0;520c;;;
   base : findtreeelements;Sortable;findTreeElements|FUNCTION|element,options;0;;;;
@@ -69,14 +69,14 @@ Indexed:
   base : initialize;SortableObserver;initialize|CONSTRUCTOR|;element,observer;0;;;;
   base : isaffected;Droppables;isAffected|FUNCTION|point,element,drop;0;;;;
   base : iscontained;Droppables;isContained|FUNCTION|element,drop;0;;;;
-  base : isparent;Element;isParent|DOCUMENTED|FUNCTION|child,element;0;6ed2;;;
+  base : isparent;Element;isParent|DOCUMENTED|FUNCTION|STATIC|;child,element;0;6ed2;;;
   base : keypress;Draggable;keyPress|FUNCTION|event;0;;;;
   base : keypress;Draggables;keyPress|FUNCTION|event;0;;;;
   base : mark;Sortable;mark|FUNCTION|dropon,position;0;;;;
   base : name;options;name|PROPERTY|;0;;;;
   base : notify;Draggables;notify|FUNCTION|eventName,draggable,event;0;;;;
   base : observers;Draggables;observers|PROPERTY|;0;;;;
-  base : offsetsize;Element;offsetSize|FUNCTION|element,type;0;;;;
+  base : offsetsize;Element;offsetSize|FUNCTION|STATIC|;element,type;0;;;;
   base : onchange;options;onChange|PROPERTY|;0;;;;
   base : onemptyhover;Sortable;onEmptyHover|FUNCTION|element,dropon,overlap;0;;;;
   base : onend;SortableObserver;onEnd|FUNCTION|;0;;;;
@@ -102,7 +102,7 @@ Indexed:
   base : revert;options;revert|PROPERTY|;0;;;;
   base : revert;options_for_draggable;revert|PROPERTY|;0;;;;
   base : reverteffect;options;reverteffect|FUNCTION|element,top_offset,left_offset;0;;;;
-  base : reverteffect;options_for_draggable;reverteffect|FUNCTION|element;0;;;;
+  base : reverteffect;options_for_draggable;reverteffect|FUNCTION|STATIC|;element;0;;;;
   base : scroll;Draggable;scroll|FUNCTION|;0;;;;
   base : scroll;options;scroll|PROPERTY|;0;;;;
   base : scroll;options;scroll|PROPERTY|;0;;;;
@@ -185,9 +185,9 @@ Indexed:
   fqn : droppables.remove;;Droppables.remove|FUNCTION|element;0;;;;
   fqn : droppables.reset;;Droppables.reset|FUNCTION|;0;;;;
   fqn : droppables.show;;Droppables.show|FUNCTION|point,element;0;;;;
-  fqn : element.findchildren;;Element.findChildren|FUNCTION|element,only,recursive,tagName;0;;;;
-  fqn : element.isparent;;Element.isParent|DOCUMENTED|FUNCTION|child,element;0;6ed2;;;
-  fqn : element.offsetsize;;Element.offsetSize|FUNCTION|element,type;0;;;;
+  fqn : element.findchildren;;Element.findChildren|FUNCTION|STATIC|;element,only,recursive,tagName;0;;;;
+  fqn : element.isparent;;Element.isParent|DOCUMENTED|FUNCTION|STATIC|;child,element;0;6ed2;;;
+  fqn : element.offsetsize;;Element.offsetSize|FUNCTION|STATIC|;element,type;0;;;;
   fqn : i;;i|GLOBAL|;;0;;;;
   fqn : options.constraint;;options.constraint|DOCUMENTED|PROPERTY|;0;45b7;;;
   fqn : options.containment;;options.containment|DOCUMENTED|PROPERTY|;0;45f9;;;
@@ -229,7 +229,7 @@ Indexed:
   fqn : options_for_draggable.ghosting;;options_for_draggable.ghosting|PROPERTY|;0;;;;
   fqn : options_for_draggable.handle;;options_for_draggable.handle|PROPERTY|;0;;;;
   fqn : options_for_draggable.revert;;options_for_draggable.revert|PROPERTY|;0;;;;
-  fqn : options_for_draggable.reverteffect;;options_for_draggable.reverteffect|FUNCTION|element;0;;;;
+  fqn : options_for_draggable.reverteffect;;options_for_draggable.reverteffect|FUNCTION|STATIC|;element;0;;;;
   fqn : options_for_draggable.scroll;;options_for_draggable.scroll|PROPERTY|;0;;;;
   fqn : options_for_draggable.scrollsensitivity;;options_for_draggable.scrollSensitivity|PROPERTY|;0;;;;
   fqn : options_for_draggable.scrollspeed;;options_for_draggable.scrollSpeed|PROPERTY|;0;;;;

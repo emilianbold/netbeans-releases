@@ -255,9 +255,8 @@ public class JsAnalyzer implements StructureScanner {
                 String className = classes[0];
                 String superName = classes[1];
                 if (className != null) {
-                    final String prototype = ".prototype"; // NOI18N
-                    if (className.endsWith(prototype)) { // NOI18N
-                        className = className.substring(0, className.length()-prototype.length()); // NOI18N
+                    if (className.endsWith(AstUtilities.DOT_PROTOTYPE)) {
+                        className = className.substring(0, className.length()-AstUtilities.DOT_PROTOTYPE.length());
 
                         // Make a constructor function for this type of object
                         AstElement js = AstElement.getElement(info, node);
@@ -310,13 +309,23 @@ public class JsAnalyzer implements StructureScanner {
                     
                 if (name != null) {
                     String in = "";
+                    boolean isInstance = true;
                     int lastDotIndex = name.lastIndexOf('.');
                     if (lastDotIndex != -1) {
                         in = name.substring(0, lastDotIndex);
                         name = name.substring(lastDotIndex+1);
+                        if (in.endsWith(AstUtilities.DOT_PROTOTYPE)) {
+                            in = in.substring(0, in.length()-AstUtilities.DOT_PROTOTYPE.length()); // NOI18N
+                        } else {
+                            isInstance = false;
+                        }
                     }
+                    
                     FunctionAstElement js = new FunctionAstElement(info, func);
                     js.setName(name, in);
+                    if (!isInstance) {
+                        js.setModifiers(AstElement.STATIC);
+                    }
                     elements.add(js);
                 } else {
                     // Some other dynamic function, like this:
