@@ -468,7 +468,7 @@ public class Evaluator extends javax.swing.JPanel {
                 if (autoClosed) {
                     DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
                     if (de == null) return ;
-                    JPDADebugger debugger = (JPDADebugger) de.lookupFirst(null, JPDADebugger.class);
+                    JPDADebugger debugger = de.lookupFirst(null, JPDADebugger.class);
                     if (debugger == null) return ;
                     open(debugger);
                     autoClosed = false;
@@ -626,18 +626,23 @@ public class Evaluator extends javax.swing.JPanel {
                 eval.csfListener = null;
                 DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
                 if (de == null) return ;
-                JPDADebugger debugger = (JPDADebugger) de.lookupFirst(null, JPDADebugger.class);
+                JPDADebugger debugger = de.lookupFirst(null, JPDADebugger.class);
                 eval.setDebugger(debugger);
             }
             updateModel ();
         }
     
-        private List joinLookups(DebuggerEngine e, DebuggerManager dm, Class service) {
-            List es = e.lookup (viewType, service);
-            List ms = dm.lookup(viewType, service);
-            ms.removeAll(es);
-            es.addAll(ms);
-            return es;
+        // XXX copy-paste programming!
+        private <T> List<? extends T> joinLookups(DebuggerEngine e, DebuggerManager dm, Class<T> service) {
+            List<? extends T> es = e.lookup (viewType, service);
+            List<? extends T> ms = dm.lookup(viewType, service);
+            List<T> joined = new ArrayList<T>(es);
+            for (T t : ms) {
+                if (!es.contains(t)) {
+                    joined.add(t);
+                }
+            }
+            return joined;
         }
     
         public synchronized void updateModel () {

@@ -102,29 +102,29 @@ class ProcessesViewListener extends DebuggerManagerAdapter {
         Models.setModelsToView (myView, Models.createCompoundModel (models));
     }
 
-    private List lookup(
-        DebuggerEngine engine,
-        DebuggerManager manager,
-        Class service)
-    {
-        List engineService = engine.lookup(myViewType, service);
-        List managerService = manager.lookup(myViewType, service);
-        List<Object> joined = new ArrayList<Object>();
-
-        add (joined, engineService);
-        add (joined, managerService);
-
+    // XXX copy-paste programming!
+    private <T> List<? extends T> lookup(
+            final DebuggerEngine engine,
+            final DebuggerManager manager,
+            final Class<T> service) {
+        final List<? extends T> engineService = engine.lookup(myViewType, service);
+        final List<? extends T> managerService = manager.lookup(myViewType, service);
+        final List<T> joined = new ArrayList<T>();
+        
+        add(joined, engineService);
+        add(joined, managerService);
+        
         return joined;
     }
-
-    private void add(List<Object> source, List collection) {
-      Object[] elements = collection.toArray();
-
-      for (Object element : elements) {
-          if ( !source.contains(element)) {
+    
+    private <T> void add(
+            final List<T> source, 
+            final List<? extends T> collection) {
+        for (T element : collection) {
+          if (!source.contains(element)) {
               source.add(element);
           }
-      }
+        }
     }
 
     private String myViewType;

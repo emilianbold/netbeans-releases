@@ -48,13 +48,11 @@ import java.util.HashMap;
 import org.openide.util.Cancellable;
 import org.openide.util.Task;
 
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.SessionProvider;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.WeakListeners;
-import org.openide.util.WeakSet;
 
 
 /**
@@ -138,7 +136,7 @@ import org.openide.util.WeakSet;
  *
  * @author Jan Jancura
  */
-public final class DebuggerManager {
+public final class DebuggerManager implements ContextProvider {
     
     // TODO: deprecate all these properties. They are useless, since there are
     //       dedicated methods in DebuggerManagerListener
@@ -225,7 +223,7 @@ public final class DebuggerManager {
      * @param service a type of service to look for
      * @return list of services of given type
      */
-    public List lookup (String folder, Class service) {
+    public <T> List<? extends T> lookup(String folder, Class<T> service) {
         return lookup.lookup (folder, service);
     }
     
@@ -235,7 +233,7 @@ public final class DebuggerManager {
      * @param service a type of service to look for
      * @return ne service of given type
      */
-    public Object lookupFirst (String folder, Class service) {
+    public <T> T lookupFirst(String folder, Class<T> service) {
         return lookup.lookupFirst (folder, service);
     }
     
@@ -1266,7 +1264,7 @@ public final class DebuggerManager {
     // helper methods ....................................................
     
     private Set<LazyDebuggerManagerListener> loadedListeners;
-    private List<LazyDebuggerManagerListener> listenersLookupList;
+    private List<? extends LazyDebuggerManagerListener> listenersLookupList;
     
     private void initDebuggerManagerListeners () {
         synchronized (listenersMap) {
@@ -1277,7 +1275,7 @@ public final class DebuggerManager {
                 ((Customizer) listenersLookupList).addPropertyChangeListener(new PropertyChangeListener() {
 
                     public void propertyChange(PropertyChangeEvent evt) {
-                        refreshDebuggerManagerListeners((List<LazyDebuggerManagerListener>) evt.getSource());
+                        refreshDebuggerManagerListeners((List<? extends LazyDebuggerManagerListener>) evt.getSource());
                     }
                 });
             }
@@ -1285,7 +1283,7 @@ public final class DebuggerManager {
         }
     }
     
-    private void refreshDebuggerManagerListeners (List<LazyDebuggerManagerListener> listenersLookupList) {
+    private void refreshDebuggerManagerListeners(List<? extends LazyDebuggerManagerListener> listenersLookupList) {
         //System.err.println("\n refreshDebuggerManagerListeners()");
         //It's neccessary to pay attention on the order in which the listeners and breakpoints are registered!
         //Annotation listeners must be unregistered AFTER breakpoints are removed

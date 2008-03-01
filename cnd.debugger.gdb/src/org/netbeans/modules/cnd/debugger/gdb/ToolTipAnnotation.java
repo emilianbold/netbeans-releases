@@ -74,7 +74,7 @@ public class ToolTipAnnotation extends Annotation {
         if (currentEngine == null) {
             return null;
         }
-        GdbDebugger debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
+        GdbDebugger debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
         if (debugger == null) {
             return null;
         }
@@ -87,7 +87,7 @@ public class ToolTipAnnotation extends Annotation {
         if (dob == null) {
             return null;
         }
-        EditorCookie ec = (EditorCookie) dob.getCookie(EditorCookie.class);
+        EditorCookie ec = dob.getCookie(EditorCookie.class);
         if (ec == null) {
             return null;
         }
