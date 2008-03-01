@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.compapp.catd;
 
-import com.sun.esb.management.api.administration.AdministrationService;
 import com.sun.esb.management.api.configuration.ConfigurationService;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -83,7 +82,6 @@ import java.util.regex.Pattern;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.Source;
-import javax.xml.transform.OutputKeys;
 import javax.xml.soap.SOAPConnectionFactory;
 import javax.xml.soap.SOAPConnection;
 import javax.xml.soap.MessageFactory;
@@ -165,6 +163,7 @@ public class ConfiguredTest extends TestCase {
      * Gets the name of a TestCase
      * @return returns a String
      */
+    @Override
     public String getName() {
         return mName;
     }
@@ -173,10 +172,12 @@ public class ConfiguredTest extends TestCase {
      * Sets the name of a TestCase
      * @param name The name to set
      */
+    @Override
     public void setName(String name) {        
         mName= name;        
     }
         
+    @Override
     protected void setUp() throws java.lang.Exception {
         // Set up the mConnection and factories
         mSoapConnFactory = SOAPConnectionFactory.newInstance();
@@ -186,11 +187,15 @@ public class ConfiguredTest extends TestCase {
         // #114295 Disable warning message for NB 6.0
         Logger.getLogger("org.netbeans.modules.editor.impl.KitsTracker").setLevel(Level.SEVERE);
         
+        // #128868 Disable warning message for NB 6.1
+        Logger.getLogger("org.openide.loaders").setLevel(Level.SEVERE);
+        
         // TEST
         //System.setProperty ("sun.net.client.defaultReadTimeout", "2000");
         //java.net.Socket.setSoLinger(true, 0);
     }
     
+    @Override
     protected void tearDown() throws java.lang.Exception {
         mConnection.close();
         mConnection = null;
@@ -2598,7 +2603,7 @@ public class ConfiguredTest extends TestCase {
         boolean timedout = false;
         while (!fileToWaitFor.exists() && !timedout) {
             // Check every second
-            Thread.currentThread().sleep(1000);
+            Thread.sleep(1000);
             if (testTimeoutSecs > 0 && System.currentTimeMillis() > timeLimit) {
                 timedout = true;
             }
@@ -2620,7 +2625,7 @@ public class ConfiguredTest extends TestCase {
         File[] entries = null;
         while ( !timedout ) {
             // Check every second
-            Thread.currentThread().sleep(1000);
+            Thread.sleep(1000);
             //System.out.println("timeout=" + testTimeoutSecs + " limit=" + timeLimit + " curr time=" + System.currentTimeMillis());
             if (testTimeoutSecs > 0 && System.currentTimeMillis() > timeLimit) {
                 timedout = true;
