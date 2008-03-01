@@ -86,7 +86,7 @@ final class MakeSharableVisualPanel2 extends JPanel {
     String ACTION_COPY = "copy"; //NOI18N
     String ACTION_RELATIVE = "keep"; //NOI18N
     String ACTION_ABSOLUTE = "abs"; //NOI18N
-    String ACTION_USE_LOCAL_LIBRARY = "use";
+    String ACTION_USE_LOCAL_LIBRARY = "use"; //NOI18N
     String[] comboValues = new String[]{
         ACTION_COPY, ACTION_RELATIVE, ACTION_ABSOLUTE, ACTION_USE_LOCAL_LIBRARY
     };
@@ -168,17 +168,17 @@ final class MakeSharableVisualPanel2 extends JPanel {
                 return col == 1;
             }
         };
-        model.addColumn("jar");
-        model.addColumn("action");
+        model.addColumn("jar"); //NOI18N
+        model.addColumn("action"); //NOI18N
         tblJars.setModel(model);
-        TableColumn col1 = tblJars.getColumn("jar");
+        TableColumn col1 = tblJars.getColumn("jar"); //NOI18N
         col1.setHeaderValue(NbBundle.getMessage(MakeSharableVisualPanel2.class, "tblJars.header1"));
         col1.setResizable(true);
         col1.setCellRenderer(new DefaultTableCellRenderer() {
 
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                String text = "";
+                String text = ""; //NOI18N
                 if (value instanceof Library) {
                     Library lib = (Library) value;
                     text = lib.getDisplayName();
@@ -191,7 +191,7 @@ final class MakeSharableVisualPanel2 extends JPanel {
                 return super.getTableCellRendererComponent(table, text, isSelected, hasFocus, row, column);
             }
         });
-        TableColumn col2 = tblJars.getColumn("action");
+        TableColumn col2 = tblJars.getColumn("action"); //NOI18N
         col2.setHeaderValue(NbBundle.getMessage(MakeSharableVisualPanel2.class, "tblJars.header2"));
         col2.sizeWidthToFit();
 
@@ -334,7 +334,7 @@ final class MakeSharableVisualPanel2 extends JPanel {
             for (String jar : jars) {
                 if (jar != null) {
                     String value = helper.getStandardPropertyEvaluator().evaluate(jar);
-                    if (!value.startsWith("${")) {
+                    if (!value.startsWith("${")) { //NOI18N
                         File jarFile = helper.resolveFile(value);
                         String action = ACTION_COPY;
                         if (CollocationQuery.areCollocated(prjDir, jarFile)) {
@@ -349,10 +349,10 @@ final class MakeSharableVisualPanel2 extends JPanel {
                         }
                         model.addRow(new Object[]{jar, action});
                     } else {
-                        Logger.getLogger(MakeSharableVisualPanel2.class.getName()).info("Cannot find jar reference:" + jar);
+                        Logger.getLogger(MakeSharableVisualPanel2.class.getName()).info("Cannot find jar reference:" + jar); //NOI18N
                     }
                 } else {
-                    Logger.getLogger(MakeSharableVisualPanel2.class.getName()).info("Cannot find jar reference:" + jar);
+                    Logger.getLogger(MakeSharableVisualPanel2.class.getName()).info("Cannot find jar reference:" + jar); //NOI18N
                 }
             }
         } catch (MalformedURLException ex) {
@@ -381,35 +381,34 @@ final class MakeSharableVisualPanel2 extends JPanel {
                                 url = URLMapper.findURL(FileUtil.getArchiveFile(fo), URLMapper.EXTERNAL);
                             }
                         }
-                        contents.append(url).append("\n");
+                        contents.append(url).append("\n"); //NOI18N
                     }
                 }
-                taDetails.setText("Library (" + typeString + ")\n" +
-                        "Contents:\n" + contents);
+                taDetails.setText(NbBundle.getMessage(MakeSharableVisualPanel2.class, "LBL_LIbraryContent", 
+                        typeString, contents));
             } else if (val instanceof String) {
                 String ref = (String) val;
-                String text = "Jar/Folder\nBinary:";
                 String value = helper.getStandardPropertyEvaluator().evaluate(ref);
                 File absFile = helper.resolveFile(value);
-                text = text + absFile.getAbsolutePath();
+                String text = NbBundle.getMessage(MakeSharableVisualPanel2.class, "LBL_BinaryDesc", absFile.getAbsolutePath());
                 String source = ref.replace("${file.reference", "${source.reference"); //NOI18N
                 value = helper.getStandardPropertyEvaluator().evaluate(source);
                 if (!value.startsWith("${source.")) { //NOI18N
                     absFile = helper.resolveFile(value);
-                    text = text + "\nSources:" + absFile.getAbsolutePath();
+                    text = text + NbBundle.getMessage(MakeSharableVisualPanel2.class, "LBL_SourcesDesc", absFile.getAbsolutePath());
                 }
                 String javadoc = ref.replace("${file.reference", "${javadoc.reference"); //NOI18N
                 value = helper.getStandardPropertyEvaluator().evaluate(javadoc);
                 if (!value.startsWith("${javadoc.")) { //NOI18N
                     absFile = helper.resolveFile(value);
-                    text = text + "\nJavadoc:" + absFile.getAbsolutePath();
+                    text = text + NbBundle.getMessage(MakeSharableVisualPanel2.class, "LBL_JavadocDesc", absFile.getAbsolutePath());
                 }
 
 
                 taDetails.setText(text);
             }
         } else {
-            taDetails.setText("<No items selected>");
+            taDetails.setText(org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel2.class, "LBL_DescNoItems"));
         }
     }
 
