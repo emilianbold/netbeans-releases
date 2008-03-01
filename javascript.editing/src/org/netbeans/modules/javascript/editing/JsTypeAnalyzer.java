@@ -114,8 +114,8 @@ public class JsTypeAnalyzer {
         BROWSER_BUILTINS.put("netscape","Netscape");
         BROWSER_BUILTINS.put("sun","Sun");
         BROWSER_BUILTINS.put("cssRule","CssRule");
-        BROWSER_BUILTINS.put("document","Document");
-        BROWSER_BUILTINS.put("element","Element");
+        BROWSER_BUILTINS.put("document","HTMLDocument");
+        BROWSER_BUILTINS.put("element","HTMLElement");
         BROWSER_BUILTINS.put("event","Event");
         BROWSER_BUILTINS.put("form","Form");
         BROWSER_BUILTINS.put("navigator","Navigator");

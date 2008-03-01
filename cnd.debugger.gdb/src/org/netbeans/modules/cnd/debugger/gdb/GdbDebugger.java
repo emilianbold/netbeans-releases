@@ -1040,7 +1040,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
             if (killcmd.size() > 0) {
                 killcmd.add("-s"); // NOI18N
-                killcmd.add((Utilities.isMac() && signal == 2) ? "TRAP" : Integer.toString(signal));
+                killcmd.add((Utilities.isMac() && signal == 2) ? "TRAP" : Integer.toString(signal)); // NOI18N
                 killcmd.add(Long.toString(pid));
                 ProcessBuilder pb = new ProcessBuilder(killcmd);
                 try {
