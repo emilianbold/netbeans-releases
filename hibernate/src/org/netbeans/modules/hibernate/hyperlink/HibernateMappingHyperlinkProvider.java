@@ -85,6 +85,10 @@ public class HibernateMappingHyperlinkProvider implements HyperlinkProvider {
         registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.COMPONENT_TAG, HibernateMappingXmlConstants.CLASS_ATTRIB, classHyperlinkProcessor);
         registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.IMPORT_TAG, HibernateMappingXmlConstants.CLASS_ATTRIB, classHyperlinkProcessor);
         registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.MANY_TO_MANY_TAG, HibernateMappingXmlConstants.CLASS_ATTRIB, classHyperlinkProcessor);
+    
+        PropertyHyperlinkProcessor propertyHyperlinkProcessor = new PropertyHyperlinkProcessor();
+        registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.PROPERTY_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyHyperlinkProcessor);
+    
     }
     
     private void registerAttribValueHyperlinkPoint(String tagName, String attribName, 

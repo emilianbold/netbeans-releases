@@ -39,16 +39,24 @@
 package org.netbeans.modules.hibernate.editor;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.SimpleElementVisitor6;
 import javax.swing.text.Document;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
@@ -210,5 +218,40 @@ public class HibernateEditorUtil {
             }
         }
     }
+    
+    public static VariableElement findFieldElementOnType(ElementUtilities eu, TypeMirror type, String fieldName) {
+        FieldAcceptor fieldAcceptor = new FieldAcceptor(fieldName);
+        Iterable<? extends Element> matchingProp = eu.getMembers(type, fieldAcceptor);
+        Iterator<? extends Element> it = matchingProp.iterator();
+        
+        // no matching element found
+        if (!it.hasNext()) {
+            return null;
+        } else
+            return (VariableElement)it.next();
+        
     }
+
+    private static class FieldAcceptor implements ElementUtilities.ElementAcceptor {
+
+        private String fieldName;
+
+        public FieldAcceptor(String fieldName) {
+            this.fieldName = fieldName;
+        }
+
+        public boolean accept(Element e, TypeMirror type) {
+            
+            if (e.getKind() != ElementKind.FIELD) {
+                return false;
+            } else {
+                if( e.getSimpleName().toString().equals(fieldName) ) {
+                     return true;
+                }
+            }
+            
+            return false;
+        }
+    }
+}
 
