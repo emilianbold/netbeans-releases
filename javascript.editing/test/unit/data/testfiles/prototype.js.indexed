@@ -25,7 +25,6 @@ Indexed:
   base : _nativeextensions;;_nativeExtensions|GLOBAL|;;0;;;;
   base : abort;;abort|FUNCTION|message;0;;;;
   base : absolutize;Position;absolutize|FUNCTION|element;0;;;;
-  base : abstract;;Abstract|GLOBAL|;;0;;;Object;
   base : accept;headers;Accept|PROPERTY|;0;;;;
   base : accesskey;Element._attributeTranslations.names;accesskey|PROPERTY|;0;;;;
   base : activate;Form.Element.Methods;activate|FUNCTION|element;0;;;;
@@ -34,7 +33,6 @@ Indexed:
   base : addclassname;Element;addClassName|FUNCTION|element,className;0;;;;
   base : addmethods;Element;addMethods|FUNCTION|methods;0;;;;
   base : after;Insertion;After|CONSTRUCTOR|;;0;;;;
-  base : ajax;;Ajax|GLOBAL|;;0;;;;
   base : all;Enumerable;all|FUNCTION|iterator;0;;;;
   base : ancestors;Element;ancestors|FUNCTION|element;0;;;;
   base : any;Enumerable;any|FUNCTION|iterator;0;;;;
@@ -47,7 +45,6 @@ Indexed:
   base : bottom;Insertion;Bottom|CONSTRUCTOR|;;0;;;;
   base : browserfeatures;Prototype;BrowserFeatures|PROPERTY|;0;;;;
   base : buildmatchexpression;Selector;buildMatchExpression|FUNCTION|;0;;;;
-  base : class;;Class|GLOBAL|;;0;;;;
   base : classnames;Element;ClassNames|CONSTRUCTOR|;;0;;;;
   base : classnames;Element;classNames|FUNCTION|element;0;;;;
   base : classnames;params;classNames|PROPERTY|;0;;;;
@@ -76,18 +73,15 @@ Indexed:
   base : down;Element;down|FUNCTION|element,expression,index;0;;;;
   base : each;Enumerable;each|FUNCTION|iterator;0;;;;
   base : eachslice;Enumerable;eachSlice|FUNCTION|number,iterator;0;;;;
-  base : element;;Element|GLOBAL|;;0;;;Object;
   base : empty;Element;empty|FUNCTION|element;0;;;;
   base : emptyfunction;Prototype;emptyFunction|FUNCTION|;0;;;;
   base : enable;Form.Element.Methods;enable|FUNCTION|element;0;;;;
   base : enable;Form.Methods;enable|FUNCTION|form;0;;;;
   base : encoding;options;encoding|PROPERTY|;0;;;;
   base : enctype;Element._attributeTranslations.names;enctype|PROPERTY|;0;;;;
-  base : enumerable;;Enumerable|GLOBAL|;;0;;;;
   base : evaljson;Ajax.Request;evalJSON|FUNCTION|;0;;;;
   base : evalresponse;Ajax.Request;evalResponse|FUNCTION|;0;;;;
   base : evaluate;Template;evaluate|FUNCTION|object;0;;;;
-  base : event;;Event|GLOBAL|;;0;;;Object;
   base : eventobserver;Abstract;EventObserver|CONSTRUCTOR|;;0;;;;
   base : eventobserver;Abstract;EventObserver|DOCUMENTED|CONSTRUCTOR|;;0;e80c;;;
   base : eventobserver;Form.Element;EventObserver|CONSTRUCTOR|;;0;;;;
@@ -95,14 +89,12 @@ Indexed:
   base : extend;Element;extend|FUNCTION|element;0;;;;
   base : extend;Object;extend|FUNCTION|destination,source;0;;;;
   base : failure;container;failure|PROPERTY|;0;;;;
-  base : field;;Field|GLOBAL|;;0;;;;
   base : findall;Enumerable;findAll|FUNCTION|iterator;0;;;;
   base : findelements;Selector;findElements|FUNCTION|scope;0;;;;
   base : findfirstelement;Form.Methods;findFirstElement|FUNCTION|form;0;;;;
   base : findorstore;Element.extend.cache;findOrStore|FUNCTION|value;0;;;;
   base : focus;Form.Element;focus|FUNCTION|element;0;;;;
   base : focusfirstelement;Form.Methods;focusFirstElement|FUNCTION|form;0;;;;
-  base : form;;Form|GLOBAL|;;0;;;;
   base : from;Array;from|FUNCTION|iterable;0;;;;
   base : getdimensions;Element;getDimensions|FUNCTION|element;0;;;;
   base : getelements;Form.Methods;getElements|FUNCTION|form;0;;;;
@@ -123,7 +115,6 @@ Indexed:
   base : grep;Enumerable;grep|FUNCTION|pattern,iterator;0;;;;
   base : hasattribute;Element.Methods.Simulated;hasAttribute|FUNCTION|element,attribute;0;;;;
   base : hasclassname;Element;hasClassName|FUNCTION|element,className;0;;;;
-  base : hash;;Hash|GLOBAL|;;0;;;;
   base : hide;Element;hide|FUNCTION|element;0;;;;
   base : immediatedescendants;Element;immediateDescendants|FUNCTION|element;0;;;;
   base : include;Enumerable;include|FUNCTION|object;0;;;;
@@ -149,7 +140,6 @@ Indexed:
   base : insertcontent;Insertion.Before;insertContent|FUNCTION|fragments;0;;;;
   base : insertcontent;Insertion.Bottom;insertContent|FUNCTION|fragments;0;;;;
   base : insertcontent;Insertion.Top;insertContent|FUNCTION|fragments;0;;;;
-  base : insertion;;Insertion|GLOBAL|;;0;;;Object;
   base : insertion;Abstract;Insertion|CONSTRUCTOR|;;0;;;;
   base : insertion;Abstract;Insertion|DOCUMENTED|CONSTRUCTOR|;adjacency;0;aeb8;;;
   base : inspect;Element;inspect|FUNCTION|element;0;;;;
@@ -168,7 +158,6 @@ Indexed:
   base : min;Enumerable;min|FUNCTION|iterator;0;;;;
   base : next;Element;next|FUNCTION|element,expression,index;0;;;;
   base : nextsiblings;Element;nextSiblings|FUNCTION|element;0;;;;
-  base : objectrange;;ObjectRange|GLOBAL|;;0;;;;
   base : observe;Element;observe|FUNCTION|;0;;;;
   base : observer;Form.Element;Observer|CONSTRUCTOR|;;0;;;;
   base : observer;Form;Observer|CONSTRUCTOR|;;0;;;;
@@ -186,18 +175,15 @@ Indexed:
   base : parameters;options;parameters|PROPERTY|;0;;;;
   base : parseexpression;Selector;parseExpression|FUNCTION|;0;;;;
   base : partition;Enumerable;partition|FUNCTION|iterator;0;;;;
-  base : periodicalexecuter;;PeriodicalExecuter|DOCUMENTED|GLOBAL|;;0;9fe;;;
   base : periodicalexecuter;PeriodicalExecuter;PeriodicalExecuter|CONSTRUCTOR|;;0;;;;
   base : periodicalupdater;Ajax;PeriodicalUpdater|CONSTRUCTOR|;;0;;;;
   base : pluck;Enumerable;pluck|FUNCTION|property;0;;;;
-  base : position;;Position|GLOBAL|;;0;;;;
   base : positionedoffset;Position;positionedOffset|FUNCTION|element;0;;;;
   base : prepare;Position;prepare|DOCUMENTED|FUNCTION|;0;fb5f;;;
   base : preparereplacement;String.prototype.gsub;prepareReplacement|FUNCTION|replacement;0;;;;
   base : present;Form.Element.Methods;present|FUNCTION|element;0;;;;
   base : previous;Element;previous|FUNCTION|element,expression,index;0;;;;
   base : previoussiblings;Element;previousSiblings|FUNCTION|element;0;;;;
-  base : prototype;;Prototype|DOCUMENTED|GLOBAL|;;0;0;;;
   base : readattribute;Element;readAttribute|FUNCTION|element,name;0;;;;
   base : readonly;Element._attributeTranslations.names;readonly|PROPERTY|;0;;;;
   base : realoffset;Position;realOffset|FUNCTION|element;0;;;;
@@ -225,7 +211,6 @@ Indexed:
   base : select;Form.Element;select|FUNCTION|element;0;;;;
   base : selectmany;Form.Element.Serializers;selectMany|FUNCTION|element;0;;;;
   base : selectone;Form.Element.Serializers;selectOne|FUNCTION|element;0;;;;
-  base : selector;;Selector|GLOBAL|;;0;;;;
   base : selector;Selector;Selector|CONSTRUCTOR|;;0;;;;
   base : serialize;Form.Element.Methods;serialize|FUNCTION|element;0;;;;
   base : serialize;Form.Methods;serialize|FUNCTION|form,getHash;0;;;;
@@ -250,7 +235,6 @@ Indexed:
   base : success;Ajax.Request;success|FUNCTION|;0;;;;
   base : success;container;success|PROPERTY|;0;;;;
   base : tabindex;Element._attributeTranslations.names;tabindex|PROPERTY|;0;;;;
-  base : template;;Template|GLOBAL|;;0;;;;
   base : template;Template;Template|CONSTRUCTOR|;;0;;;;
   base : textarea;Form.Element.Serializers;textarea|FUNCTION|element;0;;;;
   base : these;Try;these|FUNCTION|;0;;;;
@@ -258,13 +242,11 @@ Indexed:
   base : timedobserver;Abstract;TimedObserver|DOCUMENTED|CONSTRUCTOR|;;0;e362;;;
   base : title;Element._attributeTranslations.values;title|FUNCTION|element;0;;;;
   base : toarray;Enumerable;toArray|FUNCTION|;0;;;;
-  base : toggle;;Toggle|GLOBAL|;;0;;;Object;
   base : toggle;Element;toggle|FUNCTION|element;0;;;;
   base : toggleclassname;Element;toggleClassName|FUNCTION|element,className;0;;;;
   base : top;Insertion;Top|CONSTRUCTOR|;;0;;;;
   base : tostring;Element.ClassNames;toString|FUNCTION|;0;;;;
   base : tostring;Selector;toString|FUNCTION|;0;;;;
-  base : try;;Try|GLOBAL|;;0;;;;
   base : undoclipping;Element;undoClipping|FUNCTION|element;0;;;;
   base : undopositioned;Element;undoPositioned|FUNCTION|element;0;;;;
   base : unregister;Ajax.Responders;unregister|FUNCTION|responder;0;;;;
@@ -339,7 +321,6 @@ Indexed:
   fqn : abstract.timedobserver.registercallback;;Abstract.TimedObserver.registerCallback|FUNCTION|;0;;;;
   fqn : abstract.timedobserver;;Abstract.TimedObserver|CONSTRUCTOR|;;0;;;;
   fqn : abstract.timedobserver;;Abstract.TimedObserver|DOCUMENTED|CONSTRUCTOR|;;0;e362;;;
-  fqn : abstract;;Abstract|GLOBAL|;;0;;;Object;
   fqn : ajax.activerequestcount;;Ajax.activeRequestCount|PROPERTY|;0;;;;
   fqn : ajax.base.setoptions;;Ajax.Base.setOptions|FUNCTION|options;0;;;;
   fqn : ajax.base;;Ajax.Base|CONSTRUCTOR|;;0;;;;
@@ -368,11 +349,9 @@ Indexed:
   fqn : ajax.responders.register;;Ajax.Responders.register|FUNCTION|responder;0;;;;
   fqn : ajax.responders.responders;;Ajax.Responders.responders|PROPERTY|;0;;;;
   fqn : ajax.responders.unregister;;Ajax.Responders.unregister|FUNCTION|responder;0;;;;
-  fqn : ajax;;Ajax|GLOBAL|;;0;;;;
   fqn : array.from;;Array.from|FUNCTION|iterable;0;;;;
   fqn : array.prototype.concat;;Array.prototype.concat|FUNCTION|;0;;;;
   fqn : class.create;;Class.create|FUNCTION|;0;;;;
-  fqn : class;;Class|GLOBAL|;;0;;;;
   fqn : container.failure;;container.failure|PROPERTY|;0;;;;
   fqn : container.success;;container.success|PROPERTY|;0;;;;
   fqn : copy;;copy|FUNCTION|methods,destination,onlyIfAbsent;0;;;;
@@ -448,7 +427,6 @@ Indexed:
   fqn : element.update;;Element.update|FUNCTION|element,html;0;;;;
   fqn : element.update;;Element.update|FUNCTION|element,html;0;;;;
   fqn : element.visible;;Element.visible|FUNCTION|element;0;;;;
-  fqn : element;;Element|GLOBAL|;;0;;;Object;
   fqn : enumerable.all;;Enumerable.all|FUNCTION|iterator;0;;;;
   fqn : enumerable.any;;Enumerable.any|FUNCTION|iterator;0;;;;
   fqn : enumerable.collect;;Enumerable.collect|FUNCTION|iterator;0;;;;
@@ -471,9 +449,6 @@ Indexed:
   fqn : enumerable.sortby;;Enumerable.sortBy|FUNCTION|iterator;0;;;;
   fqn : enumerable.toarray;;Enumerable.toArray|FUNCTION|;0;;;;
   fqn : enumerable.zip;;Enumerable.zip|FUNCTION|;0;;;;
-  fqn : enumerable;;Enumerable|GLOBAL|;;0;;;;
-  fqn : event;;Event|GLOBAL|;;0;;;Object;
-  fqn : field;;Field|GLOBAL|;;0;;;;
   fqn : form.element.eventobserver.getvalue;;Form.Element.EventObserver.getValue|FUNCTION|;0;;;;
   fqn : form.element.eventobserver;;Form.Element.EventObserver|CONSTRUCTOR|;;0;;;;
   fqn : form.element.focus;;Form.Element.focus|FUNCTION|element;0;;;;
@@ -507,10 +482,8 @@ Indexed:
   fqn : form.observer;;Form.Observer|CONSTRUCTOR|;;0;;;;
   fqn : form.reset;;Form.reset|FUNCTION|form;0;;;;
   fqn : form.serializeelements;;Form.serializeElements|FUNCTION|elements,getHash;0;;;;
-  fqn : form;;Form|GLOBAL|;;0;;;;
   fqn : function.prototype.bind;;Function.prototype.bind|FUNCTION|;0;;;;
   fqn : function.prototype.bindaseventlistener;;Function.prototype.bindAsEventListener|FUNCTION|object;0;;;;
-  fqn : hash;;Hash|GLOBAL|;;0;;;;
   fqn : headers.accept;;headers.Accept|PROPERTY|;0;;;;
   fqn : headers.x-prototype-version;;headers.X-Prototype-Version|PROPERTY|;0;;;;
   fqn : headers.x-requested-with;;headers.X-Requested-With|PROPERTY|;0;;;;
@@ -526,10 +499,8 @@ Indexed:
   fqn : insertion.top.initializerange;;Insertion.Top.initializeRange|FUNCTION|;0;;;;
   fqn : insertion.top.insertcontent;;Insertion.Top.insertContent|FUNCTION|fragments;0;;;;
   fqn : insertion.top;;Insertion.Top|CONSTRUCTOR|;;0;;;;
-  fqn : insertion;;Insertion|GLOBAL|;;0;;;Object;
   fqn : key;;key|GLOBAL|;;0;;;;
   fqn : object.extend;;Object.extend|FUNCTION|destination,source;0;;;;
-  fqn : objectrange;;ObjectRange|GLOBAL|;;0;;;;
   fqn : options.asynchronous;;options.asynchronous|PROPERTY|;0;;;;
   fqn : options.contenttype;;options.contentType|PROPERTY|;0;;;;
   fqn : options.encoding;;options.encoding|PROPERTY|;0;;;;
@@ -547,7 +518,6 @@ Indexed:
   fqn : periodicalexecuter.periodicalexecuter;;PeriodicalExecuter.PeriodicalExecuter|CONSTRUCTOR|;;0;;;;
   fqn : periodicalexecuter.registercallback;;PeriodicalExecuter.registerCallback|FUNCTION|;0;;;;
   fqn : periodicalexecuter.stop;;PeriodicalExecuter.stop|FUNCTION|;0;;;;
-  fqn : periodicalexecuter;;PeriodicalExecuter|DOCUMENTED|GLOBAL|;;0;9fe;;;
   fqn : position.absolutize;;Position.absolutize|FUNCTION|element;0;;;;
   fqn : position.clone;;Position.clone|FUNCTION|source,target;0;;;;
   fqn : position.cumulativeoffset;;Position.cumulativeOffset|FUNCTION|element;0;;;;
@@ -562,13 +532,11 @@ Indexed:
   fqn : position.relativize;;Position.relativize|FUNCTION|element;0;;;;
   fqn : position.within;;Position.within|DOCUMENTED|FUNCTION|element,x,y;0;10224;;;
   fqn : position.withinincludingscrolloffsets;;Position.withinIncludingScrolloffsets|FUNCTION|element,x,y;0;;;;
-  fqn : position;;Position|GLOBAL|;;0;;;;
   fqn : prototype.browserfeatures;;Prototype.BrowserFeatures|PROPERTY|;0;;;;
   fqn : prototype.emptyfunction;;Prototype.emptyFunction|FUNCTION|;0;;;;
   fqn : prototype.k;;Prototype.K|CONSTRUCTOR|;x;0;;;;
   fqn : prototype.scriptfragment;;Prototype.ScriptFragment|PROPERTY|;0;;;;
   fqn : prototype.version;;Prototype.Version|PROPERTY|;0;;;;
-  fqn : prototype;;Prototype|DOCUMENTED|GLOBAL|;;0;0;;;
   fqn : selector.buildmatchexpression;;Selector.buildMatchExpression|FUNCTION|;0;;;;
   fqn : selector.compilematcher;;Selector.compileMatcher|FUNCTION|;0;;;;
   fqn : selector.findelements;;Selector.findElements|FUNCTION|scope;0;;;;
@@ -576,15 +544,11 @@ Indexed:
   fqn : selector.parseexpression;;Selector.parseExpression|FUNCTION|;0;;;;
   fqn : selector.selector;;Selector.Selector|CONSTRUCTOR|;;0;;;;
   fqn : selector.tostring;;Selector.toString|FUNCTION|;0;;;;
-  fqn : selector;;Selector|GLOBAL|;;0;;;;
   fqn : string.interpret;;String.interpret|FUNCTION|value;0;;;;
   fqn : string.prototype.gsub.preparereplacement;;String.prototype.gsub.prepareReplacement|FUNCTION|replacement;0;;;;
   fqn : template.evaluate;;Template.evaluate|FUNCTION|object;0;;;;
   fqn : template.initialize;;Template.initialize|CONSTRUCTOR|;template,pattern;0;;;;
   fqn : template.template;;Template.Template|CONSTRUCTOR|;;0;;;;
-  fqn : template;;Template|GLOBAL|;;0;;;;
-  fqn : toggle;;Toggle|GLOBAL|;;0;;;Object;
   fqn : try.these;;Try.these|FUNCTION|;0;;;;
-  fqn : try;;Try|GLOBAL|;;0;;;;
 
 Not Indexed:
