@@ -71,13 +71,13 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
         fortranRequired = false;
     }
     
-    @Override
-    public boolean isGdbEnabled() {
-        return gdbEnabled;
-    }
-    
+//    @Override
+//    public boolean isGdbEnabled() {
+//        return gdbEnabled;
+//    }
+//    
     public void setGdbEnabled(boolean enabled) {
-        gdbEnabled = enabled;
+        // gdbEnabled = enabled;
     }
     
     public void setCompilerSetName(String name) {
@@ -127,16 +127,16 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
 //    protected void setFortranCompilerName(String name) {
 //        fortranCompilerName = name;
 //    }
-    
-    @Override
-    public String getGdbPath() {
-        return gdbPath;
-    }
-    
-    @Override
-    public void setGdbPath(String gdbPath) {
-        this.gdbPath = gdbPath;
-    }
+//    
+//    @Override
+//    public String getGdbPath() {
+//        return gdbPath;
+//    }
+//    
+//    @Override
+//    public void setGdbPath(String gdbPath) {
+//        this.gdbPath = gdbPath;
+//    }
     
     public boolean isGdbRequired() {
         return gdbRequired;

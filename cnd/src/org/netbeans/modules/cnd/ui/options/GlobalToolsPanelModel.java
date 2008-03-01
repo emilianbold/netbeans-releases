@@ -68,11 +68,11 @@ public class GlobalToolsPanelModel extends ToolsPanelModel {
 //    }
     
     public boolean isGdbRequired() {
-        return CppSettings.getDefault().isGdbRequired();
+        return true;
     }
     
     public void setGdbRequired(boolean value) {
-        CppSettings.getDefault().setGdbRequired(value);
+//        CppSettings.getDefault().setGdbRequired(value);
     }
     
     public void setGdbEnabled(boolean enabled) {
@@ -80,7 +80,7 @@ public class GlobalToolsPanelModel extends ToolsPanelModel {
     }
     
     public boolean isCRequired() {
-        return false; //return CppSettings.getDefault().isCRequired();
+        return true; //return CppSettings.getDefault().isCRequired();
     }
     
     public void setCRequired(boolean value) {
@@ -88,7 +88,7 @@ public class GlobalToolsPanelModel extends ToolsPanelModel {
     }
     
     public boolean isCppRequired() {
-        return false; //return CppSettings.getDefault().isCppRequired();
+        return true; //return CppSettings.getDefault().isCppRequired();
     }
     
     public void setCppRequired(boolean value) {
@@ -96,7 +96,8 @@ public class GlobalToolsPanelModel extends ToolsPanelModel {
     }
     
     public boolean isFortranRequired() {
-        return false; //return CppSettings.getDefault().isFortranRequired();
+        return CppSettings.getDefault().isFortranEnabled();
+        //return CppSettings.getDefault().isFortranRequired();
     }
     
     public void setFortranRequired(boolean value) {

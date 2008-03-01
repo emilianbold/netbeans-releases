@@ -67,34 +67,34 @@ public abstract class ToolsPanelModel {
 //        }
 //        CppSettings.getDefault().setPath(path.toString());
 //    }
-    
-    protected String getMakeName() {
-        return CppSettings.getDefault().getMakeName();
-    }
-    
-    protected void setMakeName(String name) {
-        CppSettings.getDefault().setMakeName(name);
-    }
-    
-    protected void setMakePath(String dir) {
-        CppSettings.getDefault().setMakePath(dir);
-    }
-    
-    public String getGdbName() {
-        return CppSettings.getDefault().getGdbName();
-    }
-    
-    public void setGdbName(String name) {
-        CppSettings.getDefault().setGdbName(name);
-    }
-    
-    public String getGdbPath() {
-        return null;
-    }
-    
-    public void setGdbPath(String dir) {
-        CppSettings.getDefault().setGdbPath(dir);
-    }
+//    
+//    protected String getMakeName() {
+//        return CppSettings.getDefault().getMakeName();
+//    }
+//    
+//    protected void setMakeName(String name) {
+//        CppSettings.getDefault().setMakeName(name);
+//    }
+//    
+//    protected void setMakePath(String dir) {
+//        CppSettings.getDefault().setMakePath(dir);
+//    }
+//    
+//    public String getGdbName() {
+//        return CppSettings.getDefault().getGdbName();
+//    }
+//    
+//    public void setGdbName(String name) {
+//        CppSettings.getDefault().setGdbName(name);
+//    }
+//    
+//    public String getGdbPath() {
+//        return null;
+//    }
+//    
+//    public void setGdbPath(String dir) {
+//        CppSettings.getDefault().setGdbPath(dir);
+//    }
     
     /**
      * Check if the gdb module is enabled. Don't show the gdb line if it isn't.
