@@ -9,15 +9,15 @@ else
     hg clone http://hg.netbeans.org/main/contrib contrib
 fi
 
-ant -f nbbuild/build.xml hg-clean || exit
+ant hg-clean || exit
 
 mydir=`cd $(dirname $0); pwd`
 keystore=$mydir/../../../../NBstore
 storepass=`cat $mydir/../../../../storepass`
-ant -emacs -Dbuildnum=$BUILD_TAG -Dcluster.config=experimental -Dmoduleconfig=daily-alpha-nbms -Dkeystore=$keystore -Dstorepass=$storepass -f nbbuild/build.xml build-nozip build-nbms || exit
+ant -emacs -Dbuildnum=$BUILD_TAG -Dcluster.config=experimental -Dmoduleconfig=daily-alpha-nbms -Dkeystore=$keystore -Dstorepass=$storepass build-nozip build-nbms || exit
 ant -f o.n.core/test/build.xml -Dxtest.attribs=commit cleanresults runtests || exit
-ant -f nbbuild/build.xml -Dtest.dir=`pwd`/o.n.core/test commit-validation-junit-format || exit
+ant -Dtest.dir=`pwd`/o.n.core/test commit-validation-junit-format || exit
 ant -v -f $mydir/build-update-descriptor.xml || exit
-ant -f nbbuild/build.xml -Djnlp.codebase=http://deadlock.netbeans.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/build/jnlp/ -Djnlp.signjar.keystore=$keystore -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$storepass build-jnlp || exit
-ant -f nbbuild/build.xml index-layer-paths
-ant -f nbbuild/build.xml clean-untracked-files
+ant -Djnlp.codebase=http://deadlock.netbeans.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/build/jnlp/ -Djnlp.signjar.keystore=$keystore -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$storepass build-jnlp || exit
+ant index-layer-paths
+ant clean-untracked-files
