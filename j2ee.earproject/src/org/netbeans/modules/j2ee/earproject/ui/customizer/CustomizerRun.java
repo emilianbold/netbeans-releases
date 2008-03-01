@@ -414,6 +414,11 @@ private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent e
         
         public void storeSelectedItem(EditableProperties ep) {
             ClientModuleItem sel = (ClientModuleItem)getSelectedItem();
+            // #128854
+            initValues();
+            if (!values.contains(sel)) {
+                return;
+            }
             if (sel.isAppClient()) {
                 ep.setProperty(EarProjectProperties.APPLICATION_CLIENT, sel.getUri());
                 ep.setProperty(EarProjectProperties.CLIENT_MODULE_URI, getClientModuleUriForAppClient(project));
@@ -517,7 +522,7 @@ private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent e
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null) {
+            if (obj == null || uri == null) {
                 return false;
             }
             return uri.equals(((ClientModuleItem)obj).uri);
