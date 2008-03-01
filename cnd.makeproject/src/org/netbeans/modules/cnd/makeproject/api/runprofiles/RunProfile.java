@@ -57,11 +57,11 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileXMLCodec;
 import org.netbeans.modules.cnd.makeproject.runprofiles.ui.EnvPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.modules.InstalledFileLocator;
@@ -176,7 +176,7 @@ public class RunProfile implements ConfigurationAuxObject {
         } else {
             // Start with the user's $PATH. Append various other directories and look
             // for gnome-terminal, konsole, and xterm.
-            String path = CppSettings.getDefault().getPath() + 
+            String path = Path.getPathAsString() + 
                 ":/usr/X11/bin:/usr/X/bin:/usr/X11R6/bin:/opt/gnome/bin" + // NOI18N
                 ":/usr/gnome/bin:/opt/kde/bin:/opt/kde3/bin/usr/kde/bin:/usr/openwin/bin"; // NOI18N
             

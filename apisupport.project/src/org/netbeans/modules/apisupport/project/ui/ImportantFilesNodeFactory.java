@@ -114,7 +114,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
 
         public Node node(String key) {
-            assert key == IMPORTANT_FILES_NAME;
+            assert key.equals(IMPORTANT_FILES_NAME);
             if (project instanceof NbModuleProject) {
                 return new ImportantFilesNode((NbModuleProject)project);
             }
@@ -185,7 +185,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
      */
     private static final class ImportantFilesChildren extends Children.Keys<Object> {
         
-        private List<Object> visibleFiles = new ArrayList<Object>();
+        private List<Object> visibleFiles = null;
         private FileChangeListener fcl;
         
         /** Abstract location to display name. */
@@ -219,6 +219,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         
         protected @Override void removeNotify() {
             setKeys(Collections.<String>emptyList());
+            visibleFiles = null;
             removeListeners();
             super.removeNotify();
         }
@@ -252,9 +253,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 newVisibleFiles.add(handle);
                 files.add(layerFile);
             }
-            Iterator it = FILES.keySet().iterator();
-            while (it.hasNext()) {
-                String loc = (String) it.next();
+            for (String loc : FILES.keySet()) {
                 String locEval = project.evaluator().evaluate(loc);
                 if (locEval == null) {
                     newVisibleFiles.remove(loc); // XXX why?
@@ -266,9 +265,9 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                     files.add(file);
                 }
             }
-            if (!isInitialized() || !newVisibleFiles.equals(visibleFiles)) {
+            newVisibleFiles.add(project.getLookup().lookup(ServiceNodeHandler.class));
+            if (!newVisibleFiles.equals(visibleFiles)) {
                 visibleFiles = newVisibleFiles;
-                visibleFiles.add(project.getLookup().lookup(ServiceNodeHandler.class));
                 RP.post(new Runnable() { // #72471
                     public void run() {
                         setKeys(visibleFiles);

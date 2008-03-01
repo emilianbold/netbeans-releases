@@ -203,6 +203,8 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
         StringBuilder tmp = new StringBuilder();
         Vector<String> nurow = new Vector<String>(oldrow.size() - 2);
         String status = oldrow.get(0);
+        String stime;
+        int i;
         
         if (status.length() == 1 && (status.equals("I") ||  status.equals("C") || status.equals("O"))) { // NOI18N
             // The status field is optional...
@@ -211,17 +213,32 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
             nurow.add(2, oldrow.get(1));  // PID
             nurow.add(3, oldrow.get(2));  // PPID
             nurow.add(4, oldrow.get(7));  // STIME
-            for (int i = 8; i < oldrow.size(); i++) {
-                tmp.append(oldrow.get(i));
+            stime = oldrow.get(7);
+            if (Character.isDigit(stime.charAt(0))) {
+                i = 8;
+            } else {
+                stime = stime + ' ' + oldrow.get(8);
+                i = 9;
+            }
+            nurow.add(4, stime);  // STIME
+            while (i < oldrow.size()) {
+                tmp.append(oldrow.get(i++));
             }
         } else {
             nurow.add(0, oldrow.get(5));  // UID
             nurow.add(1, oldrow.get(3));  // WINPID
             nurow.add(2, oldrow.get(0));  // PID
             nurow.add(3, oldrow.get(1));  // PPID
-            nurow.add(4, oldrow.get(6));  // STIME
-            for (int i = 7; i < oldrow.size(); i++) {
-                tmp.append(oldrow.get(i));
+            stime = oldrow.get(6);
+            if (Character.isDigit(stime.charAt(0))) {
+                i = 7;
+            } else {
+                stime = stime + ' ' + oldrow.get(7);
+                i = 8;
+            }
+            nurow.add(4, stime);  // STIME
+            while (i < oldrow.size()) {
+                tmp.append(oldrow.get(i++));
             }
         }
         nurow.add(5, tmp.toString());  // CMD

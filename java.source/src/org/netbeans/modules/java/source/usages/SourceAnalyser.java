@@ -45,6 +45,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ErroneousTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -255,6 +256,8 @@ public class SourceAnalyser {
         private final List<? super Pair<String,String>> topLevels;
         private final Set<? super ElementHandle<TypeElement>> newTypes;
         private final Set<String> imports;
+        private final Set<String> staticImports;
+        private boolean isStaticImport;
         private State state;        
         private Element enclosingElement = null;
         private Set<String> rsList;        
@@ -269,6 +272,7 @@ public class SourceAnalyser {
             assert sibling != null;
             this.activeClass = new Stack<Pair<String,String>> ();
             this.imports = new HashSet<String> ();
+            this.staticImports = new HashSet<String> ();
             this.jt = jt;
             this.errorName = Name.Table.instance(jt.getContext()).error;
             this.state = State.OTHER;
@@ -291,6 +295,7 @@ public class SourceAnalyser {
             
             this.activeClass = new Stack<Pair<String,String>> ();
             this.imports = new HashSet<String> ();
+            this.staticImports = new HashSet<String>();
             this.jt = jt;
             this.errorName = Name.Table.instance(jt.getContext()).error;
             this.state = State.OTHER;
@@ -334,6 +339,12 @@ public class SourceAnalyser {
                         addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                     }
                     imports.clear();
+                    for (String s : staticImports) {
+                        addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                        addUsage(name, s, p, ClassIndexImpl.UsageType.METHOD_REFERENCE);
+                        addUsage(name, s, p, ClassIndexImpl.UsageType.FIELD_REFERENCE);
+                    }
+                    staticImports.clear();
                 }
             }
             return null;
@@ -351,6 +362,13 @@ public class SourceAnalyser {
         public @Override Void visitIdentifier(final IdentifierTree node, final Map<Pair<String,String>,Map<String, Set<ClassIndexImpl.UsageType>>> p) {
             handleVisitIdentSelect (((JCTree.JCIdent)node).sym, p);
             return super.visitIdentifier(node, p);
+        }
+        
+        public @Override Void visitImport (final ImportTree node, final Map<Pair<String,String>,Map<String, Set<ClassIndexImpl.UsageType>>> p) {
+            this.isStaticImport = node.isStatic();
+            final Void ret = super.visitImport(node, p);
+            this.isStaticImport = false;
+            return ret;
         }
         
         private void handleVisitIdentSelect (Symbol sym, final Map<Pair<String,String>,Map<String, Set<ClassIndexImpl.UsageType>>> p) {
@@ -401,7 +419,12 @@ public class SourceAnalyser {
             else if (sym != null && (sym.getKind().isClass() || sym.getKind().isInterface())) {
                 final String className = encodeClassName(sym);
                 if (className != null) {
-                    this.imports.add(className);
+                    if (this.isStaticImport) {
+                        this.staticImports.add(className);                        
+                    }
+                    else {
+                        this.imports.add(className);
+                    }
                 }
             }
         }
@@ -480,6 +503,12 @@ public class SourceAnalyser {
                                     addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                                 }
                                 imports.clear();
+                                for (String s : staticImports) {
+                                    addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                                    addUsage(name, s, p, ClassIndexImpl.UsageType.METHOD_REFERENCE);
+                                    addUsage(name, s, p, ClassIndexImpl.UsageType.FIELD_REFERENCE);
+                                }
+                                staticImports.clear();
                             }
                             activeClass.push (name);
                             errorIgnorSubtree = false;
@@ -531,6 +560,12 @@ public class SourceAnalyser {
                             addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                         }
                         imports.clear();
+                        for (String s : staticImports) {
+                            addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                            addUsage(name, s, p, ClassIndexImpl.UsageType.METHOD_REFERENCE);
+                            addUsage(name, s, p, ClassIndexImpl.UsageType.FIELD_REFERENCE);
+                        }
+                        staticImports.clear();
                     }
                     activeClass.push (name);                    
                     errorIgnorSubtree = false;
