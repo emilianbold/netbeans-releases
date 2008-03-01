@@ -21,7 +21,9 @@ package org.netbeans.modules.bpel.debugger.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -37,7 +39,6 @@ import org.netbeans.modules.bpel.debugger.ui.breakpoint.BpelLineBreakpointView;
 import org.netbeans.modules.bpel.debugger.ui.util.ModelUtil;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.spi.viewmodel.Model;
-import org.netbeans.spi.viewmodel.NodeModel;
 import org.openide.util.RequestProcessor;
 
 
@@ -54,10 +55,13 @@ public class CurrentPositionAnnotationListener extends DebuggerManagerAdapter {
     // annotation for current line
     private transient Object myCurrentPositionAnnotation;
     private transient Object myCurrentlyExecutingAnnotation;
-    private transient Object myLock = new Object();
+    
     private Position myCurrentPosition;
     private BpelDebugger myCurrentDebugger;
     private SourcePath mySourcePath;
+    
+    private Queue<Position> myPositionsQueue = new LinkedList<Position>();
+    private boolean doAnnotate = true;
     
     @Override
     public String[] getProperties () {
@@ -97,6 +101,12 @@ public class CurrentPositionAnnotationListener extends DebuggerManagerAdapter {
         }
         
         myCurrentDebugger = newDebugger;
+        
+        if (myCurrentDebugger == null) {
+            stopAnnotatingTask();
+        } else {
+            startAnnotatingTask();
+        }
     }
     
     private static BpelDebugger getCurrentDebugger() {
@@ -125,12 +135,12 @@ public class CurrentPositionAnnotationListener extends DebuggerManagerAdapter {
     private void updateCurrentPosition() {
         if (myCurrentDebugger != null) {
             myCurrentPosition = myCurrentDebugger.getCurrentPosition();
-            
-            if (getBreakpointsNodeModel() != null) {
-                getBreakpointsNodeModel().setCurrentPosition(myCurrentPosition);
-            }
         } else {
             myCurrentPosition = null;
+        }
+        
+        if (getBreakpointsNodeModel() != null) {
+            getBreakpointsNodeModel().setCurrentPosition(myCurrentPosition);
         }
     }
     
@@ -138,97 +148,134 @@ public class CurrentPositionAnnotationListener extends DebuggerManagerAdapter {
      * Annotates current position or removes annotation.
      */
     private void annotate() {
-        final Position position = myCurrentPosition;
+        System.out.println("-- offering - " + myCurrentPosition);
+        myPositionsQueue.offer(myCurrentPosition);
+        
+        synchronized (myPositionsQueue) {
+            myPositionsQueue.notifyAll();
+        }
+    }
+    
+    private void startAnnotatingTask() {
+        doAnnotate = true;
         
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                synchronized (myLock) {
-                    if (myCurrentPositionAnnotation != null) {
-                        EditorContextBridge.removeAnnotation(
-                                myCurrentPositionAnnotation);
-                    }
-                    
-                    if (myCurrentlyExecutingAnnotation != null) {
-                        EditorContextBridge.removeAnnotation(
-                                myCurrentlyExecutingAnnotation);
-                    }
-                    
-                    if (position != null) {
-                        final String url = mySourcePath.getSourcePath(
-                                position.getProcessQName());
-                        
-                        if (url != null) {
-                            myCurrentPositionAnnotation = 
-                                    EditorContextBridge.addAnnotation(
+                while (doAnnotate) {
+                    synchronized (myPositionsQueue) {
+                        while (!myPositionsQueue.isEmpty()) {
+                            final Position position = myPositionsQueue.poll();
+                            
+                            System.out.println("--- annotating --- " + position);
+                            
+                            if (myCurrentPositionAnnotation != null) {
+                                EditorContextBridge.removeAnnotation(
+                                        myCurrentPositionAnnotation);
+                                myCurrentPositionAnnotation = null;
+                            }
+
+                            if (myCurrentlyExecutingAnnotation != null) {
+                                EditorContextBridge.removeAnnotation(
+                                        myCurrentlyExecutingAnnotation);
+                                myCurrentlyExecutingAnnotation = null;
+                            }
+
+                            if (position != null) {
+                                final String url = mySourcePath.getSourcePath(
+                                        position.getProcessQName());
+
+                                if (url != null) {
+                                    myCurrentPositionAnnotation = 
+                                            EditorContextBridge.addAnnotation(
+                                                    url,
+                                                    position.getXpath(),
+                                                    position.getLineNumber(),
+                                                    AnnotationType.CURRENT_POSITION);
+
+                                    EditorContextBridge.showSource(
                                             url,
                                             position.getXpath(),
-                                            position.getLineNumber(),
-                                            AnnotationType.CURRENT_POSITION);
-                            
-                            EditorContextBridge.showSource(
-                                    url,
-                                    position.getXpath(),
-                                    null);
+                                            null);
+                                }
+                            } else {
+                                if (myCurrentDebugger == null) {
+                                    continue;
+                                }
+
+                                final ProcessInstance currentInstance = 
+                                        myCurrentDebugger.getCurrentProcessInstance();
+
+                                if (currentInstance == null) {
+                                    continue;
+                                }
+
+                                final String url = mySourcePath.getSourcePath(
+                                        currentInstance.getProcess().getQName());
+
+                                if (url == null) {
+                                    continue;
+                                }
+
+                                final PemEntity pemEntity = currentInstance.
+                                        getProcessExecutionModel().getLastStartedEntity();
+
+                                if (pemEntity != null) {
+                                    final PsmEntity psmEntity = pemEntity.getPsmEntity();
+
+                                    final BpelModel model = ModelUtil.getBpelModel(
+                                            currentInstance.getProcess().getQName());
+
+                                    final int lineNumber = ModelUtil.getLineNumber(
+                                            model, psmEntity.getXpath());
+
+                                    myCurrentlyExecutingAnnotation = 
+                                            EditorContextBridge.addAnnotation(
+                                                    url,
+                                                    psmEntity.getXpath(),
+                                                    lineNumber,
+                                                    AnnotationType.CURRENTLY_EXECUTING);
+                                }
+                            }
                         }
-                    } else {
-                        if (myCurrentDebugger == null) {
-                            return;
+                    }    
+                    
+                    try {
+                        synchronized (myPositionsQueue) {
+                            myPositionsQueue.wait(1000);
                         }
-                        
-                        final ProcessInstance currentInstance = 
-                                myCurrentDebugger.getCurrentProcessInstance();
-                        
-                        if (currentInstance == null) {
-                            return;
-                        }
-                        
-                        final String url = mySourcePath.getSourcePath(
-                                currentInstance.getProcess().getQName());
-                        
-                        if (url == null) {
-                            return;
-                        }
-                        
-                        final PemEntity pemEntity = currentInstance.
-                                getProcessExecutionModel().getLastStartedEntity();
-                        
-                        if (pemEntity != null) {
-                            final PsmEntity psmEntity = pemEntity.getPsmEntity();
-                            
-                            final BpelModel model = ModelUtil.getBpelModel(
-                                    currentInstance.getProcess().getQName());
-                            
-                            final int lineNumber = ModelUtil.getLineNumber(
-                                    model, psmEntity.getXpath());
-                            
-                            myCurrentlyExecutingAnnotation = 
-                                    EditorContextBridge.addAnnotation(
-                                            url,
-                                            psmEntity.getXpath(),
-                                            lineNumber,
-                                            AnnotationType.CURRENTLY_EXECUTING);
-                        }
+                    } catch (InterruptedException e) {
+                        // We should ignore this exception, as it is basically 
+                        // harmless. If we were interrupted, just repear the 
+                        // iteration and sleep again.
                     }
                 }
             }
         });
     }
     
-    private BpelLineBreakpointView breakpointsNodeModel;
+    private void stopAnnotatingTask() {
+        doAnnotate = false;
+        
+        synchronized (myPositionsQueue) {
+            myPositionsQueue.notifyAll();
+        }
+    }
+    
+    private BpelLineBreakpointView myBreakpointsNodeModel;
     private BpelLineBreakpointView getBreakpointsNodeModel () {
-        if (breakpointsNodeModel == null) {
+        if (myBreakpointsNodeModel == null) {
             List l = DebuggerManager.getDebuggerManager ().lookup
                 ("BreakpointsView", Model.class);
             Iterator it = l.iterator ();
             while (it.hasNext ()) {
                 Model nm = (Model) it.next ();
                 if (nm instanceof BpelLineBreakpointView) {
-                    breakpointsNodeModel = (BpelLineBreakpointView) nm;
+                    myBreakpointsNodeModel = (BpelLineBreakpointView) nm;
                     break;
                 }
             }
         }
-        return breakpointsNodeModel;
+        return myBreakpointsNodeModel;
     }
     
 }
