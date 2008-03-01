@@ -97,8 +97,8 @@ public final class GemManager {
      */
     private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(-\\S+)?"); // NOI18N
     
-    private static boolean SKIP_INDEX_LIBS = System.getProperty("ruby.index.nolibs") != null; // NOI18N
-    private static boolean SKIP_INDEX_GEMS = System.getProperty("ruby.index.nogems") != null; // NOI18N
+    private static final boolean SKIP_INDEX_LIBS = System.getProperty("ruby.index.nolibs") != null; // NOI18N
+    private static final boolean SKIP_INDEX_GEMS = System.getProperty("ruby.index.nogems") != null; // NOI18N
 
     /**
      * Extension of files containing gems specification residing in {@link
@@ -141,10 +141,10 @@ public final class GemManager {
         if (Utilities.isMac() && "/usr/bin/ruby".equals(platform.getInterpreter())) { // NOI18N
             String version = System.getProperty("os.version"); // NOI18N
             if (version == null || version.startsWith("10.4")) { // Only a problem on Tiger // NOI18N
-                return NbBundle.getMessage(GemAction.class, "GemMissingMac");
+                return NbBundle.getMessage(GemManager.class, "GemMissingMac");
             }
         }
-        return NbBundle.getMessage(GemAction.class, "GemMissing");
+        return NbBundle.getMessage(GemManager.class, "GemMissing");
     }
     
     /**
@@ -161,7 +161,7 @@ public final class GemManager {
         String gemHomePath = getGemHome();
         if (gemHomePath == null) {
             // edge case, misconfiguration? gem tool is installed but repository is not found
-            return NbBundle.getMessage(GemAction.class, "CannotFindGemRepository");
+            return NbBundle.getMessage(GemManager.class, "CannotFindGemRepository");
         }
 
         File gemHome = new File(gemHomePath);
@@ -177,7 +177,7 @@ public final class GemManager {
     private boolean checkGemHomePermissions() {
         if (!getGemHomeF().canWrite()) {
             NotifyDescriptor nd = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(GemAction.class, "GemNotWritable", getGemHome()),
+                    NbBundle.getMessage(GemManager.class, "GemNotWritable", getGemHome()),
                     NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notifyLater(nd);
             return false;
@@ -368,7 +368,7 @@ public final class GemManager {
 
         Map<String, File> highestVersion = gemFiles.get(gemName);
 
-        if ((highestVersion == null) || (highestVersion.size() == 0)) {
+        if (highestVersion == null || highestVersion.isEmpty()) {
             return null;
         }
 
@@ -385,7 +385,7 @@ public final class GemManager {
 
         Map<String, File> versionsToSpecs = gemFiles.get(gemName);
 
-        if ((versionsToSpecs == null) || (versionsToSpecs.size() == 0)) {
+        if (versionsToSpecs == null || versionsToSpecs.isEmpty()) {
             return null;
         }
 
@@ -832,24 +832,6 @@ public final class GemManager {
         }
     }
 
-    public String getAutoTest() {
-        return platform.findExecutable("autotest"); // NOI18N
-    }
-
-    public boolean isValidAutoTest(boolean warn) {
-        String autoTest = getAutoTest();
-        boolean valid = (autoTest != null) && new File(autoTest).exists();
-
-        if (warn && !valid) {
-            String msg = NbBundle.getMessage(GemManager.class, "GemManager.NotInstalledCmd", "autotest");
-            NotifyDescriptor nd =
-                    new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-        }
-
-        return valid;
-    }
-
     /**
      * Return path to the <em>gem</em> tool if it does exist.
      *
@@ -907,14 +889,7 @@ public final class GemManager {
     public boolean isValidRake(boolean warn) {
         String rakePath = getRake();
         boolean valid = (rakePath != null) && new File(rakePath).exists();
-
-        if (warn && !valid) {
-            String msg = NbBundle.getMessage(GemManager.class, "GemManager.NotInstalledCmd", "rake");
-            NotifyDescriptor nd =
-                    new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-        }
-
+        possiblyNotifyUser(warn, valid, "rake"); // NOI18N
         return valid;
     }
 
@@ -928,15 +903,28 @@ public final class GemManager {
     public boolean isValidRails(boolean warn) {
         String railsPath = getRails();
         boolean valid = (railsPath != null) && new File(railsPath).exists();
+        possiblyNotifyUser(warn, valid, "rails"); // NOI18N
+        return valid;
+    }
 
+    public String getAutoTest() {
+        return platform.findExecutable("autotest"); // NOI18N
+    }
+
+    public boolean isValidAutoTest(boolean warn) {
+        String autoTest = getAutoTest();
+        boolean valid = (autoTest != null) && new File(autoTest).exists();
+        possiblyNotifyUser(warn, valid, "autotest"); // NOI18N
+        return valid;
+    }
+
+    private void possiblyNotifyUser(boolean warn, boolean valid, String cmd) {
         if (warn && !valid) {
-            String msg = NbBundle.getMessage(GemManager.class, "GemManager.NotInstalledCmd", "rails");
+            String msg = NbBundle.getMessage(GemManager.class, "GemManager.NotInstalledCmd", cmd, platform.getLabel());
             NotifyDescriptor nd =
                     new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
         }
-
-        return valid;
     }
 
     /** Return other load path URLs (than the gem ones returned by {@link #getGemUrls} to add for the platform

@@ -108,6 +108,8 @@
                                 <xsd:attribute name="id" type="xsd:string"/>
                             </xsd:complexType>
                         </xsd:element>
+                        <xsd:element name="signed-url"/>
+                        <xsd:element name="session-key"/>
                         <xsd:element name="custom"/>
                     </xsd:choice>
                     <xsd:attribute name="profile" type="xsd:string" default="Templates/SaaSServices/profile.properties"/>

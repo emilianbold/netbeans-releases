@@ -153,10 +153,20 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNameIsEmpty")); // NOI18N
             return false;
         }
-        if (!SpringWebFrameworkUtils.isDispatcherNameValid(dispatcherName)){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNameIsNotValid")); // NOI18N
+        
+        // TODO clean up this method;  Either just check filename or also have servlet name check
+        // conditional error message
+        String whichError = ""; // NOI18N
+        boolean isDispatcherConfigFilenameValid = SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid(dispatcherName);
+        if (!isDispatcherConfigFilenameValid){
+            whichError = NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherServletConfigFilenameIsNotValid");
+        }                
+ 
+        if (!isDispatcherConfigFilenameValid ){
+            controller.setErrorMessage(whichError); // NOI18N
             return false;
-        }
+        }   
+        
         if (dispatcherMapping == null || dispatcherMapping.trim().length() == 0) {
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherMappingPatternIsEmpty")); // NOI18N
             return false;
@@ -191,6 +201,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         dispatcherName = getComponent().getDispatcherName();
         dispatcherMapping = getComponent().getDispatcherMapping();
         includeJstl = getComponent().getIncludeJstl();
+        dispatcherName = SpringWebFrameworkUtils.escapeAttributeValues(dispatcherName); // Escape the Dispatcher name as an XML attibute value
         changeSupport.fireChange();
     }
 
@@ -249,21 +260,38 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             ddRoot.write(dd);
 
             // ADD JSTL LIBRARY IF ENABLED AND SPRING LIBRARY
+            List<Library> libraries = new ArrayList<Library>(3);
+            Library webMVCLibrary = SpringUtilities.findSpringWebMVCLibrary();
+            Library springLibrary = null;
+            if (webMVCLibrary != null) {
+                libraries.add(webMVCLibrary);
+                if (SpringUtilities.isSpringLibrary(webMVCLibrary)) {
+                    // In case this is an user library with a monolithic Spring.
+                    springLibrary = webMVCLibrary;
+                }
+            } else {
+                LOGGER.log(Level.WARNING, null, new Error("No Spring Web MVC library found."));
+            }
+            if (springLibrary == null) {
+                springLibrary = SpringUtilities.findSpringLibrary();
+                if (springLibrary != null){
+                    libraries.add(springLibrary);
+                } else {
+                    LOGGER.log(Level.WARNING, null, new Error("No Spring Framework library found."));
+                }
+            }
             if (includeJstl) {
                 Library jstlLibrary = SpringUtilities.findJSTLibrary();
-                assert jstlLibrary != null; 
-                Library springLibrary = SpringUtilities.findSpringLibrary();
-                assert springLibrary != null;
-                Library[] libraries = {springLibrary, jstlLibrary};                
-                addLibrariesToWebModule(libraries, webModule);                
-            } else {
-                // JUST ADD SPRING LIBRARY
-                Library springLibrary = SpringUtilities.findSpringLibrary();
-                assert springLibrary != null;
-                Library[] libraries = {springLibrary};
+                if (jstlLibrary != null) {
+                    libraries.add(jstlLibrary);
+                } else {
+                    LOGGER.log(Level.WARNING, null, new Error("No JSTL library found."));
+                }
+            }
+            if (!libraries.isEmpty()) {
                 addLibrariesToWebModule(libraries, webModule);
             }
-
+            
             // CREATE WEB-INF/JSP FOLDER
             FileObject webInf = webModule.getWebInf();
             FileObject jsp = webInf.createFolder("jsp");
@@ -360,7 +388,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             return target;
         }
 
-        protected boolean addLibrariesToWebModule(Library[] libraries, WebModule webModule) throws IOException, UnsupportedOperationException {
+        protected boolean addLibrariesToWebModule(List<Library> libraries, WebModule webModule) throws IOException, UnsupportedOperationException {
             FileObject fileObject = webModule.getDocumentBase();
             Project project = FileOwnerQuery.getOwner(fileObject);
             if (project == null) {
@@ -372,7 +400,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                 if (groups.length == 0) {
                     return false;
                 }
-                addLibraryResult = ProjectClassPathModifier.addLibraries(libraries, groups[0].getRootFolder(), ClassPath.COMPILE);
+                addLibraryResult = ProjectClassPathModifier.addLibraries(libraries.toArray(new Library[libraries.size()]), groups[0].getRootFolder(), ClassPath.COMPILE);
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "Libraries required for the Spring MVC project not added", e); // NOI18N
             } catch (UnsupportedOperationException uoe) {

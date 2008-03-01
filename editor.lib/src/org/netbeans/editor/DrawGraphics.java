@@ -44,10 +44,6 @@ package org.netbeans.editor;
 import java.awt.Graphics;
 import java.awt.Font;
 import java.awt.Color;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
 import java.awt.Graphics2D;
 import java.awt.AlphaComposite;
 import java.awt.Composite;
@@ -82,6 +78,23 @@ interface DrawGraphics {
     public void setUnderlineColor(Color underlineColor);
     
     public void setWaveUnderlineColor(Color waveUnderlineColor);
+
+    /**
+     * @since 1.22
+     */
+    public void setTopBorderLineColor(Color topBorderLineColor);
+    /**
+     * @since 1.22
+     */
+    public void setRightBorderLineColor(Color rightBorderLineColor);
+    /**
+     * @since 1.22
+     */
+    public void setBottomBorderLineColor(Color bottomBorderLineColor);
+    /**
+     * @since 1.22
+     */
+    public void setLeftBorderLineColor(Color leftBorderLineColor);
 
     /** Set current font */
     public void setFont(Font font);
@@ -296,6 +309,18 @@ interface DrawGraphics {
         public void setView(javax.swing.text.View view) {
         }
         
+        public void setTopBorderLineColor(Color topBorderLineColor) {
+        }
+        
+        public void setRightBorderLineColor(Color rightBorderLineColor) {
+        }
+        
+        public void setBottomBorderLineColor(Color bottomBorderLineColor) {
+        }
+        
+        public void setLeftBorderLineColor(Color leftBorderLineColor) {
+        }
+
     } // End of AbstractDG class
 
     static class SimpleDG extends AbstractDG {
@@ -361,6 +386,11 @@ interface DrawGraphics {
         
         private Color waveUnderlineColor;
         
+        private Color topBorderLineColor;
+        private Color rightBorderLineColor;
+        private Color bottomBorderLineColor;
+        private Color leftBorderLineColor;
+        
         /** Whether annotations were drawn on the current line already */
         private int lastDrawnAnnosY;
         private int lastDrawnAnnosX;
@@ -384,10 +414,6 @@ interface DrawGraphics {
         private View view;
 
         private int bufferStartOffset;
-        private int frameStartOffset = Integer.MAX_VALUE;
-        private int frameEndOffset = frameStartOffset;
-        private JTextComponent component;
-        private PropertyChangeListener componentListener;
 
         GraphicsDG(Graphics graphics) {
             this.graphics = graphics;
@@ -439,6 +465,46 @@ interface DrawGraphics {
             }
         }
 
+        public @Override void setTopBorderLineColor(Color color) {
+            if ((color != this.topBorderLineColor)
+                && (color == null
+                    || !color.equals(this.topBorderLineColor))
+            ) {
+                flush();
+                this.topBorderLineColor = color;
+            }
+        }
+
+        public @Override void setRightBorderLineColor(Color color) {
+            if ((color != this.rightBorderLineColor)
+                && (color == null
+                    || !color.equals(this.rightBorderLineColor))
+            ) {
+                flush();
+                this.rightBorderLineColor = color;
+            }
+        }
+
+        public @Override void setBottomBorderLineColor(Color color) {
+            if ((color != this.bottomBorderLineColor)
+                && (color == null
+                    || !color.equals(this.bottomBorderLineColor))
+            ) {
+                flush();
+                this.bottomBorderLineColor = color;
+            }
+        }
+
+        public @Override void setLeftBorderLineColor(Color color) {
+            if ((color != this.leftBorderLineColor)
+                && (color == null
+                    || !color.equals(this.leftBorderLineColor))
+            ) {
+                flush();
+                this.leftBorderLineColor = color;
+            }
+        }
+
         public @Override void setFont(Font font) {
             if (!font.equals(this.font)) {
                 flush();
@@ -461,8 +527,6 @@ interface DrawGraphics {
         }
 
         public @Override void init(DrawContext ctx) {
-            component = ctx.getEditorUI().getComponent();
-            // initialize reference to annotations
             annos = ctx.getEditorUI().getDocument().getAnnotations();
             drawTextLimitLine = ctx.getEditorUI().textLimitLineVisible;
             textLimitWidth = ctx.getEditorUI().textLimitWidth();
@@ -470,35 +534,12 @@ interface DrawGraphics {
             textLimitLineColor = ctx.getEditorUI().textLimitLineColor;
             absoluteX = ctx.getEditorUI().getTextMargin().left;
             maxWidth = ctx.getEditorUI().getExtentBounds().width;
-            
-            componentListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (DrawLayer.TEXT_FRAME_START_POSITION_COMPONENT_PROPERTY.equals(evt.getPropertyName())) {
-                        if (evt.getNewValue() instanceof Position) {
-                            frameStartOffset = ((Position)evt.getNewValue()).getOffset();
-                        } else {
-                            frameStartOffset = Integer.MAX_VALUE;
-                        }
-                    }
-                    if (DrawLayer.TEXT_FRAME_END_POSITION_COMPONENT_PROPERTY.equals(evt.getPropertyName())) {
-                        if (evt.getNewValue() instanceof Position) {
-                            frameEndOffset = ((Position)evt.getNewValue()).getOffset();
-                        } else {
-                            frameEndOffset = Integer.MAX_VALUE;
-                        }
-                    }
-                }
-            };
-            component.addPropertyChangeListener(componentListener);
         }
 
         public @Override void finish() {
             // flush() already performed in setBuffer(null) and might cause problems here
             // as this code is typically called from finally clause.
             //flush();
-            if (component != null) {
-                component.removePropertyChangeListener(componentListener);
-            }
         }
         
         public @Override void setView(View view){
@@ -585,19 +626,21 @@ interface DrawGraphics {
             }
 
             // Text framing support
-            if (frameStartOffset != Integer.MAX_VALUE && bufferStartOffset != -1) {
-                if (bufferStartOffset + startOffset == frameStartOffset) { // draw vertical line
-                    graphics.drawLine(startX, startY, startX, startY + lineHeight);
-                }
-                if (bufferStartOffset + startOffset >= frameStartOffset
-                        && bufferStartOffset + endOffset <= frameEndOffset
-                ) {
-                    graphics.drawLine(startX, startY, x, startY);
-                    graphics.drawLine(startX, startY, x, startY + lineHeight);
-                }
-                if (bufferStartOffset + endOffset == frameEndOffset) { // draw vertical line
-                    graphics.drawLine(x, startY, x, startY + lineHeight);
-                }
+            if (topBorderLineColor != null) {
+                graphics.setColor(topBorderLineColor);
+                graphics.drawLine(startX, startY, x, startY);
+            }
+            if (rightBorderLineColor != null) {
+                graphics.setColor(rightBorderLineColor);
+                graphics.drawLine(x - 1, startY, x - 1, startY + lineHeight - 1);
+            }
+            if (bottomBorderLineColor != null) {
+                graphics.setColor(bottomBorderLineColor);
+                graphics.drawLine(startX, startY + lineHeight - 1, x, startY + lineHeight - 1);
+            }
+            if (leftBorderLineColor != null) {
+                graphics.setColor(leftBorderLineColor);
+                graphics.drawLine(startX, startY, startX, startY + lineHeight - 1);
             }
             
             // Check whether the graphics uses right color
@@ -629,7 +672,7 @@ interface DrawGraphics {
                                  );
             }
 
-            if (waveUnderlineColor != null) { // draw wave underline
+            if (waveUnderlineColor != null && bottomBorderLineColor == null) { // draw wave underline
                 FontMetricsCache.Info fmcInfo = FontMetricsCache.getInfo(font);
                 graphics.setColor(waveUnderlineColor);
 
@@ -648,7 +691,7 @@ interface DrawGraphics {
                 }
             }
 
-            if (underlineColor != null) { // draw underline
+            if (underlineColor != null && bottomBorderLineColor == null) { // draw underline
                 FontMetricsCache.Info fmcInfo = FontMetricsCache.getInfo(font);
                 graphics.setColor(underlineColor);
                 graphics.fillRect(startX,

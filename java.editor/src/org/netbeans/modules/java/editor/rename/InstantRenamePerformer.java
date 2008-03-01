@@ -73,6 +73,7 @@ import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.Task;
@@ -92,9 +93,8 @@ import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.modules.editor.java.JavaKit.JavaDeleteCharAction;
 import org.netbeans.modules.java.editor.semantic.FindLocalUsagesQuery;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
-import org.netbeans.spi.editor.highlighting.support.PositionsBag;
+import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
@@ -116,6 +116,12 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     private Document doc;
     private JTextComponent target;
     
+    private AttributeSet attribs = null;
+    private AttributeSet attribsLeft = null;
+    private AttributeSet attribsRight = null;
+    private AttributeSet attribsMiddle = null;
+    private AttributeSet attribsAll = null;
+    
     /** Creates a new instance of InstantRenamePerformer */
     private InstantRenamePerformer(JTextComponent target, Set<Token<JavaTokenId>> highlights, int caretOffset) throws BadLocationException {
 	this.target = target;
@@ -123,7 +129,6 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	
 	MutablePositionRegion mainRegion = null;
 	List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
-        PositionsBag bag = new PositionsBag(doc);
         
 	for (Token<JavaTokenId> h : highlights) {
 	    Position start = NbDocument.createPosition(doc, h.offset(null), Bias.Backward);
@@ -135,8 +140,6 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	    } else {
 		regions.add(current);
 	    }
-	    
-            bag.addHighlight(start, end, getSyncedTextBlocksHighlight());
 	}
 	
 	if (mainRegion == null) {
@@ -155,7 +158,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	
 	target.putClientProperty(InstantRenamePerformer.class, this);
 	
-        getHighlightsBag(doc).setHighlights(bag);
+        requestRepaint();
         
         target.select(mainRegion.getStartOffset(), mainRegion.getEndOffset());
         
@@ -380,7 +383,8 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	region.sync(0);
         span = region.getFirstRegionLength();
 	inSync = false;
-	target.repaint();
+        
+	requestRepaint();
     }
 
     public synchronized void removeUpdate(DocumentEvent e) {
@@ -450,7 +454,8 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	region.sync(0);
         span = region.getFirstRegionLength();
 	inSync = false;
-	target.repaint();
+        
+	requestRepaint();
     }
 
     public void changedUpdate(DocumentEvent e) {
@@ -479,11 +484,14 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             ((BaseDocument) doc).setPostModificationDocumentListener(null);
         }
 	target.removeKeyListener(this);
-        getHighlightsBag(doc).clear();
+	target = null;
 
 	region = null;
+        attribs = null;
+        
+        requestRepaint();
+
 	doc = null;
-	target = null;
     }
 
     private void undo() {
@@ -500,20 +508,76 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             }
         }
     }
+    
+    private void requestRepaint() {
+        if (region == null) {
+            OffsetsBag bag = getHighlightsBag(doc);
+            bag.clear();
+        } else {
+            // Compute attributes
+            if (attribs == null) {
+                attribs = getSyncedTextBlocksHighlight();
+                Color foreground = (Color) attribs.getAttribute(StyleConstants.Foreground);
+                Color background = (Color) attribs.getAttribute(StyleConstants.Background);
+                attribsLeft = AttributesUtilities.createImmutable(
+                        StyleConstants.Background, background,
+                        EditorStyleConstants.LeftBorderLineColor, foreground, 
+                        EditorStyleConstants.TopBorderLineColor, foreground, 
+                        EditorStyleConstants.BottomBorderLineColor, foreground
+                );
+                attribsRight = AttributesUtilities.createImmutable(
+                        StyleConstants.Background, background,
+                        EditorStyleConstants.RightBorderLineColor, foreground, 
+                        EditorStyleConstants.TopBorderLineColor, foreground, 
+                        EditorStyleConstants.BottomBorderLineColor, foreground
+                );
+                attribsMiddle = AttributesUtilities.createImmutable(
+                        StyleConstants.Background, background,
+                        EditorStyleConstants.TopBorderLineColor, foreground, 
+                        EditorStyleConstants.BottomBorderLineColor, foreground
+                );
+                attribsAll = AttributesUtilities.createImmutable(
+                        StyleConstants.Background, background,
+                        EditorStyleConstants.LeftBorderLineColor, foreground, 
+                        EditorStyleConstants.RightBorderLineColor, foreground,
+                        EditorStyleConstants.TopBorderLineColor, foreground, 
+                        EditorStyleConstants.BottomBorderLineColor, foreground
+                );
+            }
             
-    private static final AttributeSet defaultSyncedTextBlocksHighlight = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(138, 191, 236));
+            OffsetsBag nue = new OffsetsBag(doc);
+            int startOffset = region.getFirstRegionStartOffset();
+            int endOffset = region.getFirstRegionEndOffset();
+            int size = region.getFirstRegionLength();
+            if (size == 1) {
+                nue.addHighlight(startOffset, endOffset, attribsAll);
+            } else if (size > 1) {
+                nue.addHighlight(startOffset, startOffset + 1, attribsLeft);
+                nue.addHighlight(endOffset - 1, endOffset, attribsRight);
+                if (size > 2) {
+                    nue.addHighlight(startOffset + 1, endOffset - 1, attribsMiddle);
+                }
+            }
+
+            OffsetsBag bag = getHighlightsBag(doc);
+            bag.setHighlights(nue);
+        }
+    }
+    
+//    private static final AttributeSet defaultSyncedTextBlocksHighlight = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(138, 191, 236));
+    private static final AttributeSet defaultSyncedTextBlocksHighlight = AttributesUtilities.createImmutable(StyleConstants.Foreground, Color.red);
     
     private static AttributeSet getSyncedTextBlocksHighlight() {
         FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
-        AttributeSet as = fcs != null ? fcs.getFontColors("synchronized-text-blocks") : null; //NOI18N
+        AttributeSet as = fcs != null ? fcs.getFontColors("synchronized-text-blocks-ext") : null; //NOI18N
         return as == null ? defaultSyncedTextBlocksHighlight : as;
     }
     
-    public static PositionsBag getHighlightsBag(Document doc) {
-        PositionsBag bag = (PositionsBag) doc.getProperty(InstantRenamePerformer.class);
+    public static OffsetsBag getHighlightsBag(Document doc) {
+        OffsetsBag bag = (OffsetsBag) doc.getProperty(InstantRenamePerformer.class);
         
         if (bag == null) {
-            doc.putProperty(InstantRenamePerformer.class, bag = new PositionsBag(doc));
+            doc.putProperty(InstantRenamePerformer.class, bag = new OffsetsBag(doc));
             
             Object stream = doc.getProperty(Document.StreamDescriptionProperty);
             
