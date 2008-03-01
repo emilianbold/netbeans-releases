@@ -413,7 +413,12 @@ public final class SharableLibrariesUtils {
                             if (keepRelativeLocations) {
                                 File path = FileUtil.toFile(fo);
                                 String str = PropertyUtils.relativizeFile(mainPropertiesFile.getParentFile(), path);
-                                url = LibrariesSupport.convertFilePathToURL(str);
+                                if (str == null) {
+                                    // the relative path cannot be established, different drives?
+                                    url = fo.getURL();
+                                } else {
+                                    url = LibrariesSupport.convertFilePathToURL(str);
+                                }
                             } else {
                                 url = fo.getURL();
                             }
