@@ -9,11 +9,7 @@ else
     hg clone http://hg.netbeans.org/main/contrib contrib
 fi
 
-if [ builds/`ls -1 ../builds | tail -2 | head -1` '!=' `readlink ../lastSuccessful` ]
-then
-    echo "Previous build failed, running clean build this time..."
-    ant -f nbbuild/build.xml hg-clean || exit
-fi
+ant -f nbbuild/build.xml hg-clean || exit
 
 mydir=`cd $(dirname $0); pwd`
 keystore=$mydir/../../../../NBstore
