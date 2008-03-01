@@ -430,6 +430,14 @@ public class EditorOptions {
         }
         return 4;
     }
+
+    public static int getGlobalTabSize(CodeStyle.Language language) {
+        Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter"); // NOI18N
+        if (f != null) {
+            return f.getTabSize();
+        }
+        return 4;
+    }
     
     private static Class<? extends EditorKit> cKitClass;
     private static Class<? extends EditorKit> cppKitClass;

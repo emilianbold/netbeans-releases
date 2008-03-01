@@ -1834,4 +1834,396 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "}\n" 
         );
     }
+
+    public void testIdentBlockAfterDirective() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int yyparse()\n" +
+            "{\n" +
+            "    yychar = - 1;\n" +
+            "#if YYMAXDEPTH <= 0\n" +
+            "    if (yymaxdepth <= 0) {\n" +
+            "        if ((yymaxdepth = YYEXPAND(0)) <= 0) {\n" +
+            "            yyerror(\"yacc initialization error\");\n" +
+            "            YYABORT;\n" +
+            "        }\n" +
+            "    }\n" +
+            "#endif\n" +
+            " {\n" +
+            "        register YYSTYPE *yy_pv;\n" +
+            "        /* top of value stack */\n" +
+            "}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing coode block after directive",
+            "int yyparse()\n" +
+            "{\n" +
+            "    yychar = - 1;\n" +
+            "#if YYMAXDEPTH <= 0\n" +
+            "    if (yymaxdepth <= 0) {\n" +
+            "        if ((yymaxdepth = YYEXPAND(0)) <= 0) {\n" +
+            "            yyerror(\"yacc initialization error\");\n" +
+            "            YYABORT;\n" +
+            "        }\n" +
+            "    }\n" +
+            "#endif\n" +
+            "    {\n" +
+            "        register YYSTYPE *yy_pv;\n" +
+            "        /* top of value stack */\n" +
+            "    }\n" +
+            "}\n"
+        );
+    }
+
+    public void testMacroBeforePrepricessor() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        setLoadDocumentText(
+            "int yyparse()\n" +
+            "{\n" +
+            "    switch (nchar) {\n" +
+            "        /* split current window in two parts, horizontally */\n" +
+            "    case 'S':\n" +
+            "    case 's':\n" +
+            "        CHECK_CMDWIN\n" +
+            "#    ifdef FEAT_VISUAL\n" +
+            "reset_VIsual_and_resel();\n" +
+            "        /* stop Visual mode */\n" +
+            "#    endif\n" +
+            "    case 'W':\n" +
+            "        CHECK_CMDWIN\n" +
+            "if (lastwin == firstwin && Prenum != 1) /* just one window */\n" +
+            "            beep_flush();\n" +
+            "}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing macro before preoprocessor",
+            "int yyparse()\n" +
+            "{\n" +
+            "    switch (nchar) {\n" +
+            "        /* split current window in two parts, horizontally */\n" +
+            "    case 'S':\n" +
+            "    case 's':\n" +
+            "        CHECK_CMDWIN\n" +
+            "#ifdef FEAT_VISUAL\n" +
+            "                reset_VIsual_and_resel();\n" +
+            "        /* stop Visual mode */\n" +
+            "#endif\n" +
+            "    case 'W':\n" +
+            "        CHECK_CMDWIN\n" +
+            "        if (lastwin == firstwin && Prenum != 1) /* just one window */\n" +
+            "            beep_flush();\n" +
+            "    }\n" +
+            "}\n"
+        );
+    }
+
+    public void testIdentElseBeforePreprocessor() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        setLoadDocumentText(
+            "int yyparse()\n" +
+            "{\n" +
+            "#ifdef X\n" +
+            "    if (true) {\n" +
+            "        if (oldwin->w_p_wfw)\n" +
+            "            win_setwidth_win(oldwin->w_width + new_size, oldwin);\n" +
+            "    } else\n" +
+            "#    endif\n" +
+            " {\n" +
+            "        layout = FR_COL;\n" +
+            "}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing else before preprocessor",
+            "int yyparse()\n" +
+            "{\n" +
+            "#ifdef X\n" +
+            "    if (true) {\n" +
+            "        if (oldwin->w_p_wfw)\n" +
+            "            win_setwidth_win(oldwin->w_width + new_size, oldwin);\n" +
+            "    } else\n" +
+            "#endif\n" +
+            "    {\n" +
+            "        layout = FR_COL;\n" +
+            "    }\n" +
+            "}\n"
+        );
+    }
+
+    public void testIdentK_and_R_style() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "static void\n" +
+            "win_init(newp, oldp)\n" +
+            "win_T *newp;\n" +
+            "win_T *oldp;\n" +
+            "{\n" +
+            "    int i;\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing K&R declaration",
+            "static void\n" +
+            "win_init(newp, oldp)\n" +
+            "win_T *newp;\n" +
+            "win_T *oldp;\n" +
+            "{\n" +
+            "    int i;\n" +
+            "}\n"
+        );
+    }
+
+    public void testIdentK_and_R_style2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "extern \"C\" {\n" +
+            "static void\n" +
+            "win_init(newp, oldp)\n" +
+            "win_T *newp;\n" +
+            "win_T *oldp;\n" +
+            "{\n" +
+            "    int i;\n" +
+            "}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing multyline constructor",
+            "extern \"C\"\n" +
+            "{\n" +
+            "    static void\n" +
+            "    win_init(newp, oldp)\n" +
+            "    win_T *newp;\n" +
+            "    win_T *oldp;\n" +
+            "    {\n" +
+            "        int i;\n" +
+            "    }\n" +
+            "}\n"
+        );
+    }
+
+    public void testIdentInBlockComment() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "extern \"C\" {\n" +
+            "static void\n" +
+            "win_init(newp, oldp)\n" +
+            "win_T *newp;\n" +
+            "win_T *oldp;\n" +
+            "           /*\n" +
+            "             Preserve identation in block\n" +
+            "               1.\n" +
+            "               2.\n" +
+            "\n" +
+            "            */\n" +
+            "{\n" +
+            "/*\n" +
+            "  Preserve identation in block\n" +
+            "    1.\n" +
+            "    2.\n" +
+            "\n" +
+            "*/\n" +
+            "    int i;\n" +
+            "}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing in block comment",
+            "extern \"C\"\n" +
+            "{\n" +
+            "    static void\n" +
+            "    win_init(newp, oldp)\n" +
+            "    win_T *newp;\n" +
+            "    win_T *oldp;\n" +
+            "    /*\n" +
+            "      Preserve identation in block\n" +
+            "        1.\n" +
+            "        2.\n" +
+            "\n" +
+            "     */\n" +
+            "    {\n" +
+            "        /*\n" +
+            "          Preserve identation in block\n" +
+            "            1.\n" +
+            "            2.\n" +
+            "\n" +
+            "         */\n" +
+            "        int i;\n" +
+            "    }\n" +
+            "}\n"
+        );
+    }
+
+    public void testIdentInBlockComment2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "extern \"C\" {\n" +
+            "static void\n" +
+            "win_init(newp, oldp)\n" +
+            "win_T *newp;\n" +
+            "win_T *oldp;\n" +
+            "      /*\n" +
+            "           * Preserve identation in block\n" +
+            "          *   1.\n" +
+            "       *   2.\n" +
+            "*\n" +
+            "   */\n" +
+            "{\n" +
+            "  /*\n" +
+            "* Preserve identation in block\n" +
+            "    *   1.\n" +
+            " *   2.\n" +
+            "*\n" +
+            "*/\n" +
+            "    int i;\n" +
+            "}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing in block comment",
+            "extern \"C\"\n" +
+            "{\n" +
+            "    static void\n" +
+            "    win_init(newp, oldp)\n" +
+            "    win_T *newp;\n" +
+            "    win_T *oldp;\n" +
+            "    /*\n" +
+            "     * Preserve identation in block\n" +
+            "     *   1.\n" +
+            "     *   2.\n" +
+            "     *\n" +
+            "     */\n" +
+            "    {\n" +
+            "        /*\n" +
+            "         * Preserve identation in block\n" +
+            "         *   1.\n" +
+            "         *   2.\n" +
+            "         *\n" +
+            "         */\n" +
+            "        int i;\n" +
+            "    }\n" +
+            "}\n"
+        );
+    
+    }
+
+    public void testAddNewLineAfterSemocolon() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int foo(int i)\n" +
+            "{\n" +
+            "if(true) if(true) if(true) i--;\n" +
+            "else i++;else i++; else i++;\n" +
+            " if(true) while(i>0) i--;\n" +
+            " if(true) return; else break;\n" +
+            " if(true) return;\n" +
+            " else {break;}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect adding new line after semocolon",
+            "int foo(int i)\n" +
+            "{\n" +
+            "    if (true) if (true) if (true) i--;\n" +
+            "            else i++;\n" +
+            "        else i++;\n" +
+            "    else i++;\n" +
+            "    if (true) while (i > 0) i--;\n" +
+            "    if (true) return;\n" +
+            "    else break;\n" +
+            "    if (true) return;\n" +
+            "    else {\n" +
+            "        break;\n" +
+            "    }\n" +
+            "}\n"
+        );
+    }
+
+    public void testIdentFunctionDefinition() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "uchar *\n" +
+            "        tokname(int n)\n" +
+            "{\n" +
+            "    static char buf[100];\n" +
+            "    return printname[n - 257];\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing function definition",
+            "uchar *\n" +
+            "tokname(int n)\n" +
+            "{\n" +
+            "    static char buf[100];\n" +
+            "    return printname[n - 257];\n" +
+            "}\n"
+        );
+    }
+    
+
+    public void testIdentFunctionDefinition2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "namespace A\n" +
+            "{\n" +
+            "uchar *\n" +
+            "        tokname(int n)\n" +
+            "{\n" +
+            "    static char buf[100];\n" +
+            "    return printname[n - 257];\n" +
+            "}\n"+
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing function definition",
+            "namespace A\n" +
+            "{\n" +
+            "    uchar *\n" +
+            "    tokname(int n)\n" +
+            "    {\n" +
+            "        static char buf[100];\n" +
+            "        return printname[n - 257];\n" +
+            "    }\n"+
+            "}\n"
+        );
+    }
+    
+    public void testIdentElseAfterPreprocessor() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "getcmdline(int firstc)\n" +
+            "{\n" +
+            "    if (firstc == '/')\n" +
+            "    {\n" +
+            "#ifdef USE_IM_CONTROL\n" +
+            "	im_set_active(*b_im_ptr == B_IMODE_IM);\n" +
+            "#endif\n" +
+            "    }\n" +
+            "#ifdef USE_IM_CONTROL\n" +
+            "    else if (p_imcmdline)\n" +
+            "	im_set_active(TRUE);\n" +
+            "#endif\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing else after preprocessor",
+            "getcmdline(int firstc)\n" +
+            "{\n" +
+            "    if (firstc == '/') {\n" +
+            "#ifdef USE_IM_CONTROL\n" +
+            "        im_set_active(*b_im_ptr == B_IMODE_IM);\n" +
+            "#endif\n" +
+            "    }\n" +
+            "#ifdef USE_IM_CONTROL\n" +
+            "    else if (p_imcmdline)\n" +
+            "        im_set_active(TRUE);\n" +
+            "#endif\n" +
+            "}\n"
+        );
+    }
 }

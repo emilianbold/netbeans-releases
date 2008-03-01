@@ -220,7 +220,7 @@ public class MethodDetailPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(jScrollPane2, gridBagConstraints);
 
-        methodSigLabel.setLabelFor(jScrollPane2);
+        methodSigLabel.setLabelFor(signatureTextArea);
         org.openide.awt.Mnemonics.setLocalizedText(methodSigLabel, org.openide.util.NbBundle.getMessage(MethodDetailPanel.class, "METHOD_SIGNATURE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

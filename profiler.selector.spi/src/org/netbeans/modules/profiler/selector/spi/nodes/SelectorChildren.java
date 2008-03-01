@@ -54,7 +54,7 @@ public abstract class SelectorChildren<T extends SelectorNode> {
     public static final SelectorChildren<SelectorNode> LEAF = new SelectorChildren() {
         private final List<SelectorNode> LEAFLIST = new ArrayList<SelectorNode>();
 
-        protected List<SelectorNode> prepareChildren(SelectorNode parent) {
+        protected List<? extends SelectorNode> prepareChildren(SelectorNode parent) {
             return LEAFLIST;
         }
     };

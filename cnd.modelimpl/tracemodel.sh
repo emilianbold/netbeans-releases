@@ -84,8 +84,10 @@ function classpath() {
     CP=${CP}${path_sep}${platform}/lib/org-openide-util.jar
     CP=${CP}${path_sep}${platform}/modules/org-openide-nodes.jar
     CP=${CP}${path_sep}${platform}/core/org-openide-filesystems.jar
+    CP=${CP}${path_sep}${platform}/core/core.jar
     CP=${CP}${path_sep}${platform}/modules/org-openide-loaders.jar
     CP=${CP}${path_sep}${platform}/lib/org-openide-modules.jar
+    CP=${CP}${path_sep}${platform}/lib/boot.jar
 
 
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-api-model.jar

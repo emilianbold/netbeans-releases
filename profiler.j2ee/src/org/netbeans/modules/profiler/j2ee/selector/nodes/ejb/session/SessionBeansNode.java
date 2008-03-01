@@ -41,7 +41,6 @@
 package org.netbeans.modules.profiler.j2ee.selector.nodes.ejb.session;
 
 import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -53,10 +52,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
 import org.netbeans.modules.profiler.j2ee.ui.Utils;
-import org.netbeans.modules.profiler.selector.api.SelectorChildren;
-import org.netbeans.modules.profiler.selector.api.SelectorNode;
-import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.api.nodes.GreedySelectorChildren;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -66,6 +61,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
+import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;
+import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
+import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
 
 
 /**

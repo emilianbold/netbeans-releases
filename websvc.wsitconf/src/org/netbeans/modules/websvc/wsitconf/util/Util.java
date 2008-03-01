@@ -286,28 +286,6 @@ public class Util {
         return false;
     }
 
-    public static String getServerStoreLocation(Project project, boolean trust) {
-        String storeLocation = null;
-        J2eeModuleProvider mp = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (mp != null) {
-            InstanceProperties ip = mp.getInstanceProperties();
-            if ("".equals(ip.getProperty("LOCATION"))) {    //NOI18N
-                return null;
-            }
-            
-            J2eePlatform j2eePlatform = getJ2eePlatform(project);
-            if (j2eePlatform != null) {
-                File[] keyLocs = null;
-                keyLocs = trust ? j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_TRUSTSTORE_CLIENT) :
-                                  j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_KEYSTORE_CLIENT);
-                if ((keyLocs != null) && (keyLocs.length > 0)) {
-                    storeLocation = keyLocs[0].getAbsolutePath();
-                }
-            }
-        }
-        return storeLocation;
-    }
-    
     public static List<String> getAliases(String storePath, char[] password, String type) throws IOException {
         if ((storePath == null) || (type == null)) return null;
         FileInputStream iStream = null;
