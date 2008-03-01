@@ -213,6 +213,12 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
             getDebugger().getGdbProxy().break_after(breakpointNumber, evt.getNewValue().toString());
         } else if (pname.equals(GdbBreakpoint.PROP_SUSPEND)) {
             suspend();
+        } else if (pname.equals(GdbBreakpoint.PROP_LINE_NUMBER) && getState().equals(BPSTATE_VALIDATED)) {
+            setState(BPSTATE_REVALIDATE);
+            update();
+        } else if (pname.equals(GdbBreakpoint.PROP_FUNCTION_NAME) && getState().equals(BPSTATE_VALIDATED)) {
+            setState(BPSTATE_REVALIDATE);
+            update();
         } else if (!pname.equals(GdbBreakpoint.PROP_LINE_NUMBER)) {
             update();
         }
