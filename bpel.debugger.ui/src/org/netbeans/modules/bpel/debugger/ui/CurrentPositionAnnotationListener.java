@@ -148,7 +148,7 @@ public class CurrentPositionAnnotationListener extends DebuggerManagerAdapter {
      * Annotates current position or removes annotation.
      */
     private void annotate() {
-        System.out.println("-- offering - " + myCurrentPosition);
+        //System.out.println("-- offering - " + myCurrentPosition);
         myPositionsQueue.offer(myCurrentPosition);
         
         synchronized (myPositionsQueue) {
@@ -166,7 +166,7 @@ public class CurrentPositionAnnotationListener extends DebuggerManagerAdapter {
                         while (!myPositionsQueue.isEmpty()) {
                             final Position position = myPositionsQueue.poll();
                             
-                            System.out.println("--- annotating --- " + position);
+                            //System.out.println("--- annotating --- " + position);
                             
                             if (myCurrentPositionAnnotation != null) {
                                 EditorContextBridge.removeAnnotation(
