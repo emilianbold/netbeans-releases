@@ -153,11 +153,15 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
      */
     final Map<String, String[]> mappings = new HashMap<String, String[]>();
     
+    /**
+     * Flag whether class path is current.
+     */
+    volatile boolean cpCurrent = false;
+    
     // request processor for cleaning mappings cache and reiniting options
     private static final int REINIT_OPTIONS_DELAY = 2000; // ms
     private static final int REINIT_CACHES_DELAY = 1000; // ms
     private static final int INITIAL_CACHES_DELAY = 2000; // ms
-    private final RequestProcessor.Task reinitOptionsTask;
     private final RequestProcessor.Task reinitCachesTask;
     
     private final RequestProcessor.Task tldChangeTask;
@@ -184,10 +188,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         executeCP.addPropertyChangeListener(WeakListeners.propertyChange(this, executeCP));
 
         // request procesor tasks
-        RequestProcessor requestProcessor = new RequestProcessor("JSP parser :: Reinit options"); // NOI18N
-        reinitOptionsTask = requestProcessor.create(new ReinitOptions(), true);
-        requestProcessor = new RequestProcessor("JSP parser :: Reinit caches"); // NOI18N
-        reinitCachesTask = requestProcessor.create(new ReinitCaches());
+        RequestProcessor requestProcessor = new RequestProcessor("JSP parser :: Reinit caches"); // NOI18N
+        reinitCachesTask = requestProcessor.create(new ReinitOptions());
 
         requestProcessor = new RequestProcessor("JSP parser :: TLD change"); // NOI18N
         tldChangeTask = requestProcessor.create(new TldChange());
@@ -239,6 +241,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         // try null, but test with tag files
         //new JspRuntimeContext(context, options);
         createClassLoaders();
+        cpCurrent = true;
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initialized in " + (System.currentTimeMillis() - start) + " ms");
         }
@@ -410,22 +413,9 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         // useEditor not needed, both caches are the same
         // we have to clear all the caches when the class path is not current or the taglibmap is not initialized yet
 
-        // process sliding tasks
-        boolean reinitOptions = false;
-        boolean reinitCaches = false;
-        if (!reinitOptionsTask.isFinished()) {
-            reinitOptionsTask.cancel();
-            reinitOptions = true;
-            reinitCaches = true;
-        }
+        // process sliding task
         if (!reinitCachesTask.isFinished()) {
             reinitCachesTask.cancel();
-            reinitCaches = true;
-        }
-        if (reinitOptions) {
-            reinitOptions();
-        }
-        if (reinitCaches) {
             reinitCaches();
         }
         // XXX return deep copy (not needed now, only jsp editor uses it)
@@ -438,7 +428,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
      * from both expanded directory structures and jar files.
      */
     public synchronized URLClassLoader getWAClassLoader() {
-        if (!reinitOptionsTask.isFinished()) {
+        if (!cpCurrent) {
             reinitOptions();
         }
         return waClassLoader;
@@ -618,18 +608,8 @@ System.out.println("--------ENDSTACK------");        */
     public void propertyChange(PropertyChangeEvent evt) {
         // classpath has channged => invalidate cache
         LOG.fine("class path has changed");
-        reinitOptionsTask.schedule(REINIT_OPTIONS_DELAY);
-    }
-
-    /**
-     * Reinit tag library cache after the default delay.
-     * Method decides whether to run in the current thread or not.
-     */
-    void reinitCaches() {
-        assert Thread.holdsLock(this);
-        LOG.fine("Caches are going to reinitialize");
-        clearTagLibraryInfoCache();
-        reinitTagLibMappings();
+        cpCurrent = false;
+        reinitCachesTask.schedule(REINIT_OPTIONS_DELAY);
     }
 
     private void clearTagLibraryInfoCache() {
@@ -731,22 +711,20 @@ System.out.println("--------ENDSTACK------");        */
         return returnMap;
     }
 
-    final class ReinitCaches implements Runnable {
-        public void run() {
-            synchronized (WebAppParseSupport.this) {
-                LOG.fine("ReinitCaches task started");
-                reinitCaches();
-                tldChangeTask.run();
-                LOG.fine("ReinitCaches task finished");
-            }
+    void reinitCaches() {
+        assert Thread.holdsLock(this);
+        if (!cpCurrent) {
+            reinitOptions();
         }
+        clearTagLibraryInfoCache();
+        reinitTagLibMappings();
+        tldChangeTask.run();
     }
 
     final class ReinitOptions implements Runnable {
         public void run() {
             synchronized (WebAppParseSupport.this) {
-                LOG.fine("ReinitOptions task started");
-                reinitOptions();
+                LOG.fine("ReinitOptions task started (current classpath: " + cpCurrent + ")");
                 reinitCaches();
                 LOG.fine("ReinitOptions task finished");
             }
