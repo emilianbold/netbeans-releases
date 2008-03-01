@@ -408,6 +408,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.startup");
 
 	ModelSupport.instance().setModel(this);
+	nativeProjectListener = new NativeProjectListenerImpl(this);
 	
         setState(CsmModelState.ON);
         
@@ -429,6 +430,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
 	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.shutdown");
         setState(CsmModelState.CLOSING);
+
+	unregisterProjectListeners();
         
         ParserThreadManager.instance().shutdown();
 
@@ -463,6 +466,24 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 	ModelSupport.instance().setModel(null);
     }
     
+    public synchronized void registerProjectListeners(ProjectBase csmProjectImpl, Object platformProject) {
+        NativeProject nativeProject = platformProject instanceof NativeProject ? (NativeProject)platformProject : null;
+        if( nativeProject != null ) {
+            // The following code removed. It's a project responsibility to call this method only once.
+            //	// TODO: fix the problem of registering the same listener twice
+            //	// now just remove then add to prevent double instance
+            //	nativeProject.removeProjectItemsListener(projectItemListener);
+            nativeProject.addProjectItemsListener(nativeProjectListener);
+        }
+    }
+    
+    private void unregisterProjectListeners() {
+	NativeProject[] nativeProjects = ModelSupport.getOpenNativeProjects();
+	for (int i = 0; i < nativeProjects.length; i++) {
+	    nativeProjects[i].removeProjectItemsListener(nativeProjectListener);
+	}
+    }
+	    
     public void memoryLow(final LowMemoryEvent event) {
 	
 	double percentage = ((double) event.getUsedMemory() / (double) event.getMaxMemory());
@@ -651,6 +672,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     
     private Object lock = new Object();
     
+    private NativeProjectListenerImpl nativeProjectListener;
+	    
     /** maps platform project to project */
     private Map<Object, CsmUID<CsmProject>> platf2csm = new HashMap<Object, CsmUID<CsmProject>>();
 

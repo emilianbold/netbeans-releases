@@ -422,7 +422,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     }
                 }
                 ParserQueue.instance().onStartAddingProjectFiles(this);
-                ModelSupport.instance().registerProjectListeners(this, platformProject);
+		getModel().registerProjectListeners(this, platformProject);
                 NativeProject nativeProject = ModelSupport.getNativeProject(platformProject);
                 if( nativeProject != null ) {
                     try {
@@ -609,7 +609,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert preprocHandler != null;
         int fileType = isSourceFile ? getFileType(nativeFile) : FileImpl.HEADER_FILE;
         
-        FileAndHandler fileAndHandler = createOrFindFileImpl(ModelSupport.instance().getFileBuffer(file), nativeFile, fileType);
+        FileAndHandler fileAndHandler = createOrFindFileImpl(ModelSupport.getFileBuffer(file), nativeFile, fileType);
         
         if( fileAndHandler.preprocHandler == null ) {
             fileAndHandler.preprocHandler = createPreprocHandler(nativeFile);
@@ -1062,7 +1062,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 impl = getFile(file);
                 if( impl == null ) {
                     preprocHandler = (preprocHandler == null) ? getPreprocHandler(file) : preprocHandler;
-                    impl = new FileImpl(ModelSupport.instance().getFileBuffer(file), this, fileType, nativeFileItem);
+                    impl = new FileImpl(ModelSupport.getFileBuffer(file), this, fileType, nativeFileItem);
                     if (nativeFileItem != null) {
                         putNativeFileItem(impl.getUID(), nativeFileItem);
                     }
@@ -1204,10 +1204,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return res;
     }
     
-    
-    protected ModelImpl getModelImpl() {
-        return null;
-    }
     
     /**
      * Creates a dummy ClassImpl for uresolved name, stores in map
