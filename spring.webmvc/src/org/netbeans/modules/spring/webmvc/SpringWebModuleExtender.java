@@ -153,10 +153,20 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNameIsEmpty")); // NOI18N
             return false;
         }
-        if (!SpringWebFrameworkUtils.isDispatcherNameValid(dispatcherName)){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNameIsNotValid")); // NOI18N
+        
+        // TODO clean up this method;  Either just check filename or also have servlet name check
+        // conditional error message
+        String whichError = ""; // NOI18N
+        boolean isDispatcherConfigFilenameValid = SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid(dispatcherName);
+        if (!isDispatcherConfigFilenameValid){
+            whichError = NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherServletConfigFilenameIsNotValid");
+        }                
+ 
+        if (!isDispatcherConfigFilenameValid ){
+            controller.setErrorMessage(whichError); // NOI18N
             return false;
-        }
+        }   
+        
         if (dispatcherMapping == null || dispatcherMapping.trim().length() == 0) {
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherMappingPatternIsEmpty")); // NOI18N
             return false;
@@ -191,6 +201,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         dispatcherName = getComponent().getDispatcherName();
         dispatcherMapping = getComponent().getDispatcherMapping();
         includeJstl = getComponent().getIncludeJstl();
+        dispatcherName = SpringWebFrameworkUtils.escapeAttributeValues(dispatcherName); // Escape the Dispatcher name as an XML attibute value
         changeSupport.fireChange();
     }
 
