@@ -97,10 +97,19 @@ public class SyntaxTree {
                 
                 if (tagName.equals(nodeStack.get(lastMatchedTag).name())){
                     int nodesToDelete = nodeStack.size() - lastMatchedTag - 1;
+                    LinkedList<AstNode> orphans = new LinkedList<AstNode>();
                     
                     for (int i = 0; i < nodesToDelete; i ++){
                         nodeStack.getLast().markUnmatched();
+                        
+                        orphans.addAll(nodeStack.getLast().children());
+                        nodeStack.getLast().removeAllChildren();
+                        
                         nodeStack.removeLast();
+                    }
+                    
+                    for (AstNode orphan : orphans){
+                        nodeStack.getLast().addChild(orphan);
                     }
                     
                     nodeStack.getLast().addChild(closingTag);

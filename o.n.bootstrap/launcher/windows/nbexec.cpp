@@ -1048,20 +1048,25 @@ int createProcessNoVirt(const char *exePath, char *argv[], DWORD *retCode)
         MessageBox(NULL, "Failed to create process.", "Error", MB_OK | MB_ICONSTOP);
         return -1;
     }
-    HANDLE hToken;
-    if (OpenProcessToken(pi.hProcess, TOKEN_ALL_ACCESS, &hToken))
+    OSVERSIONINFO osvi = {0};
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    if (GetVersionEx(&osvi) && osvi.dwMajorVersion == 6)    // check it is Win VISTA
     {
-        DWORD tokenInfoVal = 0;
-        if (!SetTokenInformation(hToken, (TOKEN_INFORMATION_CLASS) 24, &tokenInfoVal, sizeof(DWORD)))
+        HANDLE hToken;
+        if (OpenProcessToken(pi.hProcess, TOKEN_ALL_ACCESS, &hToken))
         {
-            // invalid token information class (24) is OK, it means there is no folder virtualization on current system
-            if (GetLastError() != ERROR_INVALID_PARAMETER)
-                MessageBox(NULL, "Failed to set token information.", "Warning", MB_OK | MB_ICONWARNING);
+            DWORD tokenInfoVal = 0;
+            if (!SetTokenInformation(hToken, (TOKEN_INFORMATION_CLASS) 24, &tokenInfoVal, sizeof(DWORD)))
+            {
+                // invalid token information class (24) is OK, it means there is no folder virtualization on current system
+                if (GetLastError() != ERROR_INVALID_PARAMETER)
+                    MessageBox(NULL, "Failed to set token information.", "Warning", MB_OK | MB_ICONWARNING);
+            }
+            CloseHandle(hToken);
         }
-        CloseHandle(hToken);
+        else
+            MessageBox(NULL, "Failed to open process token.", "Warning", MB_OK | MB_ICONWARNING);
     }
-    else
-        MessageBox(NULL, "Failed to open process token.", "Warning", MB_OK | MB_ICONWARNING);
     ResumeThread(pi.hThread);
     WaitForSingleObject(pi.hProcess, INFINITE);
     if (retCode)
