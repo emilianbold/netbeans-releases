@@ -77,6 +77,9 @@ public class LineBreakpointImpl extends BreakpointImpl {
             getDebugger().setSilentStop();
         }
         if (st.equals(BPSTATE_UNVALIDATED) || st.equals(BPSTATE_REVALIDATE)) {
+            if (st.equals(BPSTATE_REVALIDATE) && getBreakpointNumber() > 0) {
+                getDebugger().getGdbProxy().break_delete(getBreakpointNumber());
+            }
             setState(BPSTATE_VALIDATION_PENDING);
             lineNumber = breakpoint.getLineNumber();
             String path = getDebugger().getBestPath(breakpoint.getPath());

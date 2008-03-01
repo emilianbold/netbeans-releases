@@ -290,7 +290,7 @@ public class GdbUtils {
             // put the value in the map and prepare for the next property
             value = info.substring(i, tend);
             if (Utilities.isWindows() && value.startsWith("/cygdrive/")) { // NOI18N
-                value = value.charAt(10) + ":" + value.substring(11); // NOI18N
+                value = value.toUpperCase().charAt(10) + ":" + value.substring(11); // NOI18N
             }
             if (key.equals("fullname") || key.equals("file")) { // NOI18N
                 value = gdbToUserEncoding(value); // possibly convert multi-byte fields

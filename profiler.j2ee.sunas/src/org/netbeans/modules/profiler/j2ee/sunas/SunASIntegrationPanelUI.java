@@ -44,9 +44,10 @@ import java.awt.Font;
 import javax.swing.ComboBoxModel;
 import javax.swing.UIManager;
 import javax.swing.event.ListDataListener;
-import org.netbeans.modules.profiler.ui.wizards.panels.components.DirectorySelector;
-import org.netbeans.modules.profiler.ui.wizards.panels.components.JavaPlatformPanelComponent;
-import org.netbeans.modules.profiler.ui.wizards.providers.TargetPlatform;
+import org.netbeans.modules.profiler.attach.panels.components.DirectorySelector;
+import org.netbeans.modules.profiler.attach.panels.components.JavaPlatformPanelComponent;
+import org.netbeans.modules.profiler.attach.providers.TargetPlatform;
+
 
 /**
  *
@@ -98,12 +99,12 @@ public class SunASIntegrationPanelUI extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        targetJavaSelector = new org.netbeans.modules.profiler.ui.wizards.panels.components.JavaPlatformPanelComponent();
+        targetJavaSelector = new org.netbeans.modules.profiler.attach.panels.components.JavaPlatformPanelComponent();
         jPanel1 = new javax.swing.JPanel();
         labelInstall = new javax.swing.JLabel();
-        directorySelector = new org.netbeans.modules.profiler.ui.wizards.panels.components.DirectorySelector();
+        directorySelector = new org.netbeans.modules.profiler.attach.panels.components.DirectorySelector();
         labelDomain = new javax.swing.JLabel();
-        domainsCombo = new org.netbeans.modules.profiler.ui.wizards.panels.components.ComboSelector();
+        domainsCombo = new org.netbeans.modules.profiler.attach.panels.components.ComboSelector();
 
         setMaximumSize(new java.awt.Dimension(800, 600));
         setMinimumSize(new java.awt.Dimension(400, 300));
@@ -204,12 +205,12 @@ public class SunASIntegrationPanelUI extends javax.swing.JPanel {
   
   
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.netbeans.modules.profiler.ui.wizards.panels.components.DirectorySelector directorySelector;
-    private org.netbeans.modules.profiler.ui.wizards.panels.components.ComboSelector domainsCombo;
+    private org.netbeans.modules.profiler.attach.panels.components.DirectorySelector directorySelector;
+    private org.netbeans.modules.profiler.attach.panels.components.ComboSelector domainsCombo;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel labelDomain;
     private javax.swing.JLabel labelInstall;
-    private org.netbeans.modules.profiler.ui.wizards.panels.components.JavaPlatformPanelComponent targetJavaSelector;
+    private org.netbeans.modules.profiler.attach.panels.components.JavaPlatformPanelComponent targetJavaSelector;
     // End of variables declaration//GEN-END:variables
   
   private void applyValues() {

@@ -387,7 +387,7 @@ public class JSFClientGenerator {
                 + "<title>New " + simpleEntityName + "</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
         newSb.append("<h1>New " + simpleEntityName + "</h1>\n");
-        newSb.append("<h:form>\n  <h:panelGrid columns=\"2\">\n");
+        newSb.append("<h:form>\n  <h:inputHidden id=\"entityCreationValidatorField\" validator=\"#{" + managedBean + ".entityCreationValidator}\"/>\n <h:panelGrid columns=\"2\">\n");
         
         TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
         JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_NEW, managedBean + "." + fieldName, newSb, true, entityClass);
@@ -1114,7 +1114,9 @@ public class JSFClientGenerator {
                                 "java.lang.reflect.InvocationTargetException",
                                 "java.lang.reflect.Method",
                                 "javax.faces.FacesException",
-                                "java.util.HashMap"
+                                "java.util.HashMap",
+                                "javax.faces.validator.ValidatorException",
+                                "javax.faces.component.UIComponent"
                     };
                     CompilationUnitTree modifiedImportCut = null;
                     for (String importFq : importFqs) {
@@ -1666,14 +1668,8 @@ public class JSFClientGenerator {
                     
                     String newEntityStringVar = "new" + simpleEntityName + "String";
                     String entityStringVar = fieldName + "String";
-                    bodyText = simpleEntityName + "Converter converter = new " + simpleEntityName + "Converter();\n" +
-                            "String " + newEntityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, new " + simpleEntityName + "());\n" +
-                            "String " + entityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
-                            "if (!" + newEntityStringVar + ".equals(" + entityStringVar + ")) {\n" +
-                            "addErrorMessage(\"Could not create " + fieldName + ". Try again.\");\n" +
-                            "return createSetup();\n" +
-                            "}\n";
-                    bodyText += "EntityManager em = getEntityManager();\n" + 
+
+                    bodyText = "EntityManager em = getEntityManager();\n" + 
                             "try {\n " + BEGIN + "\n em.persist(" + fieldName + ");\n" + updateRelatedInCreate.toString() + COMMIT + "\n" +   //NOI18N
                             "addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
                             "} catch (Exception ex) {\n try {\n ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" + ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
@@ -2126,6 +2122,25 @@ public class JSFClientGenerator {
                         "}\n" +
                         "return asString;";
                 methodInfo = new MethodInfo("getAsString", publicModifier, asStringType, null, null, null, bodyText, null, null);
+                modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);    
+                
+                modifiedClassTree = TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "entityCreationValidator", "javax.faces.validator.Validator", privateModifier, null, null);
+                
+                bodyText = "if entityCreationValidator == null) {\n" +
+                        "entityCreationValidator = new Validator() {\n" +
+                        "public void validate(FacesContext facesContext, UIComponent component, Object value) {\n" +
+                        simpleEntityName + "Converter converter = new " + simpleEntityName + "Converter();\n" +
+                        "String " + newEntityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, new " + simpleEntityName + "());\n" +
+                        "String " + entityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
+                        "if (!" + newEntityStringVar + ".equals(" + entityStringVar + ")) {\n" +
+                        "createSetup();\n" +
+                        "throw new ValidatorException(new FacesMessage(\"Could not create " + fieldName + ". Try again.\"));\n" +
+                        "}\n" +
+                        "}\n" +
+                        "};\n" +
+                        "}\n" +
+                        "return entityCreationValidator;";
+                methodInfo = new MethodInfo("getEntityCreationValidator", publicModifier, "javax.faces.validator.Validator", null, null, null, bodyText, null, null);
                 modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);    
                 
                 workingCopy.rewrite(classTree, modifiedClassTree);
@@ -2656,6 +2671,8 @@ public class JSFClientGenerator {
             idField = "new java.math.BigDecimal(" + valueVar + ")";
         } else if (idPropertyType.equals("java.lang.String") || "String".equals(idPropertyType)) {
             idField = valueVar;
+        } else if (idPropertyType.equals("java.lang.Character") || "Character".equals(idPropertyType)) {
+            idField = "new Character(" + valueVar + ".charAt(0))";
         } else if (idPropertyType.startsWith("java.lang.")) {
             String shortName = idPropertyType.substring(10);
             idField = "new " + shortName + "(" + valueVar + ")";
