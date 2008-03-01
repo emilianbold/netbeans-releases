@@ -122,7 +122,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (TraceFlags.CLOSE_AFTER_PARSE) {
             Terminator.create(this);
         }
-        needParseOrphan = ModelSupport.instance().needParseOrphan(platformProject);
+        needParseOrphan = ModelSupport.needParseOrphan(platformProject);
     }
     
     private void setStatus(Status newStatus) {
@@ -423,7 +423,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
                 ParserQueue.instance().onStartAddingProjectFiles(this);
                 ModelSupport.instance().registerProjectListeners(this, platformProject);
-                NativeProject nativeProject = ModelSupport.instance().getNativeProject(platformProject);
+                NativeProject nativeProject = ModelSupport.getNativeProject(platformProject);
                 if( nativeProject != null ) {
                     try {
                         ParserQueue.instance().suspend();
@@ -527,7 +527,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
         if(TraceFlags.DUMP_PROJECT_ON_OPEN ) {
-            ModelSupport.instance().dumpNativeProject(nativeProject);
+            ModelSupport.dumpNativeProject(nativeProject);
         }
         
         try {
@@ -584,7 +584,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 continue;
             }
             assert (nativeFileItem.getFile() != null) : "native file item must have valid File object";
-            if( TraceFlags.DEBUG ) ModelSupport.instance().trace(nativeFileItem);
+            if( TraceFlags.DEBUG ) ModelSupport.trace(nativeFileItem);
             try {
                 createIfNeed(nativeFileItem, sources, validator);
             } catch (Exception ex){
@@ -1671,7 +1671,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     
     private NativeProject findNativeProjectHolder(Set<ProjectBase> visited) {
         visited.add(this);
-        NativeProject nativeProject = ModelSupport.instance().getNativeProject(getPlatformProject());
+        NativeProject nativeProject = ModelSupport.getNativeProject(getPlatformProject());
         if (nativeProject == null) {
             // try to find dependent projects and ask them
             List<ProjectBase> deps = this.getDependentProjects();

@@ -58,8 +58,5 @@ public enum CsmModelState {
     
     /** Code model is  suspended: no new source files being processed */
     SUSPENDED,
-
-    /** Code model implementation is unloaded */
-    UNLOADED
 }
 

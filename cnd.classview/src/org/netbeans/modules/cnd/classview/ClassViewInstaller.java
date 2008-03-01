@@ -47,27 +47,27 @@ import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
+import org.netbeans.modules.cnd.api.model.CsmModelStateListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.classview.actions.ShowHideClassViewAction;
-import org.openide.modules.ModuleInstall;
 import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Alexander Simon
  */
-public class ClassViewInstaller extends ModuleInstall {
+public class ClassViewInstaller implements CsmModelStateListener {
     
-    @Override
-    public void restored() {
-        ProjectListener.getInstance().startup();
-	super.restored();
-    }
-
-    @Override
-    public void uninstalled() {
-        ProjectListener.getInstance().shutdown();
-	super.uninstalled();
+    public void modelStateChanged(CsmModelState newState, CsmModelState oldState) {
+	switch( newState ) {
+	    case ON:
+		ProjectListener.getInstance().startup();
+		break;
+	    case CLOSING:
+		ProjectListener.getInstance().shutdown();
+		break;
+	}
     }
     
     private static class ProjectListener implements CsmModelListener {

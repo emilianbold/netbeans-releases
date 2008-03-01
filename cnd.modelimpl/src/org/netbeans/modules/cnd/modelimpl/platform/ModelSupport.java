@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.modelimpl.platform;
 
 import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -64,6 +63,7 @@ import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
 
 import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -98,8 +98,6 @@ public class ModelSupport implements PropertyChangeListener {
     
     private Set<Project> openedProjects = new HashSet<Project>();
     
-    private Set sourceExtensions = new TreeSet();
-    
     private final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();
 
     private static final boolean TRACE_STARTUP = false;
@@ -109,9 +107,6 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     public static ModelSupport instance() {
-//        if( instance == null ) {
-//            instance = new ModelSupport();
-//        }
         return instance;
     }
     
@@ -133,9 +128,13 @@ public class ModelSupport implements PropertyChangeListener {
         return file.exists() ? file : null;
     }
     
-    public void init(ModelImpl model) {
-
+    public void setModel(ModelImpl model) {
         this.model = model;
+    }
+    
+    public void startup() {
+	
+        DataObject.getRegistry().addChangeListener(modifiedListener);
 	
 	if (! ModelImpl.isStandalone()) {
 	    openedProjects = new HashSet<Project>();
@@ -167,6 +166,14 @@ public class ModelSupport implements PropertyChangeListener {
 		    }
 		});
 	    }
+	}
+    }
+    
+    public void shutdown() {
+        DataObject.getRegistry().removeChangeListener(modifiedListener);
+	ModelImpl aModel = model;
+	if( aModel != null ) {
+	    aModel.shutdown();
 	}
     }
     
@@ -214,9 +221,9 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
-    public boolean needParseOrphan(final Object platformProject) {
+    public static boolean needParseOrphan(final Object platformProject) {
         if (!ModelImpl.isStandalone()) {
-            Project project = ModelImpl.findProjectByNativeProject(instance().getNativeProject(platformProject));
+            Project project = ModelImpl.findProjectByNativeProject(getNativeProject(platformProject));
             if (project != null) {
                 return new CodeAssistanceOptions(project,true).getParseOrphanEnabled().booleanValue();
             }
@@ -433,7 +440,7 @@ public class ModelSupport implements PropertyChangeListener {
         return csmProject;
     }
     
-    public void trace(NativeFileItem nativeFile) {
+    public static void trace(NativeFileItem nativeFile) {
         try {
             Diagnostic.trace("  native file item" + nativeFile.getFile().getAbsolutePath()); // NOI18N
             Diagnostic.trace("    user includes: " + nativeFile.getUserIncludePaths()); // NOI18N
@@ -456,7 +463,7 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
     
-    public void dumpNativeProject(NativeProject nativeProject) {
+    public static void dumpNativeProject(NativeProject nativeProject) {
         System.err.println("\n\n\nDumping project " + nativeProject.getProjectDisplayName());
         System.err.println("\nSystem include paths");
         for (Iterator it = nativeProject.getSystemIncludePaths().iterator(); it.hasNext();) System.err.println("    " + it.next());
@@ -495,7 +502,7 @@ public class ModelSupport implements PropertyChangeListener {
         System.err.println("End of project dump\n\n\n");
     }
     
-    public NativeProject getNativeProject(Object platformProject) {
+    public static NativeProject getNativeProject(Object platformProject) {
         NativeProject nativeProject = platformProject instanceof NativeProject ? (NativeProject)platformProject : null;
         if (platformProject instanceof Project ) {
             Project project = (Project) platformProject;
@@ -522,6 +529,10 @@ public class ModelSupport implements PropertyChangeListener {
         if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.addProject: " + toString(project)); // NOI18N
         NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
         if (nativeProject != null) {
+	    
+	    // FIXUP
+	    CsmModelAccessor.getModel(); // just to rensure it's created
+	    
             openedProjects.add(project);
             if( TraceFlags.DEBUG ) {
                 dumpProjectFiles(nativeProject);
@@ -629,14 +640,6 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
-    public void startup() {
-        DataObject.getRegistry().addChangeListener(modifiedListener);
-    }
-    
-    public void shutdown() {
-        DataObject.getRegistry().removeChangeListener(modifiedListener);
-    }
-    
     private static final class BufAndProj {
         public BufAndProj(FileBuffer buffer, ProjectBase project, NativeFileItem nativeFile) {
             assert buffer != null : "null buffer";

@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
-import org.netbeans.modules.cnd.modelimpl.Installer;
 
 import java.util.*;
 import javax.swing.SwingUtilities;
@@ -79,10 +78,10 @@ import org.openide.util.RequestProcessor;
  * CsmModel implementation
  * @author Vladimir Kvashin
  */
-public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startupable  {
+public class ModelImpl implements CsmModel, LowMemoryListener {
 
     public ModelImpl() {
-        ModelSupport.instance().init(this);
+	startup();
     }
     
     public static boolean isStandalone() {
@@ -162,19 +161,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                     String name;
                     if( id instanceof NativeProject ) {
                         name = ((NativeProject) id).getProjectDisplayName();
-                        if (false) {
-                            String root = ((NativeProject) id).getProjectRoot();
-                            for (Object o : platf2csm.keySet()){
-                                if (o instanceof NativeProject) {
-                                    if (name.equals( ((NativeProject)o).getProjectDisplayName() )){
-                                        System.err.println("ModelImpl.getProject() creates a duplicated project "+name+":");
-                                        System.err.println("   existent root:"+root);
-                                        System.err.println("   new      root:"+((NativeProject)o).getProjectRoot());
-                                        System.err.println("   Code model features can work wrong");
-                                    }
-                                }
-                            }
-                        }
                     }
                     else {
                         new IllegalStateException("CsmProject does not exist: " + id).printStackTrace(System.err); // NOI18N
@@ -418,9 +404,11 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     }
     
     public void startup() {
-        
+
         if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.startup");
 
+	ModelSupport.instance().setModel(this);
+	
         setState(CsmModelState.ON);
         
 	if( TraceFlags.CHECK_MEMORY && warningThreshold > 0 ) {
@@ -430,7 +418,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         
         ParserThreadManager.instance().startup(isStandalone());
 	RepositoryUtils.startup();
-	ModelSupport.instance().startup();
 	//if( ! isStandalone() ) {
 	//    for( NativeProject nativeProject : ModelSupport.instance().getNativeProjects() ) {
 	//    	addProject(nativeProject, nativeProject.getProjectDisplayName());
@@ -473,14 +460,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
 	
 	RepositoryUtils.shutdown();
         
-        ModelSupport.instance().shutdown();
+	ModelSupport.instance().setModel(null);
     }
     
-    public void unload() {
-        shutdown();
-        setState(CsmModelState.UNLOADED);
-    }
-
     public void memoryLow(final LowMemoryEvent event) {
 	
 	double percentage = ((double) event.getUsedMemory() / (double) event.getMaxMemory());
@@ -561,7 +543,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
 
     private void disableProject2(final ProjectBase csmProject) {
         csmProject.setDisposed();
-        Project project = findProjectByNativeProject(ModelSupport.instance().getNativeProject(csmProject.getPlatformProject()));
+        Project project = findProjectByNativeProject(ModelSupport.getNativeProject(csmProject.getPlatformProject()));
 	if( project != null ) {
 	    new CodeAssistanceOptions(project).setCodeAssistanceEnabled(Boolean.FALSE);
 	}

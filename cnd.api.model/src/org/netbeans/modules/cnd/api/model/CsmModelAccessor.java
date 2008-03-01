@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.api.model;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import org.openide.util.Lookup;
 
 /**
@@ -57,9 +56,10 @@ public final class CsmModelAccessor {
     private static CsmModel dummy;
     
    
-    private static class StateListener implements CsmModelStateListener {
+    private static CsmModelStateListener stateListener  = new CsmModelStateListener() {
         public void modelStateChanged(CsmModelState newState, CsmModelState oldState) {
-            if( newState == CsmModelState.UNLOADED ) {
+            if( newState == CsmModelState.OFF ) {
+		CsmListeners.getDefault().removeModelStateListener(stateListener);
                 model = null;
             }
         }
@@ -80,7 +80,7 @@ public final class CsmModelAccessor {
 	}
         
         public CsmModelState getState() {
-            return CsmModelState.UNLOADED;
+            return CsmModelState.OFF;
         }
 
 	public void enqueue(Runnable task) {}
@@ -93,16 +93,23 @@ public final class CsmModelAccessor {
     private CsmModelAccessor() {
     }
 
+    private static final boolean TRACE_GET_MODEL = Boolean.getBoolean("trace.get.model");
+
     /**
      * Gets CsmModel using Lookup
      */
     public static CsmModel getModel() {
+	if( TRACE_GET_MODEL ) {
+	    Thread.dumpStack();
+	}
         if( model == null ) {
             synchronized(CsmModel.class ) {
                 if( model == null ) {
                     model = (CsmModel) Lookup.getDefault().lookup(CsmModel.class);
 		    if( model == null ) {
 			return getStub();
+		    } else {
+			CsmListeners.getDefault().addModelStateListener(stateListener);
 		    }
                 }
             }
