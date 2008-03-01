@@ -55,6 +55,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.junit.Manager;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
+import org.openide.util.UserQuestionException;
 
 /**
  * utils to help work with CND editor and other core objects
@@ -99,8 +100,14 @@ public class CndCoreTestUtils {
             throw new IllegalStateException("Given file (\"" + dob.getName() + "\") does not have EditorCookie.");
         }
         
-        StyledDocument doc = cookie.openDocument();
-
+        StyledDocument doc = null;
+        try {
+            doc = cookie.openDocument();
+        } catch (UserQuestionException ex) {
+            ex.confirmed();
+            doc = cookie.openDocument();
+        }
+        
         return doc instanceof BaseDocument ? (BaseDocument)doc : null;
     }
     
