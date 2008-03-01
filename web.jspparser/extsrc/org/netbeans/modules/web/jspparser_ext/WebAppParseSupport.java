@@ -90,6 +90,7 @@ import org.apache.jasper.compiler.JspRuntimeContext;
 import org.apache.jasper.compiler.TldLocationsCache;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.web.jspparser.ContextUtil;
+import org.netbeans.modules.web.jspparser.JspParserImpl;
 import org.netbeans.modules.web.jspparser.ParserServletContext;
 import org.netbeans.modules.web.jspparser.WebAppParseProxy;
 import org.openide.filesystems.FileChangeAdapter;
@@ -131,6 +132,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     private static final JspParserAPI.JspOpenInfo DEFAULT_JSP_OPEN_INFO = new JspParserAPI.JspOpenInfo(false, "8859_1"); // NOI18N
     private static final Pattern RE_PATTERN_COMMONS_LOGGING = Pattern.compile(".*commons-logging.*\\.jar.*"); // NOI18N
     
+    final JspParserImpl jspParser;
     // #85817
     private final Reference<WebModule> wm;
     final FileObject wmRoot;
@@ -152,14 +154,17 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     final Map<String, String[]> mappings = new HashMap<String, String[]>();
     
     // request processor for cleaning mappings cache and reiniting options
-    private static final int REINIT_OPTIONS_DELAY = 1000; // ms
-    private static final int REINIT_CACHES_DELAY = 500; // ms
+    private static final int REINIT_OPTIONS_DELAY = 2000; // ms
+    private static final int REINIT_CACHES_DELAY = 1000; // ms
     private static final int INITIAL_CACHES_DELAY = 2000; // ms
     private final RequestProcessor.Task reinitOptionsTask;
     private final RequestProcessor.Task reinitCachesTask;
+    
+    private final RequestProcessor.Task tldChangeTask;
 
     /** Creates a new instance of WebAppParseSupport */
-    public WebAppParseSupport(WebModule wm) {
+    public WebAppParseSupport(JspParserImpl jspParser, WebModule wm) {
+        this.jspParser = jspParser;
         this.wm = new WeakReference<WebModule>(wm);
         wmRoot = wm.getDocumentBase();
         webInf = wm.getWebInf();
@@ -183,6 +188,9 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         reinitOptionsTask = requestProcessor.create(new ReinitOptions(), true);
         requestProcessor = new RequestProcessor("JSP parser :: Reinit caches"); // NOI18N
         reinitCachesTask = requestProcessor.create(new ReinitCaches());
+
+        requestProcessor = new RequestProcessor("JSP parser :: TLD change"); // NOI18N
+        tldChangeTask = requestProcessor.create(new TldChange());
 
         // init tag library cache
         reinitCachesTask.schedule(INITIAL_CACHES_DELAY);
@@ -212,12 +220,15 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     }
 
     private synchronized void initOptions(boolean firstTime) {
+        long start = 0;
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initialized for WM " + FileUtil.toFile(wmRoot));
+            start = System.currentTimeMillis();
+            LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initializing for WM " + FileUtil.toFile(wmRoot));
         }
         WebModule webModule = wm.get();
         if (webModule == null) {
             // already gced
+            LOG.fine("WebModule already GCed");
             return;
         }
         editorContext = new ParserServletContext(wmRoot, this, true);
@@ -228,6 +239,9 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         // try null, but test with tag files
         //new JspRuntimeContext(context, options);
         createClassLoaders();
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initialized in " + (System.currentTimeMillis() - start) + " ms");
+        }
     }
     
     private boolean isUnexpectedLibrary(URL url) {
@@ -722,6 +736,7 @@ System.out.println("--------ENDSTACK------");        */
             synchronized (WebAppParseSupport.this) {
                 LOG.fine("ReinitCaches task started");
                 reinitCaches();
+                tldChangeTask.run();
                 LOG.fine("ReinitCaches task finished");
             }
         }
@@ -735,6 +750,17 @@ System.out.println("--------ENDSTACK------");        */
                 reinitCaches();
                 LOG.fine("ReinitOptions task finished");
             }
+        }
+    }
+
+    final class TldChange implements Runnable {
+        public void run() {
+            WebModule webModule = wm.get();
+            if (webModule == null) {
+                return;
+            }
+            LOG.fine("TLD change fired");
+            jspParser.fireChange(webModule);
         }
     }
 
