@@ -487,6 +487,9 @@ public class MakeActionProvider implements ActionProvider {
                             true);
                     actionEvents.add(projectActionEvent);
                 }
+                else {
+                    return; // Stop here
+                }
                 validated = true;
             } else if (targetName.equals("clean")) { // NOI18N
 //                if (conf.isCompileConfiguration() && !validateProject(conf)) {
@@ -512,6 +515,9 @@ public class MakeActionProvider implements ActionProvider {
                             profile,
                             true);
                     actionEvents.add(projectActionEvent);
+                }
+                else {
+                    return; // Stop here
                 }
                 validated = true;
             } else if (targetName.equals("compile-single")) { // NOI18N
@@ -584,6 +590,9 @@ public class MakeActionProvider implements ActionProvider {
                                     true);
                             actionEvents.add(projectActionEvent);
                     }
+                }
+                else {
+                    return; // Stop here
                 }
                 validated = true;
             } else if (targetName.equals("custom-action")) { // NOI18N
