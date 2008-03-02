@@ -4,6 +4,11 @@ DIRNAME=`dirname $0`
 cd ${DIRNAME}
 source init.sh
 
+#Clean old tests results
+if [ -n $WORKSPACE ]; then
+    rm -rf $WORKSPACE/results
+fi
+
 cd  $NB_ALL
 
 ###################################################################
@@ -122,19 +127,19 @@ if [ $ERROR_CODE != 0 ]; then
     TEST_CODE=1;
 fi
 # Mobility UI validation tests
-for i in 1 2 3; do
-    ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-mobility -Dxtest.instance.name="Mobility tests" -Dxtest.no.cleanresults=true -Dwtk.dir=/hudson runtests
-    ERROR_CODE=$?
-    if [ ERROR_CODE = 0 ]; then
-        break;
-    fi
-done
-ERROR_CODE=$?
-
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Mobility UI validation failed"
-    TEST_CODE=1;
-fi
+#for i in 1 2 3; do
+#    ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-mobility -Dxtest.instance.name="Mobility tests" -Dxtest.no.cleanresults=true -Dwtk.dir=/hudson runtests
+#    ERROR_CODE=$?
+#    if [ ERROR_CODE = 0 ]; then
+#        break;
+#    fi
+#done
+#ERROR_CODE=$?
+#
+#if [ $ERROR_CODE != 0 ]; then
+#    echo "ERROR: $ERROR_CODE - Mobility UI validation failed"
+#    TEST_CODE=1;
+#fi
 # UML UI validation tests
 for i in 1 2 3; do
     ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-uml -Dxtest.instance.name="UML tests" -Dxtest.no.cleanresults=true runtests
@@ -162,6 +167,10 @@ ERROR_CODE=$?
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Ruby UI validation failed"
     TEST_CODE=1;
+fi
+
+if [ -n $WORKSPACE ]; then
+    cp -r $NB_ALL/xtest/instance/results $WORKSPACE
 fi
 
 echo TESTS STARTED: $TESTS_STARTED

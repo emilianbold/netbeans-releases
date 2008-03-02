@@ -43,12 +43,10 @@ package org.netbeans.modules.options.keymap;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -57,7 +55,7 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Jan Jancura
  */
 public final class KeymapPanelController extends OptionsPanelController {
-    private Lookup lookup = new ThisLookup();
+
 
     public void update () {
         getKeymapPanel ().update ();
@@ -84,7 +82,7 @@ public final class KeymapPanelController extends OptionsPanelController {
     }
     
     public Lookup getLookup () {
-        return lookup;
+        return Lookups.singleton (getKeymapPanel ().getModel ());
     }
     
     public JComponent getComponent (Lookup masterLookup) {
@@ -107,20 +105,4 @@ public final class KeymapPanelController extends OptionsPanelController {
             keymapPanel = new KeymapPanel ();
         return keymapPanel;
     }
-    
-    private class ThisLookup extends ProxyLookup {
-        private final Runnable init = new Runnable() {
-            public void run() {
-                Lookup lkp = Lookups.singleton(getKeymapPanel().getModel());
-                setLookups(lkp);
-            }
-        };        
-        public ThisLookup() {
-            if (SwingUtilities.isEventDispatchThread()) {
-                init.run();
-            } else {
-                SwingUtilities.invokeLater(init);            
-            }
-        }        
-    }        
 }

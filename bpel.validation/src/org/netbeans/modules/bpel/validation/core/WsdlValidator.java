@@ -70,7 +70,7 @@ public abstract class WsdlValidator extends CoreValidator {
 
   public abstract WSDLVisitor getVisitor();
 
-  public ValidationResult validate(Model model, Validation validation, ValidationType type) {
+  public synchronized ValidationResult validate(Model model, Validation validation, ValidationType type) {
     setParam(validation, type);
 
     if ( !(model instanceof WSDLModel)) {

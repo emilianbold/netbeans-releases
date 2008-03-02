@@ -101,11 +101,11 @@ public class WatchPanel {
         EditorKit kit = CloneableEditorSupport.getEditorKit("text/x-java");
         editorPane.setEditorKit(kit);
         DebuggerEngine en = DebuggerManager.getDebuggerManager ().getCurrentEngine();
-        JPDADebugger d = (JPDADebugger) en.lookupFirst(null, JPDADebugger.class);
+        JPDADebugger d = en.lookupFirst(null, JPDADebugger.class);
         CallStackFrame csf = d.getCurrentCallStackFrame();
         if (csf != null) {
             String language = DebuggerManager.getDebuggerManager ().getCurrentSession().getCurrentLanguage();
-            SourcePath sp = (SourcePath) en.lookupFirst(null, SourcePath.class);
+            SourcePath sp = en.lookupFirst(null, SourcePath.class);
             String url = sp.getURL(csf, language);
             int line = csf.getLineNumber(language);
             setupContext(editorPane, url, line);

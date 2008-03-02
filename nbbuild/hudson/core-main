@@ -30,9 +30,9 @@ if [ "$action" = "build" ]; then
 #       hg ci -m 'Automated merge' || exit 8
 #    fi
 
-    ant -f nbbuild/build.xml build || exit 2
-    ant -f nbbuild/build.xml commit-validation # || exit 3
-    ant -f nbbuild/build.xml commit-validation-junit-format # || exit 3
+    ant build || exit 2
+    ant commit-validation # || exit 3
+    ant commit-validation-junit-format # || exit 3
     testmodule openide.util  || exit 4
     testmodule openide.modules || exit 4
     testmodule openide.filesystems || exit 4

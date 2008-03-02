@@ -58,7 +58,7 @@ public class DebugProjectActionProvider extends ActionsProviderSupport {
     
     @Override
     public void postAction(Object action, Runnable actionPerformedNotifier) {
-        final Map params = (Map)mLookupProvider.lookupFirst(null, Map.class);
+        final Map params = mLookupProvider.lookupFirst(null, Map.class);
         
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
