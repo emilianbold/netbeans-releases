@@ -50,6 +50,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.DirSet;
 import org.apache.tools.ant.types.PatternSet;
+import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -142,7 +143,7 @@ public class DeleteUnreferencedClusterFiles extends Task {
                 String path = prefix + n;
                 if ( patterns != null )
                     for( String p: patterns.getExcludePatterns(getProject()) ) 
-                        if (p.equals(path)) return;
+                        if (SelectorUtils.matchPath(p, path)) return;
                     
                 if (!files.contains(path)) {
                     extraFiles.append("\n" + cluster + ": untracked file " + path);
