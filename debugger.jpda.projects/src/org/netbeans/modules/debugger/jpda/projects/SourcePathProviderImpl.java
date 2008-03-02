@@ -116,8 +116,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         pcs = new PropertyChangeSupport (this);
         //this.session = (Session) contextProvider.lookupFirst 
         //    (null, Session.class);
-        Map properties = (Map) contextProvider.lookupFirst 
-            (null, Map.class);
+        Map properties = contextProvider.lookupFirst(null, Map.class);
         
         // 2) get default allSourceRoots of source roots used for stepping
         if (properties != null) {
