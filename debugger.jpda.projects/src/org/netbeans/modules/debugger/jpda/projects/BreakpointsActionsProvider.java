@@ -55,7 +55,6 @@ import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -197,7 +196,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
     private static FileObject getFileObject(String classRelPath) {
         DebuggerEngine engine = DebuggerManager.getDebuggerManager ().getCurrentEngine();
         if (engine != null) {
-            SourcePathProvider sp = (SourcePathProvider) engine.lookupFirst(null, EditorContext.class);
+            SourcePathProvider sp = engine.lookupFirst(null, SourcePathProvider.class);
             if (sp != null) {
                 String url = sp.getURL(classRelPath, false);
                 if (url == null) {

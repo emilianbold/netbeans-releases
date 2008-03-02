@@ -61,7 +61,7 @@
         <group name="Yahoo">
         </group>
 
-        <authentication profile="Templates/WebServices/profile.properties">
+        <authentication profile="SaaSServices/Yahoo/profile.properties">
             <api-key id="dev_id"/>
         </authentication>
 

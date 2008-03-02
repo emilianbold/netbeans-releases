@@ -41,7 +41,7 @@ public class BpelDebuggerEngineProvider extends DebuggerEngineProvider {
      * @param contextProvider provides context for the BPEL debugger engine
      */
     public BpelDebuggerEngineProvider(ContextProvider contextProvider) {
-        mySession = (Session) contextProvider.lookupFirst(null, Session.class);
+        mySession = contextProvider.lookupFirst(null, Session.class);
     }
     
     public String[] getLanguages() {

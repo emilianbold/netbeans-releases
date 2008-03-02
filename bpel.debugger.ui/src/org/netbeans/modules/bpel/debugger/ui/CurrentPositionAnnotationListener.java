@@ -117,8 +117,7 @@ public class CurrentPositionAnnotationListener extends DebuggerManagerAdapter {
             return null;
         }
         
-        return (BpelDebugger) currentEngine.lookupFirst(
-                null, BpelDebugger.class);
+        return currentEngine.lookupFirst(null, BpelDebugger.class);
     }
     
     private static SourcePath getCurrentSourcePath() {
@@ -129,7 +128,7 @@ public class CurrentPositionAnnotationListener extends DebuggerManagerAdapter {
             return null;
         }
         
-        return (SourcePath)currentEngine.lookupFirst(null, SourcePath.class);
+        return currentEngine.lookupFirst(null, SourcePath.class);
     }
     
     private void updateCurrentPosition() {
