@@ -237,6 +237,19 @@ public final class DebuggerManager implements ContextProvider {
         return lookup.lookupFirst (folder, service);
     }
     
+    /**
+     * Join two lookups together.
+     * The result will merge the lookups.
+     * The result of its {@link #lookup} method will additionally implement {@link Customizer}.
+     * @param cp1 first lookup
+     * @param cp2 second lookup
+     * @return a merger of the two
+     * @since org.netbeans.api.debugger/1 1.13
+     */
+    public static ContextProvider join(ContextProvider cp1, ContextProvider cp2) {
+        return new Lookup.Compound(cp1, cp2);
+    }
+    
     
     // session / engine management .............................................
     

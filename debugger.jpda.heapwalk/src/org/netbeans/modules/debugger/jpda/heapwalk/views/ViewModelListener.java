@@ -43,16 +43,14 @@ package org.netbeans.modules.debugger.jpda.heapwalk.views;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import javax.swing.JComponent;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -121,72 +119,24 @@ class ViewModelListener extends DebuggerManagerAdapter {
         updateModel ();
     }
 
-    // XXX copy-paste programming!
-    private <T> List<? extends T> joinLookups(DebuggerEngine e, DebuggerManager dm, Class<T> service) {
-        List<? extends T> es = e.lookup (viewType, service);
-        List<? extends T> ms = dm.lookup(viewType, service);
-        List<T> joined = new ArrayList<T>(es);
-        for (T t : ms) {
-            if (!es.contains(t)) {
-                joined.add(t);
-            }
-        }
-        return joined;
-    }
-    
     private synchronized void updateModel () {
         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
         DebuggerEngine e = dm.getCurrentEngine ();
         
-        List treeModels;
-        List treeModelFilters;
-        List treeExpansionModels;
-        List nodeModels;
-        List nodeModelFilters;
-        List tableModels;
-        List tableModelFilters;
-        List nodeActionsProviders;
-        List nodeActionsProviderFilters;
-        List columnModels;
-        List mm;
-        if (e != null) {
-            treeModels =            joinLookups(e, dm, TreeModel.class);
-            treeModelFilters =      joinLookups(e, dm, TreeModelFilter.class);
-            treeExpansionModels =   joinLookups(e, dm, TreeExpansionModel.class);
-            nodeModels =            joinLookups(e, dm, NodeModel.class);
-            nodeModelFilters =      joinLookups(e, dm, NodeModelFilter.class);
-            tableModels =           joinLookups(e, dm, TableModel.class);
-            tableModelFilters =     joinLookups(e, dm, TableModelFilter.class);
-            nodeActionsProviders =  joinLookups(e, dm, NodeActionsProvider.class);
-            nodeActionsProviderFilters = joinLookups(e, dm, NodeActionsProviderFilter.class);
-            columnModels =          joinLookups(e, dm, ColumnModel.class);
-            mm =                    joinLookups(e, dm, Model.class);
-        } else {
-            treeModels =            dm.lookup (viewType, TreeModel.class);
-            treeModelFilters =      dm.lookup (viewType, TreeModelFilter.class);
-            treeExpansionModels =   dm.lookup (viewType, TreeExpansionModel.class);
-            nodeModels =            dm.lookup (viewType, NodeModel.class);
-            nodeModelFilters =      dm.lookup (viewType, NodeModelFilter.class);
-            tableModels =           dm.lookup (viewType, TableModel.class);
-            tableModelFilters =     dm.lookup (viewType, TableModelFilter.class);
-            nodeActionsProviders =  dm.lookup (viewType, NodeActionsProvider.class);
-            nodeActionsProviderFilters = dm.lookup (viewType, NodeActionsProviderFilter.class);
-            columnModels =          dm.lookup (viewType, ColumnModel.class);
-            mm =                    dm.lookup (viewType, Model.class);
-        }
+        ContextProvider cp = e != null ? DebuggerManager.join(e, dm) : dm;
         
         models.clear();
-        models.add(treeModels);
-        models.add(treeModelFilters);
-        models.add(treeExpansionModels);
-        models.add(nodeModels);
-        models.add(nodeModelFilters);
-        models.add(tableModels);
-        models.add(tableModelFilters);
-        models.add(nodeActionsProviders);
-        models.add(nodeActionsProviderFilters);
-        models.add(columnModels);
-        models.add(mm);
+        models.add(cp.lookup(viewType, TreeModel.class));
+        models.add(cp.lookup(viewType, TreeModelFilter.class));
+        models.add(cp.lookup(viewType, TreeExpansionModel.class));
+        models.add(cp.lookup(viewType, NodeModel.class));
+        models.add(cp.lookup(viewType, NodeModelFilter.class));
+        models.add(cp.lookup(viewType, TableModel.class));
+        models.add(cp.lookup(viewType, TableModelFilter.class));
+        models.add(cp.lookup(viewType, NodeActionsProvider.class));
+        models.add(cp.lookup(viewType, NodeActionsProviderFilter.class));
+        models.add(cp.lookup(viewType, ColumnModel.class));
+        models.add(cp.lookup(viewType, Model.class));
         
         Models.setModelsToView (
             view, 

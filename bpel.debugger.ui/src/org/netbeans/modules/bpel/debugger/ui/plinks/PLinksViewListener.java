@@ -26,6 +26,7 @@ import javax.swing.JComponent;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.Models;
@@ -78,74 +79,34 @@ public class PLinksViewListener extends DebuggerManagerAdapter {
         final DebuggerManager manager = DebuggerManager.getDebuggerManager();
         final DebuggerEngine engine = manager.getCurrentEngine();
         final List<List> models = new ArrayList<List>();
+        ContextProvider cp = engine != null ? DebuggerManager.join(engine, manager) : manager;
         
-        if (engine == null) {
-            models.add(manager.lookup(
-                    myViewType, TreeModel.class));
-            models.add(manager.lookup(
-                    myViewType, TreeModelFilter.class));
-            models.add(manager.lookup(
-                    myViewType, TreeExpansionModel.class));
-            models.add(manager.lookup(
-                    myViewType, NodeModel.class));
-            models.add(manager.lookup(
-                    myViewType, NodeModelFilter.class));
-            models.add(manager.lookup(
-                    myViewType, TableModel.class));
-            models.add(manager.lookup(
-                    myViewType, TableModelFilter.class));
-            models.add(manager.lookup(
-                    myViewType, NodeActionsProvider.class));
-            models.add(manager.lookup(
-                    myViewType, NodeActionsProviderFilter.class));
-            models.add(manager.lookup(
-                    myViewType, ColumnModel.class));
-            models.add(manager.lookup(
-                    myViewType, Model.class));
-        }
-        else {
-            models.add(lookup(
-                    engine, manager, TreeModel.class));
-            models.add(lookup(
-                    engine, manager, TreeModelFilter.class));
-            models.add(lookup(
-                    engine, manager, TreeExpansionModel.class));
-            models.add(lookup(
-                    engine, manager, NodeModel.class));
-            models.add(lookup(
-                    engine, manager, NodeModelFilter.class));
-            models.add(lookup(
-                    engine, manager, TableModel.class));
-            models.add(lookup(
-                    engine, manager, TableModelFilter.class));
-            models.add(lookup(
-                    engine, manager, NodeActionsProvider.class));
-            models.add(lookup(
-                    engine, manager, NodeActionsProviderFilter.class));
-            models.add(lookup(
-                    engine, manager, ColumnModel.class));
-            models.add(lookup(
-                    engine, manager, Model.class));
-        }
+        models.add(cp.lookup(
+                myViewType, TreeModel.class));
+        models.add(cp.lookup(
+                myViewType, TreeModelFilter.class));
+        models.add(cp.lookup(
+                myViewType, TreeExpansionModel.class));
+        models.add(cp.lookup(
+                myViewType, NodeModel.class));
+        models.add(cp.lookup(
+                myViewType, NodeModelFilter.class));
+        models.add(cp.lookup(
+                myViewType, TableModel.class));
+        models.add(cp.lookup(
+                myViewType, TableModelFilter.class));
+        models.add(cp.lookup(
+                myViewType, NodeActionsProvider.class));
+        models.add(cp.lookup(
+                myViewType, NodeActionsProviderFilter.class));
+        models.add(cp.lookup(
+                myViewType, ColumnModel.class));
+        models.add(cp.lookup(
+                myViewType, Model.class));
         
         Models.setModelsToView(myView, Models.createCompoundModel(models));
     }
 
-    // XXX copy-paste programming!
-    private <T> List<? extends T> lookup(
-            final DebuggerEngine engine,
-            final DebuggerManager manager,
-            final Class<T> service) {
-        final List<? extends T> engineService = engine.lookup(myViewType, service);
-        final List<? extends T> managerService = manager.lookup(myViewType, service);
-        final List<T> joined = new ArrayList<T>();
-        
-        add(joined, engineService);
-        add(joined, managerService);
-        
-        return joined;
-    }
-    
     private <T> void add(
             final List<T> source, 
             final List<? extends T> collection) {

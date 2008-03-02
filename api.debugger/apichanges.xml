@@ -74,7 +74,7 @@ made subject to such option by the copyright holder.
 <changes>
     <change id="generification">
         <api name="DebuggerCoreAPI"/>
-        <summary>Use of some generic types in API; <code>ContextProvider</code> implemented more broadly</summary>
+        <summary>Use of some generic types in API; <code>ContextProvider</code> implemented more broadly; <code>DebuggerManager.join</code></summary>
         <version major="1" minor="13"/>
         <date day="1" month="3" year="2008"/>
         <author login="jglick"/>
@@ -98,6 +98,9 @@ made subject to such option by the copyright holder.
                 <li><code>DebuggerManager</code></li>
                 <li><code>Session</code></li>
             </ul>
+            <p>
+                The new method <code>DebuggerManager.join</code> can be used to merge lookup lists easily.
+            </p>
         </description>
         <class package="org.netbeans.api.debugger" name="DebuggerEngine"/>
         <class package="org.netbeans.api.debugger" name="DebuggerInfo"/>

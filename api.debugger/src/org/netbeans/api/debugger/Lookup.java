@@ -127,10 +127,10 @@ abstract class Lookup implements ContextProvider {
     }
     
     static class Compound extends Lookup {
-        private Lookup l1;
-        private Lookup l2;
+        private ContextProvider l1;
+        private ContextProvider l2;
         
-        Compound (Lookup l1, Lookup l2) {
+        Compound(ContextProvider l1, ContextProvider l2) {
             this.l1 = l1;
             this.l2 = l2;
             setContext (this);
@@ -138,10 +138,6 @@ abstract class Lookup implements ContextProvider {
         
         public <T> List<? extends T> lookup(String folder, Class<T> service) {
             return new CompoundLookupList<T>(folder, service);
-            /*List l = new LookupList(null);
-            l.addAll (l1.lookup (folder, service));
-            l.addAll (l2.lookup (folder, service));
-            return l;*/
         }
         
         void setContext (Lookup context) {
