@@ -41,15 +41,12 @@
 
 package org.netbeans.modules.spring.webmvc.utils;
 
-import java.io.CharConversionException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.openide.util.NbBundle;
-import org.openide.xml.XMLUtil;
 
 /**
  *
@@ -59,13 +56,17 @@ public class SpringWebFrameworkUtils {
     private static final Logger LOGGER = Logger.getLogger(SpringWebFrameworkUtils.class.getName());
     private static final String DISPATCHER_MAPPING = ".htm"; // NOI18N
     
-    // Invalid characters for servlet-name (must be escaped);  some workarounds since XMLUtils is not escaping the >, " characters consistently
-    private static final String AMPERSAND               = "&" ;  
+    // Invalid characters for servlet-name (must be escaped);  
+    private static final String AMPERSAND               = "&" ;  // invalid when not escaped, but is escaped in web.xml - written as &amp; which is valid
     private static final String LEFT_ANGLE_BRACKET      = "<";
-    private static final String RIGHT_ANGLE_BRACKET     = ">" ;        
-    private static final String LEFT_ANGLE_BRACKET_ESC  = "&lt;";
-    private static final String RIGHT_ANGLE_BRACKET_ESC = "&gt;" ;  
-    private static final String DOUBLE_QUOTE_ESC        = "&quot;";
+    private static final String RIGHT_ANGLE_BRACKET     = ">" ;  
+    
+    // Valid characters, but no need to validate: 
+       // &lt;
+       // &gt;
+       // &quot;
+       // &amp;
+       // &apos;
     
     // Invalid filename characters
     private static final String ASTERISK       = "*";
@@ -76,20 +77,11 @@ public class SpringWebFrameworkUtils {
     private static final String PERCENT_SIGN   = "%";
     private static final String PIPE_CHAR      = "|";
     private static final String QUESTION_MARK  = "?";
-    private static final List<String> INVALID_DISPATCHER_CONFIG_FILENAME_CHARS = Arrays.asList(BACKSLASH, FORWARD_SLASH, DOUBLE_QUOTE, QUESTION_MARK, PERCENT_SIGN, ASTERISK, COLON, PIPE_CHAR, LEFT_ANGLE_BRACKET, RIGHT_ANGLE_BRACKET, LEFT_ANGLE_BRACKET_ESC, RIGHT_ANGLE_BRACKET_ESC, DOUBLE_QUOTE_ESC);
-     
-    public static String escapeAttributeValues(String name) {
-        try {
-            return XMLUtil.toAttributeValue(name);
-        } catch (CharConversionException ex) {
-            LOGGER.log(Level.WARNING, NbBundle.getMessage(SpringWebFrameworkUtils.class, "LOG_ServletErrorEncodingAttributes") + ex);
-        }        
-        return name;
-    }
+    private static final List<String> INVALID_DISPATCHER_CONFIG_FILENAME_CHARS = Arrays.asList(BACKSLASH, FORWARD_SLASH, DOUBLE_QUOTE, QUESTION_MARK, PERCENT_SIGN, ASTERISK, COLON, PIPE_CHAR, LEFT_ANGLE_BRACKET, RIGHT_ANGLE_BRACKET);
     
     public static boolean isDispatcherServletConfigFilenameValid(String name) {
-        boolean isNameValid = true;
-              
+        boolean isNameValid = true;              
+        
         for (Iterator i = INVALID_DISPATCHER_CONFIG_FILENAME_CHARS.iterator(); i.hasNext();) {
             if (name.contains((String)i.next())) {
                 isNameValid = false;

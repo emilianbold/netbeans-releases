@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -38,41 +38,59 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.saas.codegen.java;
-
-import java.io.IOException;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
-import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 /**
- * Code generator factory for REST services wrapping WADL-based web service.
+ * PropertiesTable.java
  *
- * @author nam
  */
-public class CustomCodeGeneratorFactory {
+package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
 
-    public static CustomCodeGenerator create(JTextComponent targetComponent, 
-            FileObject targetFO, CustomSaasMethod method) throws IOException {
-        CustomCodeGenerator codegen = null;
-        try {
-            DataObject d = DataObject.find(targetFO);
-            if(Util.isRestJavaFile(d)) {
-                codegen = new CustomResourceClassCodeGenerator(
-                                targetComponent, targetFO, method);
-//            } else if(Util.isServlet(d)) {
-//                codegen = new CustomServletCodeGenerator(
-//                                targetComponent, targetFO, method);
-//            } else {
-//                codegen = new CustomJavaClientCodeGenerator(
-//                                targetComponent, targetFO, method);
-            }
-        } catch (DataObjectNotFoundException ex) {
-            throw new IOException(ex.getMessage());
-        }
-        return codegen;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.TableCellRenderer;     
+
+
+class PropertiesTable extends JTable {
+
+    private final static int margin = 6; 
+
+    private boolean fontChanged = true;
+    private int newHeight = 23; 
+    
+    private static final long serialVersionUID = -346761221423978739L;
+    
+    PropertiesTable() { 
+	 super();
+         initComponent();
     }
+
+    void initComponent(){
+        this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    }
+    
+    @Override
+    public TableCellRenderer getCellRenderer(int row, int col) {
+	return super.getCellRenderer(row, col); 
+    }
+    
+    @Override
+    public void paint(Graphics g) {
+
+	if (fontChanged) {
+	    fontChanged = false; 
+
+	    int height = 0; 
+	    FontMetrics fm = g.getFontMetrics(getFont());
+	    height = fm.getHeight() + margin;
+	    if(height > newHeight) newHeight = height; 
+	    this.setRowHeight(newHeight);
+	    return;
+	}
+
+	super.paint(g);
+    }
+    
 }
