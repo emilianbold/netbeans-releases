@@ -124,9 +124,9 @@ public class AddressBreakpointPanel extends JPanel implements Controller {
         pSettings.setMinimumSize(new java.awt.Dimension(249, 80));
         pSettings.setLayout(new java.awt.GridBagLayout());
 
-        lAddress.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_Function_Breakpoint_Function_Name").charAt(0));
+        lAddress.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_AddressBreakpoint").charAt(0));
         lAddress.setLabelFor(tfAddress);
-        lAddress.setText(bundle.getString("L_Function_Breakpoint_Function_Name")); // NOI18N
+        lAddress.setText(bundle.getString("L_Address_Breakpoint")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;

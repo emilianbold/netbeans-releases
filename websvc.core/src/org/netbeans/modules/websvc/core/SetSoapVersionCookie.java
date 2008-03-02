@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,40 +31,21 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.websvc.core;
 
-package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
-
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.LazyActionsManagerListener;
-import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
-
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 
 /**
- * Listener on all breakpoints and prints text specified in the breakpoint when a it hits.
  *
- * @see GdbBreakpoint#setPrintText(java.lang.String)
- * @author Gordon Prieur (based on Maros Sandor's JPDA implementation)
+ * @author rico
  */
-public class BreakpointsUpdater extends LazyActionsManagerListener {
-    
-    private GdbDebugger debugger;
-    
-    public BreakpointsUpdater(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
-        EditorContextBridge.createTimeStamp(debugger);
-        BreakpointAnnotationListener bal = (BreakpointAnnotationListener) 
-            DebuggerManager.getDebuggerManager().lookupFirst(null, BreakpointAnnotationListener.class);
-        bal.updateBreakpoints();
-    }
-    
-    protected void destroy () {
-        EditorContextBridge.disposeTimeStamp(debugger);
-    }
-    
-    public String[] getProperties() {
-        return new String[0];
-    }
+public interface SetSoapVersionCookie extends Node.Cookie {
+
+    public void setSoapVersion(FileObject implBeanFo, boolean useSoap12);
 }

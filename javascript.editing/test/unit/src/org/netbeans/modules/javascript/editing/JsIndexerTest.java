@@ -121,55 +121,57 @@ public class JsIndexerTest extends JsTestBase {
         nonEmptyDocuments.add(sb.toString());
         
 
-        for (IndexDocument d : documents) {
-            IndexDocumentImpl doc = (IndexDocumentImpl)d;
-        
-            sb = new StringBuilder();
-            sb.append("Indexed:");
-            sb.append("\n");
-            List<String> strings = new ArrayList<String>();
+        if (documents != null) {
+            for (IndexDocument d : documents) {
+                IndexDocumentImpl doc = (IndexDocumentImpl)d;
 
-            List<String> keys = doc.indexedKeys;
-            List<String> values = doc.indexedValues;
-            for (int i = 0, n = keys.size(); i < n; i++) {
-                String key = keys.get(i);
-                String value = values.get(i);
-                strings.add(key + " : " + prettyPrintValue(key, value));
-            }
-            Collections.sort(strings);
-            for (String string : strings) {
-                sb.append("  ");
-                sb.append(string);
+                sb = new StringBuilder();
+                sb.append("Indexed:");
                 sb.append("\n");
-            }
+                List<String> strings = new ArrayList<String>();
 
-            sb.append("\n");
-            sb.append("Not Indexed:");
-            sb.append("\n");
-            strings = new ArrayList<String>();
-            keys = doc.unindexedKeys;
-            values = doc.unindexedValues;
-            for (int i = 0, n = keys.size(); i < n; i++) {
-                String key = keys.get(i);
-                String value = prettyPrintValue(key, values.get(i));
-                if (value.indexOf(',') != -1) {
-                    value = sortCommaList(value);
+                List<String> keys = doc.indexedKeys;
+                List<String> values = doc.indexedValues;
+                for (int i = 0, n = keys.size(); i < n; i++) {
+                    String key = keys.get(i);
+                    String value = values.get(i);
+                    strings.add(key + " : " + prettyPrintValue(key, value));
                 }
-                strings.add(key + " : " + value);
-            }
+                Collections.sort(strings);
+                for (String string : strings) {
+                    sb.append("  ");
+                    sb.append(string);
+                    sb.append("\n");
+                }
 
-            Collections.sort(strings);
-            for (String string : strings) {
-                sb.append("  ");
-                sb.append(string);
                 sb.append("\n");
-            }
+                sb.append("Not Indexed:");
+                sb.append("\n");
+                strings = new ArrayList<String>();
+                keys = doc.unindexedKeys;
+                values = doc.unindexedValues;
+                for (int i = 0, n = keys.size(); i < n; i++) {
+                    String key = keys.get(i);
+                    String value = prettyPrintValue(key, values.get(i));
+                    if (value.indexOf(',') != -1) {
+                        value = sortCommaList(value);
+                    }
+                    strings.add(key + " : " + value);
+                }
 
-            String s = sb.toString();
-            if (doc.indexedKeys.size() == 0 && doc.unindexedKeys.size() == 0) {
-                emptyDocuments.add(s);
-            } else {
-                nonEmptyDocuments.add(s);
+                Collections.sort(strings);
+                for (String string : strings) {
+                    sb.append("  ");
+                    sb.append(string);
+                    sb.append("\n");
+                }
+
+                String s = sb.toString();
+                if (doc.indexedKeys.size() == 0 && doc.unindexedKeys.size() == 0) {
+                    emptyDocuments.add(s);
+                } else {
+                    nonEmptyDocuments.add(s);
+                }
             }
         }
 
@@ -405,5 +407,13 @@ public class JsIndexerTest extends JsTestBase {
     
     public void testExtStyle() throws Exception {
         checkIndexer("testfiles/class-inheritance-ext.js");
+    }
+
+    public void testIndexEvent() throws Exception {
+        checkIndexer("testfiles/simple2.js");
+    }
+
+    public void testDomNode() throws Exception {
+        checkIndexer("testfiles/stub_dom2_Node.js");
     }
 }
