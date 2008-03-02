@@ -75,8 +75,7 @@ public class JPDAAppReloaded extends Task {
             logger.fine("No debugging sessions was found.");
             return ;
         }
-        JPDADebugger debugger = (JPDADebugger) debuggerEngine.lookupFirst 
-            (null, JPDADebugger.class);
+        JPDADebugger debugger = debuggerEngine.lookupFirst(null, JPDADebugger.class);
         if (debugger == null) {
             logger.fine("Current debugger is not JPDA one.");
             return ;

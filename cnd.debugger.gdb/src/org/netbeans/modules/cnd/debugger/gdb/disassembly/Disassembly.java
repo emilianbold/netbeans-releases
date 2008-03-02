@@ -293,7 +293,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         if (currentEngine == null) {
             return null;
         }
-        GdbDebugger debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
+        GdbDebugger debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
         if (debugger == null) {
             return null;
         }

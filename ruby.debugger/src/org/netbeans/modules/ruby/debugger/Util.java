@@ -128,7 +128,7 @@ public final class Util {
     public static RubySession getCurrentSession() {
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         return (currentEngine == null) ? null :
-            (RubySession) currentEngine.lookupFirst(null, RubySession.class);
+            currentEngine.lookupFirst(null, RubySession.class);
     }
     
     static boolean offerToInstallFastDebugger(final RubyPlatform platform) {
