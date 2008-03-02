@@ -62,6 +62,7 @@ public class ParameterInfo {
     private boolean required;
     private boolean repeating;
     private String fixed;
+    private boolean isApiKey;
 
     public ParameterInfo(String name, Class type) {
         this(name, type, null);
@@ -114,6 +115,14 @@ public class ParameterInfo {
     public String getSimpleTypeName() {
         return type.getSimpleName();
     }
+
+    public boolean isApiKey() {
+        return isApiKey;
+    }
+    
+    public void setIsApiKey(boolean isApiKey) {
+        this.isApiKey = isApiKey;
+    }
     
     public void setDefaultValue(Object value) {
         this.defaultValue = value;
@@ -165,6 +174,10 @@ public class ParameterInfo {
     public void setStyle(ParamStyle style) {
         this.style = style;
     }
+
+    public boolean isFixed() {
+        return getFixed() != null;
+    }
     
     private Object generateDefaultValue() {
         if (type == Integer.class || type == Short.class || type == Long.class ||
@@ -193,9 +206,7 @@ public class ParameterInfo {
         TEMPLATE("template"),
         MATRIX("matrix"),
         HEADER("header"),
-        QUERY("query"), 
-        QUERY_APIKEY("query_apikey"),
-        QUERY_FIXED("query_fixed");
+        QUERY("query");
         
         private String value;
         

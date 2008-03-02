@@ -61,14 +61,14 @@
         <group name="Amazon">
         </group>
 
-        <authentication profile="Templates/WebServices/profile.properties">
+        <authentication profile="SaaSServices/Amazon/profile.properties">
             <api-key id="dev_id"/>
         </authentication>
 
     </saas-metadata>
 
     <methods>
-        <method name="getComps" href="#amazonecs.ItemSearch"/>
+        <method name="searchItem" href="#amazonecs.ItemSearch"/>
     </methods>
 
 </saas-services>
