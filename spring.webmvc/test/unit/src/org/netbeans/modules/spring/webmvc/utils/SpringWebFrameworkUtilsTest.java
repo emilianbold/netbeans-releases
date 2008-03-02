@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.spring.webmvc.utils;
 
-import org.netbeans.modules.spring.webmvc.utils.SpringWebFrameworkUtils;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -65,7 +64,11 @@ public class SpringWebFrameworkUtilsTest extends NbTestCase {
     public void testDispatcherNameEntry_ValidPattern() throws Exception {
         assert(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispatcher") == true);
     }  
-            
+    
+    public void testDispatcherNameEntry_ValidAmpersandPattern() throws Exception {
+        assert(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispatcher&amp;") == true);
+    } 
+         
     public void testDispatcherNameEntry_NonWordUnicodeCharacterPattern() throws Exception {       
         assert(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("あｂ３＿:え") == false);  // ^ is the invalid character
     }        

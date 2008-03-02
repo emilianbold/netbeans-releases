@@ -201,7 +201,6 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         dispatcherName = getComponent().getDispatcherName();
         dispatcherMapping = getComponent().getDispatcherMapping();
         includeJstl = getComponent().getIncludeJstl();
-        dispatcherName = SpringWebFrameworkUtils.escapeAttributeValues(dispatcherName); // Escape the Dispatcher name as an XML attibute value
         changeSupport.fireChange();
     }
 
