@@ -154,7 +154,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         JPDADebugger debugger = null;
         DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (engine != null) {
-            debugger = (JPDADebugger) engine.lookupFirst(null, JPDADebugger.class);
+            debugger = engine.lookupFirst(null, JPDADebugger.class);
         }
         if (content != null) {
             remove(content);
@@ -293,7 +293,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         private synchronized void attachToStateChange(DebuggerEngine engine) {
             detachFromStateChange();
             if (engine == null) return ;
-            JPDADebugger debugger = (JPDADebugger) engine.lookupFirst(null, JPDADebugger.class);
+            JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
             if (debugger == null) return ;
             debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, this);
             lastDebugger = new WeakReference<JPDADebugger>(debugger);

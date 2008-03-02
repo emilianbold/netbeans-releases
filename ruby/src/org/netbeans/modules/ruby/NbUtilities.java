@@ -282,8 +282,10 @@ public class NbUtilities {
     public static boolean isCodeTemplateEditing(Document doc) {
         // Copied from editor/codetemplates/src/org/netbeans/lib/editor/codetemplates/CodeTemplateInsertHandler.java
         String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N        
+        String CT_HANDLER_DOC_PROPERTY = "code-template-insert-handler"; // NOI18N
         
-        return doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY) == Boolean.TRUE;
+        return doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY) == Boolean.TRUE ||
+                doc.getProperty(CT_HANDLER_DOC_PROPERTY) != null;
     }
 
     public static BaseDocument getBaseDocument(FileObject fileObject, boolean forceOpen) {

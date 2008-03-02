@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>\
+<?xml version="1.0" encoding="utf-8"?>
 
 <!--
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -113,16 +113,6 @@
                     <request>
                         <param name="Authorization" type="xsd:string" style="header" required="true"/>
                     </request>
-                </method>
-                <method name="PUT" id="amazons3.setAcl">
-                    <request>
-                        <param name="Authorization" type="xsd:string" style="header" required="true"/>
-                        <param name="acl" type="xsd:string" style="query" required="true"/>
-                        <representation mediaType="text/plain"/>
-                    </request>
-                    <response>
-                        <representation mediaType="*/*"/>
-                    </response>
                 </method>
             </resource>
         </resource>

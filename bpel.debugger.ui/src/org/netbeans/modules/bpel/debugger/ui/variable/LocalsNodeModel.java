@@ -41,8 +41,7 @@ public class LocalsNodeModel implements NodeModel, Constants {
     public LocalsNodeModel(
             final ContextProvider contextProvider) {
         
-        myDebugger = (BpelDebugger) contextProvider.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
         myHelper = new VariablesUtil(myDebugger);
     }
     /**{@inheritDoc}*/
