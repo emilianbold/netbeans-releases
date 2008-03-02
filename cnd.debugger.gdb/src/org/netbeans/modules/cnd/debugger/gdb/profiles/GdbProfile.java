@@ -336,7 +336,7 @@ public class GdbProfile implements ConfigurationAuxObject {
             super(PROP_GDB_COMMAND, String.class,
                     NbBundle.getMessage(GdbProfile.class, "LBL_GDB_COMMAND"), // NOI18N
                     NbBundle.getMessage(GdbProfile.class, "HINT_GDB_COMMAND"), // NOI18N
-                    true, true);
+                    true, false);
         }
         
         public Object getValue() {
