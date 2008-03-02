@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmModelStateListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.classview.actions.ShowHideClassViewAction;
 import org.openide.util.NbPreferences;
 
 /**
@@ -88,8 +87,8 @@ public class ClassViewInstaller implements CsmModelStateListener {
         }
 
         private boolean isDefaultBehavior(){
-            Preferences ps = NbPreferences.forModule(ShowHideClassViewAction.class);
-            return !ps.getBoolean("ClassViewWasOpened", false);
+            Preferences ps = NbPreferences.forModule(ClassViewTopComponent.class);
+            return !ps.getBoolean(ClassViewTopComponent.OPENED_PREFERENCE, false);
         }
         
         public void projectOpened(CsmProject project) {

@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmModelStateListener;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.classview.actions.ShowHideClassViewAction;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbPreferences;
@@ -77,6 +76,8 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
     private static final String PREFERRED_ID = "classview"; //NOI18N
 
     public static transient ClassViewTopComponent DEFAULT;
+    
+    public static final String OPENED_PREFERENCE = "ClassViewWasOpened";
 
     private transient ClassView view;
 
@@ -179,8 +180,8 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
     protected void componentClosed() {
         if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesTC: componentClosed()"); // NOI18N
         if (!isAutoMode) {
-            Preferences ps = NbPreferences.forModule(ShowHideClassViewAction.class);
-            ps.putBoolean("ClassViewWasOpened", true); // NOI18N
+            Preferences ps = NbPreferences.forModule(ClassViewTopComponent.class);
+            ps.putBoolean(ClassViewTopComponent.OPENED_PREFERENCE, true); // NOI18N
         }
         isAutoMode = false;
         addRemoveModelListeners(false);
