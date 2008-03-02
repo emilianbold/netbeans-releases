@@ -49,6 +49,7 @@ import java.util.Set;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.DirSet;
+import org.apache.tools.ant.types.PatternSet;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -67,6 +68,14 @@ public class DeleteUnreferencedClusterFiles extends Task {
      */
     public void addConfiguredClusters(DirSet clusters) {
         this.clusters = clusters;
+    }
+    
+    private PatternSet patterns;
+    /**
+     * Option to remove files from those checks
+     */
+    public void addConfiguredSelection(PatternSet p) {
+        patterns = p;
     }
 
     private File report;
@@ -131,6 +140,10 @@ public class DeleteUnreferencedClusterFiles extends Task {
                 scanForExtraFiles(f, prefix + n + "/", files, cluster, extraFiles);
             } else {
                 String path = prefix + n;
+                if ( patterns != null )
+                    for( String p: patterns.getExcludePatterns(getProject()) ) 
+                        if (p.equals(path)) return;
+                    
                 if (!files.contains(path)) {
                     extraFiles.append("\n" + cluster + ": untracked file " + path);
                     f.delete();
