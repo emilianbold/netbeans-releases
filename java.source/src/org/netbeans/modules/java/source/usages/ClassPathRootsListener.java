@@ -177,17 +177,17 @@ public class ClassPathRootsListener implements PropertyChangeListener {
                 if (l == null) {
                     l = new FileChangeSupportListener() {
                         public void fileCreated(FileChangeSupportEvent event) {
-                            LOGGER.log(Level.INFO, "file created: {0}", event.getPath()); //XXX: Level.INFO
+                            LOGGER.log(Level.FINE, "file created: {0}", event.getPath());
                             fileChanged(event.getPath());
                         }
 
                         public void fileDeleted(FileChangeSupportEvent event) {
-                            LOGGER.log(Level.INFO, "file deleted: {0}", event.getPath()); //XXX: Level.INFO
+                            LOGGER.log(Level.FINE, "file deleted: {0}", event.getPath());
                             fileChanged(event.getPath());
                         }
 
                         public void fileModified(FileChangeSupportEvent event) {
-                            LOGGER.log(Level.INFO, "file modified: {0}", event.getPath()); //XXX: Level.INFO
+                            LOGGER.log(Level.FINE, "file modified: {0}", event.getPath());
                             fileChanged(event.getPath());
                         }
 
@@ -309,7 +309,11 @@ public class ClassPathRootsListener implements PropertyChangeListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (ClassPath.PROP_ENTRIES.equals(evt.getPropertyName())) {
-            handleClassPath((ClassPath) evt.getSource());
+            ClassPath cp = (ClassPath) evt.getSource();
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "classpath entries changed: cp={0} ({2}), entries={1}", new Object[] {cp, cp.entries(), System.identityHashCode(cp)});
+            }
+            handleClassPath(cp);
         }
     }
     
