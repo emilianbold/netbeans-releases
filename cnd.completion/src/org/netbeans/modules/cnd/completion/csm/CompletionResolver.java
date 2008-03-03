@@ -120,7 +120,7 @@ public interface CompletionResolver {
     public static final int RESOLVE_FUNCTIONS              = RESOLVE_GLOB_FUNCTIONS | RESOLVE_LIB_FUNCTIONS | RESOLVE_CLASS_METHODS |
                                                                 RESOLVE_FILE_LOCAL_FUNCTIONS;
 
-    public static final int RESOLVE_VARIABLES              = RESOLVE_GLOB_VARIABLES | RESOLVE_LIB_VARIABLES | RESOLVE_CLASS_FIELDS;
+    public static final int RESOLVE_VARIABLES              = RESOLVE_GLOB_VARIABLES | RESOLVE_LIB_VARIABLES | RESOLVE_CLASS_FIELDS | RESOLVE_FILE_LOCAL_VARIABLES;
     /**
      * specify what to resolve by this resolver
      */

@@ -41,9 +41,8 @@
 
 package org.netbeans.api.debugger;
 
-import java.beans.*;
-import java.io.*;
-import java.util.*;
+import java.util.List;
+import org.netbeans.spi.debugger.ContextProvider;
 
 /**
  * Debugger Engine represents implementation of one debugger (Java Debugger,
@@ -122,7 +121,7 @@ import java.util.*;
  *
  * @author   Jan Jancura
  */
-public final class DebuggerEngine {
+public final class DebuggerEngine implements ContextProvider {
     
     
     // variables ...............................................................
@@ -176,7 +175,7 @@ public final class DebuggerEngine {
      * @param service a type of service to look for
      * @return list of services of given type
      */
-    public List lookup (String folder, Class service) {
+    public <T> List<? extends T> lookup(String folder, Class<T> service) {
         return lookup.lookup (folder, service);
     }
     
@@ -186,7 +185,7 @@ public final class DebuggerEngine {
      * @param service a type of service to look for
      * @return ne service of given type
      */
-    public Object lookupFirst (String folder, Class service) {
+    public <T> T lookupFirst(String folder, Class<T> service) {
         return lookup.lookupFirst (folder, service);
     }
     

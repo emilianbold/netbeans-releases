@@ -177,9 +177,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
             }
         }
         
-        postUpdateChildren(children, newNodes.toArray(new Node[0]));
-
-        fireRefresh();        
+        children.replaceNodes(newNodes.toArray(new Node[0]));
     }
     
     private void postUpdateChildren(final DatabaseNodeChildren children, 

@@ -133,9 +133,9 @@ public class WrappedTextViewTest extends TestCase {
     }
     
     /**
-     * tests if caret position is computed correctly correctly (see issue #122492)
+     * tests if caret position is computed correctly (see issue #122492)
      */
-    public void testViewToModel() throws InterruptedException {
+    public void testViewToModel() {
         Graphics g = win.getSelectedTab().getOutputPane().getGraphics();
         FontMetrics fm = g.getFontMetrics(win.getSelectedTab().getOutputPane().getTextView().getFont());
         int charWidth = fm.charWidth('m');

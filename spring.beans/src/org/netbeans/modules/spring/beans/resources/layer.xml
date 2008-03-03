@@ -117,7 +117,7 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="SpringFramework">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.beans.resources.Bundle"/>
-            <attr name="position" intvalue="850"/>
+            <attr name="position" intvalue="825"/>
             <file name="SpringXMLConfig.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.beans.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/spring/beans/resources/spring.png"/>

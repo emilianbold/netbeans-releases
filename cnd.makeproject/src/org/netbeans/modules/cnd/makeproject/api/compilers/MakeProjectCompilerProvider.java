@@ -69,6 +69,10 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
                 return new SunCCCompiler(flavor, kind, name, displayName, path);
             } else if (kind == Tool.FortranCompiler) {
                 return new SunFortranCompiler(flavor, kind, name, displayName, path);
+            } else if (kind == Tool.MakeTool) {
+                return new SunMaketool(flavor, name, displayName, path);
+            } else if (kind == Tool.DebuggerTool) {
+                return new SunDebuggerTool(flavor, name, displayName, path);
             }
         } else /* if (flavor.isGnuCompiler()) */ { // Assume GNU (makeproject system doesn't handle Unknown)
             if (kind == Tool.CCompiler) {
@@ -77,6 +81,10 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
                 return new GNUCCCompiler(flavor, kind, name, displayName, path);
             } else if (kind == Tool.FortranCompiler) {
                 return new GNUFortranCompiler(flavor, kind, name, displayName, path);
+            } else if (kind == Tool.MakeTool) {
+                return new GNUMaketool(flavor, name, displayName, path);
+            } else if (kind == Tool.DebuggerTool) {
+                return new GNUDebuggerTool(flavor, name, displayName, path);
             }
         }
         if (kind == Tool.CustomTool) {
