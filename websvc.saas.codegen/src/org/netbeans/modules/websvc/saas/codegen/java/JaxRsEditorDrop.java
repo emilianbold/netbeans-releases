@@ -111,32 +111,36 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
         generatorTask = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
                 try {
-                    JaxRsCodeGenerator codegen = codegen = 
+                    JaxRsCodeGenerator codegen = 
                         JaxRsCodeGeneratorFactory.create(targetComponent, targetFO, method);
                 
                     WadlSaasBean bean = codegen.getBean();
                     boolean showParams = codegen.canShowParam();
-                    List<ParameterInfo> allParams = new ArrayList<ParameterInfo>(bean.getHeaderParameters());
+                    List<ParameterInfo> allParams = new ArrayList<ParameterInfo>();
                     if (showParams && bean.getInputParameters() != null) {
                         allParams.addAll(bean.getInputParameters());
                     }
-                    JaxRsCodeSetupPanel panel = new JaxRsCodeSetupPanel(
-                            codegen.getSubresourceLocatorUriTemplate(),
-                            bean.getQualifiedClassName(), 
-                            allParams,
-                            codegen.canShowResourceInfo(), showParams);
+                    if(allParams.isEmpty())
+                        showParams = false;
+                    if(codegen.canShowResourceInfo() || showParams) {
+                        JaxRsCodeSetupPanel panel = new JaxRsCodeSetupPanel(
+                                codegen.getSubresourceLocatorUriTemplate(),
+                                bean.getQualifiedClassName(), 
+                                allParams,
+                                codegen.canShowResourceInfo(), showParams);
 
-                    DialogDescriptor desc = new DialogDescriptor(panel, 
-                            NbBundle.getMessage(JaxRsEditorDrop.class,
-                            "LBL_CustomizeSaasService", displayName));
-                    Object response = DialogDisplayer.getDefault().notify(desc);
-                    
-                    if (response.equals(NotifyDescriptor.YES_OPTION)) {
-                        codegen.setSubresourceLocatorUriTemplate(panel.getUriTemplate());
-                        codegen.setSubresourceLocatorName(panel.getMethodName());
-                    } else {
-                        // cancel
-                        return;
+                        DialogDescriptor desc = new DialogDescriptor(panel, 
+                                NbBundle.getMessage(JaxRsEditorDrop.class,
+                                "LBL_CustomizeSaasService", displayName));
+                        Object response = DialogDisplayer.getDefault().notify(desc);
+
+                        if (response.equals(NotifyDescriptor.YES_OPTION)) {
+                            codegen.setSubresourceLocatorUriTemplate(panel.getUriTemplate());
+                            codegen.setSubresourceLocatorName(panel.getMethodName());
+                        } else {
+                            // cancel
+                            return;
+                        }
                     }
 
                     codegen.generate(dialog.getProgressHandle());

@@ -230,7 +230,8 @@ public class ConditionsPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         panelHitCountFilter.add(tfSkipCount, gridBagConstraints);
-        tfSkipCount.getAccessibleContext().setAccessibleName("null");
+        tfSkipCount.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ACSN_HitCountTF")); // NOI18N
+        tfSkipCount.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ACSD_HitCountTF")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -241,7 +242,7 @@ public class ConditionsPanel extends JPanel {
         add(panelHitCountFilter, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "L_Conditions_Breakpoint_BorderTitle")); // NOI18N
-        getAccessibleContext().setAccessibleDescription("null");
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ACSD_Conditions")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void cbSkipCountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSkipCountActionPerformed

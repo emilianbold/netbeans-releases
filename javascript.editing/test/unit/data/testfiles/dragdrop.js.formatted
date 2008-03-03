@@ -45,7 +45,7 @@ var Droppables = {
       
     for (i = 1; i < drops.length; ++i)
       if (Element.isParent(drops[i].element, deepest.element))
-      deepest = drops[i];
+        deepest = drops[i];
     
     return deepest;
   },
@@ -109,7 +109,7 @@ var Droppables = {
 
     if (this.isAffected([Event.pointerX(event), Event.pointerY(event)], element, this.last_active))
       if (this.last_active.onDrop) 
-      this.last_active.onDrop(element, this.last_active.element, event);
+        this.last_active.onDrop(element, this.last_active.element, event);
   },
 
   reset: function() {
@@ -188,8 +188,8 @@ var Draggables = {
   notify: function(eventName, draggable, event) {  // 'onStart', 'onEnd', 'onDrag'
     if(this[eventName+'Count'] > 0)
       this.observers.each( function(o) {
-      if(o[eventName]) o[eventName](eventName, draggable, event);
-    });
+        if(o[eventName]) o[eventName](eventName, draggable, event);
+      });
   },
   
   _cacheObserverCallbacks: function() {
@@ -593,9 +593,9 @@ var Sortable = {
       options_for_draggable.reverteffect = options.reverteffect;
     else
       if(options.ghosting) options_for_draggable.reverteffect = function(element) {
-      element.style.top  = 0;
-      element.style.left = 0;
-    };
+        element.style.top  = 0;
+        element.style.left = 0;
+      };
 
     if(options.endeffect)
       options_for_draggable.endeffect = options.endeffect;
@@ -754,7 +754,7 @@ var Sortable = {
     
     if(position=='after')
       if(sortable.overlap == 'horizontal') 
-      Sortable._marker.style.left = (offsets[0]+dropon.clientWidth) + 'px';
+        Sortable._marker.style.left = (offsets[0]+dropon.clientWidth) + 'px';
     else
       Sortable._marker.style.top = (offsets[1]+dropon.clientHeight) + 'px';
     
@@ -793,8 +793,8 @@ var Sortable = {
   _findChildrenElement: function (element, containerTag) {
     if (element && element.hasChildNodes)
       for (var i = 0; i < element.childNodes.length; ++i)
-      if (element.childNodes[i].tagName == containerTag)
-      return element.childNodes[i];
+        if (element.childNodes[i].tagName == containerTag)
+          return element.childNodes[i];
   
     return null;
   },
@@ -895,7 +895,7 @@ Element.findChildren = function(element, only, recursive, tagName) {
   $A(element.childNodes).each( function(e) {
     if(e.tagName && e.tagName.toUpperCase()==tagName &&
       (!only || (Element.classNames(e).detect(function(v) { return only.include(v) }))))
-    elements.push(e);
+      elements.push(e);
     if(recursive) {
       var grandchildren = Element.findChildren(e, only, recursive, tagName);
       if(grandchildren) elements.push(grandchildren);

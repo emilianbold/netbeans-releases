@@ -40,7 +40,10 @@
  */
 package org.netbeans.modules.ruby.platform;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -49,6 +52,7 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -209,4 +213,15 @@ public final class Util {
     static boolean isFirstPlatformTouch() {
         return Util.getPreferences().getBoolean(FIRST_TIME_KEY, true);
     }
+    
+    public static String readAsString(final InputStream is) throws IOException {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            FileUtil.copy(is, baos);
+            return baos.toString("UTF-8"); // NOI18N
+        } finally {
+            is.close();
+        }
+    }
+    
 }

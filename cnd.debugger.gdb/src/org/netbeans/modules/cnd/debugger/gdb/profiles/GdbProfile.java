@@ -48,12 +48,18 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.actions.BuildToolsAction;
 
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.PropertySupport;
 
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
@@ -123,65 +129,115 @@ public class GdbProfile implements ConfigurationAuxObject {
         }
     }
     
-    /**
-     * Find the path to gdb. Start with the name/path stored in the project. If that doesn't resolve,
-     * bring up a Build Tools window. If that doesn't resolve then return null (at which point the
-     * debug action will be terminated).
-     *
-     * @param ev What we need to get the GdbProfile
-     * @return Either an absolute path to gdb or null
-     */
-    public String getGdbPath(String name, String dir) {
-        File file;
+    public String getGdbPath(MakeConfiguration conf) {
+        CompilerSet2Configuration csconf = conf.getCompilerSet();
+        CompilerSet cs;
+        String csname;
         
-        if (name.charAt(0) == '.') {
-            file = new File(dir, name);
-            if (file.exists()) {
-                return file.getAbsolutePath();
-            }
-        } else if ((Utilities.isUnix() && name.charAt(0) == '/') ||
-                (Utilities.isWindows() && name.charAt(1) == ':')) {
-            file = new File(name);
-            if (file.exists()) {
-                return file.getAbsolutePath();
-            }
+        if (csconf.isValid()) {
+            csname = csconf.getOption();
+            cs = CompilerSetManager.getDefault().getCompilerSet(csname);
         } else {
-            StringTokenizer tok = new StringTokenizer(CppSettings.getDefault().getPath(), File.pathSeparator);
-            while (tok.hasMoreTokens()) {
-                String d = tok.nextToken();
-                file = new File(d, name);
-                if (file.exists()) {
-                    return file.getAbsolutePath();
-                }
-                if (Utilities.isWindows()) {
-                    file = new File(d, name + ".exe"); // NOI18N
-                    if (file.exists()) {
-                        return file.getAbsolutePath();
-                    }
-                }
-            }
+            csname = csconf.getOldName();
+            cs = CompilerSet.getCompilerSet(csname);
+            CompilerSetManager.getDefault().add(cs);
+            csconf.setValid();
+        }
+        Tool debuggerTool = cs.getTool(Tool.DebuggerTool);
+        if (debuggerTool != null) {
+            String gdbPath = debuggerTool.getPath();
+            File gdbFile = new File(gdbPath);
+            if (gdbFile.exists() && !gdbFile.isDirectory())
+                return gdbPath;
+            // Try from user's PATH (if user specified just debugger name (gdb) in tools setup)
+            String fromUsersPath = Path.findCommand(gdbPath);
+            if (fromUsersPath != null)
+                return fromUsersPath;
         }
         
-        // No gdb in $PATH and non-absolute name in project. So post a Build Tools window and
+        // No debugger in cs and non-absolute name in project. So post a Build Tools window and
         // force the user to add a directory with gdb or cancel
         ToolsPanelModel model = new LocalToolsPanelModel();
-        model.setGdbName(name);
-        model.setGdbRequired(true);
-        model.setGdbEnabled(true);
+//        model.setGdbName(name);
+//        model.setGdbEnabled(true);
         model.setCRequired(false);
         model.setCppRequired(false);
         model.setFortranRequired(false);
+        model.setMakeRequired(false);
+        model.setGdbRequired(true);
+        model.setShowRequiredBuildTools(false);
+        model.setShowRequiredDebugTools(true);
         BuildToolsAction bt = (BuildToolsAction) SystemAction.get(BuildToolsAction.class);
         bt.setTitle(NbBundle.getMessage(GdbProfile.class, "LBL_ResolveMissingGdb_Title")); // NOI18N
         if (bt.initBuildTools(model, new ArrayList())) {
-            if (!name.equals(model.getGdbName())) {
-                setGdbCommand(model.getGdbName());
-            }
-            return model.getGdbPath();
+//            if (!name.equals(model.getGdbName())) {
+//                setGdbCommand(model.getGdbName());
+//            }
+            return cs.getTool(Tool.DebuggerTool).getPath();
         } else {
             return null;
         }
     }
+    
+//    /**
+//     * Find the path to gdb. Start with the name/path stored in the project. If that doesn't resolve,
+//     * bring up a Build Tools window. If that doesn't resolve then return null (at which point the
+//     * debug action will be terminated).
+//     *
+//     * @param ev What we need to get the GdbProfile
+//     * @return Either an absolute path to gdb or null
+//     */
+//    public String getGdbPath(String name, String dir) {
+//        File file;
+//        
+//        if (name.charAt(0) == '.') {
+//            file = new File(dir, name);
+//            if (file.exists()) {
+//                return file.getAbsolutePath();
+//            }
+//        } else if ((Utilities.isUnix() && name.charAt(0) == '/') ||
+//                (Utilities.isWindows() && name.charAt(1) == ':')) {
+//            file = new File(name);
+//            if (file.exists()) {
+//                return file.getAbsolutePath();
+//            }
+//        } else {
+//            StringTokenizer tok = new StringTokenizer(Path.getPathAsString(), File.pathSeparator);
+//            while (tok.hasMoreTokens()) {
+//                String d = tok.nextToken();
+//                file = new File(d, name);
+//                if (file.exists()) {
+//                    return file.getAbsolutePath();
+//                }
+//                if (Utilities.isWindows()) {
+//                    file = new File(d, name + ".exe"); // NOI18N
+//                    if (file.exists()) {
+//                        return file.getAbsolutePath();
+//                    }
+//                }
+//            }
+//        }
+//        
+//        // No gdb in $PATH and non-absolute name in project. So post a Build Tools window and
+//        // force the user to add a directory with gdb or cancel
+//        ToolsPanelModel model = new LocalToolsPanelModel();
+////        model.setGdbName(name);
+//        model.setGdbRequired(true);
+//        model.setGdbEnabled(true);
+//        model.setCRequired(false);
+//        model.setCppRequired(false);
+//        model.setFortranRequired(false);
+//        BuildToolsAction bt = (BuildToolsAction) SystemAction.get(BuildToolsAction.class);
+//        bt.setTitle(NbBundle.getMessage(GdbProfile.class, "LBL_ResolveMissingGdb_Title")); // NOI18N
+//        if (bt.initBuildTools(model, new ArrayList())) {
+////            if (!name.equals(model.getGdbName())) {
+////                setGdbCommand(model.getGdbName());
+////            }
+//            return model.getGdbPath();
+//        } else {
+//            return null;
+//        }
+//    }
     
     public int getArrayRepeatThreshold() {
         return CppSettings.getDefault().getArrayRepeatThreshold(); 
@@ -280,7 +336,7 @@ public class GdbProfile implements ConfigurationAuxObject {
             super(PROP_GDB_COMMAND, String.class,
                     NbBundle.getMessage(GdbProfile.class, "LBL_GDB_COMMAND"), // NOI18N
                     NbBundle.getMessage(GdbProfile.class, "HINT_GDB_COMMAND"), // NOI18N
-                    true, true);
+                    true, false);
         }
         
         public Object getValue() {

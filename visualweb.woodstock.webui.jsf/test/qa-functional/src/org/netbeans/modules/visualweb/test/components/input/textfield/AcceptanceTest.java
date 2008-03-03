@@ -486,7 +486,7 @@ public class AcceptanceTest extends RaveTestCase {
         EditorOperator editor = new EditorOperator(Util.getMainWindow(), _page1);
         editor.requestFocus();
         editor.pushDownArrowKey();
-        editor.txtEditorPane().typeText("log(\"Action Performed\");\n");
+        editor.txtEditorPane().setText("log(\"Action Performed\");\n");
         try { Thread.sleep(2000); } catch(Exception e) {}
         designer.switchToDesignerPane();
 

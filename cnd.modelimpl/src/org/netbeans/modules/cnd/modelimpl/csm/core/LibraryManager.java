@@ -290,7 +290,7 @@ public final class LibraryManager {
                 final LibraryEntry passEntry = entry;
                 CsmModelAccessor.getModel().enqueue(new Runnable() {
                     public void run() {
-                        model.fireProjectOpened((ProjectBase)passEntry.getLibrary().getObject());
+                        ListenersImpl.getImpl().fireProjectOpened((ProjectBase)passEntry.getLibrary().getObject());
                     }
                 }, "postponed library opened " + includeFolder); // NOI18N
             }

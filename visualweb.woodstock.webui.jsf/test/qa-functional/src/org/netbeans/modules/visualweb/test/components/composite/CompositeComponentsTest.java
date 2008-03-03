@@ -157,7 +157,7 @@ public class CompositeComponentsTest extends RaveTestCase {
 
     public void testBubbleHelp() {
         // Add Bubble Help component
-        PaletteHelper.COMPOSITE.addComponent("BubbleHelp", 50, 50,
+        PaletteHelper.COMPOSITE.addComponent("Bubble", 50, 50,
                 "id=testBubble\n" +
                 "title=Bubble Help Test");
         // Add a Static Text into the component
