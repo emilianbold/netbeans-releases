@@ -95,10 +95,7 @@ public class SpringWebFrameworkUtils {
         // mapping validation based on the Servlet 2.4 specification,section SRV.11.2
         if (pattern.startsWith("*.")){ // NOI18N
             String p = pattern.substring(2);
-            if (p.indexOf('.') == -1 && p.indexOf('*') == -1  
-                    && p.indexOf('/') == -1 && !p.trim().equals("") && !p.contains(" ") && Pattern.matches("\\w+",p)) { // NOI18N
-                return true;
-            }
+            return Pattern.matches("\\w+",p); // NOI18N
         }
         
         if ((pattern.length() > 3) && pattern.endsWith("/*") && pattern.startsWith("/") && !pattern.contains(" ")) // NOI18N
