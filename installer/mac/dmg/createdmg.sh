@@ -48,7 +48,7 @@ tmpdir=$2
 shift 2
 srcdirs=$*
 
-volname="NetBeans 6.1"
+volname="NetBeans 6.1 Beta"
 
 rm -f $tmpdir/template.sparseimage
 bunzip2 -d -c `dirname $0`/template.sparseimage.bz2 > $tmpdir/template.sparseimage

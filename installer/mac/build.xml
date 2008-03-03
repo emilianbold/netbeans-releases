@@ -56,15 +56,15 @@
   </condition>
 
   <property name="nb.dir" value="../../nbbuild/netbeans"/>
-  <property name="netbeans.appname" value="NetBeans 6.1"/>
+  <property name="netbeans.appname" value="NetBeans 6.1 Beta"/>
   <property name="appname" value="${netbeans.appname}"/>
-  <property name="appversion" value="6.1 Development Version"/>
-  <property name="version" value="6.1 Development Version"/>
+  <property name="appversion" value="6.1 Beta"/>
+  <property name="version" value="6.1 Beta"/>
   <property name="nbClusterDir" value="nb6.1"/>
   
   <property name="appdir" value="build/app/${appname}.app"/>
-  <property name="zipname" value="netbeans-6.1dev-macosx.zip"/>
-  <property name="dmgname" value="netbeans-6.1dev.dmg"/>
+  <property name="zipname" value="netbeans-6.1beta-macosx.zip"/>
+  <property name="dmgname" value="netbeans-6.1beta.dmg"/>
   
   <target name="build-app" description="Builds Mac OS X application bundle">
     <echo>Creating NetBeans.app bundle using ${nb.dir} as master</echo>
