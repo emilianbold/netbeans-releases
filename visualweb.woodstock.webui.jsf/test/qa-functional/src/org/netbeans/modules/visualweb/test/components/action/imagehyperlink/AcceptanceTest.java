@@ -212,7 +212,7 @@ public class AcceptanceTest extends RaveTestCase {
         JEditorPaneOperator editor = new JEditorPaneOperator(
                                         RaveWindowOperator.getDefaultRave(), "public class " + _page1);
         editor.requestFocus();
-        editor.typeText("log(\"Button action performed\");\n");
+        editor.setText("log(\"Button action performed\");\n");
         
         // Open context menuitem, Reformat code
         Util.wait(1000);
