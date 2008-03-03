@@ -60,14 +60,35 @@
             <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
           </param>
           <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
-          <param name="format" required="false" style="query" type="xsd:string">
+          <!--<param name="format" required="false" style="query" type="xsd:string">
             <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
-          </param>
+          </param>-->
           <param fixed="facebook.auth.createToken" name="method" required="true" style="query" type="xsd:string"/>
         </request>
         <response/>
         
       </method>
+      
+      <method id="facebook.auth_getSession" name="POST">
+        <doc xml:lang="en">Creates an auth_token to be passed in as a parameter to login.php and then to auth.getSession after the user has logged in. The user must log in soon after you create this token.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <!--<param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>-->
+          <param fixed="facebook.auth.getSession" name="method" required="true" style="query" type="xsd:string"/>
+          <param name="auth_token" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      
       <method id="facebook.data_getCookies" name="POST">
         <doc xml:lang="en">This method returns all cookies for a given user and application.</doc>
         <request>
