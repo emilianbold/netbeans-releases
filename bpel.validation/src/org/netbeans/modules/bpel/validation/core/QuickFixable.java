@@ -38,49 +38,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.bpel.validation.core;
 
-package gui.window;
-
-import gui.Projects;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
+import org.netbeans.modules.bpel.validation.core.QuickFix;
 
 /**
- *
- * @author mkhramov@netbeans.org
+ * @author Vladimir Yaroslavskiy
+ * @version 2007.12.07
  */
-public class RailsGeneratorDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    private Node testNode;
-    private String CMD, TITLE, projectName;
-    
-    public RailsGeneratorDialog(String testName) {
-        super(testName);
-        expectedTime = WINDOW_OPEN;          
-    }
-    public RailsGeneratorDialog(String testName, String performanceDataName)
-    {
-        super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;          
-    }
-    @Override
-    public void initialize() {
-        log("::initialize");
-        CMD = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.railsprojects.Bundle", "rails-generator");
-        TITLE = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.railsprojects.Bundle", "GeneratorTitle");
-        projectName = Projects.RAILS_PROJECT;
-        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(projectName);            
-    }
-    @Override
-    public void prepare() {
-        log("::prepare");
-    }
+public final class QuickFixable extends ResultItem {
 
-    @Override
-    public ComponentOperator open() {
-        testNode.performPopupActionNoBlock(CMD);
-        return new NbDialogOperator(TITLE);        
-    }
+  public QuickFixable(CoreValidator validator, ResultType type, Component component, String description, QuickFix quickFix) {
+    super(validator, type, component, description);
+    myQuickFix = quickFix;
+  }         
 
+  public QuickFix getQuickFix() {
+    return myQuickFix;
+  }
+
+  private QuickFix myQuickFix;
 }
