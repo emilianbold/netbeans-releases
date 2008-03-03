@@ -231,6 +231,7 @@ derby\.log
 ^visualweb.webui.designtime/gen$
 ^visualweb.webui.designtime/\.generated$
 ^visualweb.webui/library/gen$
+^visualweb\.woodstock\.webui\.jsf/test/functional-compile\.mark$
 ^visualweb.xhtml/generated$
 ^web.core/src/org/netbeans/modules/web/taglib/model$
 ^web.jsf.navigation/\.externalToolBuilders$
