@@ -80,6 +80,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.netbeans.api.project.Project;
 
 
 /**
@@ -123,6 +124,8 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
             category = SourceCategory.TAGLIB;
         } else if (dirName.startsWith("util")) {
             category = SourceCategory.UTIL;
+        } else if (dirName.startsWith("lib")) {
+            category = SourceCategory.LIB;
         } else if (dirName.startsWith("views")) {
             category = SourceCategory.VIEWS;
         }
@@ -220,6 +223,9 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 result.add(new NewArtifactAction(project, SourceCategory.TAGLIB, "Create new Tag Library"));
                 break;
             case UTIL:          
+                break;
+            case LIB:          
+                result.add(new AddLibraryAction((Project)project, "Add Library"));
                 break;
             case VIEWS:
                 // we don't create views on the "Views and Layouts" logical view, but by selecting a Domain Class
