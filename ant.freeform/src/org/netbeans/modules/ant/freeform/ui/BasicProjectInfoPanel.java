@@ -467,6 +467,8 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 10, 4, 4);
         jPanel2.add(jTextArea2, gridBagConstraints);
+        jTextArea2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "ACSN_Freeform_Warning_Message")); // NOI18N
+        jTextArea2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "ACSD_Freeform_Warning_Message")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

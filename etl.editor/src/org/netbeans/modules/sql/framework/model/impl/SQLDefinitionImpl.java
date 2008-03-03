@@ -151,7 +151,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     protected static final String TAG_DEFINITION = "sqlDefinition";
     /* Log category string */
     private static final String LOG_CATEGORY = SQLDefinitionImpl.class.getName();
-    private static String VERSION = "5.2";
+    private static String VERSION = "6.0";
     /**
      * Map of attributes; used by concrete implementations to store class-specific fields
      * without hard coding them as member variables

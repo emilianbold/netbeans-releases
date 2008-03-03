@@ -330,6 +330,8 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 10, 4, 4);
         jPanel3.add(jTextArea2, gridBagConstraints);
+        jTextArea2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(OutputPanel.class, "ACSN_Freeform_Warning_Message" )); // NOI18N
+        jTextArea2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OutputPanel.class, "ACSD_Freeform_Warning_Message" )); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
