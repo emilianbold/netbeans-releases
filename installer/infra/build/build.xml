@@ -2236,10 +2236,13 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-web-page">
         <!-- For each locale -->
 	<echo message="Locales: [${locales}]"/>
+        <set property="languages.js.file" value="${web.page.dir}/js/languages.js"/>
+        <echo file="${languages.js.file}"/>
+
 	<for-each list="${locales}" separator="," property="locale">
 	    <antcall target="prepare-web-page-locale">
                 <param name="locale.name" value="${locale}"/>
-		<param name="languages.js" value="${web.page.dir}/js/languages.js"/>
+		<param name="languages.js" value="${languages.js.file}"/>
 	    </antcall>	    
 	</for-each>
     </target>

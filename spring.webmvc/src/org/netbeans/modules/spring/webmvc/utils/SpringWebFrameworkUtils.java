@@ -41,12 +41,16 @@
 
 package org.netbeans.modules.spring.webmvc.utils;
 
+import java.io.CharConversionException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
 
 /**
  *
@@ -61,13 +65,12 @@ public class SpringWebFrameworkUtils {
     private static final String LEFT_ANGLE_BRACKET      = "<";
     private static final String RIGHT_ANGLE_BRACKET     = ">" ;  
     
-    // Valid characters, but no need to validate: 
+    // Valid characters, no need to validate: 
        // &lt;
        // &gt;
        // &quot;
        // &amp;
-       // &apos;
-    
+           
     // Invalid filename characters
     private static final String ASTERISK       = "*";
     private static final String BACKSLASH      = "\\";
@@ -80,25 +83,22 @@ public class SpringWebFrameworkUtils {
     private static final List<String> INVALID_DISPATCHER_CONFIG_FILENAME_CHARS = Arrays.asList(BACKSLASH, FORWARD_SLASH, DOUBLE_QUOTE, QUESTION_MARK, PERCENT_SIGN, ASTERISK, COLON, PIPE_CHAR, LEFT_ANGLE_BRACKET, RIGHT_ANGLE_BRACKET);
     
     public static boolean isDispatcherServletConfigFilenameValid(String name) {
-        boolean isNameValid = true;              
-        
-        for (Iterator i = INVALID_DISPATCHER_CONFIG_FILENAME_CHARS.iterator(); i.hasNext();) {
-            if (name.contains((String)i.next())) {
-                isNameValid = false;
-                break;
-            }
-        }
-        return isNameValid;
+            boolean isNameValid = true;
+
+            for (Iterator i = INVALID_DISPATCHER_CONFIG_FILENAME_CHARS.iterator(); i.hasNext();) {
+                if (name.contains((String) i.next())) {
+                    isNameValid = false;
+                    break;
+                }
+            }        
+            return isNameValid;        
     }    
     
     public static boolean isDispatcherMappingPatternValid(String pattern){
         // mapping validation based on the Servlet 2.4 specification,section SRV.11.2
         if (pattern.startsWith("*.")){ // NOI18N
             String p = pattern.substring(2);
-            if (p.indexOf('.') == -1 && p.indexOf('*') == -1  
-                    && p.indexOf('/') == -1 && !p.trim().equals("") && !p.contains(" ") && Pattern.matches("\\w+",p)) { // NOI18N
-                return true;
-            }
+            return Pattern.matches("\\w+",p); // NOI18N
         }
         
         if ((pattern.length() > 3) && pattern.endsWith("/*") && pattern.startsWith("/") && !pattern.contains(" ")) // NOI18N

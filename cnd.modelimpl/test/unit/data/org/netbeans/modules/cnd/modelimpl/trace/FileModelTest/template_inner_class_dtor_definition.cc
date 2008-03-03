@@ -1,4 +1,4 @@
-template<class T> class Outer {
+template<class T> class Outer2 {
 	struct Inner {
 		~Inner();
 		void foo();
@@ -6,8 +6,8 @@ template<class T> class Outer {
 
 };
 
-template<class T> Outer<T>::Inner::~Inner() {
+template<class T> Outer2<T>::Inner::~Inner() {
 }
 
-template<class T> void Outer<T>::Inner::foo() {
+template<class T> void Outer2<T>::Inner::foo() {
 }

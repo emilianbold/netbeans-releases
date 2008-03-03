@@ -55,25 +55,25 @@ FUNCTION DEFINITION ~Cls_2  [16:1/181-17:2/221] DestructorDefinitionImpl SCOPE: 
     PARAMETERS:
     RETURNS <*no_classifier*> TEXT=  [null-null]
     STATEMENT COMPOUND  [16:38/218-17:2/221] SCOPE: ~Cls_2 
-CLASS Outer<> (Outer ) [20:1/224-25:3/291] lcurly=254 SCOPE: $Global$ 
+CLASS Outer1<> (Outer1 ) [20:1/224-25:3/292] lcurly=255 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        STRUCT Inner (Outer::Inner ) [21:9/257-23:11/287] lcurly=270 SCOPE: Outer 
+        STRUCT Inner (Outer1::Inner ) [21:9/258-23:11/288] lcurly=271 SCOPE: Outer1 
             BASE CLASSES:
             MEMBERS:
-                FUNCTION ~Inner [22:17/274-22:26/283] DestructorImpl SCOPE: Inner 
-                    DEFINITION: ~Inner  [27:1/293-28:2/341]
+                FUNCTION ~Inner [22:17/275-22:26/284] DestructorImpl SCOPE: Inner 
+                    DEFINITION: ~Inner  [27:1/294-28:2/343]
                     SIGNATURE ~Inner()
-                    UNIQUE NAME F:Outer::Inner::~Inner()
+                    UNIQUE NAME F:Outer1::Inner::~Inner()
                     PARAMETERS:
                     RETURNS <*no_classifier*> TEXT=  [null-null]
-FUNCTION DEFINITION ~Inner  [27:1/293-28:2/341] DestructorDefinitionImpl SCOPE: template_dtor_definition.cc
+FUNCTION DEFINITION ~Inner  [27:1/294-28:2/343] DestructorDefinitionImpl SCOPE: template_dtor_definition.cc
     SIGNATURE ~Inner()
-    UNIQUE NAME f:Outer::Inner::~Inner()
-    DECLARATION: ~Inner  [22:17/274-22:26/283]
+    UNIQUE NAME f:Outer1::Inner::~Inner()
+    DECLARATION: ~Inner  [22:17/275-22:26/284]
     PARAMETERS:
     RETURNS <*no_classifier*> TEXT=  [null-null]
-    STATEMENT COMPOUND  [27:45/337-28:2/341] SCOPE: ~Inner 
+    STATEMENT COMPOUND  [27:46/339-28:2/343] SCOPE: ~Inner 
 
 ========== Dumping model of PROJECT DummyProject
 CLASS Cls_1<> (Cls_1 ) [1:1/0-4:3/63] lcurly=30 SCOPE: $Global$ 
@@ -106,16 +106,16 @@ CLASS Cls_2<> (Cls_2 ) [10:1/115-13:3/178] lcurly=145 SCOPE: $Global$
             UNIQUE NAME F:Cls_2::~Cls_2()
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
-CLASS Outer<> (Outer ) [20:1/224-25:3/291] lcurly=254 SCOPE: $Global$ 
+CLASS Outer1<> (Outer1 ) [20:1/224-25:3/292] lcurly=255 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        STRUCT Inner (Outer::Inner ) [21:9/257-23:11/287] lcurly=270 SCOPE: Outer 
+        STRUCT Inner (Outer1::Inner ) [21:9/258-23:11/288] lcurly=271 SCOPE: Outer1 
             BASE CLASSES:
             MEMBERS:
-                FUNCTION ~Inner [22:17/274-22:26/283] DestructorImpl SCOPE: Inner 
-                    DEFINITION: ~Inner  [27:1/293-28:2/341]
+                FUNCTION ~Inner [22:17/275-22:26/284] DestructorImpl SCOPE: Inner 
+                    DEFINITION: ~Inner  [27:1/294-28:2/343]
                     SIGNATURE ~Inner()
-                    UNIQUE NAME F:Outer::Inner::~Inner()
+                    UNIQUE NAME F:Outer1::Inner::~Inner()
                     PARAMETERS:
                     RETURNS <*no_classifier*> TEXT=  [null-null]
 
