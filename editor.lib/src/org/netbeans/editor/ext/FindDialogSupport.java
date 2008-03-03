@@ -59,22 +59,16 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.BaseTextUI;
-import org.netbeans.editor.DrawLayerFactory;
-import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.FindSupport.SearchPatternWrapper;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.FindSupport;
 import org.netbeans.editor.DialogSupport;
 import org.netbeans.editor.GuardedException;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.BaseCaret;
 import java.util.Iterator;
-import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -228,22 +222,22 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
         }
     }
 
-    public void windowActivated(WindowEvent evt) {
+    public @Override void windowActivated(WindowEvent evt) {
         findPerformed = false;
         createFindPanel();
         findPanel.initBlockSearch();
         updateCaretPosition();
     }
        
-    public void windowDeactivated(WindowEvent evt) {
+    public @Override void windowDeactivated(WindowEvent evt) {
         Map findProps = findPanel.getFindProps();
         JTextComponent c = Utilities.getLastActiveComponent();
         if (c != null) {
-            boolean blockSearch = getBooleanProp(SettingsNames.FIND_BLOCK_SEARCH, findProps);
+            boolean blockSearch = getBooleanProp(EditorFindSupport.FIND_BLOCK_SEARCH, findProps);
             if (blockSearch && !findPerformed){
-                Integer bsStartInt = (Integer)findProps.get(SettingsNames.FIND_BLOCK_SEARCH_START);
+                Integer bsStartInt = (Integer)findProps.get(EditorFindSupport.FIND_BLOCK_SEARCH_START);
                 int bsStart = (bsStartInt == null) ? -1 : bsStartInt.intValue();
-                Position pos = (Position) findProps.get(SettingsNames.FIND_BLOCK_SEARCH_END);
+                Position pos = (Position) findProps.get(EditorFindSupport.FIND_BLOCK_SEARCH_END);
                 int bsEnd = (pos != null) ? pos.getOffset() : -1;
                 if (bsStart >=0 && bsEnd > 0){
                     c.select(bsStart, bsEnd);
@@ -272,11 +266,11 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
         }
     }
 
-    public void windowClosing(WindowEvent e) {
+    public @Override void windowClosing(WindowEvent e) {
         hideDialog();
     }
 
-    public void windowClosed(WindowEvent e) {
+    public @Override void windowClosed(WindowEvent e) {
         synchronized (dialogLock) {
             if (findDialog != null){
                 xPos = findDialog.getLocation().x;
@@ -287,9 +281,9 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
         FindSupport.getFindSupport().incSearchReset();
         findPanel.resetBlockSearch();
         FindSupport.getFindSupport().setBlockSearchHighlight(0, 0);
-        findProps.put(SettingsNames.FIND_BLOCK_SEARCH, Boolean.FALSE);
-        findProps.put(SettingsNames.FIND_BLOCK_SEARCH_START, new Integer(0));
-        findProps.put(SettingsNames.FIND_BLOCK_SEARCH_END, null);
+        findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.FALSE);
+        findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, new Integer(0));
+        findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_END, null);
         FindSupport.getFindSupport().putFindProperties(findProps);
         KeyEventBlocker blocker = findPanel.getBlocker();
         if (blocker!=null){
@@ -322,7 +316,7 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
     private Vector getHistoryVector(){
         List histList = (List)FindSupport.getFindSupport().getHistory();
         if (histList == null) histList = new ArrayList();
-        boolean isRegExpChecked = ((Boolean)findPanel.getFindProps().get(SettingsNames.FIND_REG_EXP)).booleanValue();
+        boolean isRegExpChecked = ((Boolean)findPanel.getFindProps().get(EditorFindSupport.FIND_REG_EXP)).booleanValue();
         Vector vec = new Vector();
         for (int i=0; i<histList.size(); i++){
             SearchPatternWrapper spw = (SearchPatternWrapper)histList.get(i);
@@ -346,10 +340,10 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
         FindSupport fSup = FindSupport.getFindSupport();
         Map findPanelMap = findPanel.getFindProps();
         
-        SearchPatternWrapper spw = new SearchPatternWrapper((String)findPanelMap.get(SettingsNames.FIND_WHAT),
-                getBooleanProp(SettingsNames.FIND_WHOLE_WORDS, findPanelMap),
-                getBooleanProp(SettingsNames.FIND_MATCH_CASE, findPanelMap),
-                getBooleanProp(SettingsNames.FIND_REG_EXP, findPanelMap));
+        SearchPatternWrapper spw = new SearchPatternWrapper((String)findPanelMap.get(EditorFindSupport.FIND_WHAT),
+                getBooleanProp(EditorFindSupport.FIND_WHOLE_WORDS, findPanelMap),
+                getBooleanProp(EditorFindSupport.FIND_MATCH_CASE, findPanelMap),
+                getBooleanProp(EditorFindSupport.FIND_REG_EXP, findPanelMap));
 
         if (src == findButtons[0]) { // Find button
             fSup.addToHistory(spw);
@@ -384,7 +378,7 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
     }
     
     private int getBlockEndOffset(){
-        Position pos = (Position) FindSupport.getFindSupport().getFindProperties().get(SettingsNames.FIND_BLOCK_SEARCH_END);
+        Position pos = (Position) FindSupport.getFindSupport().getFindProperties().get(EditorFindSupport.FIND_BLOCK_SEARCH_END);
         return (pos != null) ? pos.getOffset() : -1;
     }
 
@@ -404,17 +398,17 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
         private int blockSearchEndPos = 0;
 
         FindPanel() {
-            objToProps.put(findWhat, SettingsNames.FIND_WHAT);
-            objToProps.put(replaceWith, SettingsNames.FIND_REPLACE_WITH);
-            objToProps.put(highlightSearch, SettingsNames.FIND_HIGHLIGHT_SEARCH);
-            objToProps.put(incSearch, SettingsNames.FIND_INC_SEARCH);
-            objToProps.put(matchCase, SettingsNames.FIND_MATCH_CASE);
+            objToProps.put(findWhat, EditorFindSupport.FIND_WHAT);
+            objToProps.put(replaceWith, EditorFindSupport.FIND_REPLACE_WITH);
+            objToProps.put(highlightSearch, EditorFindSupport.FIND_HIGHLIGHT_SEARCH);
+            objToProps.put(incSearch, EditorFindSupport.FIND_INC_SEARCH);
+            objToProps.put(matchCase, EditorFindSupport.FIND_MATCH_CASE);
             //objToProps.put(smartCase, SettingsNames.FIND_SMART_CASE);
-            objToProps.put(wholeWords, SettingsNames.FIND_WHOLE_WORDS);
-            objToProps.put(regExp, SettingsNames.FIND_REG_EXP);
-            objToProps.put(bwdSearch, SettingsNames.FIND_BACKWARD_SEARCH);
-            objToProps.put(wrapSearch, SettingsNames.FIND_WRAP_SEARCH);
-            objToProps.put(blockSearch, SettingsNames.FIND_BLOCK_SEARCH);
+            objToProps.put(wholeWords, EditorFindSupport.FIND_WHOLE_WORDS);
+            objToProps.put(regExp, EditorFindSupport.FIND_REG_EXP);
+            objToProps.put(bwdSearch, EditorFindSupport.FIND_BACKWARD_SEARCH);
+            objToProps.put(wrapSearch, EditorFindSupport.FIND_WRAP_SEARCH);
+            objToProps.put(blockSearch, EditorFindSupport.FIND_BLOCK_SEARCH);
             
             findProps.putAll(FindSupport.getFindSupport().getFindProperties());
             revertMap();
@@ -497,9 +491,9 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
         public void resetBlockSearch(){
             blockSearch.setSelected(false);
             blockSearch.setEnabled(false);
-            findProps.put(SettingsNames.FIND_BLOCK_SEARCH, Boolean.FALSE);
-            findProps.put(SettingsNames.FIND_BLOCK_SEARCH_START, new Integer(0));
-            findProps.put(SettingsNames.FIND_BLOCK_SEARCH_END, null);
+            findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.FALSE);
+            findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, new Integer(0));
+            findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_END, null);
             blockSearchStartPos = 0;
             blockSearchEndPos = 0;
             FindSupport.getFindSupport().setBlockSearchHighlight(0,0);
@@ -549,19 +543,19 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
                 try{
                     blockSearch.setEnabled(blockSearchVisible);
                     blockSearch.setSelected(blockSearchVisible);
-                    findProps.put(SettingsNames.FIND_BLOCK_SEARCH, Boolean.valueOf(blockSearchVisible));
-                    findProps.put(SettingsNames.FIND_BLOCK_SEARCH_START, new Integer(blockSearchStartPos));
+                    findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.valueOf(blockSearchVisible));
+                    findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, new Integer(blockSearchStartPos));
                     int be = getBlockEndOffset();
                     if (be < 0){
-                        findProps.put(SettingsNames.FIND_BLOCK_SEARCH_END, doc.createPosition(blockSearchEndPos));
+                        findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_END, doc.createPosition(blockSearchEndPos));
                     }else{
                         blockSearchEndPos = be;
                     }
                     FindSupport.getFindSupport().setBlockSearchHighlight(blockSearchStartPos, blockSearchEndPos);
                 }catch(BadLocationException ble){
                     blockSearch.setSelected(false);
-                    findProps.put(SettingsNames.FIND_BLOCK_SEARCH, Boolean.FALSE);
-                    findProps.put(SettingsNames.FIND_BLOCK_SEARCH_START, null);
+                    findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.FALSE);
+                    findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, null);
                 }
             }
             
@@ -746,7 +740,7 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
                     }
                     FindSupport.getFindSupport().setBlockSearchHighlight(blockSearchStartPos, blockSearchEndPos);
                 } else {
-                    FindSupport.getFindSupport().putFindProperty(SettingsNames.FIND_BLOCK_SEARCH, Boolean.FALSE);
+                    FindSupport.getFindSupport().putFindProperty(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.FALSE);
                     FindSupport.getFindSupport().setBlockSearchHighlight(0, 0);
                 }
             }

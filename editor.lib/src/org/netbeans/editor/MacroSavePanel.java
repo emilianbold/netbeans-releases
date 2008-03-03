@@ -49,7 +49,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.MessageFormat;
 
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -65,7 +64,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Petr Nejedly
  * @version 1.0
- * @deprecated Without any replacement.
+ * @deprecated Without any replacement. This class is no longer functional.
  */
 public class MacroSavePanel extends javax.swing.JPanel {
     
@@ -389,26 +388,26 @@ public class MacroSavePanel extends javax.swing.JPanel {
         }
 
         String getCollisionString( KeyStroke[] seq ) {
-            if( seq.length == 0 ) return null; // NOI18N   not valid sequence, but don't alert user
-
-            Settings.KitAndValue[] kv = Settings.getValueHierarchy( kitClass, SettingsNames.KEY_BINDING_LIST );
-            for (int i = 0; i < kv.length; i++)
-            {
-                Iterator iter = ((List)kv[i].value).iterator();
-                while( iter.hasNext() ) {
-                    MultiKeyBinding b = (MultiKeyBinding)iter.next();
-                    KeyStroke[] ks = b.keys;
-                    if (ks == null && b.key != null)
-                    {
-                        ks = new KeyStroke[1];
-                        ks[0] = b.key;
-                    }
-                    if( ks !=  null && isOverlapingSequence( ks, seq ) ) {
-                        Object[] values = { Utilities.keySequenceToString( ks ), b.actionName };
-                        return MessageFormat.format( bundle.getString( "MSP_FMT_Collision" ), values ); // NOI18N
-                    }
-                }
-            }
+//            if( seq.length == 0 ) return null; // NOI18N   not valid sequence, but don't alert user
+//
+//            Settings.KitAndValue[] kv = Settings.getValueHierarchy( kitClass, SettingsNames.KEY_BINDING_LIST );
+//            for (int i = 0; i < kv.length; i++)
+//            {
+//                Iterator iter = ((List)kv[i].value).iterator();
+//                while( iter.hasNext() ) {
+//                    MultiKeyBinding b = (MultiKeyBinding)iter.next();
+//                    KeyStroke[] ks = b.keys;
+//                    if (ks == null && b.key != null)
+//                    {
+//                        ks = new KeyStroke[1];
+//                        ks[0] = b.key;
+//                    }
+//                    if( ks !=  null && isOverlapingSequence( ks, seq ) ) {
+//                        Object[] values = { Utilities.keySequenceToString( ks ), b.actionName };
+//                        return MessageFormat.format( bundle.getString( "MSP_FMT_Collision" ), values ); // NOI18N
+//                    }
+//                }
+//            }
             return null;  // no colliding sequence
         }
         

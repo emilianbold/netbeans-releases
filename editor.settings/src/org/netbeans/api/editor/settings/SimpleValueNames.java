@@ -82,22 +82,30 @@ public final class SimpleValueNames {
     public static final String INDENT_SHIFT_WIDTH = "indent-shift-width"; // NOI18N
     
     /**
-     * Type of caret for insert mode.
+     * The type of the editor caret in the insert mode.
+     * <p>The available types are:
+     * <ul>
+     * <li><code>line-caret</code> - default 2point caret
+     * <li><code>thin-line-caret</code> - swing-like thin caret
+     * <li><code>block-caret</code> - a block covering a whole character
+     * </ul>
+     * 
      * Values: java.lang.String instances
-     *   Currently supported types are:
-     *     org.netbeans.editor.BaseCaret.LINE_CARET - default 2point caret
-     *     org.netbeans.editor.BaseCaret.THIN_LINE_CARET - swing like thin caret
-     *     org.netbeans.editor.BaseCaret.BLOCK_CARET - block covering whole character
+     * @see org.netbeans.editor.BaseCaret
      */
     public static final String CARET_TYPE_INSERT_MODE = "caret-type-insert-mode"; // NOI18N
 
     /**
-     * Type of caret for over write mode.
+     * The type of the editor caret in the overwrite mode.
+     * <p>The available types are:
+     * <ul>
+     * <li><code>line-caret</code> - default 2point caret
+     * <li><code>thin-line-caret</code> - swing-like thin caret
+     * <li><code>block-caret</code> - a block covering a whole character
+     * </ul>
+     * 
      * Values: java.lang.String instances
-     *   Currently supported types are:
-     *     org.netbeans.editor.BaseCaret.LINE_CARET - default 2point caret
-     *     org.netbeans.editor.BaseCaret.THIN_LINE_CARET - swing like thin caret
-     *     org.netbeans.editor.BaseCaret.BLOCK_CARET - block covering whole character
+     * @see org.netbeans.editor.BaseCaret
      */
     public static final String CARET_TYPE_OVERWRITE_MODE = "caret-type-overwrite-mode"; // NOI18N
 
@@ -116,13 +124,17 @@ public final class SimpleValueNames {
     /**
      * Caret color for insert mode.
      * Values: java.awt.Color instances
+     * @deprecated Use FontColorNames#CARET_INSERT_MODE_COLORING.
      */
+    @Deprecated
     public static final String CARET_COLOR_INSERT_MODE = "caret-color-insert-mode"; // NOI18N
 
     /**
      * Caret color for overwrite mode.
      * Values: java.awt.Color instances
+     * @deprecated Use FontColorNames#CARET_OVERWRITE_MODE_COLORING.
      */
+    @Deprecated
     public static final String CARET_COLOR_OVERWRITE_MODE = "caret-color-overwrite-mode"; // NOI18N
 
     /**
@@ -204,7 +216,9 @@ public final class SimpleValueNames {
     /**
      * Which color should be used for the line showing the text limit.
      * Values: java.awt.Color instances
+     * @deprecated Use FontColorNames#TEXT_LIMIT_LINE_COLORING
      */
+    @Deprecated
     public static final String TEXT_LIMIT_LINE_COLOR = "text-limit-line-color"; // NOI18N
 
     /**
@@ -223,6 +237,7 @@ public final class SimpleValueNames {
      * Highlight the row where the caret currently is. The ExtCaret must be used.
      * Values: java.lang.Boolean 
      */
+    // XXX: currently not used
     public static final String HIGHLIGHT_CARET_ROW = "highlight-caret-row"; // NOI18N
 
     /**
@@ -230,6 +245,7 @@ public final class SimpleValueNames {
      * The ExtCaret must be used.
      * Values: java.lang.Boolean 
      */
+    // XXX: currently not used
     public static final String HIGHLIGHT_MATCH_BRACE = "highlight-match-brace"; // NOI18N
     
     /**
@@ -237,7 +253,6 @@ public final class SimpleValueNames {
      * Values: java.lang.Boolean
      */
     public static final String COMPLETION_AUTO_POPUP = "completion-auto-popup"; // NOI18N
-    
 
     /**
      * Whether the code completion query search will be case  sensitive
@@ -278,7 +293,9 @@ public final class SimpleValueNames {
     /**
      * Background color of javaDoc popup window 
      *  Values: java.awt.Color
+     * @deprecated Use FontColorNames#DOCUMENTATION_POPUP_COLORING
      */
+    @Deprecated
     public static final String JAVADOC_BG_COLOR = "javadoc-bg-color"; //NOI18N
     
     /**
@@ -305,6 +322,25 @@ public final class SimpleValueNames {
      */
     public static final String SHOW_DEPRECATED_MEMBERS = "show-deprecated-members"; // NOI18N
 
+    /**
+     * Modifiers for which the hyperlinks should be enabled.
+     * @since 1.15
+     */
+    public static final String HYPERLINK_ACTIVATION_MODIFIERS = "hyperlink-activation-modifiers"; //NOI18N
+    
+    /** 
+     * Whether popup menu will be displayed on mouse right-click or not.
+     * It's set to true by default.
+     * Values: java.lang.Boolean
+     * @since 1.15
+     */
+    public static final String POPUP_MENU_ENABLED = "popup-menu-enabled"; // NOI18N
+    
+    /**
+     * @since 1.15
+     */
+    public static final String TOOLBAR_VISIBLE_PROP = "toolbarVisible"; // NOI18N
+    
     private SimpleValueNames() {
         // to prevent instantialization
     }

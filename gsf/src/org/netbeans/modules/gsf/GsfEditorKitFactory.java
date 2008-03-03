@@ -217,12 +217,6 @@ public class GsfEditorKitFactory {
         }
 
         @Override
-        public Completion createCompletion(ExtEditorUI extEditorUI) {
-            //return new GenericCompletion(extEditorUI);
-            return null;
-        }
-
-        @Override
         public Object clone() {
             return new GsfEditorKit();
         }

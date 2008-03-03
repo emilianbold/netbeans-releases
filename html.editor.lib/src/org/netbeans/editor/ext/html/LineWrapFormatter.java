@@ -86,7 +86,7 @@ public class LineWrapFormatter extends ExtFormatter {
     }
     
     public void settingsChange(SettingsChangeEvent evt) {
-	super.settingsChange(evt);
+//	super.settingsChange(evt);
 	String name = (evt != null) ? evt.getSettingName() : null;
 	if (name == null || SettingsNames.TEXT_LIMIT_WIDTH.equals(name)) {
 	    textLimit = getTextLimit();

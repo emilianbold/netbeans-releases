@@ -84,12 +84,21 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
         
         private final String value;
         private String javaType;
+        private String apiCategory; // the API stability
         
         public TypedValue(String value, String javaType) {
             this.value = value;
             this.javaType = javaType;
         }
 
+        public String getApiCategory() {
+            return apiCategory;
+        }
+        
+        public void setApiCategory(String apiCategory) {
+            this.apiCategory = apiCategory;
+        }
+        
         public String getJavaType() {
             return javaType;
         }

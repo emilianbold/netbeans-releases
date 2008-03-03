@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.SwingConstants;
@@ -66,19 +65,30 @@ import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import java.io.CharArrayWriter;
 import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+import javax.swing.KeyStroke;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib.NavigationHistory;
+import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
 * Editor kit implementation for base document
@@ -305,17 +315,13 @@ public class BaseKit extends DefaultEditorKit {
 
     static final long serialVersionUID = -8570495408376659348L;
 
-    /** [kit-class, kit-instance] pairs are stored here */
-    private static final Map kits = new HashMap(KIT_CNT_PREALLOC);
+    private static final Map<Class, BaseKit> kits = new HashMap<Class, BaseKit>(KIT_CNT_PREALLOC);
 
-    /** [kit-class, keymap] pairs */
-    private static final Map kitKeymaps = new HashMap(KIT_CNT_PREALLOC);
-
-    /** [kit, action[]] pairs */
-    private static final Map kitActions = new HashMap(KIT_CNT_PREALLOC);
-
-    /** [kit, action-map] pairs */
-    private static final Map kitActionMaps = new HashMap(KIT_CNT_PREALLOC);
+    private static final Object KEYMAPS_AND_ACTIONS_LOCK = new String("BaseKit.KEYMAPS_AND_ACTIONS_LOCK"); //NOI18N
+    private static final Map<MimePath, KeymapTracker> keymapTrackers = new WeakHashMap<MimePath, KeymapTracker>(KIT_CNT_PREALLOC);
+    private static final Map<MimePath, MultiKeymap> kitKeymaps = new WeakHashMap<MimePath, MultiKeymap>(KIT_CNT_PREALLOC);
+    private static final Map<MimePath, Action[]> kitActions = new WeakHashMap<MimePath, Action[]>(KIT_CNT_PREALLOC);
+    private static final Map<MimePath, Map<String, Action>> kitActionMaps = new WeakHashMap<MimePath, Map<String, Action>>(KIT_CNT_PREALLOC);
     
     private static CopyAction copyActionDef = new CopyAction();
     private static CutAction cutActionDef = new CutAction();
@@ -329,40 +335,49 @@ public class BaseKit extends DefaultEditorKit {
     
     public static final int MAGIC_POSITION_MAX = Integer.MAX_VALUE - 1;
 
-    static SettingsChangeListener settingsListener = new SettingsChangeListener() {
-        public void settingsChange(SettingsChangeEvent evt) {
-            String settingName = (evt != null) ? evt.getSettingName() : null;
-
-            boolean clearActions = (settingName == null
-                    || SettingsNames.CUSTOM_ACTION_LIST.equals(settingName)
-                    || SettingsNames.MACRO_MAP.equals(settingName));
-
-            if (clearActions || SettingsNames.KEY_BINDING_LIST.equals(settingName)) {
-                kitKeymaps.clear();
-            }
-
-            if (clearActions) {
-                kitActions.clear();
-                kitActionMaps.clear();
-            } else { // only refresh action settings
-                Iterator i = kitActions.entrySet().iterator();
-                while (i.hasNext()) {
-                    Map.Entry me = (Map.Entry)i.next();
-                    updateActionSettings((Action[])me.getValue(), evt, (Class)me.getKey());
-                }
-            }
-        }
-    };
-
-    static {
-        Settings.addSettingsChangeListener(settingsListener);
-    }
+//    static SettingsChangeListener settingsListener = new SettingsChangeListener() {
+//        public void settingsChange(SettingsChangeEvent evt) {
+//            String settingName = (evt != null) ? evt.getSettingName() : null;
+//
+//            boolean clearActions = (settingName == null
+//                    || SettingsNames.CUSTOM_ACTION_LIST.equals(settingName)
+//                    || SettingsNames.MACRO_MAP.equals(settingName));
+//
+//            if (clearActions || SettingsNames.KEY_BINDING_LIST.equals(settingName)) {
+//                kitKeymaps.clear();
+//            }
+//
+//            if (clearActions) {
+//                kitActions.clear();
+//                kitActionMaps.clear();
+//            } else { // only refresh action settings
+//                Iterator i = kitActions.entrySet().iterator();
+//                while (i.hasNext()) {
+//                    Map.Entry me = (Map.Entry)i.next();
+//                    updateActionSettings((Action[])me.getValue(), evt, (Class)me.getKey());
+//                }
+//            }
+//        }
+//    };
+//
+//    static {
+//        Settings.addSettingsChangeListener(settingsListener);
+//    }
     
-    private static void updateActionSettings(Action[] actions,
-            SettingsChangeEvent evt, Class kitClass) {
-        for (int i = 0; i < actions.length; i++) {
-            if (actions[i] instanceof BaseAction) {
-                ((BaseAction)actions[i]).settingsChange(evt, kitClass);
+    private void updateActionSettings(Action[] actions) {
+        for(Action a : actions) {
+            if (a instanceof BaseAction) {
+                for(Method m : a.getClass().getDeclaredMethods()) {
+                    if (m.getName().equals("settingsChange") && m.getParameterTypes().length == 2 && m.getParameterTypes()[1] == Class.class) { //NOI18N
+                        try {
+                            m.setAccessible(true);
+                            m.invoke(a, null, getClass());
+                        } catch (Exception e) {
+                            LOG.log(Level.FINE, null, e);
+                        }
+                        break;
+                    }
+                }
             }
         }
     }
@@ -446,18 +461,29 @@ public class BaseKit extends DefaultEditorKit {
         }
         
         synchronized (kits) {
-            BaseKit kit = (BaseKit)kits.get(kitClass);
-            if (kit == null) {
-                try {
-                    kit = (BaseKit)kitClass.newInstance();
-                } catch (IllegalAccessException e) {
-                    LOG.log(Level.WARNING, null, e);
-                } catch (InstantiationException e) {
-                    LOG.log(Level.WARNING, null, e);
+            Class classToTry = kitClass;
+            for(;;) {
+                BaseKit kit = (BaseKit)kits.get(classToTry);
+                if (kit == null) {
+                    try {
+                        kit = (BaseKit)classToTry.newInstance();
+                        kits.put(classToTry, kit);
+                        return kit;
+                    } catch (IllegalAccessException e) {
+                        LOG.log(Level.WARNING, "Can't instantiate editor kit from: " + classToTry, e); //NOI18N
+                    } catch (InstantiationException e) {
+                        LOG.log(Level.WARNING, "Can't instantiate editor kit from: " + classToTry, e); //NOI18N
+                    }
+                    
+                    if (classToTry != BaseKit.class) {
+                        classToTry = BaseKit.class;
+                    } else {
+                        throw new IllegalStateException("Can't create editor kit for: " + kitClass); //NOI18N
+                    }
+                } else {
+                    return kit;
                 }
-                kits.put(kitClass, kit);
             }
-            return kit;
         }
     }
 
@@ -512,7 +538,7 @@ public class BaseKit extends DefaultEditorKit {
     }
 
     /** Clone this editor kit */
-    public Object clone() {
+    public @Override Object clone() {
         return this; // no need to create another instance
     }
 
@@ -523,39 +549,57 @@ public class BaseKit extends DefaultEditorKit {
      *
      * @return the view factory
      */
-    public ViewFactory getViewFactory() {
+    public @Override ViewFactory getViewFactory() {
         return null;
     }
 
     /** Create caret to navigate through document */
-    public Caret createCaret() {
+    public @Override Caret createCaret() {
         return new BaseCaret();
     }
 
     /** Create empty document */
-    public Document createDefaultDocument() {
+    public @Override Document createDefaultDocument() {
         return new BaseDocument(this.getClass(), true);
     }
 
-    /** Create new instance of syntax coloring scanner
-    * @param doc document to operate on. It can be null in the cases the syntax
-    *   creation is not related to the particular document
-    */
+    /** 
+     * Create new instance of syntax coloring scanner
+     * @param doc document to operate on. It can be null in the cases the syntax
+     *   creation is not related to the particular document
+     * 
+     * @deprecated Please use Lexer instead, for details see
+     *   <a href="@org-netbeans-modules-lexer@/overview-summary.html">Lexer</a>.
+     */
     public Syntax createSyntax(Document doc) {
         return new DefaultSyntax();
     }
 
-    /** Create the syntax used for formatting */
+    /** 
+     * Create the syntax used for formatting.
+     * 
+     * @deprecated Please use Editor Indentation API instead, for details see
+     *   <a href="@org-netbeans-modules-editor-indent@/overview-summary.html">Editor Indentation</a>.
+     */
     public Syntax createFormatSyntax(Document doc) {
         return createSyntax(doc);
     }
 
-    /** Create syntax support */
+    /** 
+     * Create syntax support
+     * 
+     * @deprecated Please use Lexer instead, for details see
+     *   <a href="@org-netbeans-modules-lexer@/overview-summary.html">Lexer</a>.
+     */
     public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
         return new SyntaxSupport(doc);
     }
 
-    /** Create the formatter appropriate for this kit */
+    /** 
+     * Create the formatter appropriate for this kit
+     * @deprecated Please use Editor Indentation API instead, for details see
+     *   <a href="@org-netbeans-modules-editor-indent@/overview-summary.html">Editor Indentation</a>.
+     */
     public Formatter createFormatter() {
         return new Formatter(this.getClass());
     }
@@ -597,33 +641,38 @@ public class BaseKit extends DefaultEditorKit {
     }
 
     public MultiKeymap getKeymap() {
-        synchronized (Settings.class) {
-            MultiKeymap km = (MultiKeymap)kitKeymaps.get(this.getClass());
+        synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
+            MimePath mimePath = MimePath.parse(getContentType());
+            MultiKeymap km = (MultiKeymap)kitKeymaps.get(mimePath);
+            
             if (km == null) { // keymap not yet constructed
                 // construct new keymap
-                km = new MultiKeymap("Keymap for " + this.getClass()); // NOI18N
+                km = new MultiKeymap("Keymap for " + mimePath.getPath()); // NOI18N
+                
                 // retrieve key bindings for this kit and super kits
-                Settings.KitAndValue kv[] = Settings.getValueHierarchy(
-                                                this.getClass(), SettingsNames.KEY_BINDING_LIST);
-                // go through all levels and collect key bindings
-                for (int i = kv.length - 1; i >= 0; i--) {
-                    List keyList = (List)kv[i].value;
-                    JTextComponent.KeyBinding[] keys = new JTextComponent.KeyBinding[keyList.size()];
-                    keyList.toArray(keys);
-                    km.load(keys, getActionMap());
+                KeyBindingSettings kbs = MimeLookup.getLookup(mimePath).lookup(KeyBindingSettings.class);
+                List<org.netbeans.api.editor.settings.MultiKeyBinding> mkbList = kbs.getKeyBindings();
+                List<JTextComponent.KeyBinding> editorMkbList = new  ArrayList<JTextComponent.KeyBinding>();
+                
+                for(org.netbeans.api.editor.settings.MultiKeyBinding mkb : mkbList) {
+                    List<KeyStroke> keyStrokes = mkb.getKeyStrokeList();
+                    MultiKeyBinding editorMkb = new MultiKeyBinding(keyStrokes.toArray(new KeyStroke[keyStrokes.size()]), mkb.getActionName());
+                    editorMkbList.add(editorMkb);
                 }
                 
-                km.setDefaultAction((Action)getActionMap().get(defaultKeyTypedAction));
+                // go through all levels and collect key bindings
+                km.load(editorMkbList.toArray(new JTextComponent.KeyBinding[editorMkbList.size()]), getActionMap());
+                km.setDefaultAction(getActionMap().get(defaultKeyTypedAction));
 
-                kitKeymaps.put(this.getClass(), km);
+                kitKeymaps.put(mimePath, km);
             }
+            
             return km;
         }
     }
 
     /** Inserts content from the given stream. */
-    public void read(Reader in, Document doc, int pos)
-    throws IOException, BadLocationException {
+    public @Override void read(Reader in, Document doc, int pos) throws IOException, BadLocationException {
         if (doc instanceof BaseDocument) {
             ((BaseDocument)doc).read(in, pos); // delegate it to document
         } else {
@@ -632,8 +681,7 @@ public class BaseKit extends DefaultEditorKit {
     }
 
     /** Writes content from a document to the given stream */
-    public void write(Writer out, Document doc, int pos, int len)
-    throws IOException, BadLocationException {
+    public @Override void write(Writer out, Document doc, int pos, int len) throws IOException, BadLocationException {
         if (doc instanceof BaseDocument) {
             ((BaseDocument)doc).write(out, pos, len);
         } else {
@@ -644,11 +692,10 @@ public class BaseKit extends DefaultEditorKit {
     /** Creates map with [name, action] pairs from the given
     * array of actions.
     */
-    public static Map actionsToMap(Action[] actions) {
-        Map map = new HashMap();
-        for (int i = 0; i < actions.length; i++) {
-            Action a = actions[i];
-            String name = (String)a.getValue(Action.NAME);
+    public static Map<String, Action> actionsToMap(Action[] actions) {
+        Map<String, Action> map = new HashMap<String, Action>();
+        for (Action a : actions) {
+            String name = (String) a.getValue(Action.NAME);
             map.put(((name != null) ? name : ""), a); // NOI18N
         }
         return map;
@@ -667,7 +714,7 @@ public class BaseKit extends DefaultEditorKit {
     }
 
     /** Called after the kit is installed into JEditorPane */
-    public void install(JEditorPane c) {
+    public @Override void install(JEditorPane c) {
         
         assert (SwingUtilities.isEventDispatchThread()) // expected in AWT only
             : "BaseKit.install() incorrectly called from non-AWT thread."; // NOI18N
@@ -681,8 +728,8 @@ public class BaseKit extends DefaultEditorKit {
         if (noInputMethods != null) {
             enableIM = !Boolean.getBoolean(propName);
         } else {
-            enableIM = SettingsUtil.getBoolean(this.getClass(),
-                                               SettingsNames.INPUT_METHODS_ENABLED, true);
+            Preferences prefs = MimeLookup.getLookup(getContentType()).lookup(Preferences.class);
+            enableIM = prefs.getBoolean("input-methods-enabled", true); //NOI18N
         }
 
         c.enableInputMethods(enableIM);
@@ -699,26 +746,51 @@ public class BaseKit extends DefaultEditorKit {
         if (!(this instanceof HelpCtx.Provider)) {
             HelpCtx.setHelpIDString(c, getContentType().replace('/', '.').replace('+', '.')); //NOI18N
         }
+        
+        // setup the keymap tracker and initialize the keymap
+        MultiKeymap keymap;
+        synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
+            MimePath mimePath = MimePath.get(getContentType());
+            KeymapTracker tracker = keymapTrackers.get(mimePath);
+            if (tracker == null) {
+                tracker = new KeymapTracker(mimePath.getPath());
+                keymapTrackers.put(mimePath, tracker);
+            }
+            tracker.addComponent(c);
+            keymap = getKeymap();
+        }
+        
+        c.setKeymap(keymap);
     }
 
     protected void executeInstallActions(JEditorPane c) {
-        Settings.KitAndValue[] kv = Settings.getValueHierarchy(this.getClass(),
-                                    SettingsNames.KIT_INSTALL_ACTION_NAME_LIST);
-        for (int i = kv.length - 1; i >= 0; i--) {
-            List actList = (List)kv[i].value;
-            actList = translateActionNameList(actList); // translate names to actions
-            if (actList != null) {
-                for (Iterator iter = actList.iterator(); iter.hasNext();) {
-                    Action a = (Action)iter.next();
-                    a.actionPerformed(new ActionEvent(c, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-                }
-            }
+        Preferences prefs = MimeLookup.getLookup(getContentType()).lookup(Preferences.class);
+        List<String> actionNamesList = new  ArrayList<String>();
+        String actionNames = prefs.get("kit-install-action-name-list", ""); //NOI18N
+        for(StringTokenizer t = new StringTokenizer(actionNames, ","); t.hasMoreTokens(); ) { //NOI18N
+            String actionName = t.nextToken().trim();
+            actionNamesList.add(actionName);
+        }
+        
+        List<Action> actionsList = translateActionNameList(actionNamesList); // translate names to actions
+        for (Action a : actionsList) {
+            a.actionPerformed(new ActionEvent(c, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
         }
     }
 
-    public void deinstall(JEditorPane c) {
-        
-        assert (SwingUtilities.isEventDispatchThread()); // expected in AWT only
+    public @Override void deinstall(JEditorPane c) {
+        assert (SwingUtilities.isEventDispatchThread()) // expected in AWT only
+            : "BaseKit.deinstall() incorrectly called from non-AWT thread."; // NOI18N
+    
+        // reset the keymap and remove the component from the tracker
+        c.setKeymap(null);
+        synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
+            MimePath mimePath = MimePath.get(getContentType());
+            KeymapTracker tracker = keymapTrackers.get(mimePath);
+            if (tracker != null) {
+                tracker.removeComponent(c);
+            }
+        }
         
         BaseTextUI.uninstallUIWatcher(c);
         executeDeinstallActions(c);
@@ -731,17 +803,17 @@ public class BaseKit extends DefaultEditorKit {
     }
 
     protected void executeDeinstallActions(JEditorPane c) {
-        Settings.KitAndValue[] kv = Settings.getValueHierarchy(this.getClass(),
-                                    SettingsNames.KIT_DEINSTALL_ACTION_NAME_LIST);
-        for (int i = kv.length - 1; i >= 0; i--) {
-            List actList = (List)kv[i].value;
-            actList = translateActionNameList(actList); // translate names to actions
-            if (actList != null) {
-                for (Iterator iter = actList.iterator(); iter.hasNext();) {
-                    Action a = (Action)iter.next();
-                    a.actionPerformed(new ActionEvent(c, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-                }
-            }
+        Preferences prefs = MimeLookup.getLookup(getContentType()).lookup(Preferences.class);
+        List<String> actionNamesList = new  ArrayList<String>();
+        String actionNames = prefs.get("kit-deinstall-action-name-list", ""); //NOI18N
+        for(StringTokenizer t = new StringTokenizer(actionNames, ","); t.hasMoreTokens(); ) { //NOI18N
+            String actionName = t.nextToken().trim();
+            actionNamesList.add(actionName);
+        }
+        
+        List<Action> actionsList = translateActionNameList(actionNamesList); // translate names to actions
+        for (Action a : actionsList) {
+            a.actionPerformed(new ActionEvent(c, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
         }
     }
 
@@ -866,21 +938,16 @@ public class BaseKit extends DefaultEditorKit {
     }
 
     protected Action[] getCustomActions() {
-        Settings.KitAndValue kv[] = Settings.getValueHierarchy(
-                                          this.getClass(), SettingsNames.CUSTOM_ACTION_LIST);
-        if (kv.length == 0) {
-            return null;
+        MimePath mimePath = MimePath.parse(getContentType());
+        Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+        String customActionListFactory = prefs.get("custom-action-list", null); //NOI18N
+        
+        if (customActionListFactory != null) {
+            Action[] customActions = (Action []) SettingsConversions.callFactory(customActionListFactory, mimePath);
+            return customActions;
         }
-        if (kv.length == 1) {
-            List l = (List)kv[0].value;
-            return (Action[])l.toArray(new Action[l.size()]);
-        }
-        // more than one list of actions
-        List l = new ArrayList();
-        for (int i = kv.length - 1; i >= 0; i--) { // from BaseKit down
-            l.addAll((List)kv[i].value);
-        }
-        return (Action[])l.toArray(new Action[l.size()]);
+        
+        return null;
     }
     
     /**
@@ -893,50 +960,45 @@ public class BaseKit extends DefaultEditorKit {
     /** Get actions associated with this kit. createActions() is called
     * to get basic list and then customActions are added.
     */
-    public final Action[] getActions() {
-        synchronized (Settings.class) { // possibly long running code follows
-            Class thisClass = this.getClass();
-            Action[] actions = (Action[])kitActions.get(thisClass);
-            if (actions == null) {
+    public @Override final Action[] getActions() {
+        return (Action []) getActionsAndMap()[0];
+    }
+
+    /* package */ Map<String, Action> getActionMap() {
+        return (Map<String, Action>) getActionsAndMap()[1];
+    }
+
+    private Object[] getActionsAndMap() {
+        synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
+            MimePath mimePath = MimePath.parse(getContentType());
+            Action[] actions = kitActions.get(mimePath);
+            Map<String, Action> actionMap = kitActionMaps.get(mimePath);
+            
+            if (actions == null || actionMap == null) {
                 // create map of actions
-                Action[] createdActions = createActions();
-                updateActionSettings(createdActions, null, thisClass);
-                Map actionMap = actionsToMap(createdActions);
+                actions = createActions();
+                actionMap = actionsToMap(actions);
+                
                 // add custom actions
                 Action[] customActions = getCustomActions();
                 if (customActions != null) {
-                    updateActionSettings(customActions, null, thisClass);
                     actionMap.putAll(actionsToMap(customActions));
+                    actions = actionMap.values().toArray(new Action[actionMap.values().size()]);
                 }
 
-                // store for later use
-                kitActionMaps.put(thisClass, actionMap);
-                // create action array and store for later use
-                actions = mapToActions(actionMap);
-                kitActions.put(thisClass, actions);
+                kitActions.put(mimePath, actions);
+                kitActionMaps.put(mimePath, actionMap);
 
                 // At this moment the actions are constructed completely
                 // The actions will be updated now if necessary
+                updateActionSettings(actions);
                 updateActions();
             }
-            return actions;
+            
+            return new Object [] { actions, actionMap };
         }
     }
-
-    Map getActionMap() {
-        Map actionMap = (Map)kitActionMaps.get(this.getClass());
-        if (actionMap == null) {
-            getActions(); // init action map
-            actionMap = (Map)kitActionMaps.get(this.getClass());
-
-            // Fix of #27418
-            if (actionMap == null) {
-                actionMap = Collections.EMPTY_MAP;
-            }
-        }
-        return actionMap;
-    }
-
+    
     /** Update the actions right after their creation was finished.
      * The <code>getActions()</code> and <code>getActionByName()</code>
      * can be used safely in this method.
@@ -951,12 +1013,11 @@ public class BaseKit extends DefaultEditorKit {
         return (name != null) ? (Action)getActionMap().get(name) : null;
     }
 
-    public List translateActionNameList(List actionNameList) {
-        List ret = new ArrayList();
+    public List<Action> translateActionNameList(List<String> actionNameList) {
+        List<Action> ret = new ArrayList<Action>();
         if (actionNameList != null) {
-            Iterator i = actionNameList.iterator();
-            while (i.hasNext()) {
-                Action a = getActionByName((String)i.next());
+            for(String actionName : actionNameList) {
+                Action a = getActionByName(actionName);
                 if (a != null) {
                     ret.add(a);
                 }
@@ -2454,7 +2515,7 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
-    private static final class DefaultSyntax extends Syntax {
+    /* package */ static final class DefaultSyntax extends Syntax {
 
         private static final int ISI_TEXT = 0;
 
@@ -2503,7 +2564,7 @@ public class BaseKit extends DefaultEditorKit {
         }
     } // End of DefaultSyntax class
 
-    private static final class DefaultSyntaxTokenContext extends TokenContext {
+    /* package */ static final class DefaultSyntaxTokenContext extends TokenContext {
 
         // Numeric-ids for token-ids
         public static final int TEXT_ID =  1;
@@ -2525,4 +2586,49 @@ public class BaseKit extends DefaultEditorKit {
             }
         }
     } // End of DefaultSyntaxTokenContext class
+    
+    private class KeymapTracker implements LookupListener {
+        
+        private final String mimeType;
+        private final Lookup.Result<KeyBindingSettings> lookupResult;
+        private final Set<JTextComponent> components = new HashSet<JTextComponent>();
+        
+        public KeymapTracker(String mimeType) {
+            this.mimeType = mimeType;
+            this.lookupResult = MimeLookup.getLookup(mimeType).lookupResult(KeyBindingSettings.class);
+            this.lookupResult.addLookupListener(WeakListeners.create(LookupListener.class, this, this.lookupResult));
+            this.lookupResult.allInstances();
+        }
+        
+        public void resultChanged(LookupEvent ev) {
+            MultiKeymap keymap;
+            JTextComponent [] arr;
+            
+            synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
+                MimePath mimePath = MimePath.parse(mimeType);
+                
+                // reset the keymap
+                kitKeymaps.remove(mimePath);
+                
+                keymap = getKeymap();
+                arr = components.toArray(new JTextComponent[components.size()]);
+            }
+            
+            for(JTextComponent c : arr) {
+                c.setKeymap(keymap);
+            }
+        }
+        
+        public void addComponent(JTextComponent c) {
+            synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
+                components.add(c);
+            }            
+        }
+        
+        public void removeComponent(JTextComponent c) {
+            synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
+                components.remove(c);
+            }            
+        }
+    } // End of KeymapTrackare class
 }

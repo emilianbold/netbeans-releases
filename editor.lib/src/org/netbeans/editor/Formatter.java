@@ -42,16 +42,23 @@
 package org.netbeans.editor;
 
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.io.IOException;
 import java.io.Writer;
 import java.io.CharArrayWriter;
+import java.util.WeakHashMap;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.EditorKit;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.openide.util.WeakListeners;
 
 /**
 * Various services related to indentation and text formatting
@@ -63,27 +70,83 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 * @version 1.00
 */
 
-public class Formatter implements SettingsChangeListener {
+public class Formatter {
 
-    private static Map kitClass2Formatter = new HashMap();
+    private static final Map<Class, Formatter> kitClass2Formatter = new WeakHashMap<Class, Formatter>();
+    private static final Map<MimePath, Formatter> mimePath2Formatter = new WeakHashMap<MimePath, Formatter>();
 
-    /** Get the formatter for the given kit-class */
+    /** 
+     * Gets <code>Formatter</code> implementation for given editor kit's
+     * implementation class.
+     * 
+     * @param kitClass The editor kit's implementation class to get the
+     *   <code>Formatter</code> for.
+     * 
+     * @return <code>Formatter</code> implementation created by the editor kit.
+     * @deprecated Use of editor kit's implementation classes is deprecated
+     *   in favor of mime types.
+     */
     public static synchronized Formatter getFormatter(Class kitClass) {
-        Formatter f = (Formatter)kitClass2Formatter.get(kitClass);
-        if (f == null) {
-            f = BaseKit.getKit(kitClass).createFormatter();
-            kitClass2Formatter.put(kitClass, f);
+        String mimeType = BaseKit.kitsTracker_FindMimeType(kitClass);
+        if (mimeType != null) {
+            return getFormatter(mimeType);
+        } else {
+            Formatter formatter = kitClass2Formatter.get(kitClass);
+            if (formatter == null) {
+                formatter = BaseKit.getKit(kitClass).createFormatter();
+                kitClass2Formatter.put(kitClass, formatter);
+            }
+            return formatter;
         }
-        return f;
     }
     
-    /** Set the formatter for the given kit-class.
+    /**
+     * Gets <code>Formatter</code> implementation for given mime type.
+     * 
+     * @param mimeType The mime type to get the <code>Formatter</code> for.
+     * 
+     * @return <code>Formatter</code> implementation created by the mime
+     *   type's editor kit.
+     * @deprecated Use Editor Indentation API.
+     * @since 1.18
+     */
+    public static synchronized Formatter getFormatter(String mimeType) {
+        MimePath mimePath = MimePath.parse(mimeType);
+        Formatter formatter = mimePath2Formatter.get(mimePath);
+        
+        if (formatter == null) {
+            EditorKit editorKit = MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
+            if (editorKit instanceof BaseKit) {
+                formatter = ((BaseKit) editorKit).createFormatter();
+            } else {
+                formatter = BaseKit.getKit(BaseKit.class).createFormatter();
+            }
+            mimePath2Formatter.put(mimePath, formatter);
+        }
+        
+        return formatter;
+    }
+    
+    private static synchronized void setFormatter(String mimeType, Formatter formatter) {
+        mimePath2Formatter.put(MimePath.parse(mimeType), formatter);
+    }
+    
+    /** 
+     * Sets the formatter for the given kit-class.
+     * 
      * @param kitClass class of the kit for which the formatter
      *  is being assigned.
      * @param formatter new formatter for the given kit
+     * 
+     * @deprecated Use Editor Indentation API.
      */
     public static synchronized void setFormatter(Class kitClass, Formatter formatter) {
-        kitClass2Formatter.put(kitClass, formatter);
+        String mimeType = BaseKit.kitsTracker_FindMimeType(kitClass);
+        if (mimeType != null) {
+            setFormatter(mimeType, formatter);
+        } else {
+            kitClass2Formatter.put(kitClass, formatter);
+        }
     }
 
 
@@ -119,51 +182,57 @@ public class Formatter implements SettingsChangeListener {
 
     private boolean customSpacesPerTab;
 
+    private final Preferences prefs;
+    private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String key = evt == null ? null : evt.getKey();
+            if (!inited || key == null || SimpleValueNames.TAB_SIZE.equals(key)) {
+                if (!customTabSize) {
+                    tabSize = prefs.getInt(SimpleValueNames.TAB_SIZE, 8);
+                }
+            }
+
+            // Shift-width often depends on the rest of parameters
+            if (!customShiftWidth) {
+                int shw = prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, -1);
+                if (shw >= 0) {
+                    shiftWidth = shw;
+                }
+            }
+
+            if (!inited || key == null || SimpleValueNames.EXPAND_TABS.equals(key)) {
+                if (!customExpandTabs) {
+                    expandTabs = prefs.getBoolean(SimpleValueNames.EXPAND_TABS, true);
+                }
+            }
+            
+            if (!inited || key == null || SimpleValueNames.SPACES_PER_TAB.equals(key)) {
+                if (!customSpacesPerTab) {
+                    spacesPerTab = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
+                }
+            }
+
+            inited = true;
+            
+            SettingsConversions.callSettingsChange(Formatter.this);
+        }
+    };
+    
     /** Construct new formatter.
     * @param kitClass the class of the kit for which this formatter is being
     *  constructed.
     */
     public Formatter(Class kitClass) {
         this.kitClass = kitClass;
-        Settings.addSettingsChangeListener(this);
+        
+        String mimeType = BaseKit.getKit(kitClass).getContentType();
+        prefs = MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(Preferences.class);
+        prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs));
     }
 
     /** Get the kit-class for which this formatter is constructed. */
     public Class getKitClass() {
         return kitClass;
-    }
-
-    public void settingsChange(SettingsChangeEvent evt) {
-        String settingName = (evt != null) ? evt.getSettingName() : null;
-        if (!inited || settingName == null || SettingsNames.TAB_SIZE.equals(settingName)) {
-            if (!customTabSize) {
-                tabSize = SettingsUtil.getInteger(kitClass, SettingsNames.TAB_SIZE,
-                                                  SettingsDefaults.defaultTabSize);
-            }
-        }
-
-        // Shift-width often depends on the rest of parameters
-        if (!customShiftWidth) {
-            Object shw = Settings.getValue(kitClass, SettingsNames.INDENT_SHIFT_WIDTH);
-            if (shw instanceof Integer) {
-                shiftWidth = (Integer)shw;
-            }
-        }
-
-        if (!inited || settingName == null || SettingsNames.EXPAND_TABS.equals(settingName)) {
-            if (!customExpandTabs) {
-                expandTabs = SettingsUtil.getBoolean(kitClass, SettingsNames.EXPAND_TABS,
-                                                     SettingsDefaults.defaultExpandTabs);
-            }
-        }
-        if (!inited || settingName == null || SettingsNames.SPACES_PER_TAB.equals(settingName)) {
-            if (!customSpacesPerTab) {
-                spacesPerTab = SettingsUtil.getInteger(kitClass, SettingsNames.SPACES_PER_TAB,
-                                                       SettingsDefaults.defaultSpacesPerTab);
-            }
-        }
-
-        inited = true;
     }
 
     /** Get the number of spaces the TAB character ('\t') visually represents
@@ -179,7 +248,7 @@ public class Formatter implements SettingsChangeListener {
      */
     public int getTabSize() {
         if (!customTabSize && !inited) {
-            settingsChange(null);
+            prefsListener.preferenceChange(null);
         }
 
         return tabSize;
@@ -207,7 +276,7 @@ public class Formatter implements SettingsChangeListener {
      */
     public int getShiftWidth() {
         if (!customShiftWidth && !inited) {
-            settingsChange(null);
+            prefsListener.preferenceChange(null);
         }
 
         return (shiftWidth != null) ? shiftWidth.intValue() : getSpacesPerTab();
@@ -228,7 +297,7 @@ public class Formatter implements SettingsChangeListener {
     /** Should the typed tabs be expanded to the spaces? */
     public boolean expandTabs() {
         if (!customExpandTabs && !inited) {
-            settingsChange(null);
+            prefsListener.preferenceChange(null);
         }
 
         return expandTabs;
@@ -244,7 +313,7 @@ public class Formatter implements SettingsChangeListener {
     */
     public int getSpacesPerTab() {
         if (!customSpacesPerTab && !inited) {
-            settingsChange(null);
+            prefsListener.preferenceChange(null);
         }
 
         return spacesPerTab;
@@ -264,7 +333,7 @@ public class Formatter implements SettingsChangeListener {
             tabSize = 0;
         }
 
-        synchronized (Settings.class) {
+        synchronized (indentStringCache) {
             boolean large = (tabSize >= indentStringCache.length)
                 || (indent > ISC_MAX_INDENT_SIZE); // indexed by (indent - 1)
             String indentString = null;

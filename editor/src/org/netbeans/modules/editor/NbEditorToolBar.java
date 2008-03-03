@@ -54,11 +54,12 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -78,17 +79,14 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.KeyBindingSettings;
+import org.netbeans.api.editor.settings.MultiKeyBinding;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.MultiKeyBinding;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeEvent;
-import org.netbeans.editor.SettingsChangeListener;
-import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.impl.ToolbarActionsProvider;
-import org.netbeans.modules.editor.options.AllOptionsFolder;
-import org.netbeans.modules.editor.options.BaseOptions;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -99,6 +97,9 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -113,7 +114,7 @@ import org.openide.util.lookup.ProxyLookup;
  * @version 1.00
  */
 
-/* package */ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
+/* package */ final class NbEditorToolBar extends JToolBar {
     
     /** Flag for testing the sorting support by debugging messages. */
     private static final boolean debugSort
@@ -131,7 +132,7 @@ import org.openide.util.lookup.ProxyLookup;
      */
     private static final MouseListener sharedMouseListener
         = new org.openide.awt.MouseUtils.PopupMouseAdapter() {
-            public void mouseEntered(MouseEvent evt) {
+            public @Override void mouseEntered(MouseEvent evt) {
                 Object src = evt.getSource();
                 
                 if (src instanceof AbstractButton) {
@@ -143,7 +144,7 @@ import org.openide.util.lookup.ProxyLookup;
                 }
             }
             
-            public void mouseExited(MouseEvent evt) {
+            public @Override void mouseExited(MouseEvent evt) {
                 Object src = evt.getSource();
                 if (src instanceof AbstractButton)
                 {
@@ -169,7 +170,13 @@ import org.openide.util.lookup.ProxyLookup;
     private static final String NOOP_ACTION_KEY = "noop-action-key"; //NOI18N
     private static final Action NOOP_ACTION = new NoOpAction();
     
-   
+    private final Lookup.Result<KeyBindingSettings> lookupResult;
+    private final LookupListener keybindingsTracker = new LookupListener() {
+        public void resultChanged(LookupEvent ev) {
+            refreshToolbarButtons();
+        }
+    };
+    
     public NbEditorToolBar(JTextComponent component) {
         this.componentRef = new WeakReference(component);
         
@@ -179,11 +186,13 @@ import org.openide.util.lookup.ProxyLookup;
 //        Border b = (Border)UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
 //        setBorder(b);
         addMouseListener(sharedMouseListener);
-        Settings.addSettingsChangeListener(this);
-        settingsChange(null);
 
         installModulesInstallationListener();
         installNoOpActionMappings();
+        
+        lookupResult = MimeLookup.getLookup(DocumentUtilities.getMimeType(component)).lookupResult(KeyBindingSettings.class);
+        lookupResult.addLookupListener(WeakListeners.create(LookupListener.class, keybindingsTracker, lookupResult));
+        refreshToolbarButtons();
     }
 
     // issue #69642
@@ -217,16 +226,16 @@ import org.openide.util.lookup.ProxyLookup;
        module install/uninstall */
     private void installModulesInstallationListener(){
         moduleRegListener = new FileChangeAdapter() {
-            public void fileChanged(FileEvent fe){
+            public @Override void fileChanged(FileEvent fe) {
                 //some module installed/uninstalled. Refresh toolbar content
                 Runnable r = new Runnable() {
-                        public void run() {
-                            if (AllOptionsFolder.getDefault().isToolbarVisible()){
-                                checkPresentersRemoved();
-                                checkPresentersAdded();                                
-                            }
+                    public void run() {
+                        if (isToolbarVisible()) {
+                            checkPresentersRemoved();
+                            checkPresentersAdded();                                
                         }
-                     };
+                    }
+                 };
                 Utilities.runInEventDispatchThread(r);
             }
         };
@@ -239,7 +248,7 @@ import org.openide.util.lookup.ProxyLookup;
         }
     }
     
-    public String getUIClassID() {
+    public @Override String getUIClassID() {
         //For GTK and Aqua look and feels, we provide a custom toolbar UI -
         //but we cannot override this globally or it will cause problems for
         //the form editor & other things
@@ -250,84 +259,86 @@ import org.openide.util.lookup.ProxyLookup;
         }
     }
     
-    public String getName() {
+    public @Override String getName() {
         //Required for Aqua L&F toolbar UI
         return "editorToolbar"; // NOI18N
     }
     
-    public void setUI(ToolBarUI ui){
+    public @Override void setUI(ToolBarUI ui){
         addListener = false;
         super.setUI(ui);
         addListener = true;
     }
     
-    public synchronized void addMouseListener(MouseListener l){
-        if (addListener){
+    public @Override synchronized void addMouseListener(MouseListener l) {
+        if (addListener) {
             super.addMouseListener(l);
         }
     }
     
-    public synchronized void addMouseMotionListener(MouseMotionListener l){
-        if (addListener){
+    public @Override synchronized void addMouseMotionListener(MouseMotionListener l) {
+        if (addListener) {
             super.addMouseMotionListener(l);
         }
     }
     
-    public void settingsChange(SettingsChangeEvent evt) {
-        final boolean visible = isToolBarVisible();
+    private boolean isToolbarVisible() {
+        JTextComponent c = getComponent();
+        String mimeType = c == null ? null : DocumentUtilities.getMimeType(c);
+        Preferences prefs = MimeLookup.getLookup(mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType)).lookup(Preferences.class);
+        return prefs.getBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, false);
+    }
+    
+    private void refreshToolbarButtons() {
 	final JTextComponent c = getComponent();
-        final boolean keyBindingsChanged = 
-                evt!=null && 
-                SettingsNames.KEY_BINDING_LIST.equals(evt.getSettingName()) &&
-                c != null
-		&& evt.getKitClass() == Utilities.getKitClass(c);
+        final boolean visible = isToolbarVisible();
+        
         Runnable r = new Runnable() {
-                public void run() {
-                    if (visible) {
-                        checkPresentersAdded();
-                        if (keyBindingsChanged){ //#62487
-                            installNoOpActionMappings();
-                            int componentCount = getComponentCount();
-                            String mimeType = NbEditorUtilities.getMimeType(c);
-                            Map keybsMap = getKeyBindingMap(mimeType);
-                            Component comps[] = getComponents();
-                            for (int i=0; i<comps.length; i++){
-                                Component comp = comps[i];
-                                if (comp instanceof JButton){
-                                    JButton button = (JButton)comp;
-                                    Action action = button.getAction();
-                                    if (action == null){
-                                        continue;
+            public void run() {
+                if (visible) {
+                    checkPresentersAdded();
+                    if (c != null) { //#62487
+                        installNoOpActionMappings();
+                        Map<String, MultiKeyBinding> keybsMap = getKeyBindingMap();
+
+                        Component comps[] = getComponents();
+                        for (int i = 0; i < comps.length; i++) {
+                            Component comp = comps[i];
+                            if (comp instanceof JButton) {
+                                JButton button = (JButton) comp;
+                                Action action = button.getAction();
+                                if (action == null) {
+                                    continue;
+                                }
+                                String actionName = (String) action.getValue(Action.NAME);
+                                if (actionName == null) {
+                                    continue;
+                                }
+
+                                String tooltipText = button.getToolTipText();
+                                if (tooltipText != null) {
+                                    int index = tooltipText.indexOf("("); //NOI18N
+                                    if (index > 0) {
+                                        tooltipText = tooltipText.substring(0, index - 1);
                                     }
-                                    String actionName = (String) action.getValue(Action.NAME);
-                                    if (actionName == null){
-                                        continue;
-                                    }
-                                    
-                                    String tooltipText = button.getToolTipText();
-                                    if (tooltipText!=null){
-                                        int index = tooltipText.indexOf("("); //NOI18N
-                                        if (index > 0){
-                                            tooltipText = tooltipText.substring(0, index-1);
-                                        }
-                                    }
-                                    
-                                    MultiKeyBinding mkb = (MultiKeyBinding)keybsMap.get(actionName);
-                                    if (mkb != null){
-                                        button.setToolTipText(tooltipText
-                                            + " (" + getMnemonic(mkb) + ")"); // NOI18N
-                                    } else {
-                                        button.setToolTipText(tooltipText);
-                                    }
+                                }
+
+                                MultiKeyBinding mkb = keybsMap.get(actionName);
+                                if (mkb != null) {
+                                    button.setToolTipText(tooltipText + " (" + getMnemonic(mkb) + ")"); // NOI18N
+                                } else {
+                                    button.setToolTipText(tooltipText);
                                 }
                             }
                         }
-                    } else {
-                        checkPresentersRemoved();
                     }
-                    setVisible(visible);
+                } else {
+                    checkPresentersRemoved();
                 }
-             };
+                setVisible(visible);
+            }
+        };
+        
         Utilities.runInEventDispatchThread(r);
     }
     
@@ -343,26 +354,17 @@ import org.openide.util.lookup.ProxyLookup;
         removeAll();
     }    
 
-    private static boolean isToolBarVisible() {
-        return AllOptionsFolder.getDefault().isToolbarVisible();
-    }
-    
     /** Utility method for getting the mnemonic of the multi key binding.
      * @param binding multi key binding
      * @return mnemonic for the binding.
      */
     private static String getMnemonic(MultiKeyBinding binding) {
-        StringBuffer sb = new StringBuffer();
-        if (binding.keys != null) { // multiple keys
-            for (int i = 0; i < binding.keys.length; i++) {
-                if (i > 0) {
-                    sb.append(' ');
-                }
-                sb.append(getKeyMnemonic(binding.keys[i]));
+        StringBuilder sb = new StringBuilder();
+        for (KeyStroke keyStroke : binding.getKeyStrokeList()) {
+            if (sb.length() > 0) {
+                sb.append(' '); //NOI18N
             }
-
-        } else { // multiple keys
-            sb.append(getKeyMnemonic(binding.key));
+            sb.append(getKeyMnemonic(keyStroke));
         }
         return sb.toString();
     }
@@ -389,7 +391,7 @@ import org.openide.util.lookup.ProxyLookup;
             sb.append("Meta+"); // NOI18N
         }
         
-        int i = sk.indexOf('-');
+        int i = sk.indexOf('-'); //NOI18N
         if (i != -1) {
             sk = sk.substring(i + 1);
         }
@@ -398,43 +400,25 @@ import org.openide.util.lookup.ProxyLookup;
         return sb.toString();
     }
 
-    private static Map/*<String, MultiKeyBinding>*/ getKeyBindingMap(String mimeType) {
-        Map retMap = new HashMap();
-        List keybList = getKeyBindingList(mimeType);
-        Iterator it = keybList.iterator();
-        while(it.hasNext()){
-            Object obj = it.next();
-            if (obj instanceof MultiKeyBinding){
-                MultiKeyBinding keyb = (MultiKeyBinding)obj;
-                retMap.put(keyb.actionName, keyb);
-            }
+    private Map<String, MultiKeyBinding> getKeyBindingMap() {
+        Map<String, MultiKeyBinding> map = new HashMap<String, MultiKeyBinding>();
+        List<? extends MultiKeyBinding> list = getKeyBindingList();
+        
+        for(MultiKeyBinding mkb : list){
+            map.put(mkb.getActionName(), mkb);
         }
-        return retMap;
+        
+        return map;
     }
     
-    private static List getKeyBindingList(String mimeType) {
-        List keyBindingsList = new ArrayList();
-
-        AllOptionsFolder aof = AllOptionsFolder.getDefault();
-        if (aof != null) {
-            List gkbl = aof.getKeyBindingList();
-            if (gkbl != null) {
-                keyBindingsList.addAll(gkbl);
-            }
+    private List<? extends MultiKeyBinding> getKeyBindingList() {
+        Collection<? extends KeyBindingSettings> c = lookupResult.allInstances();
+        if (!c.isEmpty()) {
+            KeyBindingSettings kbs = c.iterator().next();
+            return kbs.getKeyBindings();
+        } else {
+            return Collections.<MultiKeyBinding>emptyList();
         }
-
-        if (mimeType != null) {
-            BaseOptions options = (BaseOptions) MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
-            if (options != null) {
-                List kbl = options.getKeyBindingList();
-                if (kbl != null) {
-                    keyBindingsList.addAll(kbl);
-                }
-            }
-        }
-        
-        return keyBindingsList;
-        
     }
     
     private JTextComponent getComponent() {
@@ -455,7 +439,7 @@ import org.openide.util.lookup.ProxyLookup;
             return; // Probably no component or it's not loaded properly
         }
 
-        List keybindings = null;
+        List<? extends MultiKeyBinding> keybindings = null;
         Lookup actionContext = null;
         List items = ToolbarActionsProvider.getToolbarItems(mimeType);
         
@@ -537,8 +521,8 @@ import org.openide.util.lookup.ProxyLookup;
                 processButton(button);
                 
                 if (keybindings == null) {
-                    List l = getKeyBindingList(mimeType);
-                    keybindings = l == null ? Collections.emptyList() : l;
+                    List<? extends MultiKeyBinding> l = getKeyBindingList();
+                    keybindings = l == null ? Collections.<MultiKeyBinding>emptyList() : l;
                 }
                 updateTooltip(button, keybindings);
             }
@@ -562,7 +546,7 @@ import org.openide.util.lookup.ProxyLookup;
         }
     }
 
-    private static void updateTooltip(AbstractButton b, List keybindings) {
+    private static void updateTooltip(AbstractButton b, List<? extends MultiKeyBinding> keybindings) {
         Action a = b.getAction();
         String actionName = a == null ? null : (String) a.getValue(Action.NAME);
         
@@ -571,14 +555,10 @@ import org.openide.util.lookup.ProxyLookup;
             return;
         }
         
-        for (Iterator kbIt = keybindings.iterator(); kbIt.hasNext();) {
-            Object o = kbIt.next();
-            if (o instanceof MultiKeyBinding) {
-                MultiKeyBinding binding = (MultiKeyBinding)o;
-                if (actionName.equals(binding.actionName)) {
-                    b.setToolTipText(b.getToolTipText() + " (" + getMnemonic(binding) + ")"); // NOI18N
-                    break; // multiple shortcuts ?
-                }
+        for (MultiKeyBinding mkb : keybindings) {
+            if (actionName.equals(mkb.getActionName())) {
+                b.setToolTipText(b.getToolTipText() + " (" + getMnemonic(mkb) + ")"); // NOI18N
+                break; // multiple shortcuts ?
             }
         }
     }
@@ -638,10 +618,10 @@ import org.openide.util.lookup.ProxyLookup;
         KeyStroke[] ret = new KeyStroke[] { defaultKey };
         JTextComponent comp = getComponent();
         if (editorActionName != null && comp != null) {
-            TextUI ui = comp.getUI();
+            TextUI textUI = comp.getUI();
             Keymap km = comp.getKeymap();
-            if (ui != null && km != null) {
-                EditorKit kit = ui.getEditorKit(comp);
+            if (textUI != null && km != null) {
+                EditorKit kit = textUI.getEditorKit(comp);
                 if (kit instanceof BaseKit) {
                     Action a = ((BaseKit)kit).getActionByName(editorActionName);
                     if (a != null) {

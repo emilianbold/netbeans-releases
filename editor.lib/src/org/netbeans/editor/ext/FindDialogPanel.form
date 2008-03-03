@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="1"/>
@@ -29,11 +31,12 @@
           <Connection code="findWhat" type="code"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="bundle.getString(SettingsNames.FIND_WHAT ) " type="code"/>
+          <Connection code="bundle.getString(EditorFindSupport.FIND_WHAT ) " type="code"/>
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="findWhatLabel.setDisplayedMnemonic(bundle.getString(SettingsNames.FIND_WHAT + &quot;-mnemonic&quot;).charAt(0));"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="findWhatLabel.setDisplayedMnemonic(bundle.getString(EditorFindSupport.FIND_WHAT + &quot;-mnemonic&quot;).charAt(0));"/>
+        <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="FindDialogPanel_findWhatLabel"/>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
       </AuxValues>
       <Constraints>
@@ -47,6 +50,7 @@
         <Property name="editable" type="boolean" value="true"/>
       </Properties>
       <AuxValues>
+        <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="FindDialogPanel_findWhat"/>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
       </AuxValues>
       <Constraints>
@@ -61,11 +65,11 @@
           <Connection code="replaceWith" type="code"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="bundle.getString(SettingsNames.FIND_REPLACE_WITH ) " type="code"/>
+          <Connection code="bundle.getString(EditorFindSupport.FIND_REPLACE_WITH ) " type="code"/>
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="replaceWithLabel.setDisplayedMnemonic(bundle.getString(SettingsNames.FIND_REPLACE_WITH + &quot;-mnemonic&quot;).charAt(0));"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="replaceWithLabel.setDisplayedMnemonic(bundle.getString(EditorFindSupport.FIND_REPLACE_WITH + &quot;-mnemonic&quot;).charAt(0));"/>
         <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value=""/>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
       </AuxValues>
@@ -97,7 +101,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createCheckBox( SettingsNames.FIND_HIGHLIGHT_SEARCH, &apos;H&apos; );"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createCheckBox( EditorFindSupport.FIND_HIGHLIGHT_SEARCH, &apos;H&apos; );"/>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
       </AuxValues>
       <Constraints>
@@ -115,7 +119,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createCheckBox( SettingsNames.FIND_INC_SEARCH, &apos;I&apos; );"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createCheckBox( EditorFindSupport.FIND_INC_SEARCH, &apos;I&apos; );"/>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
       </AuxValues>
       <Constraints>
@@ -133,7 +137,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createCheckBox( SettingsNames.FIND_MATCH_CASE, &apos;C&apos; );"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createCheckBox( EditorFindSupport.FIND_MATCH_CASE, &apos;C&apos; );"/>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
       </AuxValues>
       <Constraints>
@@ -151,7 +155,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createCheckBox( SettingsNames.FIND_WHOLE_WORDS, &apos;W&apos; );"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createCheckBox( EditorFindSupport.FIND_WHOLE_WORDS, &apos;W&apos; );"/>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
       </AuxValues>
       <Constraints>
@@ -169,7 +173,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createCheckBox( SettingsNames.FIND_BACKWARD_SEARCH, &apos;B&apos; );"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createCheckBox( EditorFindSupport.FIND_BACKWARD_SEARCH, &apos;B&apos; );"/>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
       </AuxValues>
       <Constraints>
@@ -187,7 +191,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createCheckBox( SettingsNames.FIND_WRAP_SEARCH, &apos;p&apos; );"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createCheckBox( EditorFindSupport.FIND_WRAP_SEARCH, &apos;p&apos; );"/>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
       </AuxValues>
       <Constraints>
@@ -205,7 +209,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createCheckBox( SettingsNames.FIND_REG_EXP, &apos;E&apos; );"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createCheckBox( EditorFindSupport.FIND_REG_EXP, &apos;E&apos; );"/>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
       </AuxValues>
       <Constraints>
@@ -223,7 +227,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createCheckBox( SettingsNames.FIND_BLOCK_SEARCH, &apos;l&apos; );"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createCheckBox( EditorFindSupport.FIND_BLOCK_SEARCH, &apos;l&apos; );"/>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
       </AuxValues>
       <Constraints>

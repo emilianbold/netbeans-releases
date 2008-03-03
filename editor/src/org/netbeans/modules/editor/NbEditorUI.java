@@ -58,6 +58,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
@@ -68,9 +69,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtKit;
-import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
@@ -84,6 +83,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.impl.CustomizableSideBar;
 import org.netbeans.modules.editor.impl.CustomizableSideBar.SideBarPosition;
 import org.netbeans.modules.editor.impl.SearchBar;
@@ -98,7 +100,7 @@ import org.openide.util.Lookup;
 * @version 1.00
 */
 
-public class NbEditorUI extends ExtEditorUI {
+public class NbEditorUI extends EditorUI {
 
     private FocusListener focusL;
 
@@ -116,7 +118,7 @@ public class NbEditorUI extends ExtEditorUI {
 
     public NbEditorUI() {
         focusL = new FocusAdapter() {
-                     public void focusGained(FocusEvent evt) {
+                     public @Override void focusGained(FocusEvent evt) {
                          // Refresh file object when component made active
                          Document doc = getDocument();
                          if (doc != null) {
@@ -156,7 +158,7 @@ public class NbEditorUI extends ExtEditorUI {
         new NbEditorUI.SystemActionPerformer(editorActionName);
     }
 
-    protected void installUI(JTextComponent c) {
+    protected @Override void installUI(JTextComponent c) {
         super.installUI(c);
 
         if (!attached){
@@ -176,7 +178,7 @@ public class NbEditorUI extends ExtEditorUI {
     }
 
 
-    protected void uninstallUI(JTextComponent c) {
+    protected @Override void uninstallUI(JTextComponent c) {
         super.uninstallUI(c);
 
         c.removeFocusListener(focusL);
@@ -220,12 +222,15 @@ public class NbEditorUI extends ExtEditorUI {
     }
     
 
-    public boolean isLineNumberEnabled() {
-        return AllOptionsFolder.getDefault().getLineNumberVisible();
+    public @Override boolean isLineNumberEnabled() {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        return prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, false);
     }
 
-    public void setLineNumberEnabled(boolean lineNumberEnabled) {
-        AllOptionsFolder.getDefault().setLineNumberVisible(lineNumberEnabled);
+    public @Override void setLineNumberEnabled(boolean lineNumberEnabled) {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        boolean visible = prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, false);
+        prefs.putBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, !visible);
     }
     
     private static void processSideBars(Map sideBars, JComponent ec) {
@@ -369,7 +374,7 @@ public class NbEditorUI extends ExtEditorUI {
         
     }
     
-    protected JToolBar createToolBarComponent() {
+    protected @Override JToolBar createToolBarComponent() {
         return new NbEditorToolBar(getComponent());
     }
 
@@ -400,23 +405,23 @@ public class NbEditorUI extends ExtEditorUI {
         private void attachSystemActionPerformer(JTextComponent c){
             if (c == null) return;
 
-            Action editorAction = getEditorAction(c);
-            if (editorAction == null) return;
+            Action action = getEditorAction(c);
+            if (action == null) return;
 
             Action globalSystemAction = getSystemAction(c);
             if (globalSystemAction == null) return;
 
             if (globalSystemAction instanceof CallbackSystemAction){
                 Object key = ((CallbackSystemAction)globalSystemAction).getActionMapKey();
-                c.getActionMap ().put (key, editorAction);
+                c.getActionMap ().put (key, action);
             }                        
         }
         
         private void detachSystemActionPerformer(JTextComponent c){
             if (c == null) return;
 
-            Action editorAction = getEditorAction(c);
-            if (editorAction == null) return;
+            Action action = getEditorAction(c);
+            if (action == null) return;
 
             Action globalSystemAction = getSystemAction(c);
             if (globalSystemAction == null) return;
@@ -426,7 +431,7 @@ public class NbEditorUI extends ExtEditorUI {
                 ActionMap am = c.getActionMap();
                 if (am != null) {
                     Object ea = am.get(key);
-                    if (editorAction.equals(ea)) {
+                    if (action.equals(ea)) {
                         am.remove(key);
                     }
                 }
@@ -685,7 +690,7 @@ public class NbEditorUI extends ExtEditorUI {
             return systemAction;
         }
 
-        protected void finalize() throws Throwable {
+        protected @Override void finalize() throws Throwable {
             reset();
         }
 

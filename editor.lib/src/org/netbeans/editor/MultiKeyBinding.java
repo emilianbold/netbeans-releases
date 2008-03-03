@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.text.JTextComponent;
 import javax.swing.KeyStroke;
-import javax.swing.Action;
 
 /**
 * Extension of JTextComponent.KeyBinding to hold several successive keystrokes.
@@ -91,7 +90,7 @@ public class MultiKeyBinding extends JTextComponent.KeyBinding
         this(kb.key, kb.actionName);
     }
 
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (o instanceof MultiKeyBinding) {
             MultiKeyBinding kb = (MultiKeyBinding)o;
 
@@ -129,6 +128,13 @@ public class MultiKeyBinding extends JTextComponent.KeyBinding
         return false;
     }
 
+    public @Override int hashCode() {
+        int hash = actionName == null ? 0 : actionName.hashCode();
+        hash += 7 * (key == null ? 0 : key.hashCode());
+        hash += 7 * (keys == null ? 0 : keys.hashCode());
+        return hash;
+    }
+    
     /** Add or replace key bindings array by changes given in
     * the second bindings array
     * @param target target list of bindings
@@ -267,11 +273,11 @@ public class MultiKeyBinding extends JTextComponent.KeyBinding
         out.writeObject( actionName );
     }
 
-    public String toString() {
+    public @Override String toString() {
         if (keys == null) {
             return "key=" + key + ", actionName=" + actionName; // NOI18N
         } else {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < keys.length; i++) {
                 sb.append("key"); // NOI18N
                 sb.append(i);

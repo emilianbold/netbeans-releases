@@ -41,9 +41,7 @@
 
 package org.netbeans.editor;
 
-import java.awt.Color;
 import java.awt.Container;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -60,7 +58,9 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
-import org.netbeans.editor.ext.ExtEditorUI;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.editor.view.spi.LockView;
 
@@ -71,23 +71,16 @@ import org.netbeans.editor.view.spi.LockView;
  *
  * @author Martin Roskanin
  */
-/* package */ class CollapsedView extends View implements SettingsChangeListener {
+/* package */ class CollapsedView extends View {
 
     private static final int MARGIN_WIDTH = 4;
     
-    private Position startPos;
+    private final Position startPos;
     
-    private Position endPos;
+    private final Position endPos;
     
-    private String foldDescription;
+    private final String foldDescription;
 
-    private Font font;
-    
-    private Color foreColor;
-    
-    private Color backColor;
-    
-    
     /** Creates a new instance of CollapsedView */
     public CollapsedView(Element elem, Position startPos, Position endPos, String foldDescription) {
         super(elem);
@@ -95,7 +88,18 @@ import org.netbeans.editor.view.spi.LockView;
         this.startPos = startPos;
         this.endPos = endPos;
         this.foldDescription = foldDescription;
-        Settings.addSettingsChangeListener(this);
+    }
+
+    private static Coloring getColoring(JTextComponent component) {
+        FontColorSettings fcs = MimeLookup.getLookup(
+            org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(component)).lookup(FontColorSettings.class);
+        
+        AttributeSet attribs = fcs.getFontColors(FontColorNames.CODE_FOLDING_COLORING);
+        if (attribs == null) {
+            attribs = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
+        }
+        
+        return Coloring.fromAttributeSet(attribs);
     }
     
     private JTextComponent getComponent() {
@@ -112,37 +116,20 @@ import org.netbeans.editor.view.spi.LockView;
         return (btui!=null) ? btui.getEditorUI() : null;
     }
     
-    public void insertUpdate(DocumentEvent e, Shape a, ViewFactory f) {
-    }
-    
-    public void removeUpdate(DocumentEvent e, Shape a, ViewFactory f) {
-    }
-    
-    public void changedUpdate(DocumentEvent e, Shape a, ViewFactory f) {
-    }
-    
-    public Document getDocument() {
+    public @Override Document getDocument() {
         View parent = getParent();
         return (parent == null) ?  null : parent.getDocument();
     }
     
-    public int getStartOffset() {
+    public @Override int getStartOffset() {
         return startPos.getOffset();
     }
     
-    public int getEndOffset() {
+    public @Override int getEndOffset() {
         return endPos.getOffset();
     }
     
-    protected void forwardUpdate(DocumentEvent.ElementChange ec, 
-				      DocumentEvent e, Shape a, ViewFactory f) {
-    }
-    
-    protected void forwardUpdateToView(View v, DocumentEvent e, 
-					   Shape a, ViewFactory f) {
-    }
-    
-    public float getAlignment(int axis) {
+    public @Override float getAlignment(int axis) {
 	return 0f;
     }
     
@@ -156,11 +143,10 @@ import org.netbeans.editor.view.spi.LockView;
         return 1f;
     }
 
-    
     private int getCollapsedFoldStringWidth() {
         JTextComponent comp = getComponent();
         if (comp==null) return 0;
-        FontMetrics fm = FontMetricsCache.getFontMetrics(getColoringFont(), comp);
+        FontMetrics fm = FontMetricsCache.getFontMetrics(getColoring(comp).getFont(), comp);
         if (fm==null) return 0;
         return fm.stringWidth(foldDescription) + 2 * MARGIN_WIDTH;
     }
@@ -175,22 +161,30 @@ import org.netbeans.editor.view.spi.LockView;
     
     public void paint(Graphics g, Shape allocation){
         Rectangle allocRect = allocation.getBounds();
-        g.setColor(getBackColor());
         int x = allocRect.x+2;
         int y = allocRect.y;
         int width = allocRect.width-1;
         int height = allocRect.height-1;
+
+        Coloring coloring = getColoring(getComponent());
+        
+        // draw background
+        g.setColor(coloring.getBackColor());
         g.fillRect(x, y, width, height);
-        g.setColor(getForeColor());
-        g.setFont(getColoringFont());
+        
+        // draw border
+        g.setColor(coloring.getForeColor());
+        g.setFont(coloring.getFont());
         g.drawRect(x, y, width, height);
         
+        // draw the fold's caption (text)
         g.drawString(foldDescription, x + MARGIN_WIDTH, y + getEditorUI().getLineAscent()-1);
     }
     
-    public int getNextVisualPositionFrom(int pos, Position.Bias b, Shape a, 
-					 int direction, Position.Bias[] biasRet) 
-      throws BadLocationException {
+    public @Override int getNextVisualPositionFrom(
+        int pos, Position.Bias b, Shape a, 
+        int direction, Position.Bias[] biasRet
+    ) throws BadLocationException {
 	biasRet[0] = Position.Bias.Forward;
 	switch (direction) {
 	case NORTH:
@@ -267,168 +261,12 @@ import org.netbeans.editor.view.spi.LockView;
         return fakeView;
     }
     
-    public String getToolTipText(float x, float y, Shape allocation){
-        ToolTipSupport tts = ((ExtEditorUI)getEditorUI()).getToolTipSupport();
+    public @Override String getToolTipText(float x, float y, Shape allocation){
+        ToolTipSupport tts = getEditorUI().getToolTipSupport();
         JComponent toolTip = new FoldingToolTip(getExpandedView(), getEditorUI());
         tts.setToolTip(toolTip, PopupManager.ScrollBarBounds, PopupManager.Largest, -FoldingToolTip.BORDER_WIDTH, 0);
-        return "";
+        return ""; //NOI18N
     }
-    
-    public void settingsChange(SettingsChangeEvent evt) {
-        if (evt == null || org.netbeans.editor.Utilities.getKitClass(getComponent()) != evt.getKitClass()) return;
-        
-        String defaultColoringName = SettingsNames.DEFAULT_COLORING+SettingsNames.COLORING_NAME_SUFFIX;
-        String foldingColoringName = SettingsNames.CODE_FOLDING_COLORING+SettingsNames.COLORING_NAME_SUFFIX;
-        EditorUI editorUI = getEditorUI();
-        if (editorUI==null) return;
-        Coloring foldingColoring = editorUI.getColoring(SettingsNames.CODE_FOLDING_COLORING);
-        Coloring defaultColoring = editorUI.getDefaultColoring();
-        
-        Font foldingFont = null;
-        Color foldingForeColor = null;
-        Color foldingBackColor = null;
-        if (foldingColoring!=null){
-            foldingFont = foldingColoring.getFont();
-            foldingForeColor = foldingColoring.getForeColor();
-            foldingBackColor = foldingColoring.getBackColor();
-        }
-        
-        if (defaultColoringName.equals(evt.getSettingName())){
-            
-            if (foldingForeColor == null){
-                // inherited fore color
-                Color tempColor = getDefaultForeColor();
-                if (!tempColor.equals(foreColor)){
-                    foreColor = tempColor;
-                }
-            }
-
-            if (foldingBackColor == null){
-                // inherited back color
-                Color tempColor = getDefaultBackColor();
-                if (!tempColor.equals(backColor)){
-                    backColor = tempColor;
-                }
-            }
-            
-            // Font size change
-            Font tempFont = getDefaultColoringFont();
-            if (!tempFont.equals(font) && foldingFont==null){
-                // if different font and foldingFont is inherited
-                font = tempFont;
-                //setPreferredSize(new Dimension(font.getSize(), component.getHeight()));
-            }
-            //repaint();
-            
-        }else if (foldingColoringName.equals(evt.getSettingName())){
-            // Code folding coloring change
-            if (foldingColoring == null) return;
-
-            Color tempColor = foldingColoring.getForeColor();
-            foreColor = (tempColor!=null) ? tempColor : getDefaultForeColor();
-            
-            tempColor = foldingColoring.getBackColor();
-            backColor = (tempColor!=null) ? tempColor : getDefaultBackColor();
-            
-            if (foldingFont == null){ //inherit
-                Font tempFont = getDefaultColoringFont();
-                if (!tempFont.equals(font)){
-                    font = tempFont;
-                    //setPreferredSize(new Dimension(font.getSize(), component.getHeight()));
-                }
-            }else{
-                if (!foldingFont.equals(font)){
-                    font = foldingFont;
-                    //setPreferredSize(new Dimension(font.getSize(), component.getHeight()));
-                }
-            }
-            
-            //repaint();
-        }
-    }
-    
-    private Font getDefaultColoringFont(){
-        // font in folding coloring not available, get default (or inherited)
-        EditorUI editorUI = getEditorUI();
-        if (editorUI!=null){
-            Coloring defaultColoring = editorUI.getDefaultColoring();
-            if (defaultColoring!=null){
-                if (defaultColoring.getFont() != null){
-                    return defaultColoring.getFont(); 
-                }
-            }
-        }
-        return SettingsDefaults.defaultFont;
-    }
-    
-    protected Font getColoringFont(){
-        if (font != null) return font;
-        EditorUI editorUI = getEditorUI();
-        if (editorUI!=null){
-            Coloring foldColoring = editorUI.getColoring(SettingsNames.CODE_FOLDING_COLORING);
-            if (foldColoring != null){
-                if (foldColoring.getFont()!=null){
-                    font = foldColoring.getFont();
-                    return font;
-                }
-            }
-        }
-        font = getDefaultColoringFont();
-        return font;
-    }
-    
-    protected Color getForeColor(){
-        if (foreColor != null) return foreColor;
-        EditorUI editorUI = getEditorUI();
-        if (editorUI!=null){
-            Coloring foldColoring = editorUI.getColoring(SettingsNames.CODE_FOLDING_COLORING);
-            if (foldColoring != null && foldColoring.getForeColor()!=null){
-                foreColor = foldColoring.getForeColor();
-                return foreColor;
-            }
-        }
-        foreColor = getDefaultForeColor();
-        return foreColor;
-    }
-    
-    private Color getDefaultForeColor(){
-        EditorUI editorUI = getEditorUI();
-        if (editorUI!=null){
-            // font in folding coloring not available, get default (or inherited)
-            Coloring defaultColoring = editorUI.getDefaultColoring();
-            if (defaultColoring!=null && defaultColoring.getForeColor()!=null){
-                return defaultColoring.getForeColor();
-            }
-        }
-        return SettingsDefaults.defaultForeColor;
-    }
-    
-    private Color getDefaultBackColor(){
-        EditorUI editorUI = getEditorUI();
-        if (editorUI!=null){
-            // font in folding coloring not available, get default (or inherited)
-            Coloring defaultColoring = editorUI.getDefaultColoring();
-            if (defaultColoring!=null){
-                return defaultColoring.getBackColor();
-            }
-        }
-        return SettingsDefaults.defaultBackColor;
-    }
-    
-    protected Color getBackColor(){
-        if (backColor != null) return backColor;
-        EditorUI editorUI = getEditorUI();
-        if (editorUI!=null){
-            Coloring foldColoring = editorUI.getColoring(SettingsNames.CODE_FOLDING_COLORING);
-            if (foldColoring != null && foldColoring.getBackColor()!=null){
-                backColor = foldColoring.getBackColor();
-                return backColor;
-            }
-        }
-        backColor = getDefaultBackColor();
-        return backColor;
-    }
-
     
     class RootView extends View {
 
@@ -453,7 +291,7 @@ import org.netbeans.editor.view.spi.LockView;
 	 * level there are no attributes.  If an attribute is resolved
 	 * up the view hierarchy this is the end of the line.
 	 */
-        public AttributeSet getAttributes() {
+        public @Override AttributeSet getAttributes() {
 	    return null;
 	}
 
@@ -469,8 +307,9 @@ import org.netbeans.editor.view.spi.LockView;
         public float getPreferredSpan(int axis) {
             if (view != null) {
                 return view.getPreferredSpan(axis);
+            } else {
+                return 10;
             }
-            return 10;
         }
 
         /**
@@ -482,11 +321,12 @@ import org.netbeans.editor.view.spi.LockView;
          *         that is returned, although there is no guarantee.
          *         The parent may choose to resize or break the view.
          */
-        public float getMinimumSpan(int axis) {
+        public @Override float getMinimumSpan(int axis) {
             if (view != null) {
                 return view.getMinimumSpan(axis);
+            } else {
+                return 10;
             }
-            return 10;
         }
 
         /**
@@ -498,30 +338,8 @@ import org.netbeans.editor.view.spi.LockView;
          *         that is returned, although there is no guarantee.
          *         The parent may choose to resize or break the view.
          */
-        public float getMaximumSpan(int axis) {
+        public @Override float getMaximumSpan(int axis) {
 	    return Integer.MAX_VALUE;
-        }
-
-        /**
-         * Specifies that a preference has changed.
-         * Child views can call this on the parent to indicate that
-         * the preference has changed.  The root view routes this to
-         * invalidate on the hosting component.
-         * <p>
-         * This can be called on a different thread from the
-         * event dispatching thread and is basically unsafe to
-         * propagate into the component.  To make this safe,
-         * the operation is transferred over to the event dispatching 
-         * thread for completion.  It is a design goal that all view
-         * methods be safe to call without concern for concurrency,
-         * and this behavior helps make that true.
-         *
-         * @param child the child view
-         * @param width true if the width preference has changed
-         * @param height true if the height preference has changed
-         */ 
-        public void preferenceChanged(View child, boolean width, boolean height) {
-            
         }
 
         /**
@@ -531,11 +349,12 @@ import org.netbeans.editor.view.spi.LockView;
          * @return the desired alignment, where 0.0 indicates the origin
          *     and 1.0 the full span away from the origin
          */
-        public float getAlignment(int axis) {
+        public @Override float getAlignment(int axis) {
             if (view != null) {
                 return view.getAlignment(axis);
+            } else {
+                return 0;
             }
-            return 0;
         }
 
         /**
@@ -558,7 +377,7 @@ import org.netbeans.editor.view.spi.LockView;
          *
          * @param parent the parent view
          */
-        public void setParent(View parent) {
+        public @Override void setParent(View parent) {
             throw new Error("Can't set parent on root view"); // NOI18N
         }
 
@@ -570,7 +389,7 @@ import org.netbeans.editor.view.spi.LockView;
          * @return the number of views
          * @see #getView
          */
-        public int getViewCount() {
+        public @Override int getViewCount() {
             return 1;
         }
 
@@ -580,7 +399,7 @@ import org.netbeans.editor.view.spi.LockView;
          * @param n the number of the view to get
          * @return the view
          */
-        public View getView(int n) {
+        public @Override View getView(int n) {
             return view;
         }
 
@@ -594,7 +413,7 @@ import org.netbeans.editor.view.spi.LockView;
 	 *   -1 if no view represents that position
 	 * @since 1.3
 	 */
-        public int getViewIndex(int pos, Position.Bias b) {
+        public @Override int getViewIndex(int pos, Position.Bias b) {
 	    return 0;
 	}
     
@@ -610,7 +429,7 @@ import org.netbeans.editor.view.spi.LockView;
          * @param a  the allocation to this view.
          * @return the allocation to the child
          */
-        public Shape getChildAllocation(int index, Shape a) {
+        public @Override Shape getChildAllocation(int index, Shape a) {
             return a;
         }
 
@@ -625,8 +444,9 @@ import org.netbeans.editor.view.spi.LockView;
         public Shape modelToView(int pos, Shape a, Position.Bias b) throws BadLocationException {
             if (view != null) {
                 return view.modelToView(pos, a, b);
+            } else {
+                return null;
             }
-            return null;
         }
 
 	/**
@@ -648,11 +468,12 @@ import org.netbeans.editor.view.spi.LockView;
 	 * @exception IllegalArgumentException for an invalid bias argument
 	 * @see View#viewToModel
 	 */
-	public Shape modelToView(int p0, Position.Bias b0, int p1, Position.Bias b1, Shape a) throws BadLocationException {
+	public @Override Shape modelToView(int p0, Position.Bias b0, int p1, Position.Bias b1, Shape a) throws BadLocationException {
 	    if (view != null) {
 		return view.modelToView(p0, b0, p1, b1, a);
-	    }
-	    return null;
+	    } else {
+                return null;
+            }
 	}
 
         /**
@@ -669,8 +490,9 @@ import org.netbeans.editor.view.spi.LockView;
             if (view != null) {
                 int retValue = view.viewToModel(x, y, a, bias);
 		return retValue;
+            } else {
+                return -1;
             }
-            return -1;
         }
 
         /**
@@ -690,17 +512,15 @@ import org.netbeans.editor.view.spi.LockView;
          * @exception BadLocationException
          * @exception IllegalArgumentException for an invalid direction
          */
-        public int getNextVisualPositionFrom(int pos, Position.Bias b, Shape a, 
-                                             int direction,
-                                             Position.Bias[] biasRet) 
-            throws BadLocationException {
+        public @Override int getNextVisualPositionFrom(
+            int pos, Position.Bias b, Shape a, 
+            int direction, Position.Bias[] biasRet
+        ) throws BadLocationException {
             if( view != null ) {
-                int nextPos = view.getNextVisualPositionFrom(pos, b, a,
-						     direction, biasRet);
+                int nextPos = view.getNextVisualPositionFrom(pos, b, a, direction, biasRet);
 		if(nextPos != -1) {
 		    pos = nextPos;
-		}
-		else {
+		} else {
 		    biasRet[0] = b;
 		}
             } 
@@ -715,7 +535,7 @@ import org.netbeans.editor.view.spi.LockView;
          * @param a the current allocation of the view
          * @param f the factory to use to rebuild if the view has children
          */
-        public void insertUpdate(DocumentEvent e, Shape a, ViewFactory f) {
+        public @Override void insertUpdate(DocumentEvent e, Shape a, ViewFactory f) {
             if (view != null) {
                 view.insertUpdate(e, a, f);
             }
@@ -729,7 +549,7 @@ import org.netbeans.editor.view.spi.LockView;
          * @param a the current allocation of the view
          * @param f the factory to use to rebuild if the view has children
          */
-        public void removeUpdate(DocumentEvent e, Shape a, ViewFactory f) {
+        public @Override void removeUpdate(DocumentEvent e, Shape a, ViewFactory f) {
             if (view != null) {
                 view.removeUpdate(e, a, f);
             }
@@ -743,7 +563,7 @@ import org.netbeans.editor.view.spi.LockView;
          * @param a the current allocation of the view
          * @param f the factory to use to rebuild if the view has children
          */
-        public void changedUpdate(DocumentEvent e, Shape a, ViewFactory f) {
+        public @Override void changedUpdate(DocumentEvent e, Shape a, ViewFactory f) {
             if (view != null) {
                 view.changedUpdate(e, a, f);
             }
@@ -754,9 +574,9 @@ import org.netbeans.editor.view.spi.LockView;
          *
          * @return the model
          */
-        public Document getDocument() {
+        public @Override Document getDocument() {
             EditorUI editorUI = getEditorUI();
-            return (editorUI==null) ? null : editorUI.getDocument();
+            return (editorUI == null) ? null : editorUI.getDocument();
         }
         
         /**
@@ -764,11 +584,12 @@ import org.netbeans.editor.view.spi.LockView;
          *
          * @return the starting offset
          */
-        public int getStartOffset() {
+        public @Override int getStartOffset() {
             if (view != null) {
                 return view.getStartOffset();
+            } else {
+                return getElement().getStartOffset();
             }
-            return getElement().getStartOffset();
         }
 
         /**
@@ -776,11 +597,12 @@ import org.netbeans.editor.view.spi.LockView;
          *
          * @return the ending offset
          */
-        public int getEndOffset() {
+        public @Override int getEndOffset() {
             if (view != null) {
                 return view.getEndOffset();
+            } else {
+                return getElement().getEndOffset();
             }
-            return getElement().getEndOffset();
         }
 
         /**
@@ -788,11 +610,12 @@ import org.netbeans.editor.view.spi.LockView;
          *
          * @return the view
          */
-        public Element getElement() {
+        public @Override Element getElement() {
             if (view != null) {
                 return view.getElement();
+            } else {
+                return view.getDocument().getDefaultRootElement();
             }
-            return view.getDocument().getDefaultRootElement();
         }
 
         /**
@@ -815,11 +638,12 @@ import org.netbeans.editor.view.spi.LockView;
          * @param axis may be either X_AXIS or Y_AXIS
          * @return the weight
          */
-        public int getResizeWeight(int axis) {
+        public @Override int getResizeWeight(int axis) {
             if (view != null) {
                 return view.getResizeWeight(axis);
+            } else {
+                return 0;
             }
-            return 0;
         }
 
         /**
@@ -828,7 +652,7 @@ import org.netbeans.editor.view.spi.LockView;
          * @param width the width
          * @param height the height
          */
-        public void setSize(float width, float height) {
+        public @Override void setSize(float width, float height) {
             if (view != null) {
                 view.setSize(width, height);
             }
@@ -842,9 +666,9 @@ import org.netbeans.editor.view.spi.LockView;
          *
          * @return the container
          */
-        public Container getContainer() {
+        public @Override Container getContainer() {
             EditorUI editorUI = getEditorUI();
-            return (editorUI==null) ? null : editorUI.getComponent();
+            return (editorUI == null) ? null : editorUI.getComponent();
         }
         
         /**
@@ -860,11 +684,10 @@ import org.netbeans.editor.view.spi.LockView;
          *
          * @return the factory
          */
-        public ViewFactory getViewFactory() {
+        public @Override ViewFactory getViewFactory() {
             EditorUI editorUI = getEditorUI();
-            if (editorUI!=null){
+            if (editorUI != null) {
                 BaseKit kit = Utilities.getKit(editorUI.getComponent());
-
                 ViewFactory f = kit.getViewFactory();
                 if (f != null) {
                     return f;
@@ -874,8 +697,6 @@ import org.netbeans.editor.view.spi.LockView;
         }
 
         private View view;
-
-    }
-    
+    } // End of RootView class
     
 }

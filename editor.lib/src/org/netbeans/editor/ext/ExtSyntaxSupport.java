@@ -54,7 +54,6 @@ import org.netbeans.editor.TokenProcessor;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.FinderFactory;
 import org.netbeans.editor.TextBatchProcessor;
 import org.netbeans.editor.Analyzer;
@@ -595,8 +594,7 @@ public class ExtSyntaxSupport extends SyntaxSupport {
 
 
         TokenItemTP() {
-            fwdBatchLineCnt = bwdBatchLineCnt = ((Integer)getDocument().getProperty(
-                                                     SettingsNames.LINE_BATCH_SIZE)).intValue();
+            fwdBatchLineCnt = bwdBatchLineCnt = ((Integer)getDocument().getProperty(BaseDocument.LINE_BATCH_SIZE)).intValue();
         }
 
         public TokenItem getTokenChain() {
@@ -622,7 +620,7 @@ public class ExtSyntaxSupport extends SyntaxSupport {
         }
 
         public int eot(int offset) {
-            return ((Integer)getDocument().getProperty(SettingsNames.MARK_DISTANCE)).intValue();
+            return ((Integer)getDocument().getProperty("mark-distance")).intValue(); //NOI18N, same constant as in the BaseDocument
         }
 
         public void nextBuffer(char[] buffer, int offset, int len,

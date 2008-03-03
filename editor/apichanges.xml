@@ -105,6 +105,32 @@ is the proper place.
 
     <changes>
 
+        <change id="NbBaseDocument-kitClass-deprecations">
+            <api name="editor"/>
+            <summary>Deprecating kit class related API in NbEditorDocument</summary>
+            <version major="1" minor="37"/>
+            <date day="16" month="1" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="yes" modification="yes"/>
+            <description>
+                <p>
+                    The use of editor kit implementation class for identifying
+                    the type of a document has been deprecated in favor of mime
+                    types and <code>MimeLookup</code>. This change deprecates API
+                    methods and construction in <code>BaseDocument</code> that
+                    accept editor kit implementation class and adds their equivalents
+                    accepting <code>EditorKit</code>.
+                </p>
+                <p>Deprecated:
+                <code>NbEditorDocument(Class)</code>
+                </p>
+                <p>Added:
+                <code>NbEditorDocument(EditorKit)</code>
+                </p>
+            </description>
+            <issue number="114747"/>
+        </change>
+
         <change id="SideBar.location">
             <api name="editor"/>
             <summary>Change of attribute name for <code>SideBar</code> instances to <code>location</code></summary>

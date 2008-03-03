@@ -60,8 +60,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.AnnotationDesc;
-import org.netbeans.editor.ext.ExtEditorUI;
-import org.netbeans.editor.ext.ExtUtilities;
 import java.beans.PropertyChangeListener;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -210,8 +208,8 @@ public class NbToolTip extends FileChangeAdapter {
     }
      
     private void buildTip(JTextComponent target) {
-        ExtEditorUI eeui = ExtUtilities.getExtEditorUI(target);
-        ToolTipSupport tts = eeui == null ? null : eeui.getToolTipSupport();
+        EditorUI eui = Utilities.getEditorUI(target);
+        ToolTipSupport tts = eui == null ? null : eui.getToolTipSupport();
 
         if (tts == null) {
             return; // no tooltip support, no tooltips

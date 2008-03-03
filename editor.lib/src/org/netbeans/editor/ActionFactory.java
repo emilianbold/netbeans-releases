@@ -758,7 +758,8 @@ public class ActionFactory {
     }
 
     /**
-     * @deprecated Without any replacement. This action is not used anymore.
+     * @deprecated Without any replacement. This action is not used anymore and
+     * is no longer functional.
      */
     public static class RunMacroAction extends BaseAction {
 
@@ -790,10 +791,11 @@ public class ActionFactory {
             BaseKit kit = Utilities.getKit(target);
             if( kit == null ) return;
             
-            Map macroMap = (Map)Settings.getValue( kit.getClass(), SettingsNames.MACRO_MAP);
+//            Map macroMap = (Map)Settings.getValue( kit.getClass(), SettingsNames.MACRO_MAP);
+//            
+//            String commandString = (String)macroMap.get( macroName );
+            String commandString = null;
             
-            String commandString = (String)macroMap.get( macroName );
-
             if( commandString == null ) {
                 error( target, "macro-not-found" ); // NOI18N
                 runningActions.remove( macroName );
@@ -906,7 +908,8 @@ public class ActionFactory {
     }
 
     /**
-     * @deprecated Without any replacement. This action is not used anymore.
+     * @deprecated Without any replacement. This action is not used anymore and
+     * is no longer functional.
      */
     public static class StopMacroRecordingAction extends LocalBaseAction {
 
@@ -1080,13 +1083,13 @@ public class ActionFactory {
                 boolean revert = false;
                 Boolean originalValue = null;
                 Map revertMap = (Map)props.get(EditorFindSupport.REVERT_MAP);
-                Boolean revertValue = revertMap != null ? (Boolean)revertMap.get(SettingsNames.FIND_WHOLE_WORDS) : null;
+                Boolean revertValue = revertMap != null ? (Boolean)revertMap.get(EditorFindSupport.FIND_WHOLE_WORDS) : null;
 
                 if (caret.isSelectionVisible()) { // valid selection
                     searchWord = target.getSelectedText();
-                    originalValue = (Boolean)props.put(SettingsNames.FIND_WHOLE_WORDS, Boolean.FALSE);
+                    originalValue = (Boolean)props.put(EditorFindSupport.FIND_WHOLE_WORDS, Boolean.FALSE);
                     if (Boolean.FALSE.equals(revertValue)) {
-                        revertMap.remove(SettingsNames.FIND_WHOLE_WORDS);
+                        revertMap.remove(EditorFindSupport.FIND_WHOLE_WORDS);
                     } else {
                         revert = !Boolean.FALSE.equals(originalValue);
                     }
@@ -1094,9 +1097,9 @@ public class ActionFactory {
                     try {
                         searchWord = Utilities.getIdentifier((BaseDocument)target.getDocument(),
                                                              dotPos);
-                        originalValue = (Boolean)props.put(SettingsNames.FIND_WHOLE_WORDS, Boolean.TRUE);
+                        originalValue = (Boolean)props.put(EditorFindSupport.FIND_WHOLE_WORDS, Boolean.TRUE);
                         if (Boolean.TRUE.equals(revertValue)) {
-                            revertMap.remove(SettingsNames.FIND_WHOLE_WORDS);
+                            revertMap.remove(EditorFindSupport.FIND_WHOLE_WORDS);
                         } else {
                             revert = !Boolean.TRUE.equals(originalValue);
                         }
@@ -1110,11 +1113,11 @@ public class ActionFactory {
                     int n = searchWord.indexOf( '\n' );
                     if (n >= 0 ) 
                         searchWord = searchWord.substring(0, n);
-                    props.put(SettingsNames.FIND_WHAT, searchWord);
+                    props.put(EditorFindSupport.FIND_WHAT, searchWord);
                 
                     if (revert){
                         revertMap = new HashMap();
-                        revertMap.put(SettingsNames.FIND_WHOLE_WORDS, originalValue != null ? originalValue : Boolean.FALSE);
+                        revertMap.put(EditorFindSupport.FIND_WHOLE_WORDS, originalValue != null ? originalValue : Boolean.FALSE);
                         props.put(EditorFindSupport.REVERT_MAP, revertMap);
                     }
 
@@ -1138,14 +1141,14 @@ public class ActionFactory {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 Boolean cur = (Boolean)EditorFindSupport.getInstance().getFindProperty(
-                                  SettingsNames.FIND_HIGHLIGHT_SEARCH);
+                                  EditorFindSupport.FIND_HIGHLIGHT_SEARCH);
                 if (cur == null || cur.booleanValue() == false) {
                     cur = Boolean.TRUE;
                 } else {
                     cur = Boolean.FALSE;
                 }
                 EditorFindSupport.getInstance().putFindProperty(
-                    SettingsNames.FIND_HIGHLIGHT_SEARCH, cur);
+                    EditorFindSupport.FIND_HIGHLIGHT_SEARCH, cur);
             }
         }
 

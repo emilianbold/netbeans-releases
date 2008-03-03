@@ -81,7 +81,14 @@ made subject to such option by the copyright holder.
                 reasons. If you are sure that all your clients and your own
                 code accesses this setting through MimeLookup and
                 java.util.prefs.Preferences then you don't need this.
-                    
+                
+    category:   (String) Determines the API stability of the setting. It can
+                be one of 'stable', 'devel', 'friend', 'private', 'deprecated'.
+                This attribute is ignored when loading settings, but should be
+                provided to indicate the availability of the setting for other
+                modules. If not specified or its value is not one of those listed
+                above the setting should be considered 'private'.
+
     remove:     When 'true' this entry will be removed and all its
                 optional attributes and elements will be ignored.
 -->
@@ -91,6 +98,7 @@ made subject to such option by the copyright holder.
           value             CDATA #IMPLIED
           valueId           CDATA #IMPLIED
           javaType          CDATA #IMPLIED
+          category          CDATA #IMPLIED
           remove            ( true | false ) "false"
           xml:space         ( default | preserve ) "default"
 >

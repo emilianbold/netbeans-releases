@@ -45,14 +45,20 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyleConstants;
 import javax.swing.text.View;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.view.spi.LockView;
+import org.netbeans.modules.editor.lib.EditorRenderingHints;
 
 /**
  *  Component for displaying folded part of code in tooltip
@@ -69,19 +75,27 @@ public class FoldingToolTip extends JPanel {
     public FoldingToolTip(View view, EditorUI editorUI) {
         this.view = view;
         this.editorUI = editorUI;
-        Coloring defColoring = editorUI.getColoring(SettingsNames.DEFAULT_COLORING);
-        Color foreColor = (defColoring != null) ? defColoring.getForeColor() : null;
-        setBorder(new LineBorder((foreColor == null) ? Color.BLACK : foreColor));
+
+        FontColorSettings fcs = MimeLookup.getLookup(
+            org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(
+            editorUI.getComponent())).lookup(FontColorSettings.class);
+        AttributeSet attribs = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
+        Color foreColor = (Color) attribs.getAttribute(StyleConstants.Foreground);
+        if (foreColor == null) {
+            foreColor = Color.black;
+        }
+        
+        setBorder(new LineBorder(foreColor));
         setOpaque(true);
     }
     
 
-    public void setSize(Dimension d){
+    public @Override void setSize(Dimension d){
         setSize(d.width, d.height);
     }
 
    /** Setting size of popup panel. The height and size is computed to fit the best place on the screen */
-    public void setSize(int width, int height){
+    public @Override void setSize(int width, int height){
         int viewHeight = (int) view.getPreferredSpan(View.Y_AXIS);
         int viewWidth = (int) view.getPreferredSpan(View.X_AXIS);
         if (height<30) {
@@ -99,36 +113,35 @@ public class FoldingToolTip extends JPanel {
     
     private void updateRenderingHints(Graphics g){
         JTextComponent comp = editorUI.getComponent();
-        if (comp == null) return;
-        Object value = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
-        //Don't bother seeing if the hints are explicitly turned off (if they
-        //even can be) as in EditorUI - it's a tooltip, desktop default is
-        //fine
-        if (value == null) {
-            value = Settings.getValue(Utilities.getKitClass(comp), SettingsNames.RENDERING_HINTS);
-        }
-        Map renderingHints = (value instanceof Map) ? (java.util.Map)value : null;
+        if (comp != null) {
+            Map renderingHints = EditorRenderingHints.get(MimePath.parse(
+                org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(comp))).getHints();
 
-        // Possibly apply the rendering hints
-        if (renderingHints != null) {
-            ((java.awt.Graphics2D)g).setRenderingHints(renderingHints);
+            // Possibly apply the rendering hints
+            if (renderingHints != null) {
+                ((java.awt.Graphics2D)g).setRenderingHints(renderingHints);
+            }
         }
     }
     
     
-    protected void paintComponent(Graphics g) {
+    protected @Override void paintComponent(Graphics g) {
 
         updateRenderingHints(g);
         
         Rectangle shape = new Rectangle(getSize());
         Rectangle clip = g.getClipBounds();
         
-        Coloring defaultColoring = editorUI.getColoring(SettingsNames.DEFAULT_COLORING);
-        if (defaultColoring!=null && defaultColoring.getBackColor()!=null){
-            g.setColor(defaultColoring.getBackColor());
-        }else{
-            g.setColor(SettingsDefaults.defaultBackColor);
+        FontColorSettings fcs = MimeLookup.getLookup(
+            org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(
+            editorUI.getComponent())).lookup(FontColorSettings.class);
+        AttributeSet attribs = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
+        Color backColor = (Color) attribs.getAttribute(StyleConstants.Background);
+        if (backColor == null) {
+            backColor = Color.white;
         }
+        
+        g.setColor(backColor);
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
 
         g.translate(BORDER_WIDTH, BORDER_WIDTH);
@@ -178,15 +191,9 @@ public class FoldingToolTip extends JPanel {
 
         g.translate(-BORDER_WIDTH, -BORDER_WIDTH);
 
-        if (defaultColoring!=null && defaultColoring.getBackColor()!=null){
-            g.setColor(defaultColoring.getBackColor());
-        }else{
-            g.setColor(SettingsDefaults.defaultBackColor);
-        }
+        g.setColor(backColor);
         for (int i = 1; i<=BORDER_WIDTH; i++){
             g.drawRect(clip.x+i,clip.y+i,clip.width-i*2-1,clip.height-i*2-1);
         }
-    }    
-
-    
+    }
 }

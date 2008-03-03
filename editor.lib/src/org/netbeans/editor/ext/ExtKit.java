@@ -45,8 +45,8 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Iterator;
+import java.util.StringTokenizer;
+import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.JMenuItem;
@@ -56,16 +56,17 @@ import javax.swing.text.Keymap;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.Settings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Formatter;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 
@@ -178,27 +179,38 @@ public class ExtKit extends BaseKit {
     }
 
     /** Create caret to navigate through document */
-    public Caret createCaret() {
+    public @Override Caret createCaret() {
         return new ExtCaret();
     }
 
-    public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
+    public @Override SyntaxSupport createSyntaxSupport(BaseDocument doc) {
         return new ExtSyntaxSupport(doc);
     }
 
-    public Completion createCompletion(ExtEditorUI extEditorUI) {
-        return null;
-    }
-    
-    public CompletionJavaDoc createCompletionJavaDoc(ExtEditorUI extEditorUI) {
-        return null;
-    }
-    
-    protected EditorUI createEditorUI() {
-        return new ExtEditorUI();
+// XXX: remove
+//    public Completion createCompletion(ExtEditorUI extEditorUI) {
+//        return null;
+//    }
+//    
+//    public CompletionJavaDoc createCompletionJavaDoc(ExtEditorUI extEditorUI) {
+//        return null;
+//    }
+
+    private boolean noExtEditorUIClass = false;
+    protected @Override EditorUI createEditorUI() {
+        if (!noExtEditorUIClass) {
+            try {
+                ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+                Class extEditorUIClass = loader.loadClass("org.netbeans.editor.ext.ExtEditorUI"); //NOI18N
+                return (EditorUI) extEditorUIClass.newInstance();
+            } catch (Exception e) {
+                noExtEditorUIClass = true;
+            }
+        }
+        return new EditorUI();
     }
 
-    protected Action[] createActions() {
+    protected @Override Action[] createActions() {
         ArrayList<Action> actions = new ArrayList<Action>();
         
         actions.add(new BuildPopupMenuAction());
@@ -238,7 +250,7 @@ public class ExtKit extends BaseKit {
             super(name, updateMask);
         }
         
-        protected Class getShortDescriptionBundleClass() {
+        protected @Override Class getShortDescriptionBundleClass() {
             return BaseKit.class;
         }
         
@@ -265,7 +277,7 @@ public class ExtKit extends BaseKit {
                 if (debugPopupMenu) {
                     /*DEBUG*/System.err.println("POPUP CREATION END >>>>>"); // NOI18N
                 }
-                ExtUtilities.getExtEditorUI(target).setPopupMenu(pm);
+                Utilities.getEditorUI(target).setPopupMenu(pm);
             }
         }
         
@@ -277,19 +289,20 @@ public class ExtKit extends BaseKit {
             JPopupMenu pm = createPopupMenu(target);
 
             EditorUI ui = Utilities.getEditorUI(target);
-            List l = (List)Settings.getValue(Utilities.getKitClass(target),
-                (ui == null || ui.hasExtComponent())
-                    ? ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST
-                    : ExtSettingsNames.DIALOG_POPUP_MENU_ACTION_NAME_LIST
-            );
+            String settingName = ui == null || ui.hasExtComponent()
+                    ? "popup-menu-action-name-list" //NOI18N
+                    : "dialog-popup-menu-action-name-list"; //NOI18N
+            
+            Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(target)).lookup(Preferences.class);
+            String actionNames = prefs.get(settingName, null);
 
-            if (l != null) {
-                Iterator i = l.iterator();
-                while (i.hasNext()) {
-                    String an = (String)i.next();
-                    addAction(target, pm, an);
+            if (actionNames != null) {
+                for(StringTokenizer t = new StringTokenizer(actionNames, ","); t.hasMoreTokens(); ) {
+                    String action = t.nextToken().trim();
+                    addAction(target, pm, action);
                 }
             }
+            
             return pm;
         }
 
@@ -348,9 +361,9 @@ public class ExtKit extends BaseKit {
             if (debugPopupMenu) {
                 StringBuffer sb = new StringBuffer("POPUP: "); // NOI18N
                 if (item != null) {
-                    sb.append('"');
+                    sb.append('"'); //NOI18N
                     sb.append(item.getText());
-                    sb.append('"');;
+                    sb.append('"'); //NOI18N
                     if (!item.isVisible()) {
                         sb.append(", INVISIBLE"); // NOI18N
                     }
@@ -396,8 +409,8 @@ public class ExtKit extends BaseKit {
                     int dotPos = target.getCaret().getDot();
                     Rectangle r = target.getUI().modelToView(target, dotPos);
                     if (r != null) {
-                        ExtEditorUI eui = ExtUtilities.getExtEditorUI(target);
-                        if (eui != null){
+                        EditorUI eui = Utilities.getEditorUI(target);
+                        if (eui != null) {
                             eui.showPopupMenu(r.x, r.y + r.height);
                         }
                     }
@@ -420,7 +433,7 @@ public class ExtKit extends BaseKit {
         }
 
         protected String buildText(JTextComponent target) {
-            ToolTipSupport tts = ExtUtilities.getExtEditorUI(target).getToolTipSupport();
+            ToolTipSupport tts = Utilities.getEditorUI(target).getToolTipSupport();
             return  (tts != null)
                 ? target.getToolTipText(tts.getLastMouseEvent())
                 : target.getToolTipText();
@@ -428,7 +441,7 @@ public class ExtKit extends BaseKit {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
-                ToolTipSupport tts = ExtUtilities.getExtEditorUI(target).getToolTipSupport();
+                ToolTipSupport tts = Utilities.getEditorUI(target).getToolTipSupport();
                 if (tts != null) {
                     tts.setToolTipText(buildText(target));
                 }
@@ -976,7 +989,7 @@ public class ExtKit extends BaseKit {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
-                ExtUtilities.getExtEditorUI(target).hidePopupMenu();
+                Utilities.getEditorUI(target).hidePopupMenu();
             }
         }
     }
@@ -987,7 +1000,7 @@ public class ExtKit extends BaseKit {
 
         static final long serialVersionUID =5273032708909044812L;
 
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        public @Override void actionPerformed(ActionEvent evt, JTextComponent target) {
             String cmd = evt.getActionCommand();
             int mod = evt.getModifiers();
 
@@ -1046,41 +1059,50 @@ public class ExtKit extends BaseKit {
         }
 
 
-        /** Check and possibly popup, hide or refresh the completion */
+        /** 
+         * Check and possibly popup, hide or refresh the completion 
+         * @deprecated Please use Editor Code Completion API instead, for details see
+         *   <a href="@org-netbeans-modules-editor-completion@/overview-summary.html">Editor Code Completion</a>.
+         */
         protected void checkCompletion(JTextComponent target, String typedText) {
-            Completion completion = ExtUtilities.getCompletion(target);
-
-            BaseDocument doc = (BaseDocument)target.getDocument();
-            ExtSyntaxSupport extSup = (ExtSyntaxSupport)doc.getSyntaxSupport();
-            
-            if (completion != null && typedText.length() > 0) {
-                if( !completion.isPaneVisible() ) {
-                    if (completion.isAutoPopupEnabled()) {
-                        int result = extSup.checkCompletion( target, typedText, false );
-                        if ( result == ExtSyntaxSupport.COMPLETION_POPUP ) {
-                            completion.popup(true);
-                        } else if ( result == ExtSyntaxSupport.COMPLETION_CANCEL ) {
-                            completion.cancelRequest();
-                        }
-                    }
-                } else {
-                    int result = extSup.checkCompletion( target, typedText, true );
-                    switch( result ) {
-                        case ExtSyntaxSupport.COMPLETION_HIDE:
-                            completion.setPaneVisible(false);
-                            break;
-                        case ExtSyntaxSupport.COMPLETION_REFRESH:
-                            completion.refresh(false);
-                            break;
-                        case ExtSyntaxSupport.COMPLETION_POST_REFRESH:
-                            completion.refresh(true);
-                            break;
-                    }
-                }
-            }
+// XXX: remove
+//            Completion completion = ExtUtilities.getCompletion(target);
+//
+//            BaseDocument doc = (BaseDocument)target.getDocument();
+//            ExtSyntaxSupport extSup = (ExtSyntaxSupport)doc.getSyntaxSupport();
+//            
+//            if (completion != null && typedText.length() > 0) {
+//                if( !completion.isPaneVisible() ) {
+//                    if (completion.isAutoPopupEnabled()) {
+//                        int result = extSup.checkCompletion( target, typedText, false );
+//                        if ( result == ExtSyntaxSupport.COMPLETION_POPUP ) {
+//                            completion.popup(true);
+//                        } else if ( result == ExtSyntaxSupport.COMPLETION_CANCEL ) {
+//                            completion.cancelRequest();
+//                        }
+//                    }
+//                } else {
+//                    int result = extSup.checkCompletion( target, typedText, true );
+//                    switch( result ) {
+//                        case ExtSyntaxSupport.COMPLETION_HIDE:
+//                            completion.setPaneVisible(false);
+//                            break;
+//                        case ExtSyntaxSupport.COMPLETION_REFRESH:
+//                            completion.refresh(false);
+//                            break;
+//                        case ExtSyntaxSupport.COMPLETION_POST_REFRESH:
+//                            completion.refresh(true);
+//                            break;
+//                    }
+//                }
+//            }
         }
     }
 
+    /** 
+     * @deprecated Please use Editor Code Completion API instead, for details see
+     *   <a href="@org-netbeans-modules-editor-completion@/overview-summary.html">Editor Code Completion</a>.
+     */
     public static class CompletionShowAction extends BaseKitLocalizedAction {
 
         static final long serialVersionUID =1050644925893851146L;
@@ -1094,6 +1116,10 @@ public class ExtKit extends BaseKit {
 
     }
 
+    /** 
+     * @deprecated Please use Editor Code Completion API instead, for details see
+     *   <a href="@org-netbeans-modules-editor-completion@/overview-summary.html">Editor Code Completion</a>.
+     */
     public static class AllCompletionShowAction extends BaseKitLocalizedAction {
 
         public AllCompletionShowAction() {
@@ -1105,6 +1131,10 @@ public class ExtKit extends BaseKit {
 
     }
 
+    /** 
+     * @deprecated Please use Editor Code Completion API instead, for details see
+     *   <a href="@org-netbeans-modules-editor-completion@/overview-summary.html">Editor Code Completion</a>.
+     */
     public static class DocumentationShowAction extends BaseKitLocalizedAction {
 
         public DocumentationShowAction() {
@@ -1116,6 +1146,10 @@ public class ExtKit extends BaseKit {
 
     }
 
+    /** 
+     * @deprecated Please use Editor Code Completion API instead, for details see
+     *   <a href="@org-netbeans-modules-editor-completion@/overview-summary.html">Editor Code Completion</a>.
+     */
     public static class CompletionTooltipShowAction extends BaseKitLocalizedAction {
 
         public CompletionTooltipShowAction() {

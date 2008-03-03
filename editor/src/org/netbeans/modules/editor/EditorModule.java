@@ -52,6 +52,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.EditorKit;
@@ -65,12 +66,8 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.FindSupport;
 import org.netbeans.editor.FindSupport.SearchPatternWrapper;
 import org.netbeans.editor.LocaleSupport;
-import org.netbeans.editor.Settings;
 import org.netbeans.modules.editor.lib2.EditorApiPackageAccessor;
-import org.netbeans.modules.editor.options.AllOptions;
-import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
-import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.openide.cookies.EditorCookie;
 import org.openide.modules.ModuleInstall;
@@ -99,7 +96,6 @@ public class EditorModule extends ModuleInstall {
 
     /** Module installed again. */
     public @Override void restored () {
-        LocaleSupport.addLocalizer(new NbLocalizer(AllOptions.class));
         LocaleSupport.addLocalizer(new NbLocalizer(BaseKit.class));
 
         // register loader for annotation types
@@ -109,31 +105,40 @@ public class EditorModule extends ModuleInstall {
                 }
                 public void loadSettings() {
                     // AnnotationType properties are stored in BaseOption, so let's read them now
-                    BaseOptions bo = (BaseOptions)BaseOptions.findObject(BaseOptions.class, true);
+                    Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
 
-                    Integer i = (Integer)bo.getSettingValue(AnnotationTypes.PROP_BACKGROUND_GLYPH_ALPHA);
-                    if (i != null)
-                        AnnotationTypes.getTypes().setBackgroundGlyphAlpha(i.intValue());
-                    Boolean b = (Boolean)bo.getSettingValue(AnnotationTypes.PROP_BACKGROUND_DRAWING);
-                    if (b != null)
-                        AnnotationTypes.getTypes().setBackgroundDrawing(b);
-                    b = (Boolean)bo.getSettingValue(AnnotationTypes.PROP_COMBINE_GLYPHS);
-                    if (b != null)
-                        AnnotationTypes.getTypes().setCombineGlyphs(b);
-                    b = (Boolean)bo.getSettingValue(AnnotationTypes.PROP_GLYPHS_OVER_LINE_NUMBERS);
-                    if (b != null)
-                        AnnotationTypes.getTypes().setGlyphsOverLineNumbers(b);
-                    b = (Boolean)bo.getSettingValue(AnnotationTypes.PROP_SHOW_GLYPH_GUTTER);
-                    if (b != null)
-                        AnnotationTypes.getTypes().setShowGlyphGutter(b);
+                    int i = prefs.getInt(AnnotationTypes.PROP_BACKGROUND_GLYPH_ALPHA, Integer.MIN_VALUE);
+                    if (i != Integer.MIN_VALUE) {
+                        AnnotationTypes.getTypes().setBackgroundGlyphAlpha(i);
+                    }
+                    
+                    boolean b = prefs.getBoolean(AnnotationTypes.PROP_BACKGROUND_DRAWING, false);
+                    AnnotationTypes.getTypes().setBackgroundDrawing(b);
+                    
+                    b = prefs.getBoolean(AnnotationTypes.PROP_COMBINE_GLYPHS, true);
+                    AnnotationTypes.getTypes().setCombineGlyphs(b);
+                    
+                    b = prefs.getBoolean(AnnotationTypes.PROP_GLYPHS_OVER_LINE_NUMBERS, false);
+                    AnnotationTypes.getTypes().setGlyphsOverLineNumbers(b);
+                    
+                    b = prefs.getBoolean(AnnotationTypes.PROP_SHOW_GLYPH_GUTTER, true);
+                    AnnotationTypes.getTypes().setShowGlyphGutter(b);
                 }
                 public void saveType(AnnotationType type) {
                     AnnotationTypesFolder.getAnnotationTypesFolder().saveAnnotationType(type);
                 }
                 public void saveSetting(String settingName, Object value) {
                     // AnnotationType properties are stored to BaseOption
-                    BaseOptions bo = (BaseOptions)BaseOptions.findObject(BaseOptions.class, true);
-                    bo.setSettingValue(settingName, value);
+                    Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+                    if (value instanceof Integer) {
+                        prefs.putInt(settingName, (Integer) value);
+                    } else if (value instanceof Boolean) {
+                        prefs.putBoolean(settingName, (Boolean) value);
+                    } else if (value != null) {
+                        prefs.put(settingName, value.toString());
+                    } else {
+                        prefs.remove(settingName);
+                    }
                 }
             } );
 
@@ -295,8 +300,6 @@ public class EditorModule extends ModuleInstall {
     /** Called when module is uninstalled. Overrides superclass method. */
     public @Override void uninstalled() {
 
-        AllOptionsFolder.unregisterModuleRegListener();
-
         /* [TEMP]
         if (searchSelectedPatternListener!=null){
             SearchHistory.getDefault().removePropertyChangeListener(searchSelectedPatternListener);
@@ -385,6 +388,8 @@ public class EditorModule extends ModuleInstall {
     
     private static class HackMap extends Hashtable {
         
+        private final Object LOCK = new String("EditorModule.HackMap.LOCK"); //NOI18N
+        
 	private Hashtable delegate;
 
         HackMap(Hashtable h) {
@@ -455,7 +460,7 @@ public class EditorModule extends ModuleInstall {
         }
         
         public @Override Object get(Object key) {
-            synchronized (Settings.class) {
+            synchronized (LOCK) {
             if (debug) LOG.log(Level.INFO, "HackMap.get key=" + key); //NOI18N
             
             Object retVal = null;
@@ -493,7 +498,7 @@ public class EditorModule extends ModuleInstall {
         }
         
         public @Override Object put(Object key, Object value) {
-            synchronized (Settings.class) {
+            synchronized (LOCK) {
             if (debug) LOG.log(Level.INFO, "HackMap.put key=" + key + " value=" + value); //NOI18N
             
             if (delegate == null) {
@@ -513,7 +518,7 @@ public class EditorModule extends ModuleInstall {
         }
 
         public @Override Object remove(Object key) {
-            synchronized (Settings.class) {
+            synchronized (LOCK) {
             if (debug) LOG.log(Level.INFO, "HackMap.remove key=" + key); //NOI18N
             
             Object ret = (delegate != null) ? delegate.remove(key) : null;

@@ -45,8 +45,12 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Iterator;
+import java.util.StringTokenizer;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.text.*;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
@@ -58,8 +62,12 @@ import javax.swing.Action;
 import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicTextUI;
 import javax.swing.text.Position.Bias;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.lib2.EditorApiPackageAccessor;
 import org.netbeans.editor.view.spi.LockView;
+import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.openide.util.WeakListeners;
 
 /**
 * Text UI implementation
@@ -68,8 +76,7 @@ import org.netbeans.editor.view.spi.LockView;
 * @version 1.00
 */
 
-public class BaseTextUI extends BasicTextUI
-    implements PropertyChangeListener, DocumentListener, SettingsChangeListener {
+public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, DocumentListener {
 
     /** Extended UI */
     private EditorUI editorUI;
@@ -87,6 +94,26 @@ public class BaseTextUI extends BasicTextUI
     private static final GetFocusedComponentAction gfcAction
     = new GetFocusedComponentAction();
 
+    private Preferences prefs = null;
+    private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            if (evt == null || SimpleValueNames.CODE_FOLDING_ENABLE.equals(evt.getKey())) {
+                foldingEnabled = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, false);
+                JTextComponent component = getComponent();
+                if (component != null) {
+                    component.putClientProperty(SimpleValueNames.CODE_FOLDING_ENABLE, foldingEnabled);
+                    needsRefresh = true;
+                    Utilities.runInEventDispatchThread(new Runnable() {
+                        public void run() {
+                            refresh();
+                        }
+                    });
+                }
+            }
+        }
+    };
+    private PreferenceChangeListener weakListener = null;
+    
     public BaseTextUI() {
     }
     
@@ -115,70 +142,37 @@ public class BaseTextUI extends BasicTextUI
     }
 
     /** Called when the model of component is changed */
-    protected void modelChanged() {
+    protected @Override void modelChanged() {
         JTextComponent component = getComponent();
-        // [TODO] assert (component != null);
-        Document doc = component.getDocument();
+        Document doc = component != null ? component.getDocument() : null;
         
-        if (doc != null && !(doc instanceof AbstractDocument)) {
-            // This UI works with AbstractDocument document instances only
-            return; // return silently
-        }
-        AbstractDocument adoc = (AbstractDocument)doc;
-        
-        // Possibly rebuild fold hierarchy prior to rebuilding views.
-        // Views have optimization in fold hierarchy rebuild listening
-        // so that the actual views rebuild is only done once.
-        // Readlock on both last and current docs.
-/*        if (doc != lastDocument) {
-            if (lastDocument != null) {
-                lastDocument.readLock();
-            }
-            try {
-                if (adoc != null) {
-                    adoc.readLock();
-                }
-                try {
-                    FoldHierarchySpi.get(component).rebuild();
-                } finally {
-                    if (adoc != null) {
-                        adoc.readUnlock();
-                    }
-                }
-            } finally {
-                if (lastDocument != null) {
-                    lastDocument.readUnlock();
-                }
-            }
-        }
- */
-
-        if (doc != null) {
-            ViewFactory f = getRootView(component).getViewFactory();
-            BaseKit kit = (BaseKit)getEditorKit(component);
+        if (component != null && doc != null) {
+            boolean documentReplaced = isRootViewReplaceNecessary();
 
             component.removeAll();
-
-            if (isRootViewReplaceNecessary()) {
+            if (documentReplaced) {
+                ViewFactory f = getRootView(component).getViewFactory();
                 rootViewReplaceNotify();
                 Element elem = doc.getDefaultRootElement();
                 View v = f.create(elem);
                 setView(v);
             }
-            
             component.revalidate();
-
-            // Execute actions related to document installaction into the component
-            Settings.KitAndValue[] kv = Settings.getValueHierarchy(kit.getClass(),
-                                        SettingsNames.DOC_INSTALL_ACTION_NAME_LIST);
-            for (int i = kv.length - 1; i >= 0; i--) {
-                List actList = (List)kv[i].value;
-                actList = kit.translateActionNameList(actList); // translate names to actions
-                if (actList != null) {
-                    for (Iterator iter = actList.iterator(); iter.hasNext();) {
-                        Action a = (Action)iter.next();
-                        a.actionPerformed(new ActionEvent(component,
-                                                          ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+            
+            if (documentReplaced) {
+                // Execute actions related to document installaction into the component
+                BaseKit baseKit = Utilities.getKit(component);
+                if (baseKit != null && prefs != null) {
+                    List<String> actionNamesList = new  ArrayList<String>();
+                    String actionNames = prefs.get("doc-install-action-name-list", ""); //NOI18N
+                    for(StringTokenizer t = new StringTokenizer(actionNames, ","); t.hasMoreTokens(); ) { //NOI18N
+                        String actionName = t.nextToken().trim();
+                        actionNamesList.add(actionName);
+                    }
+                
+                    List<Action> actionsList = baseKit.translateActionNameList(actionNamesList); // translate names to actions
+                    for(Action a : actionsList) {
+                        a.actionPerformed(new ActionEvent(component, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
                     }
                 }
             }
@@ -191,7 +185,7 @@ public class BaseTextUI extends BasicTextUI
      * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5067948
      * will be fixed.
      */
-    protected void installKeyboardActions() {
+    protected @Override void installKeyboardActions() {
         String mapName = getPropertyPrefix() + ".actionMap"; //NOI18N
         // XXX - workaround bugfix of issue #45487
         // Because the ActionMap is cached in method BasicTextUI.getActionMap()
@@ -202,7 +196,7 @@ public class BaseTextUI extends BasicTextUI
     }
 
     /** Installs the UI for a component. */
-    public void installUI(JComponent c) {
+    public @Override void installUI(JComponent c) {
         super.installUI(c);
         
         if (!(c instanceof JTextComponent)) {
@@ -210,18 +204,18 @@ public class BaseTextUI extends BasicTextUI
         }
         
         JTextComponent component = getComponent();
-
+        prefs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(component)).lookup(Preferences.class);
+        weakListener = WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs);
+        prefs.addPreferenceChangeListener(weakListener);
+        
         // set margin
-        Object value = Settings.getValue(Utilities.getKitClass(component), SettingsNames.MARGIN);
-        Insets margin = (value instanceof Insets) ? (Insets)value : null;
-        component.setMargin(margin);
+        String value = prefs.get(SimpleValueNames.MARGIN, null);
+        Insets margin = value != null ? SettingsConversions.parseInsets(value) : null;
+        component.setMargin(margin != null ? margin : EditorUI.NULL_INSETS);
 
         getEditorUI().installUI(component);
-        Object foldingEnabledBoolean = Settings.getValue(Utilities.getKitClass(component), SettingsNames.CODE_FOLDING_ENABLE);
-        foldingEnabled = foldingEnabledBoolean instanceof Boolean ? ((Boolean) foldingEnabledBoolean).booleanValue() : false;
-        component.putClientProperty(SettingsNames.CODE_FOLDING_ENABLE, foldingEnabledBoolean);
-        
-        Settings.addSettingsChangeListener(this);
+        foldingEnabled  = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, false);
+        component.putClientProperty(SimpleValueNames.CODE_FOLDING_ENABLE, foldingEnabled);
         
         // attach to the model and component
         //component.addPropertyChangeListener(this); already done in super class
@@ -239,17 +233,9 @@ public class BaseTextUI extends BasicTextUI
         component.setCaret(caret);
         
         // assign blink rate
-        int br = SettingsUtil.getInteger(Utilities.getKitClass(component), SettingsNames.CARET_BLINK_RATE,
-        SettingsDefaults.defaultCaretBlinkRate.intValue());
+        int br = prefs.getInt(SimpleValueNames.CARET_BLINK_RATE, 300);
         caret.setBlinkRate(br);
 
-        // Create document
-/*        BaseDocument doc = Utilities.getDocument(component);
-        if (doc != null) {
-            modelChanged(null, doc);
-        }
- */
-        
         SwingUtilities.replaceUIInputMap(c, JComponent.WHEN_FOCUSED, null);
         
         Registry.addComponent(component);
@@ -259,11 +245,14 @@ public class BaseTextUI extends BasicTextUI
     }
 
     /** Deinstalls the UI for a component */
-    public void uninstallUI(JComponent c) {
+    public @Override void uninstallUI(JComponent c) {
         super.uninstallUI(c);
 
-        Settings.removeSettingsChangeListener(this);        
-        //c.removePropertyChangeListener(this);        
+        if (prefs != null && weakListener != null) {
+            prefs.removePreferenceChangeListener(weakListener);
+            prefs = null;
+            weakListener = null;
+        }
         
         if (c instanceof JTextComponent){        
             JTextComponent comp = (JTextComponent)c;
@@ -357,7 +346,7 @@ public class BaseTextUI extends BasicTextUI
     /** Next visually represented model location where caret can be placed.
     * This version works without placing read lock on the document.
     */
-    public int getNextVisualPositionFrom(JTextComponent t, int pos,
+    public @Override int getNextVisualPositionFrom(JTextComponent t, int pos,
                                          Position.Bias b, int direction, Position.Bias[] biasRet)
     throws BadLocationException{
         if (biasRet == null) {
@@ -373,9 +362,9 @@ public class BaseTextUI extends BasicTextUI
     *
     * @return the component capabilities
     */
-    public EditorKit getEditorKit(JTextComponent c) {
+    public @Override EditorKit getEditorKit(JTextComponent c) {
         JEditorPane pane = (JEditorPane)getComponent();
-        return (pane==null) ? null : pane.getEditorKit();
+        return (pane == null) ? null : pane.getEditorKit();
     }
 
 
@@ -396,7 +385,7 @@ public class BaseTextUI extends BasicTextUI
     * This method gets called when a bound property is changed.
     * We are looking for document changes on the component.
     */
-    public void propertyChange(PropertyChangeEvent evt) {
+    public @Override void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
         if ("document".equals(propName)) { // NOI18N
             BaseDocument oldDoc = (evt.getOldValue() instanceof BaseDocument)
@@ -430,16 +419,16 @@ public class BaseTextUI extends BasicTextUI
     public void insertUpdate(DocumentEvent evt) {
         try {
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
-            EditorUI editorUI = getEditorUI();
+            EditorUI eui = getEditorUI();
             int y = getYFromPos(evt.getOffset());
-            int lineHeight = editorUI.getLineHeight();
+            int lineHeight = eui.getLineHeight();
             int syntaxY = getYFromPos(bevt.getSyntaxUpdateOffset());
             // !!! patch for case when DocMarksOp.eolMark is at the end of document
             if (bevt.getSyntaxUpdateOffset() == evt.getDocument().getLength()) {
                 syntaxY += lineHeight;
             }
             if (getComponent().isShowing()) {
-                editorUI.repaint(y, Math.max(lineHeight, syntaxY - y));
+                eui.repaint(y, Math.max(lineHeight, syntaxY - y));
             }
         } catch (BadLocationException ex) {
             Utilities.annotateLoggable(ex);
@@ -450,16 +439,16 @@ public class BaseTextUI extends BasicTextUI
     public void removeUpdate(DocumentEvent evt) {
         try {
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
-            EditorUI editorUI = getEditorUI();
+            EditorUI eui = getEditorUI();
             int y = getYFromPos(evt.getOffset());
-            int lineHeight = editorUI.getLineHeight();
+            int lineHeight = eui.getLineHeight();
             int syntaxY = getYFromPos(bevt.getSyntaxUpdateOffset());
             // !!! patch for case when DocMarksOp.eolMark is at the end of document
             if (bevt.getSyntaxUpdateOffset() == evt.getDocument().getLength()) {
                 syntaxY += lineHeight;
             }
             if (getComponent().isShowing()) {
-                editorUI.repaint(y, Math.max(lineHeight, syntaxY - y));
+                eui.repaint(y, Math.max(lineHeight, syntaxY - y));
             }
 
         } catch (BadLocationException ex) {
@@ -499,7 +488,7 @@ public class BaseTextUI extends BasicTextUI
     * @param elem the element
     * @return the newly created view or null
     */
-    public View create(Element elem) {
+    public @Override View create(Element elem) {
 	    String kind = elem.getName();
             /*
             if (foldingEnabled){
@@ -541,7 +530,7 @@ public class BaseTextUI extends BasicTextUI
     * @param p1 the ending offset >= p0
     * @return the view
     */
-    public View create(Element elem, int p0, int p1) {
+    public @Override View create(Element elem, int p0, int p1) {
         return null;
     }
 
@@ -554,25 +543,6 @@ public class BaseTextUI extends BasicTextUI
         // no longer available
     }
 
-    public void settingsChange(SettingsChangeEvent evt) {
-        JTextComponent component = getComponent();
-        if (component == null) return;
-        
-        if (evt == null || Utilities.getKitClass(component) != evt.getKitClass()) return;
-        
-        if (SettingsNames.CODE_FOLDING_ENABLE.equals(evt.getSettingName())){
-            Boolean foldingEnabledBoolean =(Boolean)Settings.getValue(evt.getKitClass(), SettingsNames.CODE_FOLDING_ENABLE);
-            foldingEnabled = foldingEnabledBoolean.booleanValue();
-            component.putClientProperty(SettingsNames.CODE_FOLDING_ENABLE, foldingEnabledBoolean);
-            needsRefresh = true;
-            Utilities.runInEventDispatchThread(new Runnable() {
-                public void run() {
-                    refresh();
-                }
-            });
-        }
-    }  
-    
     boolean isFoldingEnabled() {
         return foldingEnabled;
     }

@@ -105,6 +105,39 @@ is the proper place.
 
     <changes>
 
+        <change id="BaseDocument-kitClass-deprecations">
+            <summary>Deprecating kit class related API in BaseDocument</summary>
+            <version major="1" minor="22"/>
+            <date day="16" month="1" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="yes"/>
+            <description>
+                <p>
+                    The use of editor kit implementation class for identifying
+                    the type of a document has been deprecated in favor of mime
+                    types and <code>MimeLookup</code>. This change deprecates API
+                    methods and construction in <code>BaseDocument</code> that
+                    accept editor kit implementation class and adds their equivalents
+                    accepting <code>EditorKit</code>.
+                </p>
+                <p>Deprecated:
+                <code>BaseDocument(Class, boolean)</code>,
+                <code>GuardedDocument(Class)</code>,
+                <code>GuardedDocument(Class, boolean, StyleContext)</code>,
+                <code>Formatter.getFormatter(Class)</code>,
+                <code>Formatter.setFormatter(Class, Formatter)</code>
+                </p>
+                <p>Added:
+                <code>BaseDocument.MIME_TYPE_PROP</code>,
+                <code>BaseDocument(EditorKit, boolean)</code>,
+                <code>GuardedDocument(EditorKit)</code>,
+                <code>GuardedDocument(EditorKit, boolean, StyleContext)</code>,
+                <code>Formatter.getFormatter(String)</code>
+                </p>
+            </description>
+            <issue number="114747"/>
+        </change>
+
         <change id="LineSeparatorConversion.deprecated">
             <summary>Deprecating LineSeparatorConversion</summary>
             <version major="1" minor="20"/>

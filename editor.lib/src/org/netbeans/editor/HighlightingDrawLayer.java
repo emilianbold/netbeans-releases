@@ -233,7 +233,7 @@ import org.openide.util.WeakListeners;
                 Document doc = ctx.getEditorUI().getDocument();
                 
                 // Get the document's mime type
-                String mimeType = (String) doc.getProperty("mimeType"); //NOI18N
+                String mimeType = (String) doc.getProperty(BaseDocument.MIME_TYPE_PROP); //NOI18N
                 assert mimeType != null : "Document's mime type can't be null: " + doc; //NOI18N
 
 // HACK: can't set the kit on fakePane, because it needs to run in AWT, which

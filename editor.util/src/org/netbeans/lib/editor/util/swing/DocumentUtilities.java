@@ -48,7 +48,9 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.Segment;
 import javax.swing.text.StyledDocument;
 import javax.swing.undo.CannotRedoException;
@@ -717,4 +719,43 @@ public final class DocumentUtilities {
 
     }
     
+    /**
+     * Gets the mime type of a document. If the mime type can't be determined
+     * this method will return <code>null</code>. This method should work reliably
+     * for Netbeans documents that have their mime type stored in a special
+     * property. For any other documents it will probably just return <code>null</code>.
+     * 
+     * @param doc The document to get the mime type for.
+     * 
+     * @return The mime type of the document or <code>null</code>.
+     * @see org.netbeans.modules.editor.NbEditorDocument#MIME_TYPE_PROP
+     * @since 1.23
+     */
+    public static String getMimeType(Document doc) {
+        return (String)doc.getProperty("mimeType"); //NOI18N
+    }
+
+    /**
+     * Gets the mime type of a document in <code>JTextComponent</code>. If
+     * the mime type can't be determined this method will return <code>null</code>.
+     * It tries to determine the document's mime type first and if that does not
+     * work it uses mime type from the <code>EditorKit</code> attached to the
+     * component.
+     * 
+     * @param component The component to get the mime type for.
+     * 
+     * @return The mime type of a document opened in the component or <code>null</code>.
+     * @since 1.23
+     */
+    public static String getMimeType(JTextComponent component) {
+        Document doc = component.getDocument();
+        String mimeType = getMimeType(doc);
+        if (mimeType == null) {
+            EditorKit kit = component.getUI().getEditorKit(component);
+            if (kit != null) {
+                mimeType = kit.getContentType();
+            }
+        }
+        return mimeType;
+    }
 }

@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor;
 
 import java.awt.Component;
+import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
@@ -50,11 +51,13 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.awt.DynamicMenuContent;
@@ -107,24 +110,6 @@ public  class NbCodeFoldingAction extends GlobalContextAction implements Present
         return (component == null) ? BaseKit.getKit(NbEditorKit.class) : Utilities.getKit(component);
     }
     
-    private static Object getSettingValue(BaseKit kit, String settingName) {
-        return Settings.getValue(kit.getClass(), settingName);
-    }
-
-    /** Get the value of the boolean setting from the <code>Settings</code>
-     * @param settingName name of the setting to get.
-     */
-    private static boolean getSettingBoolean(BaseKit kit, String settingName) {
-        Boolean val = (Boolean)getSettingValue(kit, settingName);
-        return (val != null) ? val.booleanValue() : false;
-    }
-    
-
-    private boolean isFoldingEnabledInSettings(BaseKit kit){
-        return getSettingBoolean(kit, SettingsNames.CODE_FOLDING_ENABLE);
-    }
-    
-    
     public class CodeFoldsMenu extends JMenu implements DynamicMenuContent {
         public CodeFoldsMenu(){
             super();
@@ -147,7 +132,7 @@ public  class NbCodeFoldingAction extends GlobalContextAction implements Present
             return items;
         }
         
-        public JPopupMenu getPopupMenu(){
+        public @Override JPopupMenu getPopupMenu(){
             JPopupMenu pm = super.getPopupMenu();
             pm.removeAll();
             boolean enable = false;
@@ -155,9 +140,12 @@ public  class NbCodeFoldingAction extends GlobalContextAction implements Present
             if (bKit==null) bKit = BaseKit.getKit(NbEditorKit.class);
             if (bKit!=null){
                 Action action = bKit.getActionByName(NbEditorKit.generateFoldPopupAction);
-                if (action instanceof BaseAction){
-                    boolean foldingAvailable = isFoldingEnabledInSettings(bKit);
-                    JTextComponent component = Utilities.getFocusedComponent();
+                if (action instanceof BaseAction) {
+                    JTextComponent component = NbCodeFoldingAction.getComponent();
+                    MimePath mimePath = component == null ? MimePath.EMPTY : MimePath.parse(DocumentUtilities.getMimeType(component));
+                    Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+                    boolean foldingAvailable = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, true);
+                    
                     if (foldingAvailable){
                         ActionMap contextActionmap = getContextActionMap();
                         if (contextActionmap!=null){

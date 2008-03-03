@@ -43,17 +43,12 @@ package org.netbeans.editor.ext;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
-import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.TokenItem;
@@ -258,7 +253,7 @@ public final class FormatWriter extends Writer {
 
                 if (offset > 0) { // only if not formatting from the start of the document
                     ExtSyntaxSupport sup = (ExtSyntaxSupport)bdoc.getSyntaxSupport();
-                    Integer lines = (Integer)bdoc.getProperty(SettingsNames.LINE_BATCH_SIZE);
+                    Integer lines = (Integer)bdoc.getProperty(BaseDocument.LINE_BATCH_SIZE);
 
                     int startOffset = Utilities.getRowStart(bdoc,
                             Math.max(offset - offsetPreScan, 0),
@@ -304,10 +299,10 @@ public final class FormatWriter extends Writer {
         } else { // non-BaseDocument
             try {
                 String text = doc.getText(0, offset);
-                char[] buffer = text.toCharArray();
+                char[] charBuffer = text.toCharArray();
 
                 // Force non-last buffer
-                syntax.load(null, buffer, 0, buffer.length, false, 0);
+                syntax.load(null, charBuffer, 0, charBuffer.length, false, 0);
 
                 TokenID tokenID = syntax.nextToken();
                 while (tokenID != null) {
@@ -1277,7 +1272,7 @@ public final class FormatWriter extends Writer {
             this.writtenLength = writtenLength;
         }
 
-        public String getImage() {
+        public @Override String getImage() {
             return image;
         }
 
@@ -1338,7 +1333,7 @@ public final class FormatWriter extends Writer {
             }
         }
 
-        public TokenItem getNext() {
+        public @Override TokenItem getNext() {
             if (next == null) {
                 TokenItem ti = super.getNext();
                 if (ti != null) {
@@ -1384,7 +1379,7 @@ public final class FormatWriter extends Writer {
             throw new IllegalStateException("Cannot set image of the document-token."); // NOI18N
         }
 
-        public TokenItem getPrevious() {
+        public @Override TokenItem getPrevious() {
             if (previous == null) {
                 TokenItem ti = super.getPrevious();
                 if (ti != null) {

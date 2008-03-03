@@ -46,7 +46,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Iterator;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -64,7 +63,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
  * @deprecated Use Editor Code Templates API instead. This class is no longer
  *   functional.
  */
-public class Abbrev implements SettingsChangeListener, PropertyChangeListener {
+public class Abbrev implements /* SettingsChangeListener,*/ PropertyChangeListener {
     
     /**
      * Test whether the abbreviation expansion is disabled
@@ -121,7 +120,7 @@ public class Abbrev implements SettingsChangeListener, PropertyChangeListener {
         this.checkDocText = checkDocText;
         this.checkTextDelimiter = checkTextDelimiter;
 
-        Settings.addSettingsChangeListener(this);
+//        Settings.addSettingsChangeListener(this);
 
         synchronized (editorUI.getComponentLock()) {
             // if component already installed in EditorUI simulate installation
@@ -135,64 +134,64 @@ public class Abbrev implements SettingsChangeListener, PropertyChangeListener {
         }
     }
 
-    /** Called when settings were changed. The method is called
-    * by editorUI when settings were changed and from constructor.
-    */
-    public void settingsChange(SettingsChangeEvent evt) {
-        Class kitClass = Utilities.getKitClass(editorUI.getComponent());
-
-        if (kitClass != null) {
-            String settingName = (evt != null) ? evt.getSettingName() : null;
-
-            if (settingName == null || SettingsNames.ABBREV_ACTION_MAP.equals(settingName)
-                || SettingsNames.ABBREV_MAP.equals(settingName) 
-            ) {
-                abbrevMap = new HashMap();
-                // Inspect action abbrevs
-                Map m = (Map)Settings.getValue(kitClass, SettingsNames.ABBREV_ACTION_MAP);
-                if (m != null) {
-                    BaseKit kit = Utilities.getKit(editorUI.getComponent());
-                    Iterator iter = m.entrySet().iterator();
-                    while (iter.hasNext()) {
-                        Map.Entry me = (Map.Entry)iter.next();
-                        Object value = me.getValue();
-                        Action a = null;
-                        if (value instanceof String) {
-                            a = kit.getActionByName((String)value);
-                        } else if (value instanceof Action) {
-                            a = (Action)value;
-                        }
-
-                        if (a != null) {
-                            abbrevMap.put(me.getKey(), a);
-                        }
-                    }
-                }
-                
-                m = (Map)Settings.getValue(kitClass, SettingsNames.ABBREV_MAP);
-                if (m != null) {
-                    Iterator iter = m.entrySet().iterator();
-                    while (iter.hasNext()) {
-                        Map.Entry me = (Map.Entry)iter.next();
-                        Object value = me.getValue();
-                        if (value != null) {
-                            abbrevMap.put(me.getKey(), value);
-                        }
-                    }
-                }
-            }
-
-            if (settingName == null || SettingsNames.ABBREV_EXPAND_ACCEPTOR.equals(settingName)) {
-                doExpandAcceptor = SettingsUtil.getAcceptor(kitClass, SettingsNames.ABBREV_EXPAND_ACCEPTOR, AcceptorFactory.FALSE);
-            }
-            if (settingName == null || SettingsNames.ABBREV_ADD_TYPED_CHAR_ACCEPTOR.equals(settingName)) {
-                addTypedAcceptor = SettingsUtil.getAcceptor(kitClass, SettingsNames.ABBREV_ADD_TYPED_CHAR_ACCEPTOR, AcceptorFactory.FALSE);
-            }
-            if (settingName == null || SettingsNames.ABBREV_RESET_ACCEPTOR.equals(settingName)) {
-                resetAcceptor = SettingsUtil.getAcceptor(kitClass, SettingsNames.ABBREV_RESET_ACCEPTOR, AcceptorFactory.TRUE);
-            }
-        }
-    }
+//    /** Called when settings were changed. The method is called
+//    * by editorUI when settings were changed and from constructor.
+//    */
+//    public void settingsChange(SettingsChangeEvent evt) {
+//        Class kitClass = Utilities.getKitClass(editorUI.getComponent());
+//
+//        if (kitClass != null) {
+//            String settingName = (evt != null) ? evt.getSettingName() : null;
+//
+//            if (settingName == null || SettingsNames.ABBREV_ACTION_MAP.equals(settingName)
+//                || SettingsNames.ABBREV_MAP.equals(settingName) 
+//            ) {
+//                abbrevMap = new HashMap();
+//                // Inspect action abbrevs
+//                Map m = (Map)Settings.getValue(kitClass, SettingsNames.ABBREV_ACTION_MAP);
+//                if (m != null) {
+//                    BaseKit kit = Utilities.getKit(editorUI.getComponent());
+//                    Iterator iter = m.entrySet().iterator();
+//                    while (iter.hasNext()) {
+//                        Map.Entry me = (Map.Entry)iter.next();
+//                        Object value = me.getValue();
+//                        Action a = null;
+//                        if (value instanceof String) {
+//                            a = kit.getActionByName((String)value);
+//                        } else if (value instanceof Action) {
+//                            a = (Action)value;
+//                        }
+//
+//                        if (a != null) {
+//                            abbrevMap.put(me.getKey(), a);
+//                        }
+//                    }
+//                }
+//                
+//                m = (Map)Settings.getValue(kitClass, SettingsNames.ABBREV_MAP);
+//                if (m != null) {
+//                    Iterator iter = m.entrySet().iterator();
+//                    while (iter.hasNext()) {
+//                        Map.Entry me = (Map.Entry)iter.next();
+//                        Object value = me.getValue();
+//                        if (value != null) {
+//                            abbrevMap.put(me.getKey(), value);
+//                        }
+//                    }
+//                }
+//            }
+//
+//            if (settingName == null || SettingsNames.ABBREV_EXPAND_ACCEPTOR.equals(settingName)) {
+//                doExpandAcceptor = SettingsUtil.getAcceptor(kitClass, SettingsNames.ABBREV_EXPAND_ACCEPTOR, AcceptorFactory.FALSE);
+//            }
+//            if (settingName == null || SettingsNames.ABBREV_ADD_TYPED_CHAR_ACCEPTOR.equals(settingName)) {
+//                addTypedAcceptor = SettingsUtil.getAcceptor(kitClass, SettingsNames.ABBREV_ADD_TYPED_CHAR_ACCEPTOR, AcceptorFactory.FALSE);
+//            }
+//            if (settingName == null || SettingsNames.ABBREV_RESET_ACCEPTOR.equals(settingName)) {
+//                resetAcceptor = SettingsUtil.getAcceptor(kitClass, SettingsNames.ABBREV_RESET_ACCEPTOR, AcceptorFactory.TRUE);
+//            }
+//        }
+//    }
 
     public void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
@@ -201,7 +200,7 @@ public class Abbrev implements SettingsChangeListener, PropertyChangeListener {
             JTextComponent component = (JTextComponent)evt.getNewValue();
             if (component != null) { // just installed
 
-                settingsChange(null);
+//                settingsChange(null);
 
             } else { // just deinstalled
                 //        component = (JTextComponent)evt.getOldValue();

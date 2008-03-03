@@ -41,6 +41,7 @@
 
 package org.netbeans.editor;
 
+import java.awt.Font;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.Hashtable;
@@ -57,6 +58,10 @@ import java.util.EventListener;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
+import javax.swing.JEditorPane;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.BadLocationException;
@@ -68,15 +73,24 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.StyleConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.UndoableEditEvent;
+import javax.swing.text.EditorKit;
 import javax.swing.text.Segment;
+import javax.swing.text.View;
+import javax.swing.text.ViewFactory;
+import javax.swing.text.WrappedPlainView;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CannotRedoException;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.lib.FormatterOverride;
+import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 
 /**
 * Document implementation
@@ -85,26 +99,132 @@ import org.openide.util.Lookup;
 * @version 1.00
 */
 
-public class BaseDocument extends AbstractDocument implements SettingsChangeListener, AtomicLockDocument {
+public class BaseDocument extends AbstractDocument implements AtomicLockDocument {
 
+    // --- These constants were copied from deprecated SettingsNames ---
+    
+    /** Buffer size for reading into the document from input stream or reader.
+    * Values: java.lang.Integer
+    * WARNING! This is critical parameter for editor functionality.
+    * Please see DefaultSettings.java for values of this setting
+    */
+    /* package */ static final String READ_BUFFER_SIZE = "read-buffer-size"; // NOI18N
+
+    /** Buffer size for writing from the document to output stream or writer.
+    * Values: java.lang.Integer instances
+    * WARNING! This is critical parameter for editor functionality.
+    * Please see DefaultSettings.java for values of this setting
+    */
+    /* package */ static final String WRITE_BUFFER_SIZE = "write-buffer-size"; // NOI18N
+
+    /** Read mark distance is used when performing initial read
+    * of the document. It denotes the distance in chars of two adjacent
+    * syntax marks inserted into the document.
+    * Values: java.lang.Integer instances
+    * WARNING! This is critical parameter for editor functionality.
+    * Please see DefaultSettings.java for values of this setting
+    */
+    /* package */ static final String READ_MARK_DISTANCE = "read-mark-distance"; // NOI18N
+
+    /** Implicit mark distance for inserting to the document.
+    * If the insert is made then the distance between nearest syntax
+    * marks around insertion point is checked and if it's greater
+    * than the max mark distance then another mark(s) are inserted
+    * automatically with the distance given by this setting.
+    * Values: java.lang.Integer instances instances
+    * WARNING! This is critical parameter for editor functionality.
+    * Please see DefaultSettings.java for values of this setting
+    */
+    /* package */ static final String MARK_DISTANCE = "mark-distance"; // NOI18N
+
+    /** Maximum mark distance. When there is an insertion done in document
+    * and the distance between marks gets greater than this setting, another
+    * mark will be inserted automatically.
+    * Values: java.lang.Integer instances
+    * WARNING! This is critical parameter for editor functionality.
+    * Please see DefaultSettings.java for values of this setting
+    */
+    /* package */ static final String MAX_MARK_DISTANCE = "max-mark-distance"; // NOI18N
+
+    /** Minimum mark distance for removals. When there is a removal done
+    * in document and it makes the marks to get closer than this value, then
+    * the marks the additional marks that are closer than the distance
+    * given by this setting are removed automatically.
+    * Values: java.lang.Integer instances
+    * WARNING! This is critical parameter for editor functionality.
+    * Please see DefaultSettings.java for values of this setting
+    */
+    /* package */ static final String MIN_MARK_DISTANCE = "min-mark-distance"; // NOI18N
+
+    /** Size of one batch of characters loaded into syntax segment
+    * when updating syntax marks. It prevents checking and loading
+    * of syntax segment at every syntax mark. Instead it loads
+    * at least the amount of characters given by this setting.
+    * This whole process is done only in case the changes in syntax
+    * extend the end of current line. If the syntax changes don't
+    * extend to the next line, this setting has no effect.
+    * Values: java.lang.Integer instances
+    * WARNING! This is critical parameter for editor functionality.
+    * Please see DefaultSettings.java for values of this setting
+    */
+    /* package */ static final String SYNTAX_UPDATE_BATCH_SIZE = "syntax-update-batch-size"; // NOI18N
+
+    /** Acceptor that recognizes the identifier characters.
+    * If set it's used instead of the default Syntax.isIdentifierPart() call.
+    * Values: org.netbeans.editor.Acceptor instances
+    */
+    /* package */ static final String IDENTIFIER_ACCEPTOR = "identifier-acceptor"; // NOI18N
+
+    /** Acceptor that recognizes the whitespace characters.
+    * If set it's used instead of the default Syntax.isWhitespace() call.
+    * Values: org.netbeans.editor.Acceptor instances
+    */
+    /* package */ static final String WHITESPACE_ACCEPTOR = "whitespace-acceptor"; // NOI18N
+    
+    /** Finder for finding the next word. If it's not set,
+     * the <tt>FinderFactory.NextWordFwdFinder</tt> is used.
+     * Values: org.netbeans.editor.Finder
+     */
+    /* package */ static final String NEXT_WORD_FINDER = "next-word-finder"; // NOI18N
+
+    /** Finder for finding the previous word. If it's not set,
+     * the <tt>FinderFactory.WordStartBwdFinder</tt> is used.
+     * Values: org.netbeans.editor.Finder
+     */
+    /* package */ static final String PREVIOUS_WORD_FINDER = "previous-word-finder"; // NOI18N
+
+    /** Whether the word move should stop on the '\n' character. This setting
+    * affects both the 
+    * Values: java.lang.Boolean
+    */
+    /* package */ static final String WORD_MOVE_NEWLINE_STOP = "word-move-newline-stop"; // NOI18N
+    
+    // --- End of copied constants ---
+    
     // -J-Dorg.netbeans.editor.BaseDocument.level=FINE
     private static final Logger LOG = Logger.getLogger(BaseDocument.class.getName());
     
     // -J-Dorg.netbeans.editor.BaseDocument.listener.level=FINE
     private static final Logger LOG_LISTENER = Logger.getLogger(BaseDocument.class.getName() + ".listener");
     
+    /**
+     * Mime type of the document. This property can be used for determining
+     * mime type of a document.
+     * 
+     * @since 1.22
+     */
+    public static final String MIME_TYPE_PROP = "mimeType"; // NOI18N
+    
     /** Registry identification property */
     public static final String ID_PROP = "id"; // NOI18N
 
     /** Line separator property for reading files in */
-    public static final String READ_LINE_SEPARATOR_PROP
-    = DefaultEditorKit.EndOfLineStringProperty;
+    public static final String READ_LINE_SEPARATOR_PROP = DefaultEditorKit.EndOfLineStringProperty;
 
     /** Line separator property for writing content into files. If not set
      * the writing defaults to the READ_LINE_SEPARATOR_PROP.
      */
-    public static final String WRITE_LINE_SEPARATOR_PROP
-    = "write-line-separator"; // NOI18N
+    public static final String WRITE_LINE_SEPARATOR_PROP = "write-line-separator"; // NOI18N
 
     /** File name property */
     public static final String FILE_NAME_PROP = "file-name"; // NOI18N
@@ -170,26 +290,21 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
     private static final int MAX_READ_THREADS = 10;
 
     /** Write lock without write lock */
-    private static final String WRITE_LOCK_MISSING
-    = "extWriteUnlock() without extWriteLock()"; // NOI18N
+    private static final String WRITE_LOCK_MISSING = "extWriteUnlock() without extWriteLock()"; // NOI18N
 
     private static final Object annotationsLock = new Object();
     private static final Object getVisColFromPosLock = new Object();
     private static final Object getOffsetFromVisColLock = new Object();
 
     /** Debug modifications performed on the document */
-    private static final boolean debug
-        = Boolean.getBoolean("netbeans.debug.editor.document"); // NOI18N
+    private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.document"); // NOI18N
     /** Debug the stack of calling of the insert/remove */
-    private static final boolean debugStack
-        = Boolean.getBoolean("netbeans.debug.editor.document.stack"); // NOI18N
+    private static final boolean debugStack = Boolean.getBoolean("netbeans.debug.editor.document.stack"); // NOI18N
     /** Debug the document insert/remove but do not output text inserted/removed */
-    private static final boolean debugNoText
-        = Boolean.getBoolean("netbeans.debug.editor.document.notext"); // NOI18N
+    private static final boolean debugNoText = Boolean.getBoolean("netbeans.debug.editor.document.notext"); // NOI18N
 
     /** Debug the StreamDescriptionProperty during read() */
-    private static final boolean debugRead
-        = Boolean.getBoolean("netbeans.debug.editor.document.read"); // NOI18N
+    private static final boolean debugRead = Boolean.getBoolean("netbeans.debug.editor.document.read"); // NOI18N
     
     public static final ThreadLocal THREAD_LOCAL_LOCK_DEPTH = new ThreadLocal();
     private static final Integer[] lockIntegers
@@ -199,9 +314,6 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
             new Integer(2),
             new Integer(3)
         };
-
-    /** How many spaces should be displayed instead of '\t' character */
-    private int tabSize = SettingsDefaults.defaultTabSize.intValue();
 
     /** Size of one indentation level. If this variable is null (value
      * is not set in Settings, then the default algorithm will be used.
@@ -235,8 +347,9 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
     boolean undoMergeReset;
 
     /** Kit class stored here */
-    Class kitClass;
-
+    private final Class deprecatedKitClass;
+    private String mimeType;
+    
     /** Undo event for atomic events is fired after the successful
     * atomic operation is finished. The changes are stored in this variable
     * during the atomic operation. If the operation is broken, these edits
@@ -248,7 +361,7 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
 
     private Acceptor whitespaceAcceptor;
 
-    private ArrayList syntaxList = new ArrayList();
+    private final ArrayList<Syntax> syntaxList = new ArrayList<Syntax>();
 
     /** Root element of line elements representation */
     protected LineRootElement lineRootElement;
@@ -304,35 +417,201 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
     /** Formatter being used. */
     private Formatter formatter;
 
-    /** Create base document with a specified syntax.
-    * @param kitClass class used to initialize this document with proper settings
-    *   category based on the editor kit for which this document is created
-    * @param syntax syntax scanner to use with this document
-    */
+    private int tabSize;
+    
+    private Preferences prefs;
+    private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String key = evt == null ? null : evt.getKey();
+            if (key == null || SimpleValueNames.TAB_SIZE.equals(key)) {
+                tabSize = prefs.getInt(SimpleValueNames.TAB_SIZE, 8);
+            }
+
+            if (key == null || SimpleValueNames.INDENT_SHIFT_WIDTH.equals(key)) {
+                int shw = prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, -1);
+                if (shw >= 0) {
+                    shiftWidth = shw;
+                }
+            }
+
+            if (key == null || READ_BUFFER_SIZE.equals(key)) {
+                int readBufferSize = prefs.getInt(READ_BUFFER_SIZE, -1);
+                if (readBufferSize <= 0) {
+                    readBufferSize = 16384;
+                }
+                putProperty(READ_BUFFER_SIZE, new Integer(readBufferSize));
+            }
+
+            if (key == null || WRITE_BUFFER_SIZE.equals(key)) {
+                int writeBufferSize = prefs.getInt(WRITE_BUFFER_SIZE, -1);
+                if (writeBufferSize <= 0) {
+                    writeBufferSize = 16384;
+                }
+                putProperty(WRITE_BUFFER_SIZE, new Integer(writeBufferSize));
+            }
+
+            if (key == null || MARK_DISTANCE.equals(key)) {
+                int markDistance = prefs.getInt(MARK_DISTANCE, -1);
+                if (markDistance <= 0) {
+                    markDistance = 100;
+                }
+                putProperty(MARK_DISTANCE, new Integer(markDistance));
+            }
+
+            if (key == null || MAX_MARK_DISTANCE.equals(key)) {
+                int maxMarkDistance = prefs.getInt(MAX_MARK_DISTANCE, -1);
+                if (maxMarkDistance <= 0) {
+                    maxMarkDistance = 150;
+                }
+                putProperty(MAX_MARK_DISTANCE, new Integer(maxMarkDistance));
+            }
+
+            if (key == null || MIN_MARK_DISTANCE.equals(key)) {
+                int minMarkDistance = prefs.getInt(MIN_MARK_DISTANCE, -1);
+                if (minMarkDistance <=0 ) {
+                    minMarkDistance = 50;
+                }
+                putProperty(MIN_MARK_DISTANCE, new Integer(minMarkDistance));
+            }
+
+            if (key == null || READ_MARK_DISTANCE.equals(key)) {
+                int readMarkDistance = prefs.getInt(READ_MARK_DISTANCE, -1);
+                if (readMarkDistance <= 0) {
+                    readMarkDistance = 180;
+                }
+                putProperty(READ_MARK_DISTANCE, new Integer(readMarkDistance));
+            }
+
+            if (key == null || SYNTAX_UPDATE_BATCH_SIZE.equals(key)) {
+                int syntaxUpdateBatchSize = prefs.getInt(SYNTAX_UPDATE_BATCH_SIZE, -1);
+                if (syntaxUpdateBatchSize <= 0) {
+                    syntaxUpdateBatchSize = 7 * (Integer) getProperty(MARK_DISTANCE);
+                }
+                putProperty(SYNTAX_UPDATE_BATCH_SIZE, new Integer(syntaxUpdateBatchSize));
+            }
+
+            if (key == null || LINE_BATCH_SIZE.equals(key)) {
+                int lineBatchSize = prefs.getInt(LINE_BATCH_SIZE, -1);
+                if (lineBatchSize <= 0) {
+                    lineBatchSize = 2;
+                }
+                putProperty(LINE_BATCH_SIZE, new Integer(lineBatchSize));
+            }
+
+            if (key == null || IDENTIFIER_ACCEPTOR.equals(key)) {
+                Acceptor acceptor = null;
+                String acceptorFactory = prefs.get(IDENTIFIER_ACCEPTOR, null);
+                if (acceptorFactory != null) {
+                    acceptor = (Acceptor) SettingsConversions.callFactory(acceptorFactory, MimePath.parse(mimeType));
+                }
+                identifierAcceptor = acceptor != null ? acceptor : AcceptorFactory.LETTER_DIGIT;
+            }
+
+            if (key == null || WHITESPACE_ACCEPTOR.equals(key)) {
+                Acceptor acceptor = null;
+                String acceptorFactory = prefs.get(WHITESPACE_ACCEPTOR, null);
+                if (acceptorFactory != null) {
+                    acceptor = (Acceptor) SettingsConversions.callFactory(acceptorFactory, MimePath.parse(mimeType));
+                }
+                whitespaceAcceptor = acceptor != null ? acceptor : AcceptorFactory.WHITESPACE;
+            }
+
+            boolean stopOnEOL = prefs.getBoolean(WORD_MOVE_NEWLINE_STOP, true);
+            
+            if (key == null || NEXT_WORD_FINDER.equals(key)) {
+                Finder finder = null;
+                String finderFactory = prefs.get(NEXT_WORD_FINDER, null);
+                if (finderFactory != null) {
+                    finder = (Finder) SettingsConversions.callFactory(finderFactory, MimePath.parse(mimeType));
+                }
+                putProperty(NEXT_WORD_FINDER, finder != null ? finder : new FinderFactory.NextWordFwdFinder(BaseDocument.this, stopOnEOL, false));
+            }
+
+            if (key == null || PREVIOUS_WORD_FINDER.equals(key)) {
+                Finder finder = null;
+                String finderFactory = prefs.get(PREVIOUS_WORD_FINDER, null);
+                if (finderFactory != null) {
+                    finder = (Finder) SettingsConversions.callFactory(finderFactory, MimePath.parse(mimeType));
+                }
+                putProperty(PREVIOUS_WORD_FINDER, finder != null ? finder : new FinderFactory.PreviousWordBwdFinder(BaseDocument.this, stopOnEOL, false));
+            }
+
+            // Refresh formatter
+            formatter = null;
+            
+            SettingsConversions.callSettingsChange(BaseDocument.this);
+        }
+    };
+    private PreferenceChangeListener weakPrefsListener;
+    
+    /** 
+     * Creates a new document.
+     * 
+     * @param kitClass class used to initialize this document with proper settings
+     *   category based on the editor kit for which this document is created
+     * @param addToRegistry XXX
+     * 
+     * @deprecated Use of editor kit's implementation classes is deprecated
+     *   in favor of mime types.
+     */
     public BaseDocument(Class kitClass, boolean addToRegistry) {
         super(new DocumentContent());
-        this.kitClass = kitClass;
+        
+        if (LOG.isLoggable(Level.FINE) || LOG.isLoggable(Level.WARNING)) {
+            String msg = "Using deprecated document construction for " + //NOI18N
+                getClass().getName() + ", " + //NOI18N
+                "see http://www.netbeans.org/nonav/issues/show_bug.cgi?id=114747. " + //NOI18N
+                "Use -J-Dorg.netbeans.editor.BaseDocument.level=500 to see the stacktrace."; //NOI18N
 
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, null, new Throwable(msg)); //NOI18N
+            } else {
+                LOG.warning(msg); //NOI18N
+            }
+        }
+
+        this.deprecatedKitClass = kitClass;
+        this.mimeType = BaseKit.getKit(kitClass).getContentType();
+        init(addToRegistry);
+    }
+
+    /**
+     * Creates a new document.
+     * 
+     * @param addToRegistry XXX You probabaly want to pass <code>true</code>.
+     * @param mimeType The mime type for the document.
+     * 
+     * @since 1.22
+     */
+    public BaseDocument(boolean addToRegistry, String mimeType) {
+        super(new DocumentContent());
+        this.deprecatedKitClass = null;
+        this.mimeType = mimeType;
+        init(addToRegistry);
+    }
+    
+    private void init(boolean addToRegistry) {
         setDocumentProperties(createDocumentProperties(getDocumentProperties()));
-        super.addDocumentListener(
-                org.netbeans.lib.editor.util.swing.DocumentUtilities.initPriorityListening(this));
 
         putProperty(GapStart.class, getDocumentContent());
         putProperty(CharSequence.class, getDocumentContent().createCharSequenceView());
         putProperty("supportsModificationListener", Boolean.TRUE); // NOI18N
+        putProperty(MIME_TYPE_PROP, new MimeTypePropertyEvaluator(this));
         
         lineRootElement = new LineRootElement(this);
 
-        settingsChange(null); // initialize variables from settings
-        Settings.addSettingsChangeListener(this);
-
         // Line separators default to platform ones
         putProperty(READ_LINE_SEPARATOR_PROP, Analyzer.getPlatformLS());
+        
+        // Initialize preferences and document properties
+        prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+        prefsListener.preferenceChange(null);
+        weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs);
 
         // Additional initialization of the document through the kit
-        BaseKit kit = BaseKit.getKit(kitClass);
-        if (kit != null) {
-            kit.initDocument(this);
+        EditorKit kit = getEditorKit();
+        if (kit instanceof BaseKit) {
+            ((BaseKit) kit).initDocument(this);
         }
 
         // Possibly add the document to registry
@@ -346,8 +625,12 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
                                       findSupportChange(evt);
                                   }
                               };
-        FindSupport.getFindSupport().addPropertyChangeListener(findSupportListener);
         findSupportChange(null); // update doc by find settings
+        
+        // start listening
+        super.addDocumentListener(org.netbeans.lib.editor.util.swing.DocumentUtilities.initPriorityListening(this));
+        prefs.addPreferenceChangeListener(weakPrefsListener);
+        FindSupport.getFindSupport().addPropertyChangeListener(findSupportListener);
     }
     
     private DocumentContent getDocumentContent() {
@@ -365,134 +648,69 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
         putProperty(BLOCKS_FINDER_PROP, null);
     }
 
-    /** Called when settings were changed. The method is called
-    * also in constructor, so the code must count with the evt being null.
-    */
-    public void settingsChange(SettingsChangeEvent evt) {
-        String settingName = (evt != null) ? evt.getSettingName() : null;
-
-        if (settingName == null || SettingsNames.TAB_SIZE.equals(settingName)) {
-            tabSize = SettingsUtil.getPositiveInteger(kitClass, SettingsNames.TAB_SIZE,
-                          SettingsDefaults.defaultTabSize);
-        }
-
-        if (settingName == null || SettingsNames.INDENT_SHIFT_WIDTH.equals(settingName)) {
-            Object shw = Settings.getValue(kitClass, SettingsNames.INDENT_SHIFT_WIDTH);
-            if (shw instanceof Integer) { // currently only Integer values are supported
-                shiftWidth = (Integer)shw;
-            }
-        }
-        
-        if (settingName == null || SettingsNames.READ_BUFFER_SIZE.equals(settingName)) {
-            int readBufferSize = SettingsUtil.getPositiveInteger(kitClass,
-                                 SettingsNames.READ_BUFFER_SIZE, SettingsDefaults.defaultReadBufferSize);
-            putProperty(SettingsNames.READ_BUFFER_SIZE, new Integer(readBufferSize));
-        }
-
-        if (settingName == null || SettingsNames.WRITE_BUFFER_SIZE.equals(settingName)) {
-            int writeBufferSize = SettingsUtil.getPositiveInteger(kitClass,
-                                  SettingsNames.WRITE_BUFFER_SIZE, SettingsDefaults.defaultWriteBufferSize);
-            putProperty(SettingsNames.WRITE_BUFFER_SIZE, new Integer(writeBufferSize));
-        }
-
-        if (settingName == null || SettingsNames.MARK_DISTANCE.equals(settingName)) {
-            int markDistance = SettingsUtil.getPositiveInteger(kitClass,
-                               SettingsNames.MARK_DISTANCE, SettingsDefaults.defaultMarkDistance);
-            putProperty(SettingsNames.MARK_DISTANCE, new Integer(markDistance));
-        }
-
-        if (settingName == null || SettingsNames.MAX_MARK_DISTANCE.equals(settingName)) {
-            int maxMarkDistance = SettingsUtil.getPositiveInteger(kitClass,
-                                  SettingsNames.MAX_MARK_DISTANCE, SettingsDefaults.defaultMaxMarkDistance);
-            putProperty(SettingsNames.MAX_MARK_DISTANCE, new Integer(maxMarkDistance));
-        }
-
-        if (settingName == null || SettingsNames.MIN_MARK_DISTANCE.equals(settingName)) {
-            int minMarkDistance = SettingsUtil.getPositiveInteger(kitClass,
-                                  SettingsNames.MIN_MARK_DISTANCE, SettingsDefaults.defaultMinMarkDistance);
-            putProperty(SettingsNames.MIN_MARK_DISTANCE, new Integer(minMarkDistance));
-        }
-
-        if (settingName == null || SettingsNames.READ_MARK_DISTANCE.equals(settingName)) {
-            int readMarkDistance = SettingsUtil.getPositiveInteger(kitClass,
-                                   SettingsNames.READ_MARK_DISTANCE, SettingsDefaults.defaultReadMarkDistance);
-            putProperty(SettingsNames.READ_MARK_DISTANCE, new Integer(readMarkDistance));
-        }
-
-        if (settingName == null || SettingsNames.SYNTAX_UPDATE_BATCH_SIZE.equals(settingName)) {
-            int syntaxUpdateBatchSize = SettingsUtil.getPositiveInteger(kitClass,
-                                        SettingsNames.SYNTAX_UPDATE_BATCH_SIZE, SettingsDefaults.defaultSyntaxUpdateBatchSize);
-            putProperty(SettingsNames.SYNTAX_UPDATE_BATCH_SIZE, new Integer(syntaxUpdateBatchSize));
-        }
-
-        if (settingName == null || SettingsNames.LINE_BATCH_SIZE.equals(settingName)) {
-            int lineBatchSize = SettingsUtil.getPositiveInteger(kitClass,
-                                SettingsNames.LINE_BATCH_SIZE, SettingsDefaults.defaultLineBatchSize);
-            putProperty(SettingsNames.LINE_BATCH_SIZE, new Integer(lineBatchSize));
-        }
-
-        if (settingName == null || SettingsNames.IDENTIFIER_ACCEPTOR.equals(settingName)) {
-            identifierAcceptor = SettingsUtil.getAcceptor(kitClass,
-                                 SettingsNames.IDENTIFIER_ACCEPTOR, AcceptorFactory.LETTER_DIGIT);
-        }
-
-        if (settingName == null || SettingsNames.WHITESPACE_ACCEPTOR.equals(settingName)) {
-            whitespaceAcceptor = SettingsUtil.getAcceptor(kitClass,
-                                 SettingsNames.WHITESPACE_ACCEPTOR, AcceptorFactory.WHITESPACE);
-        }
-
-        boolean stopOnEOL = SettingsUtil.getBoolean(kitClass,
-                            SettingsNames.WORD_MOVE_NEWLINE_STOP, true);
-        if (settingName == null || SettingsNames.NEXT_WORD_FINDER.equals(settingName)) {
-            putProperty(SettingsNames.NEXT_WORD_FINDER,
-                        SettingsUtil.getValue(kitClass, SettingsNames.NEXT_WORD_FINDER,
-                                              new FinderFactory.NextWordFwdFinder(this, stopOnEOL, false)));
-        }
-
-        if (settingName == null || SettingsNames.PREVIOUS_WORD_FINDER.equals(settingName)) {
-            putProperty(SettingsNames.PREVIOUS_WORD_FINDER,
-                        SettingsUtil.getValue(kitClass, SettingsNames.PREVIOUS_WORD_FINDER,
-                                              new FinderFactory.PreviousWordBwdFinder(this, stopOnEOL, false)));
-        }
-
-        // Refresh formatter
-        formatter = null;
-    }
-
     Syntax getFreeSyntax() {
-        BaseKit kit = BaseKit.getKit(kitClass);
-        synchronized (Settings.class) {
+        synchronized (syntaxList) {
             int cnt = syntaxList.size();
-            return (cnt > 0) ? (Syntax)syntaxList.remove(cnt - 1)
-                   : kit.createSyntax(this);
+            if (cnt > 0) {
+                return syntaxList.remove(cnt - 1);
+            } else {
+                EditorKit kit = getEditorKit();
+                if (kit instanceof BaseKit) {
+                    return ((BaseKit) kit).createSyntax(this);
+                } else {
+                    return new BaseKit.DefaultSyntax();
+                }
+            }
         }
     }
 
     void releaseSyntax(Syntax syntax) {
-        synchronized (Settings.class) {
+        synchronized (syntaxList) {
             syntaxList.add(syntax);
         }
     }
 
+    /** 
+     * @deprecated Please use Editor Indentation API instead, for details see
+     *   <a href="@org-netbeans-modules-editor-indent@/overview-summary.html">Editor Indentation</a>.
+     */
     public Formatter getLegacyFormatter() {
         if (formatter == null) {
-            formatter = (Formatter)Settings.getValue(getKitClass(), FORMATTER);
-            if (formatter == null)
-                formatter = Formatter.getFormatter(kitClass);
+            String formatterFactory = prefs.get(FORMATTER, null);
+            if (formatterFactory != null) {
+                formatter = (Formatter) SettingsConversions.callFactory(formatterFactory, MimePath.parse(mimeType));
+            }
+            if (formatter == null) {
+                formatter = Formatter.getFormatter(mimeType);
+            }
         }
         return formatter;
     }
 
-    /** Get the formatter for this document. */
+    /** 
+     * Gets the formatter for this document.
+     * 
+     * @deprecated Please use Editor Indentation API instead, for details see
+     *   <a href="@org-netbeans-modules-editor-indent@/overview-summary.html">Editor Indentation</a>.
+     */
     public Formatter getFormatter() {
         Formatter f = getLegacyFormatter();
         FormatterOverride fp = Lookup.getDefault().lookup(FormatterOverride.class);
         return (fp != null) ? fp.getFormatter(this, f) : f;
     }
 
+    /**
+     * @deprecated Please use Lexer instead, for details see
+     *   <a href="@org-netbeans-modules-lexer@/overview-summary.html">Lexer</a>.
+     */
     public SyntaxSupport getSyntaxSupport() {
         if (syntaxSupport == null) {
-            syntaxSupport = BaseKit.getKit(kitClass).createSyntaxSupport(this);
+            EditorKit kit = getEditorKit();
+            if (kit instanceof BaseKit) {
+                syntaxSupport = ((BaseKit) kit).createSyntaxSupport(this);
+            } else {
+                syntaxSupport = new SyntaxSupport(this);
+            }
         }
         return syntaxSupport;
     }
@@ -518,7 +736,7 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
         if (endPos == -1) {
             endPos = getLength();
         }
-        int batchLineCnt = ((Integer)getProperty(SettingsNames.LINE_BATCH_SIZE)).intValue();
+        int batchLineCnt = ((Integer)getProperty(LINE_BATCH_SIZE)).intValue();
         int batchStart = startPos;
         int ret = -1;
         if (startPos < endPos) { // batching in forward direction
@@ -1120,8 +1338,13 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
                       int endOffset) {
         readLock();
         try {
-            EditorUI editorUI = BaseKit.getKit(kitClass).createPrintEditorUI(this,
-                usePrintColoringMap, lineNumberEnabled);
+            EditorUI editorUI;
+            EditorKit kit = getEditorKit();
+            if (kit instanceof BaseKit) {
+                editorUI = ((BaseKit) kit).createPrintEditorUI(this, usePrintColoringMap, lineNumberEnabled);
+            } else {
+                editorUI = new EditorUI(this, usePrintColoringMap, lineNumberEnabled);
+            }
 
             DrawGraphics.PrintDG printDG = new DrawGraphics.PrintDG(container);
             DrawEngine.getDrawEngine().draw(printDG, editorUI, startOffset, endOffset, 0, 0, Integer.MAX_VALUE);
@@ -1153,7 +1376,15 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
                 lineNumberEnabledPar = lineNumberEnabled.booleanValue();
                 forceLineNumbers = lineNumberEnabled.booleanValue();
             }
-            EditorUI editorUI = BaseKit.getKit(kitClass).createPrintEditorUI(this, usePrintColoringMap, lineNumberEnabledPar);
+            
+            EditorUI editorUI;
+            EditorKit kit = getEditorKit();
+            if (kit instanceof BaseKit) {
+                editorUI = ((BaseKit) kit).createPrintEditorUI(this, usePrintColoringMap, lineNumberEnabledPar);
+            } else {
+                editorUI = new EditorUI(this, usePrintColoringMap, lineNumberEnabledPar);
+            }
+            
             if (forceLineNumbers) {
                 editorUI.setLineNumberVisibleSetting(true);
                 editorUI.setLineNumberEnabled(true);
@@ -1366,10 +1597,47 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
         }
     }
 
+    /**
+     * @deprecated Don't use implementation class of editor kits. Use mime type,
+     *   <code>MimePath</code> and <code>MimeLookup</code>.
+     */
     public final Class getKitClass() {
-        return kitClass;
+        return getEditorKit().getClass();
     }
 
+    private EditorKit getEditorKit() {
+        EditorKit editorKit = MimeLookup.getLookup(mimeType).lookup(EditorKit.class);
+        if (editorKit == null) {
+            // Try 'text/plain'
+            LOG.warning("No registered editor kit for '" + mimeType + "', trying 'text/plain'."); //NOI18N
+            editorKit = MimeLookup.getLookup("text/plain").lookup(EditorKit.class); //NOI18N
+            if (editorKit == null) {
+                LOG.warning("No registered editor kit for 'text/plain', using default."); //NOI18N
+                editorKit = new PlainEditorKit();
+            }
+        }
+        return editorKit;
+    }
+
+    private void setMimeType(String mimeType) {
+        if (!this.mimeType.equals(mimeType)) {
+            this.mimeType = mimeType;
+
+            // reinitialize the document
+            EditorKit kit = getEditorKit();
+            if (kit instanceof BaseKit) {
+                ((BaseKit) kit).initDocument(this);
+            }
+            
+            if (prefs != null && weakPrefsListener != null) {
+                prefs.removePreferenceChangeListener(weakPrefsListener);
+            }
+            prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+            weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs);
+            prefsListener.preferenceChange(null);
+        }
+    }
+    
     /** This method prohibits merging of the next document modification
     * with the previous one even if it would be normally possible.
     */
@@ -1784,8 +2052,10 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
     }
 
     public @Override String toString() {
-        return super.toString() + ", kitClass=" + getKitClass() // NOI18N
-            + ", docLen=" + getLength(); // NOI18N
+        return super.toString() + 
+            ", mimeType = '" + mimeType + "'" + //NOI18N
+            ", kitClass = " + deprecatedKitClass + // NOI18N
+            ", lenght = " + getLength(); // NOI18N
     }
     
     /** Detailed debug info about the document */
@@ -1886,6 +2156,59 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
         
     }
     
+    private static final class MimeTypePropertyEvaluator implements PropertyEvaluator {
+        
+        private final BaseDocument doc;
+        private String hackMimeType = null;
+        
+        public MimeTypePropertyEvaluator(BaseDocument baseDocument) {
+            this.doc = baseDocument;
+        }
+        
+        public Object getValue() {
+            if (hackMimeType == null) {
+                return doc.getEditorKit().getContentType();
+            } else {
+                return hackMimeType;
+            }
+        }
+        
+        public Object setValue(Object value) {
+            String mimeType = value == null ? null : value.toString();
+            assert MimePath.validate(mimeType) : "Invalid mime type: '" + mimeType + "'"; //NOI18N
+            
+            // XXX: hack to support Tools-Options' "testNNNN_*" mime types
+            boolean hackNewMimeType = mimeType != null && mimeType.startsWith("test"); //NOI18N
+            
+//            // Do not change anything, just sanity checks
+//            if (value != null && LOG.isLoggable(Level.WARNING)) {
+//                String msg = null;
+//                if (doc.editorKit != null) {
+//                    msg = "Trying to set " + MIME_TYPE_PROP + " property to '" + mimeType + //NOI18N
+//                        "' on properly initialized document " + doc; //NOI18N
+//                } else {
+//                    // baseDocument initialized by the deprecated constructor
+//                    if (!mimeType.equals(doc.getEditorKit().getContentType())) {
+//                        msg = "Trying to set " + MIME_TYPE_PROP + " property to '" + mimeType + //NOI18N
+//                            "', which is inconsistent with the content type of document's editor kit, document = " + doc; //NOI18N
+//                    }
+//                }
+//                if (msg != null && !hackNewMimeType) {
+//                    LOG.log(Level.WARNING, null, new Throwable(msg));
+//                }
+//            }
+            
+            String oldValue = (String) getValue();
+            if (hackNewMimeType) {
+                hackMimeType = mimeType;
+            } else {
+                doc.setMimeType(mimeType);
+            }
+            
+            return oldValue;
+        }
+    } // End of MimeTypePropertyEvaluator class
+    
     protected static class LazyPropertyMap extends Hashtable {
         
         protected LazyPropertyMap(Dictionary dict) {
@@ -1907,7 +2230,17 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
             return val;
         }
         
-    }
+        public @Override Object put(Object key, Object value) {
+            if (key != null && MIME_TYPE_PROP.equals(key)) {
+                Object val = super.get(key);
+                if (val instanceof MimeTypePropertyEvaluator) {
+                    return ((MimeTypePropertyEvaluator) val).setValue(value);
+                }
+            }
+
+            return super.put(key, value);
+        }
+    } // End of LazyPropertyMap class
 
     private static final class MarksStorageUndo extends AbstractUndoableEdit {
         
@@ -1982,5 +2315,36 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
             return beforeModificationListener;
         }
     }
-    
+
+    // XXX: the same as the one in CloneableEditorSupport
+    private static final class PlainEditorKit extends DefaultEditorKit implements ViewFactory {
+        static final long serialVersionUID = 1L;
+
+        PlainEditorKit() {
+        }
+
+        /** @return cloned instance
+        */
+        public @Override Object clone() {
+            return new PlainEditorKit();
+        }
+
+        /** @return this (I am the ViewFactory)
+        */
+        public @Override ViewFactory getViewFactory() {
+            return this;
+        }
+
+        /** Plain view for the element
+        */
+        public View create(Element elem) {
+            return new WrappedPlainView(elem);
+        }
+
+        /** Set to a sane font (not proportional!). */
+        public @Override void install(JEditorPane pane) {
+            super.install(pane);
+            pane.setFont(new Font("Monospaced", Font.PLAIN, pane.getFont().getSize() + 1)); //NOI18N
+        }
+    } // End of PlainEditorKit class
 }

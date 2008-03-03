@@ -58,6 +58,7 @@ import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Segment;
 import javax.swing.text.View;
+import org.netbeans.api.editor.settings.FontColorNames;
 
 /**
  * This class is responsible for drawing editor components. It's a singleton.
@@ -104,7 +105,7 @@ import javax.swing.text.View;
                 LOG.log(Level.WARNING, null, e);
             }
 
-            ctx.lineNumberColoring = ctx.editorUI.getColoring(SettingsNames.LINE_NUMBER_COLORING);
+            ctx.lineNumberColoring = ctx.editorUI.getColoring(FontColorNames.LINE_NUMBER_COLORING);
             if (ctx.lineNumberColoring == null) {
                 ctx.lineNumberColoring = ctx.defaultColoring; // no number coloring found
 
@@ -160,7 +161,7 @@ import javax.swing.text.View;
 
         if (ctx.graphics != null) {
             if (ctx.editorUI.renderingHints != null) {
-                ((Graphics2D)ctx.graphics).setRenderingHints(ctx.editorUI.renderingHints);
+                ((Graphics2D)ctx.graphics).setRenderingHints(ctx.editorUI.renderingHints.getHints());
             }
         }
 
@@ -894,7 +895,7 @@ import javax.swing.text.View;
         if (ctx.editorUI.textLimitLineVisible) { // draw limit line
             int lineX = ctx.editorUI.getTextMargin().left + ctx.getEditorUI().textLimitWidth() * ctx.editorUI.defaultSpaceWidth;
             if (ctx.graphics !=null){
-                ctx.graphics.setColor(ctx.editorUI.textLimitLineColor);
+                ctx.graphics.setColor(ctx.editorUI.getTextLimitLineColor());
                 Rectangle clip = ctx.graphics.getClipBounds();
                 if (clip.height>ctx.editorUI.getLineHeight()){
                     ctx.graphics.drawLine(lineX, ctx.y, lineX, ctx.y+clip.height);

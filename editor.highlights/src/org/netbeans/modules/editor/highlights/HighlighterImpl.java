@@ -167,7 +167,7 @@ public final class HighlighterImpl implements PropertyChangeListener, ChangeList
             // force caret repaint, see #100384
             Caret caret = c.getCaret();
             if (caret instanceof BaseCaret) {
-                ((BaseCaret) caret).settingsChange(null);
+                ((BaseCaret) caret).refresh();
             }
         }
     }

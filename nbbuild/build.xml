@@ -2089,4 +2089,16 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       </makeupdatedesc>
       <gzip src="${catalog.file}" destfile="${catalog.file}.gz"/>
   </target>
+
+  <target name="refresh-deps" depends="bootstrap">
+      <taskdef name="refreshdeps" classname="org.netbeans.nbbuild.RefreshDependencyVersions" classpath="build/antclasses"/>
+      <refreshdeps module="org.netbeans.modules.editor.lib" nbroot=".." dryrun="false">
+          <inject codenamebase="org.netbeans.modules.editor.deprecated.pre61settings" release="0" specification="1.0"/>
+          <inject codenamebase="org.netbeans.modules.editor.deprecated.pre61completion" release="0" specification="1.0"/>
+      </refreshdeps>
+      <refreshdeps module="org.netbeans.modules.editor" nbroot=".." dryrun="false">
+          <inject codenamebase="org.netbeans.modules.editor.deprecated.pre61settings" release="0" specification="1.0"/>
+      </refreshdeps>
+  </target>
+
 </project>

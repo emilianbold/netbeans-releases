@@ -54,6 +54,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+import java.util.prefs.Preferences;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -64,6 +66,9 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.text.Keymap;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.ActionFactory;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtKit;
@@ -78,21 +83,14 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.MacroDialogSupport;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.impl.ActionsList;
 import org.netbeans.modules.editor.impl.SearchBar;
 import org.netbeans.modules.editor.impl.PopupMenuActionsProvider;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryBackAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryForwardAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryLastEditAction;
-import org.netbeans.modules.editor.options.BaseOptions;
-import org.netbeans.modules.editor.options.OptionUtilities;
-import org.netbeans.modules.editor.options.AllOptionsFolder;
-import org.netbeans.modules.editor.options.MacrosEditorPanel;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -142,16 +140,13 @@ public class NbEditorKit extends ExtKit {
     public NbEditorKit() {
         super();
 //        new Throwable("NbEditorKit: " + getClass()).printStackTrace();
-        NbEditorSettingsInitializer.init();
     }
 
-    public Document createDefaultDocument() {
-        Document doc = new NbEditorDocument(this.getClass());
-        Object mimeType = doc.getProperty("mimeType"); //NOI18N
-        if (mimeType == null){
-            doc.putProperty("mimeType", getContentType()); //NOI18N
-        }
-        return doc;
+    
+    // XXX: should idealy be final, but can't. Document in javadoc what needs
+    // to be done when overriding this method.
+    public @Override Document createDefaultDocument() {
+        return new NbEditorDocument(getContentType());
     }
 
     /**
@@ -173,11 +168,11 @@ public class NbEditorKit extends ExtKit {
     protected void toolTipAnnotationsUnlock(Document doc) {
     }
 
-    protected EditorUI createEditorUI() {
+    protected @Override EditorUI createEditorUI() {
         return new NbEditorUI();
     }
 
-    protected Action[] createActions() {
+    protected @Override Action[] createActions() {
         Action[] nbEditorActions = new Action[] {
                                        new NbBuildPopupMenuAction(),
                                        nbUndoActionDef,
@@ -205,7 +200,7 @@ public class NbEditorKit extends ExtKit {
         systemAction2editorAction.put(systemActionClass.getName(), editorActionName);
     }
     
-    protected void updateActions() {
+    protected @Override void updateActions() {
         addSystemActionMapping(cutAction, org.openide.actions.CutAction.class);
         addSystemActionMapping(copyAction, org.openide.actions.CopyAction.class);
         addSystemActionMapping(pasteAction, org.openide.actions.PasteAction.class);
@@ -230,7 +225,7 @@ public class NbEditorKit extends ExtKit {
         return false;
     }
     
-    public String getContentType() {
+    public @Override String getContentType() {
         if (isInheritorOfNbEditorKit()){
             ErrorManager.getDefault().log(ErrorManager.WARNING, 
                 "Warning: KitClass "+this.getClass().getName()+" doesn't override the method getContentType."); //NOI18N
@@ -260,26 +255,31 @@ public class NbEditorKit extends ExtKit {
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            boolean toolbarVisible = AllOptionsFolder.getDefault().isToolbarVisible();
-            AllOptionsFolder.getDefault().setToolbarVisible(!toolbarVisible);
+            Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+            boolean toolbarVisible = prefs.getBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, true);
+            prefs.putBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, !toolbarVisible);
         }
         
-        public JMenuItem getPopupMenuItem(JTextComponent target) {
+        public @Override JMenuItem getPopupMenuItem(JTextComponent target) {
+            Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+            boolean toolbarVisible = prefs.getBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, true);
+            
             JCheckBoxMenuItem item = new JCheckBoxMenuItem(
-                    NbBundle.getBundle(BaseOptions.class).getString("PROP_base_toolbarVisible"),
-                    AllOptionsFolder.getDefault().isToolbarVisible());
+                NbBundle.getBundle(ToggleToolbarAction.class).getString("PROP_base_toolbarVisible"), //NOI18N
+                toolbarVisible);
+            
             item.addItemListener( new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
                     actionPerformed(null,null);
                 }
             });
+            
             return item;
         }
         
-        protected Class getShortDescriptionBundleClass() {
+        protected @Override Class getShortDescriptionBundleClass() {
             return BaseKit.class;
         }
-        
     }
     
     
@@ -287,13 +287,13 @@ public class NbEditorKit extends ExtKit {
 
         static final long serialVersionUID =-8623762627678464181L;
 
-        protected JPopupMenu createPopupMenu(JTextComponent component) {
+        protected @Override JPopupMenu createPopupMenu(JTextComponent component) {
             // to make keyboard navigation (Up/Down keys) inside popup work, we
             // must use JPopupMenuPlus instead of JPopupMenu
             return new org.openide.awt.JPopupMenuPlus();
         }
 
-        protected JPopupMenu buildPopupMenu(JTextComponent component) {        
+        protected @Override JPopupMenu buildPopupMenu(JTextComponent component) {        
             EditorUI ui = Utilities.getEditorUI(component);
             if (!ui.hasExtComponent()) {
                 return null;
@@ -305,11 +305,19 @@ public class NbEditorKit extends ExtKit {
             List l = PopupMenuActionsProvider.getPopupMenuItems(mimeType);
             
             if (l.isEmpty()){
-                l = (List)Settings.getValue(Utilities.getKitClass(component),
-                    (ui == null || ui.hasExtComponent())
-                        ? ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST
-                        : ExtSettingsNames.DIALOG_POPUP_MENU_ACTION_NAME_LIST
-                );
+                String settingName = ui == null || ui.hasExtComponent()
+                        ? "popup-menu-action-name-list" //NOI18N
+                        : "dialog-popup-menu-action-name-list"; //NOI18N
+
+                Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+                String actionNames = prefs.get(settingName, null);
+
+                if (actionNames != null) {
+                    for(StringTokenizer t = new StringTokenizer(actionNames, ","); t.hasMoreTokens(); ) { //NOI18N
+                        String action = t.nextToken().trim();
+                        l.add(action);
+                    }
+                }
             }
             
             if (l != null) {
@@ -427,8 +435,7 @@ public class NbEditorKit extends ExtKit {
             }
         }
 
-        protected void addAction(JTextComponent component, JPopupMenu popupMenu,
-        String actionName) {
+        protected @Override void addAction(JTextComponent component, JPopupMenu popupMenu, String actionName) {
             if (actionName != null) { // try if it's an action class name
                 // Check for the TopComponent actions
                 if (TopComponent.class.getName().equals(actionName)) {
@@ -484,72 +491,17 @@ public class NbEditorKit extends ExtKit {
     }
 
     /**
-     * @deprecated Without any replacement.
+     * @deprecated Without any replacement. This class is no longer functional.
      */
     public class NbStopMacroRecordingAction extends ActionFactory.StopMacroRecordingAction {
-        
-        private BaseOptions bo;
-        
-        private Map getKBMap(){
-            Map ret;
-            List list = bo.getKeyBindingList();
-            if( list.size() > 0 &&
-            ( list.get( 0 ) instanceof Class || list.get( 0 ) instanceof String )
-            ) {
-                list.remove( 0 ); //remove kit class name
-            }
-            ret = OptionUtilities.makeKeyBindingsMap(list);
-            return ret;
+        protected @Override MacroDialogSupport getMacroDialogSupport(Class kitClass){
+            return super.getMacroDialogSupport(kitClass);
         }
-        
-        protected MacroDialogSupport getMacroDialogSupport(Class kitClass){
-            return new NbMacroDialogSupport(kitClass);
-        }
-        
-        
-        private class NbMacroDialogSupport extends MacroDialogSupport{
-            
-            public NbMacroDialogSupport( Class kitClass ) {
-                super(kitClass);
-            }
-            
-            public void actionPerformed(ActionEvent evt) {
-                bo = BaseOptions.getOptions(NbEditorKit.this.getClass());
-                Map oldMacroMap = null;
-                Map oldKBMap = null;
-                if (bo != null){
-                    oldMacroMap = bo.getMacroMap();
-                    oldKBMap = getKBMap();
-                }
-
-                super.actionPerformed(evt);
-
-                if (bo != null){
-                    Map newMacroMap = bo.getMacroMap();
-                    bo.setMacroDiffMap(OptionUtilities.getMapDiff(oldMacroMap, newMacroMap, true));
-                    bo.setKeyBindingsDiffMap(OptionUtilities.getMapDiff(oldKBMap, getKBMap(), true));
-                    bo.setMacroMap(newMacroMap,false);
-                    bo.setKeyBindingList(bo.getKeyBindingList(), false);
-                }
-            }
-            
-            protected int showConfirmDialog(String macroName){
-                NotifyDescriptor confirm = new NotifyDescriptor.Confirmation(
-                NbBundle.getMessage(MacrosEditorPanel.class,"MEP_Overwrite", macroName),
-                NotifyDescriptor.YES_NO_CANCEL_OPTION,
-                NotifyDescriptor.WARNING_MESSAGE
-                );
-                org.openide.DialogDisplayer.getDefault().notify(confirm);
-                return ((Integer)confirm.getValue()).intValue();
-            }
-            
-        }
-        
     } // End of NbStopMacroRecordingAction class
         
     public static class NbUndoAction extends ActionFactory.UndoAction {
 
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        public @Override void actionPerformed(ActionEvent evt, JTextComponent target) {
             // Delegate to system undo action
             UndoAction ua = (UndoAction)SystemAction.get(UndoAction.class);
             if (ua != null && ua.isEnabled()) {
@@ -561,7 +513,7 @@ public class NbEditorKit extends ExtKit {
 
     public static class NbRedoAction extends ActionFactory.RedoAction {
 
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        public @Override void actionPerformed(ActionEvent evt, JTextComponent target) {
             // Delegate to system redo action
             RedoAction ra = (RedoAction)SystemAction.get(RedoAction.class);
             if (ra != null && ra.isEnabled()) {
@@ -574,24 +526,19 @@ public class NbEditorKit extends ExtKit {
     /** Switch visibility of line numbers in editor */
     public static class NbToggleLineNumbersAction extends ActionFactory.ToggleLineNumbersAction {
 
-        
         public NbToggleLineNumbersAction() {
         }
         
-        protected boolean isLineNumbersVisible() {
-            return AllOptionsFolder.getDefault().getLineNumberVisible();
+        protected @Override boolean isLineNumbersVisible() {
+            Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+            return prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, false);
         }
         
-        protected void toggleLineNumbers() {
-            boolean numbersVisible = AllOptionsFolder.getDefault().getLineNumberVisible();
-            AllOptionsFolder.getDefault().setLineNumberVisible(!numbersVisible);
+        protected @Override void toggleLineNumbers() {
+            Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+            boolean visible = prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, false);
+            prefs.putBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, !visible);
         }
-        
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            toggleLineNumbers();
-        }
-        
-        
     }
 
     public static class NbGenerateGoToPopupAction extends BaseAction {
@@ -604,7 +551,7 @@ public class NbEditorKit extends ExtKit {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
         }
 
-        protected Class getShortDescriptionBundleClass() {
+        protected @Override Class getShortDescriptionBundleClass() {
             return NbEditorKit.class;
         }
         
@@ -613,7 +560,7 @@ public class NbEditorKit extends ExtKit {
 
     public static class NbBuildToolTipAction extends BuildToolTipAction {
 
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        public @Override void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 NbToolTip.buildToolTip(target);
             }
@@ -630,7 +577,7 @@ public class NbEditorKit extends ExtKit {
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
-        protected Class getShortDescriptionBundleClass() {
+        protected @Override Class getShortDescriptionBundleClass() {
             return NbEditorKit.class;
         }
         
@@ -682,8 +629,13 @@ public class NbEditorKit extends ExtKit {
                 target = null;
             }
             if (kit == null) return;
-            boolean foldingEnabled = (target == null) ? false :
-                ((Boolean)Settings.getValue(Utilities.getKitClass(target), SettingsNames.CODE_FOLDING_ENABLE)).booleanValue();
+            
+            boolean foldingEnabled = false;
+            if (target != null) {
+                Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(target)).lookup(Preferences.class);
+                foldingEnabled = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, true);
+            }
+            
             Action a = kit.getActionByName(actionName);
             if (a != null) {
                 JMenuItem item = null;
@@ -721,7 +673,7 @@ public class NbEditorKit extends ExtKit {
             setAddSeparatorBeforeNextAction(false);
         }
         
-        public JMenuItem getPopupMenuItem(JTextComponent target) {
+        public @Override JMenuItem getPopupMenuItem(JTextComponent target) {
             String menuText = org.openide.util.NbBundle.getBundle (NbEditorKit.class).
                 getString("Menu/View/CodeFolds");
             JMenu menu = new JMenu(menuText);

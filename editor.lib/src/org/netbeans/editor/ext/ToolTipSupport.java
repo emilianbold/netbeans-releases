@@ -65,9 +65,6 @@ import javax.swing.JEditorPane;
 import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
-import org.netbeans.editor.SettingsChangeListener;
-import org.netbeans.editor.SettingsChangeEvent;
-import org.netbeans.editor.Settings;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseTextUI;
@@ -79,6 +76,7 @@ import org.netbeans.editor.GlyphGutter;
 import javax.swing.JViewport;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import org.netbeans.editor.EditorUI;
 
 /**
  * Support for editor tooltips. Once the user stops moving the mouse
@@ -97,9 +95,7 @@ import javax.swing.text.Element;
  * @version 1.00
  */
 
-public class ToolTipSupport extends MouseAdapter
-implements MouseMotionListener, ActionListener, PropertyChangeListener,
-SettingsChangeListener, FocusListener {
+public class ToolTipSupport extends MouseAdapter implements MouseMotionListener, ActionListener, PropertyChangeListener, FocusListener {
 
     /** Property for the tooltip component change */
     public static final String PROP_TOOL_TIP = "toolTip"; // NOI18N
@@ -156,7 +152,7 @@ SettingsChangeListener, FocusListener {
     private static final String HTML_PREFIX_LOWERCASE = "<html"; //NOI18N
     private static final String HTML_PREFIX_UPPERCASE = "<HTML"; //NOI18N
     
-    private ExtEditorUI extEditorUI;
+    private EditorUI extEditorUI;
 
     private JComponent toolTip;
 
@@ -185,7 +181,7 @@ SettingsChangeListener, FocusListener {
 
     /** Construct new support for tooltips.
      */
-    public ToolTipSupport(ExtEditorUI extEditorUI) {
+    public ToolTipSupport(EditorUI extEditorUI) {
         this.extEditorUI = extEditorUI;
 
         enterTimer = new Timer(INITIAL_DELAY, new WeakTimerListener(this));
@@ -193,7 +189,6 @@ SettingsChangeListener, FocusListener {
         exitTimer = new Timer(DISMISS_DELAY, new WeakTimerListener(this));
         exitTimer.setRepeats(false);
 
-        Settings.addSettingsChangeListener(this);
         extEditorUI.addPropertyChangeListener(this);
 
         setEnabled(true);
@@ -369,13 +364,10 @@ SettingsChangeListener, FocusListener {
         return tt;
     }
 
-    public void settingsChange(SettingsChangeEvent evt) {
-    }
-
     public void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
 
-        if (ExtEditorUI.COMPONENT_PROPERTY.equals(propName)) {
+        if (EditorUI.COMPONENT_PROPERTY.equals(propName)) {
             JTextComponent component = (JTextComponent)evt.getNewValue();
             if (component != null) { // just installed
 
@@ -449,7 +441,7 @@ SettingsChangeListener, FocusListener {
      * by children.
      */
     protected void updateToolTip() {
-        ExtEditorUI ui = extEditorUI;
+        EditorUI ui = extEditorUI;
         if (ui == null)
             return;
         JTextComponent comp = ui.getComponent();
@@ -787,7 +779,7 @@ SettingsChangeListener, FocusListener {
         
         // Check that if a selection becomes visible by dragging a mouse
         // the tooltip evaluation should be posted.
-        ExtEditorUI ui = extEditorUI;
+        EditorUI ui = extEditorUI;
         if (ui != null) {
             JTextComponent component = ui.getComponent();
             if (enabled && component != null && component.getCaret().isSelectionVisible()) {

@@ -144,6 +144,24 @@ made subject to such option by the copyright holder.
                         <specification-version>6.14</specification-version>
                     </run-dependency>
                 </dependency>
+            <dependency>
+                    <code-name-base>org.netbeans.modules.editor.deprecated.pre61completion</code-name-base>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                <build-prerequisite/>
+                    <compile-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.deprecated.pre61settings</code-name-base>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                <build-prerequisite/>
+                    <compile-dependency/>
+                </dependency>
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.junit</friend>

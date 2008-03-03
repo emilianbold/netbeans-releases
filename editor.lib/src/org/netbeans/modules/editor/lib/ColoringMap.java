@@ -43,15 +43,17 @@ package org.netbeans.modules.editor.lib;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorNames;
@@ -59,8 +61,6 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.editor.Coloring;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.TokenCategory;
 import org.netbeans.editor.TokenContext;
 import org.netbeans.editor.TokenContextPath;
@@ -353,24 +353,30 @@ public final class ColoringMap {
     }
 
     private static List<String> findLegacyNonTokenColoringNames(MimePath mimePath) {
-        EditorKit kit = MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
         List<String> legacyNonTokenColoringNames = null;
 
-        if (kit != null) {
-            List list = SettingsUtil.getCumulativeList(kit.getClass(), SettingsNames.COLORING_NAME_LIST, null);
-            legacyNonTokenColoringNames = list;
+        Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+        String namesList = prefs.get("coloring-name-list", null); //NOI18N
+        
+        if (namesList != null && namesList.length() > 0) {
+            legacyNonTokenColoringNames = new ArrayList<String>();
+            
+            for(StringTokenizer t = new StringTokenizer(namesList, ","); t.hasMoreTokens(); ) { //NOI18N
+                String coloringName = t.nextToken().trim();
+                legacyNonTokenColoringNames.add(coloringName);
+            }
         }
         
         return legacyNonTokenColoringNames;
     }
     
     private static List<? extends TokenContext> findSyntaxLanguage(MimePath mimePath) {
-        EditorKit kit = MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
         List<? extends TokenContext> languages = null;
         
-        if (kit != null) {
-            List tcl = SettingsUtil.getList(kit.getClass(), SettingsNames.TOKEN_CONTEXT_LIST, null);
-            languages = tcl;
+        Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+        String  factoryRef = prefs.get("token-context-list", null); //NOI18N
+        if (factoryRef != null) {
+            languages = (List<? extends TokenContext>) SettingsConversions.callFactory(factoryRef, mimePath);
         }
         
         return languages;

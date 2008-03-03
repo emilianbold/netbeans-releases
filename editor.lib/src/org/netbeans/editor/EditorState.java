@@ -55,6 +55,9 @@ import java.util.HashMap;
  *
  * @author  Petr Nejedly
  * @version 1.0
+ * @deprecated Use Editor Settings and Settings Storage APIs. Please note that
+ *     the states stored here are not persisted and therefore don't survive
+ *     JVM restarts.
  */
 public class EditorState {
     private static HashMap state = new HashMap();

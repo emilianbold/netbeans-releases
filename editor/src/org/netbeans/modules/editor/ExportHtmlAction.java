@@ -64,6 +64,13 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
+import java.util.prefs.Preferences;
+import javax.swing.text.AttributeSet;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 
 public class ExportHtmlAction extends CookieAction {
 
@@ -106,17 +113,24 @@ public class ExportHtmlAction extends CookieAction {
                 folderName = System.getProperty("user.home"); //NOI18N
             p.setFileName (folderName+File.separatorChar+
                     ((DataObject)bdoc.getProperty (Document.StreamDescriptionProperty)).getPrimaryFile().getName()+HTML_EXT);
-            Boolean bool = (Boolean)EditorState.get(SHOW_LINES_HIST);
-            boolean showLineNumbers = (bool != null ? bool : (Boolean)SettingsUtil.getValue (bdoc.getKitClass(),SettingsNames.LINE_NUMBER_VISIBLE,
-                    Boolean.FALSE)).booleanValue();
+            
+            MimePath mimePath = jtc == null ? MimePath.EMPTY : MimePath.parse(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(jtc));
+            Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+            
+            Boolean bool = (Boolean)EditorState.get(SHOW_LINES_HIST);            
+            boolean showLineNumbers = bool != null ? bool : prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, false);
             p.setShowLines (showLineNumbers);
-            bool = (Boolean)EditorState.get(SELECTION_HIST);
+            
             p.setSelectionActive (jtc != null && jtc.getSelectionStart()!=jtc.getSelectionEnd());
+
+            bool = (Boolean)EditorState.get(SELECTION_HIST);
             boolean selection = (jtc != null && jtc.getSelectionStart()!=jtc.getSelectionEnd()) && (bool != null ? bool.booleanValue() : true);
             p.setSelection (selection);
+            
             bool = (Boolean)EditorState.get(OPEN_HTML_HIST);
             boolean setOpen = bool != null ? bool.booleanValue() : false;
             p.setOpenHtml(setOpen);
+            
             DialogDescriptor dd = new DialogDescriptor (p, NbBundle.getMessage(ExportHtmlAction.class, "CTL_ExportHtml"));
             boolean overwrite = true;
             dlg = DialogDisplayer.getDefault().createDialog (dd);            
@@ -124,14 +138,14 @@ public class ExportHtmlAction extends CookieAction {
                 dlg.setVisible (true);
                 overwrite = true;
                 if ( dd.getValue() == DialogDescriptor.OK_OPTION && new File(p.getFileName()).exists()){
-                    NotifyDescriptor NDConfirm = new NotifyDescriptor.Confirmation(
+                    NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
                     NbBundle.getMessage( org.netbeans.modules.editor.ExportHtmlAction.class, "MSG_FileExists", p.getFileName()),
                     NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.WARNING_MESSAGE
                     );
 
-                    org.openide.DialogDisplayer.getDefault().notify(NDConfirm);
-                    if (NDConfirm.getValue()!=NDConfirm.YES_OPTION){
+                    org.openide.DialogDisplayer.getDefault().notify(descriptor);
+                    if (descriptor.getValue()!=NotifyDescriptor.YES_OPTION){
                         overwrite = false;
                     }
                 }
@@ -211,21 +225,28 @@ public class ExportHtmlAction extends CookieAction {
         return HelpCtx.DEFAULT_HELP;
     }
 
-    protected final boolean asynchronous() {
+    protected @Override final boolean asynchronous() {
         return false;
     }
 
     private void export (final BaseDocument bdoc,  String fileName, boolean lineNumbers, int selectionStart, int selectionEnd) throws IOException {
-        Coloring coloring =  SettingsUtil.getColoring (bdoc.getKitClass(), SettingsNames.DEFAULT_COLORING, false);
+        MimePath mimePath = MimePath.parse((String)bdoc.getProperty(BaseDocument.MIME_TYPE_PROP));
+        FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
+        
+        AttributeSet defaultAttribs = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
+        Coloring coloring =  Coloring.fromAttributeSet(defaultAttribs);
         Color bgColor = coloring.getBackColor();
         Color fgColor = coloring.getForeColor();
         Font font = coloring.getFont();
-        coloring = SettingsUtil.getColoring (bdoc.getKitClass(), SettingsNames.LINE_NUMBER_COLORING, false);
-        Color lnbgColor = coloring.getBackColor();
-        Color lnfgColor = coloring.getForeColor();
+        
+        AttributeSet lineNumberAttribs = fcs.getFontColors(FontColorNames.LINE_NUMBER_COLORING);
+        Coloring lineNumberColoring = Coloring.fromAttributeSet(lineNumberAttribs);
+        Color lnbgColor = lineNumberColoring.getBackColor();
+        Color lnfgColor = lineNumberColoring.getForeColor();
+        
         FileObject fo = ((DataObject)bdoc.getProperty (Document.StreamDescriptionProperty)).getPrimaryFile();
         HtmlPrintContainer htmlPrintContainer = new HtmlPrintContainer();
-        htmlPrintContainer.begin (fo, font, fgColor, bgColor,lnfgColor,lnbgColor, bdoc.getKitClass(), CHARSET);
+        htmlPrintContainer.begin (fo, font, fgColor, bgColor,lnfgColor,lnbgColor, mimePath, CHARSET);
         bdoc.print (htmlPrintContainer,false, Boolean.valueOf(lineNumbers), selectionStart, selectionEnd);
         String result = htmlPrintContainer.end();
         PrintWriter out = null;

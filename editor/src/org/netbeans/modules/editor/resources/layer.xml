@@ -221,16 +221,6 @@ made subject to such option by the copyright holder.
 
     </folder>
 
-    <folder name="UI">
-      <folder name="Services">
-        <folder name="Editing">
-            <file name="EditorsAllOptions.instance">
-                <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.options.AllOptionsNode"/>
-                <attr name="instanceClass" stringvalue="org.openide.nodes.Node"/>
-            </file>
-        </folder> <!-- Editing -->
-      </folder> <!-- Services -->
-    </folder> <!-- UI -->
 <!--
     <folder name="Templates">
         <folder name="Services">
@@ -353,6 +343,11 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
 
+        <folder name="Preferences">
+            <folder name="Defaults">
+                <file name="org-netbeans-modules-editor-preferences.xml" url="NetBeans-preferences.xml"/>
+            </folder>
+        </folder>
     </folder>
 
     <folder name="xml">
@@ -360,11 +355,6 @@ made subject to such option by the copyright holder.
             <folder name="NetBeans">
                 <file name="DTD_annotation_type_1_0" url="nbres:/org/netbeans/modules/editor/resources/AnnotationTypes/annotation-type-1_0.dtd"/>
                 <file name="DTD_annotation_type_1_1" url="nbres:/org/netbeans/modules/editor/resources/AnnotationTypes/annotation-type-1_1.dtd"/>
-                <file name="DTD_Editor_Fonts_and_Colors_settings_1_0" url="nbres:/org/netbeans/modules/editor/resources/DTDs/Options/EditorFontsColors-1_0.dtd"/>
-                <file name="DTD_Editor_Properties_settings_1_0" url="nbres:/org/netbeans/modules/editor/resources/DTDs/Options/EditorProperties-1_0.dtd"/>
-                <file name="DTD_Editor_KeyBindings_settings_1_0" url="nbres:/org/netbeans/modules/editor/resources/DTDs/Options/EditorKeyBindings-1_0.dtd"/>
-                <file name="DTD_Editor_Macros_settings_1_0" url="nbres:/org/netbeans/modules/editor/resources/DTDs/Options/EditorMacros-1_0.dtd"/>
-                <file name="DTD_Editor_Abbreviations_settings_1_0" url="nbres:/org/netbeans/modules/editor/resources/DTDs/Options/EditorAbbreviations-1_0.dtd"/>
             </folder>    
         </folder>
         <folder name="lookups">
@@ -375,21 +365,6 @@ made subject to such option by the copyright holder.
                <file name="DTD_annotation_type_1_1.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.options.AnnotationTypeProcessor"/>
                </file>
-                <file name="DTD_Editor_Fonts_and_Colors_settings_1_0.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.options.FontsColorsMIMEProcessor"/>
-                </file>
-                <file name="DTD_Editor_Properties_settings_1_0.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.options.PropertiesMIMEProcessor"/>
-                </file>
-                <file name="DTD_Editor_KeyBindings_settings_1_0.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.options.KeyBindingsMIMEProcessor"/>
-                </file>
-                <file name="DTD_Editor_Macros_settings_1_0.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.options.MacrosMIMEProcessor"/>
-                </file>
-                <file name="DTD_Editor_Abbreviations_settings_1_0.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.options.AbbrevsMIMEProcessor"/>
-                </file>
             </folder>    
         </folder>
     </folder>

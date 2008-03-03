@@ -61,8 +61,10 @@ import javax.swing.event.PopupMenuEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.awt.event.*;
-import java.util.Collections;
 import java.util.Map;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.accessibility.*;
 import javax.swing.SwingUtilities;
@@ -74,8 +76,13 @@ import javax.swing.text.View;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.modules.editor.lib.EditorRenderingHints;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /** GlyphGutter is component for displaying line numbers and annotation
  * glyph icons. Component also allow to "cycle" through the annotations. It
@@ -87,7 +94,7 @@ import org.openide.util.NbBundle;
  * @since 07/2001
  */
 
-public class GlyphGutter extends JComponent implements Annotations.AnnotationsListener, Accessible, SettingsChangeListener, SideBarFactory {
+public class GlyphGutter extends JComponent implements Annotations.AnnotationsListener, Accessible, SideBarFactory {
 
     /** EditorUI which part this gutter is */
     private EditorUI editorUI;
@@ -159,7 +166,26 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     private GlyphGutter.GlyphGutterFoldHierarchyListener glyphGutterFoldHierarchyListener;
     private GutterMouseListener gutterMouseListener;
     private FoldHierarchy foldHierarchy;
-    private volatile Map renderingHints = null;
+
+    private Preferences prefs = null;
+    private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            Rectangle rect = editorUI.getComponent().getVisibleRect();
+            if (rect!=null && rect.width == 0){
+                if (SwingUtilities.isEventDispatchThread()) {
+                    resize();
+                } else {
+                    SwingUtilities.invokeLater(
+                        new Runnable() {
+                            public void run() {
+                                resize();
+                            }
+                        }
+                    );
+                }
+            }
+        }
+    };
     
     public GlyphGutter(){}
     
@@ -177,7 +203,6 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         // do initialization
         init();
         update();
-        Settings.addSettingsChangeListener(this);
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         foldHierarchy = FoldHierarchy.get(editorUI.getComponent());
         glyphGutterFoldHierarchyListener = new GlyphGutterFoldHierarchyListener();
@@ -185,59 +210,12 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         editorUIListener = new EditorUIListener();
         editorUI.addPropertyChangeListener(editorUIListener);
         setOpaque (true);
-    }
-
-    private Map getRenderingHints() {
-        if (renderingHints == null) {
-            Object value = null;
-            JTextComponent comp = editorUI.getComponent();
-            if (comp != null) {
-                value = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty(
-                        "awt.font.desktophints")); //NOI18N
-                //Don't bother seeing if the hints are explicitly turned off (if they
-                //even can be) as in EditorUI - it's a tooltip, desktop default is
-                //fine
-                if (value == null) {
-                    value = Settings.getValue(Utilities.getKitClass(comp), 
-                            SettingsNames.RENDERING_HINTS);
-                }
-            }
-            renderingHints = (value instanceof Map) ? (java.util.Map)value : Collections.EMPTY_MAP;
-        }
-        return renderingHints;
-    }
-    
-    public void settingsChange(SettingsChangeEvent evt) {
-        if (editorUI == null) // no long er active
-            return;
-
-        JTextComponent component = editorUI.getComponent();
-        if (evt == null || component == null) return;
-
-        String settingName = evt.getSettingName();
-        if (settingName == null || SettingsNames.RENDERING_HINTS.equals(settingName)) {
-            renderingHints = null;
-        }
         
-        Class kitClass = evt.getKitClass();        
-        if (Utilities.getKitClass(component) != kitClass){
-            Rectangle rect = component.getVisibleRect();
-            if (rect!=null && rect.width == 0){
-                if (SwingUtilities.isEventDispatchThread()) {
-                    resize();
-                } else {
-                    SwingUtilities.invokeLater(
-                        new Runnable() {
-                            public void run() {
-                                resize();
-                            }
-                        }
-                    );
-                }
-            }
-        }
+        String mimeType = org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent());
+        prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+        prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs));
+        prefsListener.preferenceChange(null);
     }
-    
     
     /* Read accessible context
      * @return - accessible context
@@ -289,7 +267,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     public void update() {
         if (editorUI == null)
             return ;
-        Coloring lineColoring = (Coloring)editorUI.getColoringMap().get(SettingsNames.LINE_NUMBER_COLORING);
+        Coloring lineColoring = (Coloring)editorUI.getColoringMap().get(FontColorNames.LINE_NUMBER_COLORING);
         Coloring defaultColoring = (Coloring)editorUI.getDefaultColoring();
         
         // fix for issue #16940
@@ -482,6 +460,8 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         }
     }
     
+    private static final Color DEFAULT_GUTTER_LINE = new Color(184, 184, 184);
+    
     /** Paint the gutter itself */
     public @Override void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -489,7 +469,9 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             return ;
 
         // Possibly apply the rendering hints
-        Map hints = getRenderingHints();
+        Map hints = EditorRenderingHints.get(MimePath.parse(
+            org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent()))).getHints();
+        
         if (!hints.isEmpty()) {
             ((java.awt.Graphics2D)g).setRenderingHints(hints);
         }
@@ -510,11 +492,11 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
         
         //painting gutter line
-        g.setColor(SettingsDefaults.defaultGutterLine);
+        g.setColor(DEFAULT_GUTTER_LINE);
         g.drawLine(glyphGutterWidth-1, clip.y, glyphGutterWidth-1, clip.height + clip.y);
 
-        AbstractDocument doc = (AbstractDocument)component.getDocument();
-        doc.readLock();
+        AbstractDocument dd = (AbstractDocument)component.getDocument();
+        dd.readLock();
         try{
             foldHierarchy.lock();
             try{
@@ -544,7 +526,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         }catch(BadLocationException ble){
             ErrorManager.getDefault().notify(ble);
         }finally{
-            doc.readUnlock();
+            dd.readUnlock();
         }
     }
 

@@ -42,6 +42,7 @@
 package org.netbeans.editor;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.Hashtable;
@@ -53,10 +54,14 @@ import java.beans.PropertyChangeSupport;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JViewport;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
@@ -68,7 +73,15 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.View;
 import javax.swing.plaf.TextUI;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.editor.lib.ColoringMap;
+import org.netbeans.modules.editor.lib.EditorRenderingHints;
+import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.WeakListeners;
 
 /**
@@ -79,7 +92,7 @@ import org.openide.util.WeakListeners;
 * @author Miloslav Metelka
 * @version 1.00
 */
-public class EditorUI implements ChangeListener, PropertyChangeListener, SettingsChangeListener {
+public class EditorUI implements ChangeListener, PropertyChangeListener {
 
     private static final Logger LOG = Logger.getLogger(EditorUI.class.getName());
     
@@ -113,9 +126,9 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
     public static final int SCROLL_FIND = 3;
 
 
-    private static final Insets NULL_INSETS = new Insets(0, 0, 0, 0);
+    /* package */ static final Insets NULL_INSETS = new Insets(0, 0, 0, 0);
     
-    private static final Insets DEFAULT_INSETS = new Insets(0, SettingsDefaults.defaultTextLeftMarginWidth.intValue(), 0, 0);    
+    private static final Insets DEFAULT_INSETS = new Insets(0, 2, 0, 0);    
 
     private static final Dimension NULL_DIMENSION = new Dimension(0, 0);
 
@@ -210,11 +223,9 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
 
     boolean textLimitLineVisible;
 
-    Color textLimitLineColor;
-
     int textLimitWidth;
 
-    private Rectangle lastExtentBounds = new Rectangle();
+//    private Rectangle lastExtentBounds = new Rectangle();
 
     private Dimension componentSizeIncrement = new Dimension();
 
@@ -229,7 +240,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
 
     private FocusAdapter focusL;
 
-    Map renderingHints;
+    EditorRenderingHints renderingHints;
 
     /** Glyph gutter used for drawing of annotation glyph icons. */
     private GlyphGutter glyphGutter = null;
@@ -247,12 +258,14 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
     /** init paste action #39678 */
     private static boolean isPasteActionInited = false;
 
+    private Preferences prefs = null;
+    private final Listener listener = new Listener();
+    private PreferenceChangeListener weakPrefsListener = null;
+    
     /** Construct extended UI for the use with a text component */
     public EditorUI() {
-        Settings.addSettingsChangeListener(this);
-
         focusL = new FocusAdapter() {
-                     public void focusGained(FocusEvent evt) {
+                     public @Override void focusGained(FocusEvent evt) {
                          Registry.activate(getComponent());
                          /* Fix of #25475 - copyAction's enabled flag
                           * must be updated on focus change
@@ -266,6 +279,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
                  };
 
         HighlightingDrawLayer.hookUp(this);
+        getToolTipSupport();
     }
 
     /** Construct extended UI for printing the given document */
@@ -286,7 +300,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
     public EditorUI(BaseDocument printDoc, boolean usePrintColoringMap, boolean lineNumberEnabled) {
         this.printDoc = printDoc;
 
-        settingsChange(null);
+        listener.preferenceChange(null);
 
         setLineNumberEnabled(lineNumberEnabled);
 
@@ -356,7 +370,13 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
         }
 
         // Make sure all the things depending on non-null component will be updated
-        settingsChange(null);
+        MimePath mimePath = MimePath.parse(mimeType);
+        prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+        weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, listener, prefs);
+        prefs.addPreferenceChangeListener(weakPrefsListener);
+        listener.preferenceChange(null);
+        
+        renderingHints = EditorRenderingHints.get(mimePath);
         
         // fix for issue #16352
         getDefaultColoring().apply(component);
@@ -369,8 +389,15 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
     * from the component.
     */
     protected void uninstallUI(JTextComponent c) {
+        
+        if (prefs != null && weakPrefsListener != null) {
+            prefs.removePreferenceChangeListener(weakPrefsListener);
+            prefs = null;
+            weakPrefsListener = null;
+        }
+        renderingHints = null;
+        
         synchronized (getComponentLock()) {
-            
             // fix for issue 12996
             if (component != null) {
                 
@@ -438,138 +465,9 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
         propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 
-    protected void settingsChangeImpl(String settingName){
-        Class kitClass = getKitClass();
-
-        if (settingName == null || SettingsNames.LINE_NUMBER_VISIBLE.equals(settingName)) {
-            lineNumberVisibleSetting = SettingsUtil.getBoolean(kitClass, 
-                                           SettingsNames.LINE_NUMBER_VISIBLE,
-                                           SettingsDefaults.defaultLineNumberVisible);
-            lineNumberVisible = lineNumberEnabled && lineNumberVisibleSetting;
-            
-            // if this is printing, the drawing of original line numbers must be enabled
-            if (component == null)
-                disableLineNumbers = false;
-            
-            if (disableLineNumbers)
-                lineNumberVisible = false;
-        }
-
-        BaseDocument doc = getDocument();
-        if (doc != null) {
-
-            if (settingName == null || SettingsNames.TEXT_LEFT_MARGIN_WIDTH.equals(settingName)) {
-                textLeftMarginWidth = SettingsUtil.getInteger(kitClass,
-                                      SettingsNames.TEXT_LEFT_MARGIN_WIDTH,
-                                      SettingsDefaults.defaultTextLeftMarginWidth);
-            }
-
-            if (settingName == null || SettingsNames.LINE_HEIGHT_CORRECTION.equals(settingName)) {
-                Object value = Settings.getValue(kitClass, SettingsNames.LINE_HEIGHT_CORRECTION);
-                if (!(value instanceof Float) || ((Float)value).floatValue() < 0) {
-                    value = SettingsDefaults.defaultLineHeightCorrection;
-                }
-
-                float newLineHeightCorrection = ((Float)value).floatValue();
-                if (newLineHeightCorrection != lineHeightCorrection){
-                    lineHeightCorrection = newLineHeightCorrection;
-                    updateLineHeight(getComponent());
-                }
-            }
-
-            if (settingName == null || SettingsNames.TEXT_LIMIT_LINE_VISIBLE.equals(settingName)) {
-                textLimitLineVisible = SettingsUtil.getBoolean(kitClass,
-                                       SettingsNames.TEXT_LIMIT_LINE_VISIBLE, SettingsDefaults.defaultTextLimitLineVisible);
-            }
-
-            if (settingName == null || SettingsNames.TEXT_LIMIT_LINE_COLOR.equals(settingName)) {
-                Object value = Settings.getValue(kitClass, SettingsNames.TEXT_LIMIT_LINE_COLOR);
-                textLimitLineColor = (value instanceof Color) ? (Color)value
-                                     : SettingsDefaults.defaultTextLimitLineColor;
-            }
-
-            if (settingName == null || SettingsNames.TEXT_LIMIT_WIDTH.equals(settingName)) {
-                textLimitWidth = SettingsUtil.getPositiveInteger(kitClass,
-                                 SettingsNames.TEXT_LIMIT_WIDTH, SettingsDefaults.defaultTextLimitWidth);
-            }
-
-            // component only properties
-            if (component != null) {
-                if (settingName == null || SettingsNames.SCROLL_JUMP_INSETS.equals(settingName)) {
-                    Object value = Settings.getValue(kitClass, SettingsNames.SCROLL_JUMP_INSETS);
-                    scrollJumpInsets = (value instanceof Insets) ? (Insets)value : NULL_INSETS;
-                }
-
-                if (settingName == null || SettingsNames.SCROLL_FIND_INSETS.equals(settingName)) {
-                    Object value = Settings.getValue(kitClass, SettingsNames.SCROLL_FIND_INSETS);
-                    scrollFindInsets = (value instanceof Insets) ? (Insets)value : NULL_INSETS;
-                }
-
-                if (settingName == null || SettingsNames.COMPONENT_SIZE_INCREMENT.equals(settingName)) {
-                    Object value = Settings.getValue(kitClass, SettingsNames.COMPONENT_SIZE_INCREMENT);
-                    componentSizeIncrement = (value instanceof Dimension) ? (Dimension)value : NULL_DIMENSION;
-                }
-
-                if (settingName == null || SettingsNames.RENDERING_HINTS.equals(settingName)) {
-                    
-                    //is this ever really not a Map?
-                    Object userSetHints = Settings.getValue(kitClass, SettingsNames.RENDERING_HINTS);
-                    renderingHints = (userSetHints instanceof Map && ((Map)userSetHints).size() > 0) ? (Map)userSetHints : null;
-                }
-                
-                if (settingName == null || SettingsNames.CARET_COLOR_INSERT_MODE.equals(settingName)
-                        || SettingsNames.CARET_COLOR_OVERWRITE_MODE.equals(settingName)
-                   ) {
-                    Boolean b = (Boolean)getProperty(OVERWRITE_MODE_PROPERTY);
-                    Color caretColor;
-                    if (b == null || !b.booleanValue()) {
-                        Object value = Settings.getValue(kitClass, SettingsNames.CARET_COLOR_INSERT_MODE);
-                        caretColor = (value instanceof Color) ? (Color)value
-                                     : SettingsDefaults.defaultCaretColorInsertMode;
-
-                    } else {
-                        Object value = Settings.getValue(kitClass, SettingsNames.CARET_COLOR_OVERWRITE_MODE);
-                        caretColor = (value instanceof Color) ? (Color)value
-                                     : SettingsDefaults.defaultCaretColorOvwerwriteMode;
-                    }
-
-                    JTextComponent c = component;
-                    if (caretColor != null && c != null) {
-                        c.setCaretColor(caretColor);
-                    }
-                }
-
-
-                Utilities.runInEventDispatchThread(
-                    new Runnable() {
-                        public void run() {
-                            JTextComponent c = component;
-                            if (c != null) {
-                                BaseKit kit = Utilities.getKit(c);
-                                if (kit != null) {
-                                    c.setKeymap(kit.getKeymap());
-                                    updateComponentProperties();
-
-                                    ((BaseTextUI)c.getUI()).preferenceChanged(true, true);
-                                }
-                            }
-                        }
-                    }
-                );
-            }
-        }
+    protected void settingsChangeImpl(String settingName) {
     }
     
-    public void settingsChange(SettingsChangeEvent evt) {
-        if (component != null) {
-            if (Utilities.getKit(component) == null) {
-                return; // prevent problems if not garbage collected and settings changed
-            }
-        }
-        String settingName = (evt != null) ? evt.getSettingName() : null;
-        settingsChangeImpl(settingName);
-    }
-
     public void stateChanged(ChangeEvent evt) {
         SwingUtilities.invokeLater(
             new Runnable() {
@@ -646,7 +544,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
         }
 
         if (newDoc != null) {
-            settingsChange(null);
+            listener.preferenceChange(null);
 
             // add all document layers
             drawLayerList.add(newDoc.getDrawLayerList());
@@ -734,8 +632,9 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
      * @deprecated Use Editor Settings API instead.
      */
     public Coloring getDefaultColoring() {
-        Coloring c = getCMInternal().get(SettingsNames.DEFAULT_COLORING);
-        return c == null ? SettingsDefaults.defaultColoring : c;
+        Coloring c = getCMInternal().get(FontColorNames.DEFAULT_COLORING);
+        assert c != null : "No default coloring!"; //NOI18N
+        return c;
     }
 
     /**
@@ -764,8 +663,9 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
         int maxHeight = 1;
         int maxAscent = 0;
         for(String coloringName : cm.keySet()) {
-            if (SettingsNames.STATUS_BAR_COLORING.equals(coloringName)
-                || SettingsNames.STATUS_BAR_BOLD_COLORING.equals(coloringName)) {
+            if (FontColorNames.STATUS_BAR_COLORING.equals(coloringName) ||
+                FontColorNames.STATUS_BAR_BOLD_COLORING.equals(coloringName)
+            ) {
                 //#57112
                 continue;
             }
@@ -826,14 +726,11 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
      * Update various properties of the component in AWT thread.
      */
     void updateComponentProperties() {
-        Class kitClass = Utilities.getKitClass(component);
 
         // Set the margin
-        if (kitClass != null) {
-            Object value = Settings.getValue(kitClass, SettingsNames.MARGIN);
-            Insets margin = (value instanceof Insets) ? (Insets)value : null;
-            component.setMargin(margin);
-        }
+        String value = prefs.get(SimpleValueNames.MARGIN, null);
+        Insets margin = value != null ? SettingsConversions.parseInsets(value) : null;
+        component.setMargin(margin != null ? margin : NULL_INSETS);
 
         // Apply the default coloring to the component
         getDefaultColoring().apply(component);
@@ -859,7 +756,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
     protected void update(Graphics g) {
         // Possibly apply the rendering hints
         if (renderingHints != null) {
-            ((Graphics2D)g).setRenderingHints(renderingHints);
+            ((Graphics2D)g).setRenderingHints(renderingHints.getHints());
         }
     }
 
@@ -1560,7 +1457,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
     private int computeLineNumberDigitWidth(){
         // Handle line number fonts and widths
         Coloring dc = getDefaultColoring();        
-        Coloring lnc = getCMInternal().get(SettingsNames.LINE_NUMBER_COLORING);
+        Coloring lnc = getCMInternal().get(FontColorNames.LINE_NUMBER_COLORING);
         if (lnc != null) {
             Font lnFont = lnc.getFont();
             if (lnFont == null) {
@@ -1595,7 +1492,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
     }
     
     protected void updateScrollPaneCornerColor() {
-        Coloring lineColoring = getCMInternal().get(SettingsNames.LINE_NUMBER_COLORING);
+        Coloring lineColoring = getCMInternal().get(FontColorNames.LINE_NUMBER_COLORING);
         Coloring defaultColoring = getDefaultColoring();
         
         Color backgroundColor;
@@ -1619,4 +1516,153 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
         return ret;
     }
 
+    private class Listener implements PreferenceChangeListener {
+
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            settingsChangeImpl(evt == null ? null : evt.getKey());
+            
+            if (evt == null || SimpleValueNames.LINE_NUMBER_VISIBLE.equals(evt.getKey())) {
+                lineNumberVisibleSetting = prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, false);
+                lineNumberVisible = lineNumberEnabled && lineNumberVisibleSetting;
+
+                // if this is printing, the drawing of original line numbers must be enabled
+                if (component == null)
+                    disableLineNumbers = false;
+
+                if (disableLineNumbers)
+                    lineNumberVisible = false;
+            }
+
+            BaseDocument doc = getDocument();
+            if (doc != null) {
+
+                if (evt == null || SimpleValueNames.TEXT_LEFT_MARGIN_WIDTH.equals(evt.getKey())) {
+                    textLeftMarginWidth = prefs.getInt(SimpleValueNames.TEXT_LEFT_MARGIN_WIDTH, 2);
+                }
+
+                if (evt == null || SimpleValueNames.LINE_HEIGHT_CORRECTION.equals(evt.getKey())) {
+                    float newLineHeightCorrection = prefs.getFloat(SimpleValueNames.LINE_HEIGHT_CORRECTION, 1.0f);
+                    if (newLineHeightCorrection != lineHeightCorrection){
+                        lineHeightCorrection = newLineHeightCorrection;
+                        updateLineHeight(getComponent());
+                    }
+                }
+
+                if (evt == null || SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE.equals(evt.getKey())) {
+                    textLimitLineVisible = prefs.getBoolean(SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE, true);
+                }
+
+                if (evt == null || SimpleValueNames.TEXT_LIMIT_WIDTH.equals(evt.getKey())) {
+                    textLimitWidth = prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80);
+                }
+
+                // component only properties
+                if (component != null) {
+                    if (evt == null || SimpleValueNames.SCROLL_JUMP_INSETS.equals(evt.getKey())) {
+                        String value = prefs.get(SimpleValueNames.SCROLL_JUMP_INSETS, null);
+                        Insets insets = value != null ? SettingsConversions.parseInsets(value) : null;
+                        scrollJumpInsets = insets != null ? insets : NULL_INSETS;
+                    }
+
+                    if (evt == null || SimpleValueNames.SCROLL_FIND_INSETS.equals(evt.getKey())) {
+                        String value = prefs.get(SimpleValueNames.SCROLL_FIND_INSETS, null);
+                        Insets insets = value != null ? SettingsConversions.parseInsets(value) : null;
+                        scrollFindInsets = insets != null ? insets : NULL_INSETS;
+                    }
+
+                    if (evt == null || "component-size-increment".equals(evt.getKey())) { //NOI18N
+                        String value = prefs.get("component-size-increment", null); //NOI18N
+                        Dimension increment = value != null ? SettingsConversions.parseDimension(value) : null;
+                        componentSizeIncrement = increment != null ? increment : NULL_DIMENSION;
+                    }
+
+                    Utilities.runInEventDispatchThread(new Runnable() {
+                        public void run() {
+                            JTextComponent c = component;
+                            if (c != null) {
+                                updateComponentProperties();
+                                ((BaseTextUI)c.getUI()).preferenceChanged(true, true);
+                            }
+                        }
+                    });
+                }
+            }
+        }
+    } // End of Listener class
+    
+    /* package */ Color getTextLimitLineColor() {
+        Coloring c = getCMInternal().get(FontColorNames.TEXT_LIMIT_LINE_COLORING);
+        if (c != null && c.getForeColor() != null) {
+            return c.getForeColor();
+        } else {
+            return new Color(255, 235, 235);
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Popup menus and tooltip support (moved here from ExtEditorUI)
+    // -----------------------------------------------------------------------
+    
+    private ToolTipSupport toolTipSupport;
+
+    private JPopupMenu popupMenu;
+
+    private PopupManager popupManager;
+
+    public ToolTipSupport getToolTipSupport() {
+        if (toolTipSupport == null) {
+            toolTipSupport = new ToolTipSupport(this);
+        }
+        return toolTipSupport;
+    }
+
+    public PopupManager getPopupManager() {
+        if (popupManager == null) {
+
+            synchronized (getComponentLock()) {
+                JTextComponent c = getComponent();
+                if (c != null) {
+                    popupManager = new PopupManager(c);
+                }
+            }
+        }
+
+        return popupManager;
+    }
+    
+    public void showPopupMenu(int x, int y) {
+        // First call the build-popup-menu action to possibly rebuild the popup menu
+        JTextComponent c = getComponent();
+        if (c != null) {
+            BaseKit kit = Utilities.getKit(c);
+            if (kit != null) {
+                Action a = kit.getActionByName(ExtKit.buildPopupMenuAction);
+                if (a != null) {
+                    a.actionPerformed(new ActionEvent(c, 0, "")); // NOI18N
+                }
+            }
+
+            JPopupMenu pm = getPopupMenu();
+            if (pm != null) {
+                if (c.isShowing()) { // fix of #18808
+                    pm.show(c, x, y);
+                }
+            }
+        }
+    }
+
+    public void hidePopupMenu() {
+        JPopupMenu pm = getPopupMenu();
+        if (pm != null) {
+            pm.setVisible(false);
+        }
+    }
+
+    public JPopupMenu getPopupMenu() {
+        return popupMenu;
+    }
+
+    public void setPopupMenu(JPopupMenu popupMenu) {
+        this.popupMenu = popupMenu;
+    }
 }
