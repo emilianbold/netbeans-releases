@@ -43,8 +43,10 @@ package org.netbeans.modules.websvc.core;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
@@ -54,6 +56,7 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -108,7 +111,11 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import java.util.Iterator;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
+import javax.swing.SwingUtilities;
 import javax.xml.namespace.QName;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
@@ -123,6 +130,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeader;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.cookies.EditCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -134,6 +142,8 @@ import org.openide.loaders.DataFolder;
 public class JaxWsUtils {
 
     public static final String HANDLER_TEMPLATE = "Templates/WebServices/MessageHandler.java"; //NOI18N
+    private static final String SOAP12_NAMESPACE = "http://java.sun.com/xml/ns/jaxws/2003/05/soap/bindings/HTTP/"; //NOI18N
+    private static final String BINDING_TYPE_ANNOTATION = "javax.xml.ws.BindingType"; //NOI18N
     private static int projectType;
     protected static final int JSE_PROJECT_TYPE = 0;
     protected static final int WEB_PROJECT_TYPE = 1;
@@ -222,7 +232,7 @@ public class JaxWsUtils {
                     List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
                     IdentifierTree idTree = make.Identifier("javax.xml.ws.Service.Mode.PAYLOAD");
                     attrs.add(
-                            make.Assignment(make.Identifier("value"), idTree));
+                            make.Assignment(make.Identifier("value"), idTree));  //NOI18N
                     AnnotationTree serviceModeAnnotation = make.Annotation(
                             make.QualIdent(serviceModeAn),
                             attrs);
@@ -793,55 +803,159 @@ public class JaxWsUtils {
         }
     }
 
-    public static void setSOAP12Binding(FileObject implClassFo, final boolean isSOAP12) {
+    private boolean resolveServiceUrl(Object moduleType, CompilationController controller, TypeElement targetElement, TypeElement wsElement, String[] serviceName, String[] name) throws IOException {
+        boolean foundWsAnnotation = false;
+        List<? extends AnnotationMirror> annotations = targetElement.getAnnotationMirrors();
+        for (AnnotationMirror anMirror : annotations) {
+            if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
+                foundWsAnnotation = true;
+                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
+                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : expressions.entrySet()) {
+                    if (entry.getKey().getSimpleName().contentEquals("serviceName")) {
+                        serviceName[0] = (String) expressions.get(entry.getKey()).getValue();
+                        if (serviceName[0] != null) {
+                            serviceName[0] = URLEncoder.encode(serviceName[0], "UTF-8"); //NOI18N
+                        }
+                    } else if (entry.getKey().getSimpleName().contentEquals("name")) {
+                        name[0] = (String) expressions.get(entry.getKey()).getValue();
+                        if (name[0] != null) {
+                            name[0] = URLEncoder.encode(name[0], "UTF-8");
+                        }
+                    }
+                    if (serviceName[0] != null && name[0] != null) {
+                        break;
+                    }
+                }
+                break;
+            } // end if
+        } // end for
+        return foundWsAnnotation;
+    }
+
+    public static boolean isSoap12(FileObject implClassFo) {
+        final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
+        final String[] version = new String[1];
+        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
+                boolean foundAnnotation = false;
+                TypeElement bindingElement = controller.getElements().getTypeElement(BINDING_TYPE_ANNOTATION); 
+                for (AnnotationMirror anMirror : annotations) {
+                    if (controller.getTypes().isSameType(bindingElement.asType(), anMirror.getAnnotationType())) {
+                        Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
+                        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : expressions.entrySet()) {
+                            if (entry.getKey().getSimpleName().contentEquals("value")) {   //NOI18N
+                                version[0] = (String) expressions.get(entry.getKey()).getValue();
+                                foundAnnotation = true;
+                                break;
+                            }
+                        }
+
+                    }
+                    if (foundAnnotation) {
+                        break;
+                    }
+                }
+            }
+            public void cancel() {
+            }
+        };
+        try {
+            javaSource.runUserActionTask(task, true);
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+        return version[0] != null && version[0].equals(SOAP12_NAMESPACE);
+    }
+
+    public static void setSOAP12Binding(final FileObject implClassFo, final boolean isSOAP12) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
-
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
-                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                 TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
                 ClassTree javaClass = workingCopy.getTrees().getTree(typeElement);
-                AnnotationMirror annot;
-                boolean foundBindingTypeAnnotation = false;
-                TypeElement bindingElement = workingCopy.getElements().getTypeElement("javax.xml.ws.BindingType"); //NOI18N
+
+                TypeElement bindingElement = workingCopy.getElements().getTypeElement(BINDING_TYPE_ANNOTATION); 
                 if (bindingElement != null) {
-                    List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
-                    for (AnnotationMirror anMirror : annotations) {
-                        if (workingCopy.getTypes().isSameType(bindingElement.asType(), anMirror.getAnnotationType())) {
-                            foundBindingTypeAnnotation = true;
-                            annot = anMirror;
+                    AnnotationTree bindingAnnotation = null;
+                    List<? extends AnnotationTree> annots = javaClass.getModifiers().getAnnotations();
+                    for (AnnotationTree an : annots) {
+                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
+                        TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
+                        TypeElement anElement = (TypeElement) workingCopy.getTrees().getElement(anTreePath);
+                        if (anElement != null && anElement.getQualifiedName().contentEquals(BINDING_TYPE_ANNOTATION)) { 
+                            bindingAnnotation = an;
                             break;
                         }
                     }
-                }
+                    if (isSOAP12 && bindingAnnotation == null) {
+  
+                        ModifiersTree modifiersTree = javaClass.getModifiers();
+                        AssignmentTree soapVersion = make.Assignment(make.Identifier("value"), make.Literal(SOAP12_NAMESPACE)); //NOI18N
+                        AnnotationTree soapVersionAnnotation = make.Annotation(
+                                make.QualIdent(bindingElement),
+                                Collections.<ExpressionTree>singletonList(soapVersion));
 
-                if (isSOAP12 && !foundBindingTypeAnnotation) {
-                    TypeElement bindingTypeAnn = workingCopy.getElements().getTypeElement("javax.xml.ws.BindingType"); //NOI18N
-                    ExpressionTree attrExpr = genUtils.createAnnotationArgument("value", "http://java.sun.com/xml/ns/jaxws/2003/05/soap/bindings/HTTP/");
-                    List<ExpressionTree> expressions = new ArrayList<ExpressionTree>();
-                    expressions.add(attrExpr);
-                    AnnotationTree bindingTypeAnnotation = make.Annotation(make.QualIdent(bindingTypeAnn), expressions);
-                    ClassTree modifiedClass = genUtils.addAnnotation(javaClass, bindingTypeAnnotation);
-                   
-                    workingCopy.rewrite(javaClass, modifiedClass);
-                }
-                
-                
+                        ModifiersTree newModifiersTree = make.addModifiersAnnotation(modifiersTree, soapVersionAnnotation);
+   
+                        workingCopy.rewrite(modifiersTree, newModifiersTree); 
+                    } else if (!isSOAP12 && bindingAnnotation != null) {
+                        ModifiersTree modifiers = javaClass.getModifiers();
+                        ModifiersTree newModifiers = make.removeModifiersAnnotation(modifiers, bindingAnnotation);
+                        workingCopy.rewrite(modifiers, newModifiers);
+                        CompilationUnitTree compileUnitTree = workingCopy.getCompilationUnit();
+                        List<? extends ImportTree> imports = compileUnitTree.getImports();
+                        for (ImportTree imp : imports) {
+                            Tree impTree = imp.getQualifiedIdentifier();
+                            TreePath impTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), impTree);
+                            TypeElement impElement = (TypeElement) workingCopy.getTrees().getElement(impTreePath);
+                            if (impElement != null && impElement.getQualifiedName().contentEquals(BINDING_TYPE_ANNOTATION)) { 
+                                CompilationUnitTree newCompileUnitTree = make.removeCompUnitImport(compileUnitTree, imp);
+                                workingCopy.rewrite(compileUnitTree, newCompileUnitTree);
+                                break;
+                            }
+                        }
 
+                    }
+                }
             }
 
             public void cancel() {
             }
         };
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
 
-        try {
-            javaSource.runModificationTask(modificationTask).commit();
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+                public void run() {
+                    try {
+                        javaSource.runModificationTask(modificationTask).commit();
+                        saveFile(implClassFo);
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                }
+            });
+        } else {
+            try {
+                javaSource.runModificationTask(modificationTask).commit();
+                saveFile(implClassFo);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
         }
-
+    }
+    
+     private static void saveFile(FileObject file) throws IOException {
+        DataObject dataObject = DataObject.find(file);
+        if (dataObject!=null) {
+            SaveCookie cookie = dataObject.getCookie(SaveCookie.class);
+            if (cookie!=null) cookie.save();
+        }        
     }
 
     /** Setter for WebMethod annotation attribute, e.g. operationName = "HelloOperation"
@@ -851,23 +965,12 @@ public class JaxWsUtils {
             final String attrName,
             final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
-        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask 
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
 
-                  
-                
-                   
-                  < WorkingCopy>() {
-
-            public void
-
-run(WorkingCopy workingCopy) throws IOException {
+            public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
-                GenerationUtils genUtils 
-
-= GenerationUtils.newInstance(workingCopy);
-                if
-
-(genUtils != null) {
+                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                if (genUtils != null) {
                     TreeMaker make = workingCopy.getTreeMaker();
 
                     ExpressionTree attrExpr =
@@ -951,23 +1054,12 @@ run(WorkingCopy workingCopy) throws IOException {
             final String attrName,
             final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
-        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask 
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
 
-                  
-                
-                   
-                  < WorkingCopy>() {
-
-            public void
-
-run(WorkingCopy workingCopy) throws IOException {
+            public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
-                GenerationUtils genUtils 
-
-= GenerationUtils.newInstance(workingCopy);
-                if
-
-(genUtils != null) {
+                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                if (genUtils != null) {
                     TreeMaker make = workingCopy.getTreeMaker();
 
                     ExpressionTree attrExpr =
@@ -1083,26 +1175,10 @@ run(WorkingCopy workingCopy) throws IOException {
 
             }
 
-
-
-
         }
         if (binding != null) {
             //Determine if it is a SOAP binding
             List<SOAPBinding> soapBindings = binding.getExtensibilityElements(SOAPBinding.class);
-
-
-
-
-
-
-
-
-
-
-
-
-
             if (soapBindings.size() >
                     0) { //we can assume that this is the only SOAP binding
                 Collection<BindingOperation> bindingOperations = binding.getBindingOperations();
@@ -1215,11 +1291,6 @@ run(WorkingCopy workingCopy) throws IOException {
      */
     public static boolean isEjbSupported(Project project) {
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-
-
-
-
-
 
         if (j2eeModuleProvider != null) {
             String serverInstanceId = j2eeModuleProvider.getServerInstanceID();

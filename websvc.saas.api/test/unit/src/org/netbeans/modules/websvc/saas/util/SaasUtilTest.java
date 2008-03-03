@@ -140,7 +140,7 @@ public class SaasUtilTest extends NbTestCase {
         assertEquals("YouTube", metadata.getGroup().getName());
         assertEquals("Videos", metadata.getGroup().getGroup().get(0).getName());
         assertEquals("org.netbeans.modules.websvc.saas.services.youtube.Bundle", metadata.getLocalizingBundle());
-        assertEquals("Templates/WebServices/profile.properties", metadata.getAuthentication().getProfile());
+        assertEquals("SaaSServices/YouTube/profile.properties", metadata.getAuthentication().getProfile());
         assertEquals("dev_id", metadata.getAuthentication().getApiKey().getId());
 
         SetupUtil.commonTearDown();

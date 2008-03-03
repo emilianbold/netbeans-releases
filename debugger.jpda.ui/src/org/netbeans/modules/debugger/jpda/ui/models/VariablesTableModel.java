@@ -73,7 +73,7 @@ public class VariablesTableModel implements TableModel, Constants {
     private JPDADebugger debugger;
 
     public VariablesTableModel(ContextProvider contextProvider) {
-        debugger = (JPDADebugger) contextProvider.lookupFirst(null, JPDADebugger.class);
+        debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
     }
     
     public Object getValueAt (Object row, String columnID) throws 

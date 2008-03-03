@@ -136,9 +136,7 @@ public class BpelLineBreakpointView extends BpelBreakpointView {
     
     private BpelBreakpointListener getBreakpointListener() {
         if (myBreakpointListener == null) {
-            myBreakpointListener = (BpelBreakpointListener) 
-                    DebuggerManager.getDebuggerManager().lookupFirst 
-                    (null, BpelBreakpointListener.class);
+            myBreakpointListener = DebuggerManager.getDebuggerManager().lookupFirst(null, BpelBreakpointListener.class);
         }
         
         return myBreakpointListener;

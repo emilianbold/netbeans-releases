@@ -111,6 +111,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -1122,6 +1123,10 @@ public class Installer extends ModuleInstall implements Runnable {
             saveUserName();
             params.add(settings.getUserName());
             addMoreLogs(params, openPasswd);
+            List<String> buildInfo = BuildInfo.logBuildInfo();
+                if (buildInfo != null) {
+                    params.addAll(buildInfo);
+                }
             userData = new LogRecord(Level.CONFIG, USER_CONFIGURATION);
             userData.setResourceBundle(NbBundle.getBundle(Installer.class));
             userData.setResourceBundleName(Installer.class.getPackage().getName()+".Bundle");
