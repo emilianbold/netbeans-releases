@@ -131,6 +131,10 @@ public class CompilerSetManager {
     private void initCompilerSets() {
         
         for (String path : dirlist) {
+            if (path.equals("/usr/ccs/bin")) { // NOI18N
+                // contains only softlinks
+                continue;
+            }
             File dir = new File(path);
             if (dir.isDirectory()) {
                 initCompiler(gcc_filter, "gcc", Tool.CCompiler, path); // NOI18N
