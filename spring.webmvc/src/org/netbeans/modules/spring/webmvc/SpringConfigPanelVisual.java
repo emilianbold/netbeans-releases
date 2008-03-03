@@ -83,6 +83,15 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
         // fired while initializing the UI.
         changeSupport.addChangeListener(extender);
     }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        tabbedPanel.setEnabled(enabled);
+        dispatcherNameText.setEnabled(enabled);
+        dispatcherMappingText.setEnabled(enabled);
+        includeJstlCheckBox.setEnabled(enabled);
+        super.setEnabled(enabled);
+    }
     
     public String getDispatcherName() {
         return dispatcherNameText.getText();
@@ -134,8 +143,8 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
                     .add(dispatcherMappingLabel))
                 .add(8, 8, 8)
                 .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(dispatcherNameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
-                    .add(dispatcherMappingText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE))
+                    .add(dispatcherNameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
+                    .add(dispatcherMappingText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE))
                 .addContainerGap())
         );
         standardPanelLayout.setVerticalGroup(
@@ -171,14 +180,14 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
             .add(libPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(includeJstlCheckBox)
-                .addContainerGap(506, Short.MAX_VALUE))
+                .addContainerGap(488, Short.MAX_VALUE))
         );
         libPanelLayout.setVerticalGroup(
             libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(libPanelLayout.createSequentialGroup()
                 .add(15, 15, 15)
                 .add(includeJstlCheckBox)
-                .addContainerGap(351, Short.MAX_VALUE))
+                .addContainerGap(352, Short.MAX_VALUE))
         );
 
         tabbedPanel.addTab(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_Libraries"), libPanel); // NOI18N
