@@ -102,8 +102,8 @@ public class DatabaseContext extends DatabaseItem {
         usagesSorted = false;
     }
 
-    public void addUsage(ASTToken token, DatabaseDefinition definition) {
-        DatabaseUsage usage = new DatabaseUsage("", token.getOffset(), token.getEndOffset());
+    public void addUsage(ASTItem item, DatabaseDefinition definition) {
+        DatabaseUsage usage = new DatabaseUsage("", item.getOffset(), item.getEndOffset());
         definition.addUsage(usage);
         usage.setDatabaseDefinition(definition);
         addUsage(usage);

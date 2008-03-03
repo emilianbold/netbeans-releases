@@ -297,6 +297,9 @@ private void itemFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             if (currentIndex >= itemsVector.size ())
                 currentIndex = itemsVector.size () - 1;
             itemList.setSelectedIndex (currentIndex);
+            if (!itemsVector.contains(defaultValue)) {
+                defaultValue = itemsVector.firstElement();
+            }
         }
 
         itemList.repaint ();

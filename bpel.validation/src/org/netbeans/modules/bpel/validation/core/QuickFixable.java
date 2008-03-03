@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,105 +38,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.search.impl.ui;
+package org.netbeans.modules.bpel.validation.core;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-
-import org.openide.util.HelpCtx;
-import org.openide.windows.TopComponent;
-import org.netbeans.modules.bpel.search.impl.util.Util;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
+import org.netbeans.modules.bpel.validation.core.QuickFix;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2006.11.24
+ * @version 2007.12.07
  */
-public final class View extends TopComponent {
+public final class QuickFixable extends ResultItem {
 
-  public View() {
-    setIcon(icon(Util.class, "find").getImage()); // NOI18N
-    setLayout(new GridBagLayout());
-    setFocusable(true);
+  public QuickFixable(CoreValidator validator, ResultType type, Component component, String description, QuickFix quickFix) {
+    super(validator, type, component, description);
+    myQuickFix = quickFix;
+  }         
+
+  public QuickFix getQuickFix() {
+    return myQuickFix;
   }
 
-  void show(Tree tree) {
-    addTab(tree);
-    open();
-    requestActive();
-  }
-
-  private void addTab(Tree tree) {
-    createTabbed();
-    myTabbed.addTree(tree);
-    revalidate();
-    repaint();
-  }
-
-  private void createTabbed() {
-    if (myTabbed != null) {
-      return;
-    }
-    GridBagConstraints c = new GridBagConstraints();
-    c.anchor = GridBagConstraints.NORTHWEST;
-    c.fill = GridBagConstraints.BOTH;
-
-    c.weightx = 1.0;
-    c.weighty = 1.0;
-    myTabbed = new Tabbed();
-    add(myTabbed, c);
-  }
-
-  @Override
-  public void requestActive()
-  {
-    super.requestActive();
-    myTabbed.requestActive();
-  }
-
-  @Override
-  public HelpCtx getHelpCtx()
-  {
-    return HelpCtx.DEFAULT_HELP;
-  }
-
-  @Override
-  public int getPersistenceType()
-  {
-    return PERSISTENCE_ALWAYS;
-  }
-      
-  @Override
-  public String getName()
-  {
-    return NAME;
-  }
-  
-  @Override
-  public String getDisplayName()
-  {
-    return i18n(View.class, "LBL_Search_Results_Name"); // NOI18N
-  }
-
-  @Override
-  public String getToolTipText()
-  {
-    return i18n(View.class, "LBL_Search_Results_Tooltip"); // NOI18N
-  }
-
-  @Override
-  protected void componentClosed()
-  {
-    super.componentClosed();
-    myTabbed = null;
-  }
-
-  @Override
-  protected String preferredID()
-  {
-    return NAME;
-  }
-
-  private Tabbed myTabbed;
-  public static final String NAME = "search"; // NOI18N
+  private QuickFix myQuickFix;
 }
