@@ -153,7 +153,7 @@ public class CompilerSetManager {
      * @return
      */
     private boolean isACompilerSetFolder(File folder) {
-        String[] compilerNames = new String[] {"gcc", "g++", "cc", "CC"};
+        String[] compilerNames = new String[] {"gcc", "g++", "cc", "CC"}; // NOI18N
         for (int i = 0; i < compilerNames.length; i++) {
             if (new File(folder, compilerNames[i]).exists())
                 return true;
