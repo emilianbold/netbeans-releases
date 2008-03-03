@@ -68,6 +68,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
     private boolean calculatePF;
     
     private static final String DEFAULT_BUILD_SCRIPT_NAME = "build.xml";      //NOI18N
+    private static final String NB_BUILD_SCRIPT_NAME = "nbbuild.xml";          //NOI18N
 
     /** Creates new form PanelSourceFolders */
     public PanelProjectLocationExtSrc (PanelConfigureProject panel) {
@@ -95,18 +96,21 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         this.projectLocation.getDocument().addDocumentListener(new DocumentListener () {
             public void changedUpdate(DocumentEvent e) {             
                 setCalculateProjectFolder (false);
+                checkBuildScriptName();
                 dataChanged ();
                 firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_LOCATION,null, projectLocation.getText());
             }
 
             public void insertUpdate(DocumentEvent e) {
                 setCalculateProjectFolder (false);
+                checkBuildScriptName();
                 dataChanged ();
                 firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_LOCATION,null, projectLocation.getText());
             }
 
             public void removeUpdate(DocumentEvent e) {
                 setCalculateProjectFolder (false);
+                checkBuildScriptName();
                 dataChanged ();
                 firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_LOCATION,null, projectLocation.getText());
             }
@@ -132,6 +136,17 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
             File f = ProjectChooser.getProjectsFolder();
             this.projectLocation.setText (f.getAbsolutePath() + File.separator + this.projectName.getText());
             this.calculatePF = true;
+        }
+    }
+    
+    private void checkBuildScriptName() {
+        if (DEFAULT_BUILD_SCRIPT_NAME.equals(this.buildScriptName.getText())) {
+            final String path = this.projectLocation.getText();
+            final File projDir = new File (path);
+            final File buildScript = new File (projDir, DEFAULT_BUILD_SCRIPT_NAME);
+            if (buildScript.exists()) {
+                this.buildScriptName.setText(NB_BUILD_SCRIPT_NAME);
+            }
         }
     }
     
@@ -173,8 +188,13 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         this.projectName.selectAll();
         String buildScriptName = (String) settings.getProperty("buildScriptName");           //NOI18N
         if (buildScriptName == null) {
+            assert projectLocation != null;
             buildScriptName = DEFAULT_BUILD_SCRIPT_NAME;
-            //Todo: Generate other name
+            File bf = new File (projectLocation,buildScriptName);
+            if (bf.exists()) {
+                buildScriptName = NB_BUILD_SCRIPT_NAME;
+            }
+            //Todo: Mybe generate other name, like nb-build2.xml - not sure if it's desirable
         }
         this.buildScriptName.setText(buildScriptName);
         
@@ -188,7 +208,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         if (DEFAULT_BUILD_SCRIPT_NAME.equals(buildScriptName)) {
             buildScriptName = null;
         }
-        settings.putProperty("buildScriptName", this.buildScriptName.getText());    //NOI18N
+        settings.putProperty("buildScriptName", buildScriptName);    //NOI18N
     }
     
     boolean valid (WizardDescriptor settings) {

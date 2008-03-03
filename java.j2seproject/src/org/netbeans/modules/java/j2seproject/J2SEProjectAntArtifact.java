@@ -47,7 +47,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.openide.ErrorManager;
 
 /**
- *
+ * todo: Create API
  * @author Tomas Zezula
  */
 public class J2SEProjectAntArtifact extends AntArtifact {

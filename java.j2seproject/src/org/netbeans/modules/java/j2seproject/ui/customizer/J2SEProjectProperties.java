@@ -167,7 +167,7 @@ public class J2SEProjectProperties {
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
     public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
     // Main build.xml location
-    public static final String BUILD_SCRIPT ="build.script";      //NOI18N
+    public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
 
     
     // Well known paths
