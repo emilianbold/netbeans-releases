@@ -65,6 +65,11 @@ public final class CsmModelAccessor {
         }
     };
     
+    public static CsmModelState getModelState() {
+	CsmModel aModel = model;
+	return (aModel == null) ? CsmModelState.OFF : aModel.getState();
+    }
+    
     private static class ModelStub implements CsmModel {
 	
 	public Collection<CsmProject> projects() {

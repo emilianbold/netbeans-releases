@@ -57,6 +57,6 @@ public enum CsmModelState {
     OFF,
     
     /** Code model is  suspended: no new source files being processed */
-    SUSPENDED,
+    SUSPENDED
 }
 
