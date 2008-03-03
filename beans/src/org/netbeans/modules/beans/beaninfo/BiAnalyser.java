@@ -969,7 +969,9 @@ public final class BiAnalyser {
                     if( guarded )
                         sb.append( ch );
                     else{
-                        eo_javaid = Character.isJavaIdentifierPart ( code.charAt( i - 1 ) );
+                        char prevch = code.charAt( i - 1 );
+                        eo_javaid = Character.isJavaIdentifierPart ( prevch )
+                                || prevch == ']';
                         mode = IN_WHITE;
                     }
                 }
