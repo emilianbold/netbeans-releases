@@ -85,6 +85,22 @@ public class HibernateMappingHyperlinkProvider implements HyperlinkProvider {
         registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.COMPONENT_TAG, HibernateMappingXmlConstants.CLASS_ATTRIB, classHyperlinkProcessor);
         registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.IMPORT_TAG, HibernateMappingXmlConstants.CLASS_ATTRIB, classHyperlinkProcessor);
         registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.MANY_TO_MANY_TAG, HibernateMappingXmlConstants.CLASS_ATTRIB, classHyperlinkProcessor);
+    
+        PropertyHyperlinkProcessor propertyHyperlinkProcessor = new PropertyHyperlinkProcessor();
+        registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.PROPERTY_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.ID_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.SET_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.COMPOSITE_ID_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.KEY_PROPERTY_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.KEY_MANY_TO_ONE_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.VERSION_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.TIMESTAMP_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.MANY_TO_ONE_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.ONE_TO_ONE_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.COMPONENT_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.ANY_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.MAP_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateMappingXmlConstants.LIST_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyHyperlinkProcessor);
     }
     
     private void registerAttribValueHyperlinkPoint(String tagName, String attribName, 
