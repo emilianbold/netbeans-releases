@@ -76,7 +76,7 @@ public class AppClientWsValidation extends EjbWsValidation {
      * Since it's currently impossible to create web service in Java Application,
      * this suite uses web service created previously by EjbWSValidation suite.
      */
-    public static Test suite() {
+    public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
         suite.addTest(new AppClientWsValidation("testCreateWsClient")); //NOI18N   
         suite.addTest(new AppClientWsValidation("testCallWsOperationInJavaMainClass")); //NOI18N

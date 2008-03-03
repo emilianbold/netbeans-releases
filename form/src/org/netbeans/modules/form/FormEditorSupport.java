@@ -230,7 +230,9 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     
     void selectJavaEditor(){
         MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
-        handler.requestActive(handler.getPerspectives()[JAVA_ELEMENT_INDEX]);
+        if (handler != null) {
+            handler.requestActive(handler.getPerspectives()[JAVA_ELEMENT_INDEX]);
+        }
     }
     
     /** Overriden from JavaEditor - opens editor and ensures it is selected
