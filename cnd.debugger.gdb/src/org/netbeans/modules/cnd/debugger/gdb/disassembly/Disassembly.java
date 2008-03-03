@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointAnnotationListener;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -294,7 +293,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         if (currentEngine == null) {
             return null;
         }
-        GdbDebugger debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
+        GdbDebugger debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
         if (debugger == null) {
             return null;
         }

@@ -586,10 +586,8 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
             // http://www.netbeans.org/issues/show_bug.cgi?id=115279
             boolean isContinuationOperator = (id == JsTokenId.NONUNARY_OP || id == JsTokenId.DOT);
             
-            // TODO martin: remove this condition completely
             if (ts.offset() == offset && token.length() > 1 && token.text().toString().startsWith("\\")) {
                 // Continued lines have different token types
-                assert false : "I didn't expect this in JavaScript: " + token.text();
                 isContinuationOperator = true;
             }
             

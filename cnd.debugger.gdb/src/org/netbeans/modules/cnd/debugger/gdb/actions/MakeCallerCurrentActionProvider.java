@@ -63,7 +63,7 @@ public class MakeCallerCurrentActionProvider extends ActionsProviderSupport impl
     private GdbDebugger debugger;
     
     public MakeCallerCurrentActionProvider(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
         this.lookupProvider = lookupProvider;
         debugger.addPropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
     }

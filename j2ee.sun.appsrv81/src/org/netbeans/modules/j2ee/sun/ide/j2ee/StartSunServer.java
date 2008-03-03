@@ -491,7 +491,8 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
             };
             
             //Starts JavaDB if it is not running:
-            if (ServerLocationManager.isJavaDBPresent(sunDm.getPlatformRoot())){
+            if ((ServerLocationManager.isJavaDBPresent(sunDm.getPlatformRoot())) 
+                    && (dmProps.isDatabaseStartEnabled())){
                 DerbySupport.ensureStarted();
             }
             

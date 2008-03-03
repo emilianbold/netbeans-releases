@@ -45,8 +45,7 @@ public class ThreadsTableModel implements TableModel, Constants {
     public ThreadsTableModel(
             final ContextProvider contextProvider) {
         
-        myDebugger = (BpelDebugger) contextProvider.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
     }
     
     /**{@inheritDoc}*/

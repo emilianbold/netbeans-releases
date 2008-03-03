@@ -48,8 +48,7 @@ public final class LocalsColumnModel_Value extends AbstractColumn {
     public LocalsColumnModel_Value(final ContextProvider context) {
         super();
         
-        myDebugger = (BpelDebugger) context.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = context.lookupFirst(null, BpelDebugger.class);
         
         myId = Constants.LOCALS_VALUE_COLUMN_ID;
         myName = "CTL_Variable_Column_Value";

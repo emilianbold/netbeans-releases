@@ -390,7 +390,7 @@ public class AcceptanceTest extends RaveTestCase {
 //        TestUtils.wait(2000);
 //        editor.selectText("return null;");
 //        editor.pushKey(KeyEvent.VK_DELETE);
-//        editor.typeText("return \"page2\";\n");
+//        editor.setText("return \"page2\";\n");
 //        TestUtils.wait(200);
 //        editor.clickForPopup();
 //        new JPopupMenuOperator().pushMenu("Reformat Code");

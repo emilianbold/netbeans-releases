@@ -74,8 +74,7 @@ public class KillActionProvider extends ActionsProvider {
     private GdbDebugger debuggerImpl;
     
     public KillActionProvider(ContextProvider lookupProvider) {
-        debuggerImpl = (GdbDebugger) lookupProvider.lookupFirst
-                (null, GdbDebugger.class);
+        debuggerImpl = lookupProvider.lookupFirst(null, GdbDebugger.class);
         //super (debuggerImpl);
         this.lookupProvider = lookupProvider;
     }

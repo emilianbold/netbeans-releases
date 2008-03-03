@@ -41,10 +41,8 @@
 
 package org.netbeans.modules.cnd.modelimpl;
 
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.api.model.CsmModel;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.openide.modules.ModuleInstall;
 
 /**
@@ -53,42 +51,27 @@ import org.openide.modules.ModuleInstall;
  */
 public class Installer extends ModuleInstall {
     
-    public interface Startupable {
-	public void startup();
-	public void shutdown();
-	public void unload();
-    }
-    
     @Override
     public void restored() {
-        // By default, do nothing.
-        // Put your startup code here.
 	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.restored");
-	CsmModel model = CsmModelAccessor.getModel();
-	if( model instanceof Startupable ) {
-	    ((Startupable) model).startup();
-	}
-	super.restored();
+	ModelSupport.instance().startup();
+//	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.restored");
+//	CsmModel model = CsmModelAccessor.getModel();
+//	if( model instanceof Startupable ) {
+//	    ((Startupable) model).startup();
+//	}
+//	super.restored();
     }
 
     @Override
     public void close() {
-        super.close();
 	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.close");
-	final CsmModel model = CsmModelAccessor.getModel();
-	if( model instanceof Startupable ) {
-            ((Startupable) model).shutdown();
-	}
+	ModelSupport.instance().shutdown();
+//        super.close();
+//	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.close");
+//	final CsmModel model = CsmModelAccessor.getModel();
+//	if( model instanceof Startupable ) {
+//            ((Startupable) model).shutdown();
+//	}
     }
-   
-    @Override
-    public void uninstalled() {
-	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.uninstalled");
-	final CsmModel model = CsmModelAccessor.getModel();
-	if( model instanceof Startupable ) {
-            ((Startupable) model).unload();
-	}
-	super.uninstalled();
-    }
-    
 }
