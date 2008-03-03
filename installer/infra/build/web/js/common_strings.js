@@ -73,5 +73,5 @@ BUNDLE_LONG_NAMES[5] = "All";
 var BUILD_DISPLAY_VERSION = "{build.display.version}";
 var BUILD_DISPLAY_VERSION_SHORT = "{build.display.version.short}";
 
-var RELEASE_NOTES_LINK  = "http://www.netbeans.org/community/releases/60/relnotes.html";
-var INSTALL_NOTES_LINK  = "http://www.netbeans.org/community/releases/60/install.html";
+var RELEASE_NOTES_LINK  = "http://www.netbeans.org/community/releases/61/relnotes.html";
+var INSTALL_NOTES_LINK  = "http://www.netbeans.org/community/releases/61/install.html";

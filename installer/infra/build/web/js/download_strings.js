@@ -78,9 +78,6 @@ var PLUGIN_MANAGER_LABEL     = "You can add or remove packs later using the IDE'
 var JAVATOOLSBUNDLE_LABEL    = "You can also download the NetBeans IDE as part of the <a href=\"http://java.sun.com/javaee/downloads/index.jsp\">Java EE 5 Tools Bundle</a>.";
 var SOURCE_BINARY_LABEL      = "NetBeans source code and binary builds without bundled runtimes are also available in <a href=\"zip/\">zip file format</a>.";
 var BUILD_WIKI_LABEL         = "See also <a href=\"http://wiki.netbeans.org/wiki/view/WorkingWithNetBeansSources\">instructions on how to build the IDE from sources</a> or <a href=\"{0}\">installation instructions</a>.";
-var LICENSE_NOTICE_LABEL     = "License Notices";
-var INSTALL_NOTES_LABEL      = "Installation Instructions";
-
 
 var LICENSE_NOTES_LINK      = "http://www.netbeans.org/about/legal/product-licences.html";
 
@@ -97,6 +94,7 @@ var START_PAGE = "start.html";
 
 // DO NOT TRANSLATE
 var ZIP_FILES_PREFIX    = "{nb.zip.files.prefix}";
+// DO NOT TRANSLATE
 var BUNDLE_FILES_PREFIX = "{nb.bundle.files.prefix}";
 
 

@@ -72,6 +72,42 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="generification">
+        <api name="DebuggerCoreAPI"/>
+        <summary>Use of some generic types in API; <code>ContextProvider</code> implemented more broadly; <code>DebuggerManager.join</code></summary>
+        <version major="1" minor="13"/>
+        <date day="1" month="3" year="2008"/>
+        <author login="jglick"/>
+        <compatibility binary="compatible" source="incompatible" modification="yes" semantic="compatible">
+            <p>
+                As with any generification, it is possible for old code to no longer compile. E.g.
+            </p>
+            <pre>List&lt;X&gt; = lookup.lookup(folder, X.class);</pre>
+            <p>
+                must be changed to:
+            </p>
+            <pre>List&lt;? extends X&gt; = lookup.lookup(folder, X.class);</pre>
+        </compatibility>
+        <description>
+            <p>
+                <code>ContextProvider</code> is now properly generified, and implemented also by:
+            </p>
+            <ul>
+                <li><code>DebuggerEngine</code></li>
+                <li><code>DebuggerInfo</code></li>
+                <li><code>DebuggerManager</code></li>
+                <li><code>Session</code></li>
+            </ul>
+            <p>
+                The new method <code>DebuggerManager.join</code> can be used to merge lookup lists easily.
+            </p>
+        </description>
+        <class package="org.netbeans.api.debugger" name="DebuggerEngine"/>
+        <class package="org.netbeans.api.debugger" name="DebuggerInfo"/>
+        <class package="org.netbeans.api.debugger" name="DebuggerManager"/>
+        <class package="org.netbeans.api.debugger" name="Session"/>
+        <issue number="128229"/>
+    </change>
     <change id="debugger-dual-actions">
         <api name="DebuggerCoreAPI"/>
         <summary>Support for "dual" actions added.</summary>

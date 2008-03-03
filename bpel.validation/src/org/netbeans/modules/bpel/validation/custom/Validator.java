@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.bpel.validation.custom;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
@@ -628,6 +627,8 @@ public final class Validator extends BpelValidator {
       return;
     }
     if (isValidationComplete()) {
+//out();
+//out("Vadlidate model: " + model);
       validate(model);
     }
   }

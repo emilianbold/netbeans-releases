@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,32 +31,62 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bpel.validation.core;
-
-import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
-import org.netbeans.modules.bpel.validation.core.QuickFix;
+package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2007.12.07
+ * Represents an unary operation expression
+ * <pre>e.g.<pre> +$a,
+ * -3,
+ * -foo(),
+ * +-+-$a
  */
-public final class Outcome extends ResultItem {
+public class UnaryOperation extends Expression {
+    
+    public enum Operator {
+        PLUS, // '+'
+        MINUS, // '-'
+        NOT, // '!'
+    	TILDA // '~'
+    }
+    
+    private Expression expression;
+    private UnaryOperation.Operator operator;
 
-  public Outcome(CoreValidator validator, ResultType type, Component component, String description) {
-    this(validator, type, component, description, null);
-  }
+    public UnaryOperation(int start, int end, Expression expr, UnaryOperation.Operator operator) {
+        super(start, end);
 
-  public Outcome(CoreValidator validator, ResultType type, Component component, String description, QuickFix quickFix) {
-    super(validator, type, component, description);
-    myQuickFix = quickFix;
-  }         
+        if (expr == null) {
+            throw new IllegalArgumentException();
+        }
+        this.expression = expr;
+        this.operator = operator;
+    }
 
-  public QuickFix getQuickFix() {
-    return myQuickFix;
-  }
+    /**
+     * Returns the expression of this unary operation.
+     * 
+     * @return the expression node
+     */
+    public Expression getExpression() {
+        return expression;
+    }
 
-  private QuickFix myQuickFix;
+    /**
+     * the operation type - one of {@link #OP_MINUS}, {@link #OP_NOT},
+     * {@link #OP_PLUS}, {@link #OP_TILDA}
+     * @return operation type
+     */
+    public UnaryOperation.Operator getOperator() {
+        return operator;
+    }
+    
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
 }

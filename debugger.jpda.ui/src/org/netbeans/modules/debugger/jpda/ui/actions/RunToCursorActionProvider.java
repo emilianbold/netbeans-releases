@@ -75,16 +75,14 @@ public class RunToCursorActionProvider extends ActionsProviderSupport
     
     
     public RunToCursorActionProvider (ContextProvider lookupProvider) {
-        debugger = (JPDADebugger) lookupProvider.lookupFirst 
-                (null, JPDADebugger.class);
-        session = (Session) lookupProvider.lookupFirst 
-                (null, Session.class);
-        debugger.addPropertyChangeListener (debugger.PROP_STATE, this);
+        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        session = lookupProvider.lookupFirst(null, Session.class);
+        debugger.addPropertyChangeListener (JPDADebugger.PROP_STATE, this);
         EditorContextBridge.getContext().addPropertyChangeListener (this);
     }
     
     private void destroy () {
-        debugger.removePropertyChangeListener (debugger.PROP_STATE, this);
+        debugger.removePropertyChangeListener (JPDADebugger.PROP_STATE, this);
         EditorContextBridge.getContext().removePropertyChangeListener (this);
     }
     

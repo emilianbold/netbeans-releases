@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.bpel.validation.xpath;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;

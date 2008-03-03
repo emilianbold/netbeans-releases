@@ -50,21 +50,31 @@
                api-doc="http://developer.amazonwebservices.com/connect/kbcategory.jspa?categoryID=46"
                url="org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3BucketWadl.xml">
 
-    <description>AmazonS3 Service</description>
+    <description>AmazonS3 Bucket Service</description>
     
-    <display-name>AmazonS3</display-name>
+    <display-name>AmazonS3 Bucket</display-name>
 
     <saas-metadata>
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
 
         <group name="Amazon">
+            <group name="AmazonS3"/>
         </group>
 
-        <authentication profile="Templates/WebServices/profile.properties">
-            <api-key id="dev_id"/>
+        <authentication profile="SaaSServices/AmazonS3/profile.properties">
+            <signed-url>
+                <sign>
+                    <params>
+                        <param name="HTTP-Verb" type="string" required="true" default="GET" />
+                        <param name="Date" type="date" required="true"/>
+                        <param name="HTTP-Request-URI" type="string"/>
+                        <param name="Bucket" type="string" required="true" default=""/>
+                    </params>
+                </sign>
+            </signed-url>
         </authentication>
-
+        
     </saas-metadata>
 
     <methods>
@@ -72,6 +82,8 @@
         <method name="getObject" href="#amazons3.getObject"/>
         <method name="putObject" href="#amazons3.putObject"/>
         <method name="deleteObject" href="#amazons3.deleteObject"/>
+        <method name="setAcl" href="#amazons3.setAcl"/>
+        <method name="getLocation" href="#amazons3.getLocation"/>
     </methods>
 
 </saas-services>

@@ -108,8 +108,8 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
         
         //Evaluate query parameters
         List<ParameterInfo> filterParams = filterParameters();
-        paramUse += getQueryParameterUsage(filterParams);
-        paramDecl += getQueryParameterDeclaration(filterParams);
+        paramUse += getHeaderOrParameterUsage(filterParams);
+        paramDecl += getHeaderOrParameterDeclaration(filterParams);
 
         if(paramUse.endsWith(", "))
             paramUse = paramUse.substring(0, paramUse.length()-2);
