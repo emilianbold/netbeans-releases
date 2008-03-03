@@ -49,13 +49,9 @@ import org.netbeans.modules.bpel.validation.core.QuickFix;
  * @author Vladimir Yaroslavskiy
  * @version 2007.12.07
  */
-public final class Outcome extends ResultItem {
+public final class QuickFixable extends ResultItem {
 
-  public Outcome(CoreValidator validator, ResultType type, Component component, String description) {
-    this(validator, type, component, description, null);
-  }
-
-  public Outcome(CoreValidator validator, ResultType type, Component component, String description, QuickFix quickFix) {
+  public QuickFixable(CoreValidator validator, ResultType type, Component component, String description, QuickFix quickFix) {
     super(validator, type, component, description);
     myQuickFix = quickFix;
   }         
