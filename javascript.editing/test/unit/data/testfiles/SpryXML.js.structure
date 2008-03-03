@@ -1,4 +1,3 @@
-Spry:GLOBAL:[]:ESCAPED{Spry}:
 schemaNode:GLOBAL:[]:ESCAPED{schemaNode}:
 Spry.XML.Schema:CLASS:[]:ESCAPED{Spry.XML.Schema}:
   Node:CONSTRUCTOR:[]:ESCAPED{Node}(PARAMETERS{ESCAPED{nodeName}}):
@@ -8,3 +7,4 @@ Spry.XML.Schema.Node.prototype:CLASS:[]:ESCAPED{Spry.XML.Schema.Node.prototype}:
 Spry.XML:CLASS:[]:ESCAPED{Spry.XML}:
   getSchema:METHOD:[]:ESCAPED{getSchema}(PARAMETERS{ESCAPED{xmlDoc}}):
   getSchemaForElement:METHOD:[]:ESCAPED{getSchemaForElement}(PARAMETERS{ESCAPED{ele}}):
+Spry:CLASS:[]:ESCAPED{Spry}:

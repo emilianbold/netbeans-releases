@@ -76,8 +76,11 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.openide.windows.WindowManager;
 import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.modules.bpel.search.api.SearchElement;
+import org.netbeans.modules.bpel.search.api.SearchEvent;
+import org.netbeans.modules.bpel.search.spi.SearchListener;
 
 import org.netbeans.modules.bpel.search.impl.util.Util;
 import static org.netbeans.modules.soa.ui.util.UI.*;
@@ -86,62 +89,34 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2006.11.24
  */
-final class Tree extends JTree {
+final class Tree extends JTree implements SearchListener {
 
   Tree() {
     super(new DefaultTreeModel(new DefaultMutableTreeNode()));
     myRoot = (DefaultMutableTreeNode) getModel().getRoot();
   }
 
-  void addElement(SearchElement element) {
-    addElement(myRoot, element, getParents(element));
+  public void searchStarted(SearchEvent event) {
+//out();
+    myFoundCount = 0;
   }
 
-  private void addElement(
-    MutableTreeNode root,
-    SearchElement element,
-    Iterator<SearchElement> parents)
-  {
-    SearchElement next = null;
-
-    if (parents.hasNext()) {
-      next = parents.next();
-    }
-    if (next == null) { // leaf
-//out("add leaf: " + element);
-      root.insert(new DefaultMutableTreeNode(element), 0);
-      return;
-    }
-    // try to find node among children
-    Enumeration children = root.children();
-
-//out("try to add child: " + next);
-    while (children.hasMoreElements()) {
-      DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
-
-      if (child.isLeaf()) {
-//out("skip leaf: " + child);
-        continue;
-      }
-      if (child.getUserObject().equals(next)) {
-        // go to the next level
-//out("next level");
-        addElement(child, element, parents);
-        return;
-      }
-    }
-    // cannot find the same node, add new node
-    MutableTreeNode node = new DefaultMutableTreeNode(next);
-//out("add internal: " + next);
-    root.insert(node, 0);
-    addElement(node, element, parents);
+  public void searchFound(SearchEvent event) {
+//    SearchElement element = new Element(event.getSearchElement()); // todo
+    SearchElement element = event.getSearchElement();
+//out("Found: " + element);
+//out("       " + element.getName());
+    addElement(myRoot, element, getElements(element));
+    myFoundCount++;
   }
 
-  void finished(String text, int count) {
+  public void searchFinished(SearchEvent event) {
+    String text = event.getSearchOption().getText();
+    String count = String.valueOf(myFoundCount);
     myText = i18n(Tree.class, "LBL_Search_Tab", text); // NOI18N
 
     String title = i18n(
-      Tree.class, "LBL_Found_Occurrences", text, "" + count); // NOI18N
+      Tree.class, "LBL_Found_Occurrences", text, "" + myFoundCount); // NOI18N
 
     myRoot.setUserObject(new SearchElement.Adapter(
       title, title, icon(Util.class, "find"), null)); // NOI18N
@@ -151,6 +126,9 @@ final class Tree extends JTree {
 
     // vlv: print
     putClientProperty(java.awt.print.Printable.class, getRootName());
+
+    View view = (View) WindowManager.getDefault().findTopComponent(View.NAME);
+    view.show(this);
   }
 
   private String getRootName() {
@@ -181,7 +159,8 @@ final class Tree extends JTree {
   }
 
   private void updateRoot() {
-    getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+    getSelectionModel().setSelectionMode(
+      TreeSelectionModel.SINGLE_TREE_SELECTION);
     ToolTipManager.sharedInstance().registerComponent(this);
     setCellRenderer(new TreeRenderer());
     setShowsRootHandles(false);
@@ -404,11 +383,7 @@ final class Tree extends JTree {
     ((SearchElement) node.getUserObject()).select();
   }
 
-  void previousOccurence() {
-    previousOccurence(getSelectedNode());
-  }
-
-  private void previousOccurence(TreeNode node) {
+  public void previousOccurence(TreeNode node) {
     myIndex--;
 
     if (myIndex < 0) {
@@ -418,11 +393,7 @@ final class Tree extends JTree {
     requestFocus();
   }
 
-  void nextOccurence() {
-    nextOccurence(getSelectedNode());
-  }
-  
-  private void nextOccurence(TreeNode node) {
+  public void nextOccurence(TreeNode node) {
     myIndex++;
 
     if (myIndex == myOccurences.size()) {
@@ -459,11 +430,7 @@ final class Tree extends JTree {
     }
   }
 
-  void export() {
-    export(getSelectedNode());
-  }
-
-  private void export(DefaultMutableTreeNode node) {
+  public void export(DefaultMutableTreeNode node) {
     List<List<String>> descriptions = new ArrayList<List<String>>();
     export(node, descriptions);
     descriptions.add (null);
@@ -518,11 +485,7 @@ final class Tree extends JTree {
     return false;
   }
 
-  void expose() {
-    expose(getSelectedNode());
-  }
-
-  private void expose(DefaultMutableTreeNode node) {
+  public void expose(DefaultMutableTreeNode node) {
     if (node == null || node.isLeaf()) {
       return;
     }
@@ -628,7 +591,7 @@ final class Tree extends JTree {
     return (DefaultMutableTreeNode) path.getLastPathComponent();
   }
 
-  private DefaultMutableTreeNode getSelectedNode() {
+  public DefaultMutableTreeNode getSelectedNode() {
     TreePath [] paths = getSelectionPaths();
 
     if (paths == null || paths.length == 0) {
@@ -646,7 +609,50 @@ final class Tree extends JTree {
     return new JMenuItem(i18n(Tree.class, name));
   }
 
-  private Iterator<SearchElement> getParents(SearchElement element) {
+  private void addElement(
+    MutableTreeNode root,
+    SearchElement element,
+    Iterator<SearchElement> elements)
+  {
+    if (root == null) {
+      return;
+    }
+    SearchElement next = null;
+
+    if (elements.hasNext()) {
+      next = elements.next();
+    }
+    if (next == null) { // it is leaf
+//out("add leaf: " + element);
+      root.insert(new DefaultMutableTreeNode(element), 0);
+      return;
+    }
+    // try to find node among children
+    Enumeration children = root.children();
+
+//out("try to add child: " + next);
+    while (children.hasMoreElements()) {
+      DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
+
+      if (child.isLeaf()) {
+//out("skip leaf: " + child);
+        continue;
+      }
+      if (child.getUserObject().equals(next)) {
+        // go to the next level
+//out("next level");
+        addElement(child, element, elements);
+        return;
+      }
+    }
+    // cannot find the same node, add new node
+    MutableTreeNode node = new DefaultMutableTreeNode(next);
+//out("add internal: " + next);
+    root.insert(node, 0);
+    addElement(node, element, elements);
+  }
+
+  private Iterator<SearchElement> getElements(SearchElement element) {
     List<SearchElement> elements = new ArrayList<SearchElement>();
     SearchElement parent = element.getParent();
 
@@ -655,30 +661,6 @@ final class Tree extends JTree {
       parent = parent.getParent();
     }
     return elements.iterator();
-  }
-
-  @Override
-  public String convertValueToText(
-    Object node,
-    boolean selected,
-    boolean expanded,
-    boolean leaf,
-    int row,
-    boolean hasFocus)
-  {
-    if (node != null) {
-      String text = node.toString();
-  
-      if (text != null) {
-        int k = text.lastIndexOf("."); // NOI18N
-
-        if (k == -1) {
-          return text;
-        }
-        return text.substring(k + 1);
-      }
-    }
-    return "";
   }
 
   // ----------------------------------------------------------------------
@@ -726,6 +708,7 @@ final class Tree extends JTree {
   private int myIndex;
   private String myText;
   private Export myExport;
+  private int myFoundCount;
   private boolean myIsReformAll;
   private DefaultMutableTreeNode myRoot;
   private List<DefaultMutableTreeNode> myOccurences;

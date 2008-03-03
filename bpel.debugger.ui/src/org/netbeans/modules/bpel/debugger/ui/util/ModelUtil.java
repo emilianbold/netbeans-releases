@@ -74,7 +74,7 @@ public final class ModelUtil {
         }
         
         final SourcePath sourcePath = 
-                (SourcePath) engine.lookupFirst(null, SourcePath.class);
+                engine.lookupFirst(null, SourcePath.class);
                 
         if (sourcePath == null) {
             return null;

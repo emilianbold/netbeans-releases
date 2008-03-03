@@ -250,8 +250,6 @@ public class RestUtils {
                 String classAnonType = annotation.getAnnotationType().toString();
                 if (Constants.XML_ROOT_ELEMENT.equals(classAnonType)) {
                     return true;
-                } else {
-                    return false;
                 }
             }
         }

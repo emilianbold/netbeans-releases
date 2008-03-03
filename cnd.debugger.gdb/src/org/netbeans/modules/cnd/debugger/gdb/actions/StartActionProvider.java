@@ -71,7 +71,7 @@ public class StartActionProvider extends ActionsProvider {
      */
     public StartActionProvider(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
-        debuggerImpl = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debuggerImpl = lookupProvider.lookupFirst(null, GdbDebugger.class);
         
     }
     
