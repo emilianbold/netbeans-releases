@@ -51,6 +51,7 @@ import java.net.MalformedURLException;
 import java.util.logging.Logger;
 import java.util.zip.ZipFile;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
@@ -65,7 +66,7 @@ public class Util {
 
     static ClassPath createClassPath(String classpath) {
         StringTokenizer tokenizer = new StringTokenizer(classpath, File.pathSeparator);
-        List/*<PathResourceImplementation>*/ list = new ArrayList();
+        List<PathResourceImplementation> list = new ArrayList<PathResourceImplementation>();
         while (tokenizer.hasMoreTokens()) {
             String item = tokenizer.nextToken();
             File f = FileUtil.normalizeFile(new File(item));            
@@ -134,7 +135,7 @@ public class Util {
      * @return instance of SpecificationVersion representing the version; never null
      */
     public static SpecificationVersion getSpecificationVersion(JavaPlatform plat) {
-         String version = (String)plat.getSystemProperties().get("java.specification.version");   // NOI18N
+         String version = plat.getSystemProperties().get("java.specification.version");   // NOI18N
          if (version == null) {
              version = "1.1";
          }
@@ -142,14 +143,13 @@ public class Util {
     }
 
     
-    public static FileObject findTool (String toolName, Collection installFolders) {
+    public static FileObject findTool (String toolName, Collection<FileObject> installFolders) {
         return findTool (toolName, installFolders, null);
     }
 
-    public static FileObject findTool (String toolName, Collection installFolders, String archFolderName) {
+    public static FileObject findTool (String toolName, Collection<FileObject> installFolders, String archFolderName) {
         assert toolName != null;
-        for (Iterator it = installFolders.iterator(); it.hasNext();) {
-            FileObject root = (FileObject) it.next();
+        for (FileObject root : installFolders) {
             FileObject bin = root.getFileObject("bin");             //NOI18N
             if (bin == null) {
                 continue;

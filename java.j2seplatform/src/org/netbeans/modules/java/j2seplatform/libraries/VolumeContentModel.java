@@ -57,19 +57,19 @@ class VolumeContentModel extends AbstractListModel/*<String>*/ {
     private LibraryImplementation impl;
     private LibraryStorageArea area;
     private String volumeType;
-    private List/*<URL>*/ content;
+    private List<URL> content;
 
     public VolumeContentModel (LibraryImplementation impl, LibraryStorageArea area, String volumeType) {
         //TODO: Should listen on the impl
         this.impl = impl;
         this.area = area;
         this.volumeType = volumeType;
-        List l = this.impl.getContent (volumeType);
+        List<URL> l = this.impl.getContent (volumeType);
         if (l != null) {
-            this.content = new ArrayList(l);
+            this.content = new ArrayList<URL>(l);
         }
         else {
-            content = new ArrayList();
+            content = new ArrayList<URL>();
         }
     }
     
@@ -104,7 +104,7 @@ class VolumeContentModel extends AbstractListModel/*<String>*/ {
 
     public void moveUp (int[] indices) {
         for (int i=0; i< indices.length; i++) {
-            Object value = this.content.remove(indices[i]);
+            URL value = this.content.remove(indices[i]);
             this.content.add(indices[i]-1,value);
         }
         this.impl.setContent (this.volumeType, content);
@@ -113,7 +113,7 @@ class VolumeContentModel extends AbstractListModel/*<String>*/ {
 
     public void moveDown (int[] indices) {
         for (int i=indices.length-1; i>=0; i--) {
-            Object value = this.content.remove(indices[i]);
+            URL value = this.content.remove(indices[i]);
             this.content.add(indices[i]+1,value);
         }
         this.impl.setContent (this.volumeType, content);

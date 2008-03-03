@@ -51,8 +51,8 @@ import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmMember;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -81,7 +81,7 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
     public NamespaceKeyArray(ChildrenUpdater childrenUpdater, CsmProject project){
         super(childrenUpdater, project, PersistentKey.createGlobalNamespaceKey(project));
         if (!project.isArtificial()) {
-            CsmModelAccessor.getModel().addProgressListener(this);
+            CsmListeners.getDefault().addProgressListener(this);
             isRootNamespase = true;
         }
     }
@@ -91,7 +91,7 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
         CsmProject project = namespace.getProject();
         if (namespace.equals(project.getGlobalNamespace())){
             if (!project.isArtificial()) {
-                CsmModelAccessor.getModel().addProgressListener(this);
+                CsmListeners.getDefault().addProgressListener(this);
                 isRootNamespase = true;
             }
         }

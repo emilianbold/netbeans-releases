@@ -23,157 +23,157 @@ CONSTRUCTO RegExp(pattern, flags)                     Core JS
 CONSTRUCTO String(string)                             Core JS
 CONSTRUCTO String(val)                                Core JS
 CONSTRUCTO XMLHttpRequest()                           DOM
-PACKAGE    AbstractView                               DOM
-PACKAGE    Arguments                                  Core JS
-PACKAGE    Array                                      Core JS
-PACKAGE    Attr                                       DOM
-PACKAGE    Boolean                                    Core JS
-PACKAGE    CSS2Properties                             DOM
-PACKAGE    CSSCharsetRule                             DOM
-PACKAGE    CSSFontFaceRule                            DOM
-PACKAGE    CSSImportRule                              DOM
-PACKAGE    CSSMediaRule                               DOM
-PACKAGE    CSSPageRule                                DOM
-PACKAGE    CSSPrimitiveValue                          DOM
-PACKAGE    CSSRule                                    DOM
-PACKAGE    CSSRuleList                                DOM
-PACKAGE    CSSStyleDeclaration                        DOM
-PACKAGE    CSSStyleRule                               DOM
-PACKAGE    CSSStyleSheet                              DOM
-PACKAGE    CSSValue                                   DOM
-PACKAGE    CSSValueList                               DOM
-PACKAGE    CharacterData                              DOM
-PACKAGE    Counter                                    DOM
-PACKAGE    DOMConfiguration                           DOM
-PACKAGE    DOMError                                   DOM
-PACKAGE    DOMException                               DOM
-PACKAGE    DOMImplementation                          DOM
-PACKAGE    DOMImplementationCSS                       DOM
-PACKAGE    DOMImplementationList                      DOM
-PACKAGE    DOMImplementationRegistry                  DOM
-PACKAGE    DOMImplementationSource                    DOM
-PACKAGE    DOMLocator                                 DOM
-PACKAGE    DOMStringList                              DOM
-PACKAGE    Date                                       Core JS
-PACKAGE    Document                                   DOM
-PACKAGE    DocumentCSS                                DOM
-PACKAGE    DocumentEvent                              DOM
-PACKAGE    DocumentRange                              DOM
-PACKAGE    DocumentStyle                              DOM
-PACKAGE    DocumentTraversal                          DOM
-PACKAGE    DocumentType                               DOM
-PACKAGE    DocumentView                               DOM
-PACKAGE    Element                                    DOM
-PACKAGE    ElementCSSInlineStyle                      DOM
-PACKAGE    Entity                                     DOM
-PACKAGE    Error                                      Core JS
-PACKAGE    EvalError                                  Core JS
-PACKAGE    Event                                      DOM
-PACKAGE    EventException                             DOM
-PACKAGE    EventTarget                                DOM
-PACKAGE    Form                                       DOM
-PACKAGE    Function                                   Core JS
-PACKAGE    HTMLAnchorElement                          DOM
-PACKAGE    HTMLAppletElement                          DOM
-PACKAGE    HTMLAreaElement                            DOM
-PACKAGE    HTMLBRElement                              DOM
-PACKAGE    HTMLBaseElement                            DOM
-PACKAGE    HTMLBaseFontElement                        DOM
-PACKAGE    HTMLBlockquoteElement                      DOM
-PACKAGE    HTMLBodyElement                            DOM
-PACKAGE    HTMLButtonElement                          DOM
-PACKAGE    HTMLCollection                             DOM
-PACKAGE    HTMLDListElement                           DOM
-PACKAGE    HTMLDirectoryElement                       DOM
-PACKAGE    HTMLDivElement                             DOM
-PACKAGE    HTMLDocument                               DOM
-PACKAGE    HTMLElement                                DOM
-PACKAGE    HTMLFieldSetElement                        DOM
-PACKAGE    HTMLFontElement                            DOM
-PACKAGE    HTMLFormElement                            DOM
-PACKAGE    HTMLFrameElement                           DOM
-PACKAGE    HTMLFrameSetElement                        DOM
-PACKAGE    HTMLHRElement                              DOM
-PACKAGE    HTMLHeadElement                            DOM
-PACKAGE    HTMLHeadingElement                         DOM
-PACKAGE    HTMLHtmlElement                            DOM
-PACKAGE    HTMLIFrameElement                          DOM
-PACKAGE    HTMLImageElement                           DOM
-PACKAGE    HTMLInputElement                           DOM
-PACKAGE    HTMLIsIndexElement                         DOM
-PACKAGE    HTMLLIElement                              DOM
-PACKAGE    HTMLLabelElement                           DOM
-PACKAGE    HTMLLegendElement                          DOM
-PACKAGE    HTMLLinkElement                            DOM
-PACKAGE    HTMLMapElement                             DOM
-PACKAGE    HTMLMenuElement                            DOM
-PACKAGE    HTMLMetaElement                            DOM
-PACKAGE    HTMLModElement                             DOM
-PACKAGE    HTMLOListElement                           DOM
-PACKAGE    HTMLObjectElement                          DOM
-PACKAGE    HTMLOptGroupElement                        DOM
-PACKAGE    HTMLOptionElement                          DOM
-PACKAGE    HTMLOptionsCollection                      DOM
-PACKAGE    HTMLParagraphElement                       DOM
-PACKAGE    HTMLParamElement                           DOM
-PACKAGE    HTMLPreElement                             DOM
-PACKAGE    HTMLQuoteElement                           DOM
-PACKAGE    HTMLScriptElement                          DOM
-PACKAGE    HTMLSelectElement                          DOM
-PACKAGE    HTMLStyleElement                           DOM
-PACKAGE    HTMLTableCaptionElement                    DOM
-PACKAGE    HTMLTableCellElement                       DOM
-PACKAGE    HTMLTableColElement                        DOM
-PACKAGE    HTMLTableElement                           DOM
-PACKAGE    HTMLTableRowElement                        DOM
-PACKAGE    HTMLTableSectionElement                    DOM
-PACKAGE    HTMLTextAreaElement                        DOM
-PACKAGE    HTMLTitleElement                           DOM
-PACKAGE    HTMLUListElement                           DOM
-PACKAGE    JavaArray                                  Core JS
-PACKAGE    LinkStyle                                  DOM
-PACKAGE    Math                                       Core JS
-PACKAGE    MediaList                                  DOM
-PACKAGE    MouseEvent                                 DOM
-PACKAGE    MutationEvent                              DOM
-PACKAGE    NameList                                   DOM
-PACKAGE    NamedNodeMap                               DOM
-PACKAGE    Navigator                                  DOM
-PACKAGE    Node                                       DOM
-PACKAGE    NodeFilter                                 DOM
-PACKAGE    NodeIterator                               DOM
-PACKAGE    NodeList                                   DOM
-PACKAGE    Notation                                   DOM
-PACKAGE    Number                                     Core JS
-PACKAGE    Object                                     Core JS
-PACKAGE    Packages                                   Core JS
-PACKAGE    ProcessingInstruction                      DOM
-PACKAGE    RGBColor                                   DOM
-PACKAGE    Range                                      DOM
-PACKAGE    RangeError                                 Core JS
-PACKAGE    RangeException                             DOM
-PACKAGE    Rect                                       DOM
-PACKAGE    ReferenceError                             Core JS
-PACKAGE    RegExp                                     Core JS
-PACKAGE    Screen                                     DOM
-PACKAGE    Selection                                  DOM
-PACKAGE    String                                     Core JS
-PACKAGE    Style                                      DOM
-PACKAGE    StyleSheet                                 DOM
-PACKAGE    StyleSheetList                             DOM
-PACKAGE    Stylesheet                                 DOM
-PACKAGE    SyntaxError                                Core JS
-PACKAGE    Table                                      DOM
-PACKAGE    TableRow                                   DOM
-PACKAGE    Text                                       DOM
-PACKAGE    TreeWalker                                 DOM
-PACKAGE    TypeError                                  Core JS
-PACKAGE    TypeInfo                                   DOM
-PACKAGE    UIEvent                                    DOM
-PACKAGE    URIError                                   Core JS
-PACKAGE    ViewCSS                                    DOM
-PACKAGE    Window                                     DOM
-PACKAGE    XMLHttpRequest                             DOM
+CLASS      AbstractView                               DOM
+CLASS      Arguments                                  Core JS
+CLASS      Array                                      Core JS
+CLASS      Attr                                       DOM
+CLASS      Boolean                                    Core JS
+CLASS      CSS2Properties                             DOM
+CLASS      CSSCharsetRule                             DOM
+CLASS      CSSFontFaceRule                            DOM
+CLASS      CSSImportRule                              DOM
+CLASS      CSSMediaRule                               DOM
+CLASS      CSSPageRule                                DOM
+CLASS      CSSPrimitiveValue                          DOM
+CLASS      CSSRule                                    DOM
+CLASS      CSSRuleList                                DOM
+CLASS      CSSStyleDeclaration                        DOM
+CLASS      CSSStyleRule                               DOM
+CLASS      CSSStyleSheet                              DOM
+CLASS      CSSValue                                   DOM
+CLASS      CSSValueList                               DOM
+CLASS      CharacterData                              DOM
+CLASS      Counter                                    DOM
+CLASS      DOMConfiguration                           DOM
+CLASS      DOMError                                   DOM
+CLASS      DOMException                               DOM
+CLASS      DOMImplementation                          DOM
+CLASS      DOMImplementationCSS                       DOM
+CLASS      DOMImplementationList                      DOM
+CLASS      DOMImplementationRegistry                  DOM
+CLASS      DOMImplementationSource                    DOM
+CLASS      DOMLocator                                 DOM
+CLASS      DOMStringList                              DOM
+CLASS      Date                                       Core JS
+CLASS      Document                                   DOM
+CLASS      DocumentCSS                                DOM
+CLASS      DocumentEvent                              DOM
+CLASS      DocumentRange                              DOM
+CLASS      DocumentStyle                              DOM
+CLASS      DocumentTraversal                          DOM
+CLASS      DocumentType                               DOM
+CLASS      DocumentView                               DOM
+CLASS      Element                                    DOM
+CLASS      ElementCSSInlineStyle                      DOM
+CLASS      Entity                                     DOM
+CLASS      Error                                      Core JS
+CLASS      EvalError                                  Core JS
+CLASS      Event                                      DOM
+CLASS      EventException                             DOM
+CLASS      EventTarget                                DOM
+CLASS      Form                                       DOM
+CLASS      Function                                   Core JS
+CLASS      HTMLAnchorElement                          DOM
+CLASS      HTMLAppletElement                          DOM
+CLASS      HTMLAreaElement                            DOM
+CLASS      HTMLBRElement                              DOM
+CLASS      HTMLBaseElement                            DOM
+CLASS      HTMLBaseFontElement                        DOM
+CLASS      HTMLBlockquoteElement                      DOM
+CLASS      HTMLBodyElement                            DOM
+CLASS      HTMLButtonElement                          DOM
+CLASS      HTMLCollection                             DOM
+CLASS      HTMLDListElement                           DOM
+CLASS      HTMLDirectoryElement                       DOM
+CLASS      HTMLDivElement                             DOM
+CLASS      HTMLDocument                               DOM
+CLASS      HTMLElement                                DOM
+CLASS      HTMLFieldSetElement                        DOM
+CLASS      HTMLFontElement                            DOM
+CLASS      HTMLFormElement                            DOM
+CLASS      HTMLFrameElement                           DOM
+CLASS      HTMLFrameSetElement                        DOM
+CLASS      HTMLHRElement                              DOM
+CLASS      HTMLHeadElement                            DOM
+CLASS      HTMLHeadingElement                         DOM
+CLASS      HTMLHtmlElement                            DOM
+CLASS      HTMLIFrameElement                          DOM
+CLASS      HTMLImageElement                           DOM
+CLASS      HTMLInputElement                           DOM
+CLASS      HTMLIsIndexElement                         DOM
+CLASS      HTMLLIElement                              DOM
+CLASS      HTMLLabelElement                           DOM
+CLASS      HTMLLegendElement                          DOM
+CLASS      HTMLLinkElement                            DOM
+CLASS      HTMLMapElement                             DOM
+CLASS      HTMLMenuElement                            DOM
+CLASS      HTMLMetaElement                            DOM
+CLASS      HTMLModElement                             DOM
+CLASS      HTMLOListElement                           DOM
+CLASS      HTMLObjectElement                          DOM
+CLASS      HTMLOptGroupElement                        DOM
+CLASS      HTMLOptionElement                          DOM
+CLASS      HTMLOptionsCollection                      DOM
+CLASS      HTMLParagraphElement                       DOM
+CLASS      HTMLParamElement                           DOM
+CLASS      HTMLPreElement                             DOM
+CLASS      HTMLQuoteElement                           DOM
+CLASS      HTMLScriptElement                          DOM
+CLASS      HTMLSelectElement                          DOM
+CLASS      HTMLStyleElement                           DOM
+CLASS      HTMLTableCaptionElement                    DOM
+CLASS      HTMLTableCellElement                       DOM
+CLASS      HTMLTableColElement                        DOM
+CLASS      HTMLTableElement                           DOM
+CLASS      HTMLTableRowElement                        DOM
+CLASS      HTMLTableSectionElement                    DOM
+CLASS      HTMLTextAreaElement                        DOM
+CLASS      HTMLTitleElement                           DOM
+CLASS      HTMLUListElement                           DOM
+CLASS      JavaArray                                  Core JS
+CLASS      LinkStyle                                  DOM
+CLASS      Math                                       Core JS
+CLASS      MediaList                                  DOM
+CLASS      MouseEvent                                 DOM
+CLASS      MutationEvent                              DOM
+CLASS      NameList                                   DOM
+CLASS      NamedNodeMap                               DOM
+CLASS      Navigator                                  DOM
+CLASS      Node                                       DOM
+CLASS      NodeFilter                                 DOM
+CLASS      NodeIterator                               DOM
+CLASS      NodeList                                   DOM
+CLASS      Notation                                   DOM
+CLASS      Number                                     Core JS
+CLASS      Object                                     Core JS
+CLASS      Packages                                   Core JS
+CLASS      ProcessingInstruction                      DOM
+CLASS      RGBColor                                   DOM
+CLASS      Range                                      DOM
+CLASS      RangeError                                 Core JS
+CLASS      RangeException                             DOM
+CLASS      Rect                                       DOM
+CLASS      ReferenceError                             Core JS
+CLASS      RegExp                                     Core JS
+CLASS      Screen                                     DOM
+CLASS      Selection                                  DOM
+CLASS      String                                     Core JS
+CLASS      Style                                      DOM
+CLASS      StyleSheet                                 DOM
+CLASS      StyleSheetList                             DOM
+CLASS      Stylesheet                                 DOM
+CLASS      SyntaxError                                Core JS
+CLASS      Table                                      DOM
+CLASS      TableRow                                   DOM
+CLASS      Text                                       DOM
+CLASS      TreeWalker                                 DOM
+CLASS      TypeError                                  Core JS
+CLASS      TypeInfo                                   DOM
+CLASS      UIEvent                                    DOM
+CLASS      URIError                                   Core JS
+CLASS      ViewCSS                                    DOM
+CLASS      Window                                     DOM
+CLASS      XMLHttpRequest                             DOM
 METHOD     decodeURI(encodedURI)                      Core JS
 METHOD     decodeURIComponent(encodedURI)             Core JS
 METHOD     encodeURI(URI)                             Core JS

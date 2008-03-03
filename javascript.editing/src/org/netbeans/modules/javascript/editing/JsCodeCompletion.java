@@ -1729,7 +1729,11 @@ public class JsCodeCompletion implements Completable {
         }
 
         public String getInsertPrefix() {
-            return getName();
+            if (getKind() == ElementKind.PACKAGE) {
+                return getName()+".";
+            } else {
+                return getName();
+            }
         }
 
         public String getSortText() {
