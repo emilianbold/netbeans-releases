@@ -357,7 +357,7 @@ public class AcceptanceTest extends RaveTestCase {
         JEditorPaneOperator editor = new JEditorPaneOperator(Util.getMainWindow(), "Page1");
         //For some reason, doing all of them at once doesn't work
         editor.pushKey(KeyEvent.VK_END);
-        editor.typeText("\nlog(\"Upload action performed\");\n");
+        editor.setText("\nlog(\"Upload action performed\");\n");
         log("Editor Dump:");
         log(editor.getText());
         log("**Go back to designer");
