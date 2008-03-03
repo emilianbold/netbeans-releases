@@ -53,6 +53,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 
 /**
  *
@@ -63,11 +64,10 @@ public class WadlSaasBean extends SaasBean {
     public static final String SAAS_SERVICE_TEMPLATE = AbstractGenerator.TEMPLATES_SAAS+"SaasService.java"; //NOI18N
     private String url;
     private WadlSaasMethod m;
-    private List<ParameterInfo> pathParams;
     
     public WadlSaasBean(WadlSaasMethod m)  throws IOException {
-        super(deriveResourceName(m.getName()), null, 
-                deriveUriTemplate(m.getName()), new MimeType[]{MimeType.XML}, 
+        super(Util.deriveResourceName(m.getName()), null, 
+                Util.deriveUriTemplate(m.getName()), new MimeType[]{MimeType.XML}, 
                 new String[]{"java.lang.String"},       //NOI18N
                 new HttpMethodType[]{HttpMethodType.GET});
     
@@ -82,10 +82,8 @@ public class WadlSaasBean extends SaasBean {
     
     private void init() {    
         findAuthentication(m);
-        initUrl();        
-        initInputParameters();
-        initTemplateParameters();
-        initQueryParameters();
+        initUrl();
+        getInputParameters();//init parameters
         initMimeTypes();
     }
     
@@ -97,10 +95,15 @@ public class WadlSaasBean extends SaasBean {
                 throw new IllegalArgumentException("Method do not belong to any resource in the WADL.");
             Resource currResource = rArray[rArray.length-1];
             String url2 = m.getSaas().getWadlModel().getResources().getBase();
-            if(url2 != null && url2.length() > 1 && url2.endsWith("/")) {
-                url2 = url2.substring(0, url2.length()-1);
+            url2 = url2.replace("://", "  ");//replace now, add :// later
+            for(int i=0;i<rArray.length;i++){
+                String path = rArray[i].getPath();
+                if(path != null && path.trim().length() > 0) {
+                    url2 += "/" + rArray[i].getPath();
+                }
             }
-            url2 += "/"+currResource.getPath();
+            url2 = url2.replace("//", "/");
+            url2 = url2.replace("  ", "://");//put back ://
             this.url = url2;
         } catch (Exception ex) {
         } 
@@ -114,46 +117,32 @@ public class WadlSaasBean extends SaasBean {
                 throw new IllegalArgumentException("Method do not belong to any resource in the WADL.");
             Resource currResource = rArray[rArray.length-1];
             
-            findParams(inputParams, currResource.getParam());
+            findWadlParams(inputParams, currResource.getParam());
             Request req = m.getWadlMethod().getRequest();
-            findParams(inputParams, req.getParam());
+            findWadlParams(inputParams, req.getParam());
+            List<RepresentationType> reps = req.getRepresentation();
+            for(RepresentationType rep:reps) {
+                findWadlParams(inputParams, rep.getParam());
+            }
         } catch (Exception ex) {
         } 
-        return inputParams;
-    }
-    
-    private void initTemplateParameters() {
-        ArrayList<ParameterInfo> params = new ArrayList<ParameterInfo>();
-        String url2 = this.url;
-        String[] paths = url2.split("/");
-        for(String path:paths) {
-            if(path.startsWith("{") && path.endsWith("}")) {
-                ParameterInfo paramInfo = new ParameterInfo(path, String.class);
-                if(path.length() > 2)
-                    paramInfo.setDefaultValue(path.substring(1, path.length()-1));
-                params.add(paramInfo);
-            }
-        }
-        this.pathParams = params;
-    }
-    
-    private void initQueryParameters() {
+        
+        //Further differentiate fixed, api-key for query parameters
         String apiKeyName = "";
         boolean isApiKey = getAuthenticationType() == SaasAuthenticationType.API_KEY;
         if(isApiKey)
             apiKeyName = ((ApiKeyAuthentication)getAuthentication()).getApiKeyName();
-        for (ParameterInfo param : getInputParameters()) {
+        for (ParameterInfo param : inputParams) {
             String paramName = param.getName();
-            if((isApiKey && paramName.equals(apiKeyName))) {
-                param.setStyle(ParamStyle.QUERY_APIKEY);
-            } else if(param.getFixed() != null){
-                param.setStyle(ParamStyle.QUERY_FIXED);
-            } else {
-                param.setStyle(ParamStyle.QUERY);
+            if(param.getStyle() == ParamStyle.QUERY) {
+                if((isApiKey && paramName.equals(apiKeyName))) {
+                    param.setIsApiKey(true);
+                }
             }
         }
+        return inputParams;
     }
-    
+
     private void initMimeTypes() {
         List<MimeType> mimeTypes = new ArrayList<MimeType>();
         try {
@@ -163,10 +152,6 @@ public class WadlSaasBean extends SaasBean {
                 this.setMimeTypes(mimeTypes.toArray(new MimeType[mimeTypes.size()]));
         } catch (Exception ex) {
         } 
-    }
-    
-    public List<ParameterInfo> getTemplateParameters() {
-        return pathParams;
     }
     
     public String getUrl() {
@@ -190,7 +175,7 @@ public class WadlSaasBean extends SaasBean {
         }
     }
 
-    private void findParams(List<ParameterInfo> paramInfos, List<Param> params) {
+    private void findWadlParams(List<ParameterInfo> paramInfos, List<Param> params) {
         if (params != null) {
             for (Param param:params) {
                 //<param name="replace" type="xsd:boolean" style="query" required="false" default="some value">
@@ -208,25 +193,7 @@ public class WadlSaasBean extends SaasBean {
             }
         }
     }
-       
-    private Class findJavaType(String schemaType) {       
-        if(schemaType != null) {
-            int index = schemaType.indexOf(":");        //NOI18N
-            
-            if(index != -1) {
-                schemaType = schemaType.substring(index+1);
-            }
-            
-            if(schemaType.equals("string")) {     //NOI18N
-                return String.class;
-            } else if(schemaType.equals("int")) {       //NOI18N
-                return Integer.class;
-            }
-        }
-        
-        return String.class;
-    }
-    
+
     public String getSaasServiceTemplate() {
         return SAAS_SERVICE_TEMPLATE;
     }

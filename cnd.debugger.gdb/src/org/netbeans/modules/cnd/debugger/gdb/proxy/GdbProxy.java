@@ -249,14 +249,14 @@ public class GdbProxy implements GdbMiDefinitions {
     
     /**
      */
-    public int data_list_register_names(CommandBuffer cb, String regIds) {
-        return engine.sendCommand(cb, "-data-list-register-names " + regIds); // NOI18N
+    public int data_list_register_names(String regIds) {
+        return engine.sendCommand("-data-list-register-names " + regIds); // NOI18N
     }
     
     /**
      */
-    public int data_list_register_values(CommandBuffer cb, String regIds) {
-        return engine.sendCommand(cb, "-data-list-register-values r " + regIds); // NOI18N
+    public int data_list_register_values(String regIds) {
+        return engine.sendCommand("-data-list-register-values x " + regIds); // NOI18N
     }
     
     /*
@@ -264,6 +264,13 @@ public class GdbProxy implements GdbMiDefinitions {
      */
     public int data_disassemble(String filename, int line) {
         return engine.sendCommand("-data-disassemble -f " + filename + " -l " + line + " -- 0"); // NOI18N
+    }
+    
+    /*
+     * @param size - size in bytes
+     */
+    public int data_disassemble(int size) {
+        return engine.sendCommand("-data-disassemble -s $pc -e \"$pc+" + size + "\" -- 0"); // NOI18N
     }
     
     public int print(CommandBuffer cb, String expression) {

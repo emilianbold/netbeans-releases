@@ -42,6 +42,7 @@ package org.netbeans.test.ide;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -98,6 +99,12 @@ final class WatchProjects {
         if (System.getProperty("java.version").startsWith("1.5")) {
             // hopefully this hack will be needed just on 1.5
             resetJTreeUIs(Frame.getFrames());
+            
+            // clear input method memory leak on JDK 1.5
+            Class<?> inputMethod = Class.forName("sun.awt.im.InputContext");
+            Field f = inputMethod.getDeclaredField("previousInputMethod");
+            f.setAccessible(true);
+            f.set(null, null);
         }
         
         tryCloseNavigator();

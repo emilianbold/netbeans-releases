@@ -60,16 +60,18 @@ public class DiagramViewLayout implements java.awt.LayoutManager {
 
             w = (int) Math.round(k * bounds.width + MARGIN_LEFT + MARGIN_RIGHT);
             h = (int) Math.round(k * bounds.height + MARGIN_TOP + MARGIN_BOTTOM);
+            
+            if (parent instanceof ProcessView) {
+                int count = diagramView.getComponentCount();
+                for (int i = 0; i < count; i++) {
+                    Component c = diagramView.getComponent(i);
+                    if (c instanceof NavigationTools) {
+                        continue;
+                    }
 
-            int count = diagramView.getComponentCount();
-            for (int i = 0; i < count; i++) {
-                Component c = diagramView.getComponent(i);
-                if (c instanceof NavigationTools) {
-                    continue;
+                    w = Math.max(w, c.getX() + c.getWidth() + MARGIN_RIGHT);
+                    h = Math.max(h, c.getY() + c.getHeight() + MARGIN_BOTTOM);
                 }
-
-                w = Math.max(w, c.getX() + c.getWidth() + MARGIN_RIGHT);
-                h = Math.max(h, c.getY() + c.getHeight() + MARGIN_BOTTOM);
             }
 
             return new Dimension(w, h);
@@ -145,8 +147,8 @@ public class DiagramViewLayout implements java.awt.LayoutManager {
         }
     }
     public static int MARGIN_TOP = 32;
-    public static int MARGIN_LEFT = 10;
+    public static int MARGIN_LEFT = 18;
     public static int MARGIN_BOTTOM = 32;
-    public static int MARGIN_RIGHT = 10;
+    public static int MARGIN_RIGHT = 18;
 }
  

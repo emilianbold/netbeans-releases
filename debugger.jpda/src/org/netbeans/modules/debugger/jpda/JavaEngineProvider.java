@@ -61,7 +61,7 @@ public class JavaEngineProvider extends DebuggerEngineProvider {
     private Session                     session;  
     
     public JavaEngineProvider (ContextProvider contextProvider) {
-        session = (Session) contextProvider.lookupFirst (null, Session.class);
+        session = contextProvider.lookupFirst(null, Session.class);
     }
     
     public String[] getLanguages () {

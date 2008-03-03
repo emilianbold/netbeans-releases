@@ -44,10 +44,15 @@ import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
 
@@ -74,9 +79,6 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
         createSaasServiceClass();
         addSaasServiceMethod();
         addImportsToSaasService();
-        
-        insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
-        addImportsToTargetFile();
 
         FileObject outputWrapperFO = generateJaxbOutputWrapper();
         if (outputWrapperFO != null) {
@@ -84,6 +86,7 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
         }
         generateSaasServiceResourceClass();
         addSubresourceLocator();
+        addImportsToWrapperResource();
         FileObject refConverterFO = getOrCreateGenericRefConverter().getFileObjects().iterator().next();
         modifyTargetConverter();
         FileObject[] result = new FileObject[]{getTargetFile(), getWrapperResourceFile(), refConverterFO, outputWrapperFO};
@@ -103,13 +106,10 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
         String paramDecl = "";
         String converterName = getConverterName();
         
-        //Evaluate template parameters
-        paramUse += getQueryParameterUsage(getBean().getTemplateParameters());
-        paramDecl += getQueryParameterDeclaration(getBean().getTemplateParameters());
-
         //Evaluate query parameters
-        paramUse += getQueryParameterUsage(getBean().getQueryParameters());
-        paramDecl += getQueryParameterDeclaration(getBean().getQueryParameters());
+        List<ParameterInfo> filterParams = filterParameters();
+        paramUse += getHeaderOrParameterUsage(filterParams);
+        paramDecl += getHeaderOrParameterDeclaration(filterParams);
 
         if(paramUse.endsWith(", "))
             paramUse = paramUse.substring(0, paramUse.length()-2);
@@ -121,5 +121,20 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
         methodBody += "             return converter;\n";
         
         return methodBody;
+    }
+    
+    @Override
+    protected void addImportsToTargetFile() throws IOException {
+    }
+    
+    @Override
+    protected void addImportsToWrapperResource() throws IOException {
+        ModificationResult result = getWrapperResourceSource().runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws IOException {
+                copy.toPhase(JavaSource.Phase.RESOLVED);
+                JavaSourceHelper.addImports(copy, new String[] {getSaasServicePackageName()+"."+getSaasServiceName()});
+            }
+        });
+        result.commit();
     }
 }

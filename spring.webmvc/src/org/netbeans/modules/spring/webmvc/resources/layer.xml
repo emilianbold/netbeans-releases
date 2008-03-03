@@ -51,6 +51,11 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="spring-webmvc-2.5.xml" url="spring-webmvc-2.5.xml"/>
+        </folder>
+    </folder>
     <folder name="Projects">
         <folder name="org-codehaus-mevenide-netbeans">
             <folder name="Lookup">
@@ -73,6 +78,7 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="servlet-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/webmvc/resources/abstractController.html"/>
+                <attr name="position" intvalue="200"/>
             </file>
             <file name="SimpleFormController.java" url="templates/SimpleFormController.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.webmvc.resources.Bundle"/>
@@ -82,6 +88,7 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="servlet-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/webmvc/resources/simpleFormController.html"/>
+                <attr name="position" intvalue="300"/>
             </file>
         </folder>
     </folder>

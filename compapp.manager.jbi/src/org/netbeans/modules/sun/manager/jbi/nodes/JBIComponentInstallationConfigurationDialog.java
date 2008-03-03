@@ -42,6 +42,7 @@ package org.netbeans.modules.sun.manager.jbi.nodes;
 
 import java.awt.Frame;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import javax.management.Attribute;
@@ -130,8 +131,8 @@ public class JBIComponentInstallationConfigurationDialog
             JBIComponentConfigurationDescriptor configDescriptor, 
             Properties properties) {
 
-        if (configDescriptor.isApplicationConfiguration() ||
-                configDescriptor.isApplicationVariable()) {
+        if (configDescriptor instanceof JBIComponentConfigurationDescriptor.ApplicationConfiguration ||
+                configDescriptor instanceof JBIComponentConfigurationDescriptor.ApplicationVariable) {
             // do nothing
         } else if (configDescriptor.isProperty()) {
 
@@ -161,6 +162,7 @@ public class JBIComponentInstallationConfigurationDialog
             
             properties.setProperty(name, value);
 
+            
             Object attrValue = null;
             if (JBIComponentConfigurationDescriptor.XSD_INT.equals(typeQName) ||
                     JBIComponentConfigurationDescriptor.XSD_BYTE.equals(typeQName) ||
@@ -175,7 +177,11 @@ public class JBIComponentInstallationConfigurationDialog
             } else if (JBIComponentConfigurationDescriptor.XSD_BOOLEAN.equals(typeQName)) {
                 attrValue = Boolean.parseBoolean(value);
             } else {
-                throw new RuntimeException("Type not supported: " + typeQName);
+                String newline = System.getProperty("line.separator"); // NOI18N
+                throw new RuntimeException("The type for configuration property '" + 
+                        name + "' is not supported: " + typeQName + newline +
+                        "The supported types are: " + newline + 
+                        Arrays.toString(JBIComponentConfigurationDescriptor.SUPPORTED_TYPES));
             }
 
             Attribute attr = new Attribute(name, attrValue);

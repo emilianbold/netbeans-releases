@@ -95,8 +95,6 @@ made subject to such option by the copyright holder.
             
             <property name="xtest.timeout" value="2400000" />
             
-            <!-- Opens project at specified location -->
-            <property name="xtest.ide.open.project" location="${xtest.tmpdir}/MobileApplicationVisualMIDlet"/>
         </executeTests>
 
         <!-- save copy of current Userdir -->

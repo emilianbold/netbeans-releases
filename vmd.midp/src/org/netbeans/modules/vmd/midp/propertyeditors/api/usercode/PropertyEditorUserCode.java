@@ -320,7 +320,12 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
             }
 
             userCodeRadioButton = new JRadioButton();
-            Mnemonics.setLocalizedText(userCodeRadioButton, NbBundle.getMessage(PropertyEditorUserCode.class, "LBL_USER_CODE", userCodeLabel)); // NOI18N
+            Mnemonics.setLocalizedText(userCodeRadioButton, NbBundle.getMessage(
+                    PropertyEditorUserCode.class, "LBL_USER_CODE", userCodeLabel)); // NOI18N
+            userCodeRadioButton.getAccessibleContext().setAccessibleName(
+                    NbBundle.getMessage(PropertyEditorUserCode.class, "ACSN_USER_CODE", userCodeLabel));
+            userCodeRadioButton.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(PropertyEditorUserCode.class, "ACSD_USER_CODE", userCodeLabel));
             userCodeRadioButton.addActionListener(this);
             buttonGroup.add(userCodeRadioButton);
 

@@ -45,12 +45,17 @@ import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -59,12 +64,19 @@ import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.ApiKeyAuthentication;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SignedUrlAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
+import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  * Code generator for REST services wrapping WSDL-based web service.
@@ -80,6 +92,8 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     private String groupName;
     private Object saasAuthFile;
     private JavaSource saasAuthJS;
+    private HttpMethodType httpMethod;
+    private HashMap<String, ParameterInfo> filterParamMap;
     
     public JaxRsCodeGenerator(JTextComponent targetComponent, 
             FileObject targetFile, WadlSaasMethod m) throws IOException {
@@ -87,7 +101,11 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         saasServiceFile = SourceGroupSupport.findJavaSourceFile(getProject(), getSaasServiceName());
         if(saasServiceFile != null)
             saasServiceJS = JavaSource.forFileObject(saasServiceFile);
-        this.groupName = getBean().getMethod().getSaas().getTopLevelGroup().getName();
+        SaasGroup g = getBean().getMethod().getSaas().getParentGroup();
+        if(g.getParent() == null) //g is root group, so use topLevel group usually the vendor group
+            g = getBean().getMethod().getSaas().getTopLevelGroup();
+        this.groupName = Util.normailizeName(g.getName());
+        this.httpMethod = HttpMethodType.valueOf(getBean().getMethod().getWadlMethod().getName());
     }
     
     @Override
@@ -111,6 +129,10 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         return "get" + getBean().getName();
     }
     
+    public HttpMethodType getHttpMethodName() {
+        return this.httpMethod;
+    }
+    
     @Override
     protected void preGenerate() throws IOException {
         createRestConnectionFile(getProject());
@@ -120,10 +142,10 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         String converterName = getConverterName();
         String paramStr = null;
         StringBuffer sb1 = new StringBuffer();
-        List<ParameterInfo> params = bean.getInputParameters();
+        List<ParameterInfo> params = filterParameters();
 
         for (ParameterInfo param : params) {
-            String paramName = param.getName();
+            String paramName = getParameterName(param);
             if (param.getType() != String.class) {
                 sb1.append("{\"" + paramName + "\", \"" + paramName + "\"},");
             } else {
@@ -155,67 +177,148 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     protected String getServiceMethodBody() throws IOException {
         String fixedCode = "";
         for (ParameterInfo param : getBean().getInputParameters()) {
-            if(param.getStyle() == ParamStyle.QUERY_FIXED)
-                fixedCode +=  "String " + param.getName() + " = \"" + findParamValue(param) + "\";\n";
+            if(param.isFixed())
+                fixedCode +=  "String " + getParameterName(param) + " = \"" + findParamValue(param) + "\";\n";
         }
-        String headerParamsCode = "";
-        if(getBean().getHeaderParameters() != null && getBean().getHeaderParameters().size() > 0)
-            headerParamsCode = getHeaderOrParameterDefinition(getBean().getHeaderParameters(), HEADER_PARAMS, true);
-        
         String pathParamsCode = "";
         if(getBean().getTemplateParameters() != null && getBean().getTemplateParameters().size() > 0)
             pathParamsCode = getTemplateParameterDefinition(getBean().getTemplateParameters(), PATH_PARAMS, false);
         
         String queryParamsCode = "";
-        if(getBean().getInputParameters() != null && getBean().getInputParameters().size() > 0)
-            queryParamsCode = getHeaderOrParameterDefinition(getBean().getInputParameters(), QUERY_PARAMS, false);
+        if(getBean().getQueryParameters() != null && 
+                getBean().getQueryParameters().size() > 0) {
+            queryParamsCode = getHeaderOrParameterDefinition(getBean().getQueryParameters(), QUERY_PARAMS, false);
+        }
 
         String methodBody = "";
         methodBody += "        String result = null;\n";
-        methodBody += "        try {\n";
+        
+        //Insert authentication code before new RestConnection() call
         methodBody += "             " + getPreAuthenticationCode()+"\n";
+        
+        //Insert parameter declaration
         methodBody += "        "+fixedCode;
-        methodBody += "        "+headerParamsCode;
         methodBody += "        "+pathParamsCode;
         methodBody += "        "+queryParamsCode;
-        methodBody += "             RestConnection conn = new RestConnection(\""+getBean().getUrl();
+        
+        methodBody += "             RestConnection conn = new RestConnection(\""+getBean().getUrl()+"\"";
         if(!pathParamsCode.trim().equals(""))
-            methodBody += "\", "+PATH_PARAMS+", "+(queryParamsCode.trim().equals("")?"null":QUERY_PARAMS);
+            methodBody += ", "+PATH_PARAMS+", "+(queryParamsCode.trim().equals("")?"null":QUERY_PARAMS);
         else if(!queryParamsCode.trim().equals(""))
-            methodBody += "\", "+QUERY_PARAMS;
+            methodBody += ", "+QUERY_PARAMS;
         methodBody += ");\n";
+        
+        //Insert authentication code after new RestConnection() call
         methodBody += "             " + getPostAuthenticationCode()+"\n";
-        HttpMethodType httpMethod = HttpMethodType.valueOf(getBean().getMethod().getWadlMethod().getName());
+      
+        String headerUsage = "null";
+        if(getBean().getHeaderParameters() != null && getBean().getHeaderParameters().size() > 0) {
+            headerUsage = HEADER_PARAMS;
+            methodBody += "        "+getHeaderOrParameterDefinition(getBean().getHeaderParameters(), HEADER_PARAMS, false);;
+        }
+        
+        //Insert the method call
+        HttpMethodType httpMethod = getHttpMethodName();
         if(httpMethod == HttpMethodType.GET) {
-            methodBody += "             result = conn.get("+(headerParamsCode.trim().equals("")?"null":HEADER_PARAMS)+");\n";
+            methodBody += "             result = conn.get("+headerUsage+");\n";
         } else if(httpMethod == HttpMethodType.PUT) {
             methodBody += "             String content = \"Some content.\"";
-            methodBody += "             result = conn.put("+(headerParamsCode.trim().equals("")?"null":HEADER_PARAMS)+", content.getBytes());\n";
+            methodBody += "             result = conn.put("+headerUsage+", content.getBytes());\n";
         } else if(httpMethod == HttpMethodType.POST) {
             methodBody += "             String content = \"Some content.\"";
-            methodBody += "             result = conn.post("+(headerParamsCode.trim().equals("")?"null":HEADER_PARAMS)+", content.getBytes());\n";
+            methodBody += "             result = conn.post("+headerUsage+", content.getBytes());\n";
         } else if(httpMethod == HttpMethodType.DELETE) {
-            methodBody += "             result = conn.delete("+(headerParamsCode.trim().equals("")?"null":HEADER_PARAMS)+");\n";
+            methodBody += "             result = conn.delete("+headerUsage+");\n";
         }
-        methodBody += "        } catch (java.io.IOException ex) {\n";
-        methodBody += "             Logger.getLogger(" + getSaasServiceName() + ".class.getName()).log(Level.SEVERE, null, ex);\n";
-        methodBody += "        }\n";
+        
         methodBody += "        return result;\n";
        
         return methodBody;
     }
     
+    /* 
+     * Insert this code before new RestConnection()
+     */
     private String getPreAuthenticationCode() {
-        boolean isApiKey = getBean().getAuthenticationType() == SaasAuthenticationType.API_KEY;
-        if(isApiKey)
-            return "String apiKey = "+getGroupName()+"Authenticator.getApiKey();";
-        return "";
+        String methodBody = "";
+        SaasAuthenticationType authType = getBean().getAuthenticationType();
+        if(authType == SaasAuthenticationType.API_KEY) {
+            methodBody += "        String apiKey = "+getGroupName()+"Authenticator.getApiKey();";
+        } else if(authType == SaasAuthenticationType.SESSION_KEY) {
+            methodBody += "        "+getGroupName()+"Authenticator.login();\n";
+            methodBody += "        String apiKey = "+getGroupName()+"Authenticator.getApiKey();\n";
+            methodBody += "        String sessionKey = "+getGroupName()+"Authenticator.getSessionKey();\n";
+            methodBody += "        String method = \"facebook.friends.get\";\n";
+            methodBody += "        String v = \"1.0\";\n";
+            methodBody += "        String callId = String.valueOf(System.currentTimeMillis());\n";
+            methodBody += "        String sig = "+getGroupName()+"Authenticator.sign(\n";
+            methodBody += "                new String[][]{\n";
+            methodBody += "                    {\"method\", method},\n";
+            methodBody += "                    {\"v\", v},\n";
+            methodBody += "                    {\"api_key\", apiKey},\n";
+            methodBody += "                    {\"session_key\", sessionKey},\n";
+            methodBody += "                    {\"call_id\", callId}\n";
+            methodBody += "                });\n\n";
+
+            methodBody += "        String[][] params = new String[][]{\n";
+            methodBody += "                {\"method\", method},\n";
+            methodBody += "                {\"v\", v},\n";
+            methodBody += "                {\"api_key\", apiKey},\n";
+            methodBody += "                {\"session_key\", sessionKey},\n";
+            methodBody += "                {\"sig\", sig},\n";
+            methodBody += "                {\"call_id\", callId}\n";
+            methodBody += "        };\n";
+        }
+        return methodBody;
     }
     
+    /* 
+     * Insert this code after new RestConnection()
+     */
     private String getPostAuthenticationCode() {
-        if(getBean().getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
-            return "conn.setAuthenticator(new "+getGroupName()+"Authenticator());";
-        return "";
+        String methodBody = "";
+        SaasAuthenticationType authType = getBean().getAuthenticationType();
+        if(authType == SaasAuthenticationType.HTTP_BASIC) {
+            methodBody += "        conn.setAuthenticator(new "+getGroupName()+"Authenticator());\n";
+        } else if(authType == SaasAuthenticationType.SIGNED_URL) {
+            SignedUrlAuthentication signedUrl = (SignedUrlAuthentication)getBean().getAuthentication();
+            String paramStr = "";
+            List<ParameterInfo> signParams = signedUrl.getParameters();
+            if(signParams != null && signParams.size() > 0) {
+                for(ParameterInfo p:signParams) {
+                    if(isContains(p, filterParameters()))
+                        continue;
+                    paramStr += "        String "+
+                            Inflector.getInstance().camelize(Util.normailizeName(p.getName()), true)+" = ";
+                    if(p.getFixed() != null) {
+                        paramStr += "\""+p.getFixed()+"\";\n";
+                    } else if(p.getType() == Date.class) {
+                        paramStr += "conn.getDate();\n";
+                    } else if(p.isRequired()) {
+                        if(p.getDefaultValue() != null)
+                            paramStr += "\""+p.getDefaultValue()+"\";\n";
+                        else
+                            paramStr += "\"\";\n";
+                    } else {
+                        if(p.getDefaultValue() != null)
+                            paramStr += "\""+p.getDefaultValue()+"\";\n";
+                        else
+                            paramStr += "null;\n";
+                    }
+                }
+                paramStr += "\n";
+                
+                paramStr += "        authorization = "+getGroupName()+"Authenticator.sign(\n";
+                paramStr += "                new String[][] {\n";
+                for(ParameterInfo p:signParams) {
+                    paramStr += "                    {\""+p.getName()+"\", "+
+                            Inflector.getInstance().camelize(Util.normailizeName(p.getName()), true)+"},\n";
+                }
+                paramStr += "        });\n";
+            }
+            methodBody += paramStr;
+        }
+        return methodBody;
     }
     
     protected void addImportsToTargetFile() throws IOException {
@@ -270,8 +373,12 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             String authTemplate = null;
             if(getBean().getAuthenticationType() == SaasAuthenticationType.API_KEY)
                 authTemplate = TEMPLATES_SAAS+"ApiKeyAuthenticator.java";
-            if(getBean().getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
+            else if(getBean().getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
                 authTemplate = TEMPLATES_SAAS+"HttpBasicAuthenticator.java";
+            else if(getBean().getAuthenticationType() == SaasAuthenticationType.SIGNED_URL)
+                authTemplate = TEMPLATES_SAAS+"SignedUrlAuthenticator.java";
+            else if(getBean().getAuthenticationType() == SaasAuthenticationType.SESSION_KEY)
+                authTemplate = TEMPLATES_SAAS+"SessionKeyAuthenticator.java";
             if(authTemplate != null) {
                 saasAuthJS = JavaSourceHelper.createJavaSource(authTemplate,targetFolder, pkg, authFileName);
                 Set<FileObject> files = new HashSet<FileObject>(saasAuthJS.getFileObjects());
@@ -280,7 +387,41 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 }
             }
             //Also copy profile.properties
-            Util.createDataObjectFromTemplate("SaaSServices/"+getGroupName()+"/profile.properties", targetFolder, null);
+            DataObject prof = null;
+            String authProfile = getBean().getAuthenticationProfile();
+            if (authProfile != null && !authProfile.trim().equals("")) {
+                try {
+                    prof = Util.createDataObjectFromTemplate(authProfile, targetFolder, null);
+                } catch (Exception ex) {
+                    throw new IOException("Profile file specified in saas-services/service-metadata/authentication/@profile, not found: "+authProfile);
+                } 
+            } else {
+                try {
+                    prof = Util.createDataObjectFromTemplate("SaaSServices/" + getGroupName() + "/profile.properties", targetFolder, null);
+                } catch (Exception ex1) {
+                    try {
+                        prof = Util.createDataObjectFromTemplate(TEMPLATES_SAAS+getBean().getAuthenticationType().value()+".properties", targetFolder, null);
+                    } catch (Exception ex2) {//ignore
+                    }
+                } 
+            }
+            if(prof != null) {
+                EditorCookie ec = (EditorCookie) prof.getCookie(EditorCookie.class);
+                StyledDocument doc = ec.openDocument();
+                String profileText = null;
+                if(getBean().getAuthenticationType() == SaasAuthenticationType.API_KEY) {
+                    ParameterInfo p = findParameter(((ApiKeyAuthentication)getBean().getAuthentication()).getApiKeyName());
+                    if(p != null && p.getDefaultValue() != null)
+                        profileText = "api_key="+p.getDefaultValue()+"\n";
+                }
+                if(profileText != null) {
+                    try {
+                        doc.insertString(doc.getLength(), profileText, null);
+                    } catch (BadLocationException ex) {
+                        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Replacing property values failed. Try to change it manually.", ex);
+                    }
+                }
+            }
         }
     }
     
@@ -314,9 +455,9 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 String type = String.class.getName();
                 String bodyText = "{ \n" + getServiceMethodBody() + "\n }";
 
-                List<ParameterInfo> queryParams = getBean().getQueryParameters();
-                String[] parameters = getGetParamNames(queryParams);
-                Object[] paramTypes = getGetParamTypes(queryParams);
+                List<ParameterInfo> filterParams = filterParameters();
+                String[] parameters = getGetParamNames(filterParams);
+                Object[] paramTypes = getGetParamTypes(filterParams);
 
                 String comment = "Retrieves representation of an instance of " + getBean().getQualifiedClassName() + "\n";
                 for (String param : parameters) {
@@ -327,13 +468,38 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 ClassTree tree = JavaSourceHelper.addMethod(copy, initial,
                         modifiers, null, null,
                         getSaasServiceMethodName(), type, parameters, paramTypes,
-                        null, null,
+                        null, null, new String[]{"java.io.IOException"},
                         bodyText, comment);      //NOI18N
                 copy.rewrite(initial, tree);
             }
             
         });
         result.commit();
+    }
+    
+    public List<ParameterInfo> filterParameters() {
+        List<ParameterInfo> filterParams = new ArrayList<ParameterInfo>();
+        if(getBean().getInputParameters() != null) {
+            for (ParameterInfo param : getBean().getInputParameters()) {
+                if(param.isApiKey() || param.isFixed()) {
+                        continue;
+                }
+                filterParams.add(param);
+            }
+        }
+        return filterParams;
+    }
+    
+    public ParameterInfo findParameter(String name) {
+        List<ParameterInfo> params = getBean().getInputParameters();
+        if(params != null) {
+            for (ParameterInfo param : params) {
+                if(param.getName().equals(name)) {
+                    return param;
+                }
+            }
+        }
+        return null;
     }
     
     public String[] getUriParamTypes() {
@@ -345,62 +511,27 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         return types;
     }
     
-    private String[] getGetParamNames(List<ParameterInfo> queryParams) {
-        ArrayList<String> params = new ArrayList<String>();
-        params.addAll(Arrays.asList(getBean().getUriParams()));
-        params.addAll(Arrays.asList(getParamNames(queryParams)));
-        return params.toArray(new String[params.size()]);
-    }
-    
-    private String[] getGetParamTypes(List<ParameterInfo> queryParams) {
-        ArrayList<String> types = new ArrayList<String>();
-        types.addAll(Arrays.asList(getUriParamTypes()));
-        types.addAll(Arrays.asList(getParamTypeNames(queryParams)));
-        return types.toArray(new String[types.size()]);
-    }
-    
-    
-      private String[] getParamNames(List<ParameterInfo> params) {
-        List<String> results = new ArrayList<String>();
-        
-        for (ParameterInfo param : params) {
-            results.add(param.getName());
-        }
-        
-        return results.toArray(new String[results.size()]);
-    }
-    
-    private String[] getParamTypeNames(List<ParameterInfo> params) {
-        List<String> results = new ArrayList<String>();
-        
-        for (ParameterInfo param : params) {
-            results.add(param.getTypeName());
-        }
-        
-        return results.toArray(new String[results.size()]);
-    }
-    
-    protected String getQueryParameterDeclaration(List<ParameterInfo> params) {
+    protected String getHeaderOrParameterDeclaration(List<ParameterInfo> params) {
         String paramDecl = "";
         for (ParameterInfo param : params) {
-            String name = param.getName();
+            String name = getParameterName(param, true, true, true);
             String paramVal = findParamValue(param);
             if (param.getType() != String.class) {
                 paramDecl +=  "        "+param.getType().getName()+" " + name + " = " + paramVal + ";\n";
             } else {
                 if(paramVal != null)
-                    paramDecl +=  "        String " + name + " = \"" + paramVal + "\";\n";
+                    paramDecl +=  "             String " + name + " = \"" + paramVal + "\";\n";
                 else
-                    paramDecl +=  "        String " + name + " = null;\n";
+                    paramDecl +=  "             String " + name + " = null;\n";
             }
         }
         return paramDecl;
     }
     
-    protected String getQueryParameterUsage(List<ParameterInfo> params) {
+    protected String getHeaderOrParameterUsage(List<ParameterInfo> params) {
         String paramUsage = "";
         for (ParameterInfo param : params) {
-            String name = param.getName();
+            String name = getParameterName(param, true, true, true);
             paramUsage +=  name + ", ";
         }
         return paramUsage;
@@ -410,9 +541,9 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         String paramsStr = null;
         StringBuffer sb = new StringBuffer();
         for (ParameterInfo param : params) {
-            String paramName = param.getName();
+            String paramName = getParameterName(param);
             String paramVal = null;
-            if(evaluate || param.getStyle() == ParamStyle.QUERY_APIKEY) {
+            if(evaluate || param.isApiKey()) {
                 paramVal = findParamValue(param);
                 if (param.getType() != String.class) {
                     sb.append("{\"" + paramName + "\", \"" + paramVal + "\".toString()},\n");
@@ -423,7 +554,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                         sb.append("{\"" + paramName + "\", null},\n");
                 }
             } else {
-                sb.append("{\"" + paramName + "\", " + paramName + "},\n");
+                sb.append("{\"" + paramName + "\", " + getParameterName(param, true, true, true) + "},\n");
             }
         }
         paramsStr = sb.toString();
@@ -443,7 +574,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         String paramsStr = null;
         StringBuffer sb = new StringBuffer();
         for (ParameterInfo param : params) {
-            String paramName = param.getName();
+            String paramName = getParameterName(param);
             String paramVal = null;
             if(evaluate) {
                 paramVal = findParamValue(param);
@@ -473,10 +604,20 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     
     private String findParamValue(ParameterInfo param) {
         String paramVal = null;
-        if(param.getStyle() == ParamStyle.QUERY_APIKEY) {
+        if(param.isApiKey()) {
             paramVal = "\"+apiKey+\"";
+        } else if(param.getStyle() == ParamStyle.TEMPLATE) {
+            if(param.getDefaultValue() != null)
+                paramVal = param.getDefaultValue().toString();
+            else
+                paramVal = "";
+        } else if(param.getStyle() == ParamStyle.HEADER) {
+            if(param.getDefaultValue() != null)
+                paramVal = param.getDefaultValue().toString();
+            else
+                paramVal = getParameterName(param).toLowerCase();
         } else {
-            if(param.getStyle() == ParamStyle.QUERY_FIXED)
+            if(param.isFixed())
                 paramVal = param.getFixed();
             else {
                 if(param.isRequired())
@@ -488,6 +629,17 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         return paramVal;
     }
 
+    private boolean isContains(ParameterInfo pInfo, List<ParameterInfo> params) {
+        if(filterParamMap == null) {
+            filterParamMap = new HashMap<String, ParameterInfo>();
+            for(ParameterInfo p:params) {
+                filterParamMap.put(getParameterName(p, true, true, true), p);
+            }
+        }
+        return filterParamMap.containsKey(getParameterName(pInfo, true, true, true));
+            
+    }
+    
     public static final String HEADER_PARAMS = "headerParams"; // NOI18n
     public static final String QUERY_PARAMS = "queryParams"; // NOI18n
     public static final String PATH_PARAMS = "pathParams"; // NOI18n

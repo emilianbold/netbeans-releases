@@ -63,13 +63,11 @@ public class LaunchingSessionProvider extends SessionProvider {
     
     public LaunchingSessionProvider (ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
-        launchingCookie = (LaunchingDICookie) contextProvider.lookupFirst 
-            (null, LaunchingDICookie.class);
+        launchingCookie = contextProvider.lookupFirst(null, LaunchingDICookie.class);
     };
     
     public String getSessionName () {
-        Map arguments = (Map) contextProvider.lookupFirst 
-            (null, Map.class);
+        Map arguments = contextProvider.lookupFirst(null, Map.class);
         if (arguments != null) {
             String processName = (String) arguments.get ("name");
             if (processName != null)

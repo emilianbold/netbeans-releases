@@ -123,7 +123,7 @@ public class TypingInScriptingEditor extends org.netbeans.performance.test.utili
     public void test_RB_EditorTyping() {
         testProject = Projects.RUBY_PROJECT;
         fileName = "ruby20kb.rb";
-        nodePath = "Source Files"+"|"+"100RbFiles";
+        nodePath = "Source Files";
         doMeasurement();
     }
     public void test_RHTML_EditorTyping() {
