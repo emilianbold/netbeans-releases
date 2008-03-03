@@ -56,6 +56,10 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
         return txtClassName.getText();
     }
     
+    public String getConfigurationFile() {
+        return cmbResource.getSelectedItem().toString();
+    }
+    
     private SourceGroup[] getJavaSourceGroups() throws java.io.IOException {        
         if (project==null) return new SourceGroup[]{};
         Sources sources = ProjectUtils.getSources(project);

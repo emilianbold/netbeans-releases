@@ -147,7 +147,7 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
         try {
             HibernateMappingDataObject hmo = (HibernateMappingDataObject) newOne;
             hmo.addMyClass(myClass);
-            hmo.save();
+            hmo.save();            
             return Collections.singleton(hmo.getPrimaryFile());
         } catch (Exception e) {            
             return Collections.EMPTY_SET;
