@@ -361,6 +361,12 @@ public class Utils {
         JDialogOperator customizeInstallation = new JDialogOperator("Customize Installation");
         JListOperator featureList = new JListOperator(customizeInstallation);
         featureList.selectItem(name);
+
+        try {
+            java.lang.Thread.sleep(2000);
+        } catch (InterruptedException ex) {}
+
+
         featureList.pressKey(KeyEvent.VK_SPACE);
         new JButtonOperator(customizeInstallation, "OK").push();
     }

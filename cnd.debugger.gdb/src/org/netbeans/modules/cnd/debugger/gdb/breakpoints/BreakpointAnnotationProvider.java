@@ -59,6 +59,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContext;
 
+import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -168,7 +169,9 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
              (!GdbBreakpoint.PROP_CONDITION.equals(propertyName)) &&
              (!GdbBreakpoint.PROP_SKIP_COUNT.equals(propertyName)) &&
              (!GdbBreakpoint.PROP_URL.equals(propertyName)) &&
-             (!GdbBreakpoint.PROP_LINE_NUMBER.equals(propertyName))) {        
+             (!GdbBreakpoint.PROP_FUNCTION_NAME.equals(propertyName)) &&
+             (!GdbBreakpoint.PROP_LINE_NUMBER.equals(propertyName)) &&
+             (!AddressBreakpoint.PROP_REFRESH.equals(propertyName))) {
             return;
         }
         
@@ -246,17 +249,9 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             return null;
         } else if (b instanceof AddressBreakpoint) {
             AddressBreakpoint ab = (AddressBreakpoint) b;
-            String url = ab.getURL();
-            if (url.length() > 0) {
-                try {
-                    if (fo.getURL().equals(new URL(ab.getURL()))) {
-                        return new int[] { ab.getLineNumber() };
-                    }
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (FileStateInvalidException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+            Disassembly dis = Disassembly.getCurrent();
+            if (dis != null) {
+                return new int[] {dis.getAddressLine(ab.getAddress())};
             }
             return null;
         } else {

@@ -8,12 +8,12 @@ Delete:  source : <TESTURL>/class-via-function.js
 Document 1
 Indexed:
   base : doanotherthing;;doAnotherThing|DOCUMENTED|FUNCTION|;0;b9;;;
-  base : dosomething;JMaki;doSomething|DOCUMENTED|FUNCTION|;0;63;;;
+  base : dosomething;JMaki;doSomething|DOCUMENTED|FUNCTION|STATIC|;;0;63;;;
   base : jmaki;;JMaki|CONSTRUCTOR|;;0;;;;
   base : jmaki;;jmaki|GLOBAL|;;0;;;JMaki;
   clz : JMaki;88;;0;;;;
   fqn : doanotherthing;;doAnotherThing|DOCUMENTED|FUNCTION|;0;b9;;;
-  fqn : jmaki.dosomething;;JMaki.doSomething|DOCUMENTED|FUNCTION|;0;63;;;
+  fqn : jmaki.dosomething;;JMaki.doSomething|DOCUMENTED|FUNCTION|STATIC|;;0;63;;;
   fqn : jmaki;;JMaki|CONSTRUCTOR|;;0;;;;
   fqn : jmaki;;jmaki|GLOBAL|;;0;;;JMaki;
 

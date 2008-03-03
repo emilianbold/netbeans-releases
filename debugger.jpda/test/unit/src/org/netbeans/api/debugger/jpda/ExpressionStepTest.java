@@ -273,6 +273,7 @@ public class ExpressionStepTest extends NbTestCase {
     }
     
     private static EditorContext getContext () {
+        // XXX lookupFirst?
         List l = DebuggerManager.getDebuggerManager ().lookup 
             (null, EditorContext.class);
         EditorContext context = (EditorContext) l.get (0);

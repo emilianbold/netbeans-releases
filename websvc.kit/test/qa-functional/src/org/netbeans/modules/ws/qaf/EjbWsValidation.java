@@ -99,7 +99,7 @@ public class EjbWsValidation extends WsValidation {
     }
 
     /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static Test suite() {
+    public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
         suite.addTest(new EjbWsValidation("testCreateNewWs")); //NOI18N
         suite.addTest(new EjbWsValidation("testAddOperation")); //NOI18N

@@ -75,8 +75,7 @@ public class SourcePath {
 
     public SourcePath (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
-        debugger = (JPDADebugger) lookupProvider.lookupFirst 
-            (null, JPDADebugger.class);
+        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
     }
 
     public SourcePathProvider getContext () {
