@@ -784,7 +784,7 @@ public class MakeActionProvider implements ActionProvider {
         
         // Check for a valid make program
         file = new File(cs.getTool(Tool.MakeTool).getPath());
-        if (!file.exists()) {
+        if (!file.exists() && Path.findCommand(cs.getTool(Tool.MakeTool).getPath()) == null) {
             runBTA = true;
         }
         
@@ -814,10 +814,13 @@ public class MakeActionProvider implements ActionProvider {
         if (bt != null) {
             ToolsPanelModel model = new LocalToolsPanelModel();
             model.setCompilerSetName(csname);
+            model.setMakeRequired(true);
             model.setGdbRequired(false);
             model.setCRequired(cRequired);
             model.setCppRequired(cppRequired);
             model.setFortranRequired(fRequired);
+            model.setShowRequiredBuildTools(true);
+            model.setShowRequiredDebugTools(false);
             if (bt.initBuildTools(model, errs)) {
                 String name = model.getCompilerSetName();
                 conf.getCRequired().setValue(model.isCRequired());

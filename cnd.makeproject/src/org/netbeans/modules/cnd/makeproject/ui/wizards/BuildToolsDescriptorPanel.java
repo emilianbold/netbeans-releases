@@ -78,7 +78,7 @@ public class BuildToolsDescriptorPanel implements WizardDescriptor.Panel,
     public Component getComponent() {
         if (component == null) {
             ToolsPanelModel model = new LocalToolsPanelModel();
-            model.setGdbEnabled(false);
+//            model.setGdbEnabled(false);
             component = new ToolsPanel(model);
             component.addPropertyChangeListener(this);
 	    component.setName(name);
