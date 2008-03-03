@@ -91,7 +91,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
             return;
         }
         
-        if (Disassembly.isInDisasm()) {
+        if (Disassembly.isDisasm(url)) {
             Disassembly dis = Disassembly.getCurrent();
             if (dis == null) {
                 return;
@@ -111,13 +111,20 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
         d.addBreakpoint(lb);
     }
     
-    static LineBreakpoint findBreakpoint(String url, int lineNumber) {
+    static GdbBreakpoint findBreakpoint(String url, int lineNumber) {
         Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
+        Disassembly dis = Disassembly.getCurrent();
+        boolean inDis = Disassembly.isDisasm(url);
         for (Breakpoint b : breakpoints) {
             if (b instanceof LineBreakpoint) {
                 LineBreakpoint lb = (LineBreakpoint) b;
                 if (lb.getURL().equals(url) && lb.getLineNumber() == lineNumber) {
                     return lb;
+                }
+            } else if (inDis && b instanceof AddressBreakpoint && (dis != null)) {
+                AddressBreakpoint ab = (AddressBreakpoint)b;
+                if (dis.getAddressLine(ab.getAddress()) == lineNumber) {
+                    return ab;
                 }
             }
         }
