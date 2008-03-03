@@ -318,7 +318,7 @@ public class AppserverMgmtController extends AppserverMgmtControllerBase {
                 getConnectorResourceConfigByName(jmsConnFactoryName);
         String connectorPoolName = res.getPoolName();
         Map poolProps = getConnectorConnectionPoolProperties(connectorPoolName, 
-                Arrays.asList(NodeTypes.CONNECTION_FACTORY_POOL));
+                NodeTypes.getNodeProperties(NodeTypes.CONNECTION_FACTORY_POOL));
         Map factoryProps = getPropertiesFromBackend(NodeTypes.CONNECTION_FACTORY, res,
                 propsToIgnore);      
         factoryProps.putAll(poolProps);

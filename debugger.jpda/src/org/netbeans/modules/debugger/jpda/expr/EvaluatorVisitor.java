@@ -218,6 +218,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
         }
         List<? extends TypeMirror> paramTypes = null;
+        String enclosingClass = null;
         if (elm != null) {
             TypeMirror typeMirror = elm.asType();
             TypeKind kind = typeMirror.getKind();
@@ -231,6 +232,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 ExecutableType execTypeMirror = (ExecutableType) typeMirror;
                 paramTypes = execTypeMirror.getParameterTypes();
                 isStatic = methodElement.getModifiers().contains(Modifier.STATIC);
+                Element enclosing = methodElement.getEnclosingElement();
+                if (enclosing.getKind() == ElementKind.CLASS) {
+                    TypeElement enclosingClassElement = (TypeElement) enclosing;
+                    enclosingClass = ElementUtilities.getBinaryName(enclosingClassElement);
+                }
             }
         }
         
@@ -276,17 +282,26 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 type = (ReferenceType) ((ObjectReference) object).type();
             } else {
                 type = evaluationContext.getFrame().location().declaringType();
+                if (enclosingClass != null) {
+                    ReferenceType dt = findEnclosingType(type, enclosingClass);
+                    if (dt != null) type = dt;
+                }
             }
         } else {
             if (object != null) {
                 objectReference = (ObjectReference) object;
+                type = objectReference.referenceType();
             } else {
                 objectReference = evaluationContext.getFrame().thisObject();
+                type = evaluationContext.getFrame().location().declaringType();
+                if (enclosingClass != null) {
+                    ReferenceType dt = findEnclosingType(type, enclosingClass);
+                    if (dt != null) type = dt;
+                }
             }
             if (objectReference == null) {
                 Assert2.error(arg0, "methodCallOnNull", methodName);
             }
-            type = objectReference.referenceType();
         }
         ClassType cType;
         if (type instanceof ArrayType) {
@@ -1122,6 +1137,18 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (name.equals("this")) {
             return evaluationContext.getFrame().thisObject();
         }
+        if (name.equals("super")) {
+            ReferenceType thisType = evaluationContext.getFrame().location().declaringType();
+            if (thisType instanceof ClassType) {
+                ClassType superClass = ((ClassType) thisType).superclass();
+                ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+                if (thisObject == null) {
+                    return superClass;
+                } else {
+                    return thisObject;
+                }
+            }
+        }
         Field field = evaluationContext.getFrame().location().declaringType().fieldByName(name);
         if (field != null) {
             if (field.isStatic()) {
@@ -1184,16 +1211,48 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 if (fieldName.equals("this")) {
                     return evaluationContext.getFrame().thisObject();
                 }
-                Field field = evaluationContext.getFrame().location().declaringType().fieldByName(fieldName);
+                if (fieldName.equals("super")) {
+                    ReferenceType thisType = evaluationContext.getFrame().location().declaringType();
+                    if (thisType instanceof ClassType) {
+                        ClassType superClass = ((ClassType) thisType).superclass();
+                        ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+                        if (thisObject == null) {
+                            return superClass;
+                        } else {
+                            return thisObject;
+                        }
+                    }
+                }
+                Element enclosing = ve.getEnclosingElement();
+                String enclosingClass = null;
+                if (enclosing.getKind() == ElementKind.CLASS) {
+                    TypeElement enclosingClassElement = (TypeElement) enclosing;
+                    enclosingClass = ElementUtilities.getBinaryName(enclosingClassElement);
+                }
+                ReferenceType declaringType = evaluationContext.getFrame().location().declaringType();
+                if (enclosingClass != null) {
+                    ReferenceType dt = findEnclosingType(declaringType, enclosingClass);
+                    if (dt != null) declaringType = dt;
+                }
+                Field field = declaringType.fieldByName(fieldName);
                 if (field == null) {
                     Assert2.error(arg0, "unknownVariable", fieldName);
                 }
                 if (field.isStatic()) {
                     evaluationContext.getVariables().put(arg0, new VariableInfo(field));
-                    return field.declaringType().getValue(field);
+                    return declaringType.getValue(field);
                 }
                 ObjectReference thisObject = evaluationContext.getFrame().thisObject();
                 if (thisObject != null) {
+                    if (field.isPrivate()) {
+                        ObjectReference to = findEnclosedObject(thisObject, declaringType);
+                        if (to != null) thisObject = to;
+                    } else {
+                        if (!instanceOf(thisObject.referenceType(), declaringType)) {
+                            ObjectReference to = findEnclosedObject(thisObject, declaringType);
+                            if (to != null) thisObject = to;
+                        }
+                    }
                     evaluationContext.getVariables().put(arg0, new VariableInfo(field, thisObject));
                     return thisObject.getValue(field);
                 } else {
@@ -1248,6 +1307,44 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         arg0.getName();
         throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+    }
+    
+    private ReferenceType findEnclosingType(ReferenceType type, String name) {
+        if (type.name().equals(name)) {
+            return type;
+        }
+        List<ReferenceType> classes = type.virtualMachine().classesByName(name);
+        if (classes.size() == 1) {
+            return classes.get(0);
+        }
+        for (ReferenceType clazz : classes) {
+            if (isNestedOf(clazz, type)) {
+                return clazz;
+            }
+        }
+        return null;
+    }
+    
+    private boolean isNestedOf(ReferenceType nested, ReferenceType type) {
+        if (nested.equals(type)) {
+            return true;
+        }
+        for (ReferenceType n : nested.nestedTypes()) {
+            if (isNestedOf(n, type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private ObjectReference findEnclosedObject(ObjectReference object, ReferenceType type) {
+        if (object.referenceType().equals(type)) {
+            return object;
+        }
+        Field outerRef = object.referenceType().fieldByName("this$0");
+        if (outerRef == null) return null;
+        object = (ObjectReference) object.getValue(outerRef);
+        return findEnclosedObject(object, type);
     }
 
     @Override
@@ -2175,6 +2272,17 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 value = type.invokeMethod(evaluationThread, method, argVals,
                                           ObjectReference.INVOKE_SINGLE_THREADED);
             } else {
+                if (type != null) {
+                    if (method.isPrivate()) {
+                        ObjectReference to = findEnclosedObject(objectReference, type);
+                        if (to != null) objectReference = to;
+                    } else {
+                        if (!instanceOf(objectReference.referenceType(), type)) {
+                            ObjectReference to = findEnclosedObject(objectReference, type);
+                            if (to != null) objectReference = to;
+                        }
+                    }
+                }
                 value = objectReference.invokeMethod(evaluationThread, method,
                                                      argVals,
                                                      ObjectReference.INVOKE_SINGLE_THREADED);

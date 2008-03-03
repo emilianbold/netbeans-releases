@@ -74,6 +74,8 @@ import org.netbeans.modules.autoupdate.ui.UnitCategory;
 import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizardModel;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -348,11 +350,32 @@ public class AutoupdateCheckScheduler {
             @SuppressWarnings("unchecked")
             public void run () {
                 boolean wizardFinished = false;
+                RequestProcessor.Task t = PluginManagerUI.getRunningTask ();
+                if (t != null && ! t.isFinished ()) {
+                    DialogDisplayer.getDefault ().notifyLater (
+                            new NotifyDescriptor.Message (
+                                NbBundle.getMessage (AutoupdateCheckScheduler.class,
+                                    "AutoupdateCheckScheduler_InstallInProgress"), // NOI18N
+                                NotifyDescriptor.WARNING_MESSAGE));
+                    return ;
+                }
                 try {
                     OperationContainer oc = OperationType.UPDATE == type ?
                         OperationContainer.createForUpdate() :
                         OperationContainer.createForInstall();
-                    oc.add (elems);
+                    boolean allOk = true;
+                    for (UpdateElement el : elems) {
+                        allOk &= oc.canBeAdded (el.getUpdateUnit (), el);
+                    }
+                    if (allOk) {
+                        oc.add (elems);
+                    } else {
+                        if (flasher != null) {
+                            flasher.disappear ();
+                        }
+                        BalloonManager.dismiss ();
+                        return ;
+                    }
                     wizardFinished = new InstallUnitWizard ().invokeWizard (new InstallUnitWizardModel (type, oc));
                 } finally {
                     if (wizardFinished) {
