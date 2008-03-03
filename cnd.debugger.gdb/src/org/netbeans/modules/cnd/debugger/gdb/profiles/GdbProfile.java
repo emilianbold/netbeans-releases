@@ -149,17 +149,24 @@ public class GdbProfile implements ConfigurationAuxObject {
             File gdbFile = new File(gdbPath);
             if (gdbFile.exists() && !gdbFile.isDirectory())
                 return gdbPath;
+            // Try from user's PATH (if user specified just debugger name (gdb) in tools setup)
+            String fromUsersPath = Path.findCommand(gdbPath);
+            if (fromUsersPath != null)
+                return fromUsersPath;
         }
         
         // No debugger in cs and non-absolute name in project. So post a Build Tools window and
         // force the user to add a directory with gdb or cancel
         ToolsPanelModel model = new LocalToolsPanelModel();
 //        model.setGdbName(name);
-        model.setGdbRequired(true);
-        model.setGdbEnabled(true);
+//        model.setGdbEnabled(true);
         model.setCRequired(false);
         model.setCppRequired(false);
         model.setFortranRequired(false);
+        model.setMakeRequired(false);
+        model.setGdbRequired(true);
+        model.setShowRequiredBuildTools(false);
+        model.setShowRequiredDebugTools(true);
         BuildToolsAction bt = (BuildToolsAction) SystemAction.get(BuildToolsAction.class);
         bt.setTitle(NbBundle.getMessage(GdbProfile.class, "LBL_ResolveMissingGdb_Title")); // NOI18N
         if (bt.initBuildTools(model, new ArrayList())) {
@@ -226,7 +233,7 @@ public class GdbProfile implements ConfigurationAuxObject {
 ////            if (!name.equals(model.getGdbName())) {
 ////                setGdbCommand(model.getGdbName());
 ////            }
-//            return "/xyz/gdb"; // FIXUP //model.getGdbPath();
+//            return model.getGdbPath();
 //        } else {
 //            return null;
 //        }
