@@ -63,8 +63,7 @@ public class WatchesTreeModel implements TreeModel, Constants {
             final ContextProvider contextProvider) {
         
         myContextProvider = contextProvider;
-        myDebugger = (BpelDebugger) 
-                contextProvider.lookupFirst(null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
         myHelper = new Util(myDebugger);
     }
     

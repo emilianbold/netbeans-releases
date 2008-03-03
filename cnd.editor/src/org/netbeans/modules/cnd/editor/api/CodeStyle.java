@@ -104,6 +104,10 @@ public final class CodeStyle {
         return EditorOptions.getGlobalIndentSize(language);
     }
 
+    public int getGlobalTabSize() {
+        return EditorOptions.getGlobalTabSize(language);
+    }
+
     
     // General tabs and indents ------------------------------------------------
     public boolean spaceBeforeMethodDeclParen() {

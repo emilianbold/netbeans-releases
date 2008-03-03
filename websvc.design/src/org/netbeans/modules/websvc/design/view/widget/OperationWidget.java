@@ -250,6 +250,11 @@ public class OperationWidget extends AbstractTitledWidget {
             getHeaderWidget().addChild(getExpanderWidget());
         }
         super.collapseWidget();
+        // set this operation as selected and focused
+        if(hashKey()!=null) {
+            getObjectScene().setSelectedObjects(Collections.singleton(hashKey()));
+            getObjectScene().setFocusedObject(hashKey());
+        }
     }
 
     protected void expandWidget() {
@@ -260,6 +265,11 @@ public class OperationWidget extends AbstractTitledWidget {
             getHeaderWidget().addChild(buttons);
         }
         super.expandWidget();
+        // set this operation as selected and focused
+        if(hashKey()!=null) {
+            getObjectScene().setSelectedObjects(Collections.singleton(hashKey()));
+            getObjectScene().setFocusedObject(hashKey());
+        }
     }
 
     public Object hashKey() {

@@ -218,6 +218,12 @@ public class CloneAction extends ContextAction {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
                 }finally {
+                    //#121581: Work around for ini4j bug on Windows not handling single '\' correctly
+                    // hg clone creates the default hgrc, we just overwrite it's contents with 
+                    // default path contianing '\\'
+                    if(isLocalClone && Utilities.isWindows()){ 
+                        fixLocalPullPushPathsOnWindows(cloneFolder.getAbsolutePath());
+                    }
                     // #125835 - Push to default was not being set automatically by hg after Clone
                     // but was after you opened the Mercurial -> Properties, inconsistent
                     HgConfigFiles hg = new HgConfigFiles(cloneFolder);
@@ -228,12 +234,6 @@ public class CloneAction extends ContextAction {
                     hg.setProperty(HgProperties.HGPROPNAME_DEFAULT_PULL, defaultPull);
                     hg.setProperty(HgProperties.HGPROPNAME_DEFAULT_PUSH, defaultPush);
                         
-                    //#121581: Work around for ini4j bug on Windows not handling single '\' correctly
-                    // hg clone creates the default hgrc, we just overwrite it's contents with 
-                    // default path contianing '\\'
-                    if(isLocalClone && Utilities.isWindows()){ 
-                        fixLocalPullPushPathsOnWindows(cloneFolder.getAbsolutePath(), defaultPull, defaultPush);
-                    }
                     if(!isLocalClone){
                         logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
                         logger.output(""); // NOI18N
@@ -264,7 +264,7 @@ public class CloneAction extends ContextAction {
     }
    
     private static final String HG_PATHS_SECTION_ENCLOSED = "[" + HgConfigFiles.HG_PATHS_SECTION + "]";// NOI18N
-    private static void fixLocalPullPushPathsOnWindows(String root, String defaultPull, String defaultPush) {
+    private static void fixLocalPullPushPathsOnWindows(String root) {
         File hgrcFile = null;
         File tempFile = null;
         BufferedReader br = null;
@@ -274,9 +274,6 @@ public class CloneAction extends ContextAction {
             hgrcFile = new File(root + File.separator + HgConfigFiles.HG_REPO_DIR, HgConfigFiles.HG_RC_FILE);
             if (!hgrcFile.isFile() || !hgrcFile.canWrite()) return;
             
-            String defaultPullWinStr = HgConfigFiles.HG_DEFAULT_PULL_VALUE + " = " + defaultPull.replace("\\", "\\\\") + "\n"; // NOI18N
-            String defaultPushWinStr = HgConfigFiles.HG_DEFAULT_PUSH_VALUE + " = " + defaultPush.replace("\\", "\\\\") + "\n"; // NOI18N
-
             tempFile = new File(hgrcFile.getAbsolutePath() + ".tmp"); // NOI18N
             if (tempFile == null) return;
             
@@ -296,14 +293,14 @@ public class CloneAction extends ContextAction {
                 }
 
                 if (bInPaths && !bPullDone && line.startsWith(HgConfigFiles.HG_DEFAULT_PULL_VALUE) && 
-                        !line.startsWith(HgConfigFiles.HG_DEFAULT_PUSH_VALUE)) {
-                    pw.println(defaultPullWinStr);
+                        !line.startsWith(HgConfigFiles.HG_DEFAULT_PUSH_VALUE)) {                    
+                    pw.println(line.replace("\\", "\\\\"));
                     bPullDone = true;
                 } else if (bInPaths && !bPullDone && line.startsWith(HgConfigFiles.HG_DEFAULT_PULL)) {
-                    pw.println(defaultPullWinStr);
+                    pw.println(line.replace("\\", "\\\\"));
                     bPullDone = true;
                 } else if (bInPaths && !bPushDone && line.startsWith(HgConfigFiles.HG_DEFAULT_PUSH_VALUE)) {
-                    pw.println(defaultPushWinStr);
+                    pw.println(line.replace("\\", "\\\\"));
                     bPushDone = true;
                 } else {
                     pw.println(line);

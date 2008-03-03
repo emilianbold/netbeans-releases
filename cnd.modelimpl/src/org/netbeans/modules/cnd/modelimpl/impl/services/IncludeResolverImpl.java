@@ -169,16 +169,16 @@ public class IncludeResolverImpl extends CsmIncludeResolver {
         return ""; // NOI18N
     }
 
-    HashSet<String> standardHeaders;
+    private HashSet<String> standardHeaders;
     
     // Says is header standard or not
-    boolean isStandardHeader(List<String> sysIncsPaths, CsmFile header) {
+    private boolean isStandardHeader(List<String> sysIncsPaths, CsmFile header) {
         String bestSystemPath = getRelativePath(sysIncsPaths, header.getAbsolutePath().toString());
         return standardHeaders.contains(header.getAbsolutePath().toString().substring(bestSystemPath.length() + 1));
     }
     
     // Returns standard header if it exists
-    CsmFile getStandardHeaderIfExists(CsmFile currentFile, List<String> sysIncsPaths, CsmFile file, HashSet<CsmFile> scannedFiles) {
+    private CsmFile getStandardHeaderIfExists(CsmFile currentFile, List<String> sysIncsPaths, CsmFile file, HashSet<CsmFile> scannedFiles) {
         if (scannedFiles.contains(file) || !isSystemHeader(currentFile, file)) {
             return null;
         }

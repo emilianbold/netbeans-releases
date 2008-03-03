@@ -131,8 +131,8 @@ public class JBIComponentInstallationConfigurationDialog
             JBIComponentConfigurationDescriptor configDescriptor, 
             Properties properties) {
 
-        if (configDescriptor.isApplicationConfiguration() ||
-                configDescriptor.isApplicationVariable()) {
+        if (configDescriptor instanceof JBIComponentConfigurationDescriptor.ApplicationConfiguration ||
+                configDescriptor instanceof JBIComponentConfigurationDescriptor.ApplicationVariable) {
             // do nothing
         } else if (configDescriptor.isProperty()) {
 

@@ -352,8 +352,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
             if (getInsertPrefix().length() == 0) {
                 return;
             }
-            Completion.get().hideDocumentation();
-            Completion.get().hideCompletion();
+            Completion.get().hideAll();
             int caretOffset = component.getSelectionEnd();
             substituteText(component, substitutionOffset, caretOffset - substitutionOffset, null);
         }
@@ -366,8 +365,8 @@ public abstract class GsfCompletionItem implements CompletionItem {
                 case ',':
                 case '(':
                 case '.':
-                    Completion.get().hideDocumentation();
-                    Completion.get().hideCompletion();
+                case '\n':
+                    Completion.get().hideAll();
 //                case '.':
 //                    JTextComponent component = (JTextComponent)evt.getSource();
 //                    int caretOffset = component.getSelectionEnd();

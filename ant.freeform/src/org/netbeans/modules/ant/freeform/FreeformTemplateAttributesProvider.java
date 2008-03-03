@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.Map;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -63,16 +64,18 @@ import org.w3c.dom.Element;
 public class FreeformTemplateAttributesProvider implements CreateFromTemplateAttributesProvider {
     
     private final AntProjectHelper helper;
+    private final PropertyEvaluator evaluator;
     
-    public FreeformTemplateAttributesProvider(AntProjectHelper helper) {
+    public FreeformTemplateAttributesProvider(AntProjectHelper helper, PropertyEvaluator eval) {
         this.helper = helper;
+        this.evaluator = eval;
     }
     
     public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
         Element primData = Util.getPrimaryConfigurationData(helper);
         Element licenseEl = Util.findElement(primData, "project-license", Util.NAMESPACE); // NOI18N
         if (licenseEl != null) {
-            return Collections.singletonMap("project", Collections.singletonMap("license", Util.findText(licenseEl))); // NOI18N
+            return Collections.singletonMap("project", Collections.singletonMap("license", evaluator.evaluate(Util.findText(licenseEl)))); // NOI18N
         } else {
             return null;
         }
