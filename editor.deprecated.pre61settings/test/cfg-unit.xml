@@ -57,8 +57,7 @@ made subject to such option by the copyright holder.
     <testbag testattribs="stable" executor="code" name="pre61settings">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/modules/editor/openide/*Test.class"/>
-                <include name="org/netbeans/modules/editor/options/*Test.class"/>
+                <include name="**/*Test.class"/>
             </patternset>
         </testset>
     </testbag>

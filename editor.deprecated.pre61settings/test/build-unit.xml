@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 <project name="editor/deprecated/pre61settings/test-unit" basedir="." default="all">
 
     <!-- Imports default default-compiler and run-unit-test executor. -->
-    <import file="../../../../nbbuild/templates/xtest-unit.xml"/>
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
 
     <!-- ========= -->
     <!-- Compilers -->
@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
               because inheritAll="false" doesn't work for all properties. -->
         <java classname="org.apache.tools.ant.Main" classpath="${java.class.path}" fork="true">
             <arg value="-f"/>
-            <arg value="../../../../openide/text/test/build.xml"/>
+            <arg value="../../openide/text/test/build.xml"/>
             <arg value="-Dxtest.testtype=${xtest.testtype}"/>
             <arg value="-Dxtest.attribs=${xtest.attribs}"/>
             <arg value="buildtests"/>
