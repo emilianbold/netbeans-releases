@@ -191,8 +191,6 @@
         <folder name="application">
             <folder name="x-gsp">
                 <attr name="displayName" stringvalue="GSP"/>
-                <!-- Use Schliemann instead of the custom GSF editor kit -->
-                <attr name="useCustomEditorKit" boolvalue="true"/>
                 
                 <file name="language.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.GsfLanguage"/>
