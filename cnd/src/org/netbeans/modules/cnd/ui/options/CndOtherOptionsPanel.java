@@ -54,12 +54,12 @@ import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.jdesktop.layout.GroupLayout;
+import org.netbeans.modules.cnd.editor.filecreation.CndExtensionList;
 import org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions;
 import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.loaders.ExtensionList;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -317,10 +317,7 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
         }
 
         public void apply() {
-            ExtensionList el = new ExtensionList();
-            for (String string : list) {
-                el.addExtension(string);
-            }
+            CndExtensionList el = new CndExtensionList(getValues());
 
             es.setExtensionList(el);
             es.setDefaultExtension(defaultValue);

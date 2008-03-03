@@ -45,8 +45,8 @@
                       </Group>
                       <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="dispatcherNameText" pref="471" max="32767" attributes="0"/>
-                          <Component id="dispatcherMappingText" alignment="0" pref="471" max="32767" attributes="0"/>
+                          <Component id="dispatcherNameText" pref="437" max="32767" attributes="0"/>
+                          <Component id="dispatcherMappingText" alignment="0" pref="437" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -112,7 +112,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="includeJstlCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="506" max="32767" attributes="0"/>
+                      <EmptySpace pref="488" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -121,7 +121,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
                       <Component id="includeJstlCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="351" max="32767" attributes="0"/>
+                      <EmptySpace pref="352" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

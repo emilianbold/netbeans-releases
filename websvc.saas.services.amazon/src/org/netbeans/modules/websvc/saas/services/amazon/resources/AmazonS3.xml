@@ -61,7 +61,7 @@
         <group name="Amazon">
         </group>
 
-        <authentication profile="Templates/WebServices/profile.properties">
+        <authentication profile="SaaSServices/Amazon/profile.properties">
             <api-key id="dev_id"/>
         </authentication>
 

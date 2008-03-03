@@ -86,7 +86,7 @@ public class BreakpointOutput extends LazyActionsManagerListener
     
     public BreakpointOutput(ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
-        this.debugger = (GdbDebugger) contextProvider.lookupFirst(null, GdbDebugger.class);
+        this.debugger = contextProvider.lookupFirst(null, GdbDebugger.class);
         debugger.addPropertyChangeListener(GdbDebugger.PROP_STATE, this);
         hookBreakpoints();
         DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_BREAKPOINTS, this);

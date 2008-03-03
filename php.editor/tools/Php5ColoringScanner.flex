@@ -805,6 +805,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 //<ST_PHP_COMMENT>((.|[\r\n])*\*[/])?? {
 //<ST_PHP_COMMENT>([^*]|[\r\n]|(\*([^/]|[\r\n])))*\*[/] {
 //<ST_PHP_COMMENT> ([/][*][.]*?[*][/])|([/][*][.]*) {
+//<ST_PHP_COMMENT>[^*]+ {
     int len = yylength();
     
     if (len > 1 && (yycharat(len-2) == '*') && (yycharat(len-1) == '/')) {

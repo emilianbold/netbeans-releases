@@ -98,11 +98,11 @@ public class ScriptingCodeCompletionInEditor extends org.netbeans.performance.te
     }
     
     private void setCompletionForMeasureOn() {
-        
+        repaintManager().addRegionFilter(COMPLETION_FILTER);
     }
     
     private void setCompletionForMeasuringOff() {
-        
+        repaintManager().resetRegionFilters();        
     }
     @Override
     public void prepare() {

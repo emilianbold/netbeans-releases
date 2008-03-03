@@ -159,7 +159,10 @@ public class CompilerSet {
         NbBundle.getMessage(CompilerSet.class, "LBL_NoCCompiler"), // NOI18N
         NbBundle.getMessage(CompilerSet.class, "LBL_NoCppCompiler"), // NOI18N
         NbBundle.getMessage(CompilerSet.class, "LBL_NoFortranCompiler"), // NOI18N
-        NbBundle.getMessage(CompilerSet.class, "LBL_NoCustomBuildTool") // NOI18N
+        NbBundle.getMessage(CompilerSet.class, "LBL_NoCustomBuildTool"), // NOI18N
+        NbBundle.getMessage(CompilerSet.class, "LBL_NoAssembler"), // NOI18N
+        NbBundle.getMessage(CompilerSet.class, "LBL_NoMakeTool"), // NOI18N
+        NbBundle.getMessage(CompilerSet.class, "LBL_NoDebuggerTool") // NOI18N
     };
     
     /** Creates a new instance of CompilerSet */
@@ -343,11 +346,11 @@ public class CompilerSet {
         
         label.append(flavor);
         label.append("CompilerSet_"); // NOI18N
-        if (isMissing) {
-            label.append("Missing"); // NOI18N
-        } else {
+//        if (isMissing) {
+//            label.append("Missing"); // NOI18N
+//        } else {
             label.append(id == 0 ? "0" : "X"); // NOI18N
-        }
+//        }
         return NbBundle.getMessage(CompilerSet.class, label.toString(), Integer.valueOf(id));
     }
     
@@ -477,6 +480,12 @@ public class CompilerSet {
         return tool;
     }
     
+    public Tool addNewTool(String name, String path, int kind) {
+        Tool tool = compilerProvider.createCompiler(flavor, kind, name, Tool.getToolDisplayName(kind), path);
+        tools.add(tool);
+        return tool;
+    }
+    
     public void removeTool(String name, String path, int kind) {
         for (Tool tool : tools) {
             if (tool.getName().equals(name) && tool.getPath().equals(path) && tool.getKind() == kind) {
@@ -539,9 +548,31 @@ public class CompilerSet {
             if (tool.getKind() == kind)
                 return tool;
         }
-        Tool t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], ""); // NOI18N
+        Tool t;
+        if (kind == Tool.MakeTool || kind == Tool.DebuggerTool) {
+            // Fixup: all tools should go here ....
+            t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", Tool.getToolDisplayName(kind), "");
+        }
+        else {
+            t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], ""); // NOI18N
+        }
         tools.add(t);
         return t;
+    }
+    
+    
+    /**
+     * Get the first tool of its kind.
+     *
+     * @param kind The type of tool to get
+     * @return The Tool or null
+     */
+    public Tool findTool(int kind) {
+        for (Tool tool : tools) {
+            if (tool.getKind() == kind)
+                return tool;
+        }
+        return null;
     }
     
     public boolean isValid() {
@@ -555,29 +586,33 @@ public class CompilerSet {
     public List<Tool> getTools() {
         return tools;
     }
-    
-    public String[] getToolGenericNames() {
-        ArrayList names = new ArrayList();
-        
-        for (Tool tool : tools) {
-            if (tool.getKind() == Tool.FortranCompiler && !CppSettings.getDefault().isFortranEnabled())
-                continue;
-            names.add(tool.getGenericName());
-        }
-        return (String[])names.toArray(new String[names.size()]);
-    }
-
-    public int getToolKind(String genericName) {
-        int kind = -1;
-        for (int i = 0; i < tools.size(); i++) {
-            Tool tool = tools.get(i);
-            if (tools.get(i).getGenericName().equals(genericName)) {
-                kind = tools.get(i).getKind();
-                break;
-            }
-        }
-        return kind;
-    }
+//    
+//    public String[] getToolGenericNames() {
+//        ArrayList names = new ArrayList();
+//        
+//        for (Tool tool : tools) {
+//            if (tool.getKind() == Tool.Assembler ||
+//                tool.getKind() == Tool.CCCompiler ||
+//                tool.getKind() == Tool.CCompiler ||
+//                tool.getKind() == Tool.CustomTool ||
+//                (tool.getKind() == Tool.FortranCompiler && !CppSettings.getDefault().isFortranEnabled())
+//                )
+//                names.add(tool.getGenericName());
+//        }
+//        return (String[])names.toArray(new String[names.size()]);
+//    }
+//
+//    public int getToolKind(String genericName) {
+//        int kind = -1;
+//        for (int i = 0; i < tools.size(); i++) {
+//            Tool tool = tools.get(i);
+//            if (tools.get(i).getGenericName().equals(genericName)) {
+//                kind = tools.get(i).getKind();
+//                break;
+//            }
+//        }
+//        return kind;
+//    }
     
     public String getDynamicLibrarySearchOption() {
         return dynamicLibrarySearchOption;

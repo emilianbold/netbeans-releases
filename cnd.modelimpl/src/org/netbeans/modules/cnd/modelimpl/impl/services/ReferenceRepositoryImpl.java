@@ -275,7 +275,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
             if (kinds == CsmReferenceKind.ALL) {
                 accept = true;
             } else { 
-                CsmReferenceKind kind = CsmReferenceResolver.getDefault().getReferenceKind(ref, targetDecl, targetDef);
+                CsmReferenceKind kind = ref.getKind();
                 accept = kinds.contains(kind);
             }
         }
