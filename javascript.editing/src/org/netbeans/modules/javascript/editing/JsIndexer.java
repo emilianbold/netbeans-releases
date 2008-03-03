@@ -105,7 +105,6 @@ public class JsIndexer implements Indexer {
 
     static final String FIELD_FQN = "fqn"; //NOI18N
     static final String FIELD_BASE = "base"; //NOI18N
-    static final String FIELD_BASE_LOWER = "lcbase"; //NOI18N   TODO - no longer necessary?
     static final String FIELD_EXTEND = "extend"; //NOI18N
     static final String FIELD_CLASS = "clz"; //NOI18N
     
@@ -159,7 +158,7 @@ public class JsIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "6.110"; // NOI18N
+        return "6.111"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -224,6 +223,8 @@ public class JsIndexer implements Indexer {
                     }
                 } else if (childKind == ElementKind.GLOBAL || childKind == ElementKind.PROPERTY) {
                     indexFuncOrProperty(child, document, computeSignature(child));
+                } else if (childKind == ElementKind.CLASS) {
+                    // Nothing to be stored; inferred from methods or properties  
                 } else {
                     assert false : childKind;
                 }
@@ -358,19 +359,6 @@ public class JsIndexer implements Indexer {
             base.append(signature);
             document.addPair(FIELD_BASE, base.toString(), true);
             
-            StringBuilder lcbase = new StringBuilder();
-            lcbase.append(name.toLowerCase());
-            lcbase.append(';');
-            if (in != null) {
-                lcbase.append(in);
-                //sb.append(in.toLowerCase());
-            }
-            lcbase.append(';');
-            lcbase.append(name);
-            lcbase.append(';');
-            lcbase.append(signature);
-            document.addPair(FIELD_BASE_LOWER, lcbase.toString(), true);
-            
             StringBuilder fqn = new StringBuilder();
             if (in != null && in.length() > 0) {
                 fqn.append(in.toLowerCase());
@@ -392,6 +380,9 @@ public class JsIndexer implements Indexer {
         private int getDocumentationOffset(AstElement element) {
             int offset = element.getNode().getSourceStart();
             try {
+                if (offset > doc.getLength()) {
+                    return -1;
+                }
                 offset = Utilities.getRowStart(doc, offset);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);

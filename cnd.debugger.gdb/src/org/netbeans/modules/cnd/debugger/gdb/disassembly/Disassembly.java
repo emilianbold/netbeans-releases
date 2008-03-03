@@ -44,7 +44,9 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -56,10 +58,10 @@ import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointAnnotationListener;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -70,10 +72,14 @@ import org.openide.text.DataEditorSupport;
  * @author eu155513
  */
 public class Disassembly implements PropertyChangeListener, DocumentListener {
+    private final GdbDebugger debugger;
+    
     private final List<Line> lines = new ArrayList<Line>();
     private static String functionName = "";
-    private final GdbDebugger debugger;
     private CallStackFrame lastFrame = null;
+    
+    private final Map<Integer,String> regNames = new HashMap<Integer,String>();
+    private final Map<Integer,String> regValues = new HashMap<Integer,String>();
 
     private static final String ADDRESS_HEADER="address"; // NOI18N
     private static final String FUNCTION_HEADER="func-name"; // NOI18N
@@ -81,13 +87,15 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     private static final String INSTR_HEADER="inst"; // NOI18N
     private static final String LINE_HEADER="line"; // NOI18N
     private static final String FILE_HEADER="file"; // NOI18N
+    private static final String NUMBER_HEADER="number"; // NOI18N
+    private static final String VALUE_HEADER="value"; // NOI18N
     
+    public static final String REGISTER_NAMES_HEADER="^done,register-names=["; // NOI18N
+    public static final String REGISTER_VALUES_HEADER="^done,register-values=["; // NOI18N
     public static final String RESPONSE_HEADER="^done,asm_insns=["; // NOI18N
     private static final String COMBINED_HEADER="src_and_asm_line={"; // NOI18N
     
     private static FileObject fo = null;
-    
-    private BreakpointAnnotationListener breakAnnotationListener = null;
     
     public Disassembly(GdbDebugger debugger) {
         this.debugger = debugger;
@@ -173,6 +181,47 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             }
         }
     }
+    
+    public void updateRegNames(String msg) {
+        assert msg.startsWith(REGISTER_NAMES_HEADER) : "Invalid asm response message"; // NOI18N
+        regNames.clear();
+        int idx = 0;
+        int pos = REGISTER_NAMES_HEADER.length();
+        while (pos != -1) {
+            int end = msg.indexOf("\"", pos+1); // NOI18N
+            if (end == -1) {
+                break;
+            }
+            String value = msg.substring(pos+1, end);
+            regNames.put(idx++, value);
+            pos = msg.indexOf("\"", end+1); // NOI18N
+        }
+    }
+    
+    public void updateRegValues(String msg) {
+        assert msg.startsWith(REGISTER_VALUES_HEADER) : "Invalid asm response message"; // NOI18N
+        regValues.clear();
+        int pos = msg.indexOf(NUMBER_HEADER);
+        while (pos != -1) {
+            String idx = readValue(NUMBER_HEADER, msg, pos);
+            String value = readValue(VALUE_HEADER, msg, pos);
+            try {
+                regValues.put(Integer.valueOf(idx), value);
+            } catch (NumberFormatException nfe) {
+                // do nothing
+            }
+            pos = msg.indexOf(NUMBER_HEADER, pos+1);
+        }
+        RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
+    }
+
+    public Map<String, String> getRegisterValues() {
+        Map<String,String> res = new HashMap<String,String>();
+        for (Integer idx : regValues.keySet()) {
+            res.put(regNames.get(idx), regValues.get(idx));
+        }
+        return res;
+    }
 
     public void changedUpdate(DocumentEvent e) {
     }
@@ -245,7 +294,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         if (currentEngine == null) {
             return null;
         }
-        GdbDebugger debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
+        GdbDebugger debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
         if (debugger == null) {
             return null;
         }
@@ -335,6 +384,16 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             return dobj.equals(DataObject.find(getFileObject()));
         } catch(DataObjectNotFoundException doe) {
             doe.printStackTrace();
+        }
+        return false;
+    }
+    
+    public static boolean isDisasm(String url) {
+        //TODO: optimize
+        try {
+            return getFileObject().getURL().toString().equals(url);
+        } catch (FileStateInvalidException fsi) {
+            fsi.printStackTrace();
         }
         return false;
     }

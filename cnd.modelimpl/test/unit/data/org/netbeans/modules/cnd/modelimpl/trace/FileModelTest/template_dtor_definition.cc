@@ -17,13 +17,13 @@ template<class T> Cls_2<T>::~Cls_2() {
 }
 
 
-template<class T> class Outer {
+template<class T> class Outer1 {
 	struct Inner {
 		~Inner();
 	};
 
 };
 
-template<class T> Outer<T>::Inner::~Inner() { 
+template<class T> Outer1<T>::Inner::~Inner() { 
 }
 

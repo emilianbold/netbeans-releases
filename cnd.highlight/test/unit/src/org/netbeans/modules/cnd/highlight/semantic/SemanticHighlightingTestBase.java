@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.io.File;
-import java.util.List;
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
@@ -57,7 +57,7 @@ public abstract class SemanticHighlightingTestBase  extends TraceModelTestBase {
         super(name);
     }
     
-    protected abstract List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset);
+    protected abstract Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset);
     
     protected @Override void postTest(String[] args, Object... params) {
         FileImpl file = getFileImpl(new File(args[0]));
@@ -65,7 +65,7 @@ public abstract class SemanticHighlightingTestBase  extends TraceModelTestBase {
         if (params != null && params.length > 0) {
             offset = params[0] instanceof Integer ? (Integer)params[0] : -1;
         }
-        List<? extends CsmOffsetable> out = getBlocks(file, offset);
+        Collection<? extends CsmOffsetable> out = getBlocks(file, offset);
         assert out != null;
         int i = 1;
         for (CsmOffsetable b : out) {

@@ -91,7 +91,7 @@ public class VWPMeasureActions  {
         suite.addTest(new CleanAndBuildProject("testCleanAndBuildMultipleOpenedPagesProject","CnB project with two opened pages"));
         
         suite.addTest(new PageSwitchTest("testPageSwitch"));
-        
+        suite.addTest(new ViewSwitchTest("doMeasurement","Test view switch time"));
         suite.addTest(new CreateWebPackProject("testCreateWebPackProject","Create Visual Web Project"));        
         
         return suite;

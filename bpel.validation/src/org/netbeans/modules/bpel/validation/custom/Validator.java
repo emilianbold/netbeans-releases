@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.bpel.validation.custom;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
@@ -59,6 +58,7 @@ import org.netbeans.modules.bpel.model.api.Correlation;
 import org.netbeans.modules.bpel.model.api.CorrelationContainer;
 import org.netbeans.modules.bpel.model.api.CorrelationsHolder;
 import org.netbeans.modules.bpel.model.api.CorrelationSet;
+import org.netbeans.modules.bpel.model.api.CreateInstanceActivity;
 import org.netbeans.modules.bpel.model.api.Else;
 import org.netbeans.modules.bpel.model.api.ElseIf;
 import org.netbeans.modules.bpel.model.api.EventHandlers;
@@ -98,7 +98,7 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  */
 public final class Validator extends BpelValidator {
 
-  public Validator() {
+  protected void init() {
     myErrored = new ArrayList<Component>();
   }
 
@@ -569,6 +569,37 @@ public final class Validator extends BpelValidator {
     return false;
   }
   
+  // # 90125
+  @Override
+  public void visit(CorrelationContainer container) {
+//out();
+//out("see container: " + container + " " + container.getParent());
+//out();
+    Component parent = container.getParent();
+
+    if ( !(parent instanceof CreateInstanceActivity)) {
+      return;
+    }
+    CreateInstanceActivity activity = (CreateInstanceActivity) parent;
+
+    if ( !isCreateInstanceYes(activity)) {
+      return;
+    }
+    Correlation [] correlations = container.getCorrelations();
+
+    if (correlations == null) {
+      return;
+    }
+    for (Correlation correlation : correlations) {
+      Initiate initiate = correlation.getInitiate();
+
+      if (initiate != Initiate.NO) {
+        return;
+      }
+    }
+    addError("FIX_Activity_with_Correlation", parent); // NOI18N
+  }
+  
   @Override
   public void visit(Reply reply) {
       super.visit(reply);
@@ -596,6 +627,8 @@ public final class Validator extends BpelValidator {
       return;
     }
     if (isValidationComplete()) {
+//out();
+//out("Vadlidate model: " + model);
       validate(model);
     }
   }

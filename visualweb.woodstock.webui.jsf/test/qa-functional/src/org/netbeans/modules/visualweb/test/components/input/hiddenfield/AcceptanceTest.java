@@ -449,7 +449,7 @@ public class AcceptanceTest extends RaveTestCase {
         String code = "staticText1.setValue(textField4.getValue());\n";
         EditorOperator editor = new EditorOperator(Util.getMainWindow(), _page1);
         editor.requestFocus();
-        editor.txtEditorPane().typeText("staticText1.setValue(textField4.getValue());\n");
+        editor.txtEditorPane().setText("staticText1.setValue(textField4.getValue());\n");
         try { Thread.sleep(2000); } catch(Exception e) {}
         designer.switchToDesignerPane();
  */
@@ -645,12 +645,12 @@ public class AcceptanceTest extends RaveTestCase {
 //For some reason, doing all of them at once doesn't work
 //        String code = code1 + code2 + code3 + code4 + code5 + code6;
         EditorOperator editor = new EditorOperator(Util.getMainWindow(), _page1);
-        editor.txtEditorPane().typeText(code1);
-        editor.txtEditorPane().typeText(code2);
-        editor.txtEditorPane().typeText(code3);
-        editor.txtEditorPane().typeText(code4);
-        editor.txtEditorPane().typeText(code5);
-        editor.txtEditorPane().typeText(code6);
+        editor.txtEditorPane().setText(code1);
+        editor.txtEditorPane().setText(code2);
+        editor.txtEditorPane().setText(code3);
+        editor.txtEditorPane().setText(code4);
+        editor.txtEditorPane().setText(code5);
+        editor.txtEditorPane().setText(code6);
         
         log("**Go back to designer");
         try { Thread.sleep(3000); } catch(Exception e) {}

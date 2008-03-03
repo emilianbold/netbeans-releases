@@ -89,17 +89,22 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         String paramUse = "";
         String paramDecl = "";
         
-        //Evaluate query parameters
+        //Evaluate parameters (query(not fixed or apikey), header, template,...)
         List<ParameterInfo> filterParams = filterParameters();
-        paramUse += getQueryParameterUsage(filterParams);
-        paramDecl += getQueryParameterDeclaration(filterParams);
+        paramUse += getHeaderOrParameterUsage(filterParams);
+        paramDecl += getHeaderOrParameterDeclaration(filterParams);
 
         if(paramUse.endsWith(", "))
             paramUse = paramUse.substring(0, paramUse.length()-2);
         
-        String methodBody = "\n"+paramDecl + "\n";
-        methodBody += "        String result = " + getSaasServiceName() + "." + getSaasServiceMethodName() + "(" + paramUse + ");\n";
-        methodBody += "        System.out.println(\"The SaasService returned: \"+result);\n";
+        String methodBody = "try {\n";
+        methodBody += paramDecl + "\n";
+        methodBody += "             String result = " + getSaasServiceName() + "." + getSaasServiceMethodName() + "(" + paramUse + ");\n";
+        methodBody += "             System.out.println(\"The SaasService returned: \"+result);\n";
+        methodBody += "        } catch (java.io.IOException ex) {\n";
+        methodBody += "             //java.util.logging.Logger.getLogger(this.getClass().getName()).log(java.util.logging.Level.SEVERE, null, ex);\n";
+        methodBody += "             ex.printStackTrace();\n";
+        methodBody += "        }\n";
        
         return methodBody;
     }

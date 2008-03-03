@@ -51,7 +51,6 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -70,18 +69,18 @@ public abstract class WsdlValidator extends CoreValidator {
 
   public abstract WSDLVisitor getVisitor();
 
-  public ValidationResult validate(Model model, Validation validation, ValidationType type) {
-    setParam(validation, type);
-
+  public synchronized ValidationResult validate(Model model, Validation validation, ValidationType type) {
     if ( !(model instanceof WSDLModel)) {
       return null;
     }
-    if ( !isValidationComplete()) {
+    WSDLModel wsdlModel = (WSDLModel) model;
+
+    if (wsdlModel.getState() == Model.State.NOT_WELL_FORMED) {
       return null;
     }
-    WSDLModel wsdlModel = (WSDLModel) model;
-    
-    if (wsdlModel.getState() == Model.State.NOT_WELL_FORMED) {
+    init(validation, type);
+
+    if ( !isValidationComplete()) {
       return null;
     }
     Definitions definitions = wsdlModel.getDefinitions();

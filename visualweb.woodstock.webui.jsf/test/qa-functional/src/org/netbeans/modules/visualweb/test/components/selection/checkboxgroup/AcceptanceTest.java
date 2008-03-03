@@ -257,17 +257,17 @@ public class AcceptanceTest extends RaveTestCase {
         editor.requestFocus();
         TestUtils.wait(2000);
         editor.pushKey(KeyEvent.VK_ENTER);
-        editor.typeText("String showSelections=\"You selected \"; \n");
-        editor.typeText("String[] mySelections = getSessionBean1().getChoices();\n");
-        editor.typeText("for (int i = 0; i < mySelections.length; i++) \n");
-        editor.typeText("showSelections+=mySelections[i] +\" \"; \n");
-        //  editor.typeText("} \n");
-        editor.typeText("if (showSelections.equals(\"\")) \n");
-        editor.typeText("showSelections = \"nothing selected\"; \n");
-        editor.typeText("else \n");
-        editor.typeText("showSelections = \"Values chosen:\n\" + showSelections; \n");
-        editor.typeText("// Display the list in the message group \n");
-        editor.typeText("info(showSelections);  \n");
+        editor.setText("String showSelections=\"You selected \"; \n");
+        editor.setText("String[] mySelections = getSessionBean1().getChoices();\n");
+        editor.setText("for (int i = 0; i < mySelections.length; i++) \n");
+        editor.setText("showSelections+=mySelections[i] +\" \"; \n");
+        //  editor.setText(("} \n");
+        editor.setText("if (showSelections.equals(\"\")) \n");
+        editor.setText("showSelections = \"nothing selected\"; \n");
+        editor.setText("else \n");
+        editor.setText("showSelections = \"Values chosen:\n\" + showSelections; \n");
+        editor.setText("// Display the list in the message group \n");
+        editor.setText("info(showSelections);  \n");
         TestUtils.wait(200);
         
         log("Reformat code");

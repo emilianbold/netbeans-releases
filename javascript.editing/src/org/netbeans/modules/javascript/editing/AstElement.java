@@ -39,18 +39,22 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Token;
 import org.mozilla.javascript.FunctionNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
 
 /**
  *
  * @author Tor Norbye
  */
 public class AstElement extends JsElement {
+    public static final Set<Modifier> STATIC = EnumSet.of(Modifier.STATIC);
 
     protected List<AstElement> children;
     protected Node node;
@@ -59,6 +63,9 @@ public class AstElement extends JsElement {
     protected CompilationInfo info;
     protected String signature;
     protected ElementKind kind;
+
+    @SuppressWarnings("unchecked")
+    protected Set<Modifier> modifiers = Collections.EMPTY_SET;
 
     AstElement(CompilationInfo info, Node node) {
         this.info = info;
@@ -150,6 +157,15 @@ public class AstElement extends JsElement {
 
     public CompilationInfo getInfo() {
         return info;
+    }
+    
+    @Override
+    public Set<Modifier> getModifiers() {
+        return modifiers;
+    }
+    
+    void setModifiers(Set<Modifier> modifiers) {
+        this.modifiers = modifiers;
     }
     
     public static AstElement getElement(CompilationInfo info, Node node) {

@@ -79,6 +79,7 @@ public abstract class MemoryFootprintTestCase extends org.netbeans.performance.t
     private static final String [][] SUPPORTED_PLATFORMS = {
         {"Linux,i386",UNIX},
         {"SunOS,sparc",UNIX},
+        {"SunOS,x86",UNIX},
         {"Windows_NT,x86",WINDOWS},
         {"Windows_2000,x86",WINDOWS},
         {"Windows_XP,x86",WINDOWS},
@@ -125,7 +126,7 @@ public abstract class MemoryFootprintTestCase extends org.netbeans.performance.t
      * Get platform on which the code is executed.
      * @return platform identification string
      */
-    private static String getPlatform() {
+    private String getPlatform() {
         
         String platformString=(System.getProperty("os.name","")+","+System.getProperty("os.arch","")).replace(' ','_');
         
@@ -134,7 +135,9 @@ public abstract class MemoryFootprintTestCase extends org.netbeans.performance.t
                 return SUPPORTED_PLATFORMS[i][1];
             }
         }
-        return UNKNOWN;
+        
+        log("Unknown platform: " + platformString);
+        return UNKNOWN;        
     }
     
     /**
@@ -144,7 +147,7 @@ public abstract class MemoryFootprintTestCase extends org.netbeans.performance.t
      * <p>Each test should reset the state in {@link close()} method.</p>
      */
     public void testMeasureMemoryFootprint() {
-        boolean exceptionDuringMeasurement = false;
+        Exception exceptionDuringMeasurement = null;
         
         MeasuredMemoryValue[] measuredValues = new MeasuredMemoryValue[repeat_memory+1];
         
@@ -157,7 +160,7 @@ public abstract class MemoryFootprintTestCase extends org.netbeans.performance.t
         log("Repeat = " + repeat_memory);
         
         
-        for(int i=1; i<=repeat_memory && !exceptionDuringMeasurement; i++){
+        for(int i = 1; i <= repeat_memory && exceptionDuringMeasurement == null; i++){
             try {
                 prepare();
                 
@@ -174,7 +177,7 @@ public abstract class MemoryFootprintTestCase extends org.netbeans.performance.t
                 
             }catch(Exception exc){ // catch for prepare(), open()
                 exc.printStackTrace(getLog());
-                exceptionDuringMeasurement = true;
+                exceptionDuringMeasurement = exc;
                 getScreenshot("exception_during_open");
             }finally{
                 try{
@@ -183,7 +186,7 @@ public abstract class MemoryFootprintTestCase extends org.netbeans.performance.t
                 }catch(Exception e){
                     e.printStackTrace(getLog());
                     getScreenshot("measure");
-                    exceptionDuringMeasurement = true;
+                    if (exceptionDuringMeasurement == null) exceptionDuringMeasurement = e;
                 }finally{ // finally for initialize(), shutdown(), closeAllDialogs()
                     //TODO export results?
                 }
@@ -196,12 +199,12 @@ public abstract class MemoryFootprintTestCase extends org.netbeans.performance.t
         }catch (Exception e) {
             e.printStackTrace(getLog());
             getScreenshot("shutdown");
-            exceptionDuringMeasurement = true;
+            if (exceptionDuringMeasurement == null) exceptionDuringMeasurement = e;
         }finally{
         }
         
-        if(exceptionDuringMeasurement)
-            throw new Error("Exception rises during measurement, look at appropriate log file for stack trace(s).");
+        if (exceptionDuringMeasurement != null)
+            throw new Error("Exception rises during measurement.", exceptionDuringMeasurement);
     }
     
     

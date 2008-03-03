@@ -41,9 +41,7 @@ package org.netbeans.modules.websvc.saas.codegen.java.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.websvc.saas.codegen.java.AbstractGenerator;
 import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
@@ -52,7 +50,6 @@ import org.netbeans.modules.websvc.saas.model.jaxb.Artifact;
 import org.netbeans.modules.websvc.saas.model.jaxb.Artifacts;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method.Input;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method.Output;
-import org.netbeans.modules.websvc.saas.model.jaxb.Method.Output.Media;
 import org.netbeans.modules.websvc.saas.model.jaxb.Params.Param;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.CodeGen;
 
@@ -85,11 +82,11 @@ public class CustomSaasBean extends SaasBean {
         try {
             Input in = m.getInput();
             if(in != null && in.getParams() != null && in.getParams().getParam() != null) {
-            List<Param> params = in.getParams().getParam();
-            findParams(inputParams, params);
-        }
-        Output out = m.getOutput();
-        findMediaType(mimeTypes, out.getMedia());
+                List<Param> params = in.getParams().getParam();
+                findSaasParams(inputParams, params);
+            }
+            Output out = m.getOutput();
+            findSaasMediaType(mimeTypes, out.getMedia());
 
             if(mimeTypes.size() > 0)
                 this.setMimeTypes(mimeTypes.toArray(new MimeType[mimeTypes.size()]));
@@ -150,48 +147,6 @@ public class CustomSaasBean extends SaasBean {
         if(m.getHref() != null && !m.getHref().trim().equals(""))
             name = m.getHref();
         return Inflector.getInstance().camelize(name, true) + "/"; //NOI18N
-    }
-
-    private void findMediaType(List<MimeType> mimeTypes, Media media) {
-        String mediaType = media.getType();
-        String[] mTypes = mediaType.split(",");
-        for(String m1:mTypes) {
-            MimeType mType = MimeType.find(m1);
-            if (mType != null) {
-                mimeTypes.add(mType);
-            }
-        }
-    }
-
-    private void findParams(List<ParameterInfo> paramInfos, List<Param> params) {
-        if (params != null) {
-            for (Param param:params) {
-                String paramName = param.getName();
-                Class paramType = findJavaType(param.getType());
-                Object defaultValue = param.getDefault();
-                ParameterInfo paramInfo = new ParameterInfo(paramName, paramType);
-                paramInfo.setDefaultValue(defaultValue);
-                paramInfos.add(paramInfo);
-            }
-        }
-    }
-    
-    private Class findJavaType(String schemaType) {       
-        if(schemaType != null) {
-            int index = schemaType.indexOf(":");        //NOI18N
-            
-            if(index != -1) {
-                schemaType = schemaType.substring(index+1);
-            }
-            
-            if(schemaType.equalsIgnoreCase("string")) {     //NOI18N
-                return String.class;
-            } else if(schemaType.equals("int") || schemaType.equals("Integer")) {       //NOI18N
-                return Integer.class;
-            }
-        }
-        
-        return String.class;
     }
     
     public List<String> getArtifactLibs() {
