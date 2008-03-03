@@ -43,6 +43,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementDescriptor;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementProvider;
 import org.netbeans.modules.cnd.modelutil.CsmImageName;
@@ -113,11 +115,13 @@ public class GoToElementAction extends AbstractAction implements GoToElementPane
 
     @Override
     public boolean isEnabled () {
-	elementProviders = Lookup.getDefault().lookupAll(ElementProvider.class);
-        if( OpenProjects.getDefault().getOpenProjects().length > 0 ) {
-            for( ElementProvider provider : elementProviders ) {
-		if( provider.isSuitable() ) {
-		    return true;
+	if( CsmModelAccessor.getModelState() == CsmModelState.ON ) {
+	    elementProviders = Lookup.getDefault().lookupAll(ElementProvider.class);
+	    if( OpenProjects.getDefault().getOpenProjects().length > 0 ) {
+		for( ElementProvider provider : elementProviders ) {
+		    if( provider.isSuitable() ) {
+			return true;
+		    }
 		}
 	    }
 	}

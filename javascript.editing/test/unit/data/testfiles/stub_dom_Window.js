@@ -393,6 +393,116 @@ var Window = {
   // This is just a stub for a builtin native JavaScript object.
 /**
 * <h2> <span> Summary </span></h2>
+* <p><code>addEventListener</code> allows the registration of event listeners on the event target. An event target may be a node in a document, the <a href="document" shape="rect" title="DOM:document">document</a> itself, a <a href="window" shape="rect" title="DOM:window">window</a>, or an <a href="http://developer.mozilla.org/en/docs/XMLHttpRequest" shape="rect" title="XMLHttpRequest">XMLHttpRequest</a>.
+* </p>
+* <h2> <span> Syntax </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve"><i>target</i>.addEventListener(<i>type</i>, <i>listener</i>, <i>useCapture</i>);
+* </pre>
+* <dl><dt style="font-weight:bold"> typeÊ</dt><dd> A string representing the event type to listen for.
+* </dd><dt style="font-weight:bold"> listenerÊ</dt><dd> The object that receives a notification when an event of the specified type occurs. This must be an object implementing the <a href="http://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventListener" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventListener"><code>EventListener</code></a> interface, or simply a JavaScript <a href="http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Guide:Functions" shape="rect" title="Core JavaScript 1.5 Guide:Functions">function</a>.
+* </dd><dt style="font-weight:bold"> useCaptureÊ</dt><dd> If <code>true</code>, <code>useCapture</code> indicates that the user wishes to initiate capture. After initiating capture, all events of the specified type will be dispatched to the registered <code>listener</code> before being dispatched to any <code>EventTarget</code>s beneath it in the DOM tree. Events which are bubbling upward through the tree will not trigger a listener designated to use capture. See <a href="http://www.w3.org/TR/DOM-Level-3-Events/events.html#Events-flow" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-3-Events/events.html#Events-flow">DOM Level 3 Events</a> for a detailed explanation.
+* </dd></dl>
+* <h2> <span> Example </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">
+* &lt;html&gt;
+* &lt;head&gt;
+* &lt;title&gt;DOM Event Example&lt;/title&gt;
+* &lt;style type="text/css"&gt;
+* #t { border: 1px solid red }
+* #t1 { background-color: pink; }
+* &lt;/style&gt;
+* &lt;script type="text/javascript"&gt;
+* 
+* // Function to change the content of t2
+* function modifyText() {
+* var t2 = document.getElementById("t2");
+* t2.firstChild.nodeValue = "three";
+* }
+* 
+* // Function to add event listener to t
+* function load() {
+* var el = document.getElementById("t");
+* el.addEventListener("click", modifyText, false);
+* }
+* 
+* &lt;/script&gt;
+* &lt;/head&gt;
+* &lt;body onload="load();"&gt;
+* &lt;table id="t"&gt;
+* &lt;tr&gt;&lt;td id="t1"&gt;one&lt;/td&gt;&lt;/tr&gt;
+* &lt;tr&gt;&lt;td id="t2"&gt;two&lt;/td&gt;&lt;/tr&gt;
+* &lt;/table&gt;
+* &lt;/body&gt;
+* &lt;/html&gt;
+* </pre>
+* <p>In the above example, <code>modifyText()</code> is a listener for <code>click</code> events registered using <code>addEventListener()</code>.  A click anywhere on the table will bubble up to the handler and run <code>modifyText()</code>.
+* </p>
+* <h2> <span> Notes </span></h2>
+* <h3> <span> Why use <code>addEventListener</code>? </span></h3>
+* <p><code>addEventListener</code> is the way to register an event listener as specified in W3C DOM. Its benefits are as follows:
+* </p>
+* <ul><li> It allows adding more than a single handler for an event. This is particularly useful for <a href="http://developer.mozilla.org/en/docs/DHTML" shape="rect" title="DHTML">DHTML</a> libraries or <a href="http://developer.mozilla.org/en/docs/Extensions" shape="rect" title="Extensions">Mozilla extensions</a> that need to work well even if other libraries/extensions are used.
+* </li><li> It gives you finer-grained control of the phase when the listener gets activated (capturing vs. bubbling)
+* </li><li> It works on any DOM element, not just HTML elements.
+* </li></ul>
+* <p>The alternative, older way to register event handlers is <a href="element.addEventListener#Older_way_to_attach_events" shape="rect" title="">described below</a>.
+* </p>
+* <h3> <span> Adding a listener during event dispatch </span></h3>
+* <p>If an <code>EventListener</code> is added to an <code>EventTarget</code> while it is processing an event, it will not be triggered by the current actions but may be triggered during a later stage of event flow, such as the bubbling phase.
+* </p>
+* <h3> <span> Multiple identical event listeners </span></h3>
+* <p>If multiple identical <code>EventListener</code>s are registered on the same <code>EventTarget</code> with the same parameters, the duplicate instances are discarded. They do not cause the <code>EventListener</code> to be called twice, and since the duplicates are discarded, they do not need to be removed manually with the <a href="element.removeEventListener" shape="rect" title="DOM:element.removeEventListener">removeEventListener</a> method.
+* </p>
+* <h3> <span> The value of <code>this</code> </span></h3>
+* <p>Attaching a function using <code>addEventListener()</code> changes the value of <code>this</code>Ñnote that the value of <code>this</code> is passed to a function from the caller.
+* </p><p>In the example above, the value of <code>this</code> within <code>modifyText()</code> when called from the onclick event is a reference to the table 't'.  If the onclick handler is added in the HTML source:
+* </p>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">
+* &lt;table id="t" onclick="modifyText();"&gt;
+* ...
+* &lt;/table&gt;
+* </pre>
+* <p>then value of <code>this</code> within <code>modifyText()</code> when called from the onclick event will be a reference to the global (window) object.
+* </p>
+* <h3> <span> Internet Explorer </span></h3>
+* <p>In IE you have to use <code>attachEvent</code> rather than the standard <code>addEventListener</code>. To support IE, the example above can be modified to:
+* </p>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">
+* if (el.addEventListener){
+* el.addEventListener('click', modifyText, false);
+* } else if (el.attachEvent){
+* el.attachEvent('onclick', modifyText);
+* }
+* </pre>
+* <h3> <span>Older way to attach events</span></h3>
+* <p><code>addEventListener()</code> was introduced with the DOM 2 <a href="http://www.w3.org/TR/DOM-Level-2-Events" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-Events">Events</a> specification. Before then, events were attached as follows:
+* </p>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">
+* // Using a function referenceÑnote lack of '()'
+* el.onclick = modifyText;
+* 
+* // Using a function expression
+* element.onclick = function(){
+* ...statements...
+* };
+* </pre>
+* <p>This method replaces the existing <code>onclick</code> event handler(s) on the element if there are any.  Similarly for other 'on' events such as <code>onblur</code>, <code>onkeypress</code>, and so on.
+* </p><p>Because it was essentially part of DOM 0, this method is very widely supported and requires no special crossÐbrowser code; hence it is normally used to attach events dynamically unless the extra features of <code>addEventListener()</code> are needed.
+* </p>
+* <h2> <span> Specification </span></h2>
+* <p><a href="http://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventTarget-addEventListener" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventTarget-addEventListener">DOM Level 2 Events: addEventListener</a>
+* </p>
+* 
+* <div id="catlinks"><p><a href="http://developer.mozilla.org/en/docs/Special:Categories" shape="rect" title="Special:Categories">Category</a>: <span dir="ltr"><a href="http://developer.mozilla.org/en/docs/Category:Gecko_DOM_Reference" shape="rect" title="Category:Gecko DOM Reference">Gecko DOM Reference</a></span></p></div>
+* 
+* <ul style="list-style-type:none;font-size:0.9em;text-align:center">
+* <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
+*/
+addEventListener: function(type, listener, useCapture) {
+  // This is just a stub for a builtin native JavaScript object.
+},
+/**
+* <h2> <span> Summary </span></h2>
 * <p>Display an alert dialog with the specified text.
 * </p>
 * <h2> <span> Syntax </span></h2>
@@ -459,6 +569,106 @@ alert: function(message) {
 atob: function(encodedData) {
   // This is just a stub for a builtin native JavaScript object.
 },
+/**
+* <h2> <span> Summary </span></h2>
+* <p>Returns the amount of vertical space available to the window on the screen.
+* </p>
+* <h2> <span> Syntax </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">iAvail = window.screen.availHeight
+* </pre>
+* <h2> <span> Example </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">if window.screen.availHeightÊ!= window.screen.height {
+* // something's in the way!
+* // use available to size window
+* }
+* </pre>
+* <h2> <span> Notes </span></h2>
+* <p><i>no notes</i>
+* </p>
+* <h2> <span> Specification </span></h2>
+* <p>DOM Level 0. Not part of specification.
+* </p>
+* 
+* <div id="catlinks"><p><a href="http://developer.mozilla.org/en/docs/Special:Categories" shape="rect" title="Special:Categories">Category</a>: <span dir="ltr"><a href="http://developer.mozilla.org/en/docs/Category:Gecko_DOM_Reference" shape="rect" title="Category:Gecko DOM Reference">Gecko DOM Reference</a></span></p></div>
+* 
+* <ul style="list-style-type:none;font-size:0.9em;text-align:center">
+* <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
+*/
+availHeight: undefined,
+/**
+* <h2> <span> Summary </span></h2>
+* <p>Returns the first available pixel available from the left side of the screen.
+* </p>
+* <h2> <span> Syntax </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">iAvail = window.screen.availLeft
+* </pre>
+* <h2> <span> Example </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">setY = window.screen.height - window.screen.availTop;
+* setX = window.screen.width - window.screen.availLeft;
+* window.moveTo(setX, setY);
+* </pre>
+* <h2> <span> Notes </span></h2>
+* <p>In most cases, this property returns 0.
+* </p><p>If you work with two screens this property evaluated on the right screen returns width of the left one in pixels. This way you can detect whether there is a screen available on the left. (Similar analogy aplies to screen.availTop property.)
+* </p>
+* <h2> <span> Specification </span></h2>
+* <p>DOM Level 0. Not part of specification.
+* </p>
+* 
+* <div id="catlinks"><p><a href="http://developer.mozilla.org/en/docs/Special:Categories" shape="rect" title="Special:Categories">Category</a>: <span dir="ltr"><a href="http://developer.mozilla.org/en/docs/Category:Gecko_DOM_Reference" shape="rect" title="Category:Gecko DOM Reference">Gecko DOM Reference</a></span></p></div>
+* 
+* <ul style="list-style-type:none;font-size:0.9em;text-align:center">
+* <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
+*/
+availLeft: undefined,
+/**
+* <h2> <span> Summary </span></h2>
+* <p>Specifies the y-coordinate of the first pixel that is not allocated to permanent or semipermanent user interface features.
+* </p>
+* <h2> <span> Syntax </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">iAvail = window.screen.availTop
+* </pre>
+* <h2> <span> Example </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">setY = window.screen.height - window.screen.availTop;
+* setX = window.screen.width - window.screen.availLeft;
+* window.moveTo(setX, setY);
+* </pre>
+* <h2> <span> Notes </span></h2>
+* <p>In most cases, this property returns 0.
+* </p>
+* <h2> <span> Specification </span></h2>
+* <p>DOM Level 0. Not part of specification.
+* </p>
+* 
+* <div id="catlinks"><p><a href="http://developer.mozilla.org/en/docs/Special:Categories" shape="rect" title="Special:Categories">Category</a>: <span dir="ltr"><a href="http://developer.mozilla.org/en/docs/Category:Gecko_DOM_Reference" shape="rect" title="Category:Gecko DOM Reference">Gecko DOM Reference</a></span></p></div>
+* 
+* <ul style="list-style-type:none;font-size:0.9em;text-align:center">
+* <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
+*/
+availTop: undefined,
+/**
+* <h2> <span> Summary </span></h2>
+* <p>Returns the amount of horizontal space in pixels available to the window.
+* </p>
+* <h2> <span> Syntax </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">iAvail = window.screen.availWidth
+* </pre>
+* <h2> <span> Example </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">// example code here
+* </pre>
+* <h2> <span> Notes </span></h2>
+* <p><i>no notes</i>
+* </p>
+* <h2> <span> Specification </span></h2>
+* <p>DOM Level 0. Not part of specification.
+* </p>
+* 
+* <div id="catlinks"><p><a href="http://developer.mozilla.org/en/docs/Special:Categories" shape="rect" title="Special:Categories">Category</a>: <span dir="ltr"><a href="http://developer.mozilla.org/en/docs/Category:Gecko_DOM_Reference" shape="rect" title="Category:Gecko DOM Reference">Gecko DOM Reference</a></span></p></div>
+* 
+* <ul style="list-style-type:none;font-size:0.9em;text-align:center">
+* <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
+*/
+availWidth: undefined,
 /**
 * <h2> <span>Summary</span></h2>
 * <p>Returns the window to the previous item in the history.
@@ -724,7 +934,7 @@ close: function() {
 * This property is read-only.
 * </p>
 * <h2> <span> Return Value </span></h2>
-* <dl><dt style="font-weight:bold"> <code>isClosed</code>Â </dt><dd> A boolean. Possible Values:
+* <dl><dt style="font-weight:bold"> <code>isClosed</code>Ê</dt><dd> A boolean. Possible Values:
 * </dd></dl>
 * <ul><li> <code>true</code>: The window has been closed.
 * </li><li> <code>false</code>: The window is open.
@@ -735,7 +945,7 @@ close: function() {
 * </p>
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">
 * // Check that an opener exists and is not closed
-* if (window.opener &amp;&amp;Â !window.opener.closed) {
+* if (window.opener &amp;&amp;Ê!window.opener.closed) {
 * window.opener.location.href = "http://www.mozilla.org";
 * }
 * </pre>
@@ -748,7 +958,7 @@ close: function() {
 * var popupWindow = null;
 * 
 * function refreshPopupWindow() {
-* if (popupWindow &amp;&amp;Â !popupWindow.closed) {
+* if (popupWindow &amp;&amp;Ê!popupWindow.closed) {
 * // popupWindow is open, refresh it
 * popupWindow.location.reload(true);
 * } else {
@@ -770,6 +980,34 @@ close: function() {
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
 closed: undefined,
+/**
+* <h2> <span> Summary </span></h2>
+* <p>Returns the color depth of the screen.
+* </p>
+* <h2> <span> Syntax </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">bitDepth = window.screen.colorDepth
+* </pre>
+* <h2> <span> Example </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">// check the color depth of the screen
+* if ( window.screen.colorDepth &lt; 8) {
+* // use low-color version of page
+* } else {
+* // use regular, colorful page
+* }
+* </pre>
+* <h2> <span> Notes </span></h2>
+* <p>See also <a href="DOM:window.screen.pixelDepth" shape="rect" title="DOM:window.screen.pixelDepth">window.screen.pixelDepth</a>.
+* </p>
+* <h2> <span> Specification </span></h2>
+* <p>DOM Level 0. Not part of any standard.
+* </p>
+* 
+* <div id="catlinks"><p><a href="http://developer.mozilla.org/en/docs/Special:Categories" shape="rect" title="Special:Categories">Categories</a>: <span dir="ltr"><a href="http://developer.mozilla.org/en/docs/Category:Gecko_DOM_Reference" shape="rect" title="Category:Gecko DOM Reference">Gecko DOM Reference</a></span> | <span dir="ltr"><a href="http://developer.mozilla.org/en/docs/Category:DOM_0" shape="rect" title="Category:DOM 0">DOM 0</a></span></p></div>
+* 
+* <ul style="list-style-type:none;font-size:0.9em;text-align:center">
+* <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
+*/
+colorDepth: undefined,
 /**
 * <h2> <span> Summary </span></h2>
 * <p>Displays a modal dialog with a message and two buttons, OK and Cancel.
@@ -898,6 +1136,7 @@ crypto: undefined,
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
 defaultStatus: undefined,
+dialogArguments: undefined,
 /**
 * <h2> <span>Summary</span></h2>
 * <p>Returns the window directories toolbar object.
@@ -971,7 +1210,7 @@ document: undefined,
 * </li></ul>
 * <h2> <span> Notes </span></h2>
 * <p><code>dump</code> is commonly used to debug JavaScript. Privileged code can also use <code><a href="http://developer.mozilla.org/en/docs/Components.utils.reportError" shape="rect" title="Components.utils.reportError">Components.utils.reportError</a></code> and <code><a href="http://developer.mozilla.org/en/docs/nsIConsoleService" shape="rect" title="nsIConsoleService">nsIConsoleService</a></code> to log messages to the <a href="http://developer.mozilla.org/en/docs/Error_Console" shape="rect" title="Error Console">Error Console</a>.
-* </p><p>In <a href="http://developer.mozilla.org/en/docs/Gecko" shape="rect" title="Gecko">Gecko</a> <code>dump</code> is disabled by default â€“ it doesn't do anything but doesn't raise an error either. To see the <code>dump</code> output you have to enable it by setting the preference <code>browser.dom.window.dump.enabled</code> to <code>true</code>. You can set the preference in <a href="http://kb.mozillazine.org/About:config" rel="nofollow" shape="rect" title="http://kb.mozillazine.org/About:config">about:config</a> or in a <a href="http://kb.mozillazine.org/User.js_file" rel="nofollow" shape="rect" title="http://kb.mozillazine.org/User.js_file">user.js file</a>. Note: this preference is not listed in <tt>about:config</tt> by default, you may need to create it (right-click the content area -&gt; New -&gt; Boolean).
+* </p><p>In <a href="http://developer.mozilla.org/en/docs/Gecko" shape="rect" title="Gecko">Gecko</a> <code>dump</code> is disabled by default Ð it doesn't do anything but doesn't raise an error either. To see the <code>dump</code> output you have to enable it by setting the preference <code>browser.dom.window.dump.enabled</code> to <code>true</code>. You can set the preference in <a href="http://kb.mozillazine.org/About:config" rel="nofollow" shape="rect" title="http://kb.mozillazine.org/About:config">about:config</a> or in a <a href="http://kb.mozillazine.org/User.js_file" rel="nofollow" shape="rect" title="http://kb.mozillazine.org/User.js_file">user.js file</a>. Note: this preference is not listed in <tt>about:config</tt> by default, you may need to create it (right-click the content area -&gt; New -&gt; Boolean).
 * </p><p>On Windows, you will need a console to actually see anything. If you don't have one already, closing the application and re-opening it with the command line parameter <tt>-console</tt> should create the console. On other operating systems, it's enough to launch the application from a terminal.
 * </p><p><code>dump</code> is also available to XPCOM components implemented in JavaScript, even though <code><a href="window" shape="rect" title="DOM:window">window</a></code> is not the global object in components.  However, this use of <code>dump</code> is not affected by the aforementioned preference -- it will always be shown. It is therefore advisable to either check this preference yourself or use a debugging preference of your own to make sure you don't send lots of debugging content to a user's console when they might not be interested in it at all.
 * </p>
@@ -1002,7 +1241,7 @@ dump: function(message) {
 * </pre>
 * <h2> <span>Notes </span></h2>
 * <p>The <code>escape()</code> method converts special characters (any characters that are not regular text or numbers) into hexadecimal characters, which is especially necessary for setting the values of cookies. Also useful when passing <i>name=value</i> pairs in the URL of a GET request, or an AJAX GET/POST request.
-* </p><p>See also <a href="DOM:window.unescape" shape="rect" title="DOM:window.unescape">unescape</a>, <a href="http://developer.mozilla.org/en/docs/Global_Functions:encodeURIComponent" shape="rect" title="Core JavaScript 1.5 Reference:Global Functions:encodeURIComponent">encodeURIComponent</a>.
+* </p><p>See also <a href="DOM:window.unescape" shape="rect" title="DOM:window.unescape">unescape</a>, <a href="http://developer.mozilla.org/en/docs/encodeURIComponent" shape="rect" title="Core JavaScript 1.5 Reference:Global Functions:encodeURIComponent">encodeURIComponent</a>.
 * </p>
 * <h2> <span> Specification </span></h2>
 * <p>DOM Level 0. Not part of any standard. Mentioned in a non-normative section of ECMA-262.
@@ -1013,7 +1252,9 @@ dump: function(message) {
 * <ul style="list-style-type:none;font-size:0.9em;text-align:center">
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
-escape: undefined,
+escape: function(regular) {
+  // This is just a stub for a builtin native JavaScript object.
+},
 /**
 * <h2> <span> Summary </span></h2>
 * <p>Finds a string in a window.
@@ -1154,7 +1395,7 @@ frames: undefined,
 * With chrome privileges, the property is read-write, otherwise it is read-only. Bear in mind that if you try to set this property without chrome privileges, it will not throw and instead just silently fail. This is to prevent scripts designed to set this property in Internet Explorer from breaking.
 * </p>
 * <h2> <span> Return Value </span></h2>
-* <dl><dt style="font-weight:bold"> <code>isInFullScreen</code>Â </dt><dd> A boolean. Possible Values:
+* <dl><dt style="font-weight:bold"> <code>isInFullScreen</code>Ê</dt><dd> A boolean. Possible Values:
 * </dd></dl>
 * <ul><li> <code>true</code>: The window is in full screen mode.
 * </li><li> <code>false</code>: The window is not in full screen mode.
@@ -1234,7 +1475,7 @@ getComputedStyle: function(element, pseudoElt) {
 * <p>Returns a selection object representing the range of text selected by the user.
 * </p>
 * <h2> <span> Syntax </span></h2>
-* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve"><i>selection</i> = <i>window</i>.getSelection()Â ;
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve"><i>selection</i> = <i>window</i>.getSelection()Ê;
 * </pre>
 * <ul><li> <code>selection</code> is a <a href="DOM:Selection" shape="rect" title="DOM:Selection">Selection</a> object.
 * </li></ul>
@@ -1265,6 +1506,32 @@ getComputedStyle: function(element, pseudoElt) {
 getSelection: function() {
   // This is just a stub for a builtin native JavaScript object.
 },
+globalStorage: undefined,
+/**
+* <h2> <span> Summary </span></h2>
+* <p>Returns the height of the screen in pixels.
+* </p>
+* <h2> <span> Syntax </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">iHeight = window.screen.height
+* </pre>
+* <h2> <span> Example </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">if (window.screen.availHeightÊ!= window.screen.height) {
+* // something is occupying some screen real estate!
+* }
+* </pre>
+* <h2> <span> Notes </span></h2>
+* <p>Note that not all of the height given by this property may be available to the window itself. Widgets such as taskbars or other special application windows that integrate with the OS (e.g., the Spinner player minimized to act like an additional toolbar on windows) may reduce the amount of space available to browser windows and other applications.
+* </p>
+* <h2> <span> Specification </span></h2>
+* <p>DOM Level 0. Not part of specification.
+* </p>
+* 
+* <div id="catlinks"><p><a href="http://developer.mozilla.org/en/docs/Special:Categories" shape="rect" title="Special:Categories">Category</a>: <span dir="ltr"><a href="http://developer.mozilla.org/en/docs/Category:Gecko_DOM_Reference" shape="rect" title="Category:Gecko DOM Reference">Gecko DOM Reference</a></span></p></div>
+* 
+* <ul style="list-style-type:none;font-size:0.9em;text-align:center">
+* <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
+*/
+height: undefined,
 /**
 * <h2> <span>Summary</span></h2>
 * <p>Returns a reference to the history object, which provides an interface for manipulating the browser history.
@@ -1408,6 +1675,26 @@ innerHeight: undefined,
 innerWidth: undefined,
 /**
 * <h2> <span> Summary </span></h2>
+* <p>Returns the distance in pixels from the left side of the main screen to the left side of the current screen.
+* </p>
+* <h2> <span> Syntax </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">var <i>left</i> = <i>window</i>.screen.left;
+* </pre>
+* <h2> <span> Notes </span></h2>
+* <p>See also <a href="window.screen.top" shape="rect" title="DOM:window.screen.top">window.screen.top</a>.
+* </p>
+* <h2> <span> Specification </span></h2>
+* <p>DOM Level 0. Not part of any standard.
+* </p>
+* 
+* <div id="catlinks"><p><a href="http://developer.mozilla.org/en/docs/Special:Categories" shape="rect" title="Special:Categories">Categories</a>: <span dir="ltr"><a href="http://developer.mozilla.org/en/docs/Category:Gecko_DOM_Reference" shape="rect" title="Category:Gecko DOM Reference">Gecko DOM Reference</a></span> | <span dir="ltr"><a href="http://developer.mozilla.org/en/docs/Category:DOM_0" shape="rect" title="Category:DOM 0">DOM 0</a></span></p></div>
+* 
+* <ul style="list-style-type:none;font-size:0.9em;text-align:center">
+* <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
+*/
+left: undefined,
+/**
+* <h2> <span> Summary </span></h2>
 * <p>Returns the number of frames (either <code>frame</code> or <code>iframe</code> elements) in the window.
 * </p>
 * <h2> <span> Syntax </span></h2>
@@ -1443,7 +1730,7 @@ length: undefined,
 * </li><li> <i>newLocation</i> is a <code>Location</code> object or a string, specifying the URL to navigate to.
 * </li></ul>
 * <h2> <span> <code>Location</code> object </span></h2>
-* <p><code>Location</code> objects have a <code>toString</code> method returning the current URL. You can also assign a string to <code>document.location</code>. This means that you can work with <code>document.location</code> as if it were a string in most cases. Sometimes, for example when you need to call a <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a> method on it, you have to explicitly call <code>toString</code>:
+* <p><code>Location</code> objects have a <code>toString</code> method returning the current URL. You can also assign a string to <code>document.location</code>. This means that you can work with <code>document.location</code> as if it were a string in most cases. Sometimes, for example when you need to call a <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a> method on it, you have to explicitly call <code>toString</code>:
 * </p>
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">alert(document.location.toString().charAt(17))
 * </pre>
@@ -1496,7 +1783,7 @@ length: undefined,
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code>search</code></td>
-* <td colspan="1" rowspan="1">the part of the URL that follows theÂ ? symbol, including theÂ ? symbol.</td>
+* <td colspan="1" rowspan="1">the part of the URL that follows theÊ? symbol, including theÊ? symbol.</td>
 * <td colspan="1" rowspan="1">?q=devmo</td>
 * </tr>
 * </table>
@@ -1606,7 +1893,7 @@ location: undefined,
 * netscape.security.PrivilegeManager.
 * enablePrivilege("UniversalBrowserWrite");
 * window.locationbar.visible=
-* Â !window.locationbar.visible;
+* Ê!window.locationbar.visible;
 * &lt;/script&gt;
 * &lt;/head&gt;
 * &lt;body&gt;
@@ -1785,31 +2072,31 @@ name: undefined,
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">alert("You're using " + navigator.appName);
 * </pre>
 * <h2> <span> Properties </span></h2>
-* <dl><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.appCodeName" shape="rect" title="navigator.appCodeName">navigator.appCodeName</a>Â </dt><dd> Returns the internal "code" name of the current browser.
-* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.appName" shape="rect" title="navigator.appName">navigator.appName</a>Â </dt><dd> Returns the official name of the browser.
-* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.appVersion" shape="rect" title="navigator.appVersion">navigator.appVersion</a>Â </dt><dd> Returns the version of the browser as a string.
-* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.buildID" shape="rect" title="navigator.buildID">navigator.buildID</a>Â </dt><dd> Returns the build identifier of the browser (e.g. "2006090803")
-* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.cookieEnabled" shape="rect" title="navigator.cookieEnabled">navigator.cookieEnabled</a>Â </dt><dd> Returns a boolean indicating whether cookies are enabled in the browser or not.
-* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.language" shape="rect" title="navigator.language">navigator.language</a>Â </dt><dd> Returns a string representing the language version of the browser.
-* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.mimeTypes" shape="rect" title="navigator.mimeTypes">navigator.mimeTypes</a>Â </dt><dd> Returns a list of the MIME types supported by the browser.
-* </dd><dt style="font-weight:bold"> <a href="window.navigator.onLine" shape="rect" title="DOM:window.navigator.onLine">navigator.onLine</a>Â </dt><dd> Returns a boolean indicating whether the browser is working online.
-* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.oscpu" shape="rect" title="navigator.oscpu">navigator.oscpu</a>Â </dt><dd> Returns a string that represents the current operating system.
-* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.platform" shape="rect" title="navigator.platform">navigator.platform</a>Â </dt><dd> Returns a string representing the platform of the browser.
-* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.plugins" shape="rect" title="navigator.plugins">navigator.plugins</a>Â </dt><dd> Returns an array of the plugins installed in the browser.
-* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.product" shape="rect" title="navigator.product">navigator.product</a>Â </dt><dd> Returns the product name of the current browser. (e.g. "Gecko")
-* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.productSub" shape="rect" title="navigator.productSub">navigator.productSub</a>Â </dt><dd> Returns the build number of the current browser (e.g. "20060909")
-* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/index.php?title=window.navigator.securityPolicy&amp;action=edit" shape="rect" title="DOM:window.navigator.securityPolicy">navigator.securityPolicy</a>Â </dt><dd> Returns an empty string.  In Netscape 4.7x, returns "US &amp; CA domestic policy" or "Export policy".
-* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.userAgent" shape="rect" title="navigator.userAgent">navigator.userAgent</a>Â </dt><dd> Returns the user agent string for the current browser.
-* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.vendor" shape="rect" title="navigator.vendor">navigator.vendor</a>Â </dt><dd> Returns the vendor name of the current browser (e.g. "Netscape6")
-* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.vendorSub" shape="rect" title="navigator.vendorSub">navigator.vendorSub</a>Â </dt><dd> Returns the vendor version number (e.g. "6.1")
+* <dl><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.appCodeName" shape="rect" title="navigator.appCodeName">navigator.appCodeName</a>Ê</dt><dd> Returns the internal "code" name of the current browser.
+* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.appName" shape="rect" title="navigator.appName">navigator.appName</a>Ê</dt><dd> Returns the official name of the browser.
+* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.appVersion" shape="rect" title="navigator.appVersion">navigator.appVersion</a>Ê</dt><dd> Returns the version of the browser as a string.
+* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.buildID" shape="rect" title="navigator.buildID">navigator.buildID</a>Ê</dt><dd> Returns the build identifier of the browser (e.g. "2006090803")
+* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.cookieEnabled" shape="rect" title="navigator.cookieEnabled">navigator.cookieEnabled</a>Ê</dt><dd> Returns a boolean indicating whether cookies are enabled in the browser or not.
+* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.language" shape="rect" title="navigator.language">navigator.language</a>Ê</dt><dd> Returns a string representing the language version of the browser.
+* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.mimeTypes" shape="rect" title="navigator.mimeTypes">navigator.mimeTypes</a>Ê</dt><dd> Returns a list of the MIME types supported by the browser.
+* </dd><dt style="font-weight:bold"> <a href="window.navigator.onLine" shape="rect" title="DOM:window.navigator.onLine">navigator.onLine</a>Ê</dt><dd> Returns a boolean indicating whether the browser is working online.
+* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.oscpu" shape="rect" title="navigator.oscpu">navigator.oscpu</a>Ê</dt><dd> Returns a string that represents the current operating system.
+* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.platform" shape="rect" title="navigator.platform">navigator.platform</a>Ê</dt><dd> Returns a string representing the platform of the browser.
+* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.plugins" shape="rect" title="navigator.plugins">navigator.plugins</a>Ê</dt><dd> Returns an array of the plugins installed in the browser.
+* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.product" shape="rect" title="navigator.product">navigator.product</a>Ê</dt><dd> Returns the product name of the current browser. (e.g. "Gecko")
+* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.productSub" shape="rect" title="navigator.productSub">navigator.productSub</a>Ê</dt><dd> Returns the build number of the current browser (e.g. "20060909")
+* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/index.php?title=window.navigator.securityPolicy&amp;action=edit" shape="rect" title="DOM:window.navigator.securityPolicy">navigator.securityPolicy</a>Ê</dt><dd> Returns an empty string.  In Netscape 4.7x, returns "US &amp; CA domestic policy" or "Export policy".
+* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.userAgent" shape="rect" title="navigator.userAgent">navigator.userAgent</a>Ê</dt><dd> Returns the user agent string for the current browser.
+* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.vendor" shape="rect" title="navigator.vendor">navigator.vendor</a>Ê</dt><dd> Returns the vendor name of the current browser (e.g. "Netscape6")
+* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.vendorSub" shape="rect" title="navigator.vendorSub">navigator.vendorSub</a>Ê</dt><dd> Returns the vendor version number (e.g. "6.1")
 * </dd></dl>
 * <h2> <span> Methods </span></h2>
-* <dl><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.javaEnabled" shape="rect" title="navigator.javaEnabled">navigator.javaEnabled</a>Â </dt><dd> Indicates whether the host browser is Java-enabled or not.
-* </dd><dt style="font-weight:bold"> <a href="window.navigator.isLocallyAvailable" shape="rect" title="DOM:window.navigator.isLocallyAvailable">navigator.isLocallyAvailable</a>Â </dt><dd> Lets code check to see if the document at a given URI is available without using the network.
-* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/index.php?title=window.navigator.preference&amp;action=edit" shape="rect" title="DOM:window.navigator.preference">navigator.preference</a>Â </dt><dd> Sets a user preference. This method is <a href="http://www.faqts.com/knowledge_base/view.phtml/aid/1608/fid/125/lang/en" rel="nofollow" shape="rect" title="http://www.faqts.com/knowledge_base/view.phtml/aid/1608/fid/125/lang/en">only available to privileged code</a>, and you should use XPCOM <a href="http://developer.mozilla.org/en/docs/Preferences_API" shape="rect" title="Preferences API">Preferences API</a> instead.
-* </dd><dt style="font-weight:bold"> <a href="window.navigator.registerContentHandler" shape="rect" title="DOM:window.navigator.registerContentHandler">navigator.registerContentHandler</a>Â </dt><dd> Allows web sites to register themselves as a possible handler for a given MIME type.
-* </dd><dt style="font-weight:bold"> <a href="window.navigator.registerProtocolHandler" shape="rect" title="DOM:window.navigator.registerProtocolHandler">navigator.registerProtocolHandler</a> <span style="border: 1px solid #818151; background-color: #FFFFE1; font-size: 9px; vertical-align: text-top;">New in <a href="http://developer.mozilla.org/en/docs/Firefox_3_for_developers" shape="rect" title="Firefox 3 for developers">Firefox 3</a></span>Â </dt><dd> Allows web sites to register themselves as a possible handler for a given protocol.
-* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/index.php?title=window.navigator.taintEnabled&amp;action=edit" shape="rect" title="DOM:window.navigator.taintEnabled">navigator.taintEnabled</a> <span style="border: 1px solid #FF9999; background-color: #FFDBDB; font-size: 9px; vertical-align: text-top;">Obsolete</span>Â </dt><dd> Returns false. JavaScript taint/untaint functions removed in JavaScript 1.2<a href="http://devedge-temp.mozilla.org/library/manuals/2000/javascript/1.3/reference/nav.html#1194117" rel="nofollow" shape="rect" title="http://devedge-temp.mozilla.org/library/manuals/2000/javascript/1.3/reference/nav.html#1194117">[1]</a>
+* <dl><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/navigator.javaEnabled" shape="rect" title="navigator.javaEnabled">navigator.javaEnabled</a>Ê</dt><dd> Indicates whether the host browser is Java-enabled or not.
+* </dd><dt style="font-weight:bold"> <a href="window.navigator.isLocallyAvailable" shape="rect" title="DOM:window.navigator.isLocallyAvailable">navigator.isLocallyAvailable</a>Ê</dt><dd> Lets code check to see if the document at a given URI is available without using the network.
+* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/index.php?title=window.navigator.preference&amp;action=edit" shape="rect" title="DOM:window.navigator.preference">navigator.preference</a>Ê</dt><dd> Sets a user preference. This method is <a href="http://www.faqts.com/knowledge_base/view.phtml/aid/1608/fid/125/lang/en" rel="nofollow" shape="rect" title="http://www.faqts.com/knowledge_base/view.phtml/aid/1608/fid/125/lang/en">only available to privileged code</a>, and you should use XPCOM <a href="http://developer.mozilla.org/en/docs/Preferences_API" shape="rect" title="Preferences API">Preferences API</a> instead.
+* </dd><dt style="font-weight:bold"> <a href="window.navigator.registerContentHandler" shape="rect" title="DOM:window.navigator.registerContentHandler">navigator.registerContentHandler</a>Ê</dt><dd> Allows web sites to register themselves as a possible handler for a given MIME type.
+* </dd><dt style="font-weight:bold"> <a href="window.navigator.registerProtocolHandler" shape="rect" title="DOM:window.navigator.registerProtocolHandler">navigator.registerProtocolHandler</a> <span style="border: 1px solid #818151; background-color: #FFFFE1; font-size: 9px; vertical-align: text-top;">New in <a href="http://developer.mozilla.org/en/docs/Firefox_3_for_developers" shape="rect" title="Firefox 3 for developers">Firefox 3</a></span>Ê</dt><dd> Allows web sites to register themselves as a possible handler for a given protocol.
+* </dd><dt style="font-weight:bold"> <a href="http://developer.mozilla.org/en/docs/index.php?title=window.navigator.taintEnabled&amp;action=edit" shape="rect" title="DOM:window.navigator.taintEnabled">navigator.taintEnabled</a> <span style="border: 1px solid #FF9999; background-color: #FFDBDB; font-size: 9px; vertical-align: text-top;">Obsolete</span>Ê</dt><dd> Returns false. JavaScript taint/untaint functions removed in JavaScript 1.2<a href="http://devedge-temp.mozilla.org/library/manuals/2000/javascript/1.3/reference/nav.html#1194117" rel="nofollow" shape="rect" title="http://devedge-temp.mozilla.org/library/manuals/2000/javascript/1.3/reference/nav.html#1194117">[1]</a>
 * </dd></dl>
 * <h2> <span> See also </span></h2>
 * <p><a href="DOM_Client_Object_Cross-Reference:navigator" shape="rect" title="DOM Client Object Cross-Reference:navigator">DOM Client Object Cross-Reference:navigator</a>
@@ -1848,6 +2135,7 @@ navigator: undefined,
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
 onabort: undefined,
+onbeforeunload: undefined,
 /**
 * <h2> <span> Summary </span></h2>
 * <p>The <code>onblur</code> property can be used to set the blur handler on the window, which is triggered when the window loses focus.
@@ -1993,6 +2281,7 @@ onclick: undefined,
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
 onclose: undefined,
+oncontextmenu: undefined,
 /**
 * <h2> <span> Summary </span></h2>
 * <p>An event handler for drag and drop events sent to the window.
@@ -2001,7 +2290,7 @@ onclose: undefined,
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve"><s>window.ondragdrop = funcRef;</s>
 * window.addEventListener("dragdrop", funcRef, useCapturing);
 * </pre>
-* <dl><dt style="font-weight:bold"> funcRefÂ </dt><dd> the event handler function to be registered.
+* <dl><dt style="font-weight:bold"> funcRefÊ</dt><dd> the event handler function to be registered.
 * </dd></dl>
 * <p>The <code>window.ondragdrop</code> property and the <code>ondragdrop</code> attribute are not implemented in <a href="http://developer.mozilla.org/en/docs/Gecko" shape="rect" title="Gecko">Gecko</a> (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=112288" rel="nofollow" shape="rect" title="https://bugzilla.mozilla.org/show_bug.cgi?id=112288">bug 112288</a>), you have to use <code>addEventListener</code>. See <a href="element.addEventListener" shape="rect" title="DOM:element.addEventListener">addEventListener</a> for details.
 * </p>
@@ -2624,7 +2913,7 @@ onpaint: undefined,
 * &lt;form&gt;
 * &lt;input type="reset" value="reset" /&gt;
 * &lt;/form&gt;
-* &lt;div id="d"&gt;Â &lt;/div&gt;
+* &lt;div id="d"&gt;Ê&lt;/div&gt;
 * &lt;/body&gt;
 * &lt;/html&gt;
 * </pre>
@@ -2824,7 +3113,7 @@ onselect: undefined,
 * &lt;form&gt;
 * &lt;input type="submit" value="submit" /&gt;
 * &lt;/form&gt;
-* &lt;div id="d"&gt;Â &lt;/div&gt;
+* &lt;div id="d"&gt;Ê&lt;/div&gt;
 * &lt;/body&gt;
 * &lt;/html&gt;
 * </pre>
@@ -2895,16 +3184,16 @@ onunload: undefined,
 * <p>Creates a new secondary browser window and loads the referenced resource.
 * </p>
 * <h2> <span> Syntax </span></h2>
-* <p><var>WindowObjectReference</var> = window.open(<var>strUrl</var>, <var>strWindowName</var> [,Â <var>strWindowFeatures</var>]);
+* <p><var>WindowObjectReference</var> = window.open(<var>strUrl</var>, <var>strWindowName</var> [,Ê<var>strWindowFeatures</var>]);
 * </p>
 * <h2> <span> Return value and parameters </span></h2>
-* <dl><dt style="font-weight:bold"> <code>WindowObjectReference</code>Â </dt><dd> This is the reference pointing to the newly created browser window. This reference is the return value of the open() method; it will be <code>null</code> if for some reasons the call did not succeed to open the window. A global variable is best used to store such reference. You can then, for example, use it to look for properties of the new window or access its methods, assuming that your main versus secondary window relationship complies with <a href="http://www.mozilla.org/projects/security/components/same-origin.html" rel="nofollow" shape="rect" title="http://www.mozilla.org/projects/security/components/same-origin.html">Same origin policy</a> security requirements.
+* <dl><dt style="font-weight:bold"> <code>WindowObjectReference</code>Ê</dt><dd> This is the reference pointing to the newly created browser window. This reference is the return value of the open() method; it will be <code>null</code> if for some reasons the call did not succeed to open the window. A global variable is best used to store such reference. You can then, for example, use it to look for properties of the new window or access its methods, assuming that your main versus secondary window relationship complies with <a href="http://www.mozilla.org/projects/security/components/same-origin.html" rel="nofollow" shape="rect" title="http://www.mozilla.org/projects/security/components/same-origin.html">Same origin policy</a> security requirements.
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> <code>strUrl</code>Â </dt><dd> This is the URL to be loaded in the newly opened window. <var>strUrl</var> can be an HTML document on the web, it can be an image file or any type of file which is supported by the browser.
+* <dl><dt style="font-weight:bold"> <code>strUrl</code>Ê</dt><dd> This is the URL to be loaded in the newly opened window. <var>strUrl</var> can be an HTML document on the web, it can be an image file or any type of file which is supported by the browser.
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> <code>strWindowName</code>Â </dt><dd> This is the string that just names the new window. Such string can be used to be the target of links and forms when the target attribute of an <code style="font-size: 1em;">&lt;a&gt;</code> element or of a <code style="font-size: 1em;">&lt;form&gt;</code> is specified. This string parameter should not contain any blank space. <var>strWindowName</var> does not specify the title of the new window.
+* <dl><dt style="font-weight:bold"> <code>strWindowName</code>Ê</dt><dd> This is the string that just names the new window. Such string can be used to be the target of links and forms when the target attribute of an <code style="font-size: 1em;">&lt;a&gt;</code> element or of a <code style="font-size: 1em;">&lt;form&gt;</code> is specified. This string parameter should not contain any blank space. <var>strWindowName</var> does not specify the title of the new window.
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> <code>strWindowFeatures</code>Â </dt><dd> Optional parameter. This parameter is the string which lists the requested window features (window functionalities and toolbars) of the new browser window. This string parameter must not contain any blank space. Each requested window feature must be separated by a comma inside the character string.
+* <dl><dt style="font-weight:bold"> <code>strWindowFeatures</code>Ê</dt><dd> Optional parameter. This parameter is the string which lists the requested window features (window functionalities and toolbars) of the new browser window. This string parameter must not contain any blank space. Each requested window feature must be separated by a comma inside the character string.
 * </dd></dl>
 * <h2> <span> Description </span></h2>
 * <p>The <code>open()</code> method creates a new secondary browser window, similar to choosing New Window from the File menu. The <var>strUrl</var> parameter specifies the URL to be fetched and loaded in the new window. If <var>strUrl</var> is an empty string, then a new blank, empty window (URL <code>about:blank</code> loaded) is created with the default toolbars of the main window.
@@ -2955,52 +3244,52 @@ onunload: undefined,
 * <div><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=176320" rel="nofollow" shape="rect" title="https://bugzilla.mozilla.org/show_bug.cgi?id=176320">Bug 176320: Minimal innerWidth/innerHeight values for popup windows</a></div>
 * <p><a href="window.open#Note_on_precedence" shape="rect" title="">Note on precedence</a>
 * </p>
-* <dl><dt style="font-weight:bold"> leftÂ </dt><dd> <span id="left">Specifies the distance</span> the new window is placed from the left side of the work area for applications of the user's operating system to the leftmost border (resizing handle) of the browser window. The new window can not be initially positioned offscreen.
+* <dl><dt style="font-weight:bold"> leftÊ</dt><dd> <span id="left">Specifies the distance</span> the new window is placed from the left side of the work area for applications of the user's operating system to the leftmost border (resizing handle) of the browser window. The new window can not be initially positioned offscreen.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:MSIE_ico.png" shape="rect" title="Internet Explorer 5+"/>, <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Opera6.gif" shape="rect" title="Opera 6+"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> topÂ </dt><dd> <span id="topS">Specifies the distance</span> the new window is placed from the top side of the work area for applications of the user's operating system to the topmost border (resizing handle) of the browser window. The new window can not be initially positioned offscreen.
+* <dl><dt style="font-weight:bold"> topÊ</dt><dd> <span id="topS">Specifies the distance</span> the new window is placed from the top side of the work area for applications of the user's operating system to the topmost border (resizing handle) of the browser window. The new window can not be initially positioned offscreen.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:MSIE_ico.png" shape="rect" title="Internet Explorer 5+"/>, <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Opera6.gif" shape="rect" title="Opera 6+"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> heightÂ </dt><dd> <span id="height">Specifies the height</span> of the content area, viewing area of the new secondary window in pixels. The height value includes the height of the horizontal scrollbar if present. The minimum required value is 100.
+* <dl><dt style="font-weight:bold"> heightÊ</dt><dd> <span id="height">Specifies the height</span> of the content area, viewing area of the new secondary window in pixels. The height value includes the height of the horizontal scrollbar if present. The minimum required value is 100.
 * </dd><dd> <a href="window.open#Note_on_outerHeight_versus_height" shape="rect" title="">Note on outerHeight versus height (or innerHeight)</a>
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:MSIE_ico.png" shape="rect" title="Internet Explorer 5+"/>, <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Opera6.gif" shape="rect" title="Opera 6+"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> widthÂ </dt><dd> <span id="width">Specifies the width</span> of the content area, viewing area of the new secondary window in pixels. The width value includes the width of the vertical scrollbar if present. The width value does not include the sidebar if it is expanded. The minimum required value is 100.
+* <dl><dt style="font-weight:bold"> widthÊ</dt><dd> <span id="width">Specifies the width</span> of the content area, viewing area of the new secondary window in pixels. The width value includes the width of the vertical scrollbar if present. The width value does not include the sidebar if it is expanded. The minimum required value is 100.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:MSIE_ico.png" shape="rect" title="Internet Explorer 5+"/>, <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Opera6.gif" shape="rect" title="Opera 6+"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> screenXÂ </dt><dd> Deprecated. Same as <a href="window.open#left" shape="rect" title="">left</a> but only supported by Netscape and Mozilla-based browsers.
+* <dl><dt style="font-weight:bold"> screenXÊ</dt><dd> Deprecated. Same as <a href="window.open#left" shape="rect" title="">left</a> but only supported by Netscape and Mozilla-based browsers.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold">screenYÂ </dt><dd> Deprecated. Same as <a href="window.open#topS" shape="rect" title="">top</a> but only supported by Netscape and Mozilla-based browsers.
+* <dl><dt style="font-weight:bold">screenYÊ</dt><dd> Deprecated. Same as <a href="window.open#topS" shape="rect" title="">top</a> but only supported by Netscape and Mozilla-based browsers.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> centerscreenÂ </dt><dd> Centers the window in relation to its parent's size and position. Requires chrome=yes.
+* <dl><dt style="font-weight:bold"> centerscreenÊ</dt><dd> Centers the window in relation to its parent's size and position. Requires chrome=yes.
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> outerHeightÂ </dt><dd> Specifies the height of the whole browser window in pixels. This outerHeight value includes any/all present toolbar, window horizontal scrollbar (if present) and top and bottom window resizing borders. Minimal required value is 100.
+* <dl><dt style="font-weight:bold"> outerHeightÊ</dt><dd> Specifies the height of the whole browser window in pixels. This outerHeight value includes any/all present toolbar, window horizontal scrollbar (if present) and top and bottom window resizing borders. Minimal required value is 100.
 * </dd><dd> <strong>Note</strong>: since titlebar is always rendered, then requesting outerHeight=100 will make the innerHeight of the browser window under the minimal 100 pixels.
 * </dd><dd> <a href="window.open#Note_on_outerHeight_versus_height" shape="rect" title="">Note on outerHeight versus height (or innerHeight)</a>
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> outerWidthÂ </dt><dd> Specifies the width of the whole browser window in pixels. This outerWidth value includes the window vertical scrollbar (if present) and left and right window resizing borders.
+* <dl><dt style="font-weight:bold"> outerWidthÊ</dt><dd> Specifies the width of the whole browser window in pixels. This outerWidth value includes the window vertical scrollbar (if present) and left and right window resizing borders.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> innerHeightÂ </dt><dd> Same as <a href="window.open#height" shape="rect" title="">height</a> but only supported by Netscape and Mozilla-based browsers. Specifies the height of the content area, viewing area of the new secondary window in pixels. The <var>innerHeight</var> value includes the height of the horizontal scrollbar if present. Minimal required value is 100.
+* <dl><dt style="font-weight:bold"> innerHeightÊ</dt><dd> Same as <a href="window.open#height" shape="rect" title="">height</a> but only supported by Netscape and Mozilla-based browsers. Specifies the height of the content area, viewing area of the new secondary window in pixels. The <var>innerHeight</var> value includes the height of the horizontal scrollbar if present. Minimal required value is 100.
 * </dd><dd> <a href="window.open#Note_on_outerHeight_versus_height" shape="rect" title="">Note on outerHeight versus height (or innerHeight)</a>
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> innerWidthÂ </dt><dd> Same as <a href="window.open#width" shape="rect" title="">width</a> but only supported by Netscape and Mozilla-based browsers. Specifies the width of the content area, viewing area of the new secondary window in pixels. The innerWidth value includes the width of the vertical scrollbar if present. The innerWidth value does not include the sidebar if it is expanded. Minimal required value is 100.
+* <dl><dt style="font-weight:bold"> innerWidthÊ</dt><dd> Same as <a href="window.open#width" shape="rect" title="">width</a> but only supported by Netscape and Mozilla-based browsers. Specifies the width of the content area, viewing area of the new secondary window in pixels. The innerWidth value includes the width of the vertical scrollbar if present. The innerWidth value does not include the sidebar if it is expanded. Minimal required value is 100.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
 * <h3> <span> Toolbar and chrome features </span></h3>
-* <dl><dt style="font-weight:bold"> menubarÂ </dt><dd> If this feature is set to yes, then the new secondary window renders the menubar.
+* <dl><dt style="font-weight:bold"> menubarÊ</dt><dd> If this feature is set to yes, then the new secondary window renders the menubar.
 * </dd><dd> Mozilla and Firefox users can force new windows to always render the menubar by setting <code>dom.disable_window_open_feature.menubar</code> to <var>true</var> in <kbd>about:config</kbd> or in their <a href="http://www.mozilla.org/support/firefox/edit#user" rel="nofollow" shape="rect" title="http://www.mozilla.org/support/firefox/edit#user">user.js file</a>.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:MSIE_ico.png" shape="rect" title="Internet Explorer 5+"/>, <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> toolbarÂ </dt><dd> If this feature is set to <var>yes</var>, then the new secondary window renders the Navigation Toolbar (Back, Forward, Reload, Stop buttons). In addition to the Navigation Toolbar, Mozilla-based browsers will render the Tab Bar if it is visible, present in the parent window.
+* <dl><dt style="font-weight:bold"> toolbarÊ</dt><dd> If this feature is set to <var>yes</var>, then the new secondary window renders the Navigation Toolbar (Back, Forward, Reload, Stop buttons). In addition to the Navigation Toolbar, Mozilla-based browsers will render the Tab Bar if it is visible, present in the parent window.
 * </dd><dd> Mozilla and Firefox users can force new windows to always render the Navigation Toolbar by setting <code>dom.disable_window_open_feature.toolbar</code>to <var>true</var> in <kbd>about:config</kbd> or in their <a href="http://www.mozilla.org/support/firefox/edit#user" rel="nofollow" shape="rect" title="http://www.mozilla.org/support/firefox/edit#user">user.js file</a>.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:MSIE_ico.png" shape="rect" title="Internet Explorer 5+"/>, <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> locationÂ </dt><dd> If this feature is set to <var>yes</var>, then the new secondary window renders the Location bar in Mozilla-based browsers. MSIE 5+ and Opera 7.x renders the Address Bar.
+* <dl><dt style="font-weight:bold"> locationÊ</dt><dd> If this feature is set to <var>yes</var>, then the new secondary window renders the Location bar in Mozilla-based browsers. MSIE 5+ and Opera 7.x renders the Address Bar.
 * </dd><dd> Mozilla and Firefox users can force new windows to always render the location bar by setting <code>dom.disable_window_open_feature.location</code> to <var>true</var> in <kbd>about:config</kbd> or in their <a href="http://www.mozilla.org/support/firefox/edit#user" rel="nofollow" shape="rect" title="http://www.mozilla.org/support/firefox/edit#user">user.js file</a>.
 * </dd></dl>
 * <p>MSIE 7 forces the presence of the Address Bar by default: "We think the address bar is also important for users <b>to see in pop-up windows</b>. A missing address bar creates a chance for a fraudster to forge an address of their own. To help thwart that, <b>IE7 will show the address bar on all internet windows to help users see where they are</b>." coming from <a href="http://blogs.msdn.com/ie/archive/2005/11/21.aspx" rel="nofollow" shape="rect" title="http://blogs.msdn.com/ie/archive/2005/11/21.aspx">Microsoft Internet Explorer Blog, Better Website Identification</a>
@@ -3009,19 +3298,19 @@ onunload: undefined,
 * <div><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=337344" rel="nofollow" shape="rect" title="https://bugzilla.mozilla.org/show_bug.cgi?id=337344">Bug 337344: Change default dom.disable_window_open_feature.location to true</a></div>
 * <dl><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:MSIE_ico.png" shape="rect" title="Internet Explorer 5+"/>, <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Opera6.gif" shape="rect" title="Opera 6+"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> directoriesÂ </dt><dd> If this feature is set to <var>yes</var>, then the new secondary window renders the Personal Toolbar in Netscape 6.x, Netscape 7.x and Mozilla browser. It renders the Bookmarks Toolbar in Firefox 1.x and, in MSIE 5+, it renders the Links bar. In addition to the Personal Toolbar, Mozilla browser will render the Site Navigation Bar if such toolbar is visible, present in the parent window.
+* <dl><dt style="font-weight:bold"> directoriesÊ</dt><dd> If this feature is set to <var>yes</var>, then the new secondary window renders the Personal Toolbar in Netscape 6.x, Netscape 7.x and Mozilla browser. It renders the Bookmarks Toolbar in Firefox 1.x and, in MSIE 5+, it renders the Links bar. In addition to the Personal Toolbar, Mozilla browser will render the Site Navigation Bar if such toolbar is visible, present in the parent window.
 * </dd><dd> Mozilla and Firefox users can force new windows to always render the Personal Toolbar/Bookmarks toolbar by setting <code>dom.disable_window_open_feature.directories</code> to <var>true</var> in <kbd>about:config</kbd> or in their <a href="http://www.mozilla.org/support/firefox/edit#user" rel="nofollow" shape="rect" title="http://www.mozilla.org/support/firefox/edit#user">user.js file</a>.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:MSIE_ico.png" shape="rect" title="Internet Explorer 5+"/>, <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> personalbarÂ </dt><dd> Same as <var>directories</var> but only supported by Netscape and Mozilla-based browsers.
+* <dl><dt style="font-weight:bold"> personalbarÊ</dt><dd> Same as <var>directories</var> but only supported by Netscape and Mozilla-based browsers.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> statusÂ </dt><dd> If this feature is set to <var>yes</var>, then the new secondary window has a status bar. Users can force the rendering of status bar in all Mozilla-based browsers, in MSIE 6 SP2 (<a href="window.open#Note_on_security_issues_of_the_status_bar_presence" shape="rect" title="">Note on status bar in XP SP2</a>) and in Opera 6+. The default preference setting in recent Mozilla-based browser releases and in Firefox 1.0 is to force the presence of the status bar.
+* <dl><dt style="font-weight:bold"> statusÊ</dt><dd> If this feature is set to <var>yes</var>, then the new secondary window has a status bar. Users can force the rendering of status bar in all Mozilla-based browsers, in MSIE 6 SP2 (<a href="window.open#Note_on_security_issues_of_the_status_bar_presence" shape="rect" title="">Note on status bar in XP SP2</a>) and in Opera 6+. The default preference setting in recent Mozilla-based browser releases and in Firefox 1.0 is to force the presence of the status bar.
 * </dd><dd> <a href="window.open#Note_on_status_bar" shape="rect" title="">Note on status bar</a>
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:MSIE_ico.png" shape="rect" title="Internet Explorer 5+"/>, <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
 * <h3> <span> Window functionality features </span></h3>
-* <dl><dt style="font-weight:bold"> resizableÂ </dt><dd> If this feature is set to <var>yes</var>, the new secondary window will be resizable.
+* <dl><dt style="font-weight:bold"> resizableÊ</dt><dd> If this feature is set to <var>yes</var>, the new secondary window will be resizable.
 * </dd><dd> <strong>Note</strong>: Starting with version 1.4, Mozilla-based browsers have a window resizing grippy at the right end of the status bar, this ensures that users can resize the browser window even if the web author requested this secondary window to be non-resizable. In such case, the maximize/restore icon in the window's titlebar will be disabled and the window's borders won't allow resizing but the window will still be resizable via that grippy in the status bar.
 * </dd></dl>
 * <p>It is expected to see secondary window always resizable starting from Firefox 3 (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=177838" rel="nofollow" shape="rect" title="https://bugzilla.mozilla.org/show_bug.cgi?id=177838">bug 177838</a>)
@@ -3033,7 +3322,7 @@ onunload: undefined,
 * <dl><dd> Mozilla and Firefox users can force new windows to be easily resizable by setting <code>dom.disable_window_open_feature.resizable</code> to <var>true</var> in <kbd>about:config</kbd> or in their <a href="http://www.mozilla.org/support/firefox/edit#user" rel="nofollow" shape="rect" title="http://www.mozilla.org/support/firefox/edit#user">user.js file</a>.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:MSIE_ico.png" shape="rect" title="Internet Explorer 5+"/>, <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> scrollbarsÂ </dt><dd> If this feature is set to <var>yes</var>, the new secondary window will show horizontal and/or vertical scrollbar(s) if the document doesn't fit into the window's viewport.
+* <dl><dt style="font-weight:bold"> scrollbarsÊ</dt><dd> If this feature is set to <var>yes</var>, the new secondary window will show horizontal and/or vertical scrollbar(s) if the document doesn't fit into the window's viewport.
 * </dd></dl>
 * <div>
 * <p><strong>Tip</strong>: For accessibility reasons, it is strongly encouraged to set this feature always to <var>yes</var>.
@@ -3043,20 +3332,20 @@ onunload: undefined,
 * </dd><dd> <a href="window.open#Note_on_scrollbars" shape="rect" title="">Note on scrollbars</a>
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:MSIE_ico.png" shape="rect" title="Internet Explorer 5+"/>, <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> dependentÂ </dt><dd> If set to <var>yes</var>, the new window is said to be dependent of its parent window. A dependent window closes when its parent window closes. A dependent window is minimized on the Windows task bar only when its parent window is minimized. On Windows platforms, a dependent window does not show on the task bar. A dependent window also stays in front of the parent window.
+* <dl><dt style="font-weight:bold"> dependentÊ</dt><dd> If set to <var>yes</var>, the new window is said to be dependent of its parent window. A dependent window closes when its parent window closes. A dependent window is minimized on the Windows task bar only when its parent window is minimized. On Windows platforms, a dependent window does not show on the task bar. A dependent window also stays in front of the parent window.
 * </dd><dd> Dependent windows are not implemented on MacOS X, this option will be ignored.
 * </dd><dd> The dependent feature is currently under revision to be removed (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=214867" rel="nofollow" shape="rect" title="https://bugzilla.mozilla.org/show_bug.cgi?id=214867">bug 214867</a>)
 * </dd></dl>
 * <dl><dd> In MSIE 6, the nearest equivalent to this feature is the <code>showModelessDialog()</code> method.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> dialogÂ </dt><dd> The <code>dialog</code> feature removes all icons (restore, minimize, maximize) from the window's titlebar, leaving only the close button. <span><a href="http://developer.mozilla.org/en/docs/Image:MenuSystemCommands.png" shape="rect" title="Firefox and its command system menu under Windows"/></span>Mozilla 1.2+ and Netscape 7.1 will render the other menu system commands (in FF 1.0 and in NS 7.0x, the command system menu is not identified with the Firefox/NS 7.0x icon on the left end of the titlebar: that's probably a bug. You can access the command system menu with a right-click on the titlebar). Dialog windows are windows which have no minimize system command icon and no maximize/restore down system command icon on the titlebar nor in correspondent menu item in the command system menu. They are said to be dialog because their normal, usual purpose is to only notify info and to be dismissed, closed. On Mac systems, dialog windows have a different window border and they may get turned into a sheet.
+* <dl><dt style="font-weight:bold"> dialogÊ</dt><dd> The <code>dialog</code> feature removes all icons (restore, minimize, maximize) from the window's titlebar, leaving only the close button. <span><a href="http://developer.mozilla.org/en/docs/Image:MenuSystemCommands.png" shape="rect" title="Firefox and its command system menu under Windows"/></span>Mozilla 1.2+ and Netscape 7.1 will render the other menu system commands (in FF 1.0 and in NS 7.0x, the command system menu is not identified with the Firefox/NS 7.0x icon on the left end of the titlebar: that's probably a bug. You can access the command system menu with a right-click on the titlebar). Dialog windows are windows which have no minimize system command icon and no maximize/restore down system command icon on the titlebar nor in correspondent menu item in the command system menu. They are said to be dialog because their normal, usual purpose is to only notify info and to be dismissed, closed. On Mac systems, dialog windows have a different window border and they may get turned into a sheet.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> minimizableÂ </dt><dd> This setting can only apply to dialog windows; "minimizable" requires <code>dialog=yes</code>. If <code>minimizable</code> is set to <var>yes</var>, the new dialog window will have a minimize system command icon in the titlebar and it will be minimizable. Any non-dialog window is always minimizable and <code>minimizable=no</code> will be ignored.
+* <dl><dt style="font-weight:bold"> minimizableÊ</dt><dd> This setting can only apply to dialog windows; "minimizable" requires <code>dialog=yes</code>. If <code>minimizable</code> is set to <var>yes</var>, the new dialog window will have a minimize system command icon in the titlebar and it will be minimizable. Any non-dialog window is always minimizable and <code>minimizable=no</code> will be ignored.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> fullscreenÂ </dt><dd> Do not use. Not implemented in Mozilla. There are no plans to implement this feature in Mozilla.
+* <dl><dt style="font-weight:bold"> fullscreenÊ</dt><dd> Do not use. Not implemented in Mozilla. There are no plans to implement this feature in Mozilla.
 * </dd><dd> This feature no longer works in MSIE 6 SP2 the way it worked in MSIE 5.x. The Windows taskbar, as well as the titlebar and the status bar of the window are not visible, nor accessible when fullscreen is enabled in MSIE 5.x.
 * </dd><dd> <code>fullscreen</code> always upsets users with large monitor screen or with dual monitor screen. Forcing <code>fullscreen</code> onto other users is also extremely unpopular and is considered an outright rude attempt to impose web author's viewing preferences onto users.
 * </dd><dd> <a href="window.open#Note_on_fullscreen" shape="rect" title="">Note on fullscreen</a>
@@ -3066,29 +3355,29 @@ onunload: undefined,
 * <h3> <span> Features requiring privileges </span></h3>
 * <p>The following features require the <code>UniversalBrowserWrite</code> privilege, otherwise they will be ignored. Chrome scripts have this privilege automatically, others have to request it from the <a href="http://developer.mozilla.org/en/docs/index.php?title=PrivilegeManager&amp;action=edit" shape="rect" title="PrivilegeManager">PrivilegeManager</a>.
 * </p>
-* <dl><dt style="font-weight:bold"> chromeÂ </dt><dd> <strong>Note</strong>: Starting with Mozilla 1.7/Firefox 0.9, this feature requires the <code>UniversalBrowserWrite</code> privilege (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=244965" rel="nofollow" shape="rect" title="https://bugzilla.mozilla.org/show_bug.cgi?id=244965">bug 244965</a>). Without this privilege, it is ignored.
+* <dl><dt style="font-weight:bold"> chromeÊ</dt><dd> <strong>Note</strong>: Starting with Mozilla 1.7/Firefox 0.9, this feature requires the <code>UniversalBrowserWrite</code> privilege (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=244965" rel="nofollow" shape="rect" title="https://bugzilla.mozilla.org/show_bug.cgi?id=244965">bug 244965</a>). Without this privilege, it is ignored.
 * </dd><dd> If set to <var>yes</var>, the page is loaded as window's only content, without any of the browser's interface elements. There will be no context menu defined by default and none of the standard keyboard shortcuts will work. The page is supposed to provide a user interface of its own, usually this feature is used to open XUL documents (standard dialogs like the JavaScript Console are opened this way).
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> modalÂ </dt><dd> <strong>Note</strong>: Starting with Mozilla 1.2.1, this feature requires the <code>UniversalBrowserWrite</code> privilege (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=180048" rel="nofollow" shape="rect" title="https://bugzilla.mozilla.org/show_bug.cgi?id=180048">bug 180048</a>). Without this privilege, it is ignored.
+* <dl><dt style="font-weight:bold"> modalÊ</dt><dd> <strong>Note</strong>: Starting with Mozilla 1.2.1, this feature requires the <code>UniversalBrowserWrite</code> privilege (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=180048" rel="nofollow" shape="rect" title="https://bugzilla.mozilla.org/show_bug.cgi?id=180048">bug 180048</a>). Without this privilege, it is ignored.
 * </dd><dd> If set to <var>yes</var>, the new window is said to be modal. The user cannot return to the main window until the modal window is closed. A typical modal window is created by the <a href="window.alert" shape="rect" title="DOM:window.alert">alert() function</a>.
 * </dd><dd> The exact behavior of modal windows depends on the platform and on the Mozilla release version.
 * </dd><dd> The MSIE 6 equivalent to this feature is the <code>showModalDialog()</code> method.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> titlebarÂ </dt><dd> By default, all new secondary windows have a titlebar. If set to <var>no</var>, this feature removes the titlebar from the new secondary window.
+* <dl><dt style="font-weight:bold"> titlebarÊ</dt><dd> By default, all new secondary windows have a titlebar. If set to <var>no</var>, this feature removes the titlebar from the new secondary window.
 * </dd><dd> Mozilla and Firefox users can force new windows to always render the titlebar by setting <code>dom.disable_window_open_feature.titlebar</code> to <var>true</var> in <kbd>about:config</kbd> or in their <a href="http://www.mozilla.org/support/firefox/edit#user" rel="nofollow" shape="rect" title="http://www.mozilla.org/support/firefox/edit#user">user.js file</a>.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> alwaysRaisedÂ </dt><dd> If set to <var>yes</var>, the new window will always be displayed on top of other browser windows, regardless of whether it is active or not.
+* <dl><dt style="font-weight:bold"> alwaysRaisedÊ</dt><dd> If set to <var>yes</var>, the new window will always be displayed on top of other browser windows, regardless of whether it is active or not.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> alwaysLoweredÂ </dt><dd> If set to <var>yes</var>, the new created window floats below, under its own parent when the parent window is not minimized. alwaysLowered windows are often referred as pop-under windows. The alwaysLowered window can not be on top of the parent but the parent window can be minimized. In NS 6.x, the alwaysLowered window has no minimize system command icon and no restore/maximize system command.
+* <dl><dt style="font-weight:bold"> alwaysLoweredÊ</dt><dd> If set to <var>yes</var>, the new created window floats below, under its own parent when the parent window is not minimized. alwaysLowered windows are often referred as pop-under windows. The alwaysLowered window can not be on top of the parent but the parent window can be minimized. In NS 6.x, the alwaysLowered window has no minimize system command icon and no restore/maximize system command.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> z-lockÂ </dt><dd> Same as <code>alwaysLowered</code>.
+* <dl><dt style="font-weight:bold"> z-lockÊ</dt><dd> Same as <code>alwaysLowered</code>.
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> closeÂ </dt><dd> When set to <var>no</var>, this feature removes the system close command icon and system close menu item. It will only work for dialog windows (<code>dialog</code> feature set). <code>close=no</code> will override <code>minimizable=yes</code>.
+* <dl><dt style="font-weight:bold"> closeÊ</dt><dd> When set to <var>no</var>, this feature removes the system close command icon and system close menu item. It will only work for dialog windows (<code>dialog</code> feature set). <code>close=no</code> will override <code>minimizable=yes</code>.
 * </dd><dd> Mozilla and Firefox users can force new windows to always have a close button by setting <code>dom.disable_window_open_feature.close</code> to <var>true</var> in <kbd>about:config</kbd> or in their <a href="http://www.mozilla.org/support/firefox/edit#user" rel="nofollow" shape="rect" title="http://www.mozilla.org/support/firefox/edit#user">user.js file</a>.
 * </dd><dd> Supported in: <a href="http://developer.mozilla.org/en/docs/Image:ns6.gif" shape="rect" title="Netscape 6.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:NS7_ico4.gif" shape="rect" title="Netscape 7.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:Mozilla1_ico.png" shape="rect" title="Mozilla 1.x"/>, <a href="http://developer.mozilla.org/en/docs/Image:FF1x.png" shape="rect" title="Firefox 1.x"/>
 * </dd></dl>
@@ -3192,7 +3481,7 @@ onunload: undefined,
 * WindowObjectReference = window.open(strUrl, "SingleSecondaryWindowName",
 * "resizable=yes,scrollbars=yes,status=yes");
 * }
-* else if(previousUrlÂ != strUrl)
+* else if(previousUrlÊ!= strUrl)
 * {
 * WindowObjectReference = window.open(strUrl, "SingleSecondaryWindowName",
 * "resizable=yes,scrollbars=yes,status=yes");
@@ -3351,9 +3640,9 @@ onunload: undefined,
 * In any case, if your code is well done, it should not interfere with the user's final choice but rather merely offer him more choices, more ways to open links and more power to the tool he's using (a browser).
 * </p>
 * <h2> <span> Glossary </span></h2>
-* <dl><dt style="font-weight:bold"> Opener window, parent window, main window, first windowÂ </dt><dd> Terms often used to describe or to identify the same window. It is the window from which a new window will be created. It is the window on which the user clicked a link which lead to the creation of another, new window.
+* <dl><dt style="font-weight:bold"> Opener window, parent window, main window, first windowÊ</dt><dd> Terms often used to describe or to identify the same window. It is the window from which a new window will be created. It is the window on which the user clicked a link which lead to the creation of another, new window.
 * </dd></dl>
-* <dl><dt style="font-weight:bold"> Sub-window, child window, secondary window, second windowÂ </dt><dd> Terms often used to describe or to identify the same window. It is the new window which was created.
+* <dl><dt style="font-weight:bold"> Sub-window, child window, secondary window, second windowÊ</dt><dd> Terms often used to describe or to identify the same window. It is the new window which was created.
 * </dd></dl>
 * <dl><dt style="font-weight:bold"> Unrequested popup windows</dt><dd> Script-initiated windows opening automatically without the user's consent.
 * </dd></dl>
@@ -3439,7 +3728,7 @@ onunload: undefined,
 * <h2> <span> Tutorials </span></h2>
 * <p><a href="http://www.infimum.dk/HTML/JSwindows.html" rel="nofollow" shape="rect" title="http://www.infimum.dk/HTML/JSwindows.html">JavaScript windows (tutorial)</a> by Lasse Reichstein Nielsen
 * </p><p><a href="http://www.accessify.com/tutorials/the-perfect-pop-up.asp" rel="nofollow" shape="rect" title="http://www.accessify.com/tutorials/the-perfect-pop-up.asp">The perfect pop-up (tutorial)</a> by Ian Lloyd
-* </p><p><a href="http://www.gtalbot.org/FirefoxSection/Popup/PopupAndFirefox.html" rel="nofollow" shape="rect" title="http://www.gtalbot.org/FirefoxSection/Popup/PopupAndFirefox.html">Popup windows and Firefox (interactive demos)</a> by GÃ©rard Talbot
+* </p><p><a href="http://www.gtalbot.org/FirefoxSection/Popup/PopupAndFirefox.html" rel="nofollow" shape="rect" title="http://www.gtalbot.org/FirefoxSection/Popup/PopupAndFirefox.html">Popup windows and Firefox (interactive demos)</a> by GŽrard Talbot
 * </p>
 * <h2> <span> References </span></h2>
 * <p><a href="http://www.cs.tut.fi/~jkorpela/www/links.html" rel="nofollow" shape="rect" title="http://www.cs.tut.fi/~jkorpela/www/links.html">Links Want To Be Links</a> by Jukka K. Korpela
@@ -3463,11 +3752,11 @@ open: function(strUrl, strWindowName , strWindowFeatures) {
 * <h2> <span> Syntax </span></h2>
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve"><i>newWindow</i> = openDialog(<i>url</i>, <i>name</i>, <i>features</i>, <i>arg1</i>, <i>arg2</i>, ...)
 * </pre>
-* <dl><dt style="font-weight:bold"> newWindowÂ </dt><dd> The opened window
-* </dd><dt style="font-weight:bold"> urlÂ </dt><dd> The URL to be loaded in the newly opened window.
-* </dd><dt style="font-weight:bold"> nameÂ </dt><dd> The window name (optional). See <a href="DOM:window.open" shape="rect" title="DOM:window.open">window.open</a> description for detailed information.
-* </dd><dt style="font-weight:bold"> featuresÂ </dt><dd> See <a href="window.open" shape="rect" title="DOM:window.open">window.open</a> description for description.
-* </dd><dt style="font-weight:bold"> arg1, arg2, ...Â </dt><dd> The arguments to be passed to the new window (optional).
+* <dl><dt style="font-weight:bold"> newWindowÊ</dt><dd> The opened window
+* </dd><dt style="font-weight:bold"> urlÊ</dt><dd> The URL to be loaded in the newly opened window.
+* </dd><dt style="font-weight:bold"> nameÊ</dt><dd> The window name (optional). See <a href="DOM:window.open" shape="rect" title="DOM:window.open">window.open</a> description for detailed information.
+* </dd><dt style="font-weight:bold"> featuresÊ</dt><dd> See <a href="window.open" shape="rect" title="DOM:window.open">window.open</a> description for description.
+* </dd><dt style="font-weight:bold"> arg1, arg2, ...Ê</dt><dd> The arguments to be passed to the new window (optional).
 * </dd></dl>
 * <h2> <span> Example </span></h2>
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">var win = openDialog("http://example.tld/zzz.xul", "dlg", "", "pizza", 6.98);
@@ -3529,7 +3818,7 @@ openDialog: function(url, name, features, arg1, arg2) {
 * </pre>
 * <h2> <span>Example </span></h2>
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">
-* if window.openerÂ != indexWin {
+* if window.openerÊ!= indexWin {
 * referToTop(window.opener);
 * }
 * </pre>
@@ -3669,7 +3958,7 @@ pageYOffset: undefined,
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">var <i>parentWindow</i> = window.parent
 * </pre>
 * <h2> <span> Example </span></h2>
-* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">if (window.parentÂ != window.top) {
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">if (window.parentÊ!= window.top) {
 * // we're deeper than one down
 * }
 * </pre>
@@ -3706,7 +3995,7 @@ parent: undefined,
 * netscape.security.PrivilegeManager.
 * enablePrivilege("UniversalBrowserWrite");
 * window.personalbar.visible=
-* Â !window.personalbar.visible;
+* Ê!window.personalbar.visible;
 * &lt;/script&gt;
 * &lt;/head&gt;
 * &lt;body&gt;
@@ -3728,6 +4017,35 @@ parent: undefined,
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
 personalbar: undefined,
+/**
+* <h2> <span> Summary </span></h2>
+* <p>Returns the bit depth of the screen.
+* </p>
+* <h2> <span> Syntax </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">depth = window.screen.pixelDepth
+* </pre>
+* <h2> <span> Example </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">// if there is not adequate bit depth
+* // choose a simpler color
+* if ( window.screen.pixelDepth &gt; 8 ) {
+* document.style.color = "#FAEBD7";
+* } else {
+* document.style.color = "#FFFFFF";
+* }
+* </pre>
+* <h2> <span> Notes </span></h2>
+* <p>See also <a href="DOM:window.screen.colorDepth" shape="rect" title="DOM:window.screen.colorDepth">window.screen.colorDepth</a>.
+* </p>
+* <h2> <span> Specification </span></h2>
+* <p>DOM Level 0. Not part of specification.
+* </p>
+* 
+* <div id="catlinks"><p><a href="http://developer.mozilla.org/en/docs/Special:Categories" shape="rect" title="Special:Categories">Category</a>: <span dir="ltr"><a href="http://developer.mozilla.org/en/docs/Category:Gecko_DOM_Reference" shape="rect" title="Category:Gecko DOM Reference">Gecko DOM Reference</a></span></p></div>
+* 
+* <ul style="list-style-type:none;font-size:0.9em;text-align:center">
+* <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
+*/
+pixelDepth: undefined,
 /**
 * <h2> <span>Summary</span></h2>
 * <p>Returns the <b>pkcs11</b> object , which can be used to install drivers and other software associated with the <a href="http://developer.mozilla.org/en/docs/index.php?title=pkcs11_protocol&amp;action=edit" shape="rect" title="pkcs11 protocol">pkcs11 protocol</a>.
@@ -3844,6 +4162,35 @@ releaseEvents: function(eventType) {
 },
 /**
 * <h2> <span>Summary</span></h2>
+* <p><b>removeEventListener</b> allows the removal of event listeners from the event target.
+* </p>
+* <h2> <span>Syntax </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">element.removeEventListener(<i>type</i>, <i>listener</i>, <i>useCapture</i>)
+* </pre>
+* <h2> <span>Parameters </span></h2>
+* <dl><dt style="font-weight:bold"><code>type</code>Ê</dt><dd> A string representing the event type being registered.
+* </dd><dt style="font-weight:bold"><code>listener</code>Ê</dt><dd> The listener parameter takes an interface implemented by the user which contains the methods to be called when the event occurs.
+* </dd><dt style="font-weight:bold"><code>useCapture</code>Ê</dt><dd> If true, useCapture indicates that the user wishes to initiate capture. After initiating capture, all events of the specified type will be dispatched to the registered EventListener before being dispatched to any EventTargets beneath them in the tree. Events which are bubbling upward through the tree will not trigger an EventListener designated to use capture.
+* </dd></dl>
+* <h2> <span>Notes </span></h2>
+* <p>If an EventListener is removed from an EventTarget while it is processing an event, it will not be triggered by the current actions. EventListeners can never be invoked after being removed.
+* Calling removeEventListener with arguments which do not identify any currently registered EventListener on the EventTarget has no effect.
+* See also <a href="http://developer.mozilla.org/en/docs/addEventListener" shape="rect" title="addEventListener">addEventListener</a>.
+* </p>
+* <h2> <span>Specification </span></h2>
+* <p><a href="http://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-EventTarget-removeEventListener" rel="nofollow" shape="rect" title="http://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-EventTarget-removeEventListener">removeEventListener </a>
+* </p>
+* 
+* <div id="catlinks"><p><a href="http://developer.mozilla.org/en/docs/Special:Categories" shape="rect" title="Special:Categories">Category</a>: <span dir="ltr"><a href="http://developer.mozilla.org/en/docs/Category:Gecko_DOM_Reference" shape="rect" title="Category:Gecko DOM Reference">Gecko DOM Reference</a></span></p></div>
+* 
+* <ul style="list-style-type:none;font-size:0.9em;text-align:center">
+* <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
+*/
+removeEventListener: function(type, listener, useCapture) {
+  // This is just a stub for a builtin native JavaScript object.
+},
+/**
+* <h2> <span>Summary</span></h2>
 * <p>Resizes the current window by a certain amount.
 * </p>
 * <h2> <span>Syntax </span></h2>
@@ -3908,6 +4255,7 @@ resizeBy: function(xDelta, yDelta) {
 resizeTo: function(iWidth, iHeight) {
   // This is just a stub for a builtin native JavaScript object.
 },
+returnValue: undefined,
 /**
 * <h2> <span> Summary </span></h2>
 * <p>Returns a reference to the screen object associated with the window.
@@ -4342,7 +4690,7 @@ scrollbars: undefined,
 * </pre>
 * <h2> <span>Example </span></h2>
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">
-* if (window.parent.frames[0]Â != window.self) {
+* if (window.parent.frames[0]Ê!= window.self) {
 * // this window is not the first frame in the list
 * }
 * </pre>
@@ -4359,6 +4707,7 @@ scrollbars: undefined,
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
 self: undefined,
+sessionStorage: undefined,
 /**
 * <h2> <span> Summary </span></h2>
 * <p>Calls a function repeatedly, with a fixed time delay between each call to that function.
@@ -4821,7 +5170,7 @@ top: undefined,
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">alert(unescape("%5C")); // displays "\"
 * </pre>
 * <h2> <span> Notes </span></h2>
-* <p>See also <a href="DOM:window.escape" shape="rect" title="DOM:window.escape">escape</a>, <a href="http://developer.mozilla.org/en/docs/Global_Functions:decodeURIComponent" shape="rect" title="Core JavaScript 1.5 Reference:Global Functions:decodeURIComponent">decodeURIComponent</a>.
+* <p>See also <a href="DOM:window.escape" shape="rect" title="DOM:window.escape">escape</a>, <a href="http://developer.mozilla.org/en/docs/decodeURIComponent" shape="rect" title="Core JavaScript 1.5 Reference:Global Functions:decodeURIComponent">decodeURIComponent</a>.
 * </p>
 * <h2> <span> Specification </span></h2>
 * <p>DOM Level 0. Not part of any standard. Mentioned in a non-normative section of ECMA-262.
@@ -4860,6 +5209,33 @@ unescape: function(escaped) {
 updateCommands: function(sCommandName) {
   // This is just a stub for a builtin native JavaScript object.
 },
+/**
+* <h2> <span> Summary </span></h2>
+* <p>Returns the width of the screen.
+* </p>
+* <h2> <span> Syntax </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">lWidth = window.screen.width
+* </pre>
+* <h2> <span> Example </span></h2>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">// crude way to check that the screen is at 1024x768
+* if (window.screen.width &gt; 1000) {
+* // resolution is below 10 x 7
+* }
+* </pre>
+* <h2> <span> Notes </span></h2>
+* <p>Note that not all of the width given by this property may be available to the window itself. When other widgets occupy space that cannot be used by the <code>window</code> object, there is a difference in <code>window.screen.width</code> and <code>window.screen.availWidth</code>.
+* See also <a href="DOM:window.screen.height" shape="rect" title="DOM:window.screen.height">window.screen.height</a>.
+* </p>
+* <h2> <span> Specification </span></h2>
+* <p>DOM Level 0. Not part of specification.
+* </p>
+* 
+* <div id="catlinks"><p><a href="http://developer.mozilla.org/en/docs/Special:Categories" shape="rect" title="Special:Categories">Category</a>: <span dir="ltr"><a href="http://developer.mozilla.org/en/docs/Category:Gecko_DOM_Reference" shape="rect" title="Category:Gecko DOM Reference">Gecko DOM Reference</a></span></p></div>
+* 
+* <ul style="list-style-type:none;font-size:0.9em;text-align:center">
+* <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
+*/
+width: undefined,
 /**
 * <h2> <span> Summary </span></h2>
 * <p>The <code>window</code> property of a window object points to the window object itself. Thus the following expressions all return the same window object:

@@ -24,6 +24,10 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.PHPLanguage"/>
                 </file>
+                <file name="parser.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Parser"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.parser.GSFPHPParser"/>
+                </file>
             </folder>
         </folder>
     </folder>

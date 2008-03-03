@@ -248,8 +248,17 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
 
         private void recalculate() {
             boolean fire;
+            Map<ProjectLibraryImplementation, List<String>> toFire = new HashMap<ProjectLibraryImplementation, List<String>>();
             synchronized (this) {
-                fire = delta(libraries, calculate(area));
+                fire = delta(libraries, calculate(area), toFire);
+            }
+            //#128784, don't fire in synchronized block..
+            if (toFire.size() > 0) {
+                for (ProjectLibraryImplementation impl : toFire.keySet()) {
+                    for (String prop : toFire.get(impl)) {
+                        impl.pcs.firePropertyChange(prop, null, null);
+                    }
+                }
             }
             if (fire) {
                 pcs.firePropertyChange(LibraryProvider.PROP_LIBRARIES, null, null);
@@ -473,10 +482,12 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         return libs;
     }
 
-    private boolean delta(Map<String,ProjectLibraryImplementation> libraries, Map<String,ProjectLibraryImplementation> newLibraries) {
+    private boolean delta(Map<String,ProjectLibraryImplementation> libraries, Map<String,ProjectLibraryImplementation> newLibraries,
+                          Map<ProjectLibraryImplementation, List<String>> toFire) {
         if (!listening) {
             return false;
         }
+        assert toFire != null;
         Set<String> added = new HashSet<String>(newLibraries.keySet());
         added.removeAll(libraries.keySet());
         Set<String> removed = new HashSet<String>();
@@ -498,11 +509,21 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             assert old.name.equals(nue.name);
             if (!Utilities.compareObjects(old.description, nue.description)) {
                 old.description = nue.description;
-                old.pcs.firePropertyChange(LibraryImplementation.PROP_DESCRIPTION, null, null);
+                List<String> props = toFire.get(old);
+                if (props == null) {
+                    props = new ArrayList<String>();
+                    toFire.put(old, props);
+                }
+                props.add(LibraryImplementation.PROP_DESCRIPTION);
             }
             if (!old.contents.equals(nue.contents)) {
                 old.contents = nue.contents;
-                old.pcs.firePropertyChange(LibraryImplementation.PROP_CONTENT, null, null);
+                List<String> props = toFire.get(old);
+                if (props == null) {
+                    props = new ArrayList<String>();
+                    toFire.put(old, props);
+                }
+                props.add(LibraryImplementation.PROP_CONTENT);
             }
         }
         for (String name : added) {

@@ -23,15 +23,31 @@
             <file name="ApiKeyAuthenticator.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/ApiKeyAuthenticator.template">
                 <attr name="position" intvalue="60"/>
             </file>
-            <file name="HttpBasicAuthenticator.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/HttpBasicAuthenticator.template">
+            <file name="apikey.properties" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/apikey.properties">
                 <attr name="position" intvalue="70"/>
             </file>
-            <file name="AuthorizationFrame.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/AuthorizationFrame.template">
+            <file name="HttpBasicAuthenticator.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/HttpBasicAuthenticator.template">
                 <attr name="position" intvalue="80"/>
             </file>
-            <file name="SignedUrlAuthenticator.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/SignedUrlAuthenticator.template">
+            <file name="httpbasic.properties" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/httpbasic.properties">
                 <attr name="position" intvalue="90"/>
             </file>
+            <file name="AuthorizationFrame.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/AuthorizationFrame.template">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="SessionKeyAuthenticator.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/SessionKeyAuthenticator.template">
+                <attr name="position" intvalue="110"/>
+            </file>
+            <file name="sessionkey.properties" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/sessionkey.properties">
+                <attr name="position" intvalue="120"/>
+            </file>
+            <file name="SignedUrlAuthenticator.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/SignedUrlAuthenticator.template">
+                <attr name="position" intvalue="130"/>
+            </file>
+            <file name="signedurl.properties" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/signedurl.properties">
+                <attr name="position" intvalue="140"/>
+            </file>
+            
         </folder>
     </folder>
 </filesystem>

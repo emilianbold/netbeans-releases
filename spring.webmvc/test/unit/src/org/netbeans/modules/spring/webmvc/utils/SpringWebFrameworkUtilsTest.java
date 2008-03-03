@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.spring.webmvc.utils;
 
-import org.netbeans.modules.spring.webmvc.utils.SpringWebFrameworkUtils;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -55,23 +54,27 @@ public class SpringWebFrameworkUtilsTest extends NbTestCase {
     }
 
     public void testDispatcherNameEntry_NonWordCharacterPattern() throws Exception {       
-        assert(SpringWebFrameworkUtils.isDispatcherNameValid("Dis-patcher") == false);
+        assert(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dis*patcher") == false);
     }
     
-    public void testDispatcherNameEntry_EmptyWordCharacterPattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherNameValid("") == false);
-    }
+//    public void testDispatcherNameEntry_EmptyWordCharacterPattern() throws Exception {
+//        assert(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("") == false);
+//    }
     
     public void testDispatcherNameEntry_ValidPattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherNameValid("Dispatcher") == true);
+        assert(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispatcher") == true);
     }  
-            
+    
+    public void testDispatcherNameEntry_ValidAmpersandPattern() throws Exception {
+        assert(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispatcher&amp;") == true);
+    } 
+         
     public void testDispatcherNameEntry_NonWordUnicodeCharacterPattern() throws Exception {       
-        assert(SpringWebFrameworkUtils.isDispatcherNameValid("あｂ３＿^え") == false);  // ^ is the invalid character
+        assert(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("あｂ３＿:え") == false);  // ^ is the invalid character
     }        
     
     public void testDispatcherNameEntry_ValidUnicodePattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherNameValid("あおうえｂ３＿え") == true);
+        assert(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("あおうえｂ３＿え") == true);
     }  
     public void testDispatcherMappingEntry_ExtensionSpacePattern() throws Exception {
         assert(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("*.h tm") == false);

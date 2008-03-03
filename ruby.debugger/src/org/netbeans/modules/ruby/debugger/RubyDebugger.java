@@ -228,7 +228,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         DebuggerEngine[] es = dm.startDebugging(di);
         
         RubyDebuggerActionProvider provider =
-                (RubyDebuggerActionProvider) es[0].lookupFirst(null, RubyDebuggerActionProvider.class);
+                es[0].lookupFirst(null, RubyDebuggerActionProvider.class);
         assert provider != null;
         proxy.addRubyDebugEventListener(provider);
     }

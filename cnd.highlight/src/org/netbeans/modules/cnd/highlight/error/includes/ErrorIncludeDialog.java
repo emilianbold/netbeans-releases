@@ -79,7 +79,7 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -144,7 +144,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                         if (searchBase != null) {
                             searchBase.clear();
                         }
-                        CsmModelAccessor.getModel().removeModelListener(ErrorIncludeDialog.this);
+                        CsmListeners.getDefault().removeModelListener(ErrorIncludeDialog.this);
                     }
                 }
             }
@@ -173,7 +173,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
         dlg.setVisible(true);
         errors.parent = dlg;
-        CsmModelAccessor.getModel().addModelListener(errors);
+        CsmListeners.getDefault().addModelListener(errors);
     }
     
     private void createComponents(List<CsmInclude> includes) {
