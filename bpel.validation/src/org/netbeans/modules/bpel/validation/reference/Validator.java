@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.bpel.validation.reference;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -70,7 +69,6 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
-import org.netbeans.modules.bpel.validation.core.Outcome;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
@@ -113,17 +111,15 @@ public final class Validator extends BpelValidator {
       builder.append( string );
       builder.append(", "); // NOI18N
     }
-    String str;
+    String key;
 
     if (set.size() > 1) {
-      str = i18n(Validator.class, FIX_VARIABLES);
-      str = MessageFormat.format(str, builder.substring(0, builder.length()-2), expression.trim());
+      key = "FIX_Variables";
     }
     else {
-      str = i18n(Validator.class, FIX_VARIABLE);
-      str = MessageFormat.format(str, builder.substring(0, builder.length()-2), expression.trim());
+      key = "FIX_Variable";
     }
-    addErrorMessage(str, entity);
+    addError(key, entity, builder.substring(0, builder.length()-2), expression.trim());
   }
   
   private void findDeclarationsAscendant(BpelEntity entity, Set<String> set) {
@@ -178,43 +174,13 @@ public final class Validator extends BpelValidator {
       if (reference == null) {
         continue;
       }
-      if (reference.isBroken()) {
-        addQuickFix(new Outcome(this, ResultType.ERROR, (Component) entity,
-          getMessage(entity, reference), QuickFix.get(entity, (Reference<Referenceable>) reference)));
+      if ( !reference.isBroken()) {
+        continue;
       }
+      String tag = entity.getPeer().getLocalName();
+      String attr = ((MappedReference) reference).getAttribute().getName();
+
+      addQuickFix("FIX_Reference", entity, tag, attr, QuickFix.get(entity, (Reference<Referenceable>) reference));
     }
   }
-
-  private String getMessage(BpelEntity entity, Reference ref) {
-      String str = null;
-      String tagName = entity.getPeer().getLocalName();
-      Attribute attr = null;
-
-      if (ref instanceof MappedReference) {
-        attr = ((MappedReference) ref).getAttribute();
-      }
-      if (ref instanceof BpelReference) {
-        str = i18n(getClass(), FIX_REFERENCE);
-        str = MessageFormat.format(str, tagName, attr.getName()) + " " + i18n(getClass(), FIX_CORRECTION); // NOI18N
-      }
-      else if (ref instanceof WSDLReference) {
-        str = i18n(getClass(), FIX_REFERENCE_EXTERNAL);
-        str = MessageFormat.format(str, tagName, attr.getName(), WSDL) + " " + i18n(getClass(), FIX_CORRECTION_EXTERNAL); // NOI18N
-      }
-      else if (ref instanceof SchemaReference) {
-        str = i18n(getClass(), FIX_REFERENCE_EXTERNAL);
-        str = MessageFormat.format(str, tagName, attr.getName(), XSD) + " " + i18n(getClass(),FIX_CORRECTION_EXTERNAL); // NOI18N
-      }
-      return str;
-  }
-
-  private static final String FIX_VARIABLES = "FIX_Variables";    // NOI18N
-  private static final String FIX_VARIABLE = "FIX_Variable";      // NOI18N
-  private static final String FIX_CORRECTION_EXTERNAL = "FIX_Correction_External"; // NOI18N
-  private static final String XSD = "xsd";                        // NOI18N
-  private static final String WSDL = "WSDL";                      // NOI18N
-  private static final String FIX_REFERENCE_EXTERNAL = "FIX_Reference_External"; // NOI18N
-  private static final String FIX_CORRECTION = "FIX_Correction";  // NOI18N
-  private static final String FIX_UNKNOWN = "FIX_Unknown";        // NOI18N
-  private static final String FIX_REFERENCE = "FIX_Reference";    // NOI18N
 }
