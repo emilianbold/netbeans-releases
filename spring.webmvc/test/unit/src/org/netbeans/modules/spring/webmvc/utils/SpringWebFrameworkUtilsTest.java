@@ -53,66 +53,66 @@ public class SpringWebFrameworkUtilsTest extends NbTestCase {
         super(testName);
     }
 
-    public void testDispatcherNameEntry_NonWordCharacterPattern() throws Exception {       
+    public void testDispatcherName_NonWordCharacterPattern() throws Exception {       
         assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dis*patcher"));
     }
     
-//    public void testDispatcherNameEntry_EmptyWordCharacterPattern() throws Exception {
+//    public void testDispatcherName_EmptyWordCharacterPattern() throws Exception {
 //        assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid(""));
 //    }
     
-    public void testDispatcherNameEntry_ValidPattern() throws Exception {
+    public void testDispatcherName_ValidPattern() throws Exception {
         assertTrue(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispatcher"));
     }  
     
-    public void testDispatcherNameEntry_ValidAmpersandPattern() throws Exception {
+    public void testDispatcherName_ValidAmpersandPattern() throws Exception {
         assertTrue(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispatcher&amp;"));
     } 
          
-    public void testDispatcherNameEntry_NonWordUnicodeCharacterPattern() throws Exception {       
+    public void testDispatcherName_NonWordUnicodeCharacterPattern() throws Exception {       
         assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("あｂ３＿:え"));  // ^ is the invalid character
     }        
     
-    public void testDispatcherNameEntry_ValidUnicodePattern() throws Exception {
+    public void testDispatcherName_ValidUnicodePattern() throws Exception {
         assertTrue(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("あおうえｂ３＿え"));
     }  
-    public void testDispatcherMappingEntry_ExtensionSpacePattern() throws Exception {
+    public void testDispatcherMapping_ExtensionSpacePattern() throws Exception {
         assertFalse(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("*.h tm"));
     }
     
-    public void testDispatcherMappingEntry_ExtensionNonWordPattern() throws Exception {
+    public void testDispatcherMapping_ExtensionNonWordPattern() throws Exception {
         assertFalse(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("*.h&tm"));
     }
     
-    public void testDispatcherMappingEntry_ServletSpacePattern() throws Exception {
+    public void testDispatcherMapping_ServletSpacePattern() throws Exception {
         assertFalse(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("/a /*"));
     }
     
-    public void testDispatcherMappingEntry_PathSpacePattern() throws Exception {
+    public void testDispatcherMapping_PathSpacePattern() throws Exception {
         assertFalse(SpringWebFrameworkUtils.isDispatcherMappingPatternValid(" /"));
     }
     
-    public void testDispatcherMappingEntry_InvalidExtensionPattern() throws Exception {
+    public void testDispatcherMapping_InvalidExtensionPattern() throws Exception {
         assertFalse(SpringWebFrameworkUtils.isDispatcherMappingPatternValid( "*."));
     }       
      
-    public void testDispatcherMappingEntry_InvalidPathPattern() throws Exception {
+    public void testDispatcherMapping_InvalidPathPattern() throws Exception {
         assertFalse(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("/a"));
     }
     
-    public void testDispatcherMappingEntry_ValidPathPattern() throws Exception {
+    public void testDispatcherMapping_ValidPathPattern() throws Exception {
         assertTrue(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("/"));
     }
     
-    public void testDispatcherMappingEntry_InvalidDefaultServletPattern() throws Exception {
+    public void testDispatcherMapping_InvalidDefaultServletPattern() throws Exception {
         assertFalse(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("/a*/"));
     }
     
-    public void testDispatcherMappingEntry_ValidDefaultServletPattern() throws Exception {
+    public void testDispatcherMapping_ValidDefaultServletPattern() throws Exception {
         assertTrue(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("/app/*"));
     }
         
-    public void testDispatcherMappingEntry_ValidPattern() throws Exception {
+    public void testDispatcherMapping_ValidPattern() throws Exception {
         assertTrue(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("*.htm"));
     }                   
     
