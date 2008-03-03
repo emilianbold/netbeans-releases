@@ -64,6 +64,7 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -155,8 +156,15 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     
     /**
      * Flag whether class path is current.
+     * <p>
+     * <ul><em>AtomicLong</em> and not <em>volatile boolean</em> because of the following race condition:
+     * <li> class path changes
+     * <li> task starts
+     * <li> tast changes flag to 'synchronized'
+     * <li> but a very short while before, the class path changes again
+     * </ul>
      */
-    volatile boolean cpCurrent = false;
+    final AtomicLong cpCurrent = new AtomicLong(0L);
     
     // request processor for cleaning mappings cache and reiniting options
     private static final int REINIT_OPTIONS_DELAY = 2000; // ms
@@ -189,7 +197,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
 
         // request procesor tasks
         RequestProcessor requestProcessor = new RequestProcessor("JSP parser :: Reinit caches"); // NOI18N
-        reinitCachesTask = requestProcessor.create(new ReinitOptions());
+        reinitCachesTask = requestProcessor.create(new ReinitCaches());
 
         requestProcessor = new RequestProcessor("JSP parser :: TLD change"); // NOI18N
         tldChangeTask = requestProcessor.create(new TldChange());
@@ -241,7 +249,6 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         // try null, but test with tag files
         //new JspRuntimeContext(context, options);
         createClassLoaders();
-        cpCurrent = true;
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initialized in " + (System.currentTimeMillis() - start) + " ms");
         }
@@ -428,7 +435,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
      * from both expanded directory structures and jar files.
      */
     public synchronized URLClassLoader getWAClassLoader() {
-        if (!cpCurrent) {
+        if (cpCurrent.get() != 0L) {
             reinitOptions();
         }
         return waClassLoader;
@@ -607,8 +614,8 @@ System.out.println("--------ENDSTACK------");        */
      */
     public void propertyChange(PropertyChangeEvent evt) {
         // classpath has channged => invalidate cache
-        LOG.fine("class path has changed");
-        cpCurrent = false;
+        LOG.fine("Class path has changed");
+        cpCurrent.incrementAndGet();
         reinitCachesTask.schedule(REINIT_OPTIONS_DELAY);
     }
 
@@ -713,20 +720,24 @@ System.out.println("--------ENDSTACK------");        */
 
     void reinitCaches() {
         assert Thread.holdsLock(this);
-        if (!cpCurrent) {
+        final long counter = cpCurrent.get();
+        LOG.fine("Current class path: " + (counter == 0L));
+        if (counter != 0L) {
             reinitOptions();
+            boolean cpSet = cpCurrent.compareAndSet(counter, 0L);
+            LOG.fine("Class path " + (cpSet ? "" : "*NOT* ") + "set to current");
         }
         clearTagLibraryInfoCache();
         reinitTagLibMappings();
         tldChangeTask.run();
     }
 
-    final class ReinitOptions implements Runnable {
+    final class ReinitCaches implements Runnable {
         public void run() {
             synchronized (WebAppParseSupport.this) {
-                LOG.fine("ReinitOptions task started (current classpath: " + cpCurrent + ")");
+                LOG.fine("ReinitCaches task started");
                 reinitCaches();
-                LOG.fine("ReinitOptions task finished");
+                LOG.fine("ReinitCaches task finished");
             }
         }
     }
