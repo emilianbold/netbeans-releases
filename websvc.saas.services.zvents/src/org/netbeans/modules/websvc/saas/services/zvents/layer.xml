@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    
+    <folder name="SaaSServices">
+        <folder name="Zvents">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.zvents.Bundle"/>
+            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/zvents/resources/profile.properties"/>
+            <file name="Zvents.xml" url="/org/netbeans/modules/websvc/saas/services/zvents/resources/Zvents.xml"/>
+        </folder>
+    </folder>
+    
+</filesystem>

@@ -46,6 +46,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.editor.reformat.DiffLinkedList.DiffResult;
+import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
 import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
@@ -540,6 +541,44 @@ public class ExtendedTokenSequence {
 
     @Override
     public String toString() {
-        return ts.toString();
+        //return ts.toString();
+        return apply(diffs, this);
+    }
+
+    /*package local*/ static String apply(DiffLinkedList diffs, ExtendedTokenSequence ts) {
+        int index = ts.index();
+        StringBuilder buf = new StringBuilder();
+        try {
+            ts.moveStart();
+            while(ts.moveNext()){
+                buf.append(ts.token().text());
+            }
+            int startOffset = 0;
+            int endOffset = buf.length();
+            for (Diff diff : diffs.getStorage()) {
+                int start = diff.getStartOffset();
+                int end = diff.getEndOffset();
+                String text = diff.getText();
+                if (startOffset > end || endOffset < start) {
+                    continue;
+                }
+                if (endOffset < end) {
+                    if (text != null && text.length() > 0) {
+                        text = end - endOffset >= text.length() ? null : text.substring(0, text.length() - end + endOffset);
+                    }
+                    end = endOffset;
+                }
+                if (end - start > 0) {
+                    buf.delete(start, end);
+                }
+                if (text != null && text.length() > 0) {
+                    buf.insert(start, text);
+                }
+            }
+            return buf.toString();
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
     }
 }

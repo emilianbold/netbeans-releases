@@ -100,16 +100,14 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
     public RunIntoMethodActionProvider(ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst 
                 (null, JPDADebugger.class);
-        session = (Session) lookupProvider.lookupFirst 
-                (null, Session.class);
-        sourcePath = (SourcePath) lookupProvider.lookupFirst 
-                (null, SourcePath.class);
-        debugger.addPropertyChangeListener (debugger.PROP_STATE, this);
+        session = lookupProvider.lookupFirst(null, Session.class);
+        sourcePath = lookupProvider.lookupFirst(null, SourcePath.class);
+        debugger.addPropertyChangeListener (JPDADebuggerImpl.PROP_STATE, this);
         EditorContextBridge.getContext().addPropertyChangeListener (this);
     }
     
     private void destroy () {
-        debugger.removePropertyChangeListener (debugger.PROP_STATE, this);
+        debugger.removePropertyChangeListener (JPDADebuggerImpl.PROP_STATE, this);
         EditorContextBridge.getContext().removePropertyChangeListener (this);
     }
     

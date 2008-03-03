@@ -51,11 +51,13 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.CreateInstanceActivity;
 import org.netbeans.modules.bpel.model.api.Process;
+import org.netbeans.modules.bpel.model.api.support.Initiate;
+import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -64,9 +66,7 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  */
 public abstract class BpelValidator extends CoreValidator {
 
-  public ValidationResult validate(Model model, Validation validation, ValidationType type) {
-    setParam(validation, type);
-
+  public synchronized ValidationResult validate(Model model, Validation validation, ValidationType type) {
     if ( !(model instanceof BpelModel)) {
       return null;
     }
@@ -75,6 +75,8 @@ public abstract class BpelValidator extends CoreValidator {
     if (bpelModel.getState() == Model.State.NOT_WELL_FORMED) {
       return null;
     }
+    init(validation, type);
+
     Runnable run = new Runnable() {
       public void run() {
         startTime();
@@ -87,11 +89,17 @@ public abstract class BpelValidator extends CoreValidator {
       }
     };
     bpelModel.invoke(run);
+//if (getName().contains("custom")) {
 //out();
 //out();
 //out("!!! ERRORS: " + getResultItems().size());
 //out();
 //out();
+//}
     return new ValidationResult(getResultItems(), Collections.singleton(model));
+  }
+
+  protected final boolean isCreateInstanceYes(CreateInstanceActivity activity) {
+    return activity != null && activity.getCreateInstance() == TBoolean.YES;
   }
 }

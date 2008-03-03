@@ -948,10 +948,22 @@ public class ClientStubsGenerator extends AbstractGenerator {
             return replacedLine;
         }
         
+        public static final String RJSSUPPORT = "rjsSupport";
         protected String createStubJSMethods(Resource r, String object, String pkg) {
             StringBuffer sb = new StringBuffer();
+            Method getMethod = null;
             for (Method m : r.getMethods()) {
-                sb.append(createMethod(m, object, pkg)+",\n\n");
+                if (m.getType() == MethodType.GET) {
+                    getMethod = m;
+                }
+            }
+            if(getMethod != null){
+                String defaultGetMethod = createDefaultGetMethod(getMethod, RJSSUPPORT+".");
+                if(defaultGetMethod != null)
+                    sb.append(defaultGetMethod+",\n\n");
+            }
+            for (Method m : r.getMethods()) {
+                sb.append(createMethod(m, RJSSUPPORT+".", pkg)+",\n\n");
             }
             String s = sb.toString();
             if(s.length() > 3)
@@ -1106,8 +1118,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             return mName;
         }
         
-        private String createMethod(Method m, String object, String pkg) {
-            object = "rjsSupport.";
+        private String createMethod(Method m, final String object, String pkg) {
             if (m.getType() == MethodType.GET) {
                 return createGetMethod(m, object);
             } else if (m.getType() == MethodType.POST) {
@@ -1130,6 +1141,28 @@ public class ClientStubsGenerator extends AbstractGenerator {
                         return m.getName() + mime.suffix();
             }
             return m.getName();
+        }
+        
+        private String createDefaultGetMethod(Method m, String object) {
+            StringBuffer sb = new StringBuffer();
+            String jsonMethod = null;
+            for(Representation rep:m.getResponse().getRepresentation()) {
+                String mimeType = rep.getMime();
+                mimeType = mimeType.replaceAll("\"", "").trim();
+                if(mimeType.equals(Constants.MimeType.JSON.value()))
+                    jsonMethod = mimeType;
+            }
+            //Add a default getJson() method used by Container/Containee init() methods
+            if(jsonMethod != null) {
+                sb.append("/* Default getJson() method used by Container/Containee init() methods. Do not remove. */\n");
+                sb.append("   getJson : function() {\n" +
+                    "      return "+object+"get(this.uri, '" +jsonMethod+ "');\n" +
+                    "   }");
+            }
+            if(sb.length() > 0)
+                return sb.toString();
+            else
+                return null;
         }
         
         private String createGetMethod(Method m, String object) {

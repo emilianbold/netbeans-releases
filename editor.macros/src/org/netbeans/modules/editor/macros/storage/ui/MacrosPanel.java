@@ -100,7 +100,11 @@ public class MacrosPanel extends JPanel {
             }
         });
         tMacros.getTableHeader().setReorderingAllowed(false);
-        tMacros.setModel(model.getTableModel());
+        TableSorter sorter = new TableSorter(model.getTableModel());
+        tMacros.setModel(sorter);
+        sorter.setTableHeader(tMacros.getTableHeader());
+        sorter.getTableHeader().setReorderingAllowed(false);
+
         tMacros.getModel().addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent evt) {
                 tMacrosTableChanged(evt);

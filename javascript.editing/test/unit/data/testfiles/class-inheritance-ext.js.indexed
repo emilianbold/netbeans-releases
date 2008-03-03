@@ -19,10 +19,5 @@ Indexed:
   fqn : ext.tabpanel.render;;Ext.TabPanel.render|FUNCTION|;0;;;;
   fqn : ext.tree.asynctreenode.expand;;Ext.tree.AsyncTreeNode.expand|FUNCTION|deep,anim,callback;0;;;;
   fqn : ext.tree.asynctreenode.reload;;Ext.tree.AsyncTreeNode.reload|FUNCTION|callback;0;;;;
-  lcbase : expand;Ext.tree.AsyncTreeNode;expand|FUNCTION|deep,anim,callback;0;;;;
-  lcbase : initcomponent;Ext.TabPanel;initComponent|FUNCTION|;0;;;;
-  lcbase : monitorresize;Ext.TabPanel;monitorResize|PROPERTY|;0;;;;
-  lcbase : reload;Ext.tree.AsyncTreeNode;reload|FUNCTION|callback;0;;;;
-  lcbase : render;Ext.TabPanel;render|FUNCTION|;0;;;;
 
 Not Indexed:

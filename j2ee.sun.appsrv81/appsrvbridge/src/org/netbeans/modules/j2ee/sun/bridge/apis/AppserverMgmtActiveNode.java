@@ -44,6 +44,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
+import org.netbeans.modules.j2ee.sun.util.NodeTypes;
 import org.netbeans.modules.j2ee.sun.util.PropertySupportFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport;
@@ -159,7 +160,7 @@ public abstract class AppserverMgmtActiveNode extends AppserverMgmtNode {
      *         display (Property editors).
      */
     protected List getPropertiesToIgnore() {
-        return null;
+        return NodeTypes.getNodeProperties(getNodeType());
     }
     
     

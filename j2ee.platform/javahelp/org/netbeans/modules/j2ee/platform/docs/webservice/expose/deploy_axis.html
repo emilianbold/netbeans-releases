@@ -1,0 +1,33 @@
+<!-- * Copyright � 2007 Sun Microsystems,
+Inc.  All rights reserved.  
+Use is subject to license terms.  *--> 
+<html> 
+<head> 
+    <title>Deploying Axis2 Web Services</title>
+    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head> 
+<body>
+
+<h2>Deploying Axis2 Web Services</h2>
+
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>        
+<ul class="note">
+    <li>For a full tutorial that shows how to
+        work with Axis2 web services in the NetBeans IDE,
+        see:
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://www.netbeans.org/kb/61/websvc/gs-axis.html">
+            <param name="text" value="<html><u>Getting Started with Apache Axis2 Web Services</u></html>">
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+        </object>
+    </li>
+</ul>
+
+<p> To deploy or redeploy an Axis2 web service in the IDE, right-click on the web service's node and select Deploy to Server. The IDE compiles an Axis2 AAR file and copies it into the application server's <tt>axis2.war</tt> file, or the folder to which that WAR file is unpacked. If you are using Tomcat Manager or GlassFish with <tt>axis2.war</tt> in the <tt>/autodeploy</tt> folder (see <a href="as_setup_axis.html">Setting Up Axis2 WS Deployment</a>), the WAR file is deployed automatically. Otherwise you need to use application server tools to deploy the WAR file manually.</p>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="../about/about_ws.html">About Web Services</a></dd>
+    <dd><a href="../create/create_axis.html">Creating Axis2 Web Services</a></dd>
+    <dd><a href="as_setup_axis.html">Setting Up Axis2 WS Deployment</a></dd>
+</dl>

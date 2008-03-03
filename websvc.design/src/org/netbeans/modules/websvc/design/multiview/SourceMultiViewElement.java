@@ -45,6 +45,7 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import javax.lang.model.element.Element;
@@ -153,10 +154,31 @@ public class SourceMultiViewElement extends CloneableEditor
         return this;
     }
     
+    public void updateName() {
+        super.updateName();
+        //update html displayname of the main multiview component
+        // fix bug 122727
+        updateMultiViewHtmlDisplayName();
+    }
     public void setMultiViewCallback(final MultiViewElementCallback callback) {
         multiViewCallback = callback;
+        //set html displayname of the main multiview component
+        updateMultiViewHtmlDisplayName();
     }
     
+    private void updateMultiViewHtmlDisplayName() {
+        if(multiViewCallback!=null) {
+            if (EventQueue.isDispatchThread()) {
+                multiViewCallback.getTopComponent().setHtmlDisplayName(getHtmlDisplayName());
+            } else {
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        multiViewCallback.getTopComponent().setHtmlDisplayName(getHtmlDisplayName());
+                    }
+                });
+            }
+        }
+    }
     @Override
     public void componentActivated() {
         super.componentActivated();

@@ -63,12 +63,12 @@ public class CustomCodeGeneratorFactory {
             if(Util.isRestJavaFile(d)) {
                 codegen = new CustomResourceClassCodeGenerator(
                                 targetComponent, targetFO, method);
-            } else if(Util.isServlet(d)) {
-                codegen = new CustomServletCodeGenerator(
-                                targetComponent, targetFO, method);
-            } else {
-                codegen = new CustomJavaClientCodeGenerator(
-                                targetComponent, targetFO, method);
+//            } else if(Util.isServlet(d)) {
+//                codegen = new CustomServletCodeGenerator(
+//                                targetComponent, targetFO, method);
+//            } else {
+//                codegen = new CustomJavaClientCodeGenerator(
+//                                targetComponent, targetFO, method);
             }
         } catch (DataObjectNotFoundException ex) {
             throw new IOException(ex.getMessage());

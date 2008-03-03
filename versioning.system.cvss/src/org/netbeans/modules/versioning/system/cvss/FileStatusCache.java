@@ -264,6 +264,21 @@ public class FileStatusCache {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         FileInformation fi = createFileInformation(file, entry, repositoryStatus);
+        
+        // #117933: if the repository status is UNKNOWN and the file already has some remote status, retain it
+        if ((fi.getStatus() & FileInformation.STATUS_REMOTE_CHANGE) == 0  && repositoryStatus == REPOSITORY_STATUS_UNKNOWN 
+                && current != null && (current.getStatus() & FileInformation.STATUS_REMOTE_CHANGE) != 0) {
+            if ((fi.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+                fi = new FileInformation(FileInformation.STATUS_VERSIONED_MERGE, fi.isDirectory());
+            } else {
+                if (current.getStatus() == FileInformation.STATUS_VERSIONED_MERGE) {
+                    fi = new FileInformation(FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY, current.isDirectory());
+                } else {
+                    fi = current;
+                }
+            }
+        }
+        
         if (equivalent(fi, current)) {
             if (forceChangeEvent) fireFileStatusChanged(file, current, fi);
             return fi;
