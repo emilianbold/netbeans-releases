@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -383,6 +384,16 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             return dobj.equals(DataObject.find(getFileObject()));
         } catch(DataObjectNotFoundException doe) {
             doe.printStackTrace();
+        }
+        return false;
+    }
+    
+    public static boolean isDisasm(String url) {
+        //TODO: optimize
+        try {
+            return getFileObject().getURL().toString().equals(url);
+        } catch (FileStateInvalidException fsi) {
+            fsi.printStackTrace();
         }
         return false;
     }
