@@ -291,7 +291,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             listening = true;
         }
         LP lp = getLibraries(area);
-        boolean fire = delta(lp.libraries, calculate(area));
+        boolean fire = delta(lp.libraries, calculate(area), new HashMap<ProjectLibraryImplementation, List<String>>());
         ProjectLibraryImplementation impl = lp.getLibrary(name);
         assert impl != null : name + " not found in " + f;
         for (Map.Entry<String,List<URL>> entry : contents.entrySet()) {
