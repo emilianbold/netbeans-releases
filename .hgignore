@@ -10,6 +10,7 @@ derby\.log
 \.rej$
 \.swp$
 /gensrc$
+\.ant-targets-build\.xml$
 ^nbbuild/antsrc/org/netbeans/nbbuild/extlibs/external\.pyc$
 ^o.apache.tools.ant.module/external/lib$
 ^apisupport.project/src/org/netbeans/modules/apisupport/project/resources/sample-build-impl\.xml$
