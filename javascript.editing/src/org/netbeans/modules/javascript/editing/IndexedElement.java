@@ -186,6 +186,9 @@ public abstract class IndexedElement extends JsElement {
 
     @Override
     public Set<Modifier> getModifiers() {
+        if (isStatic()) {
+            return AstElement.STATIC;
+        }
         return Collections.emptySet();
     }
 
@@ -421,6 +424,9 @@ public abstract class IndexedElement extends JsElement {
             value += FUNCTION;
         } else if (k == ElementKind.GLOBAL) {
             value += GLOBAL;
+        }
+        if (element.getModifiers().contains(Modifier.STATIC)) {
+            value += STATIC;
         }
 
         return value;

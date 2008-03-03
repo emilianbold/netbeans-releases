@@ -73,8 +73,7 @@ public class ProcessesTreeModel implements TreeModel {
     public ProcessesTreeModel(
             final ContextProvider lookupProvider) {
         
-        myDebugger = (BpelDebugger)
-                lookupProvider.lookupFirst(null, BpelDebugger.class);
+        myDebugger = lookupProvider.lookupFirst(null, BpelDebugger.class);
         myVariablesUtil = new VariablesUtil(myDebugger);
     }
     

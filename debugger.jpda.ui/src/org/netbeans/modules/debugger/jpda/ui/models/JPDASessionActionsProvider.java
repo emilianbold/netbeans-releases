@@ -89,7 +89,7 @@ public class JPDASessionActionsProvider implements NodeActionsProviderFilter {
         List myActions = new ArrayList();
         DebuggerEngine e = session.getCurrentEngine ();
         if (e != null) {
-            JPDADebugger d = (JPDADebugger) e.lookupFirst(null, JPDADebugger.class);
+            JPDADebugger d = e.lookupFirst(null, JPDADebugger.class);
             myActions.add(new CustomizeSession(d));
         }
         myActions.add(new LanguageSelection(session));
