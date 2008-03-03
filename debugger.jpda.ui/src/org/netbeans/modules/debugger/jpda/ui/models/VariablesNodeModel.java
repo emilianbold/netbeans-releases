@@ -102,8 +102,7 @@ public class VariablesNodeModel implements ExtendedNodeModel {
     
     
     public VariablesNodeModel (ContextProvider lookupProvider) {
-        debugger = (JPDADebugger) lookupProvider.
-            lookupFirst (null, JPDADebugger.class);
+        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
     }
     
     

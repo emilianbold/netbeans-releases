@@ -56,8 +56,8 @@ public class TestSessionProvider extends SessionProvider {
     private TestDICookie cookie;
 
     public TestSessionProvider (ContextProvider info) {
-        this.info = (DebuggerInfo) info.lookupFirst(null, DebuggerInfo.class);
-        cookie = (TestDICookie) info.lookupFirst(null, TestDICookie.class);
+        this.info = info.lookupFirst(null, DebuggerInfo.class);
+        cookie = info.lookupFirst(null, TestDICookie.class);
     };
     
     public String getSessionName () {

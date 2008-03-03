@@ -39,65 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.api.model.util;
+package org.netbeans.modules.cnd.makeproject.api.compilers;
 
-import java.lang.ref.WeakReference;
-import java.util.*;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 
-/**
- * A list that keeps weak references to its elements
- * @author Vladimir Kvashin
- */
-public class WeakList<T> implements Iterable<T> {
-    
-    private List<WeakReference<T>> list = new ArrayList<WeakReference<T>>();
-    
-    /**
-     * Adds a weak reference to the given element to this list
-     */
-    public synchronized void add(T element) {
-        list.add(new WeakReference<T>(element));
-    }
-
-    /**
-     * Adds all weak references frim the given iterator to this list
-     */
-    public synchronized void addAll(Iterator<T> elements) {
-	while( elements.hasNext() ) {
-	    list.add(new WeakReference<T>(elements.next()));
-	}
-    }
-    
-    /*
-     * Removes all references to the given element from this list
-     */
-    public synchronized void remove(T element) {
-	for (Iterator<WeakReference<T>> it = list.iterator(); it.hasNext();) {
-	    WeakReference<T> ref = it.next();
-            if( ref.get() == element ) {
-                it.remove();
-            }
-        }
-    }
-    
-    /** Removes all elements */
-    public synchronized void clear() {
-	list.clear();
-    }
-    
-    /** 
-     * Returns an iterator of non-null references.
-     * NB: it iterates over a snapshot made at the moment of the call
-     */
-    public synchronized Iterator<T> iterator() {
-        List<T> result = new ArrayList<T>();
-        for (Iterator<WeakReference<T>> it = list.iterator(); it.hasNext();) {
-            WeakReference<T> ref = it.next();
-            T element = ref.get();
-            if( element != null ) {
-                result.add(element);
-            }
-        }    
-        return result.iterator();
+public class GNUDebuggerTool extends Tool {
+    public GNUDebuggerTool(CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
+        super(flavor, DebuggerTool, name, displayName, path); // NOI18N
     }
 }

@@ -46,7 +46,7 @@ import java.lang.ref.SoftReference;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
@@ -61,7 +61,7 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
     
     public UsingResolverImpl() {
         if (cache) {
-            CsmModelAccessor.getModel().addProgressListener(this);
+            CsmListeners.getDefault().addProgressListener(this);
         }
     }
     

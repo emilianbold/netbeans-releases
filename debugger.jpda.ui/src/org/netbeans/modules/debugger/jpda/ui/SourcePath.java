@@ -87,8 +87,7 @@ public class SourcePath {
 
     public SourcePath (ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
-        debugger = (JPDADebugger) contextProvider.lookupFirst 
-            (null, JPDADebugger.class);
+        debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
         getContext();// To initialize the source path provider
     }
 

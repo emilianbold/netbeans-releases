@@ -77,11 +77,13 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -119,10 +121,10 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
 
         targetResourceJS = JavaSource.forFileObject(targetFile);
         String packageName = JavaSourceHelper.getPackageName(targetResourceJS);
-        bean.setPackageName(packageName);
-        bean.setPrivateFieldForQueryParam(true);
         this.bean = bean;
-        wrapperResourceFile = SourceGroupSupport.findJavaSourceFile(project, bean.getName());
+        getBean().setPackageName(packageName);
+        getBean().setPrivateFieldForQueryParam(true);
+        wrapperResourceFile = SourceGroupSupport.findJavaSourceFile(project, getBean().getName());
     }
 
     protected JTextComponent getTargetComponent() {
@@ -237,14 +239,14 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     }
 
     protected FileObject generateJaxbOutputWrapper() throws IOException {
-        MimeType mimeType = bean.getMimeTypes()[0];
+        MimeType mimeType = getBean().getMimeTypes()[0];
 
         if (mimeType == MimeType.JSON || mimeType == MimeType.XML) {
             FileObject converterFolder = getConverterFolder();
             String packageName = SourceGroupSupport.packageForFolder(converterFolder);
-            bean.setOutputWrapperPackageName(packageName);
-            String[] returnTypeNames = bean.getOutputTypes();
-            XmlOutputWrapperGenerator gen = new XmlOutputWrapperGenerator(converterFolder, bean.getOutputWrapperName(), packageName, returnTypeNames);
+            getBean().setOutputWrapperPackageName(packageName);
+            String[] returnTypeNames = getBean().getOutputTypes();
+            XmlOutputWrapperGenerator gen = new XmlOutputWrapperGenerator(converterFolder, getBean().getOutputWrapperName(), packageName, returnTypeNames);
 
             return gen.generate();
         }
@@ -255,7 +257,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     protected void generateSaasServiceResourceClass() throws IOException {
         if (wrapperResourceFile == null) {
             GenericResourceGenerator delegate = new GenericResourceGenerator(destDir, bean);
-            delegate.setTemplate(bean.getResourceClassTemplate());
+            delegate.setTemplate(getBean().getResourceClassTemplate());
             Set<FileObject> files = delegate.generate(getProgressHandle());
 
             if (files == null || files.size() == 0) {
@@ -308,7 +310,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
                 body = body.replace("$CLASS$", JavaSourceHelper.getClassName(wrapperResourceJS));
                 body = body.replace("$ARGS$", getParamList());
 
-                String comment = "Returns " + bean.getName() + " sub-resource.\n";
+                String comment = "Returns " + getBean().getName() + " sub-resource.\n";
 
                 if (addTryFinallyBlock) {
                     body += "finally { PersistenceService.getInstance().close()";
@@ -316,7 +318,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
 
                 ClassTree modifiedTree = JavaSourceHelper.addMethod(copy, tree, 
                         Constants.PUBLIC, annotations, annotationAttrs, 
-                        getSubresourceLocatorName(), bean.getQualifiedClassName(), 
+                        getSubresourceLocatorName(), getBean().getQualifiedClassName(), 
                         null, null, null, null, 
                         body, comment);
                 copy.rewrite(tree, modifiedTree);
@@ -348,8 +350,8 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
                 methodBody += getCustomMethodBody();
 
                 methodBody += "}"; //NOI18N
-                for(MimeType mime:bean.getMimeTypes()) {
-                    MethodTree methodTree = JavaSourceHelper.getMethodByName(copy, bean.getGetMethodName(mime));
+                for(MimeType mime:getBean().getMimeTypes()) {
+                    MethodTree methodTree = JavaSourceHelper.getMethodByName(copy, getBean().getGetMethodName(mime));
                     JavaSourceHelper.replaceMethodBody(copy, methodTree, methodBody);
                 }
             }
@@ -358,9 +360,11 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     }
 
     protected String getOverridingStatements() {
-        String text = ""; //NOI18N
-        for (ParameterInfo param : bean.getQueryParameters()) {
-            String name = param.getName();
+        String text = "";
+        for (ParameterInfo param : getBean().getQueryParameters()) {
+            if(param.isApiKey() || param.isFixed())
+                continue;
+            String name = getParameterName(param);
             text += "if (this." + name + " != null) {" + name + " = this." + name + ";" + "}\n";
         }
 
@@ -399,16 +403,16 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         String statements = ""; //NOI18N
         boolean addGetEntityStatement = false;
 
-        for (ParameterInfo param : bean.getInputParameters()) {
+        for (ParameterInfo param : getBean().getInputParameters()) {
             String initValue = "null"; //NOI18N
-            String access = match(JavaSourceHelper.getTopLevelClassElement(copy), param.getName());
+            String access = match(JavaSourceHelper.getTopLevelClassElement(copy), getParameterName(param));
 
             if (access != null) {
                 initValue = access;
                 addGetEntityStatement = true;
             }
 
-            statements += param.getSimpleTypeName() + " " + param.getName() + " = " + initValue + ";"; //NOI18N
+            statements += param.getSimpleTypeName() + " " + getParameterName(param) + " = " + initValue + ";"; //NOI18N
         }
 
         String getEntityStatement = "";
@@ -421,15 +425,15 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     }
 
     private String getParamList() {
-        List<ParameterInfo> inputParams = bean.getInputParameters();
+        List<ParameterInfo> inputParams = getBean().getInputParameters();
         String text = ""; //NOI18N
         for (int i = 0; i < inputParams.size(); i++) {
             ParameterInfo param = inputParams.get(i);
 
             if (i == 0) {
-                text += param.getName();
+                text += getParameterName(param);
             } else {
-                text += ", " + param.getName(); //NOI18N
+                text += ", " + getParameterName(param); //NOI18N
             }
         }
 
@@ -585,7 +589,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         String body = "{ return new $CLASS$(uri.resolve(\"$URITEMPLATE$\")); }";
         body = body.replace("$CLASS$", GENERIC_REF_CONVERTER);
         body = body.replace("$URITEMPLATE$", uriTemplate);
-        String comment = "Returns reference to " + bean.getName() + " resource.\n";
+        String comment = "Returns reference to " + getBean().getName() + " resource.\n";
         String methodName = getSubresourceLocatorName() + "Ref";
         return JavaSourceHelper.addMethod(copy, tree, Constants.PUBLIC, annotations, annotationAttrs, methodName, GENERIC_REF_CONVERTER, null, null, null, null, body, comment);
     }
@@ -613,7 +617,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         //TODO: Need to create an unique UriTemplate value.
         Collection<String> existingUriTemplates = getExistingUriTemplates();
         int counter = 1;
-        String uriTemplate = Inflector.getInstance().camelize(bean.getShortName(), true);
+        String uriTemplate = Inflector.getInstance().camelize(getBean().getShortName(), true);
         String temp = uriTemplate;
 
         while (existingUriTemplates.contains(temp) || existingUriTemplates.contains(temp + "/")) {
@@ -627,7 +631,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     private String[] getSubresourceLocatorImports() throws IOException {
         List<String> imports = new ArrayList<String>();
         //imports.add(getOutputWrapperQualifiedName());
-        List<ParameterInfo> inputParams = bean.getInputParameters();
+        List<ParameterInfo> inputParams = getBean().getInputParameters();
 
         for (ParameterInfo param : inputParams) {
             if (!param.getType().getPackage().getName().equals("java.lang")) {
@@ -706,5 +710,75 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         String pkg = RESTCONNECTION_PACKAGE;
         FileObject targetFolder = SourceGroupSupport.getFolderForPackage(srcGrps[0],pkg , true);
         JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, targetFolder, pkg, REST_CONNECTION);
+    }
+    
+    
+    protected String[] getUriParamTypes() {
+        String defaultType = String.class.getName();
+        String[] types = new String[getBean().getUriParams().length];
+        for (int i=0; i < types.length; i++) {
+            types[i] = defaultType;
+        }
+        return types;
+    }
+    
+    protected String[] getGetParamNames(List<ParameterInfo> queryParams) {
+        ArrayList<String> params = new ArrayList<String>();
+        params.addAll(Arrays.asList(getBean().getUriParams()));
+        params.addAll(Arrays.asList(getParamNames(queryParams)));
+        return params.toArray(new String[params.size()]);
+    }
+    
+    protected String[] getGetParamTypes(List<ParameterInfo> queryParams) {
+        ArrayList<String> types = new ArrayList<String>();
+        types.addAll(Arrays.asList(getUriParamTypes()));
+        types.addAll(Arrays.asList(getParamTypeNames(queryParams)));
+        return types.toArray(new String[types.size()]);
+    }
+    
+    
+    protected String[] getParamNames(List<ParameterInfo> params) {
+        List<String> results = new ArrayList<String>();
+        
+        for (ParameterInfo param : params) {
+            results.add(getParameterName(param, true, true, true));
+        }
+        
+        return results.toArray(new String[results.size()]);
+    }
+    
+    protected String[] getParamTypeNames(List<ParameterInfo> params) {
+        List<String> results = new ArrayList<String>();
+        
+        for (ParameterInfo param : params) {
+            results.add(param.getTypeName());
+        }
+        
+        return results.toArray(new String[results.size()]);
+    }
+    
+    protected String getParameterName(ParameterInfo param) {
+        return param.getName();
+    }
+    
+    protected String getParameterName(ParameterInfo param, 
+            boolean camelize, boolean normalize) {
+        return getParameterName(param, camelize, normalize, false);
+    }
+    
+    protected String getParameterName(ParameterInfo param, 
+            boolean camelize, boolean normalize, boolean trimBraces) {
+        String name = param.getName();
+        if(trimBraces && param.getStyle() == ParamStyle.TEMPLATE 
+                && name.startsWith("{") && name.endsWith("}")) {
+            name = name.substring(0, name.length()-1);
+        }
+        if(normalize) {
+            name = Util.normailizeName(name);
+        }
+        if(camelize) {
+            name = Inflector.getInstance().camelize(name, true);
+        }
+        return name;
     }
 }
