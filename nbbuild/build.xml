@@ -605,7 +605,7 @@ Link to <A HREF="overview-summary.html">Non-frame version.</A>
 Number:   ${buildnumber}
 Date:     ${buildday}
 Branding:
-Branch:   trunk
+Branch:   release61-beta
 Tag:
 </echo>
     <exec executable="hg" dir=".." outputproperty="hg.id" errorproperty="hg.id.err" failonerror="false" failifexecutionfails="false" resultproperty="hg.id.exit">
