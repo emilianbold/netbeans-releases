@@ -131,12 +131,8 @@ public class CompilerSetManager {
     private void initCompilerSets() {
         
         for (String path : dirlist) {
-            if (path.equals("/usr/ccs/bin")) { // NOI18N
-                // contains only softlinks
-                continue;
-            }
             File dir = new File(path);
-            if (dir.isDirectory()) {
+            if (dir.isDirectory()&& isACompilerSetFolder(dir)) {
                 initCompiler(gcc_filter, "gcc", Tool.CCompiler, path); // NOI18N
                 initCompiler(gpp_filter, "g++", Tool.CCCompiler, path); // NOI18N
                 initCompiler(cc_filter, "cc", Tool.CCompiler, path); // NOI18N
@@ -149,6 +145,20 @@ public class CompilerSetManager {
             }
         }
         completeCompilerSets();
+    }
+    
+    /**
+     * Check whether folder is a compilerset. It needs at least one C or C++ compiler.
+     * @param folder
+     * @return
+     */
+    private boolean isACompilerSetFolder(File folder) {
+        String[] compilerNames = new String[] {"gcc", "g++", "cc", "CC"};
+        for (int i = 0; i < compilerNames.length; i++) {
+            if (new File(folder, compilerNames[i]).exists())
+                return true;
+        }
+        return false;
     }
     
     private void initCompiler(CompilerFilenameFilter filter, String best, int kind, String path) {
