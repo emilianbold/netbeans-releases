@@ -71,7 +71,10 @@ public class FunctionBreakpointImpl extends BreakpointImpl {
         if (getDebugger().getState().equals(GdbDebugger.STATE_RUNNING)) {
             getDebugger().setSilentStop();
         }
-        if (st.equals(BPSTATE_UNVALIDATED)) {
+        if (st.equals(BPSTATE_UNVALIDATED) || st.equals(BPSTATE_REVALIDATE)) {
+            if (st.equals(BPSTATE_REVALIDATE) && getBreakpointNumber() > 0) {
+                getDebugger().getGdbProxy().break_delete(getBreakpointNumber());
+            }
             setState(BPSTATE_VALIDATION_PENDING);
             functionName = breakpoint.getFunctionName();
             int token;

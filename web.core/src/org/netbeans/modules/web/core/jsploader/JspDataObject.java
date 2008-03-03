@@ -45,9 +45,16 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.EventListener;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -85,7 +92,9 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     static final String ATTR_FILE_ENCODING = "Content-Encoding"; // NOI18N
     
     private static final String DEFAULT_ENCODING = "ISO-8559-1"; // NOI18N
-    
+
+    private static final Logger LOGGER = Logger.getLogger(JspDataObject.class.getName());
+
     transient private EditorCookie servletEdit;
     transient protected JspServletDataObject servletDataObject;
     // it is guaranteed that if servletDataObject != null, then this is its
@@ -195,8 +204,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         }
         String retrievedEncoding = (String)getPrimaryFile().getAttribute(ATTR_FILE_ENCODING);
         retrievedEncoding = retrievedEncoding != null ? retrievedEncoding : DEFAULT_ENCODING;
-        
-        return retrievedEncoding ;
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "Retrieved encoding for " + getPrimaryFile().getNameExt()
+                    + " is " + retrievedEncoding);
+        }
+        return retrievedEncoding;
     }
     
     void updateFileEncoding(boolean fromEditor) {
@@ -206,7 +219,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             try {
                 getPrimaryFile().setAttribute(ATTR_FILE_ENCODING, encoding);
             } catch (IOException e) {
-                Logger.getLogger("global").log(Level.WARNING, null, e);
+                LOGGER.log(Level.WARNING, null, e);
             }
         }
         

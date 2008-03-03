@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.utils;
 import java.awt.Component;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -58,7 +59,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
+import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 /**
@@ -840,6 +843,22 @@ public class IpeUtils {
     
     public static boolean areFilenamesEqual(String firstFile, String secondFile) {
         return isSystemCaseInsensitive() ? firstFile.equalsIgnoreCase(secondFile) : firstFile.equals(secondFile);
+    }
+    
+    /**
+     * Check if the gdb module is enabled. Don't show the gdb line if it isn't.
+     *
+     * @return true if the gdb module is enabled, false if missing or disabled
+     */
+    public static boolean isGdbEnabled() {
+        Iterator iter = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class)).allInstances().iterator();
+        while (iter.hasNext()) {
+            ModuleInfo info = (ModuleInfo) iter.next();
+            if (info.getCodeNameBase().equals("org.netbeans.modules.cnd.debugger.gdb") && info.isEnabled()) { // NOI18N
+                return true;
+            }
+        }
+        return false;
     }
 }
 

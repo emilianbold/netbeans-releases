@@ -514,7 +514,9 @@ public final class ModuleManager {
         if (m.isEager()) {
             List<Module> immediate = simulateEnable(Collections.<Module>emptySet());
             if (!immediate.isEmpty()) {
-                if (!immediate.contains(m)) throw new IllegalStateException("Can immediately enable modules " + immediate + ", but not including " + m); // NOI18N
+                if (!immediate.contains(m)) {
+                    throw new IllegalStateException("Can immediately enable modules " + immediate + ", but not including " + m + "; its problems: " + m.getProblems()); // NOI18N
+                }
                 boolean ok = true;
 		for (Module other: immediate) {
                     if (!other.isAutoload() && !other.isEager()) {

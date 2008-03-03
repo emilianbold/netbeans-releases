@@ -49,12 +49,12 @@ import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseDocument;
 
 import org.openide.ErrorManager;
@@ -67,11 +67,9 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
-import org.openide.windows.TopComponent;
 
 
 /**
@@ -84,22 +82,24 @@ public class NbUtilities {
     private NbUtilities() {
     }
 
-    public static JEditorPane getOpenPane() {
-        // TODO - switch to the edtor registry!
-        Node[] arr = TopComponent.getRegistry().getActivatedNodes();
+    public static JTextComponent getOpenPane() {
+        JTextComponent pane = EditorRegistry.lastFocusedComponent();
 
-        if (arr.length > 0) {
-            EditorCookie ec = arr[0].getCookie(EditorCookie.class);
-
-            if (ec != null) {
-                JEditorPane[] openedPanes = ec.getOpenedPanes();
-
-                if ((openedPanes != null) && (openedPanes.length > 0)) {
-                    return openedPanes[0];
-                }
+        return pane;
+    }
+    
+    public static JTextComponent getPaneFor(FileObject fo) {
+        JTextComponent pane = getOpenPane();
+        if (pane != null && findFileObject(pane) == fo) { 
+            return pane;
+        }
+        
+        for (JTextComponent c : EditorRegistry.componentList()) {
+            if (findFileObject(c) == fo) {
+                return c;
             }
         }
-
+        
         return null;
     }
     
@@ -170,7 +170,16 @@ public class NbUtilities {
 
                 try {
                     String text = doc.getText(0, doc.getLength());
+                    int caretDelta = search.indexOf('^');
+                    if (caretDelta != -1) {
+                        search = search.substring(0, caretDelta) + search.substring(caretDelta+1);
+                    } else {
+                        caretDelta = 0;
+                    }
                     offset = text.indexOf(search);
+                    if (offset != -1) {
+                        offset += caretDelta;
+                    }
                 } catch (BadLocationException ble) {
                     Exceptions.printStackTrace(ble);
                 }
@@ -273,8 +282,10 @@ public class NbUtilities {
     public static boolean isCodeTemplateEditing(Document doc) {
         // Copied from editor/codetemplates/src/org/netbeans/lib/editor/codetemplates/CodeTemplateInsertHandler.java
         String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N        
+        String CT_HANDLER_DOC_PROPERTY = "code-template-insert-handler"; // NOI18N
         
-        return doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY) == Boolean.TRUE;
+        return doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY) == Boolean.TRUE ||
+                doc.getProperty(CT_HANDLER_DOC_PROPERTY) != null;
     }
 
     public static BaseDocument getBaseDocument(FileObject fileObject, boolean forceOpen) {

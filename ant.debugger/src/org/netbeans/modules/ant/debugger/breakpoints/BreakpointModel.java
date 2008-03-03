@@ -254,6 +254,6 @@ public class BreakpointModel implements NodeModel, TableModel, Constants {
         DebuggerEngine engine = DebuggerManager.getDebuggerManager ().
             getCurrentEngine ();
         if (engine == null) return null;
-        return (AntDebugger) engine.lookupFirst (null, AntDebugger.class);
+        return engine.lookupFirst(null, AntDebugger.class);
     }
 }

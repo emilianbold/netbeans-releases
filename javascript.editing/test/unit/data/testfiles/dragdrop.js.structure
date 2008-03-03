@@ -1,8 +1,3 @@
-Droppables:GLOBAL:[]:ESCAPED{Droppables}:
-Draggables:GLOBAL:[]:ESCAPED{Draggables}:
-Draggable:GLOBAL:[]:ESCAPED{Draggable}:
-SortableObserver:GLOBAL:[]:ESCAPED{SortableObserver}:
-Sortable:GLOBAL:[]:ESCAPED{Sortable}:
 deepest:GLOBAL:[]:ESCAPED{deepest}:
 i:GLOBAL:[]:ESCAPED{i}:
 Droppables:CLASS:[]:ESCAPED{Droppables}:
