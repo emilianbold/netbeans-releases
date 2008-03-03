@@ -80,6 +80,14 @@ public class SpringCatalog implements CatalogReader, CatalogDescriptor, EntityRe
     private static final String SPRING_AOP_2_5_XSD_LOCAL_URI = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-aop-2.5.xsd";                       // NOI18N
     private static final String SPRING_AOP_2_5_XSD_ID = "SCHEMA:" + SPRING_AOP_2_5_XSD_URI;                                                                           // NOI18N
 
+    private static final String SPRING_BEANS_DTD = "spring-beans.dtd";                                                                                                // NOI18N
+    private static final String SPRING_BEANS_DTD_PUBLIC_ID = "-//SPRING//DTD BEAN//EN";                                                                               // NOI18N
+    private static final String SPRING_BEANS_DTD_LOCAL_URI = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-beans.dtd";                           // NOI18N
+
+    private static final String SPRING_BEANS_2_0_DTD = "spring-beans-2.0.dtd";                                                                                        // NOI18N
+    private static final String SPRING_BEANS_2_0_DTD_PUBLIC_ID = "-//SPRING//DTD BEAN 2.0//EN";                                                                       // NOI18N
+    private static final String SPRING_BEANS_2_0_DTD_LOCAL_URI = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-beans-2.0.dtd";                   // NOI18N
+
     private static final String SPRING_BEANS_2_0_XSD = "spring-beans-2.0.xsd";                                                                                        // NOI18N
     private static final String SPRING_BEANS_2_0_XSD_URI = "http://www.springframework.org/schema/beans/spring-beans-2.0.xsd";                                        // NOI18N
     private static final String SPRING_BEANS_2_0_XSD_LOCAL_URI = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-beans-2.0.xsd";                   // NOI18N
@@ -170,6 +178,8 @@ public class SpringCatalog implements CatalogReader, CatalogDescriptor, EntityRe
         list.add(SPRING_AOP_2_0_XSD_ID);
         list.add(SPRING_AOP_2_1_XSD_ID);
         list.add(SPRING_AOP_2_5_XSD_ID);
+        list.add(SPRING_BEANS_DTD_PUBLIC_ID);
+        list.add(SPRING_BEANS_2_0_DTD_PUBLIC_ID);
         list.add(SPRING_BEANS_2_0_XSD_ID);
         list.add(SPRING_BEANS_2_5_XSD_ID);
         list.add(SPRING_CONTEXT_2_5_XSD_ID);
@@ -200,6 +210,10 @@ public class SpringCatalog implements CatalogReader, CatalogDescriptor, EntityRe
             return SPRING_AOP_2_1_XSD_LOCAL_URI;
         } else if(publicId.equals(SPRING_AOP_2_5_XSD_ID)) {
             return SPRING_AOP_2_5_XSD_LOCAL_URI;
+        } else if (publicId.equals(SPRING_BEANS_DTD_PUBLIC_ID)) {
+            return SPRING_BEANS_DTD_LOCAL_URI;
+        } else if (publicId.equals(SPRING_BEANS_2_0_DTD_PUBLIC_ID)) {
+            return SPRING_BEANS_2_0_DTD_LOCAL_URI;
         } else if(publicId.equals(SPRING_BEANS_2_0_XSD_ID)) {
             return SPRING_BEANS_2_0_XSD_LOCAL_URI;
         } else if(publicId.equals(SPRING_BEANS_2_5_XSD_ID)) {
@@ -290,6 +304,20 @@ public class SpringCatalog implements CatalogReader, CatalogDescriptor, EntityRe
         }
         if (systemId != null && systemId.endsWith(SPRING_AOP_2_5_XSD)){
             return new org.xml.sax.InputSource(SPRING_AOP_2_5_XSD_LOCAL_URI);
+        }
+
+        if (SPRING_BEANS_DTD_PUBLIC_ID.equals(publicId)) {
+            return new org.xml.sax.InputSource(SPRING_BEANS_DTD_LOCAL_URI);
+        }
+        if (systemId != null && systemId.endsWith(SPRING_BEANS_DTD)) {
+            return new org.xml.sax.InputSource(SPRING_BEANS_DTD_LOCAL_URI);
+        }
+
+        if (SPRING_BEANS_2_0_DTD_PUBLIC_ID.equals(publicId)) {
+            return new org.xml.sax.InputSource(SPRING_BEANS_2_0_DTD_LOCAL_URI);
+        }
+        if (systemId != null && systemId.endsWith(SPRING_BEANS_2_0_DTD)) {
+            return new org.xml.sax.InputSource(SPRING_BEANS_2_0_DTD_LOCAL_URI);
         }
 
         if (SPRING_BEANS_2_0_XSD_URI.equals(systemId)){
