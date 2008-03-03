@@ -65,8 +65,7 @@ public class KillActionProvider extends ActionsProvider {
 
     public KillActionProvider (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
-        debugger = (TestDebugger) lookupProvider.lookupFirst
-            (null, TestDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, TestDebugger.class);
     }
 
     public boolean isEnabled(Object action) {
@@ -82,9 +81,8 @@ public class KillActionProvider extends ActionsProvider {
         
     public void doAction (Object action) {
         debugger.finish();
-        DebuggerInfo di = (DebuggerInfo) lookupProvider.lookupFirst
-            (null, DebuggerInfo.class);
-        TestDICookie tic = (TestDICookie) di.lookupFirst(null, TestDICookie.class);
+        DebuggerInfo di = lookupProvider.lookupFirst(null, DebuggerInfo.class);
+        TestDICookie tic = di.lookupFirst(null, TestDICookie.class);
         tic.addInfo(ActionsManager.ACTION_KILL);
     }
 }

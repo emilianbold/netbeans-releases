@@ -46,9 +46,9 @@ import org.netbeans.modules.bpel.search.api.SearchElement;
  * @author Vladimir Yaroslavskiy
  * @version 2008.02.27
  */
-final class Element extends SearchElement.Adapter {
+public final class Element extends SearchElement.Adapter {
 
-  Element(SearchElement element) {
+  public Element(SearchElement element) {
     super(
       getName(element),
       element.getToolTip(),

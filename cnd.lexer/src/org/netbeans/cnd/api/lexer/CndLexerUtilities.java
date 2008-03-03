@@ -218,6 +218,7 @@ public final class CndLexerUtilities {
             CppTokenId.PREPROCESSOR_INCLUDE,
             CppTokenId.PREPROCESSOR_INCLUDE_NEXT,
             CppTokenId.PREPROCESSOR_LINE,
+            CppTokenId.PREPROCESSOR_IDENT,
             CppTokenId.PREPROCESSOR_PRAGMA,
             CppTokenId.PREPROCESSOR_WARNING,
             CppTokenId.PREPROCESSOR_ERROR,

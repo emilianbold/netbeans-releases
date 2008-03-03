@@ -82,8 +82,16 @@ public class JsAnalyzer implements StructureScanner {
         Map<String,List<AstElement>> classes = new HashMap<String,List<AstElement>>();
         List<AstElement> outside = new ArrayList<AstElement>();
         List<String> classNames = new ArrayList<String>(); // Preserves source order for the map
+        Map<String,AstElement> realClass = new HashMap<String,AstElement>();
         for (AstElement e : elements) {
             String in = e.getIn();
+            if (e.getKind() == ElementKind.CLASS) {
+                if (in != null && in.length() > 0) {
+                    in = in + "." + e.getName();
+                } else {
+                    in = e.getName();
+                }
+            }
             if (in != null && in.length() > 0) {
                 List<AstElement> list = classes.get(in);
                 if (list == null) {
@@ -111,10 +119,27 @@ public class JsAnalyzer implements StructureScanner {
                     first, info, formatter);
             itemList.add(currentClass);
             
+            int firstAstOffset = first.getNode().getSourceStart();
+            int lastAstOffset = first.getNode().getSourceEnd();
+            
             for (AstElement e : list) {
-                JsAnalyzer.JsStructureItem item = new JsStructureItem(e, info, formatter);
-                currentClass.addChild(item);
+                if (e.getKind() != ElementKind.CLASS) {
+                    JsAnalyzer.JsStructureItem item = new JsStructureItem(e, info, formatter);
+                    currentClass.addChild(item);
+                } else {
+                    currentClass.element = e;
+                }
+                Node n = e.getNode();
+                if (n.getSourceStart() < firstAstOffset) {
+                    firstAstOffset = n.getSourceStart();
+                }
+                if (n.getSourceEnd() > lastAstOffset) {
+                    lastAstOffset = n.getSourceEnd();
+                }
             }
+            
+            currentClass.begin = LexUtilities.getLexerOffset(info, firstAstOffset);
+            currentClass.end = LexUtilities.getLexerOffset(info, lastAstOffset);
         }
         
         return itemList;
@@ -230,9 +255,8 @@ public class JsAnalyzer implements StructureScanner {
                 String className = classes[0];
                 String superName = classes[1];
                 if (className != null) {
-                    final String prototype = ".prototype"; // NOI18N
-                    if (className.endsWith(prototype)) { // NOI18N
-                        className = className.substring(0, className.length()-prototype.length()); // NOI18N
+                    if (className.endsWith(AstUtilities.DOT_PROTOTYPE)) {
+                        className = className.substring(0, className.length()-AstUtilities.DOT_PROTOTYPE.length());
 
                         // Make a constructor function for this type of object
                         AstElement js = AstElement.getElement(info, node);
@@ -285,13 +309,23 @@ public class JsAnalyzer implements StructureScanner {
                     
                 if (name != null) {
                     String in = "";
+                    boolean isInstance = true;
                     int lastDotIndex = name.lastIndexOf('.');
                     if (lastDotIndex != -1) {
                         in = name.substring(0, lastDotIndex);
                         name = name.substring(lastDotIndex+1);
+                        if (in.endsWith(AstUtilities.DOT_PROTOTYPE)) {
+                            in = in.substring(0, in.length()-AstUtilities.DOT_PROTOTYPE.length()); // NOI18N
+                        } else {
+                            isInstance = false;
+                        }
                     }
+                    
                     FunctionAstElement js = new FunctionAstElement(info, func);
                     js.setName(name, in);
+                    if (!isInstance) {
+                        js.setModifiers(AstElement.STATIC);
+                    }
                     elements.add(js);
                 } else {
                     // Some other dynamic function, like this:
@@ -376,6 +410,8 @@ public class JsAnalyzer implements StructureScanner {
         private ElementKind kind;
         private CompilationInfo info;
         private HtmlFormatter formatter;
+        private int begin;
+        private int end;
 
         private JsFakeClassStructureItem(String name, ElementKind kind, AstElement node, CompilationInfo info, HtmlFormatter formatter) {
             this.name = name;
@@ -413,9 +449,7 @@ public class JsAnalyzer implements StructureScanner {
         }
 
         public boolean isLeaf() {
-            // The fake classes always wrap some other elements
-            assert children.size() > 0;
-            return false;
+            return children.size() == 0;
         }
 
         public List<? extends StructureItem> getNestedItems() {
@@ -423,19 +457,11 @@ public class JsAnalyzer implements StructureScanner {
         }
 
         public long getPosition() {
-            //return element.getNode().getSourceStart();
-            // TODO: Find out why clicking in method doesn't link to selection!
-            return -1;
+            return begin;
         }
 
         public long getEndPosition() {
-            // Use start instead to avoid taking up a source range that
-            // contains the location since clicking inside the element we
-            // want to select the real item!
-            //return element.getNode().getSourceEnd();
-            //return element.getNode().getSourceStart();
-            // TODO: Find out why clicking in method doesn't link to selection!
-            return -1;
+            return end;
         }
 
         @Override

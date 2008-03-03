@@ -291,11 +291,14 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             listening = true;
         }
         LP lp = getLibraries(area);
-        lp.recalculate();
+        boolean fire = delta(lp.libraries, calculate(area));
         ProjectLibraryImplementation impl = lp.getLibrary(name);
         assert impl != null : name + " not found in " + f;
         for (Map.Entry<String,List<URL>> entry : contents.entrySet()) {
             impl.setContent(entry.getKey(), entry.getValue());
+        }
+        if (fire) {
+            lp.pcs.firePropertyChange(LibraryProvider.PROP_LIBRARIES, null, null);
         }
         return impl;
     }
@@ -609,6 +612,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             if (path.equals(getContent(volumeType))) {
                 return;
             }
+            contents.put(volumeType, new ArrayList<URL>(path));
             List<String> value = new ArrayList<String>();
             for (URL entry : path) {
                 String jarFolder = null;
@@ -644,6 +648,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             } catch (IOException x) {
                 throw new IllegalArgumentException(x);
             }
+            pcs.firePropertyChange(LibraryImplementation.PROP_CONTENT, null, null);
         }
 
         public void setLocalizingBundle(String resourceName) {

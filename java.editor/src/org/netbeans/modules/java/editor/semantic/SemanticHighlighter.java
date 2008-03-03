@@ -106,6 +106,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
@@ -128,7 +129,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo> {
+public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
     
     public static List<TreePathHandle> computeUnusedImports(CompilationInfo info) throws IOException {
         SemanticHighlighter sh = new SemanticHighlighter(info.getFileObject());
@@ -152,13 +153,20 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
     }
     
     private FileObject file;
+    private SemanticHighlighterFactory fact;
+    private AtomicBoolean cancel = new AtomicBoolean();
     
     SemanticHighlighter(FileObject file) {
+        this(file, null);
+    }
+    
+    SemanticHighlighter(FileObject file, SemanticHighlighterFactory fact) {
         this.file = file;
+        this.fact = fact;
     }
 
-    public @Override void run(CompilationInfo info) throws IOException {
-        resume();
+    public void run(CompilationInfo info) throws IOException {
+        cancel.set(false);
         
         Document doc = info.getDocument();
 
@@ -167,7 +175,13 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             return ;
         }
 
-        process(info, doc);
+        if (process(info, doc) && fact != null) {
+            fact.rescheduleImpl(file);
+        }
+    }
+    
+    public void cancel() {
+        cancel.set(true);
     }
     
     private static class FixAllImportsFixList implements LazyFixList {
@@ -211,8 +225,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         }
     }
     
-    void process(CompilationInfo info, final Document doc) {
-        process(info, doc, ERROR_DESCRIPTION_SETTER);
+    boolean process(CompilationInfo info, final Document doc) {
+        return process(info, doc, ERROR_DESCRIPTION_SETTER);
     }
     
     static Coloring collection2Coloring(Collection<ColoringAttributes> attr) {
@@ -225,8 +239,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         return c;
     }
     
-    void process(CompilationInfo info, final Document doc, ErrorDescriptionSetter setter) {
-        DetectorVisitor v = new DetectorVisitor(info, doc, canceled);
+    boolean process(CompilationInfo info, final Document doc, ErrorDescriptionSetter setter) {
+        DetectorVisitor v = new DetectorVisitor(info, doc, cancel);
         
         long start = System.currentTimeMillis();
         
@@ -235,10 +249,10 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
 
         CompilationUnitTree cu = info.getCompilationUnit();
         
-        scan(v, cu, null);
+        v.scan(cu, null);
         
-        if (isCancelled())
-            return ;
+        if (cancel.get())
+            return true;
         
         boolean computeUnusedImports = "text/x-java".equals(FileUtil.getMIMEType(info.getFileObject()));
         
@@ -250,8 +264,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             Coloring unused = ColoringAttributes.add(ColoringAttributes.empty(), ColoringAttributes.UNUSED);
 
             for (TreePath tree : v.import2Highlight.values()) {
-                if (isCancelled()) {
-                    return;
+                if (cancel.get()) {
+                    return true;
                 }
                 
                 //XXX: finish
@@ -284,8 +298,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         Set<Token> addedTokens = new HashSet<Token>();
         
         for (Element decl : v.type2Uses.keySet()) {
-            if (isCancelled())
-                return ;
+            if (cancel.get())
+                return true;
             
             List<Use> uses = v.type2Uses.get(decl);
             
@@ -327,8 +341,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             }
         }
         
-        if (isCancelled())
-            return ;
+        if (cancel.get())
+            return true;
         
         if (computeUnusedImports) {
             setter.setErrors(doc, errors, allUnusedImports);
@@ -339,6 +353,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         
         Logger.getLogger("TIMER").log(Level.FINE, "Semantic",
             new Object[] {((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), System.currentTimeMillis() - start});
+        
+        return false;
     }
     
         
@@ -412,6 +428,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         private SourcePositions sourcePositions;
         
         private DetectorVisitor(org.netbeans.api.java.source.CompilationInfo info, final Document doc, AtomicBoolean cancel) {
+            super(cancel);
+            
             this.info = info;
             this.doc  = doc;
             type2Uses = new HashMap<Element, List<Use>>();

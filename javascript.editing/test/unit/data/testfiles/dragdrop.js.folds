@@ -5,13 +5,13 @@
   
   /*--------------------------------------------------------------------------*/
   
-  var Droppables = {
-    drops: [],
-  
++ var Droppables = {
+|   drops: [],
+| 
 +   remove: function(element) {
--     this.drops = this.drops.reject(function(d) { return d.element==$(element) });
-    },
-  
+|     this.drops = this.drops.reject(function(d) { return d.element==$(element) });
+|   },
+| 
 +   add: function(element) {
 |     element = $(element);
 |     var options = Object.extend({
@@ -37,9 +37,9 @@
 |     Element.makePositioned(element); // fix IE
 |     options.element = element;
 | 
--     this.drops.push(options);
-    },
-    
+|     this.drops.push(options);
+|   },
+|   
 +   findDeepestChild: function(drops) {
 |     deepest = drops[0];
 |       
@@ -47,9 +47,9 @@
 |       if (Element.isParent(drops[i].element, deepest.element))
 |         deepest = drops[i];
 |     
--     return deepest;
-    },
-  
+|     return deepest;
+|   },
+| 
 +   isContained: function(element, drop) {
 |     var containmentNode;
 |     if(drop.tree) {
@@ -57,9 +57,9 @@
 |     } else {
 |       containmentNode = element.parentNode;
 |     }
--     return drop._containers.detect(function(c) { return containmentNode == c });
-    },
-    
+|     return drop._containers.detect(function(c) { return containmentNode == c });
+|   },
+|   
 +   isAffected: function(point, element, drop) {
 |     return (
 |       (drop.element!=element) &&
@@ -68,21 +68,21 @@
 |       ((!drop.accept) ||
 |         (Element.classNames(element).detect( 
 |           function(v) { return drop.accept.include(v) } ) )) &&
--       Position.within(drop.element, point[0], point[1]) );
-    },
-  
+|       Position.within(drop.element, point[0], point[1]) );
+|   },
+| 
 +   deactivate: function(drop) {
 |     if(drop.hoverclass)
 |       Element.removeClassName(drop.element, drop.hoverclass);
--     this.last_active = null;
-    },
-  
+|     this.last_active = null;
+|   },
+| 
 +   activate: function(drop) {
 |     if(drop.hoverclass)
 |       Element.addClassName(drop.element, drop.hoverclass);
--     this.last_active = drop;
-    },
-  
+|     this.last_active = drop;
+|   },
+| 
 +   show: function(point, element) {
 |     if(!this.drops.length) return;
 |     var affected = [];
@@ -100,28 +100,28 @@
 |         drop.onHover(element, drop.element, Position.overlap(drop.overlap, drop.element));
 |       
 |       Droppables.activate(drop);
--     }
-    },
-  
+|     }
+|   },
+| 
 +   fire: function(event, element) {
 |     if(!this.last_active) return;
 |     Position.prepare();
 | 
 |     if (this.isAffected([Event.pointerX(event), Event.pointerY(event)], element, this.last_active))
 |       if (this.last_active.onDrop) 
--         this.last_active.onDrop(element, this.last_active.element, event);
-    },
-  
+|         this.last_active.onDrop(element, this.last_active.element, event);
+|   },
+| 
 +   reset: function() {
 |     if(this.last_active)
 |       this.deactivate(this.last_active);
--   }
-  }
+|   }
+- }
   
-  var Draggables = {
-    drags: [],
-    observers: [],
-    
++ var Draggables = {
+|   drags: [],
+|   observers: [],
+|   
 +   register: function(draggable) {
 |     if(this.drags.length == 0) {
 |       this.eventMouseUp   = this.endDrag.bindAsEventListener(this);
@@ -132,27 +132,27 @@
 |       Event.observe(document, "mousemove", this.eventMouseMove);
 |       Event.observe(document, "keypress", this.eventKeypress);
 |     }
--     this.drags.push(draggable);
-    },
-    
+|     this.drags.push(draggable);
+|   },
+|   
 +   unregister: function(draggable) {
 |     this.drags = this.drags.reject(function(d) { return d==draggable });
 |     if(this.drags.length == 0) {
 |       Event.stopObserving(document, "mouseup", this.eventMouseUp);
 |       Event.stopObserving(document, "mousemove", this.eventMouseMove);
 |       Event.stopObserving(document, "keypress", this.eventKeypress);
--     }
-    },
-    
+|     }
+|   },
+|   
 +   activate: function(draggable) {
 |     window.focus(); // allows keypress events if window isn't currently focused, fails for Safari
--     this.activeDraggable = draggable;
-    },
-    
+|     this.activeDraggable = draggable;
+|   },
+|   
 +   deactivate: function() {
--     this.activeDraggable = null;
-    },
-    
+|     this.activeDraggable = null;
+|   },
+|   
 +   updateDrag: function(event) {
 |     if(!this.activeDraggable) return;
 |     var pointer = [Event.pointerX(event), Event.pointerY(event)];
@@ -160,51 +160,51 @@
 |     // the same coordinates, prevent needless redrawing (moz bug?)
 |     if(this._lastPointer && (this._lastPointer.inspect() == pointer.inspect())) return;
 |     this._lastPointer = pointer;
--     this.activeDraggable.updateDrag(event, pointer);
-    },
-    
+|     this.activeDraggable.updateDrag(event, pointer);
+|   },
+|   
 +   endDrag: function(event) {
 |     if(!this.activeDraggable) return;
 |     this._lastPointer = null;
 |     this.activeDraggable.endDrag(event);
--     this.activeDraggable = null;
-    },
-    
+|     this.activeDraggable = null;
+|   },
+|   
 +   keyPress: function(event) {
 |     if(this.activeDraggable)
--       this.activeDraggable.keyPress(event);
-    },
-    
+|       this.activeDraggable.keyPress(event);
+|   },
+|   
 +   addObserver: function(observer) {
 |     this.observers.push(observer);
--     this._cacheObserverCallbacks();
-    },
-    
+|     this._cacheObserverCallbacks();
+|   },
+|   
 +   removeObserver: function(element) {  // element instead of observer fixes mem leaks
 |     this.observers = this.observers.reject( function(o) { return o.element==element });
--     this._cacheObserverCallbacks();
-    },
-    
+|     this._cacheObserverCallbacks();
+|   },
+|   
 +   notify: function(eventName, draggable, event) {  // 'onStart', 'onEnd', 'onDrag'
 |     if(this[eventName+'Count'] > 0)
 |       this.observers.each( function(o) {
 |         if(o[eventName]) o[eventName](eventName, draggable, event);
--       });
-    },
-    
+|       });
+|   },
+|   
 +   _cacheObserverCallbacks: function() {
 |     ['onStart','onEnd','onDrag'].each( function(eventName) {
 |       Draggables[eventName+'Count'] = Draggables.observers.select(
 |         function(o) { return o[eventName]; }
 |       ).length;
 |     });
--   }
-  }
+|   }
+- }
   
   /*--------------------------------------------------------------------------*/
   
   var Draggable = Class.create();
-  Draggable.prototype = {
++ Draggable.prototype = {
 +   initialize: function(element) {
 |     var options = Object.extend({
 |       handle: false,
@@ -248,19 +248,19 @@
 |     Event.observe(this.handle, "mousedown", this.eventMouseDown);
 |     
 -     Draggables.register(this);
-    },
-    
+|   },
+|   
 +   destroy: function() {
 |     Event.stopObserving(this.handle, "mousedown", this.eventMouseDown);
 -     Draggables.unregister(this);
-    },
-    
+|   },
+|   
 +   currentDelta: function() {
 |     return([
 |       parseInt(Element.getStyle(this.element,'left') || '0'),
 -       parseInt(Element.getStyle(this.element,'top') || '0')]);
-    },
-    
+|   },
+|   
 +   initDrag: function(event) {
 |     if(Event.isLeftClick(event)) {    
 |       // abort on form elements, fixes a Firefox issue
@@ -284,8 +284,8 @@
 |       Draggables.activate(this);
 |       Event.stop(event);
 -     }
-    },
-    
+|   },
+|   
 +   startDrag: function(event) {
 |     this.dragging = true;
 |     
@@ -313,8 +313,8 @@
 |     
 |     Draggables.notify('onStart', this, event);
 -     if(this.options.starteffect) this.options.starteffect(this.element);
-    },
-    
+|   },
+|   
 +   updateDrag: function(event, pointer) {
 |     if(!this.dragging) this.startDrag(event);
 |     Position.prepare();
@@ -348,8 +348,8 @@
 |     if(navigator.appVersion.indexOf('AppleWebKit')>0) window.scrollBy(0,0);
 |     
 -     Event.stop(event);
-    },
-    
+|   },
+|   
 +   finishDrag: function(event, success) {
 |     this.dragging = false;
 | 
@@ -381,21 +381,21 @@
 | 
 |     Draggables.deactivate(this);
 -     Droppables.reset();
-    },
-    
+|   },
+|   
 +   keyPress: function(event) {
 |     if(event.keyCode!=Event.KEY_ESC) return;
 |     this.finishDrag(event, false);
 -     Event.stop(event);
-    },
-    
+|   },
+|   
 +   endDrag: function(event) {
 |     if(!this.dragging) return;
 |     this.stopScrolling();
 |     this.finishDrag(event, true);
 -     Event.stop(event);
-    },
-    
+|   },
+|   
 +   draw: function(point) {
 |     var pos = Position.cumulativeOffset(this.element);
 |     var d = this.currentDelta();
@@ -429,22 +429,22 @@
 |     if((!this.options.constraint) || (this.options.constraint=='vertical'))
 |       style.top  = p[1] + "px";
 -     if(style.visibility=="hidden") style.visibility = ""; // fix gecko rendering
-    },
-    
+|   },
+|   
 +   stopScrolling: function() {
 |     if(this.scrollInterval) {
 |       clearInterval(this.scrollInterval);
 |       this.scrollInterval = null;
 |       Draggables._lastScrollPointer = null;
 -     }
-    },
-    
+|   },
+|   
 +   startScrolling: function(speed) {
 |     this.scrollSpeed = [speed[0]*this.options.scrollSpeed,speed[1]*this.options.scrollSpeed];
 |     this.lastScrolled = new Date();
 -     this.scrollInterval = setInterval(this.scroll.bind(this), 10);
-    },
-    
+|   },
+|   
 +   scroll: function() {
 |     var current = new Date();
 |     var delta = current - this.lastScrolled;
@@ -474,8 +474,8 @@
 |     this.draw(Draggables._lastScrollPointer);
 |     
 -     if(this.options.change) this.options.change(this);
-    },
-    
+|   },
+|   
 +   _getWindowScroll: function(w) {
 |     var T, L, W, H;
 |     with (w.document) {
@@ -499,45 +499,45 @@
 |     }
 |     return { top: T, left: L, width: W, height: H };
 -   }
-  }
+- }
   
   /*--------------------------------------------------------------------------*/
   
   var SortableObserver = Class.create();
-  SortableObserver.prototype = {
++ SortableObserver.prototype = {
 +   initialize: function(element, observer) {
 |     this.element   = $(element);
 |     this.observer  = observer;
 -     this.lastValue = Sortable.serialize(this.element);
-    },
-    
+|   },
+|   
 +   onStart: function() {
 -     this.lastValue = Sortable.serialize(this.element);
-    },
-    
+|   },
+|   
 +   onEnd: function() {
 |     Sortable.unmark();
 |     if(this.lastValue != Sortable.serialize(this.element))
 |       this.observer(this.element)
 -   }
-  }
+- }
   
-  var Sortable = {
-    sortables: {},
-    
++ var Sortable = {
+|   sortables: {},
+|   
 +   _findRootElement: function(element) {
 |     while (element.tagName != "BODY") {  
 |       if(element.id && Sortable.sortables[element.id]) return element;
 |       element = element.parentNode;
--     }
-    },
-  
+|     }
+|   },
+| 
 +   options: function(element) {
 |     element = Sortable._findRootElement($(element));
 |     if(!element) return;
--     return Sortable.sortables[element.id];
-    },
-    
+|     return Sortable.sortables[element.id];
+|   },
+|   
 +   destroy: function(element){
 |     var s = Sortable.options(element);
 |     
@@ -547,9 +547,9 @@
 |       s.draggables.invoke('destroy');
 |       
 |       delete Sortable.sortables[s.element.id];
--     }
-    },
-  
+|     }
+|   },
+| 
 +   create: function(element) {
 |     element = $(element);
 |     var options = Object.extend({ 
@@ -594,7 +594,7 @@
 |     else
 +       if(options.ghosting) options_for_draggable.reverteffect = function(element) {
 |         element.style.top  = 0;
--         element.style.left = 0;
+|         element.style.left = 0;
 |       };
 | 
 |     if(options.endeffect)
@@ -656,20 +656,20 @@
 | 
 |     // for onupdate
 |     Draggables.addObserver(new SortableObserver(element, options.onUpdate));
-- 
-    },
-  
-    // return all suitable-for-sortable elements in a guaranteed order
+| 
+|   },
+| 
+|   // return all suitable-for-sortable elements in a guaranteed order
 +   findElements: function(element, options) {
 |     return Element.findChildren(
--       element, options.only, options.tree ? true : false, options.tag);
-    },
-    
+|       element, options.only, options.tree ? true : false, options.tag);
+|   },
+|   
 +   findTreeElements: function(element, options) {
 |     return Element.findChildren(
--       element, options.only, options.tree ? true : false, options.treeTag);
-    },
-  
+|       element, options.only, options.tree ? true : false, options.treeTag);
+|   },
+| 
 +   onHover: function(element, dropon, overlap) {
 |     if(Element.isParent(dropon, element)) return;
 | 
@@ -696,9 +696,9 @@
 |           Sortable.options(oldParentNode).onChange(element);
 |         Sortable.options(dropon.parentNode).onChange(element);
 |       }
--     }
-    },
-    
+|     }
+|   },
+|   
 +   onEmptyHover: function(element, dropon, overlap) {
 |     var oldParentNode = element.parentNode;
 |     var droponOptions = Sortable.options(dropon);
@@ -729,13 +729,13 @@
 |       
 |       Sortable.options(oldParentNode).onChange(element);
 |       droponOptions.onChange(element);
--     }
-    },
-  
+|     }
+|   },
+| 
 +   unmark: function() {
--     if(Sortable._marker) Element.hide(Sortable._marker);
-    },
-  
+|     if(Sortable._marker) Element.hide(Sortable._marker);
+|   },
+| 
 +   mark: function(dropon, position) {
 |     // mark on ghosting only
 |     var sortable = Sortable.options(dropon.parentNode);
@@ -758,9 +758,9 @@
 |       else
 |         Sortable._marker.style.top = (offsets[1]+dropon.clientHeight) + 'px';
 |     
--     Element.show(Sortable._marker);
-    },
-    
+|     Element.show(Sortable._marker);
+|   },
+|   
 +   _tree: function(element, options, parent) {
 |     var children = Sortable.findElements(element, options) || [];
 |   
@@ -785,20 +785,20 @@
 |       parent.children.push (child);
 |     }
 | 
--     return parent; 
-    },
-  
-    /* Finds the first element of the given tag type within a parent element.
-      Used for finding the first LI[ST] within a L[IST]I[TEM].*/
+|     return parent; 
+|   },
+| 
+|   /* Finds the first element of the given tag type within a parent element.
+|     Used for finding the first LI[ST] within a L[IST]I[TEM].*/
 +   _findChildrenElement: function (element, containerTag) {
 |     if (element && element.hasChildNodes)
 |       for (var i = 0; i < element.childNodes.length; ++i)
 |         if (element.childNodes[i].tagName == containerTag)
 |           return element.childNodes[i];
 |   
--     return null;
-    },
-  
+|     return null;
+|   },
+| 
 +   tree: function(element) {
 |     element = $(element);
 |     var sortableOptions = this.options(element);
@@ -818,27 +818,27 @@
 |       position: 0
 |     }
 |     
--     return Sortable._tree (element, options, root);
-    },
-  
-    /* Construct a [i] index for a particular node */
+|     return Sortable._tree (element, options, root);
+|   },
+| 
+|   /* Construct a [i] index for a particular node */
 +   _constructIndex: function(node) {
 |     var index = '';
 |     do {
 |       if (node.id) index = '[' + node.position + ']' + index;
 |     } while ((node = node.parent) != null);
--     return index;
-    },
-  
+|     return index;
+|   },
+| 
 +   sequence: function(element) {
 |     element = $(element);
 |     var options = Object.extend(this.options(element), arguments[1] || {});
 |     
 |     return $(this.findElements(element, options) || []).map( function(item) {
 |       return item.id.match(options.format) ? item.id.match(options.format)[1] : '';
--     });
-    },
-  
+|     });
+|   },
+| 
 +   setSequence: function(element, new_sequence) {
 |     element = $(element);
 |     var options = Object.extend(this.options(element), arguments[2] || {});
@@ -856,9 +856,9 @@
 |         n[1].appendChild(n[0]);
 |         delete nodeMap[ident];
 |       }
--     });
-    },
-    
+|     });
+|   },
+|   
 +   serialize: function(element) {
 |     element = $(element);
 |     var options = Object.extend(Sortable.options(element), arguments[1] || {});
@@ -875,8 +875,8 @@
 |         return name + "[]=" + encodeURIComponent(item);
 |       }).join('&');
 |     }
--   }
-  }
+|   }
+- }
   
   /* Returns true if child is contained within element */
 + Element.isParent = function(child, element) {

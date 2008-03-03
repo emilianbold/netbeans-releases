@@ -121,8 +121,7 @@ public class AntDebugger extends ActionsProviderSupport {
         this.contextProvider = contextProvider;
         
         // init antCookie
-        antCookie = (AntProjectCookie) contextProvider.lookupFirst 
-            (null, AntProjectCookie.class);
+        antCookie = contextProvider.lookupFirst(null, AntProjectCookie.class);
         
         // init engineProvider
         engineProvider = (AntDebuggerEngineProvider) contextProvider.lookupFirst 

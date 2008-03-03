@@ -69,7 +69,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * @todo Remove .prototype and .superclass properties from FQN's
  * @todo Handle $super - jump to the superclass' implementation of the given method
  * 
  * @author Tor Norbye
