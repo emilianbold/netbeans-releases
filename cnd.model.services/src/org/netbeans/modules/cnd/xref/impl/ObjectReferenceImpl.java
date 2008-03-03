@@ -90,6 +90,10 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
         return ownerDelegate.getObject();
     }
 
+    public CsmReferenceKind getKind() {
+        return this.kind;
+    }
+        
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
