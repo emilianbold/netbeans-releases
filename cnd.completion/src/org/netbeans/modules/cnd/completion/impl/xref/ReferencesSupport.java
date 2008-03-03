@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -361,6 +362,24 @@ public final class ReferencesSupport {
         CsmObject owner = ref.getOwner();
         if (CsmKindUtilities.isType(owner)) {
             kind = getReferenceUsageKind(ref);
+        } else {
+            CsmObject target = ref.getReferencedObject();
+            if (target != null) {
+                CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, true);
+                CsmObject targetDecl = decDef[0];
+                CsmObject targetDef = decDef[1];        
+                assert targetDecl != null;
+                kind = CsmReferenceKind.DIRECT_USAGE;
+                if (owner != null) {
+                    if (owner.equals(targetDecl)) {
+                        kind = CsmReferenceKind.DECLARATION;
+                    } else if (owner.equals(targetDef)) {
+                        kind = CsmReferenceKind.DEFINITION;
+                    } else {
+                        kind = getReferenceUsageKind(ref);                        
+                    }
+                }
+            }
         }
         return kind;
     }
