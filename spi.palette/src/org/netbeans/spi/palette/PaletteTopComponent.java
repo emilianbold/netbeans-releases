@@ -113,7 +113,11 @@ final class PaletteTopComponent extends TopComponent implements PropertyChangeLi
         switcher.addPropertyChangeListener( this );
         PaletteController pc = switcher.getCurrentPalette();
         setPaletteController( pc );
-        PaletteVisibility.setVisible( pc, true );
+        if( Utils.isOpenedByUser(this) ) {
+            //only change the flag when the Palette window was opened from ShowPaletteAction
+            //i.e. user clicked the menu item or used keyboard shortcut - ignore window system load & restore
+            PaletteVisibility.setVisible( pc, true );
+        }
     }
     
     public void componentClosed() {
