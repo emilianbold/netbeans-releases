@@ -113,16 +113,17 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     if (pname.equals(Watch.PROP_EXPRESSION)) {
-                        resetTypeInfo();
+                        resetVariable();
                     }
                     type = getDebugger().requestWhatis(watch.getExpression());
-                    if (type.length() > 0) {
+                    if (type != null && type.length() > 0) {
                         value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
                         String rt = getTypeInfo().getResolvedType(gwv);
                         if (GdbUtils.isPointer(rt)) {
                             derefValue = getDebugger().requestValue('*' + watch.getExpression());
                         }
                     } else {
+                        type = "";
                         value = "";
                     }
                     setModifiedValue(value);

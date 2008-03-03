@@ -458,12 +458,19 @@ public class JsIndex {
                         if (name.length() < lastDot) {
                             int nextDot = elementName.indexOf('.', fqn.length());
                             if (nextDot != -1) {
+                                int flags = IndexedElement.decode(signature, inEndIdx, 0);
+                                ElementKind k = ElementKind.PACKAGE;
+                                // If there are no more dots after this one, it's a class, not a package
+                                int nextNextDot = elementName.indexOf('.', nextDot+1);
+                                if (nextNextDot == -1) {
+                                    k = ElementKind.CLASS;
+                                }
                                 if (type != null && type.length() > 0) {
                                     String pkg = elementName.substring(type.length()+1, nextDot);
-                                    element = new IndexedPackage(pkg, null, this, map.getPersistentUrl(), signature, IndexedElement.decode(signature, inEndIdx, 0));
+                                    element = new IndexedPackage(pkg, null, this, map.getPersistentUrl(), signature, flags, k);
                                 } else {
                                     String pkg = elementName.substring(0, nextDot);
-                                    element = new IndexedPackage(pkg, null, this, map.getPersistentUrl(), signature, IndexedElement.decode(signature, inEndIdx, 0));
+                                    element = new IndexedPackage(pkg, null, this, map.getPersistentUrl(), signature, flags, k);
                                 }
                             } else {
                                 funcIn = elementName.substring(0, lastDot);

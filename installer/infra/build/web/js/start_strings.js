@@ -41,7 +41,6 @@ var INSTALLER_MESSAGE = "Installer for {0}";
 var NOFILE_MESSAGE    = "No file requested" ;
 
 var NETBEANS_DOWNLOAD_STARTED_HEADER = "NetBeans IDE {0} Download Started";
-var LICENSE_NOTES_LABEL = "License Notices";
 var RELEASE_NOTES_LABEL = "Release Notes";
 var INSTALL_NOTES_LABEL = "Installation Instructions";
 var FIND_OUT_MORE_LABEL = "Find Out More";

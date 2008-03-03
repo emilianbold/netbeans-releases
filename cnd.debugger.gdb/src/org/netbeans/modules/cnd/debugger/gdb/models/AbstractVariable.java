@@ -125,8 +125,11 @@ public class AbstractVariable implements LocalVariable, Customizer {
         return tinfo;
     }
     
-    protected void resetTypeInfo() {
+    protected void resetVariable() {
         tinfo = null;
+        type = "";
+        value = "";
+        fields = new Field[0];
     }
     
     /**
@@ -519,7 +522,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
             if (currentEngine == null) {
                 return null;
             }
-            debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
+            debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
         }
         return debugger;
     }
