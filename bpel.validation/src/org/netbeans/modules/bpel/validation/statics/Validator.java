@@ -42,7 +42,6 @@ package org.netbeans.modules.bpel.validation.statics;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -144,7 +143,6 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
-import org.netbeans.modules.bpel.validation.core.Outcome;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
@@ -683,12 +681,11 @@ public final class Validator extends BpelValidator {
         String faultVariable = catc.getFaultVariable();
         SchemaReference<GlobalElement> element = catc.getFaultElement();
         WSDLReference<Message> message = catc.getFaultMessageType();
-        Outcome item = null;
 
         if (faultVariable != null && element == null && message == null) {
             addError(FIX_FAULT_VARIABLE_TYPE, catc);
         }
-        if (element != null && message != null && item == null) {
+        if (element != null && message != null) {
             addError(FIX_FAULT_VARIABLE_TYPE, catc);
         }
         if (faultVariable == null && ( element != null || message != null)) {
