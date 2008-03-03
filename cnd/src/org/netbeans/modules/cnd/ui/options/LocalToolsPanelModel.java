@@ -51,24 +51,30 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
 //    private String cCompilerName;
 //    private String cppCompilerName;
 //    private String fortranCompilerName;
-    private String gdbPath;
-    private boolean gdbEnabled;
+//    private String gdbPath;
+//    private boolean gdbEnabled;
+    private boolean makeRequired;
     private boolean gdbRequired;
     private boolean cRequired;
     private boolean cppRequired;
     private boolean fortranRequired;
+    private boolean showBuildTools;
+    private boolean showDebugTools;
     
     public LocalToolsPanelModel() {
         compilerSetName = null;
 //        cCompilerName = null;
 //        cppCompilerName = null;
 //        fortranCompilerName = null;
-        gdbPath = null;
-        gdbEnabled = super.isGdbEnabled();
+//        gdbPath = null;
+//        gdbEnabled = super.isGdbEnabled();
+        makeRequired = false;
         gdbRequired = false;
         cRequired = false;
         cppRequired = false;
         fortranRequired = false;
+        showBuildTools = false;
+        showDebugTools = false;
     }
     
 //    @Override
@@ -76,9 +82,9 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
 //        return gdbEnabled;
 //    }
 //    
-    public void setGdbEnabled(boolean enabled) {
-        // gdbEnabled = enabled;
-    }
+//    public void setGdbEnabled(boolean enabled) {
+//        // gdbEnabled = enabled;
+//    }
     
     public void setCompilerSetName(String name) {
         compilerSetName = name;
@@ -138,6 +144,14 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
 //        this.gdbPath = gdbPath;
 //    }
     
+    public boolean isMakeRequired() {
+        return makeRequired;
+    }
+    
+    public void setMakeRequired(boolean enabled) {
+        makeRequired = enabled;
+    }
+    
     public boolean isGdbRequired() {
         return gdbRequired;
     }
@@ -172,5 +186,21 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     
     public boolean showRequiredTools() {
         return true;
+    }
+    
+    public void setShowRequiredBuildTools(boolean enabled) {
+        showBuildTools = enabled;
+    }
+    
+    public boolean showRequiredBuildTools() {
+        return showBuildTools;
+    }
+    
+    public void setShowRequiredDebugTools(boolean enabled) {
+        showDebugTools = enabled;
+    }
+    
+    public boolean showRequiredDebugTools() {
+        return showDebugTools;
     }
 }

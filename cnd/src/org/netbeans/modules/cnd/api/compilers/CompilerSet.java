@@ -480,6 +480,12 @@ public class CompilerSet {
         return tool;
     }
     
+    public Tool addNewTool(String name, String path, int kind) {
+        Tool tool = compilerProvider.createCompiler(flavor, kind, name, Tool.getToolDisplayName(kind), path);
+        tools.add(tool);
+        return tool;
+    }
+    
     public void removeTool(String name, String path, int kind) {
         for (Tool tool : tools) {
             if (tool.getName().equals(name) && tool.getPath().equals(path) && tool.getKind() == kind) {
@@ -543,15 +549,30 @@ public class CompilerSet {
                 return tool;
         }
         Tool t;
-        if (kind == Tool.MakeTool) {
+        if (kind == Tool.MakeTool || kind == Tool.DebuggerTool) {
             // Fixup: all tools should go here ....
-            t = compilerProvider.createCompiler(flavor, kind, "", Tool.getToolDisplayName(kind), "");
+            t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", Tool.getToolDisplayName(kind), "");
         }
         else {
             t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], ""); // NOI18N
         }
         tools.add(t);
         return t;
+    }
+    
+    
+    /**
+     * Get the first tool of its kind.
+     *
+     * @param kind The type of tool to get
+     * @return The Tool or null
+     */
+    public Tool findTool(int kind) {
+        for (Tool tool : tools) {
+            if (tool.getKind() == kind)
+                return tool;
+        }
+        return null;
     }
     
     public boolean isValid() {

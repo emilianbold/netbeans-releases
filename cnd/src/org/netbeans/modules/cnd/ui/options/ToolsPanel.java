@@ -76,12 +76,12 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
-import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.modules.cnd.MIMENames;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.DialogDescriptor;
@@ -91,7 +91,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /** Display the "Tools Default" panel */
 public class ToolsPanel extends JPanel implements ActionListener, DocumentListener,
@@ -177,7 +176,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         if (csm == null) {
             csm = CompilerSetManager.getDefault();
         }
-        gdbEnabled = model.isGdbEnabled();
+        gdbEnabled = IpeUtils.isGdbEnabled();
         
         cSelections = new HashMap();
         cppSelections = new HashMap();
@@ -196,6 +195,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         cbFortranRequired.setVisible(fortran);
         
         // Initialize Required tools. Can't do it in constructor because there is no model then.
+        cbMakeRequired.setSelected(model.isMakeRequired());
         cbGdbRequired.setSelected(model.isGdbRequired());
         cbCRequired.setSelected(model.isCRequired());
         cbCppRequired.setSelected(model.isCppRequired());
@@ -458,7 +458,13 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 //        tfGdbCommand.setVisible(gdbEnabled);
         tfGdbPath.setVisible(gdbEnabled);
         btGdbVersion.setVisible(gdbEnabled);
-        cbGdbRequired.setVisible(gdbEnabled);
+//        cbGdbRequired.setVisible(gdbEnabled);
+        
+        cbMakeRequired.setVisible(model.showRequiredBuildTools());
+        cbGdbRequired.setVisible(model.showRequiredDebugTools() && gdbEnabled);
+        cbCppRequired.setVisible(model.showRequiredBuildTools());
+        cbCRequired.setVisible(model.showRequiredBuildTools());
+        cbFortranRequired.setVisible(model.showRequiredBuildTools() && CppSettings.getDefault().isFortranEnabled());
         
         int idx = lstDirlist.getSelectedIndex();
         lstDirlist.setListData(dirlist.toArray());
@@ -780,8 +786,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             return true;
         } else {
             boolean csmValid = csm.getCompilerSets().size() > 0;
-            boolean makeValid = isPathFieldValid(tfMakePath);
-            boolean gdbValid = isPathFieldValid(tfGdbPath);
+            boolean makeValid = cbMakeRequired.isSelected() ? isPathFieldValid(tfMakePath) : true;
+            boolean gdbValid = cbGdbRequired.isSelected() ? isPathFieldValid(tfGdbPath) : true;
             boolean cValid = cbCRequired.isSelected() ? tfCPath.getText().length() > 0 : true;
             boolean cppValid = cbCppRequired.isSelected() ? tfCppPath.getText().length() > 0 : true;
             boolean fortranValid = cbFortranRequired.isSelected() ? tfFortranPath.getText().length() > 0 : true;
@@ -800,7 +806,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             errorTextArea.setRows(0);
             if (!valid) {
                 ArrayList<String> errors = new ArrayList<String>();
-                if (!makeValid) {
+                if (cbMakeRequired.isSelected() && !makeValid) {
                     errors.add("Make tool is missing or invalid");
                 }
                 if (cbCRequired.isSelected() && !cValid) {
@@ -1537,6 +1543,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         jPanel1.add(cbMakeRequired, gridBagConstraints);
 
         cbGdbRequired.setText(bundle.getString("LBL_RequiredGdb")); // NOI18N
+        cbGdbRequired.setEnabled(false);
         cbGdbRequired.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
