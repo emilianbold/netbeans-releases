@@ -48,6 +48,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
@@ -123,7 +124,8 @@ public class J2SEProjectGenerator {
 
     public static AntProjectHelper createProject(final File dir, final String name,
                                                   final File[] sourceFolders, final File[] testFolders, 
-                                                  final String manifestFile, final String librariesDefinition) throws IOException {
+                                                  final String manifestFile, final String librariesDefinition,
+                                                  final String buildXmlName) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
         final FileObject dirFO = FileUtil.createFolder(dir);
         final AntProjectHelper[] h = new AntProjectHelper[1];
@@ -197,6 +199,11 @@ public class J2SEProjectGenerator {
                             h[0].putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                         }
                         h[0].putPrimaryConfigurationData(data,true);
+                        if (buildXmlName != null) {
+                            final EditableProperties props = h[0].getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            props.put(J2SEProjectProperties.BUILD_SCRIPT, buildXmlName);
+                            h[0].putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                        }
                         ProjectManager.getDefault().saveProject (p);
                         copyRequiredLibraries(h[0], refHelper);
                         return null;

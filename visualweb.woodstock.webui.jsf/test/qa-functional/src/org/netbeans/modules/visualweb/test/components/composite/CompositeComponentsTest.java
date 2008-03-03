@@ -124,35 +124,31 @@ public class CompositeComponentsTest extends RaveTestCase {
     }
 
     public void testAccordion() {
-        try {
-            // Add Accordion component
-            PaletteHelper.COMPOSITE.addComponent("Accordion", 50, 50, "id=testAcrd");
-            // Add Accordion Tab component
-            PaletteHelper.COMPOSITE.addComponent("AccordionTab", 75, 100,
-                    "id=testAccrdTab\n" +
-                    "contentHeight=133px");
-            // Add a Static Text into the tab
-            PaletteHelper.BASIC.addComponent("StaticText", 75, 150,
-                    "id=stext1\n" +
-                    "text=Accordion Tab Text\n" +
-                    "toolTip=Accordion Tab Text Tooltip");
-            new SaveAllAction().perform();
-            // Verify JSP source
-            switchToJSPSource();
-            assertEditorContains(getEditorOperator("Page1"), new String[]{
-                        "<webuijsf:accordion ",
-                        "<webuijsf:accordionTab ",
-                        "<webuijsf:staticText ",
-                        " id=\"testAcrd\"",
-                        " id=\"testAccrdTab\"",
-                        " id=\"stext1\"",
-                        " contentHeight=\"133px\""
-                    });
-            switchToDesignerPane();
-            deployProject(projectName);
-        } catch (Exception ex) {
-            fail(ex);
-        }
+        // Add Accordion component
+        PaletteHelper.COMPOSITE.addComponent("Accordion", 50, 50, "id=testAcrd");
+        // Add Accordion Tab component
+        PaletteHelper.COMPOSITE.addComponent("AccordionTab", 75, 100,
+                "id=testAccrdTab\n" +
+                "contentHeight=133px");
+        // Add a Static Text into the tab
+        PaletteHelper.BASIC.addComponent("StaticText", 75, 150,
+                "id=stext1\n" +
+                "text=Accordion Tab Text\n" +
+                "toolTip=Accordion Tab Text Tooltip");
+        new SaveAllAction().perform();
+        // Verify JSP source
+        switchToJSPSource();
+        assertEditorContains(getEditorOperator("Page1"), new String[]{
+                    "<webuijsf:accordion ",
+                    "<webuijsf:accordionTab ",
+                    "<webuijsf:staticText ",
+                    " id=\"testAcrd\"",
+                    " id=\"testAccrdTab\"",
+                    " id=\"stext1\"",
+                    " contentHeight=\"133px\""
+                });
+        switchToDesignerPane();
+        deployProject(projectName);
     }
 
     public void testBubbleHelp() {
@@ -238,7 +234,6 @@ public class CompositeComponentsTest extends RaveTestCase {
                     editor.contains(str));
         }
     }
-
     private static final String UNDEPLOY_AND_DEPLOY = Bundle.getStringTrimmed(
             "org.netbeans.modules.web.project.ui.Bundle",
             "LBL_RedeployAction_Name");

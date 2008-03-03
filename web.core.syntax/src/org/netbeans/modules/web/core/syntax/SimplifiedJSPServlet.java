@@ -203,9 +203,11 @@ public class SimplifiedJSPServlet {
                 if (blockType == JavaCodeType.EXPRESSION) {
                     // ignore JSP expressions in included files
                     if (!processAsIncluded){
-                        String exprPrefix = String.format("\t\tObject expr%1$d = ", expressionIndex++); //NOI18N
+                        // the "" + (...) construction is used to preserve compatibility with pre-autoboxing java
+                        // see issue #116598
+                        String exprPrefix = String.format("\t\tObject expr%1$d = \"\" + (", expressionIndex++); //NOI18N
                         newBlockStart += exprPrefix.length();
-                        buff.append(exprPrefix + blockBody + ";\n");
+                        buff.append(exprPrefix + blockBody + ");\n");
                     }
                 } else {
                     buff.append(blockBody + "\n");
