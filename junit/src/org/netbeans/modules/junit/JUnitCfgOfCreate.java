@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -129,19 +129,6 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
     private boolean hasTargetFolders = false;
 
     /**
-     * is combination of checkbox states acceptable?
-     *
-     * @see  #isAcceptable()
-     */
-    private boolean checkBoxesOK;
-    
-    /**
-     * message about invalid configuration of checkboxes
-     * in the <em>Method Access Levels</em> group
-     */
-    private String msgChkBoxesInvalid;
-    
-    /**
      * is the entered class name non-empty and valid?
      *
      * @see  #isAcceptable()
@@ -157,14 +144,12 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
     
     /** layer index for a message about an empty set of target folders */
     private static final int MSG_TYPE_NO_TARGET_FOLDERS = 0;
-    /** layer index for a message about invalid configuration of checkboxes */
-    private static final int MSG_TYPE_INVALID_CHKBOXES = 1;
     /** layer index for a message about invalid class name */
-    private static final int MSG_TYPE_CLASSNAME_INVALID = 2;
+    private static final int MSG_TYPE_CLASSNAME_INVALID = 1;
     /** layer index for a message about non-default class name */
-    private static final int MSG_TYPE_CLASSNAME_NOT_DEFAULT = 3;
+    private static final int MSG_TYPE_CLASSNAME_NOT_DEFAULT = 2;
     /** */
-    private MessageStack msgStack = new MessageStack(4);
+    private MessageStack msgStack = new MessageStack(3);
 
     /**
      * Creates a JUnit configuration panel.
@@ -382,8 +367,6 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
         }
         chkSetUp.setSelected(settings.isGenerateSetUp());
         chkTearDown.setSelected(settings.isGenerateTearDown());
-        
-        checkChkBoxesStates();
     }
     
     /**
@@ -453,25 +436,6 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
     }
     
     /**
-     */
-    private void checkChkBoxesStates() {
-        checkBoxesOK = chkPublic.isSelected()
-                       || chkProtected.isSelected()
-                       || chkPackage.isSelected();
-        if (checkBoxesOK) {
-            setMessage(null, MSG_TYPE_INVALID_CHKBOXES);
-        } else {
-            if (msgChkBoxesInvalid == null) {
-                //PENDING - text of the message:
-                msgChkBoxesInvalid = NbBundle.getMessage(
-                        JUnitCfgOfCreate.class,
-                        "MSG_AllMethodTypesDisabled");                  //NOI18N
-            }
-            setMessage(msgChkBoxesInvalid, MSG_TYPE_INVALID_CHKBOXES);
-        }
-    }
-    
-    /**
      * Listener object that listens on state changes of some check-boxes.
      */
     private final class CheckBoxListener implements ItemListener {
@@ -483,7 +447,6 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
             assert source == chkPublic
                    || source == chkProtected
                    || source == chkPackage;
-            checkChkBoxesStates();
             checkAcceptability();
         }
         
@@ -626,7 +589,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
      */
     private void checkAcceptability() {
         final boolean wasAcceptable = isAcceptable;
-        isAcceptable = hasTargetFolders && classNameValid && checkBoxesOK;
+        isAcceptable = hasTargetFolders && classNameValid;
         if (isAcceptable != wasAcceptable) {
             fireStateChange();
         }
