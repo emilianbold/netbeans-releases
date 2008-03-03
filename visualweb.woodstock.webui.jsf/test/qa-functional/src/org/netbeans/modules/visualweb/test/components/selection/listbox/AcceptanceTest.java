@@ -254,19 +254,19 @@ public class AcceptanceTest extends RaveTestCase {
         editor.requestFocus();
         TestUtils.wait(2000);
         editor.pushKey(KeyEvent.VK_ENTER);
-        editor.typeText("String[] mySelections = getSessionBean1().getChoices();\n");
-        editor.typeText("String showSelections = \"\"; \n");
-        editor.typeText("if (mySelections != null) { \n");
-        editor.typeText("// Create a list of the values of the selected items \n");
-        editor.typeText("for (int i = 0; i < mySelections.length; i++) \n");
-        editor.typeText("showSelections = showSelections + mySelections[i] +\"\n\"; \n");
-        //  editor.typeText("} \n");
-        editor.typeText("if (showSelections.equals(\"\")) \n");
-        editor.typeText("showSelections = \"nothing selected\"; \n");
-        editor.typeText("else \n");
-        editor.typeText("showSelections = \"Values chosen:\n\" + showSelections; \n");
-        editor.typeText("// Display the list in the textArea1 text area \n");
-        editor.typeText("getTextArea1().setValue(showSelections);  \n");
+        editor.setText("String[] mySelections = getSessionBean1().getChoices();\n");
+        editor.setText("String showSelections = \"\"; \n");
+        editor.setText("if (mySelections != null) { \n");
+        editor.setText("// Create a list of the values of the selected items \n");
+        editor.setText("for (int i = 0; i < mySelections.length; i++) \n");
+        editor.setText("showSelections = showSelections + mySelections[i] +\"\n\"; \n");
+        //  editor.setText("} \n");
+        editor.setText("if (showSelections.equals(\"\")) \n");
+        editor.setText("showSelections = \"nothing selected\"; \n");
+        editor.setText("else \n");
+        editor.setText("showSelections = \"Values chosen:\n\" + showSelections; \n");
+        editor.setText("// Display the list in the textArea1 text area \n");
+        editor.setText("getTextArea1().setValue(showSelections);  \n");
         TestUtils.wait(200);
         
         log("Reformat code");
@@ -372,7 +372,7 @@ public class AcceptanceTest extends RaveTestCase {
         editor.requestFocus();
         TestUtils.wait(2000);
         editor.pushKey(KeyEvent.VK_ENTER);
-        editor.typeText("getTextArea1().setText(getSessionBean1().getChoices2()); \n");
+        editor.setText("getTextArea1().setText(getSessionBean1().getChoices2()); \n");
         // Switch to design panel
         designer.makeComponentVisible();
         TestUtils.wait(10000);

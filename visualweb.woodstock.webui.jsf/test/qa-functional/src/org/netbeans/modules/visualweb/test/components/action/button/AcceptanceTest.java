@@ -210,7 +210,7 @@ public class AcceptanceTest extends RaveTestCase {
         assertTrue("There is no \"" + expectedStr + "\" string in jsp editor",
                 editor.getText().contains(expectedStr));
         editor.requestFocus();
-        editor.typeText("log(\"Action Performed\");\n");
+        editor.setText("log(\"Action Performed\");\n");
         log("Reformat code");
         TestUtils.wait(200);
         editor.clickForPopup();
