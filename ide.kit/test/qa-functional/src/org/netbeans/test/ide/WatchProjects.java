@@ -109,7 +109,7 @@ final class WatchProjects {
         
         tryCloseNavigator();
         
-        System.setProperty("assertgc.paths", "20");
+        System.setProperty("assertgc.paths", "5");
         // disabled due to issue 124038
         //Log.assertInstances("Checking if all projects are really garbage collected");
     }
