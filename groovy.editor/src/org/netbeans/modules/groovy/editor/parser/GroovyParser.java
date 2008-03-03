@@ -45,6 +45,9 @@ import groovy.lang.GroovyClassLoader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -89,6 +92,8 @@ import org.netbeans.modules.groovy.editor.elements.KeywordElement;
 import org.netbeans.modules.gsf.spi.DefaultError;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -496,8 +501,24 @@ public class GroovyParser implements Parser {
                 ClassPath.getClassPath(fo, ClassPath.COMPILE),
                 ClassPath.getClassPath(fo, ClassPath.SOURCE)
                 );
+        
+        // temporary hack until #128978 is fixed
+        // improves speed of compilation significantly
+        List<URL> urls = new ArrayList<URL>();
+        try {
+            for (FileObject cpRoot : cp.getRoots()) {
+                URL url = FileUtil.getArchiveFile(cpRoot.getURL());
+                if (url == null) {
+                    url = cpRoot.getURL();
+                }
+                urls.add(url);
+            }
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        ClassLoader parentLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]));
+        
         CompilerConfiguration configuration = new CompilerConfiguration();
-        ClassLoader parentLoader = cp == null ? null : cp.getClassLoader(true);
         GroovyClassLoader classLoader = new GroovyClassLoader(parentLoader, configuration);
         CompilationUnit compilationUnit = new CompilationUnit(configuration, null, classLoader);
         InputStream inputStream = new ByteArrayInputStream(source.getBytes());
