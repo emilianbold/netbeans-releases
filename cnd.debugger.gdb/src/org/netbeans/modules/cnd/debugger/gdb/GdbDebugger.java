@@ -230,7 +230,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         }
                 }, 30000);
             }
-            String gdbCommand = profile.getGdbPath(profile.getGdbCommand(), pae.getProfile().getRunDirectory());
+//            String gdbCommand = profile.getGdbPath(profile.getGdbCommand(), pae.getProfile().getRunDirectory());
+            String gdbCommand = profile.getGdbPath((MakeConfiguration)pae.getConfiguration());
             if (gdbCommand.toLowerCase().contains("cygwin")) { // NOI18N
                 cygwin = true;
             }
