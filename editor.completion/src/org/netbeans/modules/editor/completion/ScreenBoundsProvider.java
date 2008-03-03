@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,46 +31,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package gui.window;
+package org.netbeans.modules.editor.completion;
 
-import org.netbeans.jellytools.NbDialogOperator;
-
-import org.netbeans.jemmy.operators.ComponentOperator;
+import java.awt.GraphicsConfiguration;
+import java.awt.Rectangle;
+import javax.swing.text.JTextComponent;
 
 /**
- *
- * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
+ * Provides screen bounds
+ * @author Max Sauer
  */
-public class ConfigureDefaultOptionsDialog extends JSFComponentOptionsDialog {
+public class ScreenBoundsProvider {
     
-    /** Creates a new instance of ConfigureDefaultOptionsDialog */
-    public ConfigureDefaultOptionsDialog(String testName) {
-        super(testName);
-        expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=3000;
-        categoryName = "Woodstock Basic"; // NOI18N
-        componentName = "Listbox"; // NOI18N
-        addPoint = new java.awt.Point(50,50);
+    /** Relative maximum width of screen covered by CC */
+    static final double MAX_COMPL_COVERAGE = 0.4;
+    
+    private static Rectangle screenBounds;
+    
+    static Rectangle getScreenBounds(CompletionLayout layout) {
+        if (screenBounds == null) {
+	    JTextComponent editorComponent = layout.getEditorComponent();
+            GraphicsConfiguration configuration = editorComponent != null
+                    ? editorComponent.getGraphicsConfiguration() : null;
+            screenBounds = configuration != null
+                    ? configuration.getBounds() : new Rectangle();
+        }
+        return screenBounds;
     }
     
-    public ConfigureDefaultOptionsDialog(String testName, String performanceDataName) {
-        super(testName, performanceDataName);
-        expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=3000;
-        categoryName = "Woodstock Basic"; // NOI18N
-        componentName = "Listbox"; // NOI18N
-        addPoint = new java.awt.Point(50,50);
+    static void clear() {
+        screenBounds = null;
     }
-    
-    public ComponentOperator open(){
-        log("::open");
-
-        //Invoking popup menu on component
-        surface.pushPopupMenu("Configure Default Options...",  60, 60); // NOI18N
-        
-        return new NbDialogOperator("Options Customizer - listbox");  // NOI18N
-    }
-    
 }
