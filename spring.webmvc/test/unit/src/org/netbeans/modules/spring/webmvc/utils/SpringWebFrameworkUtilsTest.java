@@ -54,90 +54,90 @@ public class SpringWebFrameworkUtilsTest extends NbTestCase {
     }
 
     public void testDispatcherNameEntry_NonWordCharacterPattern() throws Exception {       
-        assert(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dis*patcher") == false);
+        assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dis*patcher"));
     }
     
 //    public void testDispatcherNameEntry_EmptyWordCharacterPattern() throws Exception {
-//        assert(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("") == false);
+//        assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid(""));
 //    }
     
     public void testDispatcherNameEntry_ValidPattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispatcher") == true);
+        assertTrue(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispatcher"));
     }  
     
     public void testDispatcherNameEntry_ValidAmpersandPattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispatcher&amp;") == true);
+        assertTrue(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispatcher&amp;"));
     } 
          
     public void testDispatcherNameEntry_NonWordUnicodeCharacterPattern() throws Exception {       
-        assert(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("あｂ３＿:え") == false);  // ^ is the invalid character
+        assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("あｂ３＿:え"));  // ^ is the invalid character
     }        
     
     public void testDispatcherNameEntry_ValidUnicodePattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("あおうえｂ３＿え") == true);
+        assertTrue(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("あおうえｂ３＿え"));
     }  
     public void testDispatcherMappingEntry_ExtensionSpacePattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("*.h tm") == false);
+        assertFalse(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("*.h tm"));
     }
     
     public void testDispatcherMappingEntry_ExtensionNonWordPattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("*.h&tm") == false);
+        assertFalse(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("*.h&tm"));
     }
     
     public void testDispatcherMappingEntry_ServletSpacePattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("/a /*") == false);
+        assertFalse(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("/a /*"));
     }
     
     public void testDispatcherMappingEntry_PathSpacePattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherMappingPatternValid(" /") == false);
+        assertFalse(SpringWebFrameworkUtils.isDispatcherMappingPatternValid(" /"));
     }
     
     public void testDispatcherMappingEntry_InvalidExtensionPattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherMappingPatternValid( "*.") == false);
+        assertFalse(SpringWebFrameworkUtils.isDispatcherMappingPatternValid( "*."));
     }       
      
     public void testDispatcherMappingEntry_InvalidPathPattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("/a") == false);
+        assertFalse(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("/a"));
     }
     
     public void testDispatcherMappingEntry_ValidPathPattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("/") == true);
+        assertTrue(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("/"));
     }
     
     public void testDispatcherMappingEntry_InvalidDefaultServletPattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("/a*/") == false);
+        assertFalse(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("/a*/"));
     }
     
     public void testDispatcherMappingEntry_ValidDefaultServletPattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("/app/*") == true);
+        assertTrue(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("/app/*"));
     }
         
     public void testDispatcherMappingEntry_ValidPattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("*.htm") == true);
+        assertTrue(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("*.htm"));
     }                   
     
     public void testReplaceExtensionInTemplatesExtensionPattern_Positive() throws Exception {      
-        assert ("index.html".equals(SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", "*.html")) == true);
+        assertEquals("index.html", SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", "*.html"));
     }
 
     public void testReplaceExtensionInTemplatesServletPattern_Positive() throws Exception {
-        assert ("index.htm".equals(SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", "/app/*")) == true);
+        assertEquals("index.htm", SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", "/app/*"));
     }
 
     public void testReplaceExtensionInTemplates_PathPattern_Positive() throws Exception {
-        assert ("index.htm".equals(SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", "/")) == true);
+        assertEquals("index.htm", SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", "/"));
     }
     
     public void testReplaceExtensionInTemplatesExtensionPattern_Negative() throws Exception {
-        assert ("index.htm".equals(SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", "*.xml")) == false);
+        assertEquals("index.xml", SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", "*.xml"));
     }
 
     public void testReplaceExtensionInTemplatesServletPattern_Negative() throws Exception {
-        assert ("index/app/*".equals(SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", "/app/*")) == false);
+        assertEquals("index.htm", SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", "/app/*"));
     }
 
     public void testReplaceExtensionInTemplates_PathPattern_Negative() throws Exception {
-        assert ("index/".equals(SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", "/")) == false);
+        assertEquals("index.htm", SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", "/"));
     }    
     
     public void testReviseRedirectJsp_Servlet() throws Exception {
