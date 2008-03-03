@@ -86,7 +86,7 @@
                  variable="purchaseOrderRequest"
                  createInstance="yes">
             <correlations>
-                <correlation set="CorrelationSet" initiate="no"/>
+                <correlation set="CorrelationSet" initiate="yes"/>
             </correlations>
         </receive>
         <assign name="Assign_2">

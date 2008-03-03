@@ -48,36 +48,18 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 
 public class MakeProjectOptions {
 
+    /**
+     * @deprecated 
+     */
     public static void setDefaultMakeCommand(String defaultMakeCommand) {
-        CppSettings.getDefault().setMakeName(defaultMakeCommand);
+        //CppSettings.getDefault().setMakeName(defaultMakeCommand);
     }
 
-    public static String getDefaultMakeCommand() {
-        return CppSettings.getDefault().getMakeName();
-    }
-    
     /**
-     * Choose either Sun or GNU compiler sets. Unfortunately, we no longer guarantee either
-     * exists. In CND 5.5, you had a Sun and GNU compiler set regardless of whether you had
-     * compilers to make either set usable. In CND 5.5.1, a compiler set is defined for every
-     * directory which has executables recognized as compilers.
-     * 
-     * @deprecated
+     * @deprecated 
      */
-    public static void setDefaultCompilerSet(int compilerSet) {
-        CompilerSet cs = null;
-        
-        if (compilerSet == 0) {
-            cs = CompilerSetManager.getDefault().getCompilerSet("Sun"); // NOI18N
-        } else if (compilerSet == 1) {
-            cs = CompilerSetManager.getDefault().getCompilerSet("GNU"); // NOI18N
-        }
-        if (cs != null) {
-            CppSettings.getDefault().setCompilerSetName(cs.getName());
-//            CppSettings.getDefault().setCompilerSetDirectories(cs.getDirectory());
-        } else {
-            cs = CompilerSetManager.getDefault().getCompilerSet(0); // use 0th as default
-        }
+    public static String getDefaultMakeCommand() {
+        return null; //CppSettings.getDefault().getMakeName();
     }
     
     /**
@@ -94,30 +76,6 @@ public class MakeProjectOptions {
         } else {
             cs = CompilerSetManager.getDefault().getCompilerSet(0); // use 0th as default
         }
-    }
-
-    /**
-     * Return a default compiler set index. Note that this index is only valid if the user
-     * doesn't modify their path INSIDE THE IDE. Also, if there are no compiler sets in the
-     * user's path, the return is 0 and the results are somewhat undefined.
-     *
-     * @returns index of the current default compiler set
-     *
-     * @deprecated
-     */
-    public static int getDefaultCompilerSet() {
-        CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(CppSettings.getDefault().getCompilerSetName());
-        if (cs != null) {
-            int i = 0;
-            for (CompilerSet cs2 : CompilerSetManager.getDefault().getCompilerSets()) {
-                if (cs2 == cs) {
-                    return i;
-                } else {
-                    i++;
-                }
-            }
-        }
-        return 0;
     }
 
     public static void setDefaultMakeOptions(String defaultMakeOptions) {

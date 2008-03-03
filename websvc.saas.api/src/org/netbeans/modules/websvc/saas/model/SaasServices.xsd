@@ -108,9 +108,23 @@
                                 <xsd:attribute name="id" type="xsd:string"/>
                             </xsd:complexType>
                         </xsd:element>
+                        <xsd:element name="signed-url">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element name="sign" minOccurs="0" maxOccurs="1">
+                                        <xsd:complexType>
+                                            <xsd:sequence>
+                                                <xsd:element name="params" type="saas:Params"/>
+                                            </xsd:sequence>
+                                        </xsd:complexType>
+                                    </xsd:element>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:element name="session-key"/>
                         <xsd:element name="custom"/>
                     </xsd:choice>
-                    <xsd:attribute name="profile" type="xsd:string" default="Templates/SaaSServices/profile.properties"/>
+                    <xsd:attribute name="profile" type="xsd:string" default="Templates/SaaSServices/apikey.properties"/>
                 </xsd:complexType>
             </xsd:element>
         </xsd:sequence>
@@ -217,6 +231,7 @@
                     <xsd:attribute name="type" type="xsd:string" use="required"/>
                     <xsd:attribute name="default" type="xsd:string" use="optional"/>
                     <xsd:attribute name="fixed" type="xsd:string"/>
+                    <xsd:attribute name="required" type="xsd:boolean" use="optional"/>
                 </xsd:complexType>
             </xsd:element>  
         </xsd:sequence>

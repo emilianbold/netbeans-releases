@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.mozilla.javascript.Node;
@@ -72,6 +71,8 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class AstUtilities {
+    public static final String DOT_PROTOTYPE = ".prototype"; // NOI18N
+
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
         ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
         if (result != null) {
@@ -797,9 +798,8 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             } else if (clzNode.getType() == Token.OBJECTLIT) {
                 String className = getObjectLitFqn(clzNode)[0];
                 if (className != null) {
-                    final String prototype = ".prototype"; // NOI18N
-                    if (className.endsWith(prototype)) { // NOI18N
-                        className = className.substring(0, className.length()-prototype.length()); // NOI18N
+                    if (className.endsWith(DOT_PROTOTYPE)) {
+                        className = className.substring(0, className.length()-DOT_PROTOTYPE.length());
                     }
                     
                     return className;

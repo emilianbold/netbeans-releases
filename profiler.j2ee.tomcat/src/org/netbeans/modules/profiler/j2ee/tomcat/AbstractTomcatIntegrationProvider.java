@@ -40,25 +40,24 @@
 
 package org.netbeans.modules.profiler.j2ee.tomcat;
 
-import org.netbeans.lib.profiler.common.AttachSettings;
-import org.netbeans.lib.profiler.common.integration.IntegrationProvider;
-import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
-import org.netbeans.modules.profiler.ui.wizards.AttachWizard;
-import org.netbeans.modules.profiler.ui.wizards.framework.steps.SimpleWizardStep;
-import org.netbeans.modules.profiler.ui.wizards.providers.IDESettingsPersistor;
-import org.netbeans.modules.profiler.ui.wizards.providers.SettingsPersistor;
-import org.netbeans.modules.profiler.ui.wizards.providers.TargetPlatformEnum;
-import org.netbeans.modules.profiler.ui.wizards.providers.ValidationResult;
-import org.netbeans.modules.profiler.ui.wizards.providers.scripted.AbstractScriptIntegrationProvider;
-import org.netbeans.modules.profiler.ui.wizards.providers.scripted.ScriptHeaderModifier;
-import org.netbeans.modules.profiler.ui.wizards.providers.scripted.TextScriptHeaderModifier;
-import org.openide.util.NbBundle;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.ResourceBundle;
-
+import org.netbeans.lib.profiler.common.AttachSettings;
+import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
+import org.netbeans.modules.profiler.attach.AttachWizard;
+import org.netbeans.modules.profiler.attach.providers.IDESettingsPersistor;
+import org.netbeans.modules.profiler.attach.providers.SettingsPersistor;
+import org.netbeans.modules.profiler.attach.providers.TargetPlatformEnum;
+import org.netbeans.modules.profiler.attach.providers.ValidationResult;
+import org.netbeans.modules.profiler.attach.providers.scripted.AbstractScriptIntegrationProvider;
+import org.netbeans.modules.profiler.attach.providers.scripted.ScriptHeaderModifier;
+import org.netbeans.modules.profiler.attach.providers.scripted.TextScriptHeaderModifier;
+import org.netbeans.modules.profiler.attach.spi.IntegrationProvider;
+import org.netbeans.modules.profiler.attach.wizard.steps.SimpleWizardStep;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -113,7 +112,7 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
      */
     public AbstractTomcatIntegrationProvider() {
         super();
-        this.attachedWizard = new SimpleWizardStep(NbBundle.getMessage(AttachWizard.class,
+        this.attachedWizard = new SimpleWizardStep(NbBundle.getMessage(AbstractTomcatIntegrationProvider.class,
                                                                        "AttachWizard_LocateRequiredFilesString"),
                                                    new TomcatIntegrationPanel()); // NOI18N
         this.persistor = new IDESettingsPersistor() {

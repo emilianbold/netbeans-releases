@@ -118,6 +118,10 @@ public class AstNode {
         return parent;
     }
     
+    void removeAllChildren(){
+        children.clear();
+    }
+    
     private void setParent(AstNode parent) {
         this.parent = parent;
     }
