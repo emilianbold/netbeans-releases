@@ -1095,7 +1095,7 @@ public class JSFClientGenerator {
                     StringBuffer updateRelatedInEditPre = new StringBuffer();
                     StringBuffer updateRelatedInEditPost = new StringBuffer();
                     StringBuffer updateRelatedInDestroy = new StringBuffer();
-                    StringBuffer initRelatedInCreateSetup = new StringBuffer();
+                    StringBuffer initRelatedInCreate = new StringBuffer();
 
                     List<ElementHandle<ExecutableElement>> allRelMethods = new ArrayList<ElementHandle<ExecutableElement>>(toOneRelMethods);
                     allRelMethods.addAll(toManyRelMethods);
@@ -1186,12 +1186,23 @@ public class JSFClientGenerator {
 //                                relFieldName + "." + otherSide.getName() + "().add(" + fieldName +");\n") +
 //                            relFieldName + "=em.merge(" + relFieldName +");\n}\n\n");
                             
-                            if (isCollection) {
-                                initRelatedInCreateSetup.append("if " + fieldName + "." + mName + "() == null) {\n" + 
-                                        fieldName + ".s" + mName.substring(1) + "(new ArrayList<" + relTypeReference + ">());\n}\n");
-                            }
+//                            if (isCollection) {
+//                                initRelatedInCreateSetup.append("if " + fieldName + "." + mName + "() == null) {\n" + 
+//                                        fieldName + ".s" + mName.substring(1) + "(new ArrayList<" + relTypeReference + ">());\n}\n");
+//                            }
                             
                             String relTypeInstanceName = relTypeReference.substring(0,1).toLowerCase() + relTypeReference.substring(1);
+                            
+                            if (isCollection) {
+                                initRelatedInCreate.append("List<" + relTypeReference + "> merged" + mName.substring(3) + " = new ArrayList<" + relTypeReference + ">();\n" +
+                                        "for (" + relTypeReference + " " + relTypeInstanceName + " : " + fieldName + "." + mName + "()) {\n" +
+                                        relTypeInstanceName + " = em.merge(" + relTypeInstanceName + ");\n" +
+                                        "merged" + mName.substring(3) + ".add(" + relTypeInstanceName + ");\n" +
+                                        "}\n" +
+                                        fieldName + ".s" + mName.substring(1) + "(merged" + mName.substring(3) + ");\n"
+                                        );
+                            }
+                            
                             if (multiplicity == JsfForm.REL_TO_MANY && otherSideMultiplicity == JsfForm.REL_TO_ONE){
                                 modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "java.util.ArrayList");
                                 updateRelatedInCreate.append("Map<" + simpleEntityName + ",List<" + relTypeReference + ">> " + relTypeInstanceName + "sToRemove = new HashMap<" + simpleEntityName + ",List<" + relTypeReference + ">>();\n");
@@ -1670,7 +1681,7 @@ public class JSFClientGenerator {
                     String entityStringVar = fieldName + "String";
 
                     bodyText = "EntityManager em = getEntityManager();\n" + 
-                            "try {\n " + BEGIN + "\n em.persist(" + fieldName + ");\n" + updateRelatedInCreate.toString() + COMMIT + "\n" +   //NOI18N
+                            "try {\n " + BEGIN + "\n " + initRelatedInCreate.toString() + "em.persist(" + fieldName + ");\n" + updateRelatedInCreate.toString() + COMMIT + "\n" +   //NOI18N
                             "addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
                             "} catch (Exception ex) {\n try {\n ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" + ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
                             "}\nreturn null;\n} " +   //NOI18N
