@@ -79,7 +79,7 @@ public class ChangingPropertiesTestCase extends RepositoryAccessTestBase {
 	traceModel.setUseSysPredefined(true);
 	traceModel.processArguments(projectRoot.getAbsolutePath());
 	ModelImpl model = traceModel.getModel();
-	ModelSupport.instance().init(model);
+	ModelSupport.instance().setModel(model);
 	final CsmProject project = traceModel.getProject();
 	
 	System.err.printf("Waiting parse...\n");

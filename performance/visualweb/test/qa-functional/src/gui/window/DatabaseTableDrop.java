@@ -81,7 +81,7 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         super(testName);
         expectedTime = 10000; // 20 seconds ?
         WAIT_AFTER_OPEN=5000;
-        categoryName = "Basic";  // NOI18N
+        categoryName = "Woodstock Basic";  // NOI18N
         componentName = "Table"; // NOI18N
         addPoint = new java.awt.Point(50,50);
     }
@@ -94,7 +94,7 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         super(testName,performanceDataName);
         expectedTime = 10000; // 20 seconds ?
         WAIT_AFTER_OPEN=5000;
-        categoryName = "Basic";  // NOI18N
+        categoryName = "Woodstock Basic";  // NOI18N
         componentName = "Table"; // NOI18N
         addPoint = new java.awt.Point(50,50);
     }

@@ -353,7 +353,7 @@ public class CategoryList extends JList implements Autoscroll {
     /** Safe getter for autoscroll support. */
     AutoscrollSupport getSupport() {
         if( null == support ) {
-            support = new AutoscrollSupport( getParent().getParent() );
+            support = new AutoscrollSupport( palettePanel );
         }
 
         return support;

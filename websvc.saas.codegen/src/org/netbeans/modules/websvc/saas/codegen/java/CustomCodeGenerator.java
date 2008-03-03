@@ -101,7 +101,7 @@ public class CustomCodeGenerator extends SaasCodeGenerator {
                 paramStr += ", ";       //NOI18N
             }
             
-            paramStr += param.getName();
+            paramStr += getParameterName(param, true, true);
         }
         
         return "return execute(" + paramStr + ")";

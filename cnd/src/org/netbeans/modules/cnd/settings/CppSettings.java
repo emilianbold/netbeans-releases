@@ -169,84 +169,84 @@ public class CppSettings extends SharedClassObject {
 //            firePropertyChange(PROP_COMPILER_SET_DIRECTORIES, n, name);
 //        }
 //    }
-    
-    public String getMakeName() {
-        //String name = (String) getProperty(PROP_MAKE_NAME);
-        String name = getPreferences().get(PROP_MAKE_NAME, null);
-        if (name == null) {
-            return "make"; // NOI18N
-        } else {
-            return name;
-        }
-    }
-    
-    public void setMakeName(String name) {
-        String n = getMakeName();
-        if (!n.equals(name)) {
-            //putProperty(PROP_MAKE_NAME, name, true);
-            getPreferences().put(PROP_MAKE_NAME, name);
-            firePropertyChange(PROP_MAKE_NAME, n, name);
-        }
-    }
-    
-    /**
-     * Get the current make path. If this isnt' set but make name is, do a path search and
-     * set the make path too.
-     *
-     * @returns Path to the make program
-     */
-    public String getMakePath() {
-        String p = getPreferences().get(PROP_MAKE_PATH, null);
-        if (p == null) {
-            //String name = (String) getProperty(PROP_MAKE_NAME);
-            String name = getPreferences().get(PROP_MAKE_NAME, null);
-            if (name != null) {
-                StringTokenizer tok = new StringTokenizer(Path.getPathAsString(), File.pathSeparator);
-                while (tok.hasMoreTokens()) {
-                    String d = tok.nextToken();
-                    File file = new File(d, name);
-                    if (file.exists()) {
-                        p = file.getAbsolutePath();
-                        //putProperty(PROP_MAKE_PATH, p, true); 
-                        getPreferences().put(PROP_MAKE_PATH, p);
-                        firePropertyChange(PROP_MAKE_PATH, null, p);
-                        return p;
-                    }
-                }
-            }
-            if (Utilities.isWindows()) {
-                return "C:\\Cygwin\\bin\\make.exe"; // NOI18N
-            } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-                return "/usr/ccs/bin/make"; // NOI18N
-            } else { // pick /usr/bin/make as a default value
-                return "/usr/bin/make"; // NOI18N
-            }
-        } else {
-            return p;
-        }
-    }
-    
-    public void setMakePath(String path) {
-        String p = getMakePath();
-        if (!p.equals(path)) {
-            //putProperty(PROP_MAKE_PATH, path, true);
-            getPreferences().put(PROP_MAKE_PATH, path);
-            firePropertyChange(PROP_MAKE_PATH, p, path);
-        }
-    }
-    
-    /*
-     * Returns full path if no spaces otherwise return just base name.
-     * See IZ 116463 for details
-     */
-    public String getMakeCommand() {
-        String makeCommand = getMakePath();
-        if (makeCommand.indexOf(' ') >= 0) {
-            // Strip path
-            makeCommand = IpeUtils.getBaseName(makeCommand);
-        }
-        return makeCommand;
-    }
+//    
+//    public String getMakeName() {
+//        //String name = (String) getProperty(PROP_MAKE_NAME);
+//        String name = getPreferences().get(PROP_MAKE_NAME, null);
+//        if (name == null) {
+//            return "make"; // NOI18N
+//        } else {
+//            return name;
+//        }
+//    }
+//    
+//    public void setMakeName(String name) {
+//        String n = getMakeName();
+//        if (!n.equals(name)) {
+//            //putProperty(PROP_MAKE_NAME, name, true);
+//            getPreferences().put(PROP_MAKE_NAME, name);
+//            firePropertyChange(PROP_MAKE_NAME, n, name);
+//        }
+//    }
+//    
+//    /**
+//     * Get the current make path. If this isnt' set but make name is, do a path search and
+//     * set the make path too.
+//     *
+//     * @returns Path to the make program
+//     */
+//    public String getMakePath() {
+//        String p = getPreferences().get(PROP_MAKE_PATH, null);
+//        if (p == null) {
+//            //String name = (String) getProperty(PROP_MAKE_NAME);
+//            String name = getPreferences().get(PROP_MAKE_NAME, null);
+//            if (name != null) {
+//                StringTokenizer tok = new StringTokenizer(Path.getPathAsString(), File.pathSeparator);
+//                while (tok.hasMoreTokens()) {
+//                    String d = tok.nextToken();
+//                    File file = new File(d, name);
+//                    if (file.exists()) {
+//                        p = file.getAbsolutePath();
+//                        //putProperty(PROP_MAKE_PATH, p, true); 
+//                        getPreferences().put(PROP_MAKE_PATH, p);
+//                        firePropertyChange(PROP_MAKE_PATH, null, p);
+//                        return p;
+//                    }
+//                }
+//            }
+//            if (Utilities.isWindows()) {
+//                return "C:\\Cygwin\\bin\\make.exe"; // NOI18N
+//            } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+//                return "/usr/ccs/bin/make"; // NOI18N
+//            } else { // pick /usr/bin/make as a default value
+//                return "/usr/bin/make"; // NOI18N
+//            }
+//        } else {
+//            return p;
+//        }
+//    }
+//    
+//    public void setMakePath(String path) {
+//        String p = getMakePath();
+//        if (!p.equals(path)) {
+//            //putProperty(PROP_MAKE_PATH, path, true);
+//            getPreferences().put(PROP_MAKE_PATH, path);
+//            firePropertyChange(PROP_MAKE_PATH, p, path);
+//        }
+//    }
+//    
+//    /*
+//     * Returns full path if no spaces otherwise return just base name.
+//     * See IZ 116463 for details
+//     */
+//    public String getMakeCommand() {
+//        String makeCommand = getMakePath();
+//        if (makeCommand.indexOf(' ') >= 0) {
+//            // Strip path
+//            makeCommand = IpeUtils.getBaseName(makeCommand);
+//        }
+//        return makeCommand;
+//    }
     
     public String getGdbName() {
         //String name = (String) getProperty(PROP_GDB_NAME);
