@@ -60,7 +60,9 @@ import org.netbeans.modules.websvc.saas.codegen.java.model.GenericResourceBean;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -142,7 +144,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
                 String body = "{";      //NOI18N
                 
                 for (ParameterInfo param : params) {
-                    String name = param.getName();
+                    String name = getParameterName(param, true, true, true);
                     body += "if (" + name + " != null) {" +
                             "this." + name + " = " + name + ";" +
                             "}\n";    //NOI18N
@@ -490,10 +492,10 @@ public class GenericResourceGenerator extends AbstractGenerator {
         for (ParameterInfo param : queryParams) {
             if (param.getDefaultValue() != null) {
                 annotationAttrs = new Object[] {
-                    param.getName(), param.getDefaultValue().toString()
+                    getParameterName(param), param.getDefaultValue().toString()
                 };
             } else {
-                annotationAttrs = new Object[] {param.getName()};
+                annotationAttrs = new Object[] {getParameterName(param)};
             }
             attrs.add(annotationAttrs);
         }
@@ -533,7 +535,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         List<String> results = new ArrayList<String>();
         
         for (ParameterInfo param : params) {
-            results.add(param.getName());
+            results.add(getParameterName(param, true, true, true));
         }
         
         return results.toArray(new String[results.size()]);
@@ -563,6 +565,32 @@ public class GenericResourceGenerator extends AbstractGenerator {
         }
         
         return results.toArray(new Object[results.size()]);
+    }
+    
+    
+    protected String getParameterName(ParameterInfo param) {
+        return param.getName();
+    }
+    
+    protected String getParameterName(ParameterInfo param, 
+            boolean camelize, boolean normalize) {
+        return getParameterName(param, camelize, normalize, false);
+    }
+    
+    protected String getParameterName(ParameterInfo param, 
+            boolean camelize, boolean normalize, boolean trimBraces) {
+        String name = param.getName();
+        if(trimBraces && param.getStyle() == ParamStyle.TEMPLATE 
+                && name.startsWith("{") && name.endsWith("}")) {
+            name = name.substring(0, name.length()-1);
+        }
+        if(normalize) {
+            name = Util.normailizeName(name);
+        }
+        if(camelize) {
+            name = Inflector.getInstance().camelize(name, true);
+        }
+        return name;
     }
     
 }

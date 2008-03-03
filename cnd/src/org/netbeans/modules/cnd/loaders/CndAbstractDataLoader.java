@@ -69,7 +69,7 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
         super(representationClassName);
     }
 
-    protected final void createExtentions(String[] extensions) {
+    protected void createExtentions(String[] extensions) {
         ExtensionList extensionList = new ExtensionList();
         for (int i = 0; i < extensions.length; i++) {
             extensionList.addExtension(extensions[i]);

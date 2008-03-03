@@ -112,6 +112,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
     abstract protected CsmFinder getFinder();
 
+    abstract protected QueryScope getCompletionQueryScope();
+    
+    public static enum QueryScope {
+        LOCAL_QUERY,
+        SMART_QUERY,
+        GLOBAL_QUERY,
+    };
     
     public CsmCompletionQuery(){
         super();

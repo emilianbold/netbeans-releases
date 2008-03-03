@@ -40,17 +40,9 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
-import javax.swing.text.BadLocationException;
 import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.CustomSaasBean;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -64,81 +56,7 @@ public class CustomJavaClientCodeGenerator extends CustomCodeGenerator {
             FileObject targetFile, CustomSaasMethod m) throws IOException {
         super(targetComponent, targetFile, m);
     }
-    
-    @Override
-    public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
-        initProgressReporting(pHandle);
 
-        preGenerate();
-        
-        insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
-        
-        finishProgressReporting();
-
-        return new HashSet<FileObject>(Collections.EMPTY_LIST);
-    }
-
-    /**
-     *  Insert the Saas client call
-     */
-    public void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
-        try {
-            String code = "";
-            if(isInBlock) {
-                code = getCustomMethodBody();
-            } else {
-                code = "\nprivate String call"+bean.getName()+"Service() {\n";
-                code += getCustomMethodBody()+"\n";
-                code += "return result;\n";
-                code += "}\n";
-            }
-            insert(code, getTargetComponent(), true);
-        } catch (BadLocationException ex) {
-            throw new IOException(ex.getMessage());
-        }
-    }
-
-    @Override
-    protected String getCustomMethodBody() throws IOException {
-        String paramStr = null;
-        StringBuffer sb1 = new StringBuffer();
-        List<ParameterInfo> params = bean.getInputParameters();
-
-        String paramDecl = ""; //NOI18N
-        for (ParameterInfo param : bean.getQueryParameters()) {
-            String name = param.getName();
-            paramDecl +=  "String " + name + " = \"\";\n";
-        }
-
-        for (ParameterInfo param : params) {
-            String paramName = param.getName();
-            if (param.getType() != String.class) {
-                sb1.append("{\"" + paramName + "\", \"" + paramName + "\"},");
-            } else {
-                sb1.append("{\"" + paramName + "\", " + paramName + "},");
-            }
-        }
-        paramStr = sb1.toString();
-        if (params.size() > 0) {
-            paramStr = paramStr.substring(0, paramStr.length() - 1);
-        }
-        
-        String methodBody = paramDecl + "\n";
-        methodBody += "String url = \"" + ((CustomSaasBean) bean).getUrl() + "\";\n";
-        methodBody += "        try {\n";
-        methodBody += "             String[][] params = new String[][]{\n";
-        methodBody += "                 " + paramStr + "\n";
-        methodBody += "             };\n";
-        methodBody += "             RestConnection cl = new RestConnection(url, params);\n";
-        methodBody += "             String result = cl.get();\n";
-        methodBody += "             System.out.println(\"The SaasService returned: \"+result);\n";
-        methodBody += "        } catch (java.io.IOException ex) {\n";
-        methodBody += "             ex.printStackTrace();\n";
-        methodBody += "        }\n";
-       
-        return methodBody;
-    }
-    
     @Override
     public boolean canShowResourceInfo() {
         return false;

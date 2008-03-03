@@ -131,7 +131,7 @@ public class CreateAction extends ContextAction {
     public void performAction(ActionEvent e) {
         final Mercurial hg = Mercurial.getInstance();
 
-        File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
+        final File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         if(files == null || files.length == 0) return;
         
         // If there is a .hg directory in an ancestor of any of the files in 
@@ -147,7 +147,7 @@ public class CreateAction extends ContextAction {
         }
 
         final Project proj = HgUtils.getProject(context);
-        File projFile = HgUtils.getProjectFile(proj);
+        final File projFile = HgUtils.getProjectFile(proj);
         
         if (projFile == null) {
             OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
@@ -172,6 +172,41 @@ public class CreateAction extends ContextAction {
         
         final File rootToManage = root;
         final String prjName = projName;
+        
+
+        if (rootToManage.getAbsolutePath().indexOf(projFile.getAbsolutePath()) != 0) {
+            OutputLogger logger = OutputLogger.getLogger(rootToManage.getAbsolutePath());
+            logger.outputInRed(
+                    NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE")); // NOI18N
+            logger.outputInRed(
+                    NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE_SEP")); // NOI18N
+            logger.output(
+                    NbBundle.getMessage(CreateAction.class,
+                    "MSG_CREATE_INFO1", projFile.getAbsolutePath())); // NOI18N
+            for (File f : files) {
+                if (f.getAbsolutePath().indexOf(projFile.getAbsolutePath()) != 0){
+                    logger.output("        " + f.getAbsolutePath()); // NOI18N
+                }
+            }
+            logger.output(
+                    NbBundle.getMessage(CreateAction.class,
+                    "MSG_CREATE_INFO2", rootToManage.getAbsolutePath())); // NOI18N
+            NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(CreateAction.class,
+                    "MSG_CREATE_CONFIRM_QUERY", rootToManage.getAbsolutePath())); // NOI18N
+
+            descriptor.setTitle(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_CONFIRM_TITLE")); // NOI18N
+            descriptor.setMessageType(JOptionPane.INFORMATION_MESSAGE);
+            descriptor.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+
+            Object res = DialogDisplayer.getDefault().notify(descriptor);
+            if (res == NotifyDescriptor.CANCEL_OPTION) {
+                logger.outputInRed(
+                        NbBundle.getMessage(CreateAction.class,
+                        "MSG_CREATE_CANCELED", rootToManage.getAbsolutePath())); // NOI18N
+                logger.output(""); // NOI18N
+                return;
+            }
+        }
 
         RequestProcessor rp = hg.getRequestProcessor(rootToManage.getAbsolutePath());
         
@@ -180,13 +215,12 @@ public class CreateAction extends ContextAction {
                 
                 try {
                     OutputLogger logger = getLogger();
-                    logger.outputInRed(
-                            NbBundle.getMessage(CreateAction.class,
-                            "MSG_CREATE_TITLE")); // NOI18N
-                    logger.outputInRed(
-                            NbBundle.getMessage(CreateAction.class,
-                            "MSG_CREATE_TITLE_SEP")); // NOI18N
-        
+                    if (rootToManage.getAbsolutePath().indexOf(projFile.getAbsolutePath()) == 0) {
+                        logger.outputInRed(
+                                NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE")); // NOI18N
+                        logger.outputInRed(
+                                NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE_SEP")); // NOI18N
+                    }                 
                     logger.output(
                             NbBundle.getMessage(CreateAction.class,
                             "MSG_CREATE_INIT", prjName, rootToManage)); // NOI18N

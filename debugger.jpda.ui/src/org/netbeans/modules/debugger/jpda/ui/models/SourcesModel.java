@@ -96,10 +96,8 @@ NodeActionsProvider {
     
     
     public SourcesModel (ContextProvider lookupProvider) {
-        sourcePath = (SourcePath) lookupProvider.
-            lookupFirst (null, SourcePath.class);
-        debugger = (JPDADebugger) lookupProvider.
-            lookupFirst (null, JPDADebugger.class);
+        sourcePath = lookupProvider.lookupFirst(null, SourcePath.class);
+        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
         loadFilters (); 
     }
     

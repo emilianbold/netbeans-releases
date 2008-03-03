@@ -54,6 +54,8 @@ import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.Dimension;
 import java.util.*;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.io.*;
 
 /**
@@ -97,6 +99,27 @@ class DiffViewManager implements ChangeListener {
         leftContentPanel.getScrollPane().getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
     }
 
+    private final Boolean [] smartScrollDisabled = new Boolean[] { Boolean.TRUE };
+    
+    public void runWithSmartScrollingDisabled(Runnable runnable) {
+        synchronized (smartScrollDisabled) {
+            smartScrollDisabled[0] = true;
+        }
+        try {
+            runnable.run();
+        } catch (Exception e) {
+            Logger.getLogger(DiffViewManager.class.getName()).log(Level.SEVERE, "", e);
+        } finally {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    synchronized (smartScrollDisabled) {
+                        smartScrollDisabled[0] = false;
+                    }
+                }
+            });
+        }
+    }
+    
     public void stateChanged(ChangeEvent e) {
         JScrollBar leftScrollBar = leftContentPanel.getScrollPane().getVerticalScrollBar();
         JScrollBar rightScrollBar = rightContentPanel.getScrollPane().getVerticalScrollBar();
@@ -110,10 +133,16 @@ class DiffViewManager implements ChangeListener {
             rightContentPanel.getActionsScrollPane().getVerticalScrollBar().setValue(value);
             if (myScrollEvent) return;
             myScrollEvent = true;
-            smartScroll();
+            boolean doSmartScroll;
+            synchronized (smartScrollDisabled) {
+                doSmartScroll = !smartScrollDisabled[0];
+            }
+            if (doSmartScroll) {
+                smartScroll();
+                master.updateCurrentDifference();
+            }
         }
         master.getMyDivider().repaint();
-        master.updateCurrentDifference();
         myScrollEvent = false;
     }
     

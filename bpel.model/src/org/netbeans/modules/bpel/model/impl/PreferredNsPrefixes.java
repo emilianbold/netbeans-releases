@@ -21,6 +21,7 @@ package org.netbeans.modules.bpel.model.impl;
 
 import java.util.HashMap;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathExtFunctionMetadata;
+import org.netbeans.modules.bpel.model.ext.Extensions;
 
 /**
  * Knows which prefixes are preferred for namespaces. 
@@ -44,13 +45,9 @@ public final class PreferredNsPrefixes {
             uriToPrefixMap.put(BpelXPathExtFunctionMetadata.SUN_EXT_FUNC_NS, 
                     "sexf"); // NOI18N
             
-            uriToPrefixMap.put(
-                    "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace", 
-                    "sxt"); // NOI18N
-            
-            uriToPrefixMap.put(
-                    "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/ErrorHandling", 
-                    "sxeh"); // NOI18N
+            uriToPrefixMap.put(Extensions.TRACE_EXT_URI, "sxt"); // NOI18N
+            uriToPrefixMap.put(Extensions.ERROR_EXT_URI, "sxeh"); // NOI18N
+            uriToPrefixMap.put(Extensions.TRANSACTION_EXT_URI, "trans"); // NOI18N
         }
         //
         String prefix = uriToPrefixMap.get(nsUri);

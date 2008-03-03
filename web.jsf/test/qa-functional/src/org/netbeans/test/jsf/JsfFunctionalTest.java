@@ -329,6 +329,7 @@ public class JsfFunctionalTest extends JellyTestCase{
         NewWebProjectNameLocationStepOperator lop = new NewWebProjectNameLocationStepOperator();
         lop.setProjectName(PROJECT_NAME+"2");
         lop.setProjectLocation(getDataDir().getCanonicalPath());
+        lop.next();
         lop.finish();
         
         // add JSF framework using project properties
