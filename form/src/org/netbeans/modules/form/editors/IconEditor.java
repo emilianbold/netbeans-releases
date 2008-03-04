@@ -465,7 +465,7 @@ public class IconEditor extends PropertyEditorSupport
         
         public NbImageIcon(int type, String name, Icon icon) {
             this.type = type;
-            if (name.startsWith("/")) // NOI18N
+            if ((type == TYPE_CLASSPATH) && name.startsWith("/")) // NOI18N
                 name = name.substring(1);
             this.name = name;
             this.icon = icon;
