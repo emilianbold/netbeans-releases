@@ -171,7 +171,12 @@ public class VariablesUtil {
             
             final int length = attrs.getLength();
             for (int i = 0; i < length; i++) {
-                result.add(attrs.item(i));
+                final Node item = attrs.item(i);
+                if (item.getPrefix().equals("xmlns")) { // NOI18N
+                    continue;
+                }
+                
+                result.add(node);
             }
         }
         
