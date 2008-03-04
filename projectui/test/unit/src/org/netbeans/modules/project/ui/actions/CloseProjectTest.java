@@ -104,8 +104,8 @@ public class CloseProjectTest extends NbTestCase implements PropertyChangeListen
         
         JMenuItem item = instance.getPopupPresenter();
         item.addPropertyChangeListener("enabled", this);
-        item.addNotify();
         /*
+        item.addNotify();
         JFrame f = new JFrame();
         JMenuBar b = new JMenuBar();
         JMenu m = new JMenu();
@@ -123,6 +123,7 @@ public class CloseProjectTest extends NbTestCase implements PropertyChangeListen
         Project p = ProjectManager.getDefault().findProject(pfo);
         Project p2 = ProjectManager.getDefault().findProject(pf2);
         assertNotNull("Project found", p);
+        assertNotNull("Project2 found", p2);
         OpenProjects.getDefault().open(new Project[] { p }, false);
         ic.add(p);
         assertTrue("enabled", item.isEnabled());
