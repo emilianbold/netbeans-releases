@@ -1,0 +1,54 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ */
+
+package Templates.Classes;
+
+import org.hibernate.cfg.Configuration;
+import org.hibernate.SessionFactory;
+
+/**
+ *
+ * @author __USER__
+ */
+public class __NAME__ {
+    private static __NAME__ INSTANCE = null;
+
+    private __NAME__() {
+    }
+
+    public static synchronized __NAME__ getInstance() {
+        if(INSTANCE == null) {
+            INSTANCE = new __NAME__();
+        }
+        return INSTANCE;
+    }
+
+    public SessionFactory getSessionFactory() {
+        SessionFactory sessionFactory = null;
+        try {
+            // Create the SessionFactory from hibernate.cfg.xml
+            sessionFactory = new Configuration().configure().buildSessionFactory();
+        } catch (Throwable ex) {
+            // Make sure you log the exception, as it might be swallowed
+            System.err.println("Initial SessionFactory creation failed." + ex);
+            throw new ExceptionInInitializerError(ex);
+        }
+        return sessionFactory;
+    }
+
+    public SessionFactory getSessionFactoryForConfigFile(java.io.File configFile) {
+        SessionFactory sessionFactory = null;
+        try {
+            // Create the SessionFactory from hibernate.cfg.xml
+            sessionFactory = new Configuration().configure(configFile).buildSessionFactory();
+        } catch (Throwable ex) {
+            // Make sure you log the exception, as it might be swallowed
+            System.err.println("Initial SessionFactory creation failed." + ex);
+            throw new ExceptionInInitializerError(ex);
+        }
+        return sessionFactory;
+    }
+}
