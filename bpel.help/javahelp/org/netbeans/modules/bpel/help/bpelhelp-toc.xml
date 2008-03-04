@@ -7,7 +7,7 @@
 		<tocitem text="BPEL Designer" expand="false">
 			<tocitem text="Web Service Orchestration Basics" target="orch_basics_about" />
 			<tocitem text="Understanding Service Oriented Architecture Projects" target="orch_basics_project_lifecycle" />
-				<tocitem text="Working with BPEL Module Projects" expand="false">
+			<tocitem text="Working with BPEL Module Projects" expand="false">
 				<tocitem text="About BPEL Module Projects" target="org.netbeans.modules.bpel.project.ui.IcanproLogicalViewProvider" />
 				<tocitem text="Creating BPEL Module Projects" target="orch_basics_create_project" />
 				<tocitem text="Creating Sample Processes in the BPEL Designer" target="orch_basics_create_sample" />
@@ -26,11 +26,13 @@
 					<tocitem text="Changing Message Flows" target="orch_design_change_message_flow" />
 					<tocitem text="Navigating in the BPEL Design View" target="orch_windows_editors_design_navig" />
 					<tocitem text="Switching Between Design and Source Views" target="orch_windows_editors_design_src_switch" />
+					<tocitem text="Cloning Document Views" target="orch_windows_editors_cloning" />
 					<tocitem text="Printing BPEL Diagrams and Source Files" target="org.netbeans.modules.print.impl.ui.Attribute" />
 					<tocitem text="Validating BPEL Processes " target="orch_design_validation" />
 					<tocitem text="Applying Filters To Diagram Elements" target="orch_design_apply_filters" />
 					<tocitem text="Using Find in the Design View" target="orch_design_find" />
 					<tocitem text="Collapsing and Expanding Elements on the Diagram" target="orch_design_collapse" />
+					<tocitem text="Documenting the BPEL Process" target="orch_design_documentation" />
 				</tocitem>
 				<tocitem text="Source View (BPEL Designer)" expand="false">
 					<tocitem text="About the BPEL Designer Source View" target="orch_windows_editors_source_ed" />
@@ -83,9 +85,9 @@
 					<tocitem text="Adding On Event Elements" target="org.netbeans.modules.bpel.properties.editors.OnEventCustomEditor" />
 				</tocitem>
 				<tocitem text="Working with Correlation Sets" expand="false">
-					<tocitem text="Understanding Correlation" target="orch_design_about_correlation" />
+					<tocitem text="Understanding Correlation. Using the Correlation Wizard" target="orch_design_about_correlation_and_wizard" />
+					<tocitem text="Adding Correlation Sets Manually" target="org.netbeans.modules.bpel.properties.editors.CorrelationSetCustomEditor" />
 					<tocitem text="Adding Properties and Property Aliases to WSDL Files Using the Navigator" target="orch_design_add_props_navigator" />
-					<tocitem text="Adding Correlation Sets" target="org.netbeans.modules.bpel.properties.editors.CorrelationSetCustomEditor" />
 				</tocitem>
 				<tocitem text="Working with Variables" expand="false">
 					<tocitem text="About Variables in the BPEL Designer" target="orch_elements_about_variable" />

@@ -124,6 +124,10 @@ public abstract class SaasBean extends GenericResourceBean {
         }
         return templateParams;
     }
+    
+    protected void setTemplateParameters(List<ParameterInfo> templateParams) {
+        this.templateParams = templateParams;
+    }
 
     protected abstract List<ParameterInfo> initInputParameters();
 
@@ -140,7 +144,30 @@ public abstract class SaasBean extends GenericResourceBean {
         }
         return queryParams;
     }
-
+    
+    public List<ParameterInfo> filterParametersByAuth(List<ParameterInfo> params) {
+        List<ParameterInfo> filterParams = new ArrayList<ParameterInfo>();
+        if(params != null) {
+            for (ParameterInfo param : params) {
+                if(authType == SaasAuthenticationType.SESSION_KEY) {
+                    SessionKeyAuthentication sessionKey = (SessionKeyAuthentication)getAuthentication();
+                    if(param.getName().equals(sessionKey.getApiKeyName()) || 
+                            param.getName().equals(sessionKey.getSessionKeyName()) ||
+                                param.getName().equals(sessionKey.getSigKeyName())) {
+                        continue;
+                    }
+                } else if(authType == SaasAuthenticationType.SIGNED_URL) {
+                    SignedUrlAuthentication signedUrl = (SignedUrlAuthentication)getAuthentication();
+                    if(param.getName().equals(signedUrl.getSigKeyName())) {
+                        continue;
+                    }
+                }
+                filterParams.add(param);
+            }
+        }
+        return filterParams;
+    }
+    
     public String getOutputWrapperName() {
         if (outputWrapperName == null) {
             outputWrapperName = getName();
@@ -249,16 +276,20 @@ public abstract class SaasBean extends GenericResourceBean {
             setAuthenticationType(SaasAuthenticationType.API_KEY);
             setAuthentication(new ApiKeyAuthentication(auth2.getApiKey().getId()));
         } else if(auth2.getSignedUrl() != null) {
+            SignedUrl signedUrl = auth2.getSignedUrl();
             setAuthenticationType(SaasAuthenticationType.SIGNED_URL);
-            SignedUrlAuthentication signedUrl = new SignedUrlAuthentication();
-            setAuthentication(signedUrl);
-            Sign sign = ((SignedUrl)auth2.getSignedUrl()).getSign();
+            SignedUrlAuthentication signedUrlAuth = new SignedUrlAuthentication();
+            if(signedUrl.getSigId() != null) {
+                signedUrlAuth.setSigKeyName(signedUrl.getSigId());
+            }
+            setAuthentication(signedUrlAuth);
+            Sign sign = signedUrl.getSign();
             if (sign != null) {
                 Params params = sign.getParams();
                 if(params != null && params.getParam() != null) {
                     List<ParameterInfo> signParams = new ArrayList<ParameterInfo>();
                     findSaasParams(signParams, params.getParam());
-                    signedUrl.setParameters(signParams);
+                    signedUrlAuth.setParameters(signParams);
                 }
             }
         } else if(auth2.getSessionKey() != null) {
@@ -395,8 +426,17 @@ public abstract class SaasBean extends GenericResourceBean {
     
     public class SignedUrlAuthentication extends SaasAuthentication {
         
+        private String sig;
         List<ParameterInfo> params = Collections.emptyList();
         public SignedUrlAuthentication() {
+        }
+        
+        public String getSigKeyName() {
+            return sig;
+        }
+        
+        public void setSigKeyName(String sig) {
+            this.sig = sig;
         }
         
         public List<ParameterInfo> getParameters() {

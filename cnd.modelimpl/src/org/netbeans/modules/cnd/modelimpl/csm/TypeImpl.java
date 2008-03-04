@@ -102,6 +102,27 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     }
 
     // package-local - for facory only
+    TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, AST ast, CsmFile file, CsmOffsetable offset) {
+        super(file, offset);
+        this._setClassifier(classifier);
+        this.pointerDepth = (byte) pointerDepth;
+        this.reference = reference;
+        this.arrayDepth = (byte) arrayDepth;
+        _const = initIsConst(ast);
+        if (classifier == null) {
+            this._setClassifier(initClassifier(ast));
+            this.classifierText = initClassifierText(ast);
+        } else {
+            CharSequence typeName = classifier.getName();
+            if (typeName == null || typeName.length()==0){
+                this.classifierText = initClassifierText(ast);
+            } else {
+                this.classifierText = typeName;
+            }
+        }
+    }
+    
+    // package-local - for facory only
     TypeImpl(AST classifier, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
         super(classifier, file);
         //setAst(classifier);

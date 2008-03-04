@@ -59,7 +59,7 @@ JDK_TESTS=$JDK_HOME
 for i in 1 2 3; do
     ant -f nbbuild/build.xml -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans commit-validation
     ERROR_CODE=$?
-    if [ ERROR_CODE = 0 ]; then
+    if [ $ERROR_CODE = 0 ]; then
         break;
     fi
 done
@@ -76,11 +76,10 @@ fi
 for i in 1 2 3; do
     ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-enterprise -Dxtest.instance.name="Enterprise tests" -Dxtest.no.cleanresults=true -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
     ERROR_CODE=$?
-    if [ ERROR_CODE = 0 ]; then
+    if [ $ERROR_CODE = 0 ]; then
         break;
     fi
 done
-ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - SOA (BPEL, XSLT) and XML UI validation failed"
@@ -90,11 +89,10 @@ fi
 for i in 1 2 3; do
     ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-cnd -Dxtest.instance.name="CND tests" -Dxtest.no.cleanresults=true -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
     ERROR_CODE=$?
-    if [ ERROR_CODE = 0 ]; then
+    if [ $ERROR_CODE = 0 ]; then
         break;
     fi
 done
-ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - CND UI validation failed"
@@ -104,11 +102,10 @@ fi
 for i in 1 2 3; do
     ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-profiler -Dxtest.instance.name="Profiler tests" -Dxtest.no.cleanresults=true -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
     ERROR_CODE=$?
-    if [ ERROR_CODE = 0 ]; then
+    if [ $ERROR_CODE = 0 ]; then
         break;
     fi
 done
-ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Profiler UI validation failed"
@@ -118,11 +115,10 @@ fi
 for i in 1 2 3; do
     ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-j2ee -Dxtest.instance.name="J2EE tests" -Dxtest.no.cleanresults=true -D"xtest.userdata|com.sun.aas.installRoot"=/hudson/workdir/jobs/trunk/testappsrv/glassfish -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
     ERROR_CODE=$?
-    if [ ERROR_CODE = 0 ]; then
+    if [ $ERROR_CODE = 0 ]; then
         break;
     fi
 done
-ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - J2EE UI validation failed"
@@ -146,11 +142,10 @@ fi
 for i in 1 2 3; do
     ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-uml -Dxtest.instance.name="UML tests" -Dxtest.no.cleanresults=true -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
     ERROR_CODE=$?
-    if [ ERROR_CODE = 0 ]; then
+    if [ $ERROR_CODE = 0 ]; then
         break;
     fi
 done
-ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - UML UI validation failed"
@@ -160,11 +155,10 @@ fi
 for i in 1 2 3; do
     ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-ruby -Dxtest.instance.name="Ruby tests" -Dxtest.no.cleanresults=true -Dnetbeans.dest.dir=$NB_ALL/nbbuild/test-netbeans runtests
     ERROR_CODE=$?
-    if [ ERROR_CODE = 0 ]; then
+    if [ $ERROR_CODE = 0 ]; then
         break;
     fi
 done
-ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Ruby UI validation failed"

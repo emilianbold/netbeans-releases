@@ -9,9 +9,6 @@
 
 package Templates.Classes;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  * __NAME__ Service
  *

@@ -282,8 +282,10 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
         public void actionPerformed(ActionEvent evt) {
             if (unlockedCheckBox.isSelected()) {
                 setUnlocked(false);
+                clearErrorStatus();
             } else {
                 unsetUnlocked(false);
+                checkNumberStatus();
             }
         }
 
@@ -305,6 +307,10 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
         }
 
         private void checkNumberStatus() {
+            if (!radioButton.isSelected()) {
+                clearErrorStatus();
+                return;
+            }
             if (!Pattern.matches("[\\d\\-]+", textField.getText())) { //NOI18N
                 displayWarning(PropertyEditorNumber.NON_DIGITS_TEXT);
             } else {
@@ -324,7 +330,11 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
         }
 
         public void focusGained(FocusEvent e) {
-            if (e.getSource() == radioButton || e.getSource() == textField || e.getSource() == unlockedCheckBox) {
+            if(e.getSource() == textField || e.getSource() == unlockedCheckBox){
+               radioButton.setSelected(true);
+               checkNumberStatus();
+            }
+            if (e.getSource() == radioButton) {
                 checkNumberStatus();
             }
         }

@@ -117,7 +117,7 @@ public class CustomizeEmptySpaceAction extends CookieAction {
             NotifyDescriptor.OK_CANCEL_OPTION,
             NotifyDescriptor.OK_OPTION,
             DialogDescriptor.DEFAULT_ALIGN,
-            new HelpCtx(getClass().getName()),
+            HelpCtx.DEFAULT_HELP,
             new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     if (evt.getSource() == NotifyDescriptor.OK_OPTION) {
