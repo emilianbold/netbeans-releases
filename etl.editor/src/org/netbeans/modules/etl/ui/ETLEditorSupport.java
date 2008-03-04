@@ -74,8 +74,11 @@ import org.openide.awt.StatusDisplayer;
  */
 public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, LineCookie, CloseCookie, PrintCookie {
 
+    private static ETLDataObject obj;
+
     public ETLEditorSupport(ETLDataObject sobj) {
         super(sobj, new ETLEditorEnv(sobj));
+        obj = sobj;
         setMIMEType(ETLDataLoader.MIME_TYPE);
         PRJ_PATH = sobj.getFolder().getPrimaryFile().getParent().getPath();
         PRJ_PATH = PRJ_PATH.replace('/', '\\');
@@ -289,7 +292,7 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, E
                 node.setCollabState(ETLNode.WARNING);
             } else {
                 node.setCollabState(ETLNode.VALID);
-            }            
+            }
             multiviewTC.setIcon(node.getIcon(0));
 
         } catch (Exception ex) {
@@ -374,11 +377,15 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, E
         private static final long serialVersionUID = -3838395157610633251L;
         private DataObject dataObject;
     }
-    /**
-     * The embracing multiview TopComponent (holds the ColumnView and
-     * schema xml editor) - we remeber the last active TopComponent
-     * (not all clones)
-     */
+
+    public static String getPath() {
+        String path = null;
+        if (obj != null) {
+            path = obj.getPath();
+            PRJ_PATH = path;
+        }
+        return path;
+    }
     private TopComponent multiviewTC;
     public boolean isFirstTime = true;
     public static String PRJ_PATH = "";

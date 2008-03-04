@@ -107,7 +107,6 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         TableModelListener, PropertyChangeListener {
 
     /* Log4J category string */
-    
     private static final String LOG_CATEGORY = ETLCollaborationWizardTransferPanel.class.getName();
     private static transient final Logger mLogger = LogUtil.getLogger(ETLCollaborationWizardTransferPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
@@ -573,7 +572,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
     public static final String LBL_ADD_ALL = LBL_ALL + " " + LBL_ADD;
     /** Describes destination list */
     public static final String nbBundle8 = mLoc.t("PRSR001: Schemas:");
-    public static final String LBL_DEST_MSG =Localizer.parse(nbBundle8);
+    public static final String LBL_DEST_MSG = Localizer.parse(nbBundle8);
     /** Indicates removal of item(s). */
     public static final String LBL_REMOVE = "<";
     /** Indicates removal of all destination items. */
@@ -587,7 +586,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
     public static final int MINIMUM_VISIBLE = 5;
     /** Tooltip to describe addition of selected item(s). */
     public static final String nbBundle3 = mLoc.t("PRSR001: Add to selected items");
-    public static final String TIP_ADD =  Localizer.parse(nbBundle3);
+    public static final String TIP_ADD = Localizer.parse(nbBundle3);
     /** Tooltip to describe addition of all source items. */
     public static final String nbBundle4 = mLoc.t("PRSR001: Add all items");
     public static final String TIP_ADD_ALL = Localizer.parse(nbBundle4);
@@ -714,8 +713,8 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
                 new Object[][]{},
                 new String[]{
-            "Name", "Schema", "User", "Connection"
-        }));
+                    "Name", "Schema", "User", "Connection"
+                }));
         jTable1.setName("selectedTables");
         jTable1.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle9));
         jScrollPane3.setViewportView(jTable1);
@@ -896,8 +895,8 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                     meta.getDBType(), conn.getDriverClass(), conn.getDatabaseURL(), conn.getUser(),
                     conn.getPassword(), "Descriptive info here");
         } catch (Exception ex) {
-            // ignore
         }
+
         model.setModelName(conn.getDisplayName());
         model.setConnectionDefinition(def);
         return model;
@@ -1163,9 +1162,11 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         }
 
         if (sourceList != null) {
-            SwingUtilities.invokeLater(new Runnable() {
+            SwingUtilities.invokeLater(new  
 
-                public void run() {
+                  Runnable() {
+
+                       public void run() {
                     if (sourceList != null && sourceList.getModel().getSize() != 0) {
                         sourceList.requestFocusInWindow();
                     } else if (addButton != null) {

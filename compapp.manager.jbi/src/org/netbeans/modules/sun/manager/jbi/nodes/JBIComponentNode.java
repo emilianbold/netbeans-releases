@@ -247,7 +247,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                         "LBL_COMPONENT_STATISTICS_PROPERTIES", // NOI18N
                         "DSC_COMPONENT_STATISTICS_PROPERTIES", // NOI18N
                         getComponentStatisticsSheetSetProperties());
-            } catch (ManagementRemoteException e) {
+            } catch (Exception e) {
                 logger.warning(e.getMessage());
             }
         }
@@ -1269,17 +1269,19 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                     new TreeMap<Attribute, MBeanAttributeInfo>();
 
             ConfigurationService configService = getConfigurationService();
+            String componentName = getName();
             Map<String, Level> loggerMap = configService.getComponentLoggerLevels(
-                    getName(), SERVER_TARGET, null); // NULL?    
+                    componentName, SERVER_TARGET, null);  
+            Map<String, String> loggerDisplayNameMap = configService.getComponentLoggerDisplayNames(
+                    componentName, SERVER_TARGET, null);  
 
             for (String loggerCustomName : loggerMap.keySet()) {
                 Level logLevel = loggerMap.get(loggerCustomName);
-                int lastDotIndex = loggerCustomName.lastIndexOf("."); // NOI18N
-                String shortName = lastDotIndex == -1 ? loggerCustomName : loggerCustomName.substring(lastDotIndex + 1);
-
+                String displayName = loggerDisplayNameMap.get(loggerCustomName);
+                
                 Attribute attr = new Attribute(loggerCustomName, logLevel);
                 MBeanAttributeInfo info = new MBeanAttributeInfo(
-                        shortName,
+                        displayName,
                         "java.util.logging.Level", // NOI18N
                         loggerCustomName,
                         true, true, false);
