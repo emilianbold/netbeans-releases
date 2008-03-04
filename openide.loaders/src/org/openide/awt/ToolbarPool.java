@@ -44,6 +44,7 @@ package org.openide.awt;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.util.*;
 import javax.accessibility.*;
 import javax.swing.*;
@@ -99,7 +100,13 @@ public final class ToolbarPool extends JComponent implements Accessible {
      */
     public static synchronized ToolbarPool getDefault () {
         if (defaultPool == null) {
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Toolbars"); // NOI18N
+            FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+            FileObject fo = null;
+            try {
+                fo = FileUtil.createFolder(root, "Toolbars"); // NOI18N
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             if (fo == null) throw new IllegalStateException("No Toolbars/"); // NOI18N
             DataFolder folder = DataFolder.findFolder(fo);
             defaultPool = new ToolbarPool(folder);
