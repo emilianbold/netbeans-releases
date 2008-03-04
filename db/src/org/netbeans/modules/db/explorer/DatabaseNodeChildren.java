@@ -90,7 +90,8 @@ public class DatabaseNodeChildren extends Children.Array {
 
     // synchronized by this
     private TreeSet<Node> children;
-    private transient PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
+    private transient final PropertyChangeSupport propertySupport 
+            = new PropertyChangeSupport(this);
     // synchronized by additionalNodes
     private boolean initialized = false; // true if the node is displaying its children (not the "Please wait..." node)
     // synchronized by additionalNodes

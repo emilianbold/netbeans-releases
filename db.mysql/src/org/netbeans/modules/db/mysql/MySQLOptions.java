@@ -43,8 +43,7 @@ package org.netbeans.modules.db.mysql;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.logging.Level;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 import org.openide.util.NbPreferences;
 
@@ -86,10 +85,10 @@ public class MySQLOptions {
     private static final String DEFAULT_ADMIN_USER = "root";
     private static final String DEFAULT_ADMIN_PASSWORD = "";
     
-    private ArrayList<PropertyChangeListener> listeners = 
-            new ArrayList<PropertyChangeListener>();
+    private CopyOnWriteArrayList<PropertyChangeListener> listeners = 
+            new CopyOnWriteArrayList<PropertyChangeListener>();
     
-    public static synchronized MySQLOptions getDefault() {
+    public static MySQLOptions getDefault() {
         return DEFAULT;
     }
     
@@ -125,11 +124,11 @@ public class MySQLOptions {
         notifyPropertyChange(key, oldval, null);
     }
     
-    protected synchronized final String getProperty(String key) {
+    protected final String getProperty(String key) {
         return NbPreferences.forModule(MySQLOptions.class).get(key, "");
     }
     
-    protected synchronized final boolean getBooleanProperty(String key) {
+    protected final boolean getBooleanProperty(String key) {
         return NbPreferences.forModule(MySQLOptions.class).getBoolean(key, false); 
     }
     
