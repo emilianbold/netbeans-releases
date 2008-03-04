@@ -38,21 +38,20 @@
 <html>
     <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">                
-        <title>NetBeans IDE {build.display.version} Download</title>	
-        <meta name="description" content="NetBeans IDE {build.display.version} Download"/>
-        <link rel="stylesheet" type="text/css" href="http://www.netbeans.org/netbeans.css" media="screen"/>
-        <link rel="stylesheet" type="text/css" href="css/download.css" media="screen"/>
-	<link rel="shortcut icon" href="http://www.netbeans.org/favicon.ico" type="image/x-icon"/>
-
 	<!-- Do not change the order of the scripts-->
-        <script type="text/javascript" src="js/build_info.js"></script>
         <script type="text/javascript" src="js/common.js"></script>
 	<script type="text/javascript" src="js/languages.js"></script>
-
 	<script type="text/javascript">load_js_locale("js/common_strings",".js")</script>
         <script type="text/javascript">load_js_locale("js/download_strings",".js")</script>
         <script type="text/javascript" src="js/download.js"></script>
-        <script type="text/javascript">load_js_locale("js/components",".js")</script>	        
+        <script type="text/javascript" src="js/build_info.js"></script>
+        <script type="text/javascript">load_js_locale("js/components",".js")</script>
+        <script type="text/javascript">set_page_title(NETBEANS_DOWNLOAD_PAGE_TITLE.replace('{0}',BUILD_DISPLAY_VERSION))</script>
+        <script type="text/javascript">set_page_description(NETBEANS_DOWNLOAD_PAGE_DESCRIPTION.replace('{0}',BUILD_DISPLAY_VERSION))</script>
+
+        <link rel="stylesheet" type="text/css" href="http://www.netbeans.org/netbeans.css" media="screen"/>
+        <link rel="stylesheet" type="text/css" href="css/download.css" media="screen"/>
+	<link rel="shortcut icon" href="http://www.netbeans.org/favicon.ico" type="image/x-icon"/>
     </head>
     
     <body class="blue-bg" onkeyup="handle_keyup(event)">
@@ -107,12 +106,7 @@
                               <tr>
                                   <td class="title"><script type="text/javascript">message(NETBEANS_DOWNLOAD_HEADER.replace('{0}',BUILD_DISPLAY_VERSION))</script></td>
                                   <td class="menu">
-                                      <script type="text/javascript">
-				          add_download_tab("6.0.1", "http://download.netbeans.org/netbeans/6.0/final/");
-                                          add_download_tab("6.1M1","http://bits.netbeans.org/download/6.1/m1/latest/");
-                                          add_download_tab(DEVELOPMENT_TITLE /*,DEVELOPMENT_BUILDS_LINK*/);
-                                          add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
-				     </script>
+                                      <script type="text/javascript">add_download_tabs()</script>
                                   </td>
                               </tr>
                         </table>
@@ -305,9 +299,10 @@
             </div>
         </div>
 
-        <!-- Begin SiteCatalyst code -->
-        <!--<script language="JavaScript" src="http://www.netbeans.org/images/js/s_code_remote.js"></script>-->
-        <!-- End SiteCatalyst code -->
-
+	<script type="text/javascript">
+		if(LOAD_OMNITURE_CODE==1) {
+			load_js(OMNITURE_CODE_JS);
+		}
+	</script>
     </body>
 </html>
