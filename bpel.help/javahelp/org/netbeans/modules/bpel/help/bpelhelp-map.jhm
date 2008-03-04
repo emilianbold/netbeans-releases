@@ -13,9 +13,9 @@
 	<mapID target="orch_debug_start_stop" url="debug/start_stop.html"/>
 	<mapID target="orch_debug_windows" url="debug/debug_windows.html"/>
 	<mapID target="orch_debug_windows_sessions" url="debug/debug_windows_sessions.html"/>
-	<mapID target="orch_design_about_correlation" url="design/about_correlation.html"/>
+	<mapID target="orch_design_about_correlation_and_wizard" url="design/about_correlation_and_wizard.html"/>
 	<mapID target="orch_design_change_message_flow" url="design/change_message_flow.html"/>
-	<mapID target="org.netbeans.modules.bpel.properties.editors.CorrelationSetCustomEditor" url="design/create_correlation_set.html"/>
+	<mapID target="org.netbeans.modules.bpel.properties.editors.CorrelationSetCustomEditor" url="design/create_correlation_manually.html"/>
 	<mapID target="orch_design_create_diagram" url="design/create_diagram.html"/>
 	<mapID target="orch_design_import_wsdl_resources" url="design/import_wsdl_resources.html"/>
 	<mapID target="orch_design_open_diag" url="design/open_diag.html"/>
@@ -102,4 +102,6 @@
 	<mapID target="orch_debug_monitor" url="debug/monitor_debugger.html"/>
 	<mapID target="org.netbeans.modules.bpel.core.wizard.NewBpelFilePanel" url="properties/bpel_process_wizard.html"/>
 	<mapID target="orch_design_find_usage" url="design/finding_usages.html"/>
-	</map>
+	<mapID target="orch_design_documentation" url="design/documentation.html"/>
+	<mapID target="orch_windows_editors_cloning" url="windows_editors/cloning.html"/>
+</map>
