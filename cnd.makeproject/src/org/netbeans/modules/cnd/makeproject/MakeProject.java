@@ -198,8 +198,8 @@ public final class MakeProject implements Project, AntProjectListener {
 
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
 
-        private static final String[] RECOMMENDED_TYPES = new String[]{"c-types", "cpp-types", "shell-types", "makefile-types", "c-types", "simple-files"}; // NOI18N
-        private static final String[] RECOMMENDED_TYPES_FORTRAN = new String[]{"c-types", "cpp-types", "shell-types", "makefile-types", "c-types", "simple-files", "fortran-types"}; // NOI18N
+        private static final String[] RECOMMENDED_TYPES = new String[]{"c-types", "cpp-types", "shell-types", "makefile-types", "c-types", "simple-files", "asm-types"}; // NOI18N
+        private static final String[] RECOMMENDED_TYPES_FORTRAN = new String[]{"c-types", "cpp-types", "shell-types", "makefile-types", "c-types", "simple-files", "fortran-types", "asm-types"}; // NOI18N
         private static final String[] PRIVILEGED_NAMES = new String[]{"Templates/cFiles/main.c", "Templates/cFiles/file.c", "Templates/cFiles/file.h", "Templates/cppFiles/main.cc", "Templates/cppFiles/file.cc", "Templates/cppFiles/file.h", "Templates/MakeTemplates/ComplexMakefile", "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile", "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile", "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
         private static final String[] PRIVILEGED_NAMES_FORTRAN = new String[]{"Templates/cFiles/main.c", "Templates/cFiles/file.c", "Templates/cFiles/file.h", "Templates/cppFiles/main.cc", "Templates/cppFiles/file.cc", "Templates/cppFiles/file.h", "Templates/fortranFiles/fortranEmptyFile.f90", "Templates/fortranFiles/fortranFixedFormatFile.f", "Templates/fortranFiles/fortranFreeFormatFile.f90", "Templates/MakeTemplates/ComplexMakefile", "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile", "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile", "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
 

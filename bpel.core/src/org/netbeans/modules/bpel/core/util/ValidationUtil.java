@@ -33,7 +33,7 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 public final class ValidationUtil {
     public static final String SCHEMA_COMPONENT_ATTRIBUTE_BASE = "base"; // NOI18N
 
-    public static Collection<GlobalSimpleType> PRIMITIVE_SIMPLE_TYPES = 
+    public static Collection<GlobalSimpleType> BUILT_IN_SIMPLE_TYPES = 
         SchemaModelFactory.getDefault().getPrimitiveTypesModel().getSchema().getSimpleTypes();
     
     
@@ -87,7 +87,7 @@ public final class ValidationUtil {
         return false;
     }
     
-    public static GlobalSimpleType resolveSimpleTypeName(SchemaComponent schemaComponent) {
+    public static GlobalSimpleType getBuiltInSimpleType(SchemaComponent schemaComponent) {
         if (schemaComponent == null) return null;
         Collection<GlobalSimpleType> 
             schemaSimpleTypes = schemaComponent.getModel().getSchema().getSimpleTypes();
@@ -97,12 +97,12 @@ public final class ValidationUtil {
         if (baseTypeName != null) {
             baseTypeName = ignoreNamespace(baseTypeName);
             GlobalSimpleType globalSimpleType = findGlobalSimpleType(baseTypeName, 
-                PRIMITIVE_SIMPLE_TYPES);
+                BUILT_IN_SIMPLE_TYPES);
             if (globalSimpleType != null) return globalSimpleType;
             globalSimpleType = findGlobalSimpleType(baseTypeName, schemaSimpleTypes);
             if (globalSimpleType != null) {
                 for (SchemaComponent childComponent : schemaComponent.getChildren()) {
-                    globalSimpleType = resolveSimpleTypeName(childComponent);
+                    globalSimpleType = getBuiltInSimpleType(childComponent);
                     if (globalSimpleType != null) return globalSimpleType;
                 }
                 return null;
@@ -113,7 +113,7 @@ public final class ValidationUtil {
         return null;
     }
     
-    private static GlobalSimpleType findGlobalSimpleType(String typeName,
+    public static GlobalSimpleType findGlobalSimpleType(String typeName,
         Collection<GlobalSimpleType> globalSimpleTypes) {
         for (GlobalSimpleType globalSimpleType : globalSimpleTypes) {
             if (globalSimpleType.toString().equals(typeName)) {

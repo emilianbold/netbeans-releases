@@ -42,16 +42,14 @@
 package gui.action;
 
 import gui.VWPUtilities;
-import java.awt.Component;
-import javax.swing.JButton;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.AbstractButtonOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -74,7 +72,7 @@ public class CSSRuleAddTest  extends org.netbeans.performance.test.utilities.Per
     protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");    
     //protected static String OPEN = "Open";
     
-    private TopComponentOperator cssEditor = null;
+    private EditorOperator cssEditor = null;
     private NbDialogOperator createRuleDialog = null;
     
     public CSSRuleAddTest(String testName)
@@ -111,26 +109,30 @@ public class CSSRuleAddTest  extends org.netbeans.performance.test.utilities.Per
     }
     
     private void invokeAddRuleEditor() {
-        JButtonOperator addRuleButton;
+        AbstractButtonOperator addRuleButton;
         long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 90000);
         {
-            addRuleButton = new JButtonOperator(cssEditor, new ComponentChooser() {
-
-            public boolean checkComponent(Component component) {
-                log("looking for component: "+component.toString());
-                if((((JButton)component).getToolTipText() != null)) {
-                    if( ((JButton)component).getToolTipText().equals("Create Rule") ) {
-                        return true;
-                    }
-                    else return false;
-                } else return false;
-            }
-
-            public String getDescription() {
-                return "Add CSS Rule button";
-            }
-        });
+//            Component cssEditorToolbar;
+//            log("css Editor" +cssEditor.getName());
+//            Operator tBar;
+//            addRuleButton = new JButtonOperator(cssEditor, new ComponentChooser() {
+//
+//            public boolean checkComponent(Component component) {
+//                log("looking for component: "+component.toString());
+//                if((((JButton)component).getToolTipText() != null)) {
+//                    if( ((JButton)component).getToolTipText().equals("Create Rule") ) {
+//                        return true;
+//                    }
+//                    else return false;
+//                } else return false;
+//            }
+//
+//            public String getDescription() {
+//                return "Add CSS Rule button";
+//            }
+//        });
+            addRuleButton = cssEditor.getToolbarButton("Create Rule");
         }
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
         log("add Rule Button obtained");
@@ -161,11 +163,11 @@ public class CSSRuleAddTest  extends org.netbeans.performance.test.utilities.Per
         EditorOperator.closeDiscardAll();         
     }
 
-    private TopComponentOperator findCSSEditor() {
-        TopComponentOperator cssEditorToFind; 
+    private EditorOperator findCSSEditor() {
+        EditorOperator cssEditorToFind; 
         long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout");
         JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout",120000);
-          cssEditorToFind = new TopComponentOperator(fileName);
+          cssEditorToFind = new EditorOperator(fileName);
         JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
         return cssEditorToFind; 
     }
