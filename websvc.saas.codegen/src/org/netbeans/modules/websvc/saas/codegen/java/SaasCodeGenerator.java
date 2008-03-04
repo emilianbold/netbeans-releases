@@ -781,4 +781,18 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         }
         return name;
     }
+    
+    protected String getVariableName(String name, 
+            boolean camelize, boolean normalize, boolean trimBraces) {
+        if(trimBraces && name.startsWith("{") && name.endsWith("}")) {
+            name = name.substring(0, name.length()-1);
+        }
+        if(normalize) {
+            name = Util.normailizeName(name);
+        }
+        if(camelize) {
+            name = Inflector.getInstance().camelize(name, true);
+        }
+        return name;
+    }
 }

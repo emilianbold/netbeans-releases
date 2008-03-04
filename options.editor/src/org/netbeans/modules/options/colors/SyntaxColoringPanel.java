@@ -434,8 +434,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     public void update (ColorModel colorModel) {
         this.colorModel = colorModel;
         currentProfile = colorModel.getCurrentProfile ();
-        currentLanguage = (String) colorModel.getLanguages ().
-            iterator ().next ();
+        currentLanguage = ColorModel.ALL_LANGUAGES;
         if (preview != null) 
             preview.removePropertyChangeListener 
                 (Preview.PROP_CURRENT_ELEMENT, this);

@@ -115,6 +115,9 @@ public class ClientStubModel {
                 continue;
             }
             String className = JavaSourceHelper.getClassNameQuietly(src);
+            if (className == null) {
+                continue;
+            }
             srcMap.put(className, src);
             if (RestUtils.isStaticResource(src)) {
                 staticR.add(src);

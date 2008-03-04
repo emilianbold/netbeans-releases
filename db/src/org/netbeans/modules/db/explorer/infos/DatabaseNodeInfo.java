@@ -387,15 +387,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
                 }
             }
 
-            Children.MUTEX.postWriteRequest(new Runnable() {
-                public void run() {
-                    // remove current sub-tree
-                    children.remove(children.getNodes());
-
-                    // add built sub-tree
-                    children.add(subTreeNodes);
-                }
-            });
+            children.replaceNodes(subTreeNodes);
             
             fireRefresh();
         } catch (ClassCastException ex) {
@@ -699,7 +691,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     {
     }
 
-    public Vector getChildren()
+    public synchronized Vector getChildren()
     throws DatabaseException
     {
         Vector children = (Vector)get(CHILDREN);
