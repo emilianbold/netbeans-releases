@@ -168,8 +168,12 @@ final class SaveAsAction extends AbstractAction implements ContextAwareAction, L
     private File getNewFileName() {
         File newFile = null;
         FileObject currentFileObject = getCurrentFileObject();
-        if( null != currentFileObject )
+        if( null != currentFileObject ) {
             newFile = FileUtil.toFile( currentFileObject );
+            if( null == newFile ) {
+                newFile = new File( currentFileObject.getNameExt() );
+            }
+        }
 
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle( NbBundle.getMessage(DataObject.class, "LBL_SaveAsTitle" ) ); //NOI18N
@@ -183,8 +187,18 @@ final class SaveAsAction extends AbstractAction implements ContextAwareAction, L
             return null;
         }
         newFile = chooser.getSelectedFile();
-        if( null == newFile || newFile.equals( origFile ) )
+        if( null == newFile )
             return null;
+        if( newFile.equals( origFile ) ) {
+            NotifyDescriptor nd = new NotifyDescriptor( 
+                    NbBundle.getMessage( DataObject.class, "MSG_SaveAs_SameFileSelected"), //NOI18N
+                    NbBundle.getMessage( DataObject.class, "MSG_SaveAs_SameFileSelected_Title"), //NOI18N
+                    NotifyDescriptor.DEFAULT_OPTION, 
+                    NotifyDescriptor.INFORMATION_MESSAGE, 
+                    new Object[] { NotifyDescriptor.OK_OPTION }, NotifyDescriptor.OK_OPTION );
+            DialogDisplayer.getDefault().notifyLater( nd );
+            return null;
+        }
 
         return newFile;
     }

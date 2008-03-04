@@ -69,8 +69,9 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
 public class BPELValidationController extends ChangeEventListenerAdapter {
     
   public BPELValidationController(BpelModel bpelModel) {
-    myWeaklisteners = new WeakHashMap<BPELValidationListener, Object>();
+    myTimer = new Timer();
     myBpelModel = bpelModel;
+    myWeaklisteners = new WeakHashMap<BPELValidationListener, Object>();
     myTrigger = new ExternalModelsValidationTrigger( this );
     myAnnotations = new ArrayList<BPELValidationAnnotation>();
     myValidationResult = new ArrayList<ResultItem>();
@@ -194,20 +195,18 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
       Map<Line, List<ResultItem>> map = new HashMap<Line, List<ResultItem>>();
       for (ResultItem item: result) {
           final Line line = Util.getLine(item);
-          
           List<ResultItem> list = map.get(line);
+
           if (list == null) {
-              list = new LinkedList<ResultItem>();
-              map.put(line, list);
+            list = new LinkedList<ResultItem>();
+            map.put(line, list);
           }
-          
           list.add(item);
       }
-      
       for (Line line: map.keySet()) {
           final StringBuilder description = new StringBuilder();
-          
           final List<ResultItem> list = map.get(line);
+
           for (int i = 0; i < list.size(); i++) {
               description.append(list.get(i).getDescription());
               
@@ -215,7 +214,6 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
                   description.append("\n\n"); // NOI18N
               }
           }
-          
           BPELValidationAnnotation annotation = new BPELValidationAnnotation();
           myAnnotations.add(annotation);
           annotation.show(line, description.toString());
@@ -231,8 +229,8 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
     return myValidationResult;
   }
   
+  private Timer myTimer;
   private BpelModel myBpelModel;
-  private Timer myTimer = new Timer();
   private List<ResultItem> myValidationResult;
   private ExternalModelsValidationTrigger myTrigger;
   private List<BPELValidationAnnotation> myAnnotations;

@@ -197,7 +197,7 @@ public class SourcePathImplementationTest extends NbTestCase {
         src1.mkdir();
         File src2 = new File(getWorkDir(), "src2");
         src2.mkdir();
-        AntProjectHelper h = J2SEProjectGenerator.createProject(new File(getWorkDir(), "prj"), "test", new File[] {src1, src2}, new File[0], null, null);
+        AntProjectHelper h = J2SEProjectGenerator.createProject(new File(getWorkDir(), "prj"), "test", new File[] {src1, src2}, new File[0], null, null, null);
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
         FileOwnerQuery.markExternalOwner(src1.toURI(), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         ClassPath cp = ClassPath.getClassPath(FileUtil.toFileObject(src1), ClassPath.SOURCE);

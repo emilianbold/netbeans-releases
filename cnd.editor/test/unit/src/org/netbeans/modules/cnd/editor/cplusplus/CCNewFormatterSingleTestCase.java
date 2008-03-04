@@ -139,38 +139,35 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //    }
 //
 
-    public void testIdentFunctionDefinition2() {
+    public void testReformatMultiLineClassDeclaration() {
         setDefaultsOptions();
         setLoadDocumentText(
-            "getcmdline(int firstc)\n" +
-            "{\n" +
-            "    if (firstc == '/')\n" +
-            "    {\n" +
-            "#ifdef USE_IM_CONTROL\n" +
-            "	im_set_active(*b_im_ptr == B_IMODE_IM);\n" +
-            "#endif\n" +
-            "    }\n" +
-            "#ifdef USE_IM_CONTROL\n" +
-            "    else if (p_imcmdline)\n" +
-            "	im_set_active(TRUE);\n" +
-            "#endif\n" +
-            "}\n"
-            );
+                "int foo()\n" +
+                "{\n" +
+                "}\n" +
+                "/*\n" +
+                "* Call this when vim starts up, whether or not the GUI is started\n" +
+                " */\n" +
+                "void\n" +
+                "gui_prepare(argc)\n" +
+                "    int *argc;\n" +
+                "{\n" +
+                "}\n"
+                );
         reformat();
-        assertDocumentText("Incorrect identing function definition",
-            "getcmdline(int firstc)\n" +
-            "{\n" +
-            "    if (firstc == '/') {\n" +
-            "#ifdef USE_IM_CONTROL\n" +
-            "        im_set_active(*b_im_ptr == B_IMODE_IM);\n" +
-            "#endif\n" +
-            "    }\n" +
-            "#ifdef USE_IM_CONTROL\n" +
-            "    else if (p_imcmdline)\n" +
-            "        im_set_active(TRUE);\n" +
-            "#endif\n" +
-            "}\n"
-        );
+        assertDocumentText("Incorrect new-line indent",
+                "int foo()\n" +
+                "{\n" +
+                "}\n" +
+                "\n" +
+                "/*\n" +
+                " * Call this when vim starts up, whether or not the GUI is started\n" +
+                " */\n" +
+                "void\n" +
+                "gui_prepare(argc)\n" +
+                "int *argc;\n" +
+                "{\n" +
+                "}\n"
+                );
     }
-    
 }
