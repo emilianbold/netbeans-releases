@@ -51,15 +51,7 @@ public class SpringWebFrameworkUtilsTest extends NbTestCase {
     
     public SpringWebFrameworkUtilsTest(String testName) {
         super(testName);
-    }
-
-    public void testDispatcherName_NonWordCharacterPattern() throws Exception {       
-        assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dis*patcher"));
-    }
-    
-//    public void testDispatcherName_EmptyWordCharacterPattern() throws Exception {
-//        assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid(""));
-//    }
+    }         
     
     public void testDispatcherName_ValidPattern() throws Exception {
         assertTrue(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispatcher"));
@@ -76,6 +68,47 @@ public class SpringWebFrameworkUtilsTest extends NbTestCase {
     public void testDispatcherName_ValidUnicodePattern() throws Exception {
         assertTrue(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("あおうえｂ３＿え"));
     }  
+    
+    public void testDispatcherName_InvalidPattern_LEFT_ANGLE_BRACKET() throws Exception {
+        assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("<Dispatcher"));
+    }  
+    
+    public void testDispatcherName_InvalidPattern_RIGHT_ANGLE_BRACKET() throws Exception {
+        assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispatcher>"));
+    }  
+    
+    public void testDispatcherName_InvalidPattern_ASTERISK() throws Exception {
+        assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispat*cher"));
+    }  
+    
+    public void testDispatcherName_InvalidPattern_BACKSLASH() throws Exception {
+        assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispatcher\\"));
+    }  
+    
+    public void testDispatcherName_InvalidPattern_COLON() throws Exception {
+        assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispatcher:"));
+    }  
+    
+    public void testDispatcherName_InvalidPattern_DOUBLE_QUOTE() throws Exception {
+        assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispatcher\""));
+    }  
+    
+    public void testDispatcherName_InvalidPattern_FORWARD_SLASH() throws Exception {
+        assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("/Dispatcher"));
+    }  
+    
+    public void testDispatcherName_InvalidPattern_PERCENT_SIGN() throws Exception {
+        assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispa%tcher"));
+    }  
+    
+    public void testDispatcherName_InvalidPattern_PIPE_CHAR() throws Exception {
+        assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("|Dispatcher"));
+    }  
+    
+    public void testDispatcherName_ValidPattern_QUESTION_MARK() throws Exception {
+        assertFalse(SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid("Dispatc?her"));
+    }  
+        
     public void testDispatcherMapping_ExtensionSpacePattern() throws Exception {
         assertFalse(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("*.h tm"));
     }

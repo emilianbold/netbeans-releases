@@ -100,6 +100,7 @@ public class CompilerSet2Configuration {
     
     public void setValue(String name) {
         getCompilerSetName().setValue(name);
+        setCachedDisplayName(null);
     }
     
     /*
