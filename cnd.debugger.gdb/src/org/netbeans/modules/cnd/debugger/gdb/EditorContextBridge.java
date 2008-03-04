@@ -89,8 +89,8 @@ public class EditorContextBridge {
         return getContext().showSource(url, lineNumber, timeStamp);
     }
     
-    public static boolean showSource(CallStackFrame csf) {
-        if (Disassembly.isInDisasm()) {
+    public static boolean showSource(CallStackFrame csf, boolean inDis) {
+        if (inDis) {
             return showDis(csf);
         } else {
             return showCode(csf);
