@@ -115,10 +115,6 @@ public class CloseProject extends ProjectAction implements PropertyChangeListene
     public JMenuItem getPopupPresenter() {
         JMenuItem popupPresenter = new JMenuItem();
         org.openide.awt.Actions.connect(popupPresenter, this, true);
-
-        popupPresenter.setIcon( null );
-        popupPresenter.setText( popupName );
-        
         return popupPresenter;
     }
     

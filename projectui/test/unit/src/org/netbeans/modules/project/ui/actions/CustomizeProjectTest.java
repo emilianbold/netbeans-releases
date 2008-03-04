@@ -41,23 +41,31 @@ package org.netbeans.modules.project.ui.actions;
 
 import javax.swing.Action;
 import org.netbeans.modules.project.ui.actions.TestSupport.TestProject;
+import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-public class CloseProjectTest extends LookupSensitiveActionBase {
-    public CloseProjectTest(String testName) {
+public class CustomizeProjectTest extends LookupSensitiveActionBase {
+    public CustomizeProjectTest(String testName) {
         super(testName);
     }            
 
+    @Override
     protected Action create(Lookup context) {
-        return new CloseProject(context);
+        return new CustomizeProject(context);
     }
 
     @Override
     protected void enhanceProject(TestProject prj) {
+        CustomizerProvider customizer = new CustomizerProvider() {
+            public void showCustomizer() {
+            }
+        };
+        prj.setLookup(Lookups.singleton(customizer));
     }
 
 }

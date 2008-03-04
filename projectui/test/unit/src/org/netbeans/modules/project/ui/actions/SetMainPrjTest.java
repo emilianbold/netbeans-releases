@@ -47,13 +47,14 @@ import org.openide.util.Lookup;
  *
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-public class CloseProjectTest extends LookupSensitiveActionBase {
-    public CloseProjectTest(String testName) {
+public class SetMainPrjTest extends LookupSensitiveActionBase {
+    public SetMainPrjTest(String testName) {
         super(testName);
     }            
 
+    @Override
     protected Action create(Lookup context) {
-        return new CloseProject(context);
+        return new SetMainProject(context);
     }
 
     @Override
