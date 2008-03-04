@@ -128,6 +128,8 @@ public final class ProcessesColumnModel_Value extends AbstractColumn {
         public ColumnCustomEditor(
                 final String value) {
             myValue = value;
+            
+            init();
         }
         
         private void init() {
