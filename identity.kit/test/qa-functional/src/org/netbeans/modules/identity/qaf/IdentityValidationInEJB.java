@@ -41,24 +41,16 @@ package org.netbeans.modules.identity.qaf;
 
 import java.io.File;
 import java.io.IOException;
-import junit.textui.TestRunner;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.modules.ws.qaf.EjbWsValidation;
 
 /**
@@ -199,48 +191,48 @@ public class IdentityValidationInEJB extends EjbWsValidation {
     /**
      * Tests Call Web Service Operation action in a servlet
      */
-    public void testCallWsOperationInSessionEJB() {
-        //create a session bean
-        String ejbName = "NewSession";
-        //Enterprise
-        String enterpriseLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.resources.Bundle", "Templates/J2EE");
-        //Session Bean
-        String sessionBeanLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.Bundle", "Templates/J2EE/Session");
-        createNewFile(getWsClientProject(), enterpriseLabel, sessionBeanLabel);
-        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
-        op.txtObjectName().clearText();
-        op.txtObjectName().typeText(ejbName);
-        op.cboPackage().clearText();
-        op.cboPackage().typeText("org.mycompany.ejbs"); //NOI18N
-        op.finish();
-        new org.netbeans.jemmy.EventTool().waitNoEvent(2000); //Temporary hack preventing occurence of issue
-        //Add business method
-        final EditorOperator eo = new EditorOperator(ejbName); //NOI18N
-        addBusinessMethod(eo, "myBm", "String"); //NOI18N
-        //edit code in the EJB
-        // add new line and select it
-        eo.setCaretPosition("myBm() {", false); //NOI18N
-        eo.insert("\n//xxx"); //NOI18N
-        eo.select("//xxx"); //NOI18N
-        callWsOperation(eo, "myIntMethod", 16); //NOI18N
-        eo.close(true);
-    }
-
-    protected void addBusinessMethod(EditorOperator eo, String mName, String mRetVal) {
-        //EJB Methods
-        String actionGroupName = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_EJBActionGroup");
-        //Add Business Method...
-        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddBusinessMethodAction");
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ie) {
-        }
-        try {
-            new ActionNoBlock(null, actionGroupName + "|" + actionName).performPopup(eo);
-        } catch (TimeoutExpiredException tee) {
-            eo.select(16);
-            new ActionNoBlock(null, actionGroupName + "|" + actionName).performPopup(eo);
-        }
-        addMethod(eo, actionName, mName, mRetVal);
-    }
+//    public void testCallWsOperationInSessionEJB() {
+//        //create a session bean
+//        String ejbName = "NewSession";
+//        //Enterprise
+//        String enterpriseLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.resources.Bundle", "Templates/J2EE");
+//        //Session Bean
+//        String sessionBeanLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.Bundle", "Templates/J2EE/Session");
+//        createNewFile(getWsClientProject(), enterpriseLabel, sessionBeanLabel);
+//        NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+//        op.txtObjectName().clearText();
+//        op.txtObjectName().typeText(ejbName);
+//        op.cboPackage().clearText();
+//        op.cboPackage().typeText("org.mycompany.ejbs"); //NOI18N
+//        op.finish();
+//        new org.netbeans.jemmy.EventTool().waitNoEvent(2000); //Temporary hack preventing occurence of issue
+//        //Add business method
+//        final EditorOperator eo = new EditorOperator(ejbName); //NOI18N
+//        addBusinessMethod(eo, "myBm", "String"); //NOI18N
+//        //edit code in the EJB
+//        // add new line and select it
+//        eo.setCaretPosition("myBm() {", false); //NOI18N
+//        eo.insert("\n//xxx"); //NOI18N
+//        eo.select("//xxx"); //NOI18N
+//        callWsOperation(eo, "myIntMethod", 16); //NOI18N
+//        eo.close(true);
+//    }
+//
+//    protected void addBusinessMethod(EditorOperator eo, String mName, String mRetVal) {
+//        //EJB Methods
+//        String actionGroupName = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_EJBActionGroup");
+//        //Add Business Method...
+//        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddBusinessMethodAction");
+//        try {
+//            Thread.sleep(1000);
+//        } catch (InterruptedException ie) {
+//        }
+//        try {
+//            new ActionNoBlock(null, actionGroupName + "|" + actionName).performPopup(eo);
+//        } catch (TimeoutExpiredException tee) {
+//            eo.select(16);
+//            new ActionNoBlock(null, actionGroupName + "|" + actionName).performPopup(eo);
+//        }
+//        addMethod(eo, actionName, mName, mRetVal);
+//    }
 }

@@ -362,9 +362,9 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     protected String getOverridingStatements() {
         String text = "";
         for (ParameterInfo param : getBean().getQueryParameters()) {
-            if(param.isApiKey() || param.isFixed())
+            if(param.isApiKey() || param.isSessionKey() || param.isFixed())
                 continue;
-            String name = getParameterName(param);
+            String name = getParameterName(param, true, true, true);
             text += "if (this." + name + " != null) {" + name + " = this." + name + ";" + "}\n";
         }
 
@@ -405,14 +405,14 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
 
         for (ParameterInfo param : getBean().getInputParameters()) {
             String initValue = "null"; //NOI18N
-            String access = match(JavaSourceHelper.getTopLevelClassElement(copy), getParameterName(param));
+            String access = match(JavaSourceHelper.getTopLevelClassElement(copy), getParameterName(param, true, true, true));
 
             if (access != null) {
                 initValue = access;
                 addGetEntityStatement = true;
             }
 
-            statements += param.getSimpleTypeName() + " " + getParameterName(param) + " = " + initValue + ";"; //NOI18N
+            statements += param.getSimpleTypeName() + " " + getParameterName(param, true, true, true) + " = " + initValue + ";"; //NOI18N
         }
 
         String getEntityStatement = "";
@@ -431,9 +431,9 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
             ParameterInfo param = inputParams.get(i);
 
             if (i == 0) {
-                text += getParameterName(param);
+                text += getParameterName(param, true, true, true);
             } else {
-                text += ", " + getParameterName(param); //NOI18N
+                text += ", " + getParameterName(param, true, true, true); //NOI18N
             }
         }
 
@@ -771,6 +771,20 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         String name = param.getName();
         if(trimBraces && param.getStyle() == ParamStyle.TEMPLATE 
                 && name.startsWith("{") && name.endsWith("}")) {
+            name = name.substring(0, name.length()-1);
+        }
+        if(normalize) {
+            name = Util.normailizeName(name);
+        }
+        if(camelize) {
+            name = Inflector.getInstance().camelize(name, true);
+        }
+        return name;
+    }
+    
+    protected String getVariableName(String name, 
+            boolean camelize, boolean normalize, boolean trimBraces) {
+        if(trimBraces && name.startsWith("{") && name.endsWith("}")) {
             name = name.substring(0, name.length()-1);
         }
         if(normalize) {
