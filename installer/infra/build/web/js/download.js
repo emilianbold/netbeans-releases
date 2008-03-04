@@ -53,7 +53,6 @@ var ONE_LEFT_SRC = "img/one_left.gif";
 var IMG_ONE      = '<img src="' + ONE_SRC + '"/>';
 var IMG_ONE_LEFT = '<img src="' + ONE_LEFT_SRC + '"/>';
 
-
 var CHECKED_WHITE_SRC = "img/checked_badge_white.gif";
 var CHECKED_BEIGE_SRC = "img/checked_badge_beige.gif";
 var WARNING_WHITE_SRC = "img/warning_badge_white.gif";
@@ -599,7 +598,7 @@ function update() {
         document.getElementById("jdk_note").innerHTML = JDK_NOTE_MACOSX;
     }
     else {
-        document.getElementById("jdk_note").innerHTML = JDK_NOTE_ALL.replace('{0}',JDK_DOWNLOAD_LINK).replace('{1}',NBJDK_DOWNLOAD_LINK);
+        document.getElementById("jdk_note").innerHTML = JDK_NOTE_ALL.replace('{0}',JDK_DOWNLOAD_LINK).replace('{1}',NBJDK_DOWNLOAD_LINK).replace('{2}',JDK_LATEST_UPDATE);
     }
 }
 
