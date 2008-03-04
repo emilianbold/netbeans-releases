@@ -73,6 +73,30 @@ public class PreviewPreferences extends AbstractPreferences {
         }
     }
 
+    public void makeAllKeys(Preferences master){
+        for(String key : EditorOptions.keys()){
+            if (!map.containsKey(key)) {
+                Object o = EditorOptions.getDefault(language, styleId, key);
+                if (o instanceof Boolean) {
+                    Boolean v = master.getBoolean(key, (Boolean)o);
+                    if (!o.equals(v)) {
+                        putBoolean(key, v);
+                    }
+                } else if (o instanceof Integer) {
+                    Integer v = master.getInt(key, (Integer)o);
+                    if (!o.equals(v)) {
+                        putInt(key, v);
+                    }
+                } else {
+                    String v = master.get(key, o.toString());
+                    if (!o.equals(v)) {
+                        map.put(key, v);
+                    }
+                }
+            }
+        }
+    }
+    
     public CodeStyle.Language getLanguage() {
         return language;
     }
