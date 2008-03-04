@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.spring.webmvc.utils;
 
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.openide.util.NbBundle;
 

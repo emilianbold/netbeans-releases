@@ -238,18 +238,18 @@ public class EditorOptions {
     //BlankLines
     public static final String blankLinesBeforeClass = "blankLinesBeforeClass"; //NOI18N
     public static final int blankLinesBeforeClassDefault = 1;    
-    public static final String blankLinesAfterClass = "blankLinesAfterClass"; //NOI18N
-    public static final int blankLinesAfterClassDefault = 0;    
+    //public static final String blankLinesAfterClass = "blankLinesAfterClass"; //NOI18N
+    //public static final int blankLinesAfterClassDefault = 0;    
     public static final String blankLinesAfterClassHeader = "blankLinesAfterClassHeader"; //NOI18N
     public static final int blankLinesAfterClassHeaderDefault = 0;    
-    public static final String blankLinesBeforeFields = "blankLinesBeforeFields"; //NOI18N
-    public static final int blankLinesBeforeFieldsDefault = 0;    
-    public static final String blankLinesAfterFields = "blankLinesAfterFields"; //NOI18N
-    public static final int blankLinesAfterFieldsDefault = 0;    
+    //public static final String blankLinesBeforeFields = "blankLinesBeforeFields"; //NOI18N
+    //public static final int blankLinesBeforeFieldsDefault = 0;    
+    //public static final String blankLinesAfterFields = "blankLinesAfterFields"; //NOI18N
+    //public static final int blankLinesAfterFieldsDefault = 0;    
     public static final String blankLinesBeforeMethods = "blankLinesBeforeMethods"; //NOI18N
     public static final int blankLinesBeforeMethodsDefault = 1;    
-    public static final String blankLinesAfterMethods = "blankLinesAfterMethods"; //NOI18N
-    public static final int blankLinesAfterMethodsDefault = 0;    
+    //public static final String blankLinesAfterMethods = "blankLinesAfterMethods"; //NOI18N
+    //public static final int blankLinesAfterMethodsDefault = 0;    
 
     //Other
     /** Whether the '*' should be added at the new line * in comment */
@@ -341,12 +341,12 @@ public class EditorOptions {
         defaults.put(spaceAfterTypeCast,spaceAfterTypeCastDefault);
         //BlankLines
         defaults.put(blankLinesBeforeClass,blankLinesBeforeClassDefault);
-        defaults.put(blankLinesAfterClass,blankLinesAfterClassDefault);
+        //defaults.put(blankLinesAfterClass,blankLinesAfterClassDefault);
         defaults.put(blankLinesAfterClassHeader,blankLinesAfterClassHeaderDefault);
-        defaults.put(blankLinesBeforeFields,blankLinesBeforeFieldsDefault);
-        defaults.put(blankLinesAfterFields,blankLinesAfterFieldsDefault);
+        //defaults.put(blankLinesBeforeFields,blankLinesBeforeFieldsDefault);
+        //defaults.put(blankLinesAfterFields,blankLinesAfterFieldsDefault);
         defaults.put(blankLinesBeforeMethods,blankLinesBeforeMethodsDefault);
-        defaults.put(blankLinesAfterMethods,blankLinesAfterMethodsDefault);      
+        //defaults.put(blankLinesAfterMethods,blankLinesAfterMethodsDefault);      
         //Other
         defaults.put(addLeadingStarInComment,addLeadingStarInCommentDefault);
 
