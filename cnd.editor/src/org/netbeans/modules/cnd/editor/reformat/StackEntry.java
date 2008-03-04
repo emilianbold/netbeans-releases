@@ -147,6 +147,7 @@ class StackEntry {
                     {
                         if (paren == 0 && curly == 0 && triangle == 0) {
                             importantKind = current.id();
+                            likeToFunction = false;
                             return;
                         }
                         break;
@@ -184,6 +185,7 @@ class StackEntry {
                     {
                         if (paren == 0 && curly == 0 && triangle == 0) {
                             importantKind = current.id();
+                            likeToFunction = false;
                             return;
                         }
                         break;
