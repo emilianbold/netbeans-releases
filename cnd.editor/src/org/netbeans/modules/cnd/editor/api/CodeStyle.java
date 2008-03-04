@@ -364,7 +364,36 @@ public final class CodeStyle {
         return getOption(EditorOptions.spaceWithinArrayInitBrackets,
                          EditorOptions.spaceWithinArrayInitBracketsDefault);
     }
-    
+
+    public int blankLinesBeforeClass(){
+        return getOption(EditorOptions.blankLinesBeforeClass,
+                         EditorOptions.blankLinesBeforeClassDefault);
+    }
+//    public int blankLinesAfterClass(){
+//        return getOption(EditorOptions.blankLinesAfterClass,
+//                         EditorOptions.blankLinesAfterClassDefault);
+//    }
+    public int blankLinesAfterClassHeader(){
+        return getOption(EditorOptions.blankLinesAfterClassHeader,
+                         EditorOptions.blankLinesAfterClassHeaderDefault);
+    }
+//    public int blankLinesBeforeFields(){
+//        return getOption(EditorOptions.blankLinesBeforeFields,
+//                         EditorOptions.blankLinesBeforeFieldsDefault);
+//    }
+//    public int blankLinesAfterFields(){
+//        return getOption(EditorOptions.blankLinesAfterFields,
+//                         EditorOptions.blankLinesAfterFieldsDefault);
+//    }
+    public int blankLinesBeforeMethods(){
+        return getOption(EditorOptions.blankLinesBeforeMethods,
+                         EditorOptions.blankLinesBeforeMethodsDefault);
+    }
+//    public int blankLinesAfterMethods(){
+//        return getOption(EditorOptions.blankLinesAfterMethods,
+//                         EditorOptions.blankLinesAfterMethodsDefault);
+//    }
+
     private boolean getOption(String key, boolean defaultValue) {
         return getPreferences().getBoolean(key, defaultValue);
     }
