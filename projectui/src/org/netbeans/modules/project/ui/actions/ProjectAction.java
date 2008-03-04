@@ -162,8 +162,9 @@ public class ProjectAction extends LookupSensitiveAction implements Presenter.Me
     
     public JMenuItem getMenuPresenter () {
         if ( menuPresenter == null ) {
-            menuPresenter = new JMenuItem( this );
-
+            menuPresenter = new JMenuItem();
+            Actions.connect(menuPresenter, this, false);
+/*
             Icon icon = null;
             // ignore icon if noIconInMenu flag is set
             if (!Boolean.TRUE.equals( getValue( "noIconInMenu" ) ) ) { 
@@ -171,6 +172,7 @@ public class ProjectAction extends LookupSensitiveAction implements Presenter.Me
             }
             menuPresenter.setIcon( icon );
             Mnemonics.setLocalizedText( menuPresenter, presenterName );
+ */
         }
         
         return menuPresenter;        

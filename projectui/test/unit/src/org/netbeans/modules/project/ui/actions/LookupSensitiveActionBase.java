@@ -55,6 +55,7 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.AbstractLookup;
@@ -97,12 +98,48 @@ public abstract class LookupSensitiveActionBase extends NbTestCase implements Pr
     /**
      * Test of actionPerformed method, of class CloseProject.
      */
-    public void testNoNeedToRefreshWhenNotVisible() throws IOException, InterruptedException {
+    public void testNoNeedToRefreshWhenNotVisiblePopup() throws IOException, InterruptedException {
+        doTestRefreshAfterBeingHidden(false, false);
+    }
+    public void testNoNeedToRefreshWhenNotVisibleMenu() throws IOException, InterruptedException {
+        doTestRefreshAfterBeingHidden(false, true);
+    }
+    public void testCloneNoNeedToRefreshWhenNotVisiblePopup() throws IOException, InterruptedException {
+        doTestRefreshAfterBeingHidden(true, false);
+    }
+    public void testCloneNoNeedToRefreshWhenNotVisibleMenu() throws IOException, InterruptedException {
+        doTestRefreshAfterBeingHidden(true, true);
+    }
+    
+    private JMenuItem item(Action a, boolean menu) {
+        if (menu) {
+            if (a instanceof Presenter.Menu) {
+                return ((Presenter.Menu) a).getMenuPresenter();
+            } else {
+                return new JMenuItem(a);
+            }
+        } else {
+            if (a instanceof Presenter.Popup) {
+                return ((Presenter.Popup)a).getPopupPresenter();        
+            } else {
+                return new JMenuItem(a);
+            }
+        }
+    }
+    
+    
+    private void doTestRefreshAfterBeingHidden(boolean clone, boolean menu) throws IOException {
         InstanceContent ic = new InstanceContent();
         Lookup context = new AbstractLookup(ic);
         
         
-        Action instance = create(context);
+        Action instance;
+        if (clone) {
+            Action a = create(Lookup.EMPTY);
+            instance = ((ContextAwareAction)a).createContextAwareInstance(context);
+        } else {
+            instance = create(context);
+        }
         
         if (!(instance instanceof Presenter.Popup)) {
             // cannot test, skipping
@@ -116,15 +153,15 @@ public abstract class LookupSensitiveActionBase extends NbTestCase implements Pr
             fail("Should be refreshing: " + log1);
         }
         
-        JMenuItem item = ((Presenter.Popup)instance).getPopupPresenter();
-        JMenu menu = new JMenu();
-        menu.addNotify();
-        assertNotNull("Peer created", peer(menu));
-        menu.getPopupMenu().addNotify();
-        assertNotNull("Peer for popup", peer(menu.getPopupMenu()));
+        JMenuItem item = item(instance, menu);
+        JMenu jmenu = new JMenu();
+        jmenu.addNotify();
+        assertNotNull("Peer created", peer(jmenu));
+        jmenu.getPopupMenu().addNotify();
+        assertNotNull("Peer for popup", peer(jmenu.getPopupMenu()));
         
         item.addPropertyChangeListener(this);
-        menu.add(item);
+        jmenu.add(item);
         assertEquals("anncessor properly changes, this means the actions framework is activated", 1, ancEvent);
         
         
