@@ -138,5 +138,36 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        );
 //    }
 //
-    
+
+    public void testReformatMultiLineClassDeclaration() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int foo()\n" +
+                "{\n" +
+                "}\n" +
+                "/*\n" +
+                "* Call this when vim starts up, whether or not the GUI is started\n" +
+                " */\n" +
+                "void\n" +
+                "gui_prepare(argc)\n" +
+                "    int *argc;\n" +
+                "{\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect new-line indent",
+                "int foo()\n" +
+                "{\n" +
+                "}\n" +
+                "\n" +
+                "/*\n" +
+                " * Call this when vim starts up, whether or not the GUI is started\n" +
+                " */\n" +
+                "void\n" +
+                "gui_prepare(argc)\n" +
+                "int *argc;\n" +
+                "{\n" +
+                "}\n"
+                );
+    }
 }

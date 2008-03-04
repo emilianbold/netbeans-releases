@@ -62,7 +62,6 @@ import javax.xml.namespace.QName;
 public class JBIComponentConfigurationDescriptor {
 
     public static final String XSD_NS = "http://www.w3.org/2001/XMLSchema"; // NOI18N
-    
     // currently supported xsd types
     public static final QName XSD_BYTE = new QName(XSD_NS, "byte"); // NOI18N
     public static final QName XSD_SHORT = new QName(XSD_NS, "short"); // NOI18N
@@ -78,7 +77,10 @@ public class JBIComponentConfigurationDescriptor {
     public static final QName XSD_NON_NEGATIVE_INTEGER = new QName(XSD_NS, "nonNegativeInteger"); // NOI18N
     public static final QName XSD_STRING = new QName(XSD_NS, "string"); // NOI18N
     public static final QName XSD_BOOLEAN = new QName(XSD_NS, "boolean"); // NOI18N
-    
+    public static final QName[] SUPPORTED_TYPES = new QName[]{
+        XSD_BYTE, XSD_SHORT, XSD_INT, XSD_POSITIVE_INTEGER, XSD_NEGATIVE_INTEGER,
+        XSD_NON_POSITIVE_INTEGER, XSD_NON_NEGATIVE_INTEGER, XSD_STRING, XSD_BOOLEAN
+    };
     private static final String SHOWDISPLAY_INSTALLATION = "install"; // NOI18N
     private static final String SHOWDISPLAY_RUNTIME = "runtime"; // NOI18N
     private static final String SHOWDISPLAY_ALL = "all"; // NOI18N
@@ -153,7 +155,32 @@ public class JBIComponentConfigurationDescriptor {
         return SHOWDISPLAY_INSTALLATION.equals(showDisplay) ||
                 SHOWDISPLAY_ALL.equals(showDisplay);
     }
+    
+    /**
+     * Checks whether this descriptor (or any child descriptor, when recursive
+     * is true) is an installation-time configuration.
+     * 
+     * @param recursive whether to search for child descriptors recursively     * 
+     * @return
+     */
+    public boolean showDisplayAtInstallation(boolean recursive) {
+        boolean ret = showDisplayAtInstallation();
+        
+        if (!ret && recursive) {
+            for (JBIComponentConfigurationDescriptor child : getChildren()) {
+                if (child.showDisplayAtInstallation(recursive)) {
+                    return true;
+                }
+            }
+        } 
+        
+        return ret;
+    }
 
+    /**
+     * Checks whether this descriptor is an installation-time configuration. 
+     * @return
+     */
     public boolean showDisplayAtRuntime() {
         return SHOWDISPLAY_RUNTIME.equals(showDisplay) ||
                 SHOWDISPLAY_ALL.equals(showDisplay);
@@ -217,7 +244,8 @@ public class JBIComponentConfigurationDescriptor {
     }
 
     public Collection<JBIComponentConfigurationDescriptor> getChildren() {
-        return children.values();
+        return children == null || children.values() == null ?
+            new ArrayList<JBIComponentConfigurationDescriptor>() : children.values();
     }
 
     public void setApplicationRestartRequired(boolean applicationRestartRequired) {
@@ -283,47 +311,47 @@ public class JBIComponentConfigurationDescriptor {
     public String validate(Object value) {
         return constraint.validate(value);
     }
-}
 
-class ApplicationVariable extends JBIComponentConfigurationDescriptor {
+    public static class ApplicationVariable extends JBIComponentConfigurationDescriptor {
 
-    ApplicationVariable() {
-        setName("ApplicationVariable");
-        setDisplayName("Application Variables");
-        setDescription("Application Variables");
-        
-        JBIComponentConfigurationDescriptor name = 
-                new JBIComponentConfigurationDescriptor();
-        name.setName("name");
-        name.setDisplayName("Name");
-        name.setDescription("Application Variable Name");
-        name.setTypeQName(XSD_STRING);
-        
-        JBIComponentConfigurationDescriptor type = 
-                new JBIComponentConfigurationDescriptor();
-        type.setName("type");
-        type.setDisplayName("Type");
-        type.setDescription("Application Variable Type");   
-        type.setTypeQName(XSD_STRING);
-        
-        JBIComponentConfigurationDescriptor value = 
-                new JBIComponentConfigurationDescriptor();
-        value.setName("value");
-        value.setDisplayName("Value");
-        value.setDescription("Application Variable Value");   
-        value.setTypeQName(XSD_STRING);
-        
-        addChild(name);
-        addChild(type);
-        addChild(value);
+        ApplicationVariable() {
+            setName("ApplicationVariable");
+            setDisplayName("Application Variables");
+            setDescription("Application Variables");
+
+            JBIComponentConfigurationDescriptor name =
+                    new JBIComponentConfigurationDescriptor();
+            name.setName("name");
+            name.setDisplayName("Name");
+            name.setDescription("Application Variable Name");
+            name.setTypeQName(XSD_STRING);
+
+            JBIComponentConfigurationDescriptor type =
+                    new JBIComponentConfigurationDescriptor();
+            type.setName("type");
+            type.setDisplayName("Type");
+            type.setDescription("Application Variable Type");
+            type.setTypeQName(XSD_STRING);
+
+            JBIComponentConfigurationDescriptor value =
+                    new JBIComponentConfigurationDescriptor();
+            value.setName("value");
+            value.setDisplayName("Value");
+            value.setDescription("Application Variable Value");
+            value.setTypeQName(XSD_STRING);
+
+            addChild(name);
+            addChild(type);
+            addChild(value);
+        }
     }
-}
 
-class ApplicationConfiguration extends JBIComponentConfigurationDescriptor {
+    public static class ApplicationConfiguration extends JBIComponentConfigurationDescriptor {
 
-    ApplicationConfiguration() {
-        setName("ApplicationConfiguration");
-        setDisplayName("Application Configuration");
-        setDescription("Application Configuration");
+        ApplicationConfiguration() {
+            setName("ApplicationConfiguration");
+            setDisplayName("Application Configuration");
+            setDescription("Application Configuration");
+        }
     }
 }

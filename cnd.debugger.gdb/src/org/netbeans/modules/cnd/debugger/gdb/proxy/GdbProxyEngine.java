@@ -53,9 +53,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -126,7 +126,7 @@ public class GdbProxyEngine {
                 env.put(key, value);
             }
         }
-        env.put("PATH", CppSettings.getDefault().getPath()); // NOI18N
+        env.put("PATH", Path.getPathAsString()); // NOI18N
         pb.directory(new File(workingDirectory));
         pb.redirectErrorStream(true);
         

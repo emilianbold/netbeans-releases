@@ -10,6 +10,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
 public final class DisassemblyAction extends CallableSystemAction {
+    @Override
+    public boolean isEnabled() {
+        return Disassembly.getCurrent() != null;
+    }
 
     public void performAction() {
         Disassembly.open();

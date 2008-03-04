@@ -128,15 +128,17 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testReformatMultiLineClassDeclaration() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
-                "public class C\n"
+                "class C\n"
                 + ": public Runnable {\n"
                 + "int printf(int);\n"
                 + "};\n"
                 );
         reformat();
         assertDocumentText("Incorrect new-line indent",
-                "public class C\n"
+                "class C\n"
                 + ": public Runnable\n"
                 + "{\n"
                 + "    int printf(int);\n"
@@ -345,6 +347,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "class Test {\n" +
                 "Test(int one,\n" +
@@ -372,6 +376,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      */
     public void testReformatMultilineConstructor2() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "class Test {\n" +
                 "Test(int one,\n" +
@@ -486,6 +492,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceClass, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "class C {\n" +
             "protected:\n" +
@@ -515,6 +523,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      */
     public void testReformatSimpleClass2() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "class C {\n" +
             "protected:\n" +
@@ -768,6 +778,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceClass, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeClass, 1);
         setLoadDocumentText(
             "class NdbTransaction {\n" +
             "#ifndef D\n" +
@@ -807,6 +819,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testIdentInnerEnum2() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeClass, 0);
         setLoadDocumentText(
             "class NdbTransaction {\n" +
             "#ifndef D\n" +
@@ -833,7 +847,6 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "#endif\n" +
             "\n" +
             "public:\n" +
-            "\n" +
             "    enum AbortOption\n" +
             "    {\n" +
             "#ifndef D\n" +
@@ -854,6 +867,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "template <class T, class U>\n" +
             "class KeyTable2 : public DLHashTable2<T, U> {\n" +
@@ -875,7 +890,6 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "    KeyTable2(ArrayPool<U>& pool) :\n" +
             "    DLHashTable2<T, U>(pool) {\n" +
             "    }\n" +
-            "\n" +
             "    bool find(Ptr<T>& ptr, const T& rec) const {\n" +
             "        return DLHashTable2<T, U>::find(ptr, rec);\n" +
             "    }\n" +
@@ -885,6 +899,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testTemplate2() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 1);
         setLoadDocumentText(
             "template <class T, class U>\n" +
             "class KeyTable2 : public DLHashTable2<T, U> {\n" +
@@ -904,6 +920,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "class KeyTable2 : public DLHashTable2<T, U>\n" +
             "{\n" +
             "public:\n" +
+            "\n" +
             "    KeyTable2(ArrayPool<U>& pool) :\n" +
             "    DLHashTable2<T, U>(pool)\n" +
             "    {\n" +
@@ -942,6 +959,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     
     public void testIdentDefine() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "int\n" +
             "main() {\n" +
@@ -973,6 +992,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "long z;\n" +
             "int\n" +
@@ -992,6 +1013,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testIdentMultyLineMain2() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "long z;\n" +
             "int\n" +
@@ -1081,6 +1104,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testIdentDefineBrace() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "#define BRACE {\n" +
             "int main() {\n" +
@@ -1101,6 +1126,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     
     public void testIdentDefineBrace2() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "#define BRACE }\n" +
             "int main() {\n" +
@@ -1226,6 +1253,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "#include <stdio.h>\n" +
                 "#define M(x) puts(#x)\n" +
@@ -1245,6 +1274,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testMacroDefineWithParen11() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "#include <stdio.h>\n" +
                 "#define M(x) puts(#x)\n" +
@@ -1272,6 +1303,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "#include <stdio.h>\n" +
                 "#define M(x) puts(#x)\n" +
@@ -1293,6 +1326,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "#include <stdio.h>\n" +
                 "#define M(x) puts(#x)\n" +
@@ -1636,6 +1671,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testIdentInlineMethod() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "class IndexReader : LUCENE_BASE\n" +
             "{\n" +
@@ -1832,6 +1869,406 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "        my_close(fd, MYF(MY_WME));\n" +
             "    return error;\n" +
             "}\n" 
+        );
+    }
+
+    public void testIdentBlockAfterDirective() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int yyparse()\n" +
+            "{\n" +
+            "    yychar = - 1;\n" +
+            "#if YYMAXDEPTH <= 0\n" +
+            "    if (yymaxdepth <= 0) {\n" +
+            "        if ((yymaxdepth = YYEXPAND(0)) <= 0) {\n" +
+            "            yyerror(\"yacc initialization error\");\n" +
+            "            YYABORT;\n" +
+            "        }\n" +
+            "    }\n" +
+            "#endif\n" +
+            " {\n" +
+            "        register YYSTYPE *yy_pv;\n" +
+            "        /* top of value stack */\n" +
+            "}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing coode block after directive",
+            "int yyparse()\n" +
+            "{\n" +
+            "    yychar = -1;\n" +
+            "#if YYMAXDEPTH <= 0\n" +
+            "    if (yymaxdepth <= 0) {\n" +
+            "        if ((yymaxdepth = YYEXPAND(0)) <= 0) {\n" +
+            "            yyerror(\"yacc initialization error\");\n" +
+            "            YYABORT;\n" +
+            "        }\n" +
+            "    }\n" +
+            "#endif\n" +
+            "    {\n" +
+            "        register YYSTYPE *yy_pv;\n" +
+            "        /* top of value stack */\n" +
+            "    }\n" +
+            "}\n"
+        );
+    }
+
+    public void testMacroBeforePrepricessor() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        setLoadDocumentText(
+            "int yyparse()\n" +
+            "{\n" +
+            "    switch (nchar) {\n" +
+            "        /* split current window in two parts, horizontally */\n" +
+            "    case 'S':\n" +
+            "    case 's':\n" +
+            "        CHECK_CMDWIN\n" +
+            "#    ifdef FEAT_VISUAL\n" +
+            "reset_VIsual_and_resel();\n" +
+            "        /* stop Visual mode */\n" +
+            "#    endif\n" +
+            "    case 'W':\n" +
+            "        CHECK_CMDWIN\n" +
+            "if (lastwin == firstwin && Prenum != 1) /* just one window */\n" +
+            "            beep_flush();\n" +
+            "}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing macro before preoprocessor",
+            "int yyparse()\n" +
+            "{\n" +
+            "    switch (nchar) {\n" +
+            "        /* split current window in two parts, horizontally */\n" +
+            "    case 'S':\n" +
+            "    case 's':\n" +
+            "        CHECK_CMDWIN\n" +
+            "#ifdef FEAT_VISUAL\n" +
+            "                reset_VIsual_and_resel();\n" +
+            "        /* stop Visual mode */\n" +
+            "#endif\n" +
+            "    case 'W':\n" +
+            "        CHECK_CMDWIN\n" +
+            "        if (lastwin == firstwin && Prenum != 1) /* just one window */\n" +
+            "            beep_flush();\n" +
+            "    }\n" +
+            "}\n"
+        );
+    }
+
+    public void testIdentElseBeforePreprocessor() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        setLoadDocumentText(
+            "int yyparse()\n" +
+            "{\n" +
+            "#ifdef X\n" +
+            "    if (true) {\n" +
+            "        if (oldwin->w_p_wfw)\n" +
+            "            win_setwidth_win(oldwin->w_width + new_size, oldwin);\n" +
+            "    } else\n" +
+            "#    endif\n" +
+            " {\n" +
+            "        layout = FR_COL;\n" +
+            "}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing else before preprocessor",
+            "int yyparse()\n" +
+            "{\n" +
+            "#ifdef X\n" +
+            "    if (true) {\n" +
+            "        if (oldwin->w_p_wfw)\n" +
+            "            win_setwidth_win(oldwin->w_width + new_size, oldwin);\n" +
+            "    } else\n" +
+            "#endif\n" +
+            "    {\n" +
+            "        layout = FR_COL;\n" +
+            "    }\n" +
+            "}\n"
+        );
+    }
+
+    public void testIdentK_and_R_style() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "static void\n" +
+            "win_init(newp, oldp)\n" +
+            "win_T *newp;\n" +
+            "win_T *oldp;\n" +
+            "{\n" +
+            "    int i;\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing K&R declaration",
+            "static void\n" +
+            "win_init(newp, oldp)\n" +
+            "win_T *newp;\n" +
+            "win_T *oldp;\n" +
+            "{\n" +
+            "    int i;\n" +
+            "}\n"
+        );
+    }
+
+    public void testIdentK_and_R_style2() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
+        setLoadDocumentText(
+            "extern \"C\" {\n" +
+            "static void\n" +
+            "win_init(newp, oldp)\n" +
+            "win_T *newp;\n" +
+            "win_T *oldp;\n" +
+            "{\n" +
+            "    int i;\n" +
+            "}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing multyline constructor",
+            "extern \"C\"\n" +
+            "{\n" +
+            "    static void\n" +
+            "    win_init(newp, oldp)\n" +
+            "    win_T *newp;\n" +
+            "    win_T *oldp;\n" +
+            "    {\n" +
+            "        int i;\n" +
+            "    }\n" +
+            "}\n"
+        );
+    }
+
+    public void testIdentInBlockComment() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
+        setLoadDocumentText(
+            "extern \"C\" {\n" +
+            "static void\n" +
+            "win_init(newp, oldp)\n" +
+            "win_T *newp;\n" +
+            "win_T *oldp;\n" +
+            "           /*\n" +
+            "             Preserve identation in block\n" +
+            "               1.\n" +
+            "               2.\n" +
+            "\n" +
+            "            */\n" +
+            "{\n" +
+            "/*\n" +
+            "  Preserve identation in block\n" +
+            "    1.\n" +
+            "    2.\n" +
+            "\n" +
+            "*/\n" +
+            "    int i;\n" +
+            "}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing in block comment",
+            "extern \"C\"\n" +
+            "{\n" +
+            "    static void\n" +
+            "    win_init(newp, oldp)\n" +
+            "    win_T *newp;\n" +
+            "    win_T *oldp;\n" +
+            "    /*\n" +
+            "      Preserve identation in block\n" +
+            "        1.\n" +
+            "        2.\n" +
+            "\n" +
+            "     */\n" +
+            "    {\n" +
+            "        /*\n" +
+            "          Preserve identation in block\n" +
+            "            1.\n" +
+            "            2.\n" +
+            "\n" +
+            "         */\n" +
+            "        int i;\n" +
+            "    }\n" +
+            "}\n"
+        );
+    }
+
+    public void testIdentInBlockComment2() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
+        setLoadDocumentText(
+            "extern \"C\" {\n" +
+            "static void\n" +
+            "win_init(newp, oldp)\n" +
+            "win_T *newp;\n" +
+            "win_T *oldp;\n" +
+            "      /*\n" +
+            "           * Preserve identation in block\n" +
+            "          *   1.\n" +
+            "       *   2.\n" +
+            "*\n" +
+            "   */\n" +
+            "{\n" +
+            "  /*\n" +
+            "* Preserve identation in block\n" +
+            "    *   1.\n" +
+            " *   2.\n" +
+            "*\n" +
+            "*/\n" +
+            "    int i;\n" +
+            "}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing in block comment",
+            "extern \"C\"\n" +
+            "{\n" +
+            "    static void\n" +
+            "    win_init(newp, oldp)\n" +
+            "    win_T *newp;\n" +
+            "    win_T *oldp;\n" +
+            "    /*\n" +
+            "     * Preserve identation in block\n" +
+            "     *   1.\n" +
+            "     *   2.\n" +
+            "     *\n" +
+            "     */\n" +
+            "    {\n" +
+            "        /*\n" +
+            "         * Preserve identation in block\n" +
+            "         *   1.\n" +
+            "         *   2.\n" +
+            "         *\n" +
+            "         */\n" +
+            "        int i;\n" +
+            "    }\n" +
+            "}\n"
+        );
+    
+    }
+
+    public void testAddNewLineAfterSemocolon() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int foo(int i)\n" +
+            "{\n" +
+            "if(true) if(true) if(true) i--;\n" +
+            "else i++;else i++; else i++;\n" +
+            " if(true) while(i>0) i--;\n" +
+            " if(true) return; else break;\n" +
+            " if(true) return;\n" +
+            " else {break;}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect adding new line after semocolon",
+            "int foo(int i)\n" +
+            "{\n" +
+            "    if (true) if (true) if (true) i--;\n" +
+            "            else i++;\n" +
+            "        else i++;\n" +
+            "    else i++;\n" +
+            "    if (true) while (i > 0) i--;\n" +
+            "    if (true) return;\n" +
+            "    else break;\n" +
+            "    if (true) return;\n" +
+            "    else {\n" +
+            "        break;\n" +
+            "    }\n" +
+            "}\n"
+        );
+    }
+
+    public void testIdentFunctionDefinition() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "uchar *\n" +
+            "        tokname(int n)\n" +
+            "{\n" +
+            "    static char buf[100];\n" +
+            "    return printname[n - 257];\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing function definition",
+            "uchar *\n" +
+            "tokname(int n)\n" +
+            "{\n" +
+            "    static char buf[100];\n" +
+            "    return printname[n - 257];\n" +
+            "}\n"
+        );
+    }
+    
+
+    public void testIdentFunctionDefinition2() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
+        setLoadDocumentText(
+            "namespace A\n" +
+            "{\n" +
+            "uchar *\n" +
+            "        tokname(int n)\n" +
+            "{\n" +
+            "    static char buf[100];\n" +
+            "    return printname[n - 257];\n" +
+            "}\n"+
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing function definition",
+            "namespace A\n" +
+            "{\n" +
+            "    uchar *\n" +
+            "    tokname(int n)\n" +
+            "    {\n" +
+            "        static char buf[100];\n" +
+            "        return printname[n - 257];\n" +
+            "    }\n"+
+            "}\n"
+        );
+    }
+    
+    public void testIdentElseAfterPreprocessor() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "getcmdline(int firstc)\n" +
+            "{\n" +
+            "    if (firstc == '/')\n" +
+            "    {\n" +
+            "#ifdef USE_IM_CONTROL\n" +
+            "	im_set_active(*b_im_ptr == B_IMODE_IM);\n" +
+            "#endif\n" +
+            "    }\n" +
+            "#ifdef USE_IM_CONTROL\n" +
+            "    else if (p_imcmdline)\n" +
+            "	im_set_active(TRUE);\n" +
+            "#endif\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing else after preprocessor",
+            "getcmdline(int firstc)\n" +
+            "{\n" +
+            "    if (firstc == '/') {\n" +
+            "#ifdef USE_IM_CONTROL\n" +
+            "        im_set_active(*b_im_ptr == B_IMODE_IM);\n" +
+            "#endif\n" +
+            "    }\n" +
+            "#ifdef USE_IM_CONTROL\n" +
+            "    else if (p_imcmdline)\n" +
+            "        im_set_active(TRUE);\n" +
+            "#endif\n" +
+            "}\n"
         );
     }
 }

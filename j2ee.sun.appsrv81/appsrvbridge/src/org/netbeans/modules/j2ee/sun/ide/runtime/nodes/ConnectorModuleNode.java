@@ -124,7 +124,4 @@ public class ConnectorModuleNode extends AppserverMgmtApplicationsNode {
         return children;  
     }
     
-    protected List getPropertiesToIgnore() {
-        return Arrays.asList(NodeTypes.CONNECTOR_MODULE);        
-    }
 }

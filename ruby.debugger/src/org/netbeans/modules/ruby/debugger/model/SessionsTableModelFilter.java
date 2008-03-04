@@ -100,7 +100,7 @@ public final class SessionsTableModelFilter implements TableModelFilter {
         if (e == null) {
             return getMessage("MSG_Session.State.Starting");
         }
-        RubySession session = (RubySession) e.lookupFirst (null, RubySession.class);
+        RubySession session = e.lookupFirst(null, RubySession.class);
         String state;
         switch (session.getState()) {
             case RUNNING:

@@ -42,17 +42,18 @@
 -->
 
 <saas-services xmlns="http://xml.netbeans.org/websvc/saas/services/1.0"
-           xmlns:tns="http://xml.netbeans.org/websvc/rest/component/1.0/amazon/amazon-map"
-           xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
-           xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
-           ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
-           type="custom"
-           api-doc="http://developer.amazonwebservices.com/connect/kbcategory.jspa?categoryID=46"
-           >
-     
-    <description>AmazonS3Bucket Service</description>
-    <display-name>AmazonS3Bucket</display-name>
+               xmlns:tns="http://xml.netbeans.org/websvc/saas/services/1.0/amazon"
+               xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
+               xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
+               type="http://research.sun.com/wadl/2006/10"
+               api-doc="http://developer.amazonwebservices.com/connect/kbcategory.jspa?categoryID=46"
+               url="org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3BucketWadl.xml">
+
+    <description>AmazonS3 Bucket Service</description>
     
+    <display-name>AmazonS3 Bucket</display-name>
+
     <saas-metadata>
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
@@ -60,30 +61,29 @@
         <group name="Amazon">
             <group name="AmazonS3"/>
         </group>
-        <code-gen packageName="org.netbeans.saas.services.amazon">
-            <artifacts targets="java">
-                <artifact id="AmazonS3Bucket" type="template"
-                    url="Templates/SaaSServices/AmazonS3BucketResource.java"/>
-            </artifacts>
-        </code-gen>
-        <authentication profile="SaaSServices/AmazonS3/profile.properties">
-            <http-basic/>
-        </authentication>
 
+        <authentication profile="SaaSServices/AmazonS3/profile.properties">
+            <signed-url sig-id="Authorization">
+                <sign>
+                    <params>
+                        <param name="HTTP-Verb" type="string" required="true" default="GET"/>
+                        <param name="Date" type="date" required="true"/>
+                        <param name="HTTP-Request-URI" type="string" default="&quot;/&quot; + object + &quot;/&quot;"/>
+                        <param name="Bucket" type="string" required="true" default=""/>
+                    </params>
+                </sign>
+            </signed-url>
+        </authentication>
+        
     </saas-metadata>
-    
+
     <methods>
-        <method name="getS3Bucket" href="AmazonS3Bucket">
-            <documentation>
-                Allows a developer to generate code to access Amazon S3 Bucket.
-            </documentation>
-            <input>
-                <params/>
-            </input>
-            <output>
-                <media type="text/html"/>
-            </output>
-        </method>
+        <method name="getBucket" href="#amazons3.getBucket"/>
+        <method name="getObject" href="#amazons3.getObject"/>
+        <method name="putObject" href="#amazons3.putObject"/>
+        <method name="deleteObject" href="#amazons3.deleteObject"/>
+        <method name="setAcl" href="#amazons3.setAcl"/>
+        <method name="getLocation" href="#amazons3.getLocation"/>
     </methods>
 
 </saas-services>

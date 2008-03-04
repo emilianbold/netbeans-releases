@@ -360,8 +360,7 @@ Controller, ActionListener {
                         );
                     if (es != null) {
                         for (int i = 0; i < es.length; i++) {
-                            JPDADebugger d = (JPDADebugger) es [i].lookupFirst 
-                                (null, JPDADebugger.class);
+                            JPDADebugger d = es[i].lookupFirst(null, JPDADebugger.class);
                             if (d == null) continue;
                             try {
                                 // workaround for #64227

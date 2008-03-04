@@ -181,7 +181,8 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
             waitFinished();
             checkState(2);
             state = 3;
-            task.schedule(0);
+//            task.schedule(0);
+            run();
         }
         
         public boolean isCancelled() {
@@ -268,7 +269,7 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
         }
         
         private void fillBiPanel() {
-            biNode = new BiNode( bia );
+            biNode = BiNode.createBiNode( bia );
             biPanel.setContext( biNode );
             biPanel.expandAll();
         }

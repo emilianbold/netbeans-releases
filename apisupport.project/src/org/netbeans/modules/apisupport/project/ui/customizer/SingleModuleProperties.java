@@ -894,7 +894,8 @@ public final class SingleModuleProperties extends ModuleProperties {
             } catch (IOException x) {
                 // #69029: maybe invalidated platform? Try the default platform instead.
                 Logger.getLogger(SingleModuleProperties.class.getName()).log(Level.FINE, null, x);
-                return ModuleList.getModuleList(getProjectDirectoryFile(), NbPlatform.getDefaultPlatform().getDestDir());
+                NbPlatform p = NbPlatform.getDefaultPlatform();
+                return ModuleList.getModuleList(getProjectDirectoryFile(), p != null ? p.getDestDir() : null);
             }
         } else {
             return ModuleList.getModuleList(getProjectDirectoryFile());

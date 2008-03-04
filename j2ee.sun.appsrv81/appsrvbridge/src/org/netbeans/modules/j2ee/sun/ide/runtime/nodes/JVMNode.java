@@ -84,7 +84,4 @@ public class JVMNode extends AppserverMgmtLeafNode {
             setJVMProperty("server", attrName, value);
     }
     
-    protected List getPropertiesToIgnore() {
-        return Arrays.asList(NodeTypes.JVM);        
-    }
 }
