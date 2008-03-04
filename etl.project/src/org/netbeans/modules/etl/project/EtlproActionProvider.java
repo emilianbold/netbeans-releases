@@ -112,8 +112,9 @@ class EtlproActionProvider implements ActionProvider {
         }
         if (COMMAND_DELETE.equals(command)) {
             try {
-                project.getAntProjectHelper().resolveFileObject("data").delete();
-                DefaultProjectOperations.performDefaultDeleteOperation(project);
+                //project.getAntProjectHelper().resolveFileObject("data").delete();
+                project.getAntProjectHelper().getProjectDirectory().delete();
+                //DefaultProjectOperations.performDefaultDeleteOperation(project);
                 return;
             } catch (IOException ex) {                
             }
