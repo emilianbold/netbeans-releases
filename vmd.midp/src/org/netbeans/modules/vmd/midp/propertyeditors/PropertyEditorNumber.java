@@ -480,7 +480,11 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
         }
 
         public void focusGained(FocusEvent e) {
-            if (e.getSource() == radioButton  ||  e.getSource() == textField  ||  e.getSource() == spinner) {
+            if(e.getSource() == textField  ||  e.getSource() == spinner) {
+                radioButton.setSelected(true);
+                checkNumberStatus();
+            }
+            if (e.getSource() == radioButton ) {
                 checkNumberStatus();
             }
         }
