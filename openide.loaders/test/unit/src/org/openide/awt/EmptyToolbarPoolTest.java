@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,74 +38,48 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.api.languages.database;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+package org.openide.awt;
 
+import java.util.logging.Level;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 
-public class DatabaseDefinition extends DatabaseItem {
-
-    private String                  name;
-    private String                  type;
-    private List<DatabaseUsage>     usages;
-    private URL                     sourceFileUrl;
-
-    public DatabaseDefinition (
-        String name,
-        String type,
-        int offset, 
-        int endOffset
-    ) {
-        super (offset, endOffset);
-        this.name = name;
-        this.type = type;
+/** Mostly to test the correct behaviour of AWTTask.waitFinished.
+ *
+ * @author Jaroslav Tulach
+ */
+public class EmptyToolbarPoolTest extends NbTestCase {
+    FileObject toolbars;
+    DataFolder toolbarsFolder;
+    
+    public EmptyToolbarPoolTest (String testName) {
+        super (testName);
     }
 
-    public String getName () {
-        return name;
+    @Override
+    protected int timeOut() {
+        return 30000;
+    }
+    
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        toolbars = root.getFileObject("Toolbars");
+        assertNull("Not created yet", toolbars);
     }
 
-    public String getType () {
-        return type;
-    }
-    
-    public void addUsage (DatabaseUsage usage) {
-        if (usages == null) usages = new ArrayList<DatabaseUsage> ();
-        usages.add (usage);
-    }
-    
-    public List<DatabaseUsage> getUsages () {
-        if (usages == null)
-            return Collections.<DatabaseUsage>emptyList ();
-        return usages;
-    }
-    
-    public void setSourceFileUrl(URL url) {
-        this.sourceFileUrl = url;
-    }
-    
-    public URL getSourceFileUrl() {
-        return sourceFileUrl;
-    }
-    
-    public String toString () {
-        return "Definition " + getName () + " (" + getType () + ")";
-    }
-    
-    public static DatabaseDefinition load (DataInputStream is) throws IOException {
-        return new DatabaseDefinition (is.readUTF (), is.readUTF (), is.readInt (), is.readInt ());
-    }
-    
-    public void save (DataOutputStream os) throws IOException {
-        os.writeUTF (name);
-        os.writeUTF (type);
-        os.writeInt (getOffset ());
-        os.writeInt (getEndOffset ());
+    public void testGetConf () throws Exception {
+        ToolbarPool tp = ToolbarPool.getDefault ();
+        String conf = tp.getConfiguration ();
+        assertEquals ("By default there is no config", "", conf);
+        
     }
 }
