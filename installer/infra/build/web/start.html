@@ -38,21 +38,21 @@
 <html>
     <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-        <title>NetBeans IDE {build.display.version} Download</title>
-        <meta name="description" content="NetBeans IDE {build.display.version} Download"/>
-        <link rel="stylesheet" type="text/css" href="http://www.netbeans.org/netbeans.css" media="screen"/>
-        <link rel="stylesheet" type="text/css" href="css/start.css" media="screen"/>
-        <link rel="shortcut icon" href="http://www.netbeans.org/favicon.ico" type="image/x-icon"/>
-
-        <script type="text/javascript" src="js/build_info.js"></script>
+	<!-- Do not change the order of the scripts-->
 	<script type="text/javascript" src="js/common.js"></script>
-	<script type="text/javascript" src="js/languages.js"></script>
+        <script type="text/javascript" src="js/languages.js"></script>
 
 	<script type="text/javascript">load_js_locale("js/common_strings",".js")</script>
         <script type="text/javascript">load_js_locale("js/start_strings",".js")</script>
-
+        <script type="text/javascript" src="js/build_info.js"></script>
 	<script type="text/javascript" src="js/start.js"></script>
 	<script type="text/javascript" src="js/files.js"></script>
+        <script type="text/javascript">set_page_title(NETBEANS_DOWNLOAD_PAGE_TITLE.replace('{0}',BUILD_DISPLAY_VERSION))</script>
+        <script type="text/javascript">set_page_description(NETBEANS_DOWNLOAD_PAGE_DESCRIPTION.replace('{0}',BUILD_DISPLAY_VERSION))</script>
+
+        <link rel="stylesheet" type="text/css" href="http://www.netbeans.org/netbeans.css" media="screen"/>
+        <link rel="stylesheet" type="text/css" href="css/start.css" media="screen"/>
+        <link rel="shortcut icon" href="http://www.netbeans.org/favicon.ico" type="image/x-icon"/>
     </head>
     
     <body class="blue-bg">
@@ -215,7 +215,7 @@
         <!-- Initialise omniture vars -->
         <script type="text/javascript">
 		if(option_id!="" && platform_id!="" && lang_id!="") {
-			//var s_pageName = "Download Netbeans IDE Started";
+			var s_pageName = "Download Netbeans IDE Started";
 			var s_events = "event7";
 			var s_products = "Downloaded Products;NetBeans IDE " + BUILD_DISPLAY_VERSION_SHORT + " | " + platform_id + " | " + option_id;
 			var s_eVar3 = "netbeans";
@@ -223,10 +223,10 @@
 			var s_prop19 = platform_id;
 			var s_prop20 = lang_id;
 			var s_prop21 = BUILD_DISPLAY_VERSION_SHORT;
+			if(LOAD_OMNITURE_CODE==1) {
+				load_js(OMNITURE_CODE_JS);
+			}
 		}
 	</script>
-        <!-- Begin SiteCatalyst code -->
-        <!--<script language="JavaScript" src="http://www.netbeans.org/images/js/s_code_remote.js"></script>-->
-        <!-- End SiteCatalyst code -->
     </body>
 </html>

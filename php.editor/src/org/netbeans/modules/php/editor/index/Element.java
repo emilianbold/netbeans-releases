@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,21 +39,20 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui;
+package org.netbeans.modules.php.editor.index;
 
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.Node;
+import java.util.Set;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
 
 /**
- * Utilities for Performance tests, workarrounds, often used methods, ...
  *
- * @author  mmirilovic@netbeans.org
+ * @author Tor Norbye
  */
-public class EPUtilities extends gui.Utilities{
-
-    public static Node getProcessFilesNode(String project){
-        String processNode = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.bpel.project.ui.Bundle", "LBL_Node_Sources");
-        return new Node(new ProjectsTabOperator().getProjectRootNode(project),processNode);
-    }
-    
+public interface Element extends ElementHandle {
+    String getName();
+    String getIn();
+    ElementKind getKind();
+    Set<Modifier> getModifiers();
 }
