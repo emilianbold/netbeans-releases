@@ -116,11 +116,8 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
                 
                     WadlSaasBean bean = codegen.getBean();
                     boolean showParams = codegen.canShowParam();
-                    List<ParameterInfo> allParams = new ArrayList<ParameterInfo>();
-                    if (showParams && bean.getInputParameters() != null) {
-                        allParams.addAll(bean.getInputParameters());
-                    }
-                    if(allParams.isEmpty())
+                    List<ParameterInfo> allParams = bean.filterParametersByAuth(bean.getInputParameters());
+                    if(showParams && allParams.isEmpty())
                         showParams = false;
                     if(codegen.canShowResourceInfo() || showParams) {
                         JaxRsCodeSetupPanel panel = new JaxRsCodeSetupPanel(

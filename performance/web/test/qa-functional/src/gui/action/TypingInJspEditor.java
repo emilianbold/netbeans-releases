@@ -84,6 +84,7 @@ public class TypingInJspEditor extends WebPerformanceTestCase {
         super.init();
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_PREPARE = 3000;
+        WAIT_AFTER_OPEN = 100;
     }
     
     private EditorOperator editorOperator;
@@ -112,8 +113,9 @@ public class TypingInJspEditor extends WebPerformanceTestCase {
     public ComponentOperator open(){
         //repaintManager().setOnlyEditor(true);
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        KeyStroke keyA = KeyStroke.getKeyStroke('a');
-        new ActionNoBlock(null, null, keyA).perform(editorOperator);
+//        KeyStroke keyA = KeyStroke.getKeyStroke('a');
+//        new ActionNoBlock(null, null, keyA).perform(editorOperator);
+        editorOperator.typeKey('a');
         return null;
     }
     

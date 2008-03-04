@@ -476,6 +476,12 @@ public final class BiAnalyser {
                 }
                 bis.createFromTemplate(iconBlockRequired());
                 regenerateSource();
+                BIEditorSupport editor = bis.getDataObject().getLookup().lookup(BIEditorSupport.class);
+                try {
+                    editor.saveDocument();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
         else {
@@ -488,6 +494,12 @@ public final class BiAnalyser {
             }
             bis.createFromTemplate(iconBlockRequired());
             regenerateSource();
+            BIEditorSupport editor = bis.getDataObject().getLookup().lookup(BIEditorSupport.class);
+            try {
+                editor.saveDocument();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
 
             if ( !bis.isNbBeanInfo() ) {
                 // XXX notify user about wrong template
@@ -957,7 +969,9 @@ public final class BiAnalyser {
                     if( guarded )
                         sb.append( ch );
                     else{
-                        eo_javaid = Character.isJavaIdentifierPart ( code.charAt( i - 1 ) );
+                        char prevch = code.charAt( i - 1 );
+                        eo_javaid = Character.isJavaIdentifierPart ( prevch )
+                                || prevch == ']';
                         mode = IN_WHITE;
                     }
                 }

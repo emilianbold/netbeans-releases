@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.completion.csm;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -58,9 +57,9 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-
 
 /**
  *
@@ -86,7 +85,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     private boolean caseSensitive = false;
     private boolean naturalSort = false;
     private boolean sort = false;
-    private boolean localContextOnly = false;
+    private QueryScope queryScope = QueryScope.GLOBAL_QUERY;
 
     public boolean isSortNeeded() {
         return sort;
@@ -96,8 +95,8 @@ public class CompletionResolverImpl implements CompletionResolver {
         this.sort = sort;
     }
     
-    public void setResolveLocalContextOnly(boolean onlyLocal) {
-        this.localContextOnly = onlyLocal;
+    public void setResolveScope(QueryScope queryScope) {
+        this.queryScope = queryScope;
     }
     
     public boolean isCaseSensitive() {
@@ -158,7 +157,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         context  = CsmOffsetResolver.findContext(file, offset);
         if (DEBUG) System.out.println("context for offset " + offset + " :\n" + context); //NOI18N
         initMacroResolving(context, strPrefix);
-        this.hideTypes = initHideMask(context, this.resolveTypes, this.localContextOnly, strPrefix);
+        this.hideTypes = initHideMask(context, this.resolveTypes, this.queryScope, strPrefix);
         resolveContext(context, offset, strPrefix, match);
         return file != null;
     }
@@ -363,7 +362,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         }        
     }
 
-    private static int initHideMask(final CsmContext context, final int resolveTypes, final boolean localOnly, final String strPrefix) {
+    private static int initHideMask(final CsmContext context, final int resolveTypes, final QueryScope queryScope, final String strPrefix) {
         int hideTypes = ~RESOLVE_NONE;
         // do not provide libraries data and global data when just resolve context with empty prefix
         if ((resolveTypes & RESOLVE_CONTEXT) == RESOLVE_CONTEXT && strPrefix.length() == 0) {
@@ -384,28 +383,30 @@ public class CompletionResolverImpl implements CompletionResolver {
 //                hideTypes &= ~RESOLVE_CLASSES;
             }
         }
-        if (localOnly) {
-            // hide all lib context
-            hideTypes &= ~RESOLVE_FILE_LIB_MACROS;
-            hideTypes &= ~RESOLVE_LIB_MACROS;
-            hideTypes &= ~RESOLVE_LIB_CLASSES;
-            hideTypes &= ~RESOLVE_LIB_ENUMERATORS;
-            hideTypes &= ~RESOLVE_LIB_FUNCTIONS;
-            hideTypes &= ~RESOLVE_LIB_NAMESPACES;
-            hideTypes &= ~RESOLVE_LIB_VARIABLES;
+        if (queryScope == QueryScope.LOCAL_QUERY || queryScope == QueryScope.SMART_QUERY) {
+                // hide all lib context
+                hideTypes &= ~RESOLVE_FILE_LIB_MACROS;
+                hideTypes &= ~RESOLVE_LIB_MACROS;
+                hideTypes &= ~RESOLVE_LIB_CLASSES;
+                hideTypes &= ~RESOLVE_LIB_ENUMERATORS;
+                hideTypes &= ~RESOLVE_LIB_FUNCTIONS;
+                hideTypes &= ~RESOLVE_LIB_NAMESPACES;
+                hideTypes &= ~RESOLVE_LIB_VARIABLES;
 
-            // hide all project context
-            hideTypes &= ~RESOLVE_GLOB_MACROS;
-            hideTypes &= ~RESOLVE_FILE_PRJ_MACROS;
-            hideTypes &= ~RESOLVE_FILE_LOCAL_MACROS;
-            hideTypes &= ~RESOLVE_GLOB_VARIABLES;
-            hideTypes &= ~RESOLVE_GLOB_FUNCTIONS;
-            hideTypes &= ~RESOLVE_GLOB_ENUMERATORS;
-            hideTypes &= ~RESOLVE_CLASSES;        
-            hideTypes &= ~RESOLVE_CLASS_FIELDS;
-            hideTypes &= ~RESOLVE_CLASS_METHODS;
-            hideTypes &= ~RESOLVE_CLASS_NESTED_CLASSIFIERS;
-            hideTypes &= ~RESOLVE_CLASS_ENUMERATORS;
+                // hide all project context
+                hideTypes &= ~RESOLVE_GLOB_MACROS;
+                hideTypes &= ~RESOLVE_FILE_PRJ_MACROS;
+        }
+        // for local query hide some more elements as well
+        if (queryScope == QueryScope.LOCAL_QUERY) {
+                hideTypes &= ~RESOLVE_GLOB_VARIABLES;
+                hideTypes &= ~RESOLVE_GLOB_FUNCTIONS;
+                hideTypes &= ~RESOLVE_GLOB_ENUMERATORS;
+                hideTypes &= ~RESOLVE_CLASSES;        
+                hideTypes &= ~RESOLVE_CLASS_FIELDS;
+                hideTypes &= ~RESOLVE_CLASS_METHODS;
+                hideTypes &= ~RESOLVE_CLASS_NESTED_CLASSIFIERS;
+                hideTypes &= ~RESOLVE_CLASS_ENUMERATORS;
         }
         return hideTypes;
     }

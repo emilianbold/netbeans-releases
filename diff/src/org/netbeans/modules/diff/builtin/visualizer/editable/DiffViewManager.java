@@ -99,7 +99,7 @@ class DiffViewManager implements ChangeListener {
         leftContentPanel.getScrollPane().getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
     }
 
-    private final Boolean [] smartScrollDisabled = new Boolean[1];
+    private final Boolean [] smartScrollDisabled = new Boolean[] { Boolean.TRUE };
     
     public void runWithSmartScrollingDisabled(Runnable runnable) {
         synchronized (smartScrollDisabled) {

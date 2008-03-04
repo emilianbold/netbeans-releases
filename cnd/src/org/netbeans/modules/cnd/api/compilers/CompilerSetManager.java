@@ -131,12 +131,8 @@ public class CompilerSetManager {
     private void initCompilerSets() {
         
         for (String path : dirlist) {
-            if (path.equals("/usr/ccs/bin")) { // NOI18N
-                // contains only softlinks
-                continue;
-            }
             File dir = new File(path);
-            if (dir.isDirectory()) {
+            if (dir.isDirectory()&& isACompilerSetFolder(dir)) {
                 initCompiler(gcc_filter, "gcc", Tool.CCompiler, path); // NOI18N
                 initCompiler(gpp_filter, "g++", Tool.CCCompiler, path); // NOI18N
                 initCompiler(cc_filter, "cc", Tool.CCompiler, path); // NOI18N
@@ -151,12 +147,33 @@ public class CompilerSetManager {
         completeCompilerSets();
     }
     
+    /**
+     * Check whether folder is a compilerset. It needs at least one C or C++ compiler.
+     * @param folder
+     * @return
+     */
+    private boolean isACompilerSetFolder(File folder) {
+        String[] compilerNames = new String[] {"gcc", "g++", "cc", "CC"}; // NOI18N
+        if (folder.getPath().contains("msys") && new File(folder, "make.exe").exists()) { // NOI18N
+            return true;
+        }
+        for (int i = 0; i < compilerNames.length; i++) {
+            if (new File(folder, compilerNames[i]).exists() || new File(folder, compilerNames[i] + ".exe").exists()) // NOI18N
+                return true;
+        }
+        return false;
+    }
+    
     private void initCompiler(CompilerFilenameFilter filter, String best, int kind, String path) {
         File dir = new File(path);
         String[] list = dir.list(filter);
 
         if (list != null && list.length > 0) {
-            CompilerSet cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
+            CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), list);
+            CompilerSet cs = getCompilerSet(flavor);
+            if (cs != null && !cs.getDirectory().equals(path))
+                return;
+            cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
             add(cs);
             for (String name : list) {
                 File file = new File(dir, name);
@@ -179,7 +196,11 @@ public class CompilerSetManager {
         };
 
         if (list != null && list.length > 0) {
-            CompilerSet cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
+            CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), list);
+            CompilerSet cs = getCompilerSet(flavor);
+            if (cs != null && !cs.getDirectory().equals(path))
+                return;
+            cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
             add(cs);
             for (String name : list) {
                 File file = new File(dir, name);
@@ -211,8 +232,12 @@ public class CompilerSetManager {
                 cs = getCompilerSet(CompilerFlavor.MinGW);
             }
             if (cs == null) {
+                CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), list);
+                cs = getCompilerSet(flavor);
+                if (cs != null && !cs.getDirectory().equals(path))
+                    return;
                 cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
-                add(cs);
+                    add(cs);
             }
             for (int i = 0; i < best.length; i++) {
                 File file = new File(dir, best[i]);
@@ -237,7 +262,11 @@ public class CompilerSetManager {
         }
 
         if (list != null && list.length > 0) {
-            CompilerSet cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
+            CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), list);
+            CompilerSet cs = getCompilerSet(flavor);
+            if (cs != null && !cs.getDirectory().equals(path))
+                return;
+            cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
             add(cs);
             for (int i = 0; i < best.length; i++) {
                 File file = new File(dir, best[i]);
@@ -337,6 +366,7 @@ public class CompilerSetManager {
     public void remove(CompilerSet cs) {
         if (sets.contains(cs)) {
             sets.remove(cs);
+            CompilerSet.removeCompilerSet(cs); // has it's own cache!!!!!!
             if (CppSettings.getDefault().getCompilerSetName().equals(cs.getName())) {
                 CppSettings.getDefault().setCompilerSetName("");
             }
@@ -365,6 +395,15 @@ public class CompilerSetManager {
     public CompilerSet getCompilerSetByDisplayName(String name) {
         for (CompilerSet cs : sets) {
             if (cs.getDisplayName().equals(name)) {
+                return cs;
+            }
+        }
+        return null;
+    }
+    
+    public CompilerSet getCompilerSetByPath(String path) {
+        for (CompilerSet cs : sets) {
+            if (cs.getDirectory().equals(path)) {
                 return cs;
             }
         }
