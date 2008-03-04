@@ -39,20 +39,47 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.core;
+package org.openide.awt;
 
-public class ClientWizardProperties {
+import java.util.logging.Level;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 
-    public static final String WSDL_SOURCE = "wsdlSource"; // NOI18N
-    public static final String WSDL_FILE_PATH = "wsdlFilePath"; // NOI18N
-    public static final String WSDL_DOWNLOAD_URL = "wsdlDownloadUrl"; // NOI18N
-    public static final String WSDL_DOWNLOAD_FILE = "wsdlDownloadedWsdl"; // NOI18N
-    public static final String WSDL_PACKAGE_NAME = "wsdlPackageName"; // NOI18N
-    public static final String CLIENT_STUB_TYPE = "clientStubType"; // NOI18N
-    public static final String WSDL_DOWNLOAD_SCHEMAS = "wsdlDownloadedSchemas"; // NOI18N
-    public static final String JAX_VERSION = "jaxVersion"; // NOI18N
+/** Mostly to test the correct behaviour of AWTTask.waitFinished.
+ *
+ * @author Jaroslav Tulach
+ */
+public class EmptyToolbarPoolTest extends NbTestCase {
+    FileObject toolbars;
+    DataFolder toolbarsFolder;
     
-    public static final String JAX_WS = "JAX-WS Style"; // NOI18N
-    public static final String JAX_RPC = "JAX-RPC Style"; // NOI18N   
-    public static final String USEDISPATCH = "useDispatch"; // NOI18N  
+    public EmptyToolbarPoolTest (String testName) {
+        super (testName);
+    }
+
+    @Override
+    protected int timeOut() {
+        return 30000;
+    }
+    
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        toolbars = root.getFileObject("Toolbars");
+        assertNull("Not created yet", toolbars);
+    }
+
+    public void testGetConf () throws Exception {
+        ToolbarPool tp = ToolbarPool.getDefault ();
+        String conf = tp.getConfiguration ();
+        assertEquals ("By default there is no config", "", conf);
+        
+    }
 }

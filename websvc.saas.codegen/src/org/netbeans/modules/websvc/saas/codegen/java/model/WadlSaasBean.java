@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.websvc.saas.codegen.java.AbstractGenerator;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
+import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
 import org.netbeans.modules.websvc.saas.model.wadl.Param;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Request;
@@ -54,6 +55,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
+import org.netbeans.modules.websvc.saas.model.wadl.Method;
 
 /**
  *
@@ -115,30 +117,61 @@ public class WadlSaasBean extends SaasBean {
             Resource[] rArray = m.getResourcePath();
             if(rArray == null || rArray.length == 0)
                 throw new IllegalArgumentException("Method do not belong to any resource in the WADL.");
-            Resource currResource = rArray[rArray.length-1];
-            
-            findWadlParams(inputParams, currResource.getParam());
-            Request req = m.getWadlMethod().getRequest();
-            findWadlParams(inputParams, req.getParam());
-            List<RepresentationType> reps = req.getRepresentation();
-            for(RepresentationType rep:reps) {
-                findWadlParams(inputParams, rep.getParam());
-            }
+            inputParams.addAll(findWadlParams(m));
         } catch (Exception ex) {
         } 
         
         //Further differentiate fixed, api-key for query parameters
-        String apiKeyName = "";
-        boolean isApiKey = getAuthenticationType() == SaasAuthenticationType.API_KEY;
-        if(isApiKey)
+        String apiKeyName = null;
+        String sessionKeyName = null;
+        boolean checkApiKey = false;
+        boolean isSessionKey = getAuthenticationType() == SaasAuthenticationType.SESSION_KEY;
+        if(isSessionKey)
+            sessionKeyName = ((SessionKeyAuthentication)getAuthentication()).getSessionKeyName();
+        if(getAuthenticationType() == SaasAuthenticationType.API_KEY)
             apiKeyName = ((ApiKeyAuthentication)getAuthentication()).getApiKeyName();
+        if(isSessionKey)
+            apiKeyName = ((SessionKeyAuthentication)getAuthentication()).getApiKeyName();
+        if(apiKeyName != null)
+            checkApiKey = true;
         for (ParameterInfo param : inputParams) {
             String paramName = param.getName();
             if(param.getStyle() == ParamStyle.QUERY) {
-                if((isApiKey && paramName.equals(apiKeyName))) {
+                if(checkApiKey && paramName.equals(apiKeyName)) {
                     param.setIsApiKey(true);
                 }
+                if(isSessionKey && paramName.equals(sessionKeyName)) {
+                    param.setIsSessionKey(true);
+                }
             }
+        }
+        return inputParams;
+    }
+    
+    public static ArrayList<ParameterInfo> findWadlParams(WadlSaasMethod wsm) {
+        ArrayList<ParameterInfo> inputParams = new ArrayList<ParameterInfo>();
+        inputParams.addAll(findWadlParams(wsm.getWadlMethod()));
+        WadlSaasResource wParentResource = wsm.getParentResource();
+        Resource parentResource = null;
+        if(wParentResource != null) {
+            parentResource = wParentResource.getResource();
+        } else {
+            Resource[] rPaths = wsm.getResourcePath();
+            if(rPaths != null && rPaths.length > 0)
+                parentResource = rPaths[rPaths.length-1];
+        }
+        if(parentResource != null)
+            findWadlParams(inputParams, parentResource.getParam());
+        return inputParams;
+    }
+    
+    public static ArrayList<ParameterInfo> findWadlParams(Method wm) {
+        ArrayList<ParameterInfo> inputParams = new ArrayList<ParameterInfo>();
+        Request req = wm.getRequest();
+        findWadlParams(inputParams, req.getParam());
+        List<RepresentationType> reps = req.getRepresentation();
+        for(RepresentationType rep:reps) {
+            findWadlParams(inputParams, rep.getParam());
         }
         return inputParams;
     }
@@ -158,7 +191,7 @@ public class WadlSaasBean extends SaasBean {
         return this.url;
     }
 
-    private void findMediaType(Response response, List<MimeType> mimeTypes) {
+    public static void findMediaType(Response response, List<MimeType> mimeTypes) {
         List repOrFaults = response.getRepresentationOrFault();
         for(Object repOrFault: repOrFaults) {
             if(repOrFault instanceof RepresentationType) {
@@ -175,7 +208,7 @@ public class WadlSaasBean extends SaasBean {
         }
     }
 
-    private void findWadlParams(List<ParameterInfo> paramInfos, List<Param> params) {
+    public static void findWadlParams(List<ParameterInfo> paramInfos, List<Param> params) {
         if (params != null) {
             for (Param param:params) {
                 //<param name="replace" type="xsd:boolean" style="query" required="false" default="some value">
