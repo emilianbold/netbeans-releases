@@ -154,6 +154,9 @@ public class CompilerSetManager {
      */
     private boolean isACompilerSetFolder(File folder) {
         String[] compilerNames = new String[] {"gcc", "g++", "cc", "CC"}; // NOI18N
+        if (folder.getPath().contains("msys") && new File(folder, "make.exe").exists()) {
+            return true;
+        }
         for (int i = 0; i < compilerNames.length; i++) {
             if (new File(folder, compilerNames[i]).exists() || new File(folder, compilerNames[i] + ".exe").exists()) // NOI18N
                 return true;
