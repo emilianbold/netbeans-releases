@@ -43,7 +43,7 @@ var NETBEANS_PACKS_MSG 		  = "NetBeans&nbsp;Packs";
 var JDK_DOWNLOAD_LINK    = "http://java.sun.com/javase/downloads/index.jsp";
 var NBJDK_DOWNLOAD_LINK  = "http://java.sun.com/javase/downloads/netbeans.html";
 
-var JDK_NOTE_ALL      = "JDK 6 or JDK 5.0 is required for installing and running the NetBeans IDE. You can download <a href=\"{0}\">standalone JDK</a> or download the latest <a href=\"{1}\">JDK6 Update 4 with NetBeans IDE Java SE bundle</a>.";
+var JDK_NOTE_ALL      = "JDK 6 or JDK 5.0 is required for installing and running the NetBeans IDE. You can download <a href=\"{0}\">standalone JDK</a> or download the latest <a href=\"{1}\">JDK6 Update {2} with NetBeans IDE Java SE bundle</a>.";
 var JDK_NOTE_MACOSX   = "JDK 5.0 is required for installing and running the NetBeans IDE.";
 
 var FREE_SIZE_MESSAGE  = "Free,&nbsp;{0}&nbsp;MB";
