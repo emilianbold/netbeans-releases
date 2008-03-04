@@ -78,4 +78,19 @@ public class WadlSaasMethodTest extends NbTestCase {
         SetupUtil.commonTearDown();
     }
 
+    public void testGetResourcePathOfFilteredMethod() throws Exception {
+        SetupUtil.commonSetUp(super.getWorkDir());
+        
+        SaasServicesModel instance = SaasServicesModel.getInstance();
+        SaasGroup group = instance.getRootGroup().getChildGroup("YouTube");
+        WadlSaas saas = (WadlSaas) group.getServices().get(0);
+        assertEquals("YouTubeVideos", saas.getDisplayName());
+        WadlSaasMethod m = (WadlSaasMethod) saas.getMethods().get(2);
+        assertEquals("ListPopular", m.getName());
+        Resource[] path = m.getResourcePath();
+        assertEquals(1, path.length);
+        assertEquals("api2_rest", path[0].getPath());
+
+        SetupUtil.commonTearDown();
+    }
 }
