@@ -64,8 +64,12 @@ class ClassLoaderSupport extends NbClassLoader
     implements FileChangeListener, PropertyChangeListener {
     
     public static ClassLoader create(ClassPath cp) {
+        return create (cp, ClassLoader.getSystemClassLoader());
+    }
+    
+    static ClassLoader create (final ClassPath cp, final ClassLoader parentClassLoader) {
         try {
-            return new ClassLoaderSupport(cp);
+            return new ClassLoaderSupport(cp, parentClassLoader);
         } catch (FileStateInvalidException e) {
             // Should not happen, we already trimmed unused roots:
             throw new AssertionError(e);
@@ -90,8 +94,8 @@ class ClassLoaderSupport extends NbClassLoader
 
     /** Constructor that attaches itself to the filesystem pool.
     */
-    private ClassLoaderSupport (ClassPath cp) throws FileStateInvalidException {
-        super(cp.getRoots(), ClassLoader.getSystemClassLoader(), null);
+    private ClassLoaderSupport (final ClassPath cp, final ClassLoader parentClassLoader) throws FileStateInvalidException {
+        super(cp.getRoots(), parentClassLoader, null);
         this.classPath = cp;
 
         setDefaultPermissions(getAllPermissions());

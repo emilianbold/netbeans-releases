@@ -448,6 +448,20 @@ public final class UI {
     }
   }
 
+  public static void stackTrace() {
+    stackTrace(null);
+  }
+
+  public static void stackTrace(Object object) {
+    out();
+    out();
+
+    if (object != null) {
+      out(object);
+    }
+    new Exception("!!!").printStackTrace(); // NOI18N
+  }
+
   public static void out() {
     if (ENABLE_OUT) {
       System.out.println();
