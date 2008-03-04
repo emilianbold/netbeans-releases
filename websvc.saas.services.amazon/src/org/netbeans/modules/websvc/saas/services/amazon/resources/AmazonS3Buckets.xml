@@ -63,7 +63,7 @@
         </group>
 
         <authentication profile="SaaSServices/AmazonS3/profile.properties">
-            <signed-url>
+            <signed-url sig-id="Authorization">
                 <sign>
                     <params>
                         <param name="HTTP-Verb" type="string" required="true" default="GET" />
