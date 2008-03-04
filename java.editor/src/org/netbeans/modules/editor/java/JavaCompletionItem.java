@@ -2323,7 +2323,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     sb.append(", "); //NOI18N
                 }
             }
-            sb.append(')');
+            sb.append(") - parameters"); //NOI18N
             return sb.toString();
         }
     }

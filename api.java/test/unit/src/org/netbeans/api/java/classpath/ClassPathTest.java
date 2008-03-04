@@ -49,12 +49,17 @@ import java.io.FileOutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
@@ -582,6 +587,86 @@ public class ClassPathTest extends NbTestCase {
         proxyCP = null;
         
         assertGC("the proxy classpath needs to GCable", proxy);
+    }
+    
+    public void testGetClassLoaderPerf () throws Exception {
+        final String bootPathProp = System.getProperty("sun.boot.class.path");  //NOI18N
+        List<URL> roots = new ArrayList<URL> ();
+        StringTokenizer tk = new StringTokenizer (bootPathProp,File.pathSeparator);
+        if (tk.hasMoreTokens()) {
+            final String path = tk.nextToken();
+            final File f = FileUtil.normalizeFile(new File (path));
+            if (f.canRead()) {
+                roots.add(f.toURI().toURL());
+            }
+        }
+        final ClassLoader bootLoader = new URLClassLoader(roots.toArray(new URL[roots.size()]), null);
+        
+        final String classPathProp = System.getProperty("java.class.path");     //NOI18N
+        roots = new ArrayList<URL> ();
+        List<URL> roots2 = new ArrayList<URL>();
+        tk = new StringTokenizer (classPathProp,File.pathSeparator);
+        while (tk.hasMoreTokens()) {
+            final String path = tk.nextToken();
+            final File f = FileUtil.normalizeFile(new File (path));
+            if (!f.canRead()) {
+                continue;
+            }
+            URL url = f.toURI().toURL();
+            roots2.add(url);
+            if (FileUtil.isArchiveFile(url)) {
+                url = FileUtil.getArchiveRoot(url);
+            }
+            roots.add(url);
+        }
+        
+        final ClassPath cp = ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
+//        final ClassLoader loader = ClassLoaderSupport.create(cp,bootLoader);
+//        final ClassLoader loader = new URLClassLoader(roots.toArray(new URL[roots.size()]),bootLoader);
+        final ClassLoader loader = new URLClassLoader(roots2.toArray(new URL[roots2.size()]),bootLoader);
+        
+        final Set<String> classNames = getClassNames (cp);
+        int noLoaded = 0;
+        int noFailed = 0;
+        long st = System.currentTimeMillis();
+        for (String className : classNames) {
+            try {
+                final Class<?> c = loader.loadClass(className);
+                noLoaded++;
+            } catch (ClassNotFoundException e) {
+                noFailed++;
+            }
+            catch (NoClassDefFoundError e) {
+                noFailed++;
+            }
+        }
+        long et = System.currentTimeMillis();
+        System.out.println("Loaded: " + noLoaded + " in: " + (et-st)+"ms");
+    }
+    
+    private Set<String> getClassNames (final ClassPath cp) {
+        Set<String> classNames = new HashSet<String> ();
+        for (FileObject root : cp.getRoots()) {
+            Enumeration<? extends FileObject> fos = root.getChildren(true);
+            while (fos.hasMoreElements()) {
+                FileObject fo = fos.nextElement();
+                if (isImportant (fo)) {
+                    classNames.add(cp.getResourceName(fo, '.', false));
+                }
+            }
+        }
+        return classNames;
+    }
+    
+    private boolean isImportant (final FileObject fo) {
+        if (fo.isFolder()) {
+            return false;
+        }
+        if (!"class".equals(fo.getExt())) {      //NOI18N
+            return false;
+        }
+        return !fo.getName().contains("$");     //NOI18N
+                
     }
     
 }

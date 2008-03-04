@@ -94,9 +94,9 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2007.11.06
  */
-public class DocumentationCookie implements ReportCookie {
+public class DocumentationGenerator implements ReportCookie {
 
-  public DocumentationCookie(BPELDataObject dataObject, JComponent canvas) {
+  public DocumentationGenerator(BPELDataObject dataObject, JComponent canvas) {
     myDataObject = dataObject;
     myCanvas = canvas;
   }
@@ -365,12 +365,12 @@ public class DocumentationCookie implements ReportCookie {
 
   private String i18n(String key) {
     return org.netbeans.modules.soa.ui.util.UI.i18n(
-      DocumentationCookie.class, key);
+      DocumentationGenerator.class, key);
   }
 
   private String i18n(String key, String param) {
     return org.netbeans.modules.soa.ui.util.UI.i18n(
-      DocumentationCookie.class, key, param);
+      DocumentationGenerator.class, key, param);
   }
 
   private JComponent myCanvas;
