@@ -361,8 +361,10 @@ public final class ReferencesSupport {
     static CsmReferenceKind getReferenceKind(CsmReference ref) {
         CsmReferenceKind kind = CsmReferenceKind.UNKNOWN;
         CsmObject owner = ref.getOwner();
-        if (CsmKindUtilities.isType(owner)) {
+        if (CsmKindUtilities.isType(owner) || CsmKindUtilities.isInheritance(owner)) {
             kind = getReferenceUsageKind(ref);
+        } else if (CsmKindUtilities.isInclude(owner)) {
+            kind = CsmReferenceKind.DIRECT_USAGE;
         } else {
             CsmObject target = ref.getReferencedObject();
             if (target != null) {
