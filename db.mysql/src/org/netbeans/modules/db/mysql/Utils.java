@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -59,7 +60,10 @@ public class Utils {
     public static void displayError(String msg, Exception ex) {
         LOGGER.log(Level.INFO, msg, ex);
         
-        msg = msg + ": " + ex.getMessage();
+        String reason = ex.getMessage() != null ? ex.getMessage() : 
+            NbBundle.getMessage(Utils.class, "MSG_SeeErrorLog");
+        
+        msg = msg + ": " + reason;
         
 	NotifyDescriptor d = new NotifyDescriptor.Message(msg, 
                 NotifyDescriptor.ERROR_MESSAGE);

@@ -93,10 +93,6 @@ class DatabaseNode extends AbstractNode implements Comparable {
 
         try {                
             server.dropDatabase(dbname);
-
-            // Delete all the connections for this database, they
-            // are no longer valid
-            deleteConnections(server, dbname);
         } catch ( DatabaseException dbe ) {
             String msg = NbBundle.getMessage(DatabaseNode.class,
                     "MSG_ErrorDeletingDatabase", model.getDbName());
@@ -105,19 +101,6 @@ class DatabaseNode extends AbstractNode implements Comparable {
 
     }
     
-    private void deleteConnections(ServerInstance server, String dbname) {
-        // TODO - this requires API support from DB Explorer
-        /*
-        List<DatabaseConnection> conns = 
-                DatabaseUtils.findDatabaseConnections(
-                    server.getURL(dbname));
-        
-        for ( DatabaseConnection conn : conns ) {
-            ConnectionManager.getDefault().
-        }
-         */
-    }
-
     @Override
     @SuppressWarnings("unchecked")
     public Node.Cookie getCookie(Class cls) {

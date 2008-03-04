@@ -49,12 +49,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.api.sql.execute.SQLExecuteCookie;
@@ -474,12 +474,24 @@ public class ServerInstance implements Node.Cookie {
                     .prepareStatement(DROP_DATABASE_SQL + dbname)
                     .executeUpdate();
             
-            refreshDatabaseList();
+            deleteConnections(dbname);
         } catch ( SQLException sqle ) {
             throw new DatabaseException(sqle);
+        } finally {
+            refreshDatabaseList();            
         }
         
     }
+    
+    private void deleteConnections(String dbname) throws DatabaseException {
+        List<DatabaseConnection> conns = 
+                DatabaseUtils.findDatabaseConnections(getURL(dbname));
+        
+        for ( DatabaseConnection conn : conns ) {
+            ConnectionManager.getDefault().removeConnection(conn);
+        }
+    }
+
     
     /**
      * Get the list of users defined for this server

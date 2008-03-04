@@ -163,6 +163,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         return ninfo;
     }
     
+    @Override
     public void refreshChildren() throws DatabaseException {
         // refresh action is empty
     }
@@ -213,6 +214,25 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
         ConnectionList.getDefault().add(dbconn);
         children.createSubnode(ninfo, true);
+    }
+    
+    public void removeConnection(DatabaseConnection dbconn) throws DatabaseException {
+        if ( dbconn == null ) {
+            throw new NullPointerException();
+        }
+        
+        DatabaseNode node = getNode();
+        DatabaseNodeChildren children = (DatabaseNodeChildren)node.getChildren();
+        Node[] nodes = children.getNodes();
+        
+        for ( Node childNode : nodes ) {
+            if ( childNode instanceof ConnectionNode ) {
+                ConnectionNode connNode = (ConnectionNode)childNode;
+                if ( connNode.getInfo().getDatabaseConnection().equals(dbconn)) {
+                    connNode.deleteNode();
+                }
+            }
+        }
     }
     
     public void addConnection(DBConnection cinfo) throws DatabaseException {
