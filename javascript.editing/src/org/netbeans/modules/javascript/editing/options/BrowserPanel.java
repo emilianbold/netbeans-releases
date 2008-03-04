@@ -4,12 +4,14 @@
  * Created on December 27, 2007, 8:53 PM
  */
 
-package org.netbeans.modules.javascript.editing;
+package org.netbeans.modules.javascript.editing.options;
 
 import java.util.EnumSet;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import org.mozilla.javascript.Context;
+import org.netbeans.modules.javascript.editing.BrowserVersion;
+import org.netbeans.modules.javascript.editing.SupportedBrowsers;
 import org.openide.util.NbBundle;
 
 /**
@@ -17,13 +19,13 @@ import org.openide.util.NbBundle;
  * @author  Tor Norbye
  */
 public class BrowserPanel extends javax.swing.JPanel {
-    
+
     private final String[] VERSION_LABELS = new String[] {
-         NbBundle.getMessage(BrowserPanel.class, "LanguageDefault"), 
+         NbBundle.getMessage(BrowserPanel.class, "LanguageDefault"),
          "1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8"
     };
     private final int[] VERSION_VALUES = new int[] {
-        Context.VERSION_DEFAULT, 
+        Context.VERSION_DEFAULT,
         Context.VERSION_1_0,
         Context.VERSION_1_1,
         Context.VERSION_1_2,
@@ -34,11 +36,16 @@ public class BrowserPanel extends javax.swing.JPanel {
         Context.VERSION_1_7,
         Context.VERSION_1_8
     };
-    
+
+    private final JsOptionsController controller;
+
     /** Creates new form BrowserPanel */
-    public BrowserPanel() {
+    public BrowserPanel(JsOptionsController controller) {
+        this.controller = controller;
         initComponents();
-        
+    }
+
+    public void load() {
         SupportedBrowsers query = SupportedBrowsers.getInstance();
         if (query.isSupported(BrowserVersion.FF1)) {
             ff1Rb.setSelected(true);
@@ -65,7 +72,7 @@ public class BrowserPanel extends javax.swing.JPanel {
         } else {
             ieCb.setSelected(false);
         }
-        
+
         if (query.isSupported(BrowserVersion.SAFARI2)) {
             sf2Rb.setSelected(true);
             safariCb.setSelected(true);
@@ -75,8 +82,8 @@ public class BrowserPanel extends javax.swing.JPanel {
         } else {
             safariCb.setSelected(false);
         }
-        
-        operaCb.setSelected(query.isSupported(BrowserVersion.FF1));
+
+        operaCb.setSelected(query.isSupported(BrowserVersion.OPERA));
 
         int version = query.getLanguageVersion();
         for (int i = 0, n = VERSION_VALUES.length; i < n; i++) {
@@ -85,13 +92,12 @@ public class BrowserPanel extends javax.swing.JPanel {
                 break;
             }
         }
-        
         // XXX TODO
     }
 
-    EnumSet<BrowserVersion> getSelection() {
+    public void store() {
         EnumSet<BrowserVersion> es = EnumSet.noneOf(BrowserVersion.class);
-        
+
         if (ieCb.isSelected()) {
             if (ie5Rb.isSelected()) {
                 es.add(BrowserVersion.IE55);
@@ -117,7 +123,7 @@ public class BrowserPanel extends javax.swing.JPanel {
                 es.add(BrowserVersion.FF3);
             }
         }
-        
+
         if (safariCb.isSelected()) {
             if (sf2Rb.isSelected()) {
                 es.add(BrowserVersion.SAFARI2);
@@ -126,22 +132,21 @@ public class BrowserPanel extends javax.swing.JPanel {
                 es.add(BrowserVersion.SAFARI3);
             }
         }
-        
+
         if (operaCb.isSelected()) {
             es.add(BrowserVersion.OPERA);
         }
 
-        return es;
+        final SupportedBrowsers supported = SupportedBrowsers.getInstance();
+        JsOptionsController.Accessor.DEFAULT.setSupported(supported, es);
+        JsOptionsController.Accessor.DEFAULT.setLanguageVersion(supported,
+                VERSION_VALUES[languageCombo.getSelectedIndex()]);
     }
-    
+
     private ComboBoxModel getVersionModel() {
         return new DefaultComboBoxModel(VERSION_LABELS);
     }
-    
-    public int getChosenLanguage() {
-        return VERSION_VALUES[languageCombo.getSelectedIndex()];
-    }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -176,52 +181,127 @@ public class BrowserPanel extends javax.swing.JPanel {
 
         ffCb.setSelected(true);
         ffCb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ffCb.text")); // NOI18N
+        ffCb.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                itemCheckChange(evt);
+            }
+        });
 
         ieCb.setSelected(true);
         ieCb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ieCb.text")); // NOI18N
+        ieCb.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                itemCheckChange(evt);
+            }
+        });
 
         safariCb.setSelected(true);
         safariCb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.safariCb.text")); // NOI18N
+        safariCb.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                itemCheckChange(evt);
+            }
+        });
 
         operaCb.setSelected(true);
         operaCb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.operaCb.text")); // NOI18N
+        operaCb.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                itemCheckChange(evt);
+            }
+        });
 
         firefoxGroup.add(ff1Rb);
         ff1Rb.setSelected(true);
         ff1Rb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ff1Rb.text")); // NOI18N
+        ff1Rb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                actionCheckChange(evt);
+            }
+        });
 
         firefoxGroup.add(ff2Rb);
         ff2Rb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ff2Rb.text")); // NOI18N
+        ff2Rb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                actionCheckChange(evt);
+            }
+        });
 
         firefoxGroup.add(ff3Rb);
         ff3Rb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ff3Rb.text")); // NOI18N
+        ff3Rb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                actionCheckChange(evt);
+            }
+        });
 
         ieGroup.add(ie5Rb);
         ie5Rb.setSelected(true);
         ie5Rb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ie5Rb.text")); // NOI18N
+        ie5Rb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                actionCheckChange(evt);
+            }
+        });
 
         ieGroup.add(ie6Rb);
         ie6Rb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ie6Rb.text")); // NOI18N
+        ie6Rb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                actionCheckChange(evt);
+            }
+        });
 
         ieGroup.add(ie7Rb);
         ie7Rb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ie7Rb.text")); // NOI18N
+        ie7Rb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                actionCheckChange(evt);
+            }
+        });
 
         safariGroup.add(sf2Rb);
         sf2Rb.setSelected(true);
         sf2Rb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.sf2Rb.text")); // NOI18N
+        sf2Rb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                actionCheckChange(evt);
+            }
+        });
 
         safariGroup.add(sf3Rb);
         sf3Rb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.sf3Rb.text")); // NOI18N
+        sf3Rb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                actionCheckChange(evt);
+            }
+        });
 
         unsupportedCb.setSelected(true);
         unsupportedCb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.unsupportedCb.text")); // NOI18N
+        unsupportedCb.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                itemCheckChange(evt);
+            }
+        });
 
         limitCb.setSelected(true);
         limitCb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.limitCb.text")); // NOI18N
+        limitCb.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                itemCheckChange(evt);
+            }
+        });
 
         languageLabel.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.languageLabel.text")); // NOI18N
 
         languageCombo.setModel(getVersionModel());
+        languageCombo.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                itemCheckChange(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -297,8 +377,18 @@ public class BrowserPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-    
-    
+
+private void actionCheckChange(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_actionCheckChange
+// TODO add your handling code here:
+        controller.changed();
+}//GEN-LAST:event_actionCheckChange
+
+private void itemCheckChange(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_itemCheckChange
+// TODO add your handling code here:
+        controller.changed();
+}//GEN-LAST:event_itemCheckChange
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel browserLabel;
     private javax.swing.JRadioButton ff1Rb;
@@ -321,5 +411,5 @@ public class BrowserPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton sf3Rb;
     private javax.swing.JCheckBox unsupportedCb;
     // End of variables declaration//GEN-END:variables
-    
+
 }
