@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.bpel.validation.custom;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
@@ -59,6 +58,7 @@ import org.netbeans.modules.bpel.model.api.Correlation;
 import org.netbeans.modules.bpel.model.api.CorrelationContainer;
 import org.netbeans.modules.bpel.model.api.CorrelationsHolder;
 import org.netbeans.modules.bpel.model.api.CorrelationSet;
+import org.netbeans.modules.bpel.model.api.CreateInstanceActivity;
 import org.netbeans.modules.bpel.model.api.Else;
 import org.netbeans.modules.bpel.model.api.ElseIf;
 import org.netbeans.modules.bpel.model.api.EventHandlers;
@@ -97,6 +97,10 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  * @version 2007.05.03
  */
 public final class Validator extends BpelValidator {
+
+  protected void init() {
+    myErrored = new ArrayList<Component>();
+  }
 
   @Override
   public void visit(ForEach forEach) {
@@ -301,7 +305,7 @@ public final class Validator extends BpelValidator {
     }
   }
 
-  // vlv # 93078
+  // # 93078
   @Override
   public void visit(Branches branches) {
     String content = branches.getContent();
@@ -317,7 +321,7 @@ public final class Validator extends BpelValidator {
     }
   }
 
-  // vlv # 81404
+  // # 81404
   @Override
   public void visit(Process process) {
     List<Reply> replies = new ArrayList<Reply>();
@@ -374,15 +378,15 @@ public final class Validator extends BpelValidator {
 //out("reply2: " + reply2.getName());
     if ( !isInGate(reply1) && !isInGate(reply2)) {
       if (haveTheSamePartnerLink(reply1, reply2)) {
-        addError("FIX_Replies_PartnerLink", reply1); // NOI18N
-        addError("FIX_Replies_PartnerLink", reply2); // NOI18N
+        addErrorCheck("FIX_Replies_PartnerLink", reply1); // NOI18N
+        addErrorCheck("FIX_Replies_PartnerLink", reply2); // NOI18N
         return;
       }
     }
     if (getParent(reply1) == getParent(reply2)) {
       if (haveTheSamePartnerLink(reply1, reply2)) {
-        addError("FIX_Replies_PartnerLink", reply1); // NOI18N
-        addError("FIX_Replies_PartnerLink", reply2); // NOI18N
+        addErrorCheck("FIX_Replies_PartnerLink", reply1); // NOI18N
+        addErrorCheck("FIX_Replies_PartnerLink", reply2); // NOI18N
         return;
       }
     }
@@ -392,23 +396,40 @@ public final class Validator extends BpelValidator {
 //out();
 //out("holder1: " + holder1);
 //out("holder2: " + holder2);
+    BpelEntity parent1 = getParent(holder1);
+    BpelEntity parent2 = getParent(holder2);
+
     if ( !isInGate(holder1) && !isInGate(holder2)) {
-      if (haveTheSameCorrelationWithInitiateYes(holder1, holder2)) {
-        addError("FIX_Holder_Correlation", holder1); // NOI18N
-        addError("FIX_Holder_Correlation", holder2); // NOI18N
+      if (haveTheSameCorrelationWithInitiateYes(holder1, holder2, parent1, parent2)) {
+//out("111");
+        addErrorCheck("FIX_Holder_Correlation", holder1); // NOI18N
+        addErrorCheck("FIX_Holder_Correlation", holder2); // NOI18N
         return;
       }
     }
-    if (getParent(holder1) == getParent(holder2)) {
-      if (haveTheSameCorrelationWithInitiateYes(holder1, holder2)) {
-        addError("FIX_Holder_Correlation", holder1); // NOI18N
-        addError("FIX_Holder_Correlation", holder2); // NOI18N
+    if (parent1 == parent2) {
+      if (haveTheSameCorrelationWithInitiateYes(holder1, holder2, parent1, parent2)) {
+//out("222");
+        addErrorCheck("FIX_Holder_Correlation", holder1); // NOI18N
+        addErrorCheck("FIX_Holder_Correlation", holder2); // NOI18N
         return;
       }
     }
   }
 
-  private boolean haveTheSameCorrelationWithInitiateYes(CorrelationsHolder holder1, CorrelationsHolder holder2) {
+  private boolean haveTheSameCorrelationWithInitiateYes(
+    CorrelationsHolder holder1,
+    CorrelationsHolder holder2,
+    BpelEntity parent1,
+    BpelEntity parent2)
+  {
+    // # 128357
+    if (holder1 instanceof OnMessage && parent1 instanceof Pick) {
+      return false;
+    }
+    if (holder2 instanceof OnMessage && parent2 instanceof Pick) {
+      return false;
+    }
     CorrelationContainer container1 = holder1.getCorrelationContainer();
 //out("  1");
 
@@ -514,8 +535,11 @@ public final class Validator extends BpelValidator {
   }
 
   private boolean isInGate(BpelEntity entity) {
-//out("  isInIfElse...");
+//out();
+//out("is in gate ...");
     BpelEntity parent = entity.getParent();
+//out("  entity: " + entity);
+//out("  parent: " + parent);
 
     while (true) {
 //out("  parent: " + parent);
@@ -545,6 +569,37 @@ public final class Validator extends BpelValidator {
     return false;
   }
   
+  // # 90125
+  @Override
+  public void visit(CorrelationContainer container) {
+//out();
+//out("see container: " + container + " " + container.getParent());
+//out();
+    Component parent = container.getParent();
+
+    if ( !(parent instanceof CreateInstanceActivity)) {
+      return;
+    }
+    CreateInstanceActivity activity = (CreateInstanceActivity) parent;
+
+    if ( !isCreateInstanceYes(activity)) {
+      return;
+    }
+    Correlation [] correlations = container.getCorrelations();
+
+    if (correlations == null) {
+      return;
+    }
+    for (Correlation correlation : correlations) {
+      Initiate initiate = correlation.getInitiate();
+
+      if (initiate != Initiate.NO) {
+        return;
+      }
+    }
+    addError("FIX_Activity_with_Correlation", parent); // NOI18N
+  }
+  
   @Override
   public void visit(Reply reply) {
       super.visit(reply);
@@ -572,6 +627,8 @@ public final class Validator extends BpelValidator {
       return;
     }
     if (isValidationComplete()) {
+//out();
+//out("Vadlidate model: " + model);
       validate(model);
     }
   }
@@ -584,4 +641,14 @@ public final class Validator extends BpelValidator {
     }
     return ImportHelper.getSchemaModel(imp, false);
   }
+
+  private void addErrorCheck(String key, Component component) {
+    if (myErrored.contains(component)) {
+      return;
+    }
+    myErrored.add(component);
+    addError(key, component);
+  }
+
+  private List<Component> myErrored;
 }

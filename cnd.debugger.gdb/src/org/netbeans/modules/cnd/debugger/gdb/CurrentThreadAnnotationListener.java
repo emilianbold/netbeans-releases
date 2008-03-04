@@ -42,10 +42,7 @@
 package org.netbeans.modules.cnd.debugger.gdb;
 
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.netbeans.api.debugger.*;
 
@@ -112,7 +109,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         if (currentEngine == null) {
             return null;
         }
-        return (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
+        return currentEngine.lookupFirst(null, GdbDebugger.class);
     }
 
     /**
@@ -138,7 +135,10 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
 
 
     // do not need synchronization, called in a 1-way RP
-    private final Set              stackAnnotations = new HashSet();
+    private final Collection  stackAnnotations = new LinkedList();
+    
+    // this set is used to avoid duplicated annotations (of the same line)
+    private final Set<String> annotatedAddresses = new HashSet<String>();
     
     private RequestProcessor rp = new RequestProcessor("Debugger Thread Annotation Refresher"); // NOI18N
 
@@ -153,15 +153,20 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             if (taskRemove == null) {
                 taskRemove = rp.create(new Runnable() {
                     public void run() {
-                        for (Object ann : stackAnnotations) {
-                            EditorContextBridge.removeAnnotation(ann);
-                        }
-                        stackAnnotations.clear();
+                        clearAnnotations();
                     }
                 });
             }
         }
         taskRemove.schedule(500);
+    }
+    
+    private void clearAnnotations() {
+        for (Object ann : stackAnnotations) {
+            EditorContextBridge.removeAnnotation(ann);
+        }
+        stackAnnotations.clear();
+        annotatedAddresses.clear();
     }
 
     private void annotateCallStack(List stack) {
@@ -184,20 +189,16 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                         }
                         
                         // Remove old annotations
-                        for (Object ann : stackAnnotations) {
-                            EditorContextBridge.removeAnnotation(ann);
-                        }
-                        stackAnnotations.clear();
+                        clearAnnotations();
                         
                         // Add new annotations
-                        Set<CallStackFrame> newAnnotations = new HashSet<CallStackFrame>();
                         String annotationType = EditorContext.CURRENT_LINE_ANNOTATION_TYPE;
                         for (CallStackFrame csf : stack) {
-                            // 1) Stack frame already annotated?
-                            if (!newAnnotations.add(csf)) {
+                            // 1) Is current stackFrame annotated
+                            if (!annotatedAddresses.add(csf.getAddr())) {
                                 continue;
                             }
-
+                            
                             // 2) annotate line
                             Object da = EditorContextBridge.annotate(csf, annotationType);
 

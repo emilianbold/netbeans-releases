@@ -50,6 +50,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.api.ClassNamesForFileOraculum;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Source;
@@ -86,6 +87,7 @@ import java.io.Writer;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1042,6 +1044,15 @@ public final class JavaSource {
         }
         synchronized (INTERNAL_LOCK) {
             toRemove.add (task);
+            Collection<Request> rqs = finishedRequests.get(this);
+            if (rqs != null) {
+                for (Iterator<Request> it = rqs.iterator(); it.hasNext(); ) {
+                    Request rq = it.next();
+                    if (rq.task == task) {
+                        it.remove();
+                    }
+                }
+            }
         }
     }
     
@@ -1102,7 +1113,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         return files;
     }
     
-    JavacTaskImpl createJavacTask(final DiagnosticListener<? super JavaFileObject> diagnosticListener) {
+    JavacTaskImpl createJavacTask(final DiagnosticListener<? super JavaFileObject> diagnosticListener, ClassNamesForFileOraculum oraculum) {
         String sourceLevel = null;
         if (!this.files.isEmpty()) {
             if (LOGGER.isLoggable(Level.FINER)) {
@@ -1125,7 +1136,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         if (sourceLevel == null) {
             sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
         }
-        JavacTaskImpl javacTask = createJavacTask(getClasspathInfo(), diagnosticListener, sourceLevel, false);
+        JavacTaskImpl javacTask = createJavacTask(getClasspathInfo(), diagnosticListener, sourceLevel, false, oraculum);
         Context context = javacTask.getContext();
         JSCancelService.preRegister(context);
         JSFlowListener.preRegister(context);
@@ -1139,7 +1150,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         return javacTask;
     }
     
-    private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation) {        
+    private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, ClassNamesForFileOraculum cnih) {
         ArrayList<String> options = new ArrayList<String>();
         String lintOptions = CompilerSettings.getCommandLine();
         
@@ -1175,6 +1186,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 SymbolClassReader.preRegister(context, true);
             }
             
+            if (cnih != null) {
+                context.put(ClassNamesForFileOraculum.class, cnih);
+            }
             return task;
         } finally {
             Thread.currentThread().setContextClassLoader(orig);
@@ -2038,10 +2052,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }                
 
         @Override
-        public JavacTaskImpl createJavacTask(ClasspathInfo cpInfo, DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel) {
+        public JavacTaskImpl createJavacTask(ClasspathInfo cpInfo, DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel, ClassNamesForFileOraculum oraculum) {
             if (sourceLevel == null)
                 sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
-            return JavaSource.createJavacTask(cpInfo, diagnosticListener, sourceLevel, true);
+            return JavaSource.createJavacTask(cpInfo, diagnosticListener, sourceLevel, true, oraculum);
         }
                 
         @Override
@@ -2427,7 +2441,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     
     private static class JSFlowListener extends FlowListener {
         
-        private boolean flowCompleted;
+        private final Set<URL> flowCompleted = new HashSet<URL>();
         
         public static JSFlowListener instance (final Context context) {
             final FlowListener flowListener = FlowListener.instance(context);
@@ -2438,13 +2452,29 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             context.put(flowListenerKey, new JSFlowListener());
         }
         
-        final boolean hasFlowCompleted () {
-            return this.flowCompleted;
+        final boolean hasFlowCompleted (final FileObject fo) {
+            if (fo == null) {
+                return false;
+            }
+            else {
+                try {
+                    return this.flowCompleted.contains(fo.getURL());
+                } catch (FileStateInvalidException e) {
+                    return false;
+                }
+            }
         }
         
         @Override
-        public void flowFinished (final Env<AttrContext> env) {            
-            this.flowCompleted = true;
+        public void flowFinished (final Env<AttrContext> env) {
+            if (env.toplevel != null && env.toplevel.sourcefile != null) {
+                try {
+                    this.flowCompleted.add (env.toplevel.sourcefile.toUri().toURL());
+                } catch (MalformedURLException e) {
+                    //never thrown
+                    Exceptions.printStackTrace(e);
+                }
+            }
         }
     }
     
@@ -2712,7 +2742,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     }
                     if (!((CompilationInfoImpl.DiagnosticListenerImpl)dl).hasPartialReparseErrors()) {
                         final JSFlowListener fl = JSFlowListener.instance(ctx);
-                        if (fl != null && fl.hasFlowCompleted()) {
+                        if (fl != null && fl.hasFlowCompleted(fo)) {
                             if (LOGGER.isLoggable(Level.FINER)) {
                                 final List<? extends Diagnostic> diag = ci.getDiagnostics();
                                 if (!diag.isEmpty()) {

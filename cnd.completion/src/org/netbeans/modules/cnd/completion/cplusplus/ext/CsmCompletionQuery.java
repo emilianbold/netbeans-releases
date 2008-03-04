@@ -112,6 +112,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
     abstract protected CsmFinder getFinder();
 
+    abstract protected QueryScope getCompletionQueryScope();
+    
+    public static enum QueryScope {
+        LOCAL_QUERY,
+        SMART_QUERY,
+        GLOBAL_QUERY,
+    };
     
     public CsmCompletionQuery(){
         super();
@@ -534,7 +541,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     private static CsmClassifier getClassifier(CsmType type, boolean resolveArrow) {
         CsmClassifier cls = type.getClassifier();
         cls = cls != null ? CsmBaseUtilities.getOriginalClassifier(cls) : cls;
-        if (resolveArrow) {
+        if (resolveArrow && CsmKindUtilities.isClass(cls)) {
             CsmFunction op = CsmBaseUtilities.getOperator((CsmClass)cls, CsmFunction.OperatorKind.ARROW);
             if (op != null) {
                 CsmType opType = op.getReturnType();

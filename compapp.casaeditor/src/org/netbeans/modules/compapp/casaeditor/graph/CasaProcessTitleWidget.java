@@ -54,7 +54,7 @@ import org.netbeans.api.visual.widget.Widget;
  * 
  * @author jqian
  */
-public class CasaProcessTitleWidget extends Widget {
+public class CasaProcessTitleWidget extends Widget implements CasaMinimizable {
 
     private static final boolean DEBUG = false;
     
@@ -112,6 +112,11 @@ public class CasaProcessTitleWidget extends Widget {
         } else {
             titleWidget.setForeground(Color.gray);
         }
-    }    
+    }
     
+    public void setMinimized(boolean isMinimized) {
+        Rectangle rect = isMinimized ? new Rectangle() : null;
+        titleWidget.setPreferredBounds(rect);
+        setPreferredBounds(rect);
+    }
 }

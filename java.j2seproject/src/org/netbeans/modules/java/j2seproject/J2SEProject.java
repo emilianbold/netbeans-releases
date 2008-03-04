@@ -82,6 +82,7 @@ import org.netbeans.modules.java.j2seproject.queries.BinaryForSourceQueryImpl;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
@@ -165,7 +166,9 @@ public final class J2SEProject implements Project, AntProjectListener {
 
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
         this.cpMod = new J2SEProjectClassPathModifier(this, this.updateHelper, eval, refHelper);
-        lookup = createLookup(aux);
+        final J2SEActionProvider actionProvider = new J2SEActionProvider( this, this.updateHelper );
+        lookup = createLookup(aux, actionProvider);
+        actionProvider.startFSListener();
         helper.addAntProjectListener(this);
     }
 
@@ -247,15 +250,16 @@ public final class J2SEProject implements Project, AntProjectListener {
         return helper;
     }
 
-    private Lookup createLookup(AuxiliaryConfiguration aux) {
-        SubprojectProvider spp = refHelper.createSubprojectProvider();        
-        Lookup base = Lookups.fixed(new Object[] {
+    private Lookup createLookup(final AuxiliaryConfiguration aux,
+            final ActionProvider actionProvider) {
+        final SubprojectProvider spp = refHelper.createSubprojectProvider();        
+        final Lookup base = Lookups.fixed(new Object[] {
             J2SEProject.this,
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
             spp,
-            new J2SEActionProvider( this, this.updateHelper ),
+            actionProvider,
             new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), spp, refHelper),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
@@ -454,12 +458,11 @@ public final class J2SEProject implements Project, AntProjectListener {
                     J2SEProject.class.getResource("resources/build-impl.xsl"),
                     false);
                 genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_XML_PATH,
+                    J2SEProjectUtil.getBuildXmlName(J2SEProject.this),
                     J2SEProject.class.getResource("resources/build.xsl"),
                     false);
             }
-        }
-        
+        }    
     }
     
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
@@ -479,7 +482,7 @@ public final class J2SEProject implements Project, AntProjectListener {
                         J2SEProject.class.getResource("resources/build-impl.xsl"),
                         true);
                     genFilesHelper.refreshBuildScript(
-                        GeneratedFilesHelper.BUILD_XML_PATH,
+                        J2SEProjectUtil.getBuildXmlName(J2SEProject.this),
                         J2SEProject.class.getResource("resources/build.xsl"),
                         true);
                 }                
@@ -624,7 +627,9 @@ public final class J2SEProject implements Project, AntProjectListener {
 
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
-                helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.jar", evaluator(), "jar", "clean"), // NOI18N
+                new J2SEProjectAntArtifact (J2SEProject.this,
+                        JavaProjectConstants.ARTIFACT_TYPE_JAR,
+                        "dist.jar", "jar", "clean"), // NOI18N
             };
         }
 

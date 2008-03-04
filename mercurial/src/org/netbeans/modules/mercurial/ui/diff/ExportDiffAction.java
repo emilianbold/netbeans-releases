@@ -113,6 +113,41 @@ public class ExportDiffAction extends ContextAction {
         support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")); // NOI18N
     }
 
+    public static void exportDiffFileRevision(final RepositoryRevision.Event drev) {
+        if(drev == null) return;
+        final File fileToDiff = drev.getFile();
+        RepositoryRevision repoRev = drev.getLogInfoHeader();   
+        if(repoRev.getRepositoryRootUrl() == null || repoRev.getRepositoryRootUrl().equals(""))
+            return;
+        final File root = new File(repoRev.getRepositoryRootUrl());
+        ExportDiff ed = new ExportDiff(root, repoRev, fileToDiff);
+        final String revStr = repoRev.getLog().getRevision();
+        if (!ed.showDialog()) {
+            return;
+        }
+        final String outputFileName = ed.getOutputFileName();
+        File destinationFile = new File(outputFileName);
+        if (destinationFile.exists()) {
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(ExportDiffAction.class, "BK3005", destinationFile.getAbsolutePath()));
+            nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+            DialogDisplayer.getDefault().notify(nd);
+            if (nd.getValue().equals(NotifyDescriptor.OK_OPTION) == false) {
+                return;
+            }
+        }
+
+        HgModuleConfig.getDefault().setExportFolder(destinationFile.getParent());
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
+        HgProgressSupport support = new HgProgressSupport() {
+
+            public void perform() {
+                OutputLogger logger = getLogger();
+                performExportFile(root, revStr, fileToDiff, outputFileName, logger);
+            }
+        };
+        support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")); // NOI18N
+    }
+
     public static void exportDiffRevision(final RepositoryRevision repoRev) {
         if(repoRev == null || repoRev.getRepositoryRootUrl() == null || repoRev.getRepositoryRootUrl().equals(""))
             return;
@@ -174,6 +209,42 @@ public class ExportDiffAction extends ContextAction {
             DialogDisplayer.getDefault().notifyLater(e);
         } finally {
             logger.outputInRed(NbBundle.getMessage(ExportDiffAction.class, "MSG_EXPORT_DONE")); // NOI18N
+            logger.output(""); // NOI18N
+        }
+    }
+    private static void performExportFile(File repository, String revStr, File fileToDiff, String outputFileName, OutputLogger logger) {
+    try {
+        logger.outputInRed(
+                NbBundle.getMessage(ExportDiffAction.class,
+                "MSG_EXPORT_FILE_TITLE")); // NOI18N
+        logger.outputInRed(
+                NbBundle.getMessage(ExportDiffAction.class,
+                "MSG_EXPORT_FILE_TITLE_SEP")); // NOI18N
+        
+        if (NbBundle.getMessage(ExportDiffAction.class,
+                "MSG_Revision_Default").startsWith(revStr)) {
+            logger.output(
+                    NbBundle.getMessage(ExportDiffAction.class,
+                    "MSG_EXPORT_NOTHING")); // NOI18N
+        } else {
+            List<String> list = HgCommand.doExportFileDiff(repository, fileToDiff, revStr, outputFileName, logger);
+            String repoPath = repository.getAbsolutePath();
+            String fileToDiffPath = fileToDiff.getAbsolutePath();
+            fileToDiffPath = fileToDiffPath.substring(repoPath.length()+1);
+            
+            logger.output(NbBundle.getMessage(ExportDiffAction.class, "MSG_EXPORT_FILE", fileToDiffPath, revStr, outputFileName)); // NOI18N
+            if (!list.isEmpty() && list.size() > 1) {
+                File outFile = new File(outputFileName);
+                if (outFile != null && outFile.canRead()) {
+                    org.netbeans.modules.versioning.util.Utils.openFile(outFile);
+                }
+            }
+        }
+        } catch (HgException ex) {
+            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+            DialogDisplayer.getDefault().notifyLater(e);
+        } finally {
+            logger.outputInRed(NbBundle.getMessage(ExportDiffAction.class, "MSG_EXPORT_FILE_DONE")); // NOI18N
             logger.output(""); // NOI18N
         }
     }

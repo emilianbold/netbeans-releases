@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
+import org.openide.util.UserQuestionException;
 
 /**
  * implementation of references resolver
@@ -97,7 +98,12 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
                 CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);
                 StyledDocument doc = null;
                 try {
-                    doc = cookie.openDocument();
+                    try {
+                        doc = cookie.openDocument();
+                    } catch (UserQuestionException ex) {
+                        ex.confirmed();
+                        doc = cookie.openDocument();
+                    }
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
                 }
@@ -113,25 +119,5 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
     @Override
     public Scope fastCheckScope(CsmReference ref) {
         return ReferencesSupport.fastCheckScope(ref);
-    }
-    
-    @Override
-    public CsmReferenceKind getReferenceKind(CsmReference ref) {
-        CsmReferenceKind kind = ReferencesSupport.getReferenceKind(ref);
-        if (kind == CsmReferenceKind.UNKNOWN) {
-            kind = super.getReferenceKind(ref);
-        }
-        return kind;
-    }
-
-    @Override
-    public CsmReferenceKind getReferenceKind(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
-        // default implementation
-        assert targetDecl != null;
-        CsmReferenceKind kind = super.getReferenceKind(ref, targetDecl, targetDef);
-        if (kind == CsmReferenceKind.DIRECT_USAGE) {
-            kind = ReferencesSupport.getReferenceUsageKind(ref);
-        }
-        return kind;
     }    
 }

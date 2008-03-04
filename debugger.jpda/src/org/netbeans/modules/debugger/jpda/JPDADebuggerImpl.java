@@ -145,6 +145,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private int                         state = 0;
     private Operator                    operator;
     private PropertyChangeSupport       pcs;
+    public  PropertyChangeSupport       varChangeSupport = new PropertyChangeSupport(this);
     private JPDAThreadImpl              currentThread;
     private CallStackFrame              currentCallStackFrame;
     private int                         suspend = (SINGLE_THREAD_STEPPING) ? SUSPEND_EVENT_THREAD : SUSPEND_ALL;
@@ -399,7 +400,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
     
     public Session getSession() {
-        return (Session) lookupProvider.lookupFirst (null, Session.class);
+        return lookupProvider.lookupFirst(null, Session.class);
     }
     
     private Boolean canBeModified;
@@ -438,8 +439,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public SmartSteppingFilter getSmartSteppingFilter () {
         if (smartSteppingFilter == null) {
-            smartSteppingFilter = (SmartSteppingFilter) lookupProvider.
-                lookupFirst (null, SmartSteppingFilter.class);
+            smartSteppingFilter = lookupProvider.lookupFirst(null, SmartSteppingFilter.class);
             smartSteppingFilter.addExclusionPatterns (
                 (Set) Properties.getDefault ().getProperties ("debugger").
                     getProperties ("sources").getProperties ("class_filters").
@@ -456,8 +456,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     
     private CompoundSmartSteppingListener getCompoundSmartSteppingListener () {
         if (compoundSmartSteppingListener == null)
-            compoundSmartSteppingListener = (CompoundSmartSteppingListener) lookupProvider.
-                lookupFirst (null, CompoundSmartSteppingListener.class);
+            compoundSmartSteppingListener = lookupProvider.lookupFirst(null, CompoundSmartSteppingListener.class);
         return compoundSmartSteppingListener;
     }
     
@@ -1069,8 +1068,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 finishing = true;
             }
             logger.fine("StartActionProvider.finish ()");
-            AbstractDICookie di = (AbstractDICookie) lookupProvider.lookupFirst 
-                (null, AbstractDICookie.class);
+            AbstractDICookie di = lookupProvider.lookupFirst(null, AbstractDICookie.class);
             if (getState () == STATE_DISCONNECTED) return;
             Operator o = getOperator();
             if (o != null) o.stop();
@@ -1396,8 +1394,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private SourcePath engineContext;
     public synchronized SourcePath getEngineContext () {
         if (engineContext == null)
-            engineContext = (SourcePath) lookupProvider.
-                lookupFirst (null, SourcePath.class);
+            engineContext = lookupProvider.lookupFirst(null, SourcePath.class);
         return engineContext;
     }
 
@@ -1559,7 +1556,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
     
     public JPDAStep createJPDAStep(int size, int depth) {
-        Session session = (Session) lookupProvider.lookupFirst (null, Session.class);
+        Session session = lookupProvider.lookupFirst(null, Session.class);
         return new JPDAStepImpl(this, session, size, depth);
     }
     

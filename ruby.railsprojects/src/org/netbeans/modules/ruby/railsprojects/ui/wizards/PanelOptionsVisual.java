@@ -60,8 +60,10 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 //    private boolean valid;
     
     public PanelOptionsVisual(PanelConfigureProject panel, int type) {
+        this.panel = panel;
         initComponents();
         Util.preselectWizardPlatform(platforms);
+
 
         PlatformComponentFactory.addPlatformChangeListener(platforms, new PlatformComponentFactory.PlatformChangeListener() {
             public void platformChanged() {
@@ -71,7 +73,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
             }
         });
 
-        this.panel = panel;
 
         fireChangeEvent();
         switch (type) {
@@ -263,7 +264,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         }
     }
     
-    private RubyPlatform getPlatform() {
+    RubyPlatform getPlatform() {
         return PlatformComponentFactory.getPlatform(platforms);
     }
     

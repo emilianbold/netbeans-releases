@@ -468,7 +468,7 @@ public class MakeActionProvider implements ActionProvider {
                 }
                 if (validateBuildSystem(pd, conf, validated)) {
                     MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                    String buildCommand = makeArtifact.getBuildCommand(CppSettings.getDefault().getMakeCommand(), "");
+                    String buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf), "");
                     String args = "";
                     int index = buildCommand.indexOf(' ');
                     if (index > 0) {
@@ -487,6 +487,9 @@ public class MakeActionProvider implements ActionProvider {
                             true);
                     actionEvents.add(projectActionEvent);
                 }
+                else {
+                    return; // Stop here
+                }
                 validated = true;
             } else if (targetName.equals("clean")) { // NOI18N
 //                if (conf.isCompileConfiguration() && !validateProject(conf)) {
@@ -494,7 +497,7 @@ public class MakeActionProvider implements ActionProvider {
 //                }
                 if (validateBuildSystem(pd, conf, validated)) {
                     MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                    String buildCommand = makeArtifact.getCleanCommand(CppSettings.getDefault().getMakeCommand(), ""); // NOI18N
+                    String buildCommand = makeArtifact.getCleanCommand(getMakeCommand(pd, conf), ""); // NOI18N
                     String args = ""; // NOI18N
                     int index = buildCommand.indexOf(' '); // NOI18N
                     if (index > 0) {
@@ -512,6 +515,9 @@ public class MakeActionProvider implements ActionProvider {
                             profile,
                             true);
                     actionEvents.add(projectActionEvent);
+                }
+                else {
+                    return; // Stop here
                 }
                 validated = true;
             } else if (targetName.equals("compile-single")) { // NOI18N
@@ -564,7 +570,7 @@ public class MakeActionProvider implements ActionProvider {
                                     true);
                             actionEvents.add(projectActionEvent);
                             // Build commandLine
-                            commandLine = CppSettings.getDefault().getMakeCommand() + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
+                            commandLine = getMakeCommand(pd, conf) + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
                             args = ""; // NOI18N
                             index = commandLine.indexOf(' '); // NOI18N
                             if (index > 0) {
@@ -584,6 +590,9 @@ public class MakeActionProvider implements ActionProvider {
                                     true);
                             actionEvents.add(projectActionEvent);
                     }
+                }
+                else {
+                    return; // Stop here
                 }
                 validated = true;
             } else if (targetName.equals("custom-action")) { // NOI18N
@@ -740,17 +749,32 @@ public class MakeActionProvider implements ActionProvider {
         return DefaultProjectActionHandler.getInstance().getCustomDebugActionHandlerProvider() != null;
     }
     
+    private String getMakeCommand(MakeConfigurationDescriptor pd, MakeConfiguration conf) {
+        String cmd = null;
+        CompilerSet2Configuration csconf = conf.getCompilerSet();
+        String csname = csconf.getOption();
+        CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(csname);
+        if (cs != null) {
+            cmd = cs.getTool(Tool.MakeTool).getPath();
+        }
+        else {
+            assert false;
+            cmd = "make"; // NOI18N
+        }
+        //cmd = cmd + " " + MakeOptions.getInstance().getMakeOptions(); // NOI18N
+        return cmd;
+    }
+    
     public boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf, boolean validated) {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         ArrayList<String> errs = new ArrayList<String>();
         CompilerSet cs;
         BuildToolsAction bt = null;
         String csname;
-        String csdirs;
         File file;
-        boolean cRequired = conf.getCRequired().getValue();
-        boolean cppRequired = conf.getCppRequired().getValue();
-        boolean fRequired = CppSettings.getDefault().isFortranEnabled() && conf.getFortranRequired().getValue();
+        boolean cRequired = conf.hasCFiles(pd);
+        boolean cppRequired = conf.hasCPPFiles(pd);
+        boolean fRequired = CppSettings.getDefault().isFortranEnabled() && conf.hasFortranFiles(pd);
         
         if (validated) {
             return lastValidation;
@@ -758,91 +782,36 @@ public class MakeActionProvider implements ActionProvider {
         if (csconf.isValid()) {
             csname = csconf.getOption();
             cs = CompilerSetManager.getDefault().getCompilerSet(csname);
-            csdirs = cs.getDirectory();
         } else {
             csname = csconf.getOldName();
             cs = CompilerSet.getCompilerSet(csconf.getOldName());
             CompilerSetManager.getDefault().add(cs);
             csconf.setValid();
-            csdirs = cs.getDirectory();
         }
         
-        String cName = conf.getCCompilerConfiguration().getTool().getValue();
-        String cppName = conf.getCCCompilerConfiguration().getTool().getValue();
-        String fName = conf.getFortranCompilerConfiguration().getTool().getValue();
-        String cPath = null;
-        String cppPath = null;
-        String fPath = null;
         boolean runBTA = false;
         
-        if (cName.length() == 0) {
-            cName = (cs != null && cs.isSunCompiler()) ? "cc" : "gcc"; // NOI18N
-        }
-        if (cppName.length() == 0) {
-            cppName = (cs != null && cs.isSunCompiler()) ? "CC" : "g++"; // NOI18N
-        }
-        if (fName.length() == 0) {
-            fName = (cs != null && cs.isSunCompiler()) ? "f90" : "g77"; // NOI18N
-        }
-        
         // Check for a valid make program
-        file = new File(CppSettings.getDefault().getMakePath());
-        if (!file.exists()) {
+        file = new File(cs.getTool(Tool.MakeTool).getPath());
+        if (!file.exists() && Path.findCommand(cs.getTool(Tool.MakeTool).getPath()) == null) {
             runBTA = true;
         }
         
-        // Check for C and C++ compilers. If Fortran is enabled, check for that compiler too.
-        StringTokenizer tok = new StringTokenizer(csdirs, File.pathSeparator);
-        while (tok.hasMoreTokens()) {
-            String dir = tok.nextToken();
-            
-            if (cRequired && cPath == null) {
-                file = new File(dir, cName);
-                if (file.exists()) {
-                    cPath = file.getAbsolutePath();
-                } else if (Utilities.isWindows()) {
-                    file = new File(dir, cName + ".exe"); // NOI18N
-                    if (file.exists()) {
-                        cPath = file.getAbsolutePath();
-                    }
-                }
-            }
-            
-            if (cppRequired && cppPath == null) {
-                file = new File(dir, cppName);
-                if (file.exists()) {
-                    cppPath = file.getAbsolutePath();
-                } else if (Utilities.isWindows()) {
-                    file = new File(dir, cppName + ".exe"); // NOI18N
-                    if (file.exists()) {
-                        cppPath = file.getAbsolutePath();
-                    }
-                }
-            }
-            
-            if (fRequired && fPath == null) {
-                file = new File(dir, fName);
-                if (file.exists()) {
-                    fPath = file.getAbsolutePath();
-                } else if (Utilities.isWindows()) {
-                    file = new File(dir, fName + ".exe"); // NOI18N
-                    if (file.exists()) {
-                        fPath = file.getAbsolutePath();
-                    }
-                }
-            }
-        }
+        // Check compilers
+        Tool cTool = cs.getTool(Tool.CCompiler);
+        Tool cppTool = cs.getTool(Tool.CCCompiler);
+        Tool fTool = cs.getTool(Tool.FortranCompiler);
         
-        if (cRequired && cPath == null) {
-            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCCompiler", csname, cName)); // NOI18N
+        if (cRequired && !cTool.exists()) {
+            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCCompiler", csname, cTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
-        if (cppRequired && cppPath == null ) {
-            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCppCompiler", csname, cppName)); // NOI18N
+        if (cppRequired && !cppTool.exists()) {
+            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCppCompiler", csname, cppTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
-        if (fRequired && fPath == null) {
-            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fName)); // NOI18N
+        if (fRequired && !fTool.exists()) {
+            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
         
@@ -854,10 +823,13 @@ public class MakeActionProvider implements ActionProvider {
         if (bt != null) {
             ToolsPanelModel model = new LocalToolsPanelModel();
             model.setCompilerSetName(csname);
-            model.setGdbEnabled(false);
+            model.setMakeRequired(true);
+            model.setGdbRequired(false);
             model.setCRequired(cRequired);
             model.setCppRequired(cppRequired);
             model.setFortranRequired(fRequired);
+            model.setShowRequiredBuildTools(true);
+            model.setShowRequiredDebugTools(false);
             if (bt.initBuildTools(model, errs)) {
                 String name = model.getCompilerSetName();
                 conf.getCRequired().setValue(model.isCRequired());

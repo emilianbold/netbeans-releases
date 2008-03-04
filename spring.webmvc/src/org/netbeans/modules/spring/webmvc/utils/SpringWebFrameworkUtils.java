@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.spring.webmvc.utils;
 
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.openide.util.NbBundle;
 
@@ -50,21 +49,25 @@ import org.openide.util.NbBundle;
  * @author John Baker
  */
 public class SpringWebFrameworkUtils {
-    private static final String DISPATCHER_MAPPING = ".htm"; // NOI18N
-    private static final Logger LOGGER = Logger.getLogger(SpringWebFrameworkUtils.class.getName());        
+    private static final String DISPATCHER_MAPPING = ".htm"; // NOI18N        
+    private static final char[] INVALID_CHARS = {'<', '>', '*', '\\',  ':', '\"',  '/', '%', '|', '?'}; // NOI18N
     
-    public static boolean isDispatcherNameValid(String name) {
-        return Pattern.matches("\\w+", name);
+    public static boolean isDispatcherServletConfigFilenameValid(String name) {
+        boolean isNameValid = true;
+        for (char c : INVALID_CHARS) {
+            if (name.indexOf(c) != -1) {
+                isNameValid = false;
+                break;
+            }
+        }
+        return isNameValid;
     }
     
     public static boolean isDispatcherMappingPatternValid(String pattern){
         // mapping validation based on the Servlet 2.4 specification,section SRV.11.2
         if (pattern.startsWith("*.")){ // NOI18N
             String p = pattern.substring(2);
-            if (p.indexOf('.') == -1 && p.indexOf('*') == -1  
-                    && p.indexOf('/') == -1 && !p.trim().equals("") && !p.contains(" ") && Pattern.matches("\\w+",p)) { // NOI18N
-                return true;
-            }
+            return Pattern.matches("\\w+",p); // NOI18N
         }
         
         if ((pattern.length() > 3) && pattern.endsWith("/*") && pattern.startsWith("/") && !pattern.contains(" ")) // NOI18N
@@ -115,7 +118,7 @@ public class SpringWebFrameworkUtils {
         return lineInTemplate;
     }
     
-    public static String setWelcomePageText(String lineInTemplate) {
-        return NbBundle.getMessage(SpringWebFrameworkUtils.class, "MSG_WELCOME_PAGE_TEXT"); // NOI18N
+    public static String getWelcomePageText() {
+        return NbBundle.getMessage(SpringWebFrameworkUtils.class, "MSG_WELCOME_PAGE_TEXT"); 
     }
 }

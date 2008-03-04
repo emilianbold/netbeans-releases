@@ -45,20 +45,26 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -85,6 +91,7 @@ import org.apache.jasper.compiler.JspRuntimeContext;
 import org.apache.jasper.compiler.TldLocationsCache;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.web.jspparser.ContextUtil;
+import org.netbeans.modules.web.jspparser.JspParserImpl;
 import org.netbeans.modules.web.jspparser.ParserServletContext;
 import org.netbeans.modules.web.jspparser.WebAppParseProxy;
 import org.openide.filesystems.FileChangeAdapter;
@@ -126,6 +133,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     private static final JspParserAPI.JspOpenInfo DEFAULT_JSP_OPEN_INFO = new JspParserAPI.JspOpenInfo(false, "8859_1"); // NOI18N
     private static final Pattern RE_PATTERN_COMMONS_LOGGING = Pattern.compile(".*commons-logging.*\\.jar.*"); // NOI18N
     
+    final JspParserImpl jspParser;
     // #85817
     private final Reference<WebModule> wm;
     final FileObject wmRoot;
@@ -146,15 +154,29 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
      */
     final Map<String, String[]> mappings = new HashMap<String, String[]>();
     
+    /**
+     * Flag whether class path is current.
+     * <p>
+     * <ul><em>AtomicLong</em> and not <em>volatile boolean</em> because of the following race condition:
+     * <li> class path changes
+     * <li> task starts
+     * <li> tast changes flag to 'synchronized'
+     * <li> but a very short while before, the class path changes again
+     * </ul>
+     */
+    final AtomicLong cpCurrent = new AtomicLong(0L);
+    
     // request processor for cleaning mappings cache and reiniting options
-    private static final int REINIT_OPTIONS_DELAY = 1000; // ms
-    private static final int REINIT_CACHES_DELAY = 500; // ms
+    private static final int REINIT_OPTIONS_DELAY = 2000; // ms
+    private static final int REINIT_CACHES_DELAY = 1000; // ms
     private static final int INITIAL_CACHES_DELAY = 2000; // ms
-    private final RequestProcessor.Task reinitOptionsTask;
     private final RequestProcessor.Task reinitCachesTask;
+    
+    private final RequestProcessor.Task tldChangeTask;
 
     /** Creates a new instance of WebAppParseSupport */
-    public WebAppParseSupport(WebModule wm) {
+    public WebAppParseSupport(JspParserImpl jspParser, WebModule wm) {
+        this.jspParser = jspParser;
         this.wm = new WeakReference<WebModule>(wm);
         wmRoot = wm.getDocumentBase();
         webInf = wm.getWebInf();
@@ -174,10 +196,11 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         executeCP.addPropertyChangeListener(WeakListeners.propertyChange(this, executeCP));
 
         // request procesor tasks
-        RequestProcessor requestProcessor = new RequestProcessor("JSP parser :: Reinit options"); // NOI18N
-        reinitOptionsTask = requestProcessor.create(new ReinitOptions(), true);
-        requestProcessor = new RequestProcessor("JSP parser :: Reinit caches"); // NOI18N
+        RequestProcessor requestProcessor = new RequestProcessor("JSP parser :: Reinit caches"); // NOI18N
         reinitCachesTask = requestProcessor.create(new ReinitCaches());
+
+        requestProcessor = new RequestProcessor("JSP parser :: TLD change"); // NOI18N
+        tldChangeTask = requestProcessor.create(new TldChange());
 
         // init tag library cache
         reinitCachesTask.schedule(INITIAL_CACHES_DELAY);
@@ -207,12 +230,15 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     }
 
     private synchronized void initOptions(boolean firstTime) {
+        long start = 0;
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initialized for WM " + FileUtil.toFile(wmRoot));
+            start = System.currentTimeMillis();
+            LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initializing for WM " + FileUtil.toFile(wmRoot));
         }
         WebModule webModule = wm.get();
         if (webModule == null) {
             // already gced
+            LOG.fine("WebModule already GCed");
             return;
         }
         editorContext = new ParserServletContext(wmRoot, this, true);
@@ -223,6 +249,9 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         // try null, but test with tag files
         //new JspRuntimeContext(context, options);
         createClassLoaders();
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initialized in " + (System.currentTimeMillis() - start) + " ms");
+        }
     }
     
     private boolean isUnexpectedLibrary(URL url) {
@@ -357,7 +386,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         return clctxt;
     }
     
-    private boolean determineIsTagFile(FileObject fo) {
+    boolean determineIsTagFile(FileObject fo) {
         if (fo.getExt().startsWith("tag")) { // NOI18N - all tag, tagx and even tagf are considered tag files
             return true;
         }
@@ -391,22 +420,9 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         // useEditor not needed, both caches are the same
         // we have to clear all the caches when the class path is not current or the taglibmap is not initialized yet
 
-        // process sliding tasks
-        boolean reinitOptions = false;
-        boolean reinitCaches = false;
-        if (!reinitOptionsTask.isFinished()) {
-            reinitOptionsTask.cancel();
-            reinitOptions = true;
-            reinitCaches = true;
-        }
+        // process sliding task
         if (!reinitCachesTask.isFinished()) {
             reinitCachesTask.cancel();
-            reinitCaches = true;
-        }
-        if (reinitOptions) {
-            reinitOptions();
-        }
-        if (reinitCaches) {
             reinitCaches();
         }
         // XXX return deep copy (not needed now, only jsp editor uses it)
@@ -419,7 +435,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
      * from both expanded directory structures and jar files.
      */
     public synchronized URLClassLoader getWAClassLoader() {
-        if (!reinitOptionsTask.isFinished()) {
+        if (cpCurrent.get() != 0L) {
             reinitOptions();
         }
         return waClassLoader;
@@ -598,19 +614,9 @@ System.out.println("--------ENDSTACK------");        */
      */
     public void propertyChange(PropertyChangeEvent evt) {
         // classpath has channged => invalidate cache
-        LOG.fine("class path has changed");
-        reinitOptionsTask.schedule(REINIT_OPTIONS_DELAY);
-    }
-
-    /**
-     * Reinit tag library cache after the default delay.
-     * Method decides whether to run in the current thread or not.
-     */
-    void reinitCaches() {
-        assert Thread.holdsLock(this);
-        LOG.fine("Caches are going to reinitialize");
-        clearTagLibraryInfoCache();
-        reinitTagLibMappings();
+        LOG.fine("Class path has changed");
+        cpCurrent.incrementAndGet();
+        reinitCachesTask.schedule(REINIT_OPTIONS_DELAY);
     }
 
     private void clearTagLibraryInfoCache() {
@@ -712,6 +718,20 @@ System.out.println("--------ENDSTACK------");        */
         return returnMap;
     }
 
+    void reinitCaches() {
+        assert Thread.holdsLock(this);
+        final long counter = cpCurrent.get();
+        LOG.fine("Current class path: " + (counter == 0L));
+        if (counter != 0L) {
+            reinitOptions();
+            boolean cpSet = cpCurrent.compareAndSet(counter, 0L);
+            LOG.fine("Class path " + (cpSet ? "" : "*NOT* ") + "set to current");
+        }
+        clearTagLibraryInfoCache();
+        reinitTagLibMappings();
+        tldChangeTask.run();
+    }
+
     final class ReinitCaches implements Runnable {
         public void run() {
             synchronized (WebAppParseSupport.this) {
@@ -722,14 +742,14 @@ System.out.println("--------ENDSTACK------");        */
         }
     }
 
-    final class ReinitOptions implements Runnable {
+    final class TldChange implements Runnable {
         public void run() {
-            synchronized (WebAppParseSupport.this) {
-                LOG.fine("ReinitOptions task started");
-                reinitOptions();
-                reinitCaches();
-                LOG.fine("ReinitOptions task finished");
+            WebModule webModule = wm.get();
+            if (webModule == null) {
+                return;
             }
+            LOG.fine("TLD change fired");
+            jspParser.fireChange(webModule);
         }
     }
 
@@ -748,15 +768,37 @@ System.out.println("--------ENDSTACK------");        */
         }
     }
     
-    /** This classloader does some security stuff, but equally importantly, it does one horrible hack,
+    /**
+     * This classloader does some security stuff, but equally importantly, it does one horrible hack,
      * explained in the constructor Javadoc.
+     * <p>
+     * The classloader is hiding some resources to avoid commons logging
+     * related jar locking. See issue 128360.
      */
     public static class ParserClassLoader extends URLClassLoader {
-        
+
+        private static final Logger LOGGER = Logger.getLogger(ParserClassLoader.class.getName());
+
         private static final java.security.AllPermission ALL_PERM = new AllPermission();
-        
+
+        /*
+         * All three following constants are used to avoid not necessary jar
+         * locking (just due to commons logging).
+         */
+        private static final String LOGGING_CONFIG = "commons-logging.properties"; // NOI18N
+
+        private static final String SERVICES_FOLDER = "META-INF/services/"; // NOI18N
+
+        private static final Set<String> FORBIDDEN_PACKAGES = new HashSet<String>();
+
+        static {
+            Collections.addAll(FORBIDDEN_PACKAGES, "org.apache.log4j", "org.apache.commons.logging"); // NOI18N
+        }
+
         private final URL[] tomcatURLs;
-        
+
+        private final ClassLoader parent;
+
         /** This constructor and the getURLs() method is one horrible hack. On the one hand, we want to give
          * Tomcat a JarURLConnection when it attempts to load classes from jars, on the other hand
          * we don't want this classloader to load classes using JarURLConnection, as that's buggy.
@@ -766,23 +808,90 @@ System.out.println("--------ENDSTACK------");        */
          */
         public ParserClassLoader(URL[] classLoadingURLs, URL[] tomcatURLs, ClassLoader parent) {
             super(classLoadingURLs, parent);
+            this.parent = parent;
             this.tomcatURLs = tomcatURLs;
         }
-        
+
         /** See the constructor for explanation of what thie method does.
          */
         @Override
         public URL[] getURLs() {
             return tomcatURLs;
         }
-        
+
         @Override
         protected PermissionCollection getPermissions(CodeSource codesource) {
             PermissionCollection perms = super.getPermissions(codesource);
             perms.add(ALL_PERM);
             return perms;
         }
-        
+
+        @Override
+        public URL getResource(String name) {
+            URL url;
+            if (parent != null) {
+                url = parent.getResource(name);
+            } else {
+                url = findResource(name);
+            }
+            return url;
+        }
+
+        @Override
+        public InputStream getResourceAsStream(String name) {
+            URL url = getResource(name);
+            try {
+                if (url != null) {
+                    URLConnection conn = url.openConnection();
+                    conn.setUseCaches(false);
+                    return conn.getInputStream();
+                }
+                return null;
+            } catch (IOException e) {
+                return null;
+            }
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            boolean forbidden = false;
+            for (String packageName : FORBIDDEN_PACKAGES) {
+                if (name.startsWith(packageName)) {
+                    forbidden = true;
+                    break;
+                }
+            }
+            if (forbidden) {
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINER, "Denying access to " + name); // NOI18N
+                }
+                throw new ClassNotFoundException(name);
+            }
+            return super.findClass(name);
+        }
+
+        @Override
+        public URL findResource(String name) {
+            if (LOGGING_CONFIG.equals(name) || name.startsWith(SERVICES_FOLDER)) {
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINER, "Discarding request for " + name); // NOI18N
+                }
+                return null;
+            }
+            return super.findResource(name);
+        }
+
+        @Override
+        public Enumeration<URL> findResources(String name) throws IOException {
+            if (LOGGING_CONFIG.equals(name) || name.startsWith(SERVICES_FOLDER)) {
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINEST, "Discarding request for " + name); // NOI18N
+                }
+                return Collections.enumeration(Collections.<URL>emptyList());
+            }
+            return super.findResources(name);
+        }
+
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
@@ -792,7 +901,7 @@ System.out.println("--------ENDSTACK------");        */
             return sb.toString();
         }
     }
-    
+
     private static class InitTldLocationCacheThread extends Thread {
         
         private final TldLocationsCache cache;
@@ -844,10 +953,10 @@ System.out.println("--------ENDSTACK------");        */
         private void processFileChange(final FileEvent fe) {
             // check the file type/name/extension and then
             // check if the file belongs to this parse proxy
-            String name = fe.getFile().getNameExt();
-            String ext = fe.getFile().getExt();
-            if (ext.equals("tld") || name.equals("web.xml")) { // NOI18N
-                FileObject fo = fe.getFile();
+            FileObject fo = fe.getFile();
+            if (fo.getExt().equals("tld") // NOI18N
+                    || fo.getNameExt().equals("web.xml") // NOI18N
+                    || determineIsTagFile(fo)) { // #109478
                 if (FileUtil.isParentOf(wmRoot, fo)
                         || (FileUtil.isParentOf(webInf, fo))) {
                     LOG.fine("File " + fo + " has changed, reinitCaches() called");

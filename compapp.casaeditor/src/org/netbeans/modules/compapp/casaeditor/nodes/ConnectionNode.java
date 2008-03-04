@@ -141,15 +141,7 @@ public class ConnectionNode extends CasaNode {
         // Add JBI extensions on connection
         ExtensionPropertyHelper.setupExtensionPropertySheet(this,
                 casaConnection, sheet, "connection", "all"); // NOI18N
-
-//        CasaComponent component = casaConnection;
-//        EndpointProperty endpointProperty = new EndpointProperty(this, component,
-//                "propertyType",
-//                String.class,
-//                "propertyName",
-//                "displayName",
-//                "description");
-//        providerProperties.put(endpointProperty);
+        
     }
 
     //The navigator title is unable to decode HTML text and showing the encoded chars (&#60;-&#62;) as is...

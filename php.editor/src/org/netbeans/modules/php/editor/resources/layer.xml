@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="PHPMimeResolver.xml" url="PHPMimeResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
+                <attr name="position" intvalue="282"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-php">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/editor/resources/php16.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/php/editor/resources/php16.png"/>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="GsfPlugins">
+        <folder name="text">
+            <folder name="x-php">
+                <file name="language.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.GsfLanguage"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.PHPLanguage"/>
+                </file>
+                <file name="parser.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Parser"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.parser.GSFPHPParser"/>
+                </file>
+<!--
+                <file name="indexer.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Indexer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.PHPIndexer"/>
+                </file>
+-->
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-php">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
+                
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="fontsColors.xml" url="fontsColors.xml">
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                
+            </folder>
+        </folder>
+    </folder>
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="x-php" url="PHP5Example"/>
+            </folder>
+        </folder>
+        <file name="RubyOptions.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyOptionsCategory"/>
+            <attr name="position" intvalue="305"/>
+        </file>     
+    </folder>
+</filesystem>

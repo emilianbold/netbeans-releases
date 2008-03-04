@@ -44,8 +44,10 @@ package org.netbeans.modules.db.explorer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -83,25 +85,31 @@ import org.openide.NotifyDescriptor;
 public class DatabaseNodeChildren extends Children.Array {
 
     private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+    
+    NodeComparator comparator;
 
-    private TreeSet children;
+    // synchronized by this
+    private TreeSet<Node> children;
     private transient PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
-    private static Object sync = new Object(); // synchronizing object
     // synchronized by additionalNodes
     private boolean initialized = false; // true if the node is displaying its children (not the "Please wait..." node)
     // synchronized by additionalNodes
-    private List additionalNodes = new ArrayList(); // nodes added by createSubnode() during the "Please wait..." phase
+    private List<Node> additionalNodes = new ArrayList<Node>(); // nodes added by createSubnode() during the "Please wait..." phase
+    
+    private static Logger LOGGER = Logger.getLogger(
+            DatabaseNodeChildren.class.getName());
 
     private PropertyChangeListener listener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent event) {
             if (event.getPropertyName().equals("finished")) { //NOI18N
                 MUTEX.writeAccess(new Runnable() {
                     public void run() {
-                        remove(getNodes()); //remove wait node
-                        nodes = getCh(); // change children ...
+                        // remove wait node and replace it with a sorted set
+                        nodes = new TreeSet<Node>(comparator);
+                        add(getCh().toArray(new Node[0])); // change children ...
                         // add additional nodes created during the "Please wait..." phase
                         synchronized (additionalNodes) {
-                            nodes.addAll(additionalNodes);
+                            add(additionalNodes.toArray(new Node[0]));
                             initialized = true;
                         }
                         refresh(); // ... and refresh them
@@ -111,23 +119,29 @@ public class DatabaseNodeChildren extends Children.Array {
             }
         }
     };
-
+    
+    @Override
     protected Collection initCollection() {
         propertySupport.addPropertyChangeListener(listener);
 
         RequestProcessor.getDefault().post(new Runnable() {
-            public void run () {
-                DatabaseNodeInfo nodeinfo = ((DatabaseNode)getNode()).getInfo();
-                java.util.Map nodeord = (java.util.Map)nodeinfo.get(DatabaseNodeInfo.CHILDREN_ORDERING);
-                boolean sort = (nodeinfo.getName().equals("Drivers") || (nodeinfo instanceof TableNodeInfo) || (nodeinfo instanceof ViewNodeInfo) || (nodeinfo instanceof ProcedureNodeInfo)) ? false : true; //NOI18N
-                TreeSet children = new TreeSet(new NodeComparator(nodeord, sort));
-                
-                try {
-                    
+            public void run () {             
+                DatabaseNodeInfo nodeinfo = ((DatabaseNode)getNode()).getInfo();  
+                java.util.Map nodeord = (java.util.Map)
+                    nodeinfo.get(DatabaseNodeInfo.CHILDREN_ORDERING);
+
+                boolean sort = (! nodeinfo.getName().equals("Drivers") &&
+                    (! (nodeinfo instanceof TableNodeInfo)) && 
+                    (! (nodeinfo instanceof ViewNodeInfo)) && 
+                    (! (nodeinfo instanceof ProcedureNodeInfo)) ); //NOI18N
+
+                comparator = new NodeComparator(nodeord, sort);
+
+                TreeSet<Node> tempChildren = new TreeSet<Node>(comparator);
+
+                try {                    
                     Vector chlist;
-                    synchronized (sync) {
-                        chlist = nodeinfo.getChildren();
-                    }
+                    chlist = nodeinfo.getChildren();
 
                     for (int i=0;i<chlist.size();i++) {
                         Node snode = null;
@@ -138,13 +152,18 @@ public class DatabaseNodeChildren extends Children.Array {
                             
                             // aware! in this method is clone of instance dni created
                             snode = createNode(dni);
-
+                        } else if (sinfo instanceof Node) {
+                            snode = (Node)sinfo;
+                        } else {
+                            throw new ClassCastException(sinfo.getClass().getName());
                         }
-                        else
-                            if (sinfo instanceof Node)
-                                snode = (Node)sinfo;
-                        if (snode != null)
-                            children.add(snode);
+                        
+                        if (snode != null) {
+                            LOGGER.log(Level.FINE, "Adding node " + 
+                                    snode.getDisplayName());
+                            logThreadDump();
+                            tempChildren.add(snode);                            
+                        }
                     }
                     
 //commented out for 3.6 release, need to solve for next Studio release
@@ -156,18 +175,18 @@ public class DatabaseNodeChildren extends Children.Array {
 //                                    // add connection (if needed) and make the connection to SAMPLE database connected
 //                                    PointbasePlus.addOrConnectAccordingToOption();
 //                                    } catch(Exception ex) {
-//                                        org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+//                                        org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.FINERMATIONAL, ex);
 //                                    }
 //                                }
 //                            });
 //                    }
                 } catch (Exception e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e);
+                    Logger.getLogger("global").log(Level.FINE, null, e);
                     showException(e);
-                    children.clear();
+                    tempChildren.clear();
                 }
 
-                setCh(children);
+                setCh(tempChildren);
                 
                 propertySupport.firePropertyChange("finished", null, null); //NOI18N
             }
@@ -176,6 +195,13 @@ public class DatabaseNodeChildren extends Children.Array {
         TreeSet ts = new TreeSet();
         ts.add(createWaitNode());
         return ts;
+    }
+    
+    private static void logThreadDump() {
+        if ( LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Thread " + Thread.currentThread().getName());
+            LOGGER.log(Level.FINE, "Stack dump: ", new Exception());  
+        }
     }
     
     public boolean getChildrenInitialized() {
@@ -194,11 +220,11 @@ public class DatabaseNodeChildren extends Children.Array {
         return n;
     }
 
-    private TreeSet getCh() {
+    private synchronized TreeSet<Node> getCh() {
         return children;
     }
 
-    private void setCh(TreeSet children) {
+    private synchronized void setCh(TreeSet<Node> children) {
         this.children = children;
     }
 
@@ -206,7 +232,7 @@ public class DatabaseNodeChildren extends Children.Array {
         propertySupport.removePropertyChangeListener(listener);
     }
 
-    class NodeComparator implements Comparator {
+    class NodeComparator implements Comparator, Serializable {
         private java.util.Map map = null;
         private boolean sort;
 
@@ -214,14 +240,9 @@ public class DatabaseNodeChildren extends Children.Array {
             this.map = map;
             this.sort = sort;
         }
-
+        
         public int compare(Object o1, Object o2) {
             if (! sort)
-                return 1;
-
-            if (!(o1 instanceof DatabaseNode))
-                return -1;
-            if (!(o2 instanceof DatabaseNode))
                 return 1;
 
             int o1val, o2val, diff;
@@ -237,9 +258,26 @@ public class DatabaseNodeChildren extends Children.Array {
                 o2val = Integer.MAX_VALUE;
 
             diff = o1val-o2val;
-            if (diff == 0)
-                return ((DatabaseNode)o1).getInfo().getName().compareTo(((DatabaseNode)o2).getInfo().getName());
-            return diff;
+            
+            if (diff != 0) {
+                return diff;
+            }
+            
+            String dname1 = ((Node)o1).getDisplayName();
+            String dname2 = ((Node)o2).getDisplayName();
+
+            if ( dname1 == null && dname2 == null) {
+                // unlikely, but you never know
+                return 0;
+            }
+
+            if ( dname1 == null ) {
+                return -1;
+            } else if ( dname2 == null ) {
+                return 1;
+            } else {
+                return dname1.compareTo(dname2);
+            }
         }
     }
 
@@ -257,21 +295,53 @@ public class DatabaseNodeChildren extends Children.Array {
 
         return node;
     }
-
-    public void addSubNode(Node subnode) {
+    
+    public void addSubNode(final Node subnode) {
         //workaround for issue #31617, children should be initialized if they are not
         //            getNodes();
         if (isInitialized()) {
             synchronized (additionalNodes) {
                 if (initialized) {
-                    add(new Node[] {subnode});
+                    MUTEX.postWriteRequest(new Runnable() {
+                        public void run() {
+                            add(new Node[] {subnode});
+                        }
+                    });
                 } else {
+                    LOGGER.log(Level.FINE, "ADDING TO ADDITIONAL: " + subnode.getDisplayName());
+                    logThreadDump();
                     additionalNodes.add(subnode);
                 }
             }
-        }
+        }                
 
     }
+    
+    public void replaceNodes(final Node[] nodes) {
+        if (isInitialized()) {
+            synchronized (additionalNodes) {
+                if (initialized) {
+                    MUTEX.postWriteRequest(new Runnable() {
+                        public void run() {
+                            remove(getNodes());
+                            add(nodes);
+                        }
+                    });
+                } else {
+                    if ( LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "REPLACING ON ADDITIONAL: "); 
+                        for ( Node node : nodes ) {
+                            LOGGER.log(Level.FINE, "==> " + node.getDisplayName());
+                        }
+                        logThreadDump();
+                    }
+                    additionalNodes.clear();
+                    additionalNodes.addAll(Arrays.asList(nodes));
+                }
+            }
+        }
+    }
+    
     public DatabaseNode createSubnode(DatabaseNodeInfo info, boolean addToChildrenFlag) throws DatabaseException {
         DatabaseNode subnode = createNode(info);
         if (subnode != null && addToChildrenFlag) {
@@ -283,7 +353,7 @@ public class DatabaseNodeChildren extends Children.Array {
 
         return subnode;
     }
-    
+        
     private void showException(final Exception e) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {

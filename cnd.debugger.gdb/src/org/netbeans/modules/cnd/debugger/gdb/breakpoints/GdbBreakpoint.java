@@ -67,8 +67,10 @@ public abstract class GdbBreakpoint extends Breakpoint {
     public static final String          PROP_PRINT_TEXT = "printText"; // NOI18N
     public static final String          PROP_BREAKPOINT_STATE = "breakpointState"; // NOI18N
     public static final String          PROP_LINE_NUMBER = "lineNumber"; // NOI18N
+    public static final String          PROP_FUNCTION_NAME = "functionName"; // NOI18N
     public static final String          PROP_URL = "url"; // NOI18N
     public static final String          PROP_CONDITION = "condition"; // NOI18N
+    public static final String          PROP_SKIP_COUNT = "skipCount"; // NOI18N
     
     public static final int             SUSPEND_NONE = 0;
     public static final int             SUSPEND_THREAD = 1;
@@ -83,6 +85,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
     private HashSet                     breakpointListeners = new HashSet();
     private GdbDebugger                 debugger;
     private String                      condition = ""; // NOI18N
+    private int                         skipCount = 0;
     private String                      url = "";       // NOI18N
     private String                      path = "";      // NOI18N
     
@@ -214,6 +217,19 @@ public abstract class GdbBreakpoint extends Breakpoint {
             condition = c;
         }
         firePropertyChange(PROP_CONDITION, old, c);
+    }
+    
+    public int getSkipCount() {
+        return skipCount;
+    }
+    
+    public void setSkipCount(int skipCount) {
+        int old = this.skipCount;
+        if (skipCount != old) {
+            this.skipCount = skipCount;
+            firePropertyChange(PROP_SKIP_COUNT, old, skipCount);
+        }
+        
     }
     
     /**

@@ -276,7 +276,7 @@ public class TraceXRef extends TraceModel {
     
     public static String toString(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
         String out = CsmTracer.getOffsetString(ref, true);
-        CsmReferenceKind kind = CsmReferenceResolver.getDefault().getReferenceKind(ref, targetDecl, targetDef);
+        CsmReferenceKind kind = ref.getKind();
         String postfix;
         if (kind == CsmReferenceKind.DECLARATION) {
             postfix = " (DECLARATION)"; // NOI18N
@@ -361,7 +361,8 @@ public class TraceXRef extends TraceModel {
                                 bag.addEntry(funScope, entry);
                             }
                         }
-                    });
+                    },
+                    EnumSet.<CsmReferenceKind>of(CsmReferenceKind.DIRECT_USAGE));
         } else {
             printOut.println("function definition without body " + fun);
         }
@@ -373,7 +374,7 @@ public class TraceXRef extends TraceModel {
         if (target == null) {
             entry = XRefResultSet.ContextEntry.UNRESOLVED;
         } else {
-            CsmReferenceKind kind = CsmReferenceResolver.getDefault().getReferenceKind(ref);
+            CsmReferenceKind kind = ref.getKind();
             if (kind == CsmReferenceKind.DIRECT_USAGE) { 
                 XRefResultSet.DeclarationKind declaration = classifyDeclaration(target, printOut);
                 XRefResultSet.DeclarationScope declarationScope = classifyDeclarationScopeForFunction(declaration, target, fun, printOut);
@@ -512,6 +513,10 @@ public class TraceXRef extends TraceModel {
                     out = checkClassContainers(objContext, csmFunction);
                 } else if (objContext.objNs != null) {
                     out = checkNamespaceContainers(objContext, csmFunction);
+                } else if (CsmKindUtilities.isFunction(objContext.objScope) &&
+                        csmFunction.csmObject.equals(objContext.objScope)) {
+                    // function local classifier
+                    out = XRefResultSet.DeclarationScope.FUNCTION_THIS;
                 } else if (printOut != null) {
                     printOut.println("unknown classifier " + objContext.csmObject + " in context of " + csmFunction.csmObject); // NOI18N
                 }
@@ -911,6 +916,17 @@ public class TraceXRef extends TraceModel {
             objScope = ((CsmEnumerator)obj).getEnumeration().getScope();
         } else if (CsmKindUtilities.isScopeElement(obj)) {
             objScope = ((CsmScopeElement)obj).getScope();
+        }
+        while (objScope != null) {
+            if (CsmKindUtilities.isNamespaceDefinition(objScope) ||
+                    CsmKindUtilities.isClass(objScope) ||
+                    CsmKindUtilities.isFunction(objScope)) {
+                break;
+            } else if (CsmKindUtilities.isScopeElement(objScope)) {
+                objScope = ((CsmScopeElement)objScope).getScope();
+            } else {
+                break;
+            }
         }
         return new ObjectContext<T>(csmObject, objClass, objFile, objPrj, objNs, objScope);
     }

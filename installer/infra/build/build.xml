@@ -84,7 +84,6 @@
                 <exclude name="infra/server/**/build/**/*.*"/>
                 <exclude name="infra/server/**/dist/**/*.*"/>
                 <exclude name="infra/server/**/private/**/*.*"/>
-		<exclude name="${nbi.all.dir}"/>
             </fileset>
         </copy>
         <copy todir="${nbi.netbeans.dir}">
@@ -92,7 +91,7 @@
                 <exclude name="infra/server/**/build/**/*.*"/>
                 <exclude name="infra/server/**/dist/**/*.*"/>
                 <exclude name="infra/server/**/private/**/*.*"/>
-		<exclude name="${nbi.all.dir}"/>
+                <exclude name="${nbi.all.relative.path}/**/*.*"/>
                 <include name="components/**/*.*"/>
                 <include name="infra/**/*.*"/>
                 <include name="engine/**/*.*"/>
@@ -101,7 +100,6 @@
         <mkdir dir="${nbi.all.dir}/reglib"/>
         <copy todir="${nbi.all.dir}/reglib">
             <fileset dir="${hg.root}/reglib">
-		<exclude name="${nbi.all.dir}"/>
 		<include name="**/*.*"/>
                 <exclude name="build/**/*.*"/>
                 <exclude name="dist/**/*.*"/>                
@@ -344,7 +342,7 @@
         <set property="openesb.build.number.real" value="080123_2"/>
 	-->
         <get
-            src="${openesb.builds.host}/kits/ojc/main/latest/log/"
+            src="${openesb.builds.host}/kits/ojc/main/latest/solsparc/ojc/version.txt"
             dest="${temp.file}"/>
         <openesb-buildnumber 
             file="${temp.file}" 
@@ -2238,10 +2236,13 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-web-page">
         <!-- For each locale -->
 	<echo message="Locales: [${locales}]"/>
+        <set property="languages.js.file" value="${web.page.dir}/js/languages.js"/>
+        <echo file="${languages.js.file}"/>
+
 	<for-each list="${locales}" separator="," property="locale">
 	    <antcall target="prepare-web-page-locale">
                 <param name="locale.name" value="${locale}"/>
-		<param name="languages.js" value="${web.page.dir}/js/languages.js"/>
+		<param name="languages.js" value="${languages.js.file}"/>
 	    </antcall>	    
 	</for-each>
     </target>
@@ -2291,9 +2292,7 @@ jarsigner.storepass=${jarsigner.storepass}
                      encoding="utf-8"
                      token="${current.token}" 
                      value="${current.value}">
-		     <include name="index${locale.suffix}.html"/>	
-		     <include name="start${locale.suffix}.html"/>
-		     <include name="js/*_strings${locale.suffix}.js"/>
+		     <include name="js/build_info.js"/>
 	    </replace>
         </for-each>                
     </target>

@@ -65,6 +65,10 @@ public class BpelLineBreakpointView extends BpelBreakpointView {
             }
         }
         
+        if (lbp.equals(currentBreakpoint)) {
+            result = "<html><b>" + result + "</b>";
+        }
+        
         return result;
     }
     
@@ -104,6 +108,8 @@ public class BpelLineBreakpointView extends BpelBreakpointView {
                     position.getLineNumber());
             
             currentBreakpoint = breakpoint;
+        } else {
+            currentBreakpoint = null;
         }
         
         Vector v = (Vector) listeners.clone ();
@@ -130,9 +136,7 @@ public class BpelLineBreakpointView extends BpelBreakpointView {
     
     private BpelBreakpointListener getBreakpointListener() {
         if (myBreakpointListener == null) {
-            myBreakpointListener = (BpelBreakpointListener) 
-                    DebuggerManager.getDebuggerManager().lookupFirst 
-                    (null, BpelBreakpointListener.class);
+            myBreakpointListener = DebuggerManager.getDebuggerManager().lookupFirst(null, BpelBreakpointListener.class);
         }
         
         return myBreakpointListener;

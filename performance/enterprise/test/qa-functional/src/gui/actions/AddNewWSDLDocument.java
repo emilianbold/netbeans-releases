@@ -86,6 +86,13 @@ public class AddNewWSDLDocument extends org.netbeans.performance.test.utilities.
         index=1;
 //        new CloseAllDocumentsAction().performAPI();
     }
+
+    @Override
+    protected void shutdown() {
+        super.shutdown();
+        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
+        new EventTool().waitNoEvent(1000);
+    }
     
     public void prepare(){
         EPUtilities.getProcessFilesNode("BPELTestProject").select();
@@ -106,7 +113,6 @@ public class AddNewWSDLDocument extends org.netbeans.performance.test.utilities.
     }
     
     public void close(){
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
     public static void main(java.lang.String[] args) {

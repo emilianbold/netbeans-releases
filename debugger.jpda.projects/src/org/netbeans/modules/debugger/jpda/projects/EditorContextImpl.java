@@ -136,6 +136,7 @@ import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -150,6 +151,7 @@ public class EditorContextImpl extends EditorContext {
     private Map                     annotationToURL = new HashMap ();
     private PropertyChangeListener  editorObservableListener;
 
+    private RequestProcessor refreshProcessor;
     private Lookup.Result resDataObject;
     private Lookup.Result resEditorCookie;
     private Lookup.Result resNode;
@@ -162,6 +164,8 @@ public class EditorContextImpl extends EditorContext {
     
     {
         pcs = new PropertyChangeSupport (this);
+        
+        refreshProcessor = new RequestProcessor("Refresh Editor Context", 1);
 
         resDataObject = Utilities.actionsGlobalContext().lookup(new Lookup.Template(DataObject.class));
         resDataObject.addLookupListener(new EditorLookupListener(DataObject.class));
@@ -183,11 +187,19 @@ public class EditorContextImpl extends EditorContext {
      * @param timeStamp a time stamp to be used
      */
     public boolean showSource (String url, int lineNumber, Object timeStamp) {
+        Line l = showSourceLine(url, lineNumber, timeStamp);
+        if (l != null) {
+            addPositionToJumpList(url, l, 0);
+        }
+        return l != null;
+    }
+    
+    static Line showSourceLine (String url, int lineNumber, Object timeStamp) {
         Line l = LineTranslations.getTranslations().getLine (url, lineNumber, timeStamp); // false = use original ln
         if (l == null) {
             ErrorManager.getDefault().log(ErrorManager.WARNING,
                     "Show Source: Have no line for URL = "+url+", line number = "+lineNumber);
-            return false;
+            return null;
         }
         if ("true".equalsIgnoreCase(fronting) || Utilities.isWindows()) {
             l.show (Line.SHOW_REUSE);
@@ -195,8 +207,7 @@ public class EditorContextImpl extends EditorContext {
         } else {
             l.show (Line.SHOW_REUSE);
         }
-        addPositionToJumpList(url, l, 0);
-        return true;
+        return l;
     }
     
     /**
@@ -1859,7 +1870,7 @@ public class EditorContextImpl extends EditorContext {
         }
     }
     
-    private class EditorLookupListener extends Object implements LookupListener, PropertyChangeListener {
+    private class EditorLookupListener extends Object implements LookupListener, PropertyChangeListener, Runnable {
         
         private Class type;
         
@@ -1878,7 +1889,7 @@ public class EditorContextImpl extends EditorContext {
                     }
                     currentEditorCookie = null;
                 }
-                pcs.firePropertyChange (TopComponent.Registry.PROP_CURRENT_NODES, null, null);
+                refreshProcessor.post(this);
             } else if (type == EditorCookie.class) {
                 synchronized (currentLock) {
                     currentURL = null;
@@ -1889,13 +1900,17 @@ public class EditorContextImpl extends EditorContext {
                     }
                     currentEditorCookie = null;
                 }
-                pcs.firePropertyChange (TopComponent.Registry.PROP_CURRENT_NODES, null, null);
+                refreshProcessor.post(this);
             } else if (type == Node.class) {
                 synchronized (currentLock) {
                     //currentElement = null;
                 }
-                pcs.firePropertyChange (TopComponent.Registry.PROP_CURRENT_NODES, null, null);
+                refreshProcessor.post(this);
             }
+        }
+        
+        public void run() {
+            pcs.firePropertyChange (TopComponent.Registry.PROP_CURRENT_NODES, null, null);
         }
         
         public void propertyChange(PropertyChangeEvent evt) {

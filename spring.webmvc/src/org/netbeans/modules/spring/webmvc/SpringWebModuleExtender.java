@@ -52,9 +52,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -68,7 +66,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.CreateCapability;
@@ -79,6 +76,7 @@ import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
+import org.netbeans.modules.spring.api.SpringUtilities;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.ConfigFileManager;
 import org.netbeans.modules.spring.api.beans.SpringScope;
@@ -86,7 +84,6 @@ import org.netbeans.modules.spring.webmvc.utils.SpringWebFrameworkUtils;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -95,6 +92,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 
 /**
@@ -105,10 +104,10 @@ import org.openide.util.NbBundle;
 public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {      
     private static final Logger LOGGER = Logger.getLogger(SpringWebModuleExtender.class.getName());
     
-    private SpringConfigPanelVisual frameworkPanelVisual;
     private final SpringWebFrameworkProvider framework;
     private final ExtenderController controller;
-    private boolean customizer;
+    private final boolean customizer;
+    private SpringConfigPanelVisual component;
     private String dispatcherName = "dispatcher"; // NOI18N
     private String dispatcherMapping = "*.htm"; // NOI18N
     private boolean includeJstl = true;
@@ -143,10 +142,11 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     }
 
     public SpringConfigPanelVisual getComponent() {
-        if (frameworkPanelVisual == null) {
-            frameworkPanelVisual = new SpringConfigPanelVisual(this);
+        if (component == null) {
+            component = new SpringConfigPanelVisual(this);
+            component.setEnabled(!customizer);
         }
-        return frameworkPanelVisual;
+        return component;
     }
 
     public boolean isValid() {
@@ -154,10 +154,12 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNameIsEmpty")); // NOI18N
             return false;
         }
-        if (!SpringWebFrameworkUtils.isDispatcherNameValid(dispatcherName)){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNameIsNotValid")); // NOI18N
+               
+        if (!SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid(dispatcherName)){
+            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherServletConfigFilenameIsNotValid")); 
             return false;
-        }
+        }                
+
         if (dispatcherMapping == null || dispatcherMapping.trim().length() == 0) {
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherMappingPatternIsEmpty")); // NOI18N
             return false;
@@ -172,12 +174,6 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         
     public HelpCtx getHelp() {
         return new HelpCtx(SpringWebModuleExtender.class);
-    }
-
-    public void readSettings(Object settings) {
-    }
-
-    public void storeSettings(Object settings) {
     }
 
     public final void addChangeListener(ChangeListener l) {
@@ -218,8 +214,6 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
 
     private class CreateSpringConfig implements FileSystem.AtomicAction {
 
-        public static final String SPRING_CLASS_NAME = "org.springframework.core.SpringVersion"; // NOI18N
-        public static final String JSTL_CLASS_NAME = "javax.servlet.jsp.jstl.core.Config"; // NOI18N
         public static final String CONTEXT_LOADER = "org.springframework.web.context.ContextLoaderListener"; // NOI18N
         public static final String DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N        
         public static final String ENCODING = "UTF-8"; // NOI18N
@@ -252,21 +246,38 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             ddRoot.write(dd);
 
             // ADD JSTL LIBRARY IF ENABLED AND SPRING LIBRARY
-            if (includeJstl) {
-                Library jstlLibrary = getLibrary(JSTL_CLASS_NAME);            
-                assert jstlLibrary != null; 
-                Library springLibrary = getLibrary(SPRING_CLASS_NAME);
-                assert springLibrary != null;
-                Library[] libraries = {springLibrary, jstlLibrary};                
-                addLibrariesToWebModule(libraries, webModule);                
+            List<Library> libraries = new ArrayList<Library>(3);
+            Library webMVCLibrary = SpringUtilities.findSpringWebMVCLibrary();
+            Library springLibrary = null;
+            if (webMVCLibrary != null) {
+                libraries.add(webMVCLibrary);
+                if (SpringUtilities.isSpringLibrary(webMVCLibrary)) {
+                    // In case this is an user library with a monolithic Spring.
+                    springLibrary = webMVCLibrary;
+                }
             } else {
-                // JUST ADD SPRING LIBRARY
-                Library springLibrary = getLibrary(SPRING_CLASS_NAME);
-                assert springLibrary != null;
-                Library[] libraries = {springLibrary};
+                LOGGER.log(Level.WARNING, null, new Error("No Spring Web MVC library found."));
+            }
+            if (springLibrary == null) {
+                springLibrary = SpringUtilities.findSpringLibrary();
+                if (springLibrary != null){
+                    libraries.add(springLibrary);
+                } else {
+                    LOGGER.log(Level.WARNING, null, new Error("No Spring Framework library found."));
+                }
+            }
+            if (includeJstl) {
+                Library jstlLibrary = SpringUtilities.findJSTLibrary();
+                if (jstlLibrary != null) {
+                    libraries.add(jstlLibrary);
+                } else {
+                    LOGGER.log(Level.WARNING, null, new Error("No JSTL library found."));
+                }
+            }
+            if (!libraries.isEmpty()) {
                 addLibrariesToWebModule(libraries, webModule);
             }
-
+            
             // CREATE WEB-INF/JSP FOLDER
             FileObject webInf = webModule.getWebInf();
             FileObject jsp = webInf.createFolder("jsp");
@@ -286,24 +297,25 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             SpringScope scope = SpringScope.getSpringScope(configFile);
             if (scope != null) {
                 final ConfigFileManager manager = scope.getConfigFileManager();
-                manager.mutex().writeAccess(new Runnable() {
-                    public void run() {
-                        List<File> files = manager.getConfigFiles();
-                        files.addAll(newFiles);
-                        List<ConfigFileGroup> groups = manager.getConfigFileGroups();
-                        String groupName = NbBundle.getMessage(SpringWebModuleExtender.class, "LBL_DefaultGroup"); // NOI18N
-                        ConfigFileGroup newGroup = ConfigFileGroup.create(groupName, newFiles);
-                        groups.add(newGroup);
-                        manager.putConfigFilesAndGroups(files, groups);
-                        try {
+                try {
+                    manager.mutex().writeAccess(new ExceptionAction<Void>() {
+                        public Void run() throws IOException {
+                            List<File> files = manager.getConfigFiles();
+                            files.addAll(newFiles);
+                            List<ConfigFileGroup> groups = manager.getConfigFileGroups();
+                            String groupName = NbBundle.getMessage(SpringWebModuleExtender.class, "LBL_DefaultGroup");
+                            ConfigFileGroup newGroup = ConfigFileGroup.create(groupName, newFiles);
+                            groups.add(newGroup);
+                            manager.putConfigFilesAndGroups(files, groups);
                             manager.save();
-                        } catch (IOException e) {
-                            Exceptions.printStackTrace(e);
+                            return null;
                         }
-                    }
-                });
+                    });
+                } catch (MutexException e) {
+                    throw (IOException)e.getException();
+                }
             } else {
-                LOGGER.log(Level.WARNING, "Could not find a SpringScope for file {0}", configFile); // NOI18N
+                LOGGER.log(Level.WARNING, "Could not find a SpringScope for file {0}", configFile);
             }
 
             // MODIFY EXISTING REDIRECT.JSP
@@ -339,7 +351,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                         line = SpringWebFrameworkUtils.reviseRedirectJsp(line, dispatcherMapping);
                     }
                     if (resourceName.equals("index.jsp")) { // NOI18N
-                        line = SpringWebFrameworkUtils.setWelcomePageText(line);
+                        line = SpringWebFrameworkUtils.getWelcomePageText();
                     }
                     buffer.append(line);
                     buffer.append(lineSeparator);
@@ -362,7 +374,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             return target;
         }
 
-        protected boolean addLibrariesToWebModule(Library[] libraries, WebModule webModule) throws IOException, UnsupportedOperationException {
+        protected boolean addLibrariesToWebModule(List<Library> libraries, WebModule webModule) throws IOException, UnsupportedOperationException {
             FileObject fileObject = webModule.getDocumentBase();
             Project project = FileOwnerQuery.getOwner(fileObject);
             if (project == null) {
@@ -374,7 +386,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                 if (groups.length == 0) {
                     return false;
                 }
-                addLibraryResult = ProjectClassPathModifier.addLibraries(libraries, groups[0].getRootFolder(), ClassPath.COMPILE);
+                addLibraryResult = ProjectClassPathModifier.addLibraries(libraries.toArray(new Library[libraries.size()]), groups[0].getRootFolder(), ClassPath.COMPILE);
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "Libraries required for the Spring MVC project not added", e); // NOI18N
             } catch (UnsupportedOperationException uoe) {
@@ -430,36 +442,5 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             }
             return bean;
         }
-        
-        private boolean containsPath(List<URL> roots, String relativePath) {
-             // workaround for #126307
-            List<URL> validRoots = new ArrayList<URL>();            
-            URL url = null;
-            Iterator it = roots.iterator();
-            while (it.hasNext()) {
-                url = (URL)it.next();
-                if ((url.getPath().startsWith("nbinst://"))) { // NOI18N
-                    validRoots.add(url);
-                }
-            }                        
-            ClassPath cp = ClassPathSupport.createClassPath((validRoots.toArray(new URL[validRoots.size()])));
-            return cp.findResource(relativePath) != null;
-        }
-                        
-        private boolean containsClass(List<URL> libraryContent, String className) {   
-            String classRelativePath = className.replace('.', '/') + ".class"; //NOI18N
-            return containsPath(libraryContent, classRelativePath); //NOI18N
-        }            
-        
-        protected Library getLibrary(String className) {
-            for (Library eachLibrary : LibraryManager.getDefault().getLibraries()) {              
-                if (containsClass(eachLibrary.getContent("classpath"), className)) { // NOI18N
-                    return eachLibrary;
-                }
-            }
-
-            //Library wasn't found
-            return null;
-        }     
     }
 }

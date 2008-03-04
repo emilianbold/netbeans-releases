@@ -159,6 +159,10 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         // Accessibility
         configurationsButton.getAccessibleContext().setAccessibleDescription(getString("CONFIGURATIONS_BUTTON_AD"));
         configurationComboBox.getAccessibleContext().setAccessibleDescription(getString("CONFIGURATION_COMBOBOX_AD"));
+        
+        allConfigurationComboBox.addItem(getString("ALL_CONFIGURATIONS"));
+        allConfigurationComboBox.getAccessibleContext().setAccessibleDescription(getString("CONFIGURATIONS_BUTTON_AD"));
+        allConfigurationComboBox.getAccessibleContext().setAccessibleDescription(getString("CONFIGURATION_COMBOBOX_AD"));
     }
     
     public void setDialogDescriptor(DialogDescriptor dialogDescriptor) {
@@ -180,6 +184,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         configurationPanel = new javax.swing.JPanel();
         configurationLabel = new javax.swing.JLabel();
         configurationComboBox = new javax.swing.JComboBox();
+        allConfigurationComboBox = new javax.swing.JComboBox();
         configurationsButton = new javax.swing.JButton();
         customizerPanel = new javax.swing.JPanel();
 
@@ -227,6 +232,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             }
         });
         configurationPanel.add(configurationComboBox, new java.awt.GridBagConstraints());
+        configurationPanel.add(allConfigurationComboBox, new java.awt.GridBagConstraints());
 
         configurationsButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/customizer/Bundle").getString("CONFIGURATIONS_BUTTON_MNE").charAt(0));
         configurationsButton.setText(bundle.getString("CONFIGURATIONS_BUTTON_LBL")); // NOI18N
@@ -330,6 +336,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox allConfigurationComboBox;
     private javax.swing.JLabel categoryLabel;
     private javax.swing.JPanel categoryPanel;
     private javax.swing.JComboBox configurationComboBox;
@@ -473,6 +480,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                         configurationLabel.setEnabled(false);
                         configurationComboBox.setEnabled(false);
                         configurationsButton.setEnabled(true);
+                        configurationComboBox.setVisible(false);
+                        allConfigurationComboBox.setVisible(true);
+                        allConfigurationComboBox.setEnabled(false);
                     }
                     else if (currentConfigurationNode.custumizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
                         panel.setBorder(new javax.swing.border.EtchedBorder());
@@ -486,11 +496,15 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                         configurationLabel.setEnabled(true);
                         configurationComboBox.setEnabled(true);
                         configurationsButton.setEnabled(true);
+                        configurationComboBox.setVisible(true);
+                        allConfigurationComboBox.setVisible(false);
                     }
                     else {
                         configurationLabel.setEnabled(false);
                         configurationComboBox.setEnabled(false);
                         configurationsButton.setEnabled(false);
+                        configurationComboBox.setVisible(true);
+                        allConfigurationComboBox.setVisible(false);
                     }
                     customizerPanel.add(panel, fillConstraints );
                     customizerPanel.validate();
@@ -1258,6 +1272,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             if (getActive() != null)
                 type = ((MakeConfiguration)getActive()).getConfigurationType().getValue();
             Configuration newconf = projectDescriptor.defaultConf(newName, type);
+            ((MakeConfiguration)newconf).reCountLanguages((MakeConfigurationDescriptor)projectDescriptor);
             return newconf;
         }
         

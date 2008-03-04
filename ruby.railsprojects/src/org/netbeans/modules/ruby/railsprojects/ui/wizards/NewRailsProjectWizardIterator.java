@@ -56,7 +56,7 @@ import org.netbeans.modules.ruby.railsprojects.RailsProjectCreateData;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectGenerator;
 import org.netbeans.modules.ruby.railsprojects.database.RailsAdapterFactory;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
-import org.netbeans.modules.ruby.railsprojects.server.RubyServer;
+import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.ErrorManager;
@@ -157,7 +157,7 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
         RakeProjectHelper h = null;
         
         Boolean deploy = (Boolean) wiz.getProperty(GOLDSPIKE_WN); // NOI18N
-        RubyServer server = (RubyServer) wiz.getProperty(SERVER_INSTANCE); // NOI18N
+        RubyInstance server = (RubyInstance) wiz.getProperty(SERVER_INSTANCE); // NOI18N
 
         RubyPlatform platform = (RubyPlatform) wiz.getProperty("platform"); // NOI18N
         RailsDatabaseConfiguration databaseConf = (RailsDatabaseConfiguration) wiz.getProperty(RAILS_DEVELOPMENT_DB);

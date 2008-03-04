@@ -65,10 +65,15 @@ made subject to such option by the copyright holder.
         <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-manager.jar"/>
         <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-metro-samples.jar"/>
         <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-saas-api.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-saas-codegen.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-saas-services-strikeiron.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-saas-ui.jar"/>
         <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-utilities.jar"/>
         <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-websvcapi.jar"/>
+<!--
         <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-wsitconf.jar"/>
         <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-wsitmodelext.jar"/>
+-->        
     </path>
 
     <path id="ws.kit.src.path">
@@ -84,14 +89,32 @@ made subject to such option by the copyright holder.
         <pathelement location="../../websvc.manager/src"/>
         <pathelement location="../../websvc.metro.samples/src"/>
         <pathelement location="../../websvc.saas.api/src"/>
+        <pathelement location="../../websvc.saas.codegen/src"/>
+        <pathelement location="../../websvc.saas.services.strikeiron/src"/>
+        <pathelement location="../../websvc.saas.ui/src"/>
         <pathelement location="../../websvc.utilities/src"/>
         <pathelement location="../../websvc.websvcapi/src"/>
+<!--
         <pathelement location="../../websvc.wsitconf/src"/>
         <pathelement location="../../websvc.wsitmodelext/src"/>
+-->
     </path>
 
     <target name="emma-init-coverage-path-module" unless="coverage.kit">
-        <antcall target="xtest.emma-init-coverage-path"/>
+        <property name="module.jar.dir" value="modules"/>
+        <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
+        <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
+        <property name="coverage.path" location="${cluster}/${module.jar}"/>
+        <!-- only when is emma.disable.backup -->
+        <property name="backup.netbeans.dest.dir" location="${netbeans.dest.dir}"/>
+        <pathconvert property="backup.coverage.path" targetos="unix">
+            <path path="${coverage.path}"/>
+            <mapper>
+              <globmapper from="${netbeans.dest.dir}*" to="${backup.netbeans.dest.dir}*" />
+            </mapper>
+        </pathconvert>
+        <echo>coverage.path=${backup.coverage.path}</echo>
+        <path id="coverage.path.id" path="${backup.coverage.path}"/>
     </target>
 
     <target name="emma-init-coverage-path-kit" if="coverage.kit">
@@ -111,7 +134,9 @@ made subject to such option by the copyright holder.
     <target name="emma-init-coverage-path" depends="emma-init-coverage-path-module,emma-init-coverage-path-kit"/>
 
     <target name="emma-init-coverage-source-path-module" unless="coverage.kit">
-        <antcall target="xtest.emma-init-coverage-source-path"/>
+        <property name="coverage.source.path" location="../src"/>
+        <echo>coverage.source.path=${coverage.source.path}</echo>
+        <path id="coverage.source.path" path="${coverage.source.path}"/>
     </target>
 
     <target name="emma-init-coverage-source-path-kit" if="coverage.kit">

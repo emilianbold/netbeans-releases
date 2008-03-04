@@ -1,24 +1,45 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.validation.reference;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -48,7 +69,6 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
-import org.netbeans.modules.bpel.validation.core.Outcome;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
@@ -91,17 +111,15 @@ public final class Validator extends BpelValidator {
       builder.append( string );
       builder.append(", "); // NOI18N
     }
-    String str;
+    String key;
 
     if (set.size() > 1) {
-      str = i18n(Validator.class, FIX_VARIABLES);
-      str = MessageFormat.format(str, builder.substring(0, builder.length()-2), expression.trim());
+      key = "FIX_Variables";
     }
     else {
-      str = i18n(Validator.class, FIX_VARIABLE);
-      str = MessageFormat.format(str, builder.substring(0, builder.length()-2), expression.trim());
+      key = "FIX_Variable";
     }
-    addErrorMessage(str, entity);
+    addError(key, entity, builder.substring(0, builder.length()-2), expression.trim());
   }
   
   private void findDeclarationsAscendant(BpelEntity entity, Set<String> set) {
@@ -156,43 +174,13 @@ public final class Validator extends BpelValidator {
       if (reference == null) {
         continue;
       }
-      if (reference.isBroken()) {
-        addQuickFix(new Outcome(this, ResultType.ERROR, (Component) entity,
-          getMessage(entity, reference), QuickFix.get(entity, (Reference<Referenceable>) reference)));
+      if ( !reference.isBroken()) {
+        continue;
       }
+      String tag = entity.getPeer().getLocalName();
+      String attr = ((MappedReference) reference).getAttribute().getName();
+
+      addQuickFix("FIX_Reference", entity, tag, attr, QuickFix.get(entity, (Reference<Referenceable>) reference));
     }
   }
-
-  private String getMessage(BpelEntity entity, Reference ref) {
-      String str = null;
-      String tagName = entity.getPeer().getLocalName();
-      Attribute attr = null;
-
-      if (ref instanceof MappedReference) {
-        attr = ((MappedReference) ref).getAttribute();
-      }
-      if (ref instanceof BpelReference) {
-        str = i18n(getClass(), FIX_REFERENCE);
-        str = MessageFormat.format(str, tagName, attr.getName()) + " " + i18n(getClass(), FIX_CORRECTION); // NOI18N
-      }
-      else if (ref instanceof WSDLReference) {
-        str = i18n(getClass(), FIX_REFERENCE_EXTERNAL);
-        str = MessageFormat.format(str, tagName, attr.getName(), WSDL) + " " + i18n(getClass(), FIX_CORRECTION_EXTERNAL); // NOI18N
-      }
-      else if (ref instanceof SchemaReference) {
-        str = i18n(getClass(), FIX_REFERENCE_EXTERNAL);
-        str = MessageFormat.format(str, tagName, attr.getName(), XSD) + " " + i18n(getClass(),FIX_CORRECTION_EXTERNAL); // NOI18N
-      }
-      return str;
-  }
-
-  private static final String FIX_VARIABLES = "FIX_Variables";    // NOI18N
-  private static final String FIX_VARIABLE = "FIX_Variable";      // NOI18N
-  private static final String FIX_CORRECTION_EXTERNAL = "FIX_Correction_External"; // NOI18N
-  private static final String XSD = "xsd";                        // NOI18N
-  private static final String WSDL = "WSDL";                      // NOI18N
-  private static final String FIX_REFERENCE_EXTERNAL = "FIX_Reference_External"; // NOI18N
-  private static final String FIX_CORRECTION = "FIX_Correction";  // NOI18N
-  private static final String FIX_UNKNOWN = "FIX_Unknown";        // NOI18N
-  private static final String FIX_REFERENCE = "FIX_Reference";    // NOI18N
 }

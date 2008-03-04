@@ -77,6 +77,9 @@ public class LineBreakpointImpl extends BreakpointImpl {
             getDebugger().setSilentStop();
         }
         if (st.equals(BPSTATE_UNVALIDATED) || st.equals(BPSTATE_REVALIDATE)) {
+            if (st.equals(BPSTATE_REVALIDATE) && getBreakpointNumber() > 0) {
+                getDebugger().getGdbProxy().break_delete(getBreakpointNumber());
+            }
             setState(BPSTATE_VALIDATION_PENDING);
             lineNumber = breakpoint.getLineNumber();
             String path = getDebugger().getBestPath(breakpoint.getPath());
@@ -89,13 +92,16 @@ public class LineBreakpointImpl extends BreakpointImpl {
             }
             getDebugger().addPendingBreakpoint(token, this);
 	} else {
-	    if (st.equals(BPSTATE_DELETION_PENDING)) {
-		getDebugger().getGdbProxy().break_delete(getBreakpointNumber());
-	    } else if (st.equals(BPSTATE_VALIDATED)) {
-                if (breakpoint.isEnabled()) {
-                    getDebugger().getGdbProxy().break_enable(getBreakpointNumber());
-                } else {
-                    getDebugger().getGdbProxy().break_disable(getBreakpointNumber());
+            int bnum = getBreakpointNumber();
+            if (bnum > 0) { // bnum < 0 for breakpoints from other projects...
+                if (st.equals(BPSTATE_DELETION_PENDING)) {
+                    getDebugger().getGdbProxy().break_delete(bnum);
+                } else if (st.equals(BPSTATE_VALIDATED)) {
+                    if (breakpoint.isEnabled()) {
+                        getDebugger().getGdbProxy().break_enable(bnum);
+                    } else {
+                        getDebugger().getGdbProxy().break_disable(bnum);
+                    }
                 }
             }
 	}

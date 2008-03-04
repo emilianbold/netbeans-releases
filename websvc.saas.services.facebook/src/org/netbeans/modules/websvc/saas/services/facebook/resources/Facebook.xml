@@ -45,7 +45,7 @@
                xmlns:tns="http://xml.netbeans.org/websvc/saas/component/1.0/facebook"
                xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
-                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
+               ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://wiki.developers.facebook.com/index.php/API"
                url="org/netbeans/modules/websvc/saas/services/facebook/resources/FacebookWadl.xml">
@@ -56,6 +56,43 @@
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.facebook.Bundle</localizing-bundle>
         <group name="Facebook"/>
+
+        <authentication profile="SaaSServices/Facebook/profile.properties">
+            <session-key api-id="api_key" session-id="session_key" sig-id="sig">
+                <sign>
+                    <params>
+                        <param name="method" type="string" required="true"/>
+                        <param name="v" type="string" required="true" default="1.0"/>
+                        <param name="api_key" type="string" required="true"/>
+                        <param name="auth_token" type="string" required="true"/>
+                    </params>
+                </sign>
+                <login>
+                    <sign>
+                        <params>
+                            <param name="method" type="string" required="true"/>
+                            <param name="v" type="string" required="true" default="1.0"/>
+                            <param name="api_key" type="string" required="true"/>
+                            <param name="auth_token" type="string" required="true"/>
+                        </params>
+                    </sign>
+                    <method id="sessionKey={session_key},sessionSecret={secret}" name="login" href="#facebook.auth_getSession"/>
+                </login>
+                <token>
+                    <sign>
+                        <params>
+                            <param name="method" type="string" required="true"/>
+                            <param name="v" type="string" required="true" default="1.0"/>
+                            <param name="api_key" type="string" required="true"/>
+                        </params>
+                    </sign>
+                    <method id="token={auth_createToken_response}" name="getToken" href="#facebook.auth_createToken"/>
+                    <frame url="http://www.facebook.com/login.php?api_key={apiKey}&amp;v={v}&amp;auth_token={token}"/>
+                </token>
+                <logout/>
+            </session-key>
+        </authentication>
+        
     </saas-metadata>
     
     <!-- Process all methods in the wadl !-->

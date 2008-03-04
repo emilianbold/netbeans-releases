@@ -71,37 +71,103 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
     private void setDefaultsOptions(){
         EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
     }
-    public void testReformatArrayInitializerWithNewline2() {
+
+//    public void testIdentMultyConstructor3() {
+//        setDefaultsOptions();
+//        setLoadDocumentText(
+//            "class IndexReader : LUCENE_BASE\n" +
+//            "{\n" +
+//            "public:\n" +
+//            "class IndexReaderCommitLockWith : \n" +
+//            "public CL_NS(store)::LuceneLockWith\n" +
+//            "{\n" +
+//            "private:\n" +
+//            "IndexReader* reader;\n" +
+//            "};\n" +
+//            "};\n"
+//            );
+//        reformat();
+//        assertDocumentText("Incorrect identing multyline constructor",
+//            "class IndexReader : LUCENE_BASE\n" +
+//            "{\n" +
+//            "public:\n" +
+//            "    class IndexReaderCommitLockWith :\n" +
+//            "    public CL_NS(store)::LuceneLockWith\n" +
+//            "    {\n" +
+//            "    private:\n" +
+//            "        IndexReader* reader;\n" +
+//            "    };\n" +
+//            "};\n"
+//        );
+//    }
+
+//    public void testCaseIndentAftePreprocessor() {
+//        setDefaultsOptions();
+//        setLoadDocumentText(
+//            " C_MODE_START\n" +
+//            "#    include <decimal.h>\n" +
+//            "        C_MODE_END\n" +
+//            "\n" +
+//            "#    define DECIMAL_LONGLONG_DIGITS 22\n" +
+//            "\n" +
+//            "\n" +
+//            "        /* maximum length of buffer in our big digits (uint32) */\n" +
+//            "#    define DECIMAL_BUFF_LENGTH 9\n" +
+//            "        /*\n" +
+//            "        point on the border of our big digits))\n" +
+//            "*/\n" +
+//            "#    define DECIMAL_MAX_PRECISION ((DECIMAL_BUFF_LENGTH * 9) - 8*2)\n" +
+//            "\n"
+//            );
+//        reformat();
+//        assertDocumentText("Incorrect identing case after preprocessor",
+//            "C_MODE_START\n" +
+//            "#include <decimal.h>\n" +
+//            "C_MODE_END\n" +
+//            "\n" +
+//            "#define DECIMAL_LONGLONG_DIGITS 22\n" +
+//            "\n" +
+//            "\n" +
+//            "/* maximum length of buffer in our big digits (uint32) */\n" +
+//            "#define DECIMAL_BUFF_LENGTH 9\n" +
+//            "/*\n" +
+//            "point on the border of our big digits))\n" +
+//            "*/\n" +
+//            "#define DECIMAL_MAX_PRECISION ((DECIMAL_BUFF_LENGTH * 9) - 8*2)\n" +
+//            "\n"
+//        );
+//    }
+//
+
+    public void testReformatMultiLineClassDeclaration() {
         setDefaultsOptions();
         setLoadDocumentText(
-                "	void testError(CuTest *tc){\n" +
-                "		IndexReader* reader = NULL;\n" +
-                "		try{\n" +
-                "			RAMDirectory dir;\n" +
-                "		}catch(CLuceneError&){\n" +
-                "			_CLDELETE(reader);\n" +
-                "		}catch(...){\n" +
-                "			CuAssert(tc,_T(\"Error did not catch properly\"),false);\n" +
-                "		}\n" +
-                "	}\n" +
-                "\n");
-        reformat();
-        assertDocumentText("Incorrect tabbed catch reformatting",
-                "void testError(CuTest *tc)\n" +
+                "int foo()\n" +
                 "{\n" +
-                "    IndexReader* reader = NULL;\n" +
-                "    try {\n" +
-                "        RAMDirectory dir;\n" +
-                "    }\n" +
-                "    catch(CLuceneError&){\n" +
-                "        _CLDELETE(reader);\n" +
-                "    }\n" +
-                "    catch(...){\n" +
-                "        CuAssert(tc,_T(\"Error did not catch properly\"),false);\n" +
-                "    }\n" +
                 "}\n" +
-                "\n");
+                "/*\n" +
+                "* Call this when vim starts up, whether or not the GUI is started\n" +
+                " */\n" +
+                "void\n" +
+                "gui_prepare(argc)\n" +
+                "    int *argc;\n" +
+                "{\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect new-line indent",
+                "int foo()\n" +
+                "{\n" +
+                "}\n" +
+                "\n" +
+                "/*\n" +
+                " * Call this when vim starts up, whether or not the GUI is started\n" +
+                " */\n" +
+                "void\n" +
+                "gui_prepare(argc)\n" +
+                "int *argc;\n" +
+                "{\n" +
+                "}\n"
+                );
     }
-                
- 
 }

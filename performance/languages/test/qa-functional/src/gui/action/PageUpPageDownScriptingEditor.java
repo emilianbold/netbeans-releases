@@ -6,6 +6,7 @@
 package gui.action;
 
 import gui.Projects;
+import gui.ScriptingUtilities;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -63,7 +64,7 @@ public class PageUpPageDownScriptingEditor extends org.netbeans.performance.test
     
     protected Node getProjectNode(String projectName) {
         if(projectsTab==null)
-            projectsTab = new ProjectsTabOperator();
+            projectsTab = ScriptingUtilities.invokePTO();
         
         return projectsTab.getProjectRootNode(projectName);
     }
@@ -104,14 +105,14 @@ public class PageUpPageDownScriptingEditor extends org.netbeans.performance.test
     public void testPgUp_In_RBEditor() {
         testProject = Projects.RUBY_PROJECT;
         fileName = "ruby20kb.rb";
-        nodePath = "Source Files"+"|";        
+        nodePath = "Source Files";        
         pgup = true;
         doMeasurement();
     }
     public void testPgDn_In_RBEditor() {
         testProject = Projects.RUBY_PROJECT;
         fileName = "ruby20kb.rb";
-        nodePath = "Source Files"+"|";        
+        nodePath = "Source Files";        
         pgup = false;        
         doMeasurement();
     }
@@ -119,22 +120,21 @@ public class PageUpPageDownScriptingEditor extends org.netbeans.performance.test
     public void testPgUp_In_RHTMLEditor() {
         testProject = Projects.RAILS_PROJECT;
         fileName = "rhtml20kb.rhtml";
-        nodePath = "Views"+"|";        
+        nodePath = "Views";        
         pgup = true;
         doMeasurement();
-    }
-    
+    }    
     public void testPgDn_In_RHTMLEditor() {
         testProject = Projects.RAILS_PROJECT;
         fileName = "rhtml20kb.rhtml";
-        nodePath = "Views"+"|";        
+        nodePath = "Views";        
         pgup = false;        
         doMeasurement();
     }
     
     public void testPgUp_In_JSEditor() {
         testProject = Projects.SCRIPTING_PROJECT;
-        nodePath = "Web Pages"+"|";
+        nodePath = "Web Pages";
         fileName = "javascript20kb.js";         
         pgup = true;
         doMeasurement();
@@ -142,7 +142,7 @@ public class PageUpPageDownScriptingEditor extends org.netbeans.performance.test
     
     public void testPgDn_In_JSEditor() {
         testProject = Projects.SCRIPTING_PROJECT;
-        nodePath = "Web Pages"+"|";
+        nodePath = "Web Pages";
         fileName = "javascript20kb.js";         
         pgup = false;        
         doMeasurement();
@@ -150,7 +150,7 @@ public class PageUpPageDownScriptingEditor extends org.netbeans.performance.test
     
     public void testPgUp_In_CSSEditor() {
         testProject = Projects.SCRIPTING_PROJECT;
-        nodePath = "Web Pages"+"|";
+        nodePath = "Web Pages";
         fileName = "css20kb.css";        
         pgup = true;
         doMeasurement();
@@ -158,7 +158,7 @@ public class PageUpPageDownScriptingEditor extends org.netbeans.performance.test
     
     public void testPgDn_In_CSSEditor() {
         testProject = Projects.SCRIPTING_PROJECT;
-        nodePath = "Web Pages"+"|";
+        nodePath = "Web Pages";
         fileName = "css20kb.css";        
         pgup = false;        
         doMeasurement();

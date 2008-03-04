@@ -148,7 +148,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
     
     private static final String WAITING_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/waiting.png"; // NOI18N
     private static final String ERROR_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/error-badge.gif"; //NOI18N
-    private static final String SERVICE_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif"; //NOI18N
+    private static final String SERVICE_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.png"; //NOI18N
 
     private java.awt.Image cachedWaitingBadge;
     private java.awt.Image cachedErrorBadge;
@@ -517,35 +517,5 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
         return null;
     }
     
-     @Override
-    protected Sheet createSheet() {
-        Sheet sheet = super.createSheet();
-        Sheet.Set set = sheet.get(Sheet.PROPERTIES);
-        if (set == null) {
-            set = Sheet.createPropertiesSet();
-
-        }
-        sheet.put(set);
-        set.put(
-                new PropertySupport("useDispatch", Boolean.class,
-                NbBundle.getMessage(JaxWsClientNode.class, "TTL_USE_DISPATCH"),
-                "", true, true) {
-
-                    public Object getValue() {
-                        return client.getUseDispatch();
-                    }
-
-                    public void setValue(Object value) {
-                        try {
-                            Boolean val = (Boolean) value;
-                            client.setUseDispatch(val);
-                            jaxWsModel.write();
-                        } catch (IOException ex) {
-                            ErrorManager.getDefault().notify(ex);
-                        }
-                    }
-                });
-        
-        return sheet;
-    }
+ 
 }

@@ -249,14 +249,14 @@ public class GdbProxy implements GdbMiDefinitions {
     
     /**
      */
-    public int data_list_register_names(CommandBuffer cb, String regIds) {
-        return engine.sendCommand(cb, "-data-list-register-names " + regIds); // NOI18N
+    public int data_list_register_names(String regIds) {
+        return engine.sendCommand("-data-list-register-names " + regIds); // NOI18N
     }
     
     /**
      */
-    public int data_list_register_values(CommandBuffer cb, String regIds) {
-        return engine.sendCommand(cb, "-data-list-register-values r " + regIds); // NOI18N
+    public int data_list_register_values(String regIds) {
+        return engine.sendCommand("-data-list-register-values x " + regIds); // NOI18N
     }
     
     /*
@@ -264,6 +264,13 @@ public class GdbProxy implements GdbMiDefinitions {
      */
     public int data_disassemble(String filename, int line) {
         return engine.sendCommand("-data-disassemble -f " + filename + " -l " + line + " -- 0"); // NOI18N
+    }
+    
+    /*
+     * @param size - size in bytes
+     */
+    public int data_disassemble(int size) {
+        return engine.sendCommand("-data-disassemble -s $pc -e \"$pc+" + size + "\" -- 0"); // NOI18N
     }
     
     public int print(CommandBuffer cb, String expression) {
@@ -479,6 +486,14 @@ public class GdbProxy implements GdbMiDefinitions {
      */
     public int break_disable(int number) {
         return engine.sendCommand("-break-disable " + Integer.toString(number)); // NOI18N
+    }
+    
+    public int break_condition(int number, String condition) {
+        return engine.sendCommand("-break-condition " + Integer.toString(number) + " " + condition); // NOI18N
+    }
+    
+    public int break_after(int number, String count) {
+        return engine.sendCommand("-break-after " + Integer.toString(number) + " " + count); // NOI18N
     }
 
     /** Send "-stack-list-locals" to the debugger */

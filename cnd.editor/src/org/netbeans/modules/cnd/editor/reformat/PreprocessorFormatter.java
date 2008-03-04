@@ -39,13 +39,15 @@
 
 package org.netbeans.modules.cnd.editor.reformat;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.reformat.DiffLinkedList.DiffResult;
-import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
 
 /**
  *
@@ -57,12 +59,16 @@ public class PreprocessorFormatter {
     private final CodeStyle codeStyle;
     private final DiffLinkedList diffs;
     private int prepocessorDepth = 0;
+    private Stack<PreprocessorStateStack> stateStack = new Stack<PreprocessorStateStack>();
+    private BracesStack braces;
+
     
-    public PreprocessorFormatter(ReformatterImpl context){
+    /*package local*/ PreprocessorFormatter(ReformatterImpl context){
         this.context = context;
         this.ts = context.ts;
         this.codeStyle = context.codeStyle;
         this.diffs = context.diffs;
+        this.braces = context.braces;
     }
     
     /*package local*/ void indentPreprocessor(Token<CppTokenId> previous) {
@@ -82,12 +88,25 @@ public class PreprocessorFormatter {
         if (prep.token() != null) {
             directive = prep.token();
         }
+        PreprocessorStateStack ps = null;
         if (directive != null) {
             switch (directive.id()) {
                 case PREPROCESSOR_ELSE: //("else", "preprocessor-keyword-directive"),
                 case PREPROCESSOR_ELIF: //("elif", "preprocessor-keyword-directive"),
+                    prepocessorDepth--;
+                    if (!stateStack.empty()){
+                        ps = stateStack.pop();
+                        ps.outputStack.add(braces.clone());
+                        braces.reset(ps.inputStack);
+                    }
+                    break;
                 case PREPROCESSOR_ENDIF: //("endif", "preprocessor-keyword-directive"),
                     prepocessorDepth--;
+                    if (!stateStack.empty()){
+                        ps = stateStack.pop();
+                        ps.outputStack.add(braces.clone());
+                        braces.reset(ps.getBestOutputStack());
+                    }
                     break;
             }
             if (context.doFormat()) {
@@ -108,10 +127,16 @@ public class PreprocessorFormatter {
                 case PREPROCESSOR_IFDEF: //("ifdef", "preprocessor-keyword-directive"),
                 case PREPROCESSOR_IFNDEF: //("ifndef", "preprocessor-keyword-directive"),
                     prepocessorDepth++;
+                    stateStack.push(new PreprocessorStateStack(braces.clone()));
                     break;
                 case PREPROCESSOR_ELSE: //("else", "preprocessor-keyword-directive"),
                 case PREPROCESSOR_ELIF: //("elif", "preprocessor-keyword-directive"),
                     prepocessorDepth++;
+                    if (ps != null) {
+                        stateStack.push(ps);
+                    } else {
+                        stateStack.push(new PreprocessorStateStack(braces.clone()));
+                    }
                     break;
             }
         }
@@ -207,5 +232,44 @@ public class PreprocessorFormatter {
         } else {
             return prefix;
         }
+    }
+    private static class PreprocessorStateStack {
+        private BracesStack inputStack;
+        private List<BracesStack> outputStack = new ArrayList<BracesStack>();
+        private PreprocessorStateStack(BracesStack inputStack){
+            this.inputStack = inputStack;
+        }
+        private BracesStack getBestOutputStack(){
+            if (outputStack.size()>0){
+                BracesStack min =null;
+                int minLen = Integer.MAX_VALUE;
+                BracesStack max =null;
+                int maxLen = Integer.MIN_VALUE;
+                int inLen = inputStack.getLength();
+                for(BracesStack out : outputStack){
+                    int currentLen = out.getLength();
+                    if (currentLen < inLen){
+                        if (currentLen <= minLen) {
+                            min = out;
+                            minLen = currentLen;
+                        }
+                    } else if (currentLen > inLen) {
+                        if (currentLen >= maxLen) {
+                            max = out;
+                            maxLen = currentLen;
+                        }
+                    }
+                }
+                if (min != null && max == null) {
+                    return min;
+                }
+                if (max != null) {
+                    return max;
+                }
+                return outputStack.get(outputStack.size()-1);
+            }
+            return inputStack;
+        }
+        
     }
 }

@@ -269,7 +269,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport(ejbJarWebServicesClientSupport);
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
         classPathModifier = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
-            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), getClassPathUiSupportCallback());
+            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), 
+            getClassPathUiSupportCallback(), new String[]{ProjectProperties.JAVAC_CLASSPATH});
         classPathExtender = new ClassPathExtender(classPathModifier, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
         librariesLocationUpdater = new LibrariesLocationUpdater(this, updateHelper, eval, classPathModifier.getClassPathSupport(),
                 ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES, 
@@ -1015,7 +1016,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             
             // unregister the property change listener on the prop evaluator
             if (librariesLocationUpdater != null) {
-                librariesLocationUpdater.unregister();
+                librariesLocationUpdater.destroy();
             }
             
             // Probably unnecessary, but just in case:
