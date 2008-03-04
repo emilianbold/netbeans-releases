@@ -70,9 +70,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.CsmVariable;
 
 /**
  *
