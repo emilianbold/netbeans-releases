@@ -9,7 +9,6 @@ derby\.log
 \.orig$
 \.rej$
 \.swp$
-hs_err_pid[0-9]+\.log$
 /gensrc$
 ^nbbuild/antsrc/org/netbeans/nbbuild/extlibs/external\.pyc$
 ^o.apache.tools.ant.module/external/lib$
