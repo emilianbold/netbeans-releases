@@ -175,13 +175,13 @@ public class DatabaseNodeChildren extends Children.Array {
 //                                    // add connection (if needed) and make the connection to SAMPLE database connected
 //                                    PointbasePlus.addOrConnectAccordingToOption();
 //                                    } catch(Exception ex) {
-//                                        org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.FINERMATIONAL, ex);
+//                                        org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
 //                                    }
 //                                }
 //                            });
 //                    }
                 } catch (Exception e) {
-                    Logger.getLogger("global").log(Level.FINE, null, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                     showException(e);
                     tempChildren.clear();
                 }
