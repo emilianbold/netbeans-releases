@@ -307,7 +307,7 @@ public class RestUtils {
                     } else if (RestConstants.PRODUCE_MIME_ANNOTATION.equals(mAnonType) || 
                             RestConstants.PRODUCE_MIME.equals(mAnonType)) {
                         List<String> mimes = getMimeAnnotationValue(mAnon);
- f                        if (mimes.contains(Constants.MimeType.JSON.value()) ||
+                         if (mimes.contains(Constants.MimeType.JSON.value()) ||
                             mimes.contains(Constants.MimeType.XML.value())) {
                             isXmlMime = true;
                         }
