@@ -535,7 +535,9 @@ implements PropertyChangeListener, CasaValidationListener {
         }
         ((CasaNodeWidget) findWidget(node)).attachPinWidget(widget);
         
-        widget.getActions().addAction(mDoubleClickOpenAction);
+        if (!isBinding) {
+            widget.getActions().addAction(mDoubleClickOpenAction);
+        }
         widget.getActions().addAction(createObjectHoverAction());
         widget.getActions().addAction(createSelectAction());
         widget.getActions().addAction(mPopupMenuAction);

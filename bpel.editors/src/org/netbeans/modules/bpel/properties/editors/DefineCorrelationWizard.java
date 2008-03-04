@@ -83,6 +83,7 @@ import javax.swing.tree.TreePath;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.bpel.core.util.ValidationUtil;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
 import org.netbeans.modules.bpel.model.api.BaseCorrelation;
@@ -136,6 +137,7 @@ import org.netbeans.modules.soa.mappercore.model.SourcePin;
 import org.netbeans.modules.soa.mappercore.model.TargetPin;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
+import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.ComplexType;
 import org.netbeans.modules.xml.schema.model.Element;
@@ -162,6 +164,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
+import org.netbeans.modules.xml.wsdl.ui.wsdl.util.RelativePath;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
@@ -179,6 +182,7 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -1393,6 +1397,9 @@ public class DefineCorrelationWizard implements WizardProperties {
                     (globalSimpleTypes == null)) return null;
                 
                 for (SchemaComponent component : componentList) {
+                    GlobalSimpleType globalSimpleType = ValidationUtil.resolveSimpleTypeName(component);
+                    if  (globalSimpleType != null) return globalSimpleType.toString();
+/*****??????                    
                  String baseTypeName = component.getAnyAttribute(new QName(
                      WizardConstants.SCHEMA_COMPONENT_ATTRIBUTE_BASE));
                     if (baseTypeName != null) {
@@ -1407,9 +1414,11 @@ public class DefineCorrelationWizard implements WizardProperties {
                             return null;
                         }
                     }
+*********????????*/ 
                 }
                 return null;
-            }            
+            }
+            
             private NamedComponentReference<GlobalType> findGlobalSimpleType(String typeName,
                 Collection<GlobalSimpleType> globalSimpleTypes) {
                 NamedComponentReference<GlobalType> typeRef = null;
@@ -2059,12 +2068,14 @@ class WizardUtils implements WizardConstants {
         try {
             org.netbeans.modules.xml.wsdl.model.Import objImport = 
                 baseWsdlModel.getFactory().createImport();
+
+            FileObject 
+                baseFileObj = baseWsdlModel.getModelSource().getLookup().lookup(FileObject.class),
+                importedFileObj = importedWsdlModel.getModelSource().getLookup().lookup(FileObject.class);
+            String importRelativePath = getRelativePath(baseFileObj, importedFileObj);
             
             objImport.setNamespace(importedWsdlModel.getDefinitions().getTargetNamespace());
-
-            FileObject importedFileObject = 
-                importedWsdlModel.getModelSource().getLookup().lookup(FileObject.class);
-            objImport.setLocation(importedFileObject.getNameExt());
+            objImport.setLocation(importRelativePath);
 
             if (! wsdlContainsImport(baseWsdlModel, objImport)) {
                 baseWsdlModel.startTransaction();
@@ -2075,6 +2086,37 @@ class WizardUtils implements WizardConstants {
         } finally {
             baseWsdlModel.endTransaction();
         }
+    }
+    
+    public static String getRelativePath(FileObject baseFileObj, 
+        FileObject relatedFileObj) {
+        if ((baseFileObj == null) || (relatedFileObj == null)) {
+            throw new NullPointerException(baseFileObj == null ? 
+                "Base file object is null" : "Related file object is null");
+        }
+        // both files are located in the same folder
+        String relativePath = relatedFileObj.getNameExt();
+        
+        URI baseFileURI = FileUtil.toFile(baseFileObj).toURI(),
+            relatedFileURI = FileUtil.toFile(relatedFileObj).toURI();
+        if (! (relatedFileURI.equals(baseFileURI))) {
+            DefaultProjectCatalogSupport catalogSupport = DefaultProjectCatalogSupport.getInstance(baseFileObj);
+            if (catalogSupport.needsCatalogEntry(baseFileObj, relatedFileObj)) {
+                try { // remove a previous catalog entry, then create a new one
+                    URI uri = catalogSupport.getReferenceURI(baseFileObj, relatedFileObj);
+                    catalogSupport.removeCatalogEntry(uri);
+                    catalogSupport.createCatalogEntry(baseFileObj, relatedFileObj);
+                    relativePath = catalogSupport.getReferenceURI(baseFileObj, 
+                        relatedFileObj).toString();
+                } catch (Exception e) {
+                    ErrorManager.getDefault().notify(e);
+                }
+            } else {
+                relativePath = RelativePath.getRelativePath(FileUtil.toFile(
+                    baseFileObj).getParentFile(), FileUtil.toFile(relatedFileObj));
+            }
+        }
+        return relativePath;
     }
     
     public static boolean wsdlContainsImport(WSDLModel baseWsdlModel, 
@@ -2272,7 +2314,6 @@ interface WizardConstants {
     String 
         CORRELATION_PROPERTY_NAME_PREFIX = "wzrd_prop_", // NOI18N
         CORRELATION_SET_NAME_PREFIX = "wzrd_set_", // NOI18N
-        SCHEMA_COMPONENT_ATTRIBUTE_BASE = "base", // NOI18N
         DEFAULT_NS_PREFIX = "ns"; // NOI18N
 }
 //============================================================================//
