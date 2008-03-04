@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.editor.reformat;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -57,7 +59,7 @@ public class PreprocessorFormatter {
     private final CodeStyle codeStyle;
     private final DiffLinkedList diffs;
     private int prepocessorDepth = 0;
-    private Stack<BracesStack> stateStack = new Stack<BracesStack>();
+    private Stack<PreprocessorStateStack> stateStack = new Stack<PreprocessorStateStack>();
     private BracesStack braces;
 
     
@@ -86,19 +88,24 @@ public class PreprocessorFormatter {
         if (prep.token() != null) {
             directive = prep.token();
         }
+        PreprocessorStateStack ps = null;
         if (directive != null) {
             switch (directive.id()) {
                 case PREPROCESSOR_ELSE: //("else", "preprocessor-keyword-directive"),
                 case PREPROCESSOR_ELIF: //("elif", "preprocessor-keyword-directive"),
                     prepocessorDepth--;
                     if (!stateStack.empty()){
-                        braces.reset(stateStack.pop());
+                        ps = stateStack.pop();
+                        ps.outputStack.add(braces.clone());
+                        braces.reset(ps.inputStack);
                     }
                     break;
                 case PREPROCESSOR_ENDIF: //("endif", "preprocessor-keyword-directive"),
                     prepocessorDepth--;
                     if (!stateStack.empty()){
-                        stateStack.pop();
+                        ps = stateStack.pop();
+                        ps.outputStack.add(braces.clone());
+                        braces.reset(ps.getBestOutputStack());
                     }
                     break;
             }
@@ -120,12 +127,16 @@ public class PreprocessorFormatter {
                 case PREPROCESSOR_IFDEF: //("ifdef", "preprocessor-keyword-directive"),
                 case PREPROCESSOR_IFNDEF: //("ifndef", "preprocessor-keyword-directive"),
                     prepocessorDepth++;
-                    stateStack.push(braces.clone());
+                    stateStack.push(new PreprocessorStateStack(braces.clone()));
                     break;
                 case PREPROCESSOR_ELSE: //("else", "preprocessor-keyword-directive"),
                 case PREPROCESSOR_ELIF: //("elif", "preprocessor-keyword-directive"),
                     prepocessorDepth++;
-                    stateStack.push(braces.clone());
+                    if (ps != null) {
+                        stateStack.push(ps);
+                    } else {
+                        stateStack.push(new PreprocessorStateStack(braces.clone()));
+                    }
                     break;
             }
         }
@@ -221,5 +232,44 @@ public class PreprocessorFormatter {
         } else {
             return prefix;
         }
+    }
+    private static class PreprocessorStateStack {
+        private BracesStack inputStack;
+        private List<BracesStack> outputStack = new ArrayList<BracesStack>();
+        private PreprocessorStateStack(BracesStack inputStack){
+            this.inputStack = inputStack;
+        }
+        private BracesStack getBestOutputStack(){
+            if (outputStack.size()>0){
+                BracesStack min =null;
+                int minLen = Integer.MAX_VALUE;
+                BracesStack max =null;
+                int maxLen = Integer.MIN_VALUE;
+                int inLen = inputStack.getLength();
+                for(BracesStack out : outputStack){
+                    int currentLen = out.getLength();
+                    if (currentLen < inLen){
+                        if (currentLen <= minLen) {
+                            min = out;
+                            minLen = currentLen;
+                        }
+                    } else if (currentLen > inLen) {
+                        if (currentLen >= maxLen) {
+                            max = out;
+                            maxLen = currentLen;
+                        }
+                    }
+                }
+                if (min != null && max == null) {
+                    return min;
+                }
+                if (max != null) {
+                    return max;
+                }
+                return outputStack.get(outputStack.size()-1);
+            }
+            return inputStack;
+        }
+        
     }
 }

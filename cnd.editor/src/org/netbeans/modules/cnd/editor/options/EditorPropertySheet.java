@@ -291,12 +291,12 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.setDisplayName(getString("LBL_BlankLines")); // NOI18N
 	set.setShortDescription(getString("HINT_BlankLines")); // NOI18N
 	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesBeforeClass));
-	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesAfterClass));
+	//set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesAfterClass));
 	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesAfterClassHeader));
-	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesBeforeFields));
-	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesAfterFields));
+	//set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesBeforeFields));
+	//set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesAfterFields));
 	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesBeforeMethods));
-	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesAfterMethods));
+	//set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesAfterMethods));
         sheet.put(set);
         
         set = new Sheet.Set();
