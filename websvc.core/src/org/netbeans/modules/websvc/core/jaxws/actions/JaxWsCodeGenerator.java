@@ -48,7 +48,6 @@ import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -320,11 +319,11 @@ public class JaxWsCodeGenerator {
             "    <%\n" + //NOI18N
             "    try '{'\n" + //NOI18N
             "\t{0} service = new {0}();\n" + //NOI18N
-            "javax.xml.namespace.QName portQName = new javax.xml.namespace.QName(\"{1}\", \"{2}\");\n" +
-            "String req = \"{3}\";\n" +
-            "javax.xml.ws.Dispatch<javax.xml.transform.Source> sourceDispatch = null;\n" +
-            "sourceDispatch = service.createDispatch(portQName, javax.xml.transform.Source.class, javax.xml.ws.Service.Mode.PAYLOAD);\n" +
-            "javax.xml.transform.Source result = sourceDispatch.invoke(new javax.xml.transform.stream.StreamSource(new java.io.StringReader(req)));\n" +
+            "\tjavax.xml.namespace.QName portQName = new javax.xml.namespace.QName(\"{1}\", \"{2}\");\n" +
+            "\tString req = \"{3}\";\n" +
+            "\tjavax.xml.ws.Dispatch<javax.xml.transform.Source> sourceDispatch = null;\n" +
+            "\tsourceDispatch = service.createDispatch(portQName, javax.xml.transform.Source.class, javax.xml.ws.Service.Mode.PAYLOAD);\n" +
+            "\tjavax.xml.transform.Source result = sourceDispatch.invoke(new javax.xml.transform.stream.StreamSource(new java.io.StringReader(req)));\n" +
             "    '}' catch (Exception ex) '{'\n" + //NOI18N
             "\t// TODO handle custom exceptions here\n" + //NOI18N
             "    '}'\n" + //NOI18N
@@ -1063,16 +1062,12 @@ public class JaxWsCodeGenerator {
             WsdlService service, WsdlPort port, WsdlOperation operation, String wsdlUrl) {
         boolean inJsp = "text/x-jsp".equals(document.getProperty("mimeType")); //NOI18N
         if (inJsp) {
-            Object[] args = new Object[]{service.getJavaName(),
-                port.getNamespaceURI(),
-                port.getJavaName(),
-                generateXMLMessage(port, operation)
-            };
+            Object[] args = new Object[]{service.getJavaName(), port.getNamespaceURI(), port.getJavaName(), generateXMLMessage(port, operation)};
             final String invocationBody = getJSPDispatchBody(args);
             try {
-
                 document.insertString(pos, invocationBody, null);
             } catch (javax.swing.text.BadLocationException ex) {
+                ErrorManager.getDefault().notify(ex);
             }
             return;
         }
