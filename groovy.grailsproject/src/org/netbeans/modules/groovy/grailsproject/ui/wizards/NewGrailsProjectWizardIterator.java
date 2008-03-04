@@ -49,6 +49,7 @@ import org.netbeans.modules.groovy.grails.api.GrailsServerFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import java.io.BufferedReader;
 import java.util.concurrent.CountDownLatch;
+import org.netbeans.modules.groovy.grailsproject.actions.PublicSwingWorker;
 
 
 
@@ -92,22 +93,20 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
             this.handle = handle;
 
             Set<FileObject> resultSet = new HashSet<FileObject>();
-
-            new WizardSwingWorker(  null,
-                                    "create-app",
-                                    pls,
-                                    handle,
-                                    serverFinished,
-                                    serverRunning,
-                                    (String) wiz.getProperty("projectFolder")
-                                    ).start();
+            
+            serverRunning = true;
+            
+            new PublicSwingWorker( null, "create-app " + (String) wiz.getProperty("projectName"), 
+                                    (String) wiz.getProperty("projectFolder"), 
+                                    handle, serverFinished).start();
             
             try {
                 serverFinished.await();
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                     }
-
+                   
+            serverRunning = false;
             File dirF = new File((String) wiz.getProperty("projectFolder"));
 
            if (dirF != null) {
@@ -124,9 +123,6 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
             return resultSet;
 
     }
-     
-    
-    
     
     public Set instantiate() throws IOException {
 

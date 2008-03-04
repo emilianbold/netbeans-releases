@@ -45,8 +45,7 @@ import org.openide.util.NbBundle;
  */
 public class GetProjectLocationStep implements  WizardDescriptor.Panel, 
                                                 WizardDescriptor.ValidatingPanel,
-                                                WizardDescriptor.FinishablePanel,
-                                                GrailsServerOutputReceiver
+                                                WizardDescriptor.FinishablePanel
                                                 {
 
     private GetProjectLocationPanel component;
@@ -128,9 +127,4 @@ public class GetProjectLocationStep implements  WizardDescriptor.Panel,
         return true;
     }
 
-    public javax.swing.JTextArea getGrailsServerOutputTextArea() {
-        return component.getGrailsServerOutputTextArea();
-    }
-    
-    
 }

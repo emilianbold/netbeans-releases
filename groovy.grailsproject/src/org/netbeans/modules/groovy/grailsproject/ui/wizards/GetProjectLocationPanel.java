@@ -48,6 +48,7 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
     void store( WizardDescriptor d ) {
         // d.putProperty( "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
         d.putProperty( "projectFolder", projectFolderTextField.getText() ); // NOI18N
+        d.putProperty( "projectName", projectNameTextField.getText() ); // NOI18N
         parentStep.fireChangeEvent();
         }
     
@@ -89,9 +90,6 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
         projectFolderTextField = new javax.swing.JTextField();
         browsLocationJButton = new javax.swing.JButton();
         setAsMainCheckBox = new javax.swing.JCheckBox();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        grailsServerOutputTextArea = new javax.swing.JTextArea();
-        jLabel1 = new javax.swing.JLabel();
 
         projectNameLabel.setText(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectNameLabel.text")); // NOI18N
 
@@ -116,22 +114,12 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
         setAsMainCheckBox.setSelected(true);
         setAsMainCheckBox.setText(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.setAsMainCheckBox.text")); // NOI18N
 
-        grailsServerOutputTextArea.setColumns(20);
-        grailsServerOutputTextArea.setEditable(false);
-        grailsServerOutputTextArea.setRows(5);
-        jScrollPane1.setViewportView(grailsServerOutputTextArea);
-
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.jLabel1.text")); // NOI18N
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(setAsMainCheckBox)
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(jLabel1)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -141,12 +129,11 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
+                        .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browsLocationJButton))
-                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE)
-                    .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE)))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
+                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                    .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -165,10 +152,7 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
                     .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
                 .add(setAsMainCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -193,9 +177,6 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browsLocationJButton;
-    private javax.swing.JTextArea grailsServerOutputTextArea;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel projectFolderLabel;
     private javax.swing.JTextField projectFolderTextField;
     private javax.swing.JLabel projectLocationLabel;
@@ -241,11 +222,5 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
     public javax.swing.JTextField getProjectFolderTextField() {
         return projectFolderTextField;
     }
-
-    public javax.swing.JTextArea getGrailsServerOutputTextArea() {
-        return grailsServerOutputTextArea;
-    }
-
-    
     
 }
