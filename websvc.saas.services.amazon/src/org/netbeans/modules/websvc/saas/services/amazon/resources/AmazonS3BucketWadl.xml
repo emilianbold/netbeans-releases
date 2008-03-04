@@ -56,7 +56,7 @@
             
             This is a single WADL method for a all 3 methods of Amazon S3 services.
         -->	
-        <resource path="{bucket}.s3.amazonaws.com/">
+        <resource path="{bucket}.s3.amazonaws.com/" id="amazons3.bucket">
             
             <param name="bucket" type="xsd:string" style="template" required="true"/>
             
@@ -90,7 +90,7 @@
                 </response>
             </method>
             
-            <resource path="{object}/">
+            <resource path="{object}/" id="amazons3.object">
                 <param name="object" type="xsd:string" style="template" required="true"/>
                 <method name="GET" id="amazons3.getObject">
                     <request>
