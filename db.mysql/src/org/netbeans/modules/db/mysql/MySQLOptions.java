@@ -94,33 +94,42 @@ public class MySQLOptions {
     }
     
     protected final void putProperty(String key, String value) {
-        String oldval = getProperty(key);
-        if (value != null) {
-            NbPreferences.forModule(MySQLOptions.class).put(key, value);
-        } else {
-            NbPreferences.forModule(MySQLOptions.class).remove(key);
+        String oldval;
+        synchronized(this) {
+            oldval = getProperty(key);
+            if (value != null) {
+                NbPreferences.forModule(MySQLOptions.class).put(key, value);
+            } else {
+                NbPreferences.forModule(MySQLOptions.class).remove(key);
+            }
         }
         notifyPropertyChange(key, oldval, value);
     }
 
     protected final void putProperty(String key, boolean value) {
-        boolean oldval = getBooleanProperty(key);
-        NbPreferences.forModule(MySQLOptions.class).putBoolean(key, value);
+        boolean oldval;
+        synchronized(this) {
+            oldval = getBooleanProperty(key);
+            NbPreferences.forModule(MySQLOptions.class).putBoolean(key, value);
+        }
         
         notifyPropertyChange(key, new Boolean(oldval), new Boolean(value)   );
     }
     
     protected final void clearProperty(String key) {
-        String oldval = getProperty(key);
-        NbPreferences.forModule(MySQLOptions.class).remove(key);
+        String oldval;
+        synchronized(this) {
+            oldval = getProperty(key);
+            NbPreferences.forModule(MySQLOptions.class).remove(key);
+        }
         notifyPropertyChange(key, oldval, null);
     }
     
-    protected final String getProperty(String key) {
+    protected synchronized final String getProperty(String key) {
         return NbPreferences.forModule(MySQLOptions.class).get(key, "");
     }
     
-    protected final boolean getBooleanProperty(String key) {
+    protected synchronized final boolean getBooleanProperty(String key) {
         return NbPreferences.forModule(MySQLOptions.class).getBoolean(key, false); 
     }
     
@@ -165,7 +174,7 @@ public class MySQLOptions {
         putProperty(PROP_ADMINUSER, adminUser);
     }
 
-    public String getAdminPassword() {
+    public synchronized String getAdminPassword() {
         if ( isSavePassword() ) {
             return getProperty(PROP_ADMINPWD);
         } else {
@@ -173,7 +182,7 @@ public class MySQLOptions {
         }
     }
 
-    public void setAdminPassword(String adminPassword) {
+    public synchronized void setAdminPassword(String adminPassword) {
         // 'null' is a valid password, but if we save as null
         // it will actually clear the property.  So convert it to
         // an empty string.
