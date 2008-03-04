@@ -331,7 +331,9 @@ public class SimplifiedJSPServlet {
             
             if (pageInfo.isTagFile()){
                 for (TagAttributeInfo info : pageInfo.getTagInfo().getAttributes()){
-                    beanDeclarationsBuff.append(info.getTypeName() + " " + info.getName() + ";\n"); //NOI18N
+                    if (info.getTypeName() != null){ // will be null e.g. for fragment attrs
+                        beanDeclarationsBuff.append(info.getTypeName() + " " + info.getName() + ";\n"); //NOI18N
+                    }
                 }
             }
         }

@@ -44,11 +44,12 @@ import com.sun.source.tree.ClassTree;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,7 +66,13 @@ import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticatio
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.ApiKeyAuthentication;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.Login;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.Method;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.Token;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.Token.Frame;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SignedUrlAuthentication;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.Time;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
@@ -73,10 +80,10 @@ import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 
 /**
  * Code generator for REST services wrapping WSDL-based web service.
@@ -192,12 +199,12 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
 
         String methodBody = "";
         methodBody += "        String result = null;\n";
+        methodBody += "        "+fixedCode;
         
         //Insert authentication code before new RestConnection() call
         methodBody += "             " + getPreAuthenticationCode()+"\n";
         
         //Insert parameter declaration
-        methodBody += "        "+fixedCode;
         methodBody += "        "+pathParamsCode;
         methodBody += "        "+queryParamsCode;
         
@@ -210,7 +217,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         
         //Insert authentication code after new RestConnection() call
         methodBody += "             " + getPostAuthenticationCode()+"\n";
-      
+
         String headerUsage = "null";
         if(getBean().getHeaderParameters() != null && getBean().getHeaderParameters().size() > 0) {
             headerUsage = HEADER_PARAMS;
@@ -236,6 +243,51 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         return methodBody;
     }
     
+    /*
+     * Generates something like 
+            String apiKey = FacebookAuthenticator.getApiKey();
+            String sessionKey = FacebookAuthenticator.getSessionKey();
+            String method = "facebook.friends.get";
+            String v = "1.0";
+            String callId = String.valueOf(System.currentTimeMillis());
+     */ 
+    private String getSignParamDeclaration(List<ParameterInfo> signParams, List<ParameterInfo> filterParams) {
+        String paramStr = "";
+        for(ParameterInfo p:signParams) {
+            if(isContains(p, filterParams))
+                continue;
+            paramStr += "        String "+ getParameterName(p, true, true) +" = ";
+            if(p.getFixed() != null) {
+                paramStr += "\""+p.getFixed()+"\";\n";
+            } else if(p.getType() == Date.class) {
+                paramStr += "conn.getDate();\n";
+            } else if(p.getType() == Time.class) {
+                paramStr += "String.valueOf(System.currentTimeMillis());\n";
+            } else if(p.isRequired()) {
+                if(p.getDefaultValue() != null)
+                    paramStr += getQuotedValue(p.getDefaultValue().toString())+";\n";
+                else
+                    paramStr += "\"\";\n";
+            } else {
+                if(p.getDefaultValue() != null)
+                    paramStr += getQuotedValue(p.getDefaultValue().toString())+";\n";
+                else
+                    paramStr += "null;\n";
+            }
+        }
+        paramStr += "\n";
+        return paramStr;
+    }
+    
+    private String getQuotedValue(String value) {
+        String normalized = value;
+        if(normalized.startsWith("\""))
+            normalized = normalized.substring(1);
+        else if(normalized.endsWith("\""))
+            normalized = normalized.substring(0, normalized.length()-1);
+        return "\""+normalized+"\"";
+    }
+    
     /* 
      * Insert this code before new RestConnection()
      */
@@ -245,29 +297,28 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         if(authType == SaasAuthenticationType.API_KEY) {
             methodBody += "        String apiKey = "+getGroupName()+"Authenticator.getApiKey();";
         } else if(authType == SaasAuthenticationType.SESSION_KEY) {
+            SessionKeyAuthentication sessionKey = (SessionKeyAuthentication)getBean().getAuthentication();
             methodBody += "        "+getGroupName()+"Authenticator.login();\n";
-            methodBody += "        String apiKey = "+getGroupName()+"Authenticator.getApiKey();\n";
-            methodBody += "        String sessionKey = "+getGroupName()+"Authenticator.getSessionKey();\n";
-            methodBody += "        String method = \"facebook.friends.get\";\n";
-            methodBody += "        String v = \"1.0\";\n";
-            methodBody += "        String callId = String.valueOf(System.currentTimeMillis());\n";
-            methodBody += "        String sig = "+getGroupName()+"Authenticator.sign(\n";
-            methodBody += "                new String[][]{\n";
-            methodBody += "                    {\"method\", method},\n";
-            methodBody += "                    {\"v\", v},\n";
-            methodBody += "                    {\"api_key\", apiKey},\n";
-            methodBody += "                    {\"session_key\", sessionKey},\n";
-            methodBody += "                    {\"call_id\", callId}\n";
-            methodBody += "                });\n\n";
-
-            methodBody += "        String[][] params = new String[][]{\n";
-            methodBody += "                {\"method\", method},\n";
-            methodBody += "                {\"v\", v},\n";
-            methodBody += "                {\"api_key\", apiKey},\n";
-            methodBody += "                {\"session_key\", sessionKey},\n";
-            methodBody += "                {\"sig\", sig},\n";
-            methodBody += "                {\"call_id\", callId}\n";
-            methodBody += "        };\n";
+            methodBody += "        String "+
+                    getVariableName(sessionKey.getApiKeyName(), true, true, true)+" = "+
+                    getGroupName()+"Authenticator.getApiKey();\n";//apiKey
+            methodBody += "        String "+
+                    getVariableName(sessionKey.getSessionKeyName(), true, true, true)+" = "+
+                    getGroupName()+"Authenticator.getSessionKey();\n";//sessionKey
+            List<ParameterInfo> signParams = sessionKey.getParameters();
+            if(signParams != null && signParams.size() > 0) {
+                String paramStr = getSignParamDeclaration(signParams, getBean().getInputParameters());
+                paramStr += "        String "+
+                        getVariableName(sessionKey.getSigKeyName(), true, true, true)+" = "+
+                        getGroupName()+"Authenticator.sign(\n";//sig
+                paramStr += "                new String[][] {\n";
+                for(ParameterInfo p:signParams) {
+                    paramStr += "                    {\""+p.getName()+"\", "+
+                            getParameterName(p, true, true)+"},\n";
+                }
+                paramStr += "        });\n";
+                methodBody += paramStr;
+            }
         }
         return methodBody;
     }
@@ -282,41 +333,20 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             methodBody += "        conn.setAuthenticator(new "+getGroupName()+"Authenticator());\n";
         } else if(authType == SaasAuthenticationType.SIGNED_URL) {
             SignedUrlAuthentication signedUrl = (SignedUrlAuthentication)getBean().getAuthentication();
-            String paramStr = "";
             List<ParameterInfo> signParams = signedUrl.getParameters();
             if(signParams != null && signParams.size() > 0) {
-                for(ParameterInfo p:signParams) {
-                    if(isContains(p, filterParameters()))
-                        continue;
-                    paramStr += "        String "+
-                            Inflector.getInstance().camelize(Util.normailizeName(p.getName()), true)+" = ";
-                    if(p.getFixed() != null) {
-                        paramStr += "\""+p.getFixed()+"\";\n";
-                    } else if(p.getType() == Date.class) {
-                        paramStr += "conn.getDate();\n";
-                    } else if(p.isRequired()) {
-                        if(p.getDefaultValue() != null)
-                            paramStr += "\""+p.getDefaultValue()+"\";\n";
-                        else
-                            paramStr += "\"\";\n";
-                    } else {
-                        if(p.getDefaultValue() != null)
-                            paramStr += "\""+p.getDefaultValue()+"\";\n";
-                        else
-                            paramStr += "null;\n";
-                    }
-                }
-                paramStr += "\n";
-                
-                paramStr += "        authorization = "+getGroupName()+"Authenticator.sign(\n";
+                String paramStr = getSignParamDeclaration(signParams, filterParameters());
+                paramStr += "        String "+
+                        getVariableName(signedUrl.getSigKeyName(), true, true, true)+" = "+
+                        getGroupName()+"Authenticator.sign(\n";
                 paramStr += "                new String[][] {\n";
                 for(ParameterInfo p:signParams) {
                     paramStr += "                    {\""+p.getName()+"\", "+
-                            Inflector.getInstance().camelize(Util.normailizeName(p.getName()), true)+"},\n";
+                            getParameterName(p, true, true)+"},\n";
                 }
                 paramStr += "        });\n";
+                methodBody += paramStr;
             }
-            methodBody += paramStr;
         }
         return methodBody;
     }
@@ -405,6 +435,8 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                     }
                 } 
             }
+            
+            //Modify profile file with user defined values
             if(prof != null) {
                 EditorCookie ec = (EditorCookie) prof.getCookie(EditorCookie.class);
                 StyledDocument doc = ec.openDocument();
@@ -420,6 +452,15 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                     } catch (BadLocationException ex) {
                         Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Replacing property values failed. Try to change it manually.", ex);
                     }
+                }
+            }
+            
+            //Add AuthenticatorFrame class
+            if(getBean().getAuthenticationType() == SaasAuthenticationType.SESSION_KEY) {
+                try {
+                    Util.createDataObjectFromTemplate(TEMPLATES_SAAS+"AuthorizationFrame.java", targetFolder, null);
+                } catch (Exception ex) {
+                    throw new IOException("Cannot create authorization frame class AuthorizationFrame.java");
                 }
             }
         }
@@ -455,7 +496,8 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 String type = String.class.getName();
                 String bodyText = "{ \n" + getServiceMethodBody() + "\n }";
 
-                List<ParameterInfo> filterParams = filterParameters();
+                //Further filter
+                List<ParameterInfo> filterParams = getBean().filterParametersByAuth(filterParameters());
                 String[] parameters = getGetParamNames(filterParams);
                 Object[] paramTypes = getGetParamTypes(filterParams);
 
@@ -475,6 +517,345 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             
         });
         result.commit();
+    }
+    
+    /**
+     *  Return target and generated file objects
+     */
+    protected void modifyAuthenticationClass() throws IOException {
+        Modifier[] modifiers = Constants.PUBLIC_STATIC;
+        Object returnType = Constants.VOID;
+        String methodName = "login";
+        String comment = methodName+"\n";
+        String[] parameters = null;
+        Object[] paramTypes = null;
+        Object[] throwList = null;
+        String bodyText = getLoginBody();
+        if(bodyText != null)
+            modifyAuthenticationClass(comment, modifiers, returnType, methodName, 
+                    parameters, paramTypes, throwList, bodyText);
+        methodName = "getToken";
+        comment = methodName+"\n";
+        returnType = "String";
+        bodyText = getTokenBody();
+        if(bodyText != null)
+            modifyAuthenticationClass(comment, modifiers, returnType, methodName, 
+                parameters, paramTypes, throwList, bodyText);
+        methodName = "logout";
+        comment = methodName+"\n";
+        returnType = Constants.VOID;
+        bodyText = getLogoutBody();
+        if(bodyText != null)
+            modifyAuthenticationClass(comment, modifiers, returnType, methodName, 
+                parameters, paramTypes, throwList, bodyText);
+    }
+    
+    /**
+     *  Return target and generated file objects
+     */
+    protected void modifyAuthenticationClass(final String comment, final Modifier[] modifiers, 
+            final Object returnType, final String name, final String[] parameters, final Object[] paramTypes, 
+            final Object[] throwList, final String bodyText) 
+                throws IOException {
+        ModificationResult result = saasAuthJS.runModificationTask(new AbstractTask<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws IOException {
+                copy.toPhase(JavaSource.Phase.RESOLVED);
+
+                ClassTree initial = JavaSourceHelper.getTopLevelClassTree(copy);
+                ClassTree tree = JavaSourceHelper.addMethod(copy, initial,
+                        modifiers, null, null,
+                        name, returnType, parameters, paramTypes,
+                        null, null, 
+                        throwList, "{ \n" + bodyText + "\n }", comment);
+                copy.rewrite(initial, tree);
+            }
+            
+        });
+        result.commit();       
+    }
+    
+    private String getLoginBody() throws IOException {
+        String methodBody = "";
+        if(getBean().getAuthenticationType() != SaasAuthenticationType.SESSION_KEY)
+            return null;
+        SessionKeyAuthentication sessionKey = (SessionKeyAuthentication)getBean().getAuthentication();
+        Login login = sessionKey.getLogin();
+        if(login != null) {
+            String methodName = null;
+            Method method = login.getMethod();
+            if(method != null) {
+                methodName = method.getHref();
+                if(methodName == null)
+                    return methodBody;
+                else
+                    methodName = methodName.startsWith("#")?methodName.substring(1):methodName;
+            }
+            methodBody += "        if (sessionKey == null) {\n";
+            methodBody += "            String authToken = getToken();\n\n";
+
+            methodBody += "            if (authToken != null) {\n";
+            methodBody += "                try {\n";
+
+            methodBody += "                    String method = \""+methodName+"\";\n";
+            methodBody += "                    String v = \"1.0\";\n\n";
+
+    //        methodBody += "                    String sig = sign(secret,\n";
+    //        methodBody += "                            new String[][]{\n";
+    //        methodBody += "                                {\"method\", method},\n";
+    //        methodBody += "                                {\"v\", v},\n";
+    //        methodBody += "                                {\"api_key\", apiKey},\n";
+    //        methodBody += "                                {\"auth_token\", token}\n";
+    //        methodBody += "                            });\n\n";
+
+            List<ParameterInfo> signParams = login.getParameters();
+            if(signParams != null && signParams.size() > 0) {
+                String paramStr = "";//getSignParamDeclaration(signParams);
+                paramStr += "        String sig = sign(secret, \n";
+                paramStr += "                new String[][] {\n";
+                for(ParameterInfo p:signParams) {
+                    paramStr += "                    {\""+p.getName()+"\", "+
+                            (p.getId()!=null?p.getId():getParameterName(p, true, true))+"},\n";
+                }
+                paramStr += "        });\n\n";
+                methodBody += paramStr;
+            }
+
+    //        methodBody += "                    RestConnection conn = new RestConnection(\n";
+    //        methodBody += "                            \"http://api.facebook.com/restserver.php\",\n";
+    //        methodBody += "                            new String[][]{\n";
+    //        methodBody += "                                {\"method\", method},\n";
+    //        methodBody += "                                {\"api_key\", apiKey},\n";
+    //        methodBody += "                                {\"sig\", sig},\n";
+    //        methodBody += "                                {\"v\", v},\n";
+    //        methodBody += "                                {\"auth_token\", token}\n";
+    //        methodBody += "                            });\n\n";
+
+            String queryParamsCode = "";
+            Map<String, String> tokenMap = new HashMap<String, String>();
+            if(method != null) {
+                String id = method.getId();
+                if(id != null) {
+                    String[] tokens = id.split(",");
+                    for(String token:tokens) {
+                        String[] tokenElem = token.split("=");
+                        if(tokenElem.length == 2)
+                            tokenMap.put(tokenElem[0], tokenElem[1]);
+                    }
+                }
+                String href = method.getHref();
+                if(href != null) {
+                    org.netbeans.modules.websvc.saas.model.wadl.Method wadlMethod = 
+                            SaasUtil.wadlMethodFromIdRef(
+                                getBean().getMethod().getSaas().getWadlModel(), href);
+                    if(wadlMethod != null) {
+                        ArrayList<ParameterInfo> params = getBean().findWadlParams(wadlMethod);
+                        if(params != null && 
+                                params.size() > 0) {
+                            queryParamsCode = getHeaderOrParameterDefinition(params, QUERY_PARAMS, false);
+                        }
+                    }
+                }
+            }
+
+            //Insert parameter declaration
+            methodBody += "        "+queryParamsCode;
+
+            methodBody += "             RestConnection conn = new RestConnection(\""+getBean().getUrl()+"\"";
+            if(!queryParamsCode.trim().equals(""))
+                methodBody += ", "+QUERY_PARAMS;
+            methodBody += ");\n";
+
+            methodBody += "                    String result = conn.get();\n";
+
+            for (Entry e : tokenMap.entrySet()) {
+                String name = (String) e.getKey();
+                String val = (String) e.getValue();
+                if (val.startsWith("{")) {
+                    val = val.substring(1);
+                }
+                if (val.endsWith("{")) {
+                    val = val.substring(val.length() - 1);
+                }
+                methodBody += "                    sessionKey = result.substring(result.indexOf(\"<"+val+">\") + 13,\n";
+                methodBody += "                            result.indexOf(\"</"+val+">\"));\n\n";
+            }
+
+//            methodBody += "                    sessionKey = result.substring(result.indexOf(\"<"+tokenMap.get("sessionKey") +">\") + 13,\n";
+//            methodBody += "                            result.indexOf(\"</"+tokenMap.get("sessionKey") +">\"));\n\n";
+//
+//            methodBody += "                    sessionSecret = result.substring(result.indexOf(\"<"+tokenMap.get("sessionSecret") +">\") + 8,\n";
+//            methodBody += "                            result.indexOf(\"</"+tokenMap.get("sessionSecret") +">\"));\n";
+            methodBody += "                } catch (IOException ex) {\n";
+            methodBody += "                    Logger.getLogger("+getGroupName()+"Authenticator.class.getName()).log(Level.SEVERE, null, ex);\n";
+            methodBody += "                }\n\n";
+
+            methodBody += "            }\n";
+            methodBody += "        }\n";
+        }
+        return methodBody;
+    }
+    
+    private String getLogoutBody() {
+        String methodBody = "";
+        if(getBean().getAuthenticationType() != SaasAuthenticationType.SESSION_KEY)
+            return null;
+        return methodBody;
+    }
+    
+    private String getTokenBody() throws IOException {
+        String methodBody = "";
+        if(getBean().getAuthenticationType() != SaasAuthenticationType.SESSION_KEY)
+            return null;
+        SessionKeyAuthentication sessionKey = (SessionKeyAuthentication)getBean().getAuthentication();
+        Token token = sessionKey.getToken();
+        if(token != null) {
+            String methodName = null;
+            Method method = token.getMethod();
+            if(method != null) {
+                methodName = method.getHref();
+                if(methodName == null)
+                    return methodBody;
+                else
+                    methodName = methodName.startsWith("#")?methodName.substring(1):methodName;
+            }
+            methodBody += "       String token = null;\n";
+            methodBody += "       try {\n";
+            methodBody += "            String method = \""+methodName+"\";\n";
+            methodBody += "            String v = \"1.0\";\n\n";
+//            methodBody += "            String sig = sign(secret,\n";
+//            methodBody += "                new String[][]{\n";
+//            methodBody += "                    {\"method\", method},\n";
+//            methodBody += "                    {\"v\", v},\n";
+//            methodBody += "                    {\"api_key\", apiKey}\n";
+//            methodBody += "                });\n\n";
+            
+            List<ParameterInfo> signParams = token.getParameters();
+            if(signParams != null && signParams.size() > 0) {
+                String paramStr = "";//getSignParamDeclaration(signParams);
+                paramStr += "        String sig = sign(secret, \n";
+                paramStr += "                new String[][] {\n";
+                for(ParameterInfo p:signParams) {
+                    paramStr += "                    {\""+p.getName()+"\", "+
+                            getParameterName(p, true, true)+"},\n";
+                }
+                paramStr += "        });\n\n";
+                methodBody += paramStr;
+            }
+
+//            methodBody += "            RestConnection conn = new RestConnection(\n";
+//            methodBody += "                   \"http://api.facebook.com/restserver.php\",\n";
+//            methodBody += "                new String[][]{\n";
+//            methodBody += "                    {\"method\", method},\n";
+//            methodBody += "                    {\"api_key\", apiKey},\n";
+//            methodBody += "                    {\"sig\", sig},\n";
+//            methodBody += "                    {\"v\", v}\n";
+//            methodBody += "                });\n\n";
+
+            String queryParamsCode = "";
+            Map<String, String> tokenMap = new HashMap<String, String>();
+            if(method != null) {
+                String id = method.getId();
+                if(id != null) {
+                    String[] tokens = id.split(",");
+                    for(String tk:tokens) {
+                        String[] tokenElem = tk.split("=");
+                        if(tokenElem.length == 2)
+                            tokenMap.put(tokenElem[0], tokenElem[1]);
+                    }
+                }
+                String href = method.getHref();
+                if(href != null) {
+                    org.netbeans.modules.websvc.saas.model.wadl.Method wadlMethod = 
+                            SaasUtil.wadlMethodFromIdRef(
+                                getBean().getMethod().getSaas().getWadlModel(), href);
+                    if(wadlMethod != null) {
+                        ArrayList<ParameterInfo> params = getBean().findWadlParams(wadlMethod);
+                        if(params != null && 
+                                params.size() > 0) {
+                            queryParamsCode = getHeaderOrParameterDefinition(params, QUERY_PARAMS, false);
+                        }
+                    }
+                }
+            }
+
+            //Insert parameter declaration
+            methodBody += "        "+queryParamsCode;
+
+            methodBody += "             RestConnection conn = new RestConnection(\""+getBean().getUrl()+"\"";
+            if(!queryParamsCode.trim().equals(""))
+                methodBody += ", "+QUERY_PARAMS;
+            methodBody += ");\n";
+            
+            methodBody += "            String result = conn.get();\n";
+
+            for(Entry e:tokenMap.entrySet()) {
+                String name = (String) e.getKey();
+                String val = (String) e.getValue();
+                if(val.startsWith("{"))
+                    val = val.substring(1);
+                if(val.endsWith("{"))
+                    val = val.substring(val.length()-1);
+                methodBody += "            token = result.substring(result.indexOf(\"<"+val+"\"),\n";
+                methodBody += "                            result.indexOf(\"</"+val+">\"));\n\n";
+                methodBody += "            token = token.substring(token.indexOf(\">\") + 1);\n\n";
+            }
+            
+
+            if(token.getFrame() != null) {
+                Frame frame = token.getFrame();
+                String url = frame.getUrl();
+                signParams = frame.getParameters();
+                if(signParams != null && signParams.size() > 0) {
+                    methodBody += "            String perms = \"write\";";
+                    String paramStr = "";
+                    paramStr += "        apiSig = sign(\n";
+                    paramStr += "                new String[][] {\n";
+                    for(ParameterInfo p:signParams) {
+                        paramStr += "                    {\""+p.getName()+"\", "+
+                                getParameterName(p, true, true)+"},\n";
+                    }
+                    paramStr += "        });\n\n";
+                    methodBody += paramStr;
+                }
+                int index = url.indexOf("?");
+                String formatUrl = url.substring(0, index+1);
+                String params = url.substring(index+1);
+                String[] tokens = params.split("&");
+                for(String tokenE:tokens) {
+                    String[] tokenElem = tokenE.split("=");
+                    if(tokenElem.length == 2) {
+                        String paramVal = tokenElem[1];
+                        if(paramVal.startsWith("{"))
+                            paramVal = paramVal.substring(1);
+                        if(paramVal.endsWith("}"))
+                            paramVal = paramVal.substring(0, paramVal.length()-1);
+                        if(paramVal.indexOf(":") != -1)
+                            formatUrl += tokenElem[0]+"="+paramVal.substring(paramVal.indexOf(":")+1) +"&";
+                        else
+                            formatUrl += tokenElem[0]+"=\"+"+paramVal+"+\"&";
+                    }
+                }
+                formatUrl = formatUrl.substring(0, formatUrl.length()-1);
+                methodBody += "            String loginUrl = \""+formatUrl+"\"";
+            }
+            //methodBody += "            String loginUrl = \"http://www.facebook.com/login.php?api_key=\" +\n";
+            //methodBody += "                      apiKey + \"&v=\" + v + \"&auth_token=\" + token;\n\n";
+
+            methodBody += "            "+getSaasServicePackageName()+".AuthorizationFrame frame = new "+getSaasServicePackageName()+".AuthorizationFrame(loginUrl);\n";
+            methodBody += "            synchronized (frame) {\n";
+            methodBody += "                try {\n";
+            methodBody += "                    frame.wait();\n";
+            methodBody += "                } catch (InterruptedException ex) {\n";
+            methodBody += "                    Logger.getLogger("+getGroupName()+"Authenticator.class.getName()).log(Level.SEVERE, null, ex);\n";
+            methodBody += "                }\n";
+            methodBody += "            }\n";
+            methodBody += "       } catch (IOException ex) {\n";
+            methodBody += "            Logger.getLogger("+getGroupName()+"Authenticator.class.getName()).log(Level.SEVERE, null, ex);\n";
+            methodBody += "       }\n\n";
+            methodBody += "       return token;\n";
+        }
+        return methodBody;
     }
     
     public List<ParameterInfo> filterParameters() {
