@@ -140,11 +140,13 @@ public class CsmOffsetResolver {
                     // offset is in body, try to find inners statement
                     if (CsmStatementResolver.findInnerObject(funDef.getBody(), offset, context)) {
                         // if found exact object => return it, otherwise return last found scope
-                        last = context.getLastObject();
+                        lastObj = last = context.getLastObject();
                     }
                 }
             }
-        } else if (CsmKindUtilities.isClass(lastObj)) {
+        } 
+        
+        if (CsmKindUtilities.isClass(lastObj)) {
             // check if in inheritance part
             CsmClass clazz = (CsmClass)lastObj;
             Collection<CsmInheritance> inherits = clazz.getBaseClasses();
