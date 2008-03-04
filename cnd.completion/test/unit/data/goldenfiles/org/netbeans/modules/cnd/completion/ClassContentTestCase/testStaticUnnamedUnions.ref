@@ -1,8 +1,7 @@
-argc int
-argv char**
-d D
-pD D*
 D
 E
 F
+a a
+i int
+j int
 main(int argc, char** argv) int
