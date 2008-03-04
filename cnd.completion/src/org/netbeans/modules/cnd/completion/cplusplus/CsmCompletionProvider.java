@@ -212,7 +212,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                     CsmSyntaxSupport sup = (CsmSyntaxSupport) syntSupp.get(CsmSyntaxSupport.class);
                     NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope);
                     NbCsmCompletionQuery.CsmCompletionResult res = (NbCsmCompletionQuery.CsmCompletionResult) query.query(component, caretOffset, sup);
-                    if (res != null && res.getData().isEmpty() && (queryScope != CsmCompletionQuery.QueryScope.GLOBAL_QUERY)) {
+                    if (res != null && res.getData().isEmpty() && (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY)) {
                         // switch to global context
                         queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
                         if (res.isSimpleVariableExpression()) {
@@ -222,8 +222,9 @@ public class CsmCompletionProvider implements CompletionProvider {
                         }
                     }
                     if (res != null) {
-                        if (queryScope != CsmCompletionQuery.QueryScope.GLOBAL_QUERY &&
-                                res.isSimpleVariableExpression()) {
+                        if (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY && 
+                                !res.isSimpleVariableExpression()) {
+                            // change to global mode
                             queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
                         }
                         queryAnchorOffset = res.getSubstituteOffset();
@@ -231,7 +232,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                         // no more title in NB 6 in completion window
                         //resultSet.setTitle(res.getTitle());
                         resultSet.setAnchorOffset(queryAnchorOffset);
-                        resultSet.setHasAdditionalItems(queryScope != CsmCompletionQuery.QueryScope.GLOBAL_QUERY);
+                        resultSet.setHasAdditionalItems(queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY);
                         queryResult = res;
                         addItems(resultSet, items);
                     }
