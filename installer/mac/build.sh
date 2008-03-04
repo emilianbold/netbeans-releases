@@ -53,12 +53,12 @@ basename=$2
 
 progdir=`dirname $0`
 
-dmgname=$basename
+dmgname="netbeans-6.1beta"
 
 
 buildnum=""`find "$zipdir" -name '*[0-9].zip'`
 buildnum="`expr $buildnum : '.*-\(.*\)\..*'`" 
-installdir="NetBeans 6.1 Dev $buildnum"
+installdir="NetBeans 6.1 Beta"
 
 ant -f $progdir/build.xml distclean
 
