@@ -248,6 +248,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                         String d = tok.nextToken();
                         if (d.equals(dir)) {
                             csm = new CompilerSetManager(dirlist);
+                            CompilerSet.removeCompilerSet(cs); // CompilerSet has it's own cache!!!!!!!!
                             return;
                         }
                     }
@@ -274,6 +275,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         }
         dirlist.add(idx, dir);
         lstDirlist.setSelectedIndex(idx);
+        // Update compiler sets
+        csm = new CompilerSetManager(dirlist);
         update(false);
     }
     
@@ -511,12 +514,21 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             changeCompilerSet(cs);
         } else {
             cbCompilerSet.removeAllItems();
+            changeCompilerSet(null);
         }
     }
     
     private void changeCompilerSet(CompilerSet cs) {
         boolean fortran = CppSettings.getDefault().isFortranEnabled();
         Tool fortranSelection = null;
+        
+        if (cs != null) {
+            tfBaseDirectory.setText(cs.getDirectory());
+        }
+        else {
+            tfBaseDirectory.setText(""); // NOI18N
+            return;
+        }
         
         changingCompilerSet = true;
         cbCCommand.removeAllItems();
@@ -807,7 +819,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             if (!valid) {
                 ArrayList<String> errors = new ArrayList<String>();
                 if (cbMakeRequired.isSelected() && !makeValid) {
-                    errors.add("Make tool is missing or invalid");
+                    errors.add("Make is missing or invalid");
                 }
                 if (cbCRequired.isSelected() && !cValid) {
                     errors.add("C Compiler is missing or invalid");
@@ -1210,6 +1222,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         jSeparator1 = new javax.swing.JSeparator();
         errorScrollPane = new javax.swing.JScrollPane();
         errorTextArea = new javax.swing.JTextArea();
+        lbBaseDirectory = new javax.swing.JLabel();
+        tfBaseDirectory = new javax.swing.JTextField();
+        btBaseDirectory = new javax.swing.JButton();
+        btVersions = new javax.swing.JButton();
+        btRestore = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(600, 650));
         setLayout(new java.awt.GridBagLayout());
@@ -1268,7 +1285,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 100.0;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
         add(tfMakePath, gridBagConstraints);
 
@@ -1276,6 +1293,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btMakeVersion, gridBagConstraints);
@@ -1302,7 +1320,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 100.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
         add(tfGdbPath, gridBagConstraints);
 
@@ -1310,6 +1327,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btGdbVersion, gridBagConstraints);
@@ -1322,9 +1340,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         lbCCommand.setToolTipText(bundle.getString("HINT_CCommand")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 15, 0, 0);
         add(lbCCommand, gridBagConstraints);
         lbCCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CCommand")); // NOI18N
         lbCCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CCommand")); // NOI18N
@@ -1333,7 +1351,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         cbCCommand.setPreferredSize(new java.awt.Dimension(100, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
         add(cbCCommand, gridBagConstraints);
@@ -1343,18 +1361,18 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         tfCPath.setPreferredSize(new java.awt.Dimension(100, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 100.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(tfCPath, gridBagConstraints);
 
         btCVersion.setText(bundle.getString("LBL_CVersion")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btCVersion, gridBagConstraints);
@@ -1367,9 +1385,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         lbCppCommand.setToolTipText(bundle.getString("HINT_CppCommand")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 16, 0, 0);
         add(lbCppCommand, gridBagConstraints);
         lbCppCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CppCommand")); // NOI18N
         lbCppCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CppCommand")); // NOI18N
@@ -1378,7 +1396,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         cbCppCommand.setPreferredSize(new java.awt.Dimension(100, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
         add(cbCppCommand, gridBagConstraints);
@@ -1388,18 +1406,18 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         tfCppPath.setPreferredSize(new java.awt.Dimension(100, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 100.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(tfCppPath, gridBagConstraints);
 
         btCppVersion.setText(bundle.getString("LBL_CppVersion")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btCppVersion, gridBagConstraints);
@@ -1412,9 +1430,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         lbFortranCommand.setToolTipText(bundle.getString("HINT_FortranCommand")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 16, 0, 0);
         add(lbFortranCommand, gridBagConstraints);
         lbFortranCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_FortranCommand")); // NOI18N
         lbFortranCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_FortranCommand")); // NOI18N
@@ -1423,7 +1441,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         cbFortranCommand.setPreferredSize(new java.awt.Dimension(100, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
         add(cbFortranCommand, gridBagConstraints);
@@ -1433,20 +1451,20 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         tfFortranPath.setPreferredSize(new java.awt.Dimension(100, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 100.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(tfFortranPath, gridBagConstraints);
 
         btFortranVersion.setText(bundle.getString("LBL_FortranVersion")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btFortranVersion, gridBagConstraints);
         btFortranVersion.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_FortranVersion")); // NOI18N
         btFortranVersion.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_FortranVersion")); // NOI18N
@@ -1470,7 +1488,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 2, 0, 0);
         add(cbCompilerSet, gridBagConstraints);
 
@@ -1526,9 +1543,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         jLabel1.setText(bundle.getString("LBL_RequiredTools")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 4, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
         add(jLabel1, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
@@ -1539,7 +1556,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         cbMakeRequired.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         jPanel1.add(cbMakeRequired, gridBagConstraints);
 
         cbGdbRequired.setText(bundle.getString("LBL_RequiredGdb")); // NOI18N
@@ -1547,7 +1563,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         cbGdbRequired.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPanel1.add(cbGdbRequired, gridBagConstraints);
 
         cbCRequired.setText(bundle.getString("LBL_RequiredCompiler_C")); // NOI18N
@@ -1579,15 +1595,15 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 2, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 2, 0, 6);
         add(jPanel1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 12;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridwidth = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -1603,16 +1619,65 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         errorScrollPane.setViewportView(errorTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 6);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 15;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 6, 0, 6);
         add(errorScrollPane, gridBagConstraints);
+
+        lbBaseDirectory.setLabelFor(tfBaseDirectory);
+        lbBaseDirectory.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lbBaseDirectory.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
+        add(lbBaseDirectory, gridBagConstraints);
+
+        tfBaseDirectory.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 2, 0, 0);
+        add(tfBaseDirectory, gridBagConstraints);
+
+        btBaseDirectory.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btBaseDirectory.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        add(btBaseDirectory, gridBagConstraints);
+
+        btVersions.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btVersions.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        add(btVersions, gridBagConstraints);
+
+        btRestore.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btRestore.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 15;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 7);
+        add(btRestore, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAdd;
+    private javax.swing.JButton btBaseDirectory;
     private javax.swing.JButton btCVersion;
     private javax.swing.JButton btCppVersion;
     private javax.swing.JButton btDown;
@@ -1620,7 +1685,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private javax.swing.JButton btGdbVersion;
     private javax.swing.JButton btMakeVersion;
     private javax.swing.JButton btRemove;
+    private javax.swing.JButton btRestore;
     private javax.swing.JButton btUp;
+    private javax.swing.JButton btVersions;
     private javax.swing.JComboBox cbCCommand;
     private javax.swing.JCheckBox cbCRequired;
     private javax.swing.JComboBox cbCompilerSet;
@@ -1635,6 +1702,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel lbBaseDirectory;
     private javax.swing.JLabel lbCCommand;
     private javax.swing.JLabel lbCompilerCollection;
     private javax.swing.JLabel lbCppCommand;
@@ -1644,6 +1712,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private javax.swing.JLabel lbMakeCommand;
     private javax.swing.JList lstDirlist;
     private javax.swing.JScrollPane spDirlist;
+    private javax.swing.JTextField tfBaseDirectory;
     private javax.swing.JTextField tfCPath;
     private javax.swing.JTextField tfCppPath;
     private javax.swing.JTextField tfFortranPath;
