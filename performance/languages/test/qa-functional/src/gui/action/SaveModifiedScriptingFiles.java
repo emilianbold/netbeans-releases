@@ -43,6 +43,7 @@
 package gui.action;
 
 import gui.Projects;
+import gui.ScriptingUtilities;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -150,7 +151,7 @@ public class SaveModifiedScriptingFiles extends org.netbeans.performance.test.ut
 
     protected Node getProjectNode(String projectName) {
         if(projectsTab==null)
-            projectsTab = new ProjectsTabOperator();        
+            projectsTab = ScriptingUtilities.invokePTO();        
         return projectsTab.getProjectRootNode(projectName);
     } 
     
