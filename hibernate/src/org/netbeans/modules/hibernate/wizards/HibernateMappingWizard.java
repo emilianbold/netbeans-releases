@@ -49,7 +49,6 @@ import java.awt.Component;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Sources;
 
-
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -58,6 +57,8 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
+import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataObject;
 import org.netbeans.modules.hibernate.mapping.model.MyClass;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -73,6 +74,7 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
     private WizardDescriptor wizard;
     private HibernateMappingWizardDescriptor descriptor;
     private transient WizardDescriptor.Panel[] panels;
+    private final String resourceAttr = "resource";
 
     public static HibernateMappingWizard create() {
         return new HibernateMappingWizard();
@@ -123,8 +125,8 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
         this.wizard = wizard;
         project = Templates.getProject(wizard);
         descriptor = new HibernateMappingWizardDescriptor(project);
-        FileObject sourceRoot = Util.getSourceRoot(project);        
-        Templates.setTargetFolder(wizard, sourceRoot);      
+        FileObject sourceRoot = Util.getSourceRoot(project);
+        Templates.setTargetFolder(wizard, sourceRoot);
     }
 
     public void uninitialize(WizardDescriptor wizard) {
@@ -139,20 +141,32 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
         DataObject templateDataObject = DataObject.find(templateFileObject);
 
         DataObject newOne = templateDataObject.createFromTemplate(targetDataFolder, targetName);
-
+        FileObject confFile = null;
         MyClass myClass = new MyClass();
-        if (descriptor.getClassName() != null && !"".equals(descriptor.getClassName())) {            
+        if (descriptor.getClassName() != null && !"".equals(descriptor.getClassName())) {
             myClass.setAttributeValue("name", descriptor.getClassName());
         }
+        // Adding mapping entry in the selected config file.
+        if (descriptor.getConfigurationFile() != null && !"".equals(descriptor.getConfigurationFile())) {
+            confFile = (FileObject) descriptor.getConfigurationFile();
+            DataObject confDataObject = DataObject.find(confFile);
+            HibernateCfgDataObject hco = (HibernateCfgDataObject) confDataObject;
+            SessionFactory sf = hco.getHibernateConfiguration().getSessionFactory();
+            int mappingIndex = sf.addMapping(true);
+            sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, resourceAttr, newOne.getPrimaryFile().getNameExt());
+            hco.modelUpdatedFromUI();
+            hco.save();
+        }
+
         try {
             HibernateMappingDataObject hmo = (HibernateMappingDataObject) newOne;
             hmo.addMyClass(myClass);
-            hmo.save();            
+            hmo.save();
             return Collections.singleton(hmo.getPrimaryFile());
-        } catch (Exception e) {            
+        } catch (Exception e) {
             return Collections.EMPTY_SET;
 
-        }   
+        }
     }
 
     public void previousPanel() {
