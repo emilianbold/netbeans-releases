@@ -2292,8 +2292,6 @@ jarsigner.storepass=${jarsigner.storepass}
                      encoding="utf-8"
                      token="${current.token}" 
                      value="${current.value}">
-		     <include name="index.html"/>	
-		     <include name="start.html"/>
 		     <include name="js/build_info.js"/>
 	    </replace>
         </for-each>                

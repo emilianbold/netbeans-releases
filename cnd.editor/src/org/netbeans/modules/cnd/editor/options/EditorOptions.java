@@ -39,8 +39,12 @@
 
 package org.netbeans.modules.cnd.editor.options;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -50,6 +54,7 @@ import org.netbeans.editor.Settings;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.BracePlacement;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.PreprocessorIndent;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -412,6 +417,25 @@ public class EditorOptions {
         }
     }
 
+    private static String getString(String key) {
+        return NbBundle.getMessage(EditorOptions.class, key);
+    }
+
+    public static String getStyleDisplayName(CodeStyle.Language language, String style) {
+        for (String name : EditorOptions.PREDEFINED_STYLES) {
+            if (style.equals(name)) {
+                return getString(style + "_Name"); // NOI18N
+            }
+        }
+        switch(language){
+            case C:
+                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get(style+"_Style_Name", style); // NOI18N
+            case CPP:
+            default:
+                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get(style+"_Style_Name", style); // NOI18N
+        }
+    }
+    
     public static Preferences getPreferences(CodeStyle.Language language, String profileId) {
         switch(language){
             case C:
@@ -422,6 +446,43 @@ public class EditorOptions {
         }
     }
 
+    public static List<String> getAllStyles(CodeStyle.Language language) {
+        String styles = null;
+        StringBuilder def = new StringBuilder();
+        for(String s: PREDEFINED_STYLES){
+            if (def.length() > 0){
+                def.append(',');
+            }
+            def.append(s);
+        }
+        switch(language){
+            case C:
+                styles = NbPreferences.forModule(CodeStyle.class).node("C_CodeStyles").get("List_Of_Styles", def.toString()); // NOI18N
+                break;
+            case CPP:
+            default:
+                styles = NbPreferences.forModule(CodeStyle.class).node("CPP_CodeStyles").get("List_Of_Styles", def.toString()); // NOI18N
+                break;
+        }
+        List<String> res = new ArrayList<String>();
+        StringTokenizer st = new StringTokenizer(styles,",");
+        while(st.hasMoreTokens()) {
+            res.add(st.nextToken());
+        }
+        return res;
+    }
+
+    public static void setAllStyles(CodeStyle.Language language, String list) {
+        switch(language){
+            case C:
+                NbPreferences.forModule(CodeStyle.class).node("C_CodeStyles").put("List_Of_Styles", list); // NOI18N
+                break;
+            case CPP:
+            default:
+                NbPreferences.forModule(CodeStyle.class).node("CPP_CodeStyles").put("List_Of_Styles", list); // NOI18N
+                break;
+        }
+    }
 
     public static int getGlobalIndentSize(CodeStyle.Language language) {
         Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter"); // NOI18N
@@ -478,6 +539,10 @@ public class EditorOptions {
                 preferences.put(entry.getKey(), entry.getValue().toString());
             }
         }
+    }
+
+    public static Set<String> keys(){
+        return defaults.keySet();
     }
 
     public static void setPreferences(CodeStyle codeStyle, Preferences preferences){

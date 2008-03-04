@@ -248,9 +248,12 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             }
             return null;
         } else if (b instanceof AddressBreakpoint) {
-            AddressBreakpoint ab = (AddressBreakpoint) b;
+            if (fo != Disassembly.getFileObject()) {
+                return null;
+            }
             Disassembly dis = Disassembly.getCurrent();
             if (dis != null) {
+                AddressBreakpoint ab = (AddressBreakpoint) b;
                 return new int[] {dis.getAddressLine(ab.getAddress())};
             }
             return null;
