@@ -206,7 +206,8 @@ public class EtlproProjectGenerator {
         return h;
     }
 
-    private static void createDefaultDatabase(String name) {        
+    private static void createDefaultDatabase(String name) {   
+        // Modified for Other OS - Solaris
         /*File f = new File(name + fs + DEFAULT_DB_DIR);
         try {
             FileUtil.createFolder(f);
