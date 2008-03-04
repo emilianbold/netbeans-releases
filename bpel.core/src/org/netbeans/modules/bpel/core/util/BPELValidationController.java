@@ -198,8 +198,8 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
           List<ResultItem> list = map.get(line);
 
           if (list == null) {
-              list = new LinkedList<ResultItem>();
-              map.put(line, list);
+            list = new LinkedList<ResultItem>();
+            map.put(line, list);
           }
           list.add(item);
       }
