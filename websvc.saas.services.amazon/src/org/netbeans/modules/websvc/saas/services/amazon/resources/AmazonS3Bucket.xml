@@ -63,12 +63,12 @@
         </group>
 
         <authentication profile="SaaSServices/AmazonS3/profile.properties">
-            <signed-url>
+            <signed-url sig-id="Authorization">
                 <sign>
                     <params>
-                        <param name="HTTP-Verb" type="string" required="true" default="GET" />
+                        <param name="HTTP-Verb" type="string" required="true" default="GET"/>
                         <param name="Date" type="date" required="true"/>
-                        <param name="HTTP-Request-URI" type="string"/>
+                        <param name="HTTP-Request-URI" type="string" default="&quot;/&quot; + object + &quot;/&quot;"/>
                         <param name="Bucket" type="string" required="true" default=""/>
                     </params>
                 </sign>
