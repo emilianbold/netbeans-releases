@@ -146,14 +146,15 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
     }
     
     public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
-        if (node instanceof LineBreakpoint) 
+        if (node instanceof LineBreakpoint) {
             goToSource((LineBreakpoint) node);
-        if (node instanceof AddressBreakpoint) 
+        } else if (node instanceof AddressBreakpoint) {
             goToSource((AddressBreakpoint) node);
-        else if (node instanceof GdbBreakpoint) 
+        } else if (node instanceof GdbBreakpoint) {
             customize((Breakpoint) node);
-        else
+        } else {
             original.performDefaultAction(node);
+        }
     }
 
     public void addModelListener(ModelListener l) {

@@ -114,7 +114,7 @@ public class Wsdl2Java {
     public boolean createProxyJars() {
         try {
             boolean jaxRPCAvailable = ManagerUtil.isJAXRPCAvailable();
-            String wsdlFileName = webServiceData.getURL();
+            String wsdlUrl = webServiceData.getOriginalWsdlUrl();  //should use oringinal remote wsdl url
             String serviceDirName = WsdlUtil.getServiceDirName(webServiceData.getOriginalWsdlUrl());
             String serviceName = webServiceData.getName();
             String packageName = webServiceData.getPackageName();
@@ -124,7 +124,7 @@ public class Wsdl2Java {
             properties.put(USER_FILE_PROP, userDir+"/build.properties");
             properties.put(WSDL_DIRNAME_PROP, serviceDirName);
             properties.put(WSDL_NAME_PROP, serviceName);
-            properties.put(WSDL_FILE_NAME_PROP, wsdlFileName);
+            properties.put(WSDL_FILE_NAME_PROP, wsdlUrl);
             properties.put(PACKAGE_NAME, packageName == null ? "" : packageName);
             
             File endorsedDir = InstalledFileLocator.getDefault().locate(ENDORSED_REF, null, true).getParentFile();
