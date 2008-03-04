@@ -43,14 +43,26 @@ package org.netbeans.modules.websvc.saas.codegen.java.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import org.netbeans.modules.websvc.saas.codegen.java.AbstractGenerator;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Login;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Logout;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Token;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method.Output.Media;
+import org.netbeans.modules.websvc.saas.model.jaxb.Params;
+import org.netbeans.modules.websvc.saas.model.jaxb.Params.Param;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Token.Frame;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SignedUrl;
+import org.netbeans.modules.websvc.saas.model.jaxb.Sign;
 
 /**
  *
@@ -62,6 +74,8 @@ public abstract class SaasBean extends GenericResourceBean {
     private String outputWrapperName;
     private String wrapperPackageName;
     private List<ParameterInfo> inputParams;
+    private List<ParameterInfo> headerParams;
+    private List<ParameterInfo> templateParams;
     private List<ParameterInfo> queryParams;
     private String resourceTemplate;
     private SaasAuthenticationType authType;
@@ -86,7 +100,29 @@ public abstract class SaasBean extends GenericResourceBean {
     }
 
     public List<ParameterInfo> getHeaderParameters() {
-        return Collections.emptyList();
+        if (headerParams == null) {
+            headerParams = new ArrayList<ParameterInfo>();
+
+            for (ParameterInfo param : getInputParameters()) {
+                if (param.getStyle() == ParamStyle.HEADER) {
+                    headerParams.add(param);
+                }
+            }
+        }
+        return headerParams;
+    }
+    
+    public List<ParameterInfo> getTemplateParameters() {
+        if (templateParams == null) {
+            templateParams = new ArrayList<ParameterInfo>();
+
+            for (ParameterInfo param : getInputParameters()) {
+                if (param.getStyle() == ParamStyle.TEMPLATE) {
+                    templateParams.add(param);
+                }
+            }
+        }
+        return templateParams;
     }
 
     protected abstract List<ParameterInfo> initInputParameters();
@@ -173,6 +209,29 @@ public abstract class SaasBean extends GenericResourceBean {
     public String getAuthenticationProfile() {
         return this.authProfile;
     }
+
+    private  SaasBean.SessionKeyAuthentication.Method createSessionKeyMethod(Method method, SaasBean.SessionKeyAuthentication sessionKeyAuth) {
+        if (method != null) {
+            SaasBean.SessionKeyAuthentication.Method skMethod = sessionKeyAuth.createMethod();
+            skMethod.setId(method.getId());
+            skMethod.setName(method.getName());
+            skMethod.setHref(method.getHref());
+            return skMethod;
+        }
+        return null;
+    }
+
+    private List<ParameterInfo> findSignParameters(Sign sign) {
+        if (sign != null) {
+            Params params = sign.getParams();
+            if (params != null && params.getParam() != null) {
+                List<ParameterInfo> signParams = new ArrayList<ParameterInfo>();
+                findSaasParams(signParams, params.getParam());
+                return signParams;
+            }
+        }
+        return Collections.emptyList();
+    }
     
     private void setAuthenticationProfile(String profile) {
         this.authProfile = profile;
@@ -191,20 +250,128 @@ public abstract class SaasBean extends GenericResourceBean {
             setAuthentication(new ApiKeyAuthentication(auth2.getApiKey().getId()));
         } else if(auth2.getSignedUrl() != null) {
             setAuthenticationType(SaasAuthenticationType.SIGNED_URL);
-            setAuthentication(new SignedUrlAuthentication());
+            SignedUrlAuthentication signedUrl = new SignedUrlAuthentication();
+            setAuthentication(signedUrl);
+            Sign sign = ((SignedUrl)auth2.getSignedUrl()).getSign();
+            if (sign != null) {
+                Params params = sign.getParams();
+                if(params != null && params.getParam() != null) {
+                    List<ParameterInfo> signParams = new ArrayList<ParameterInfo>();
+                    findSaasParams(signParams, params.getParam());
+                    signedUrl.setParameters(signParams);
+                }
+            }
         } else if(auth2.getSessionKey() != null) {
+            SessionKey sessionKey = auth2.getSessionKey();
             setAuthenticationType(SaasAuthenticationType.SESSION_KEY);
-            setAuthentication(new SessionKeyAuthentication());
+            SessionKeyAuthentication sessionKeyAuth = new SessionKeyAuthentication(
+                    sessionKey.getApiId());
+            if(sessionKey.getSessionId() != null) {
+                sessionKeyAuth.setSessionKeyName(sessionKey.getSessionId());
+            }
+            if(sessionKey.getSigId() != null) {
+                sessionKeyAuth.setSigKeyName(sessionKey.getSigId());
+            }
+            setAuthentication(sessionKeyAuth);
+            Sign sign = sessionKey.getSign();
+            if (sign != null) {
+                Params params = sign.getParams();
+                if(params != null && params.getParam() != null) {
+                    List<ParameterInfo> signParams = new ArrayList<ParameterInfo>();
+                    findSaasParams(signParams, params.getParam());
+                    sessionKeyAuth.setParameters(signParams);
+                }
+            }
+            Login login = sessionKey.getLogin();
+            if(login != null) {
+                SaasBean.SessionKeyAuthentication.Login skLogin = sessionKeyAuth.createLogin();
+                sessionKeyAuth.setLogin(skLogin);
+                sign = login.getSign();
+                skLogin.setParameters(findSignParameters(sign));
+                skLogin.setMethod(createSessionKeyMethod(login.getMethod(), sessionKeyAuth));
+            }
+            Token token = sessionKey.getToken();
+            if(token != null) {
+                SaasBean.SessionKeyAuthentication.Token skToken = sessionKeyAuth.createToken();
+                sessionKeyAuth.setToken(skToken);
+                sign = token.getSign();
+                skToken.setParameters(findSignParameters(sign));
+                skToken.setMethod(createSessionKeyMethod(token.getMethod(), sessionKeyAuth));
+                
+                Frame frame = token.getFrame();
+                if(frame != null) {
+                    SaasBean.SessionKeyAuthentication.Token.Frame skFrame = skToken.createFrame();
+                    skToken.setFrame(skFrame);
+                    sign = frame.getSign();
+                    skFrame.setParameters(findSignParameters(sign));
+                    skFrame.setUrl(frame.getUrl());
+                }
+            }
+            Logout logout = sessionKey.getLogout();
         } else {
             setAuthenticationType(SaasAuthenticationType.PLAIN);
         }
         if(auth2.getProfile() != null)
             setAuthenticationProfile(auth2.getProfile());
     }
+
+    public void findSaasParams(List<ParameterInfo> paramInfos, List<Param> params) {
+        if (params != null) {
+            for (Param param:params) {
+                //<param name="replace" type="xsd:boolean" style="query" required="false" default="some value">
+                String paramName = param.getName();
+                Class paramType = findJavaType(param.getType());
+                ParameterInfo paramInfo = new ParameterInfo(paramName, paramType);
+                if(param.getId() != null && !param.getId().trim().equals(""))
+                    paramInfo.setId(param.getId());
+                paramInfo.setIsRequired(param.isRequired()!=null?param.isRequired():false);
+                paramInfo.setFixed(param.getFixed());
+                paramInfo.setDefaultValue(param.getDefault());
+                paramInfos.add(paramInfo);
+            }
+        }
+    }
+ 
+    public static Class findJavaType(String schemaType) {       
+        if(schemaType != null) {
+            int index = schemaType.indexOf(":");        //NOI18N
+            
+            if(index != -1) {
+                schemaType = schemaType.substring(index+1);
+            }
+            
+            if(schemaType.equals("string")) {     //NOI18N
+                return String.class;
+            } else if(schemaType.equals("int")) {       //NOI18N
+                return Integer.class;
+            } else if(schemaType.equals("date")) {       //NOI18N
+                return Date.class;
+            } else if(schemaType.equals("time")) {       //NOI18N
+                return Time.class;
+            }
+        }
+        
+        return String.class;
+    }
+    
+    public void findSaasMediaType(List<MimeType> mimeTypes, Media media) {
+        String mediaType = media.getType();
+        String[] mTypes = mediaType.split(",");
+        for(String m1:mTypes) {
+            MimeType mType = MimeType.find(m1);
+            if (mType != null) {
+                mimeTypes.add(mType);
+            }
+        }
+    }
+    
+    public class Time {
+        public Time() {
+        }
+    }
     
     public class SaasAuthentication {
         public SaasAuthentication() {
-            
         }
     }
     
@@ -227,20 +394,214 @@ public abstract class SaasBean extends GenericResourceBean {
     }
     
     public class SignedUrlAuthentication extends SaasAuthentication {
+        
+        List<ParameterInfo> params = Collections.emptyList();
         public SignedUrlAuthentication() {
-            
+        }
+        
+        public List<ParameterInfo> getParameters() {
+            return params;
+        }
+        
+        public void setParameters(List<ParameterInfo> params) {
+            this.params = params;
         }
     }
     
     public class SessionKeyAuthentication extends SaasAuthentication {
-        public SessionKeyAuthentication() {
+        
+        private String apiId;
+        private String sessionId;
+        private String sig;
+        List<ParameterInfo> params = Collections.emptyList();
+        private SaasBean.SessionKeyAuthentication.Login login;
+        private SaasBean.SessionKeyAuthentication.Token token;
+        private SaasBean.SessionKeyAuthentication.Logout logout;
+
+        public SessionKeyAuthentication(String apiId) {
+            this.apiId = apiId;
+        }
+        
+        public String getApiKeyName() {
+            return apiId;
+        }
+        
+        public String getSessionKeyName() {
+            return sessionId;
+        }
+
+        public void setSessionKeyName(String sessionId) {
+            this.sessionId = sessionId;
+        }
+
+        public String getSigKeyName() {
+            return sig;
+        }
+        
+        public void setSigKeyName(String sig) {
+            this.sig = sig;
+        }
+        
+        public List<ParameterInfo> getParameters() {
+            return params;
+        }
+
+        public void setParameters(List<ParameterInfo> params) {
+            this.params = params;
+        }
             
+        public Login getLogin() {
+            return login;
+        }
+        
+        public void setLogin(Login login) {
+            this.login = login;
+        }
+        
+        public Token getToken() {
+            return token;
+        }
+        
+        public void setToken(Token token) {
+            this.token = token;
+        }
+        
+        public Logout getLogout() {
+            return logout;
+        }
+        
+        public void setLogout(Logout logout) {
+            this.logout = logout;
+        }
+        
+        public Login createLogin() {
+            return new Login();
+        }
+        
+        public Token createToken() {
+            return new Token();
+        }
+        
+        public Logout createLogout() {
+            return new Logout();
+        }
+        
+        public Method createMethod() {
+            return new Method();
+        }
+        
+        public class Login {
+        
+            List<ParameterInfo> params = Collections.emptyList();
+            Method method;
+            
+            public Login() {
+            }
+            
+            public List<ParameterInfo> getParameters() {
+                return params;
+            }
+
+            public void setParameters(List<ParameterInfo> params) {
+                this.params = params;
+            }
+            
+            public Method getMethod() {
+                return method;
+            }
+
+            public void setMethod(Method method) {
+                this.method = method;
+            }
+        }
+        
+        public class Token extends Login {
+
+            private Frame frame;
+
+            public Token() {    
+            }
+
+            public Frame getFrame() {
+                return frame;
+            }
+
+            public void setFrame(Frame frame) {
+                this.frame = frame;
+            }
+            
+            private Frame createFrame() {
+                return new Frame();
+            }
+            
+            public class Frame {
+
+                private String url;
+                List<ParameterInfo> params = Collections.emptyList();
+
+                public Frame() {    
+                }
+
+                public String getUrl() {
+                    return url;
+                }
+
+                public void setUrl(String url) {
+                    this.url = url;
+                }
+
+                public List<ParameterInfo> getParameters() {
+                    return params;
+                }
+
+                public void setParameters(List<ParameterInfo> params) {
+                    this.params = params;
+                }
+            }
+        }
+        
+        public class Logout extends Login {
+            public Logout() {
+            }
+        }
+        
+        public class Method {
+        
+            String id;
+            String name;
+            String href;
+            
+            public Method() {  
+            }
+            
+            public String getId() {
+                return id;
+            }
+
+            public void setId(String id) {
+                this.id = id;
+            }
+            
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+            
+            public String getHref() {
+                return href;
+            }
+
+            public void setHref(String href) {
+                this.href = href;
+            }
         }
     }
     
     public class CustomAuthentication extends SaasAuthentication {
         public CustomAuthentication() {
-            
         }
     }
 

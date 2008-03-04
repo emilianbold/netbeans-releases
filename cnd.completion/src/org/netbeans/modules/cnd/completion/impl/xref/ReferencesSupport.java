@@ -61,11 +61,13 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver.Scope;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionProvider;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.QueryScope;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider;
 import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
@@ -177,15 +179,15 @@ public final class ReferencesSupport {
         }
         // check but not for function call
         if (idFunBlk != null && idFunBlk.length != 3) {
-            csmItem = findDeclaration(csmFile, doc, tokenUnderOffset, offset, true);
+            csmItem = findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.SMART_QUERY);
         }
         // then full check if needed
-        csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, false);
+        csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY);
         return csmItem;
     }
     
     public static CsmObject findDeclaration(final CsmFile csmFile, final BaseDocument doc, 
-            Token tokenUnderOffset, final int offset, final boolean onlyLocal) {
+            Token tokenUnderOffset, final int offset, final QueryScope queryScope) {
         assert csmFile != null;
         tokenUnderOffset = tokenUnderOffset != null ? tokenUnderOffset : getTokenByOffset(doc, offset);
         // no token in document under offset position
@@ -213,7 +215,7 @@ public final class ReferencesSupport {
         }
         if (csmObject == null) {
             // try with code completion engine
-            csmObject = CompletionUtilities.findItemAtCaretPos(null, doc, CsmCompletionProvider.getCompletionQuery(csmFile, onlyLocal), offset);
+            csmObject = CompletionUtilities.findItemAtCaretPos(null, doc, CsmCompletionProvider.getCompletionQuery(csmFile, queryScope), offset);
         }     
         return csmObject;
     }
@@ -267,7 +269,7 @@ public final class ReferencesSupport {
             BaseDocument doc = getRefDocument(ref);
             if (doc != null) {
                 Token token = getRefTokenIfPossible(ref);
-                target = findDeclaration(ref.getContainingFile(), doc, token, offset, true);
+                target = findDeclaration(ref.getContainingFile(), doc, token, offset, QueryScope.LOCAL_QUERY);
                 setResolvedInfo(ref, target);
             }
         } 
@@ -361,6 +363,24 @@ public final class ReferencesSupport {
         CsmObject owner = ref.getOwner();
         if (CsmKindUtilities.isType(owner)) {
             kind = getReferenceUsageKind(ref);
+        } else {
+            CsmObject target = ref.getReferencedObject();
+            if (target != null) {
+                CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, true);
+                CsmObject targetDecl = decDef[0];
+                CsmObject targetDef = decDef[1];        
+                assert targetDecl != null;
+                kind = CsmReferenceKind.DIRECT_USAGE;
+                if (owner != null) {
+                    if (owner.equals(targetDecl)) {
+                        kind = CsmReferenceKind.DECLARATION;
+                    } else if (owner.equals(targetDef)) {
+                        kind = CsmReferenceKind.DEFINITION;
+                    } else {
+                        kind = getReferenceUsageKind(ref);                        
+                    }
+                }
+            }
         }
         return kind;
     }

@@ -367,7 +367,7 @@ public class WsValidation extends WebServicesTestBase {
         undeployProject(getWsClientProjectName());
     }
 
-    public static Test suite() {
+    public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
         suite.addTest(new WsValidation("testCreateNewWs")); //NOI18N
         suite.addTest(new WsValidation("testAddOperation")); //NOI18N

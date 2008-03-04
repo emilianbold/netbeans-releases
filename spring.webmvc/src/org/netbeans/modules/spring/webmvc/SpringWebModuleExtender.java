@@ -104,10 +104,10 @@ import org.openide.util.NbBundle;
 public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {      
     private static final Logger LOGGER = Logger.getLogger(SpringWebModuleExtender.class.getName());
     
-    private SpringConfigPanelVisual frameworkPanelVisual;
     private final SpringWebFrameworkProvider framework;
     private final ExtenderController controller;
-    private boolean customizer;
+    private final boolean customizer;
+    private SpringConfigPanelVisual component;
     private String dispatcherName = "dispatcher"; // NOI18N
     private String dispatcherMapping = "*.htm"; // NOI18N
     private boolean includeJstl = true;
@@ -142,10 +142,11 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     }
 
     public SpringConfigPanelVisual getComponent() {
-        if (frameworkPanelVisual == null) {
-            frameworkPanelVisual = new SpringConfigPanelVisual(this);
+        if (component == null) {
+            component = new SpringConfigPanelVisual(this);
+            component.setEnabled(!customizer);
         }
-        return frameworkPanelVisual;
+        return component;
     }
 
     public boolean isValid() {
@@ -153,20 +154,12 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNameIsEmpty")); // NOI18N
             return false;
         }
-        
-        // TODO clean up this method;  Either just check filename or also have servlet name check
-        // conditional error message
-        String whichError = ""; // NOI18N
-        boolean isDispatcherConfigFilenameValid = SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid(dispatcherName);
-        if (!isDispatcherConfigFilenameValid){
-            whichError = NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherServletConfigFilenameIsNotValid");
-        }                
- 
-        if (!isDispatcherConfigFilenameValid ){
-            controller.setErrorMessage(whichError); // NOI18N
+               
+        if (!SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid(dispatcherName)){
+            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherServletConfigFilenameIsNotValid")); 
             return false;
-        }   
-        
+        }                
+
         if (dispatcherMapping == null || dispatcherMapping.trim().length() == 0) {
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherMappingPatternIsEmpty")); // NOI18N
             return false;
@@ -183,12 +176,6 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         return new HelpCtx(SpringWebModuleExtender.class);
     }
 
-    public void readSettings(Object settings) {
-    }
-
-    public void storeSettings(Object settings) {
-    }
-
     public final void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
@@ -201,7 +188,6 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         dispatcherName = getComponent().getDispatcherName();
         dispatcherMapping = getComponent().getDispatcherMapping();
         includeJstl = getComponent().getIncludeJstl();
-        dispatcherName = SpringWebFrameworkUtils.escapeAttributeValues(dispatcherName); // Escape the Dispatcher name as an XML attibute value
         changeSupport.fireChange();
     }
 

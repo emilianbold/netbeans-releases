@@ -131,14 +131,12 @@ public class VariablesActionsProvider implements NodeActionsProvider {
     }
     
     public void goToSource (Field variable) {
-        SourcePath ectx = (SourcePath) lookupProvider.lookupFirst
-            (null, SourcePath.class);
+        SourcePath ectx = lookupProvider.lookupFirst(null, SourcePath.class);
         ectx.showSource (variable);
     }
 
     private boolean isSourceAvailable (Field v) {
-        SourcePath ectx = (SourcePath) lookupProvider.lookupFirst 
-            (null, SourcePath.class);
+        SourcePath ectx = lookupProvider.lookupFirst(null, SourcePath.class);
         return ectx.sourceAvailable (v);
     }
 }

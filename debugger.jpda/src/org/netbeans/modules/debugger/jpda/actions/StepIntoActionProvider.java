@@ -100,10 +100,9 @@ implements Executor, PropertyChangeListener {
         );
         this.contextProvider = contextProvider;
         getSmartSteppingFilterImpl ().addPropertyChangeListener (this);
-        SourcePath ec = (SourcePath) contextProvider.
-            lookupFirst (null, SourcePath.class);
+        SourcePath ec = contextProvider.lookupFirst(null, SourcePath.class);
         ec.addPropertyChangeListener (this);
-        Map properties = (Map) contextProvider.lookupFirst (null, Map.class);
+        Map properties = contextProvider.lookupFirst(null, Map.class);
         if (properties != null)
             smartSteppingStepOut = properties.containsKey (SS_STEP_OUT);
         setProviderToDisableOnLazyAction(this);
@@ -264,7 +263,7 @@ implements Executor, PropertyChangeListener {
             }
             if (stop) {
                 removeStepRequests (le.thread ());
-                Session session = (Session) contextProvider.lookupFirst(null, Session.class);
+                Session session = contextProvider.lookupFirst(null, Session.class);
                 if (session != null) {
                     DebuggerManager.getDebuggerManager().setCurrentSession(session);
                 }
@@ -367,8 +366,7 @@ implements Executor, PropertyChangeListener {
     
     private SmartSteppingFilter getSmartSteppingFilterImpl () {
         if (smartSteppingFilter == null)
-            smartSteppingFilter = (SmartSteppingFilter) contextProvider.
-                lookupFirst (null, SmartSteppingFilter.class);
+            smartSteppingFilter = contextProvider.lookupFirst(null, SmartSteppingFilter.class);
         return smartSteppingFilter;
     }
 
@@ -376,8 +374,7 @@ implements Executor, PropertyChangeListener {
     
     private CompoundSmartSteppingListener getCompoundSmartSteppingListener () {
         if (compoundSmartSteppingListener == null)
-            compoundSmartSteppingListener = (CompoundSmartSteppingListener) 
-                contextProvider.lookupFirst (null, CompoundSmartSteppingListener.class);
+            compoundSmartSteppingListener = contextProvider.lookupFirst(null, CompoundSmartSteppingListener.class);
         return compoundSmartSteppingListener;
     }
 
