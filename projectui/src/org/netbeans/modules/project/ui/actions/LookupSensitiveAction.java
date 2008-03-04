@@ -65,6 +65,7 @@ import org.openide.windows.TopComponent;
  */
 public abstract class LookupSensitiveAction extends BasicAction implements LookupListener {
     private static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions"); // NOI18N
+    private static Logger LOG = Logger.getLogger(LookupSensitiveAction.class.getName());
 
     private Lookup lookup;
     private Class<?>[] watch;
@@ -162,6 +163,16 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     private void doRefresh() {
         refreshing = true;
         try {
+            if (LOG.isLoggable(Level.FINER)) {
+                LogRecord r = new LogRecord(Level.FINER, "LOG_ACTION_REFRESH"); // NOI18N
+                r.setResourceBundle(NbBundle.getBundle(LookupSensitiveAction.class));
+                r.setParameters(new Object[]{
+                    getClass(),
+                    lookup
+                });
+                r.setLoggerName(LOG.getName());
+                LOG.log(r);
+            }
             refresh( lookup );
         } finally {
             refreshing = false;
