@@ -281,6 +281,44 @@ public class CompilerSet {
         return cs;
     }
     
+    public static CompilerFlavor getCompilerSetFlavor(String directory, String[] list) {
+        if (Utilities.isWindows()) {
+            if (directory.toLowerCase().indexOf("cygwin") != -1) { // NOI18N
+                return CompilerFlavor.Cygwin;
+            }
+            if (directory.toLowerCase().indexOf("mingw") != -1) { // NOI18N
+                return CompilerFlavor.MinGW;
+            }
+            if (directory.toLowerCase().indexOf("sfu") != -1 || directory.toLowerCase().indexOf("sua") != -1) { // NOI18N
+                return CompilerFlavor.Interix;
+            }
+        } else {
+            if (isSunCompilerDirectory(directory)) { 
+                return getBestSunStudioFlavor(CompilerFlavor.Sun, directory);
+            } else if (isSunUCBCompilerDirectory(directory)) { 
+                return CompilerFlavor.SunUCB;
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS &&
+                    (directory.equals("/usr/bin") || directory.equals("/bin"))) { // NOI18N
+                for (int i = 0; i < list.length; i++) {
+                    if (list[i].equals("cc") || list[i].equals("CC")) { // NOI18N
+                        // Can't verify version, so just return Sun
+                        return getBestSunStudioFlavor(CompilerFlavor.Sun, directory);
+                    }
+                }
+            }
+        }
+        
+        // So far we havne't been able to determine the compiler set flavor. Look at the
+        // names in list and see if we can from it. If not, assume its unknown.
+        for (String pgm : list) {
+            if (pgm.indexOf("gcc") != -1 || pgm.indexOf("g++") != -1) { // NOI18N
+                return CompilerFlavor.GNU;
+            }
+        }
+        
+        return CompilerFlavor.GNU;
+    }
+    
     public static CompilerSet getCompilerSet(String directory, String[] list) {
         CompilerSet cs = csmap.get(directory);
         if (cs != null) {
@@ -295,41 +333,51 @@ public class CompilerSet {
             }
         }
         
-        if (Utilities.isWindows()) {
-            if (directory.toLowerCase().indexOf("cygwin") != -1) { // NOI18N
-                return new CompilerSet(CompilerFlavor.Cygwin, directory);
-            }
-            if (directory.toLowerCase().indexOf("mingw") != -1) { // NOI18N
-                return new CompilerSet(CompilerFlavor.MinGW, directory);
-            }
-            if (directory.toLowerCase().indexOf("sfu") != -1 || directory.toLowerCase().indexOf("sua") != -1) { // NOI18N
-                return new CompilerSet(CompilerFlavor.Interix, directory);
-            }
-        } else {
-            if (isSunCompilerDirectory(directory)) { 
-                return new CompilerSet(CompilerFlavor.Sun, directory);
-            } else if (isSunUCBCompilerDirectory(directory)) { 
-                return new CompilerSet(CompilerFlavor.SunUCB, directory);
-            } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS &&
-                    (directory.equals("/usr/bin") || directory.equals("/bin"))) { // NOI18N
-                for (int i = 0; i < list.length; i++) {
-                    if (list[i].equals("cc") || list[i].equals("CC")) { // NOI18N
-                        // Can't verify version, so just return Sun
-                        return new CompilerSet(CompilerFlavor.Sun, directory);
-                    }
-                }
-            }
-        }
+        CompilerFlavor flavor = getCompilerSetFlavor(directory, list);
+        return new CompilerSet(flavor, directory);
         
-        // So far we havne't been able to determine the compiler set flavor. Look at the
-        // names in list and see if we can from it. If not, assume its unknown.
-        for (String pgm : list) {
-            if (pgm.indexOf("gcc") != -1 || pgm.indexOf("g++") != -1) { // NOI18N
-                return new CompilerSet(CompilerFlavor.GNU, directory);
-            }
+//        if (Utilities.isWindows()) {
+//            if (directory.toLowerCase().indexOf("cygwin") != -1) { // NOI18N
+//                return new CompilerSet(CompilerFlavor.Cygwin, directory);
+//            }
+//            if (directory.toLowerCase().indexOf("mingw") != -1) { // NOI18N
+//                return new CompilerSet(CompilerFlavor.MinGW, directory);
+//            }
+//            if (directory.toLowerCase().indexOf("sfu") != -1 || directory.toLowerCase().indexOf("sua") != -1) { // NOI18N
+//                return new CompilerSet(CompilerFlavor.Interix, directory);
+//            }
+//        } else {
+//            if (isSunCompilerDirectory(directory)) { 
+//                return new CompilerSet(CompilerFlavor.Sun, directory);
+//            } else if (isSunUCBCompilerDirectory(directory)) { 
+//                return new CompilerSet(CompilerFlavor.SunUCB, directory);
+//            } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS &&
+//                    (directory.equals("/usr/bin") || directory.equals("/bin"))) { // NOI18N
+//                for (int i = 0; i < list.length; i++) {
+//                    if (list[i].equals("cc") || list[i].equals("CC")) { // NOI18N
+//                        // Can't verify version, so just return Sun
+//                        return new CompilerSet(CompilerFlavor.Sun, directory);
+//                    }
+//                }
+//            }
+//        }
+//        
+//        // So far we havne't been able to determine the compiler set flavor. Look at the
+//        // names in list and see if we can from it. If not, assume its unknown.
+//        for (String pgm : list) {
+//            if (pgm.indexOf("gcc") != -1 || pgm.indexOf("g++") != -1) { // NOI18N
+//                return new CompilerSet(CompilerFlavor.GNU, directory);
+//            }
+//        }
+//        
+//        return new CompilerSet(CompilerFlavor.GNU, directory);
+    }
+    
+    public static void removeCompilerSet(CompilerSet cs) {
+        csmap.remove(cs.getDirectory());
+        for (Tool tool : cs.getTools()) {
+            cache.remove(cs.getDirectory() + File.separator + tool.getKind());
         }
-        
-        return new CompilerSet(CompilerFlavor.GNU, directory);
     }
     
     /**
@@ -349,8 +397,9 @@ public class CompilerSet {
 //        if (isMissing) {
 //            label.append("Missing"); // NOI18N
 //        } else {
-            label.append(id == 0 ? "0" : "X"); // NOI18N
+//            label.append(id == 0 ? "0" : "X"); // NOI18N
 //        }
+        label.append("0"); // There is now only one of each // NOI18N
         return NbBundle.getMessage(CompilerSet.class, label.toString(), Integer.valueOf(id));
     }
     
@@ -466,13 +515,10 @@ public class CompilerSet {
     private static HashMap<String, Tool> cache = new HashMap();
     
     public Tool addTool(String name, String path, int kind) {
-        String fullpath = name.length() > 0 ? path + File.separator + name : path;
-        Tool tool = cache.get(fullpath + kind);
+        Tool tool = cache.get(path + File.separator + kind);
         if (tool == null) {
             tool = compilerProvider.createCompiler(flavor, kind, name, Tool.getToolDisplayName(kind), path);
-            if (fullpath.length() > 0) {
-                cache.put(fullpath + kind, tool);
-            }
+            cache.put(path + File.separator + kind, tool);
         }
         if (!tools.contains(tool)) {
             tools.add(tool);
