@@ -1,12 +1,11 @@
 Name: Java Native Access
 Version: 3.0.1
-License: LPGL
+License: LGPL-2.1
 OSR: 7755
 Origin: https://jna.dev.java.net/source/browse/*checkout*/jna/tags/3.0.1/jnalib/dist/jna.jar?rev=HEAD
+Source: https://jna.dev.java.net/source/browse/*checkout*/jna/tags/3.0.1/jnalib/dist/jna.jar?rev=HEAD
 Description: Dynamically access native libraries from Java without JNI.
 
-
-------------------------------------------------------------------------
 
 GNU LESSER GENERAL PUBLIC LICENSE
 

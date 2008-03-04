@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,31 +38,49 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.validation.core;
+/*
+ * PluginDesignTimeConstants.java
+ * 
+ * Created on Oct 8, 2007, 3:59:03 PM
+ * 
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
 
-import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
-import org.netbeans.modules.bpel.validation.core.QuickFix;
+package org.netbeans.modules.masterindex.plugin.util;
+
+import java.io.File;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2007.12.07
+ *
+ * @author Manish Bharani
  */
-public final class Outcome extends ResultItem {
+public class PluginDTConstants {
 
-  public Outcome(CoreValidator validator, ResultType type, Component component, String description) {
-    this(validator, type, component, description, null);
-  }
-
-  public Outcome(CoreValidator validator, ResultType type, Component component, String description, QuickFix quickFix) {
-    super(validator, type, component, description);
-    myQuickFix = quickFix;
-  }         
-
-  public QuickFix getQuickFix() {
-    return myQuickFix;
-  }
-
-  private QuickFix myQuickFix;
+    // File System Constants
+    public static final String USER_DIR = System.getProperty("user.dir");
+    public static final String PS = ":"; //Path Separator
+    public static final String fs = System.getProperty("file.separator"); //File Separator
+    public static File EVIEW_CONFIG_FILE = null;
+    
+    //Axion Database Constants
+    public static final String AXION_KEY_TABLE = "AXION_KEYS";
+    public static final String DB_DRIVER = "org.axiondb.jdbc.AxionDriver";
+    public static final String URI_PRIFIX = "jdbc" + PS +  "axiondb";
+    public static final String AXION_DB_VERSION = ".VER";
+    
+    //Query Manager Specific Constants
+    public static final String QueryManagerTablePrefix = "SBYN_";
+    public static final String QualifiedPathPrefix = "Enterprise.SystemObject.";
+    
+    //Default Columns Constants
+    public static final String datatype = "string";
+    public static final int datasize = 32;
+    public static final boolean isRequired = true;
+    public static final boolean isUpdatable = false;    
+    
+    public PluginDTConstants(){
+        
+    }
+    
 }

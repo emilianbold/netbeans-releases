@@ -42,6 +42,7 @@
 package gui.action;
 
 import gui.Projects;
+import gui.ScriptingUtilities;
 import java.awt.Font;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -115,7 +116,7 @@ public class TypingInScriptingEditor extends org.netbeans.performance.test.utili
     }
     protected Node getProjectNode(String projectName) {
         if(projectsTab==null)
-            projectsTab = new ProjectsTabOperator();
+            projectsTab = ScriptingUtilities.invokePTO();
         
         return projectsTab.getProjectRootNode(projectName);
     }

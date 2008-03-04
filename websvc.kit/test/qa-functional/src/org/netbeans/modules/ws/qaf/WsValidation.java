@@ -53,6 +53,7 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.web.NewJspFileNameStepOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -367,7 +368,7 @@ public class WsValidation extends WebServicesTestBase {
         undeployProject(getWsClientProjectName());
     }
 
-    public static Test suite() {
+    public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
         suite.addTest(new WsValidation("testCreateNewWs")); //NOI18N
         suite.addTest(new WsValidation("testAddOperation")); //NOI18N
@@ -423,6 +424,7 @@ public class WsValidation extends WebServicesTestBase {
                 getWsClientProjectName() + "|" + getWsName()//NOI18N
                 + "|" + getWsName() + "Service|" //NOI18N
                 + getWsName() + "Port|" + opName)); //NOI18N
+        eo.select(line);
         ndo.ok();
         waitForTextInEditor(eo, "port." + opName); //NOI18N
     }
