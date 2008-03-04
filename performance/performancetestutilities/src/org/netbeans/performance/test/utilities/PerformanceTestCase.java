@@ -299,6 +299,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
             for(int i=1; i<=repeat && exceptionDuringMeasurement==null; i++){
                 try {
+                    testedComponentOperator = null;
                     tr.startNewEventList("Iteration no." + i);
                     tr.connectToAWT(true);
                     prepare();
@@ -433,6 +434,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
         for(int i=1; i<=repeat_memory && exceptionDuringMeasurement==null; i++){
             try {
+                testedComponentOperator = null;
+                
                 prepare();
 
                 waitNoEvent(WAIT_AFTER_PREPARE);
