@@ -119,11 +119,11 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
     /** Wait No Event in the Event Queue after call method <code>prepare()</code>.
      * <br><b>default</b> = 1000 ms */
-    public int WAIT_AFTER_PREPARE = 250;
+    public int WAIT_AFTER_PREPARE = 1000;
 
     /** Wait No Event in the Event Queue after call method {@link close}.
      * <br><b>default</b> = 1000 ms */
-    public int WAIT_AFTER_CLOSE = 250;
+    public int WAIT_AFTER_CLOSE = 1000;
 
     /** Factor for wait_after_open_heuristic timeout, negative HEURISTIC_FACTOR
      * disables heuristic */
