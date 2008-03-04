@@ -47,7 +47,6 @@ import javax.swing.Action;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.OpenProjectList;
-import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -76,12 +75,14 @@ public class CloseProject extends ProjectAction implements PropertyChangeListene
         refresh( getLookup() );
     }
         
+    @Override
     protected void actionPerformed( Lookup context ) {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );        
         // show all modified documents, if an user cancel it then no project is closed        
         OpenProjectList.getDefault().close( projects, true );
     }
     
+    @Override
     public void refresh( Lookup context ) {
         
         super.refresh( context );
@@ -100,6 +101,7 @@ public class CloseProject extends ProjectAction implements PropertyChangeListene
         }        
     }
     
+    @Override
     public Action createContextAwareInstance( Lookup actionContext ) {
         return new CloseProject( actionContext );
     }
@@ -111,7 +113,8 @@ public class CloseProject extends ProjectAction implements PropertyChangeListene
     // Implementation of Presenter.Popup ---------------------------------------
     
     public JMenuItem getPopupPresenter() {
-        JMenuItem popupPresenter = new JMenuItem( this );
+        JMenuItem popupPresenter = new JMenuItem();
+        org.openide.awt.Actions.connect(popupPresenter, this, true);
 
         popupPresenter.setIcon( null );
         popupPresenter.setText( popupName );

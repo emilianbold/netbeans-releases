@@ -67,6 +67,7 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class CloseProjectTest extends NbTestCase implements PropertyChangeListener {
     private int change;
+    private int ancEvent;
     
     public CloseProjectTest(String testName) {
         super(testName);
@@ -91,7 +92,7 @@ public class CloseProjectTest extends NbTestCase implements PropertyChangeListen
     /**
      * Test of actionPerformed method, of class CloseProject.
      */
-    public void testNoNeedToRefreshWhenNotVisible() throws IOException {
+    public void testNoNeedToRefreshWhenNotVisible() throws IOException, InterruptedException {
         InstanceContent ic = new InstanceContent();
         Lookup context = new AbstractLookup(ic);
         CloseProject instance = new CloseProject(context);
@@ -103,18 +104,16 @@ public class CloseProjectTest extends NbTestCase implements PropertyChangeListen
         }
         
         JMenuItem item = instance.getPopupPresenter();
-        item.addPropertyChangeListener("enabled", this);
-        /*
-        item.addNotify();
-        JFrame f = new JFrame();
-        JMenuBar b = new JMenuBar();
-        JMenu m = new JMenu();
-        b.add(m);
-        m.add(item);
-        f.setJMenuBar(b);
-        f.pack();
-        f.setVisible(true);
-         */
+        JMenu menu = new JMenu();
+        menu.addNotify();
+        assertNotNull("Peer created", menu.getPeer());
+        menu.getPopupMenu().addNotify();
+        assertNotNull("Peer for popup", menu.getPopupMenu().getPeer());
+        
+        item.addPropertyChangeListener(this);
+        menu.add(item);
+        assertEquals("anncessor properly changes, this means the actions framework is activated", 1, ancEvent);
+        
         
         assertFalse("Not enabled", item.isEnabled());
         FileObject pfo = TestSupport.createTestProject(FileUtil.createMemoryFileSystem().getRoot(), "yaya");
@@ -141,7 +140,14 @@ public class CloseProjectTest extends NbTestCase implements PropertyChangeListen
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        change++;
+        if ("ancestor".equals(evt.getPropertyName())) {
+            ancEvent++;
+            return;
+        }
+        if ("enabled".equals(evt.getPropertyName())) {
+            change++;
+            return;
+        }
     }
 
 }
