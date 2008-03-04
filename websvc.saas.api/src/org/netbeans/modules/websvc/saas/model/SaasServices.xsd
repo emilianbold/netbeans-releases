@@ -113,6 +113,7 @@
                                 <xsd:sequence>
                                     <xsd:element name="sign" type="saas:Sign" minOccurs="0" maxOccurs="1"/>
                                 </xsd:sequence>
+                                <xsd:attribute name="sig-id" type="xsd:string" use="required"/>
                             </xsd:complexType>
                         </xsd:element>
                         <xsd:element name="session-key">
