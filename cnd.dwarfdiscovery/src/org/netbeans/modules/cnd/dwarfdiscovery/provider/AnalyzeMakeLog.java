@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -151,11 +152,10 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
 
     @Override
     public boolean isApplicable(ProjectProxy project) {
-        if (detectMakeLog(project) != null){
-            Object o = getProperty(RESTRICT_COMPILE_ROOT).getValue();
-            if (o == null || "".equals(o.toString())){ // NOI18N
-                getProperty(RESTRICT_COMPILE_ROOT).setValue(project.getSourceRoot());
-            }
+//        if (detectMakeLog(project) != null){
+        Object o = getProperty(RESTRICT_COMPILE_ROOT).getValue();
+        if (o == null || "".equals(o.toString())){ // NOI18N
+            getProperty(RESTRICT_COMPILE_ROOT).setValue(project.getSourceRoot());
             return true;
         }
         return false;
@@ -204,6 +204,22 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
         }
         return 80;
     }
+
+    @Override
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map){
+        ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
+        String root = "";
+        if (p != null) {
+            root = (String)p.getValue();
+        }
+        return runLogReader(objFileName, root);
+    }
+    
+    /* package-local */ static List<SourceFileProperties> runLogReader(String objFileName, String root){
+        LogReader clrf = new LogReader(objFileName, root);
+        List<SourceFileProperties> list = clrf.getResults();
+        return list;
+    }
     
     public List<Configuration> analyze(final ProjectProxy project) {
         isStoped = false;
@@ -233,6 +249,8 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                     }
                     return myFileProperties;
                 }
+                
+                
                 
                 public List<String> getIncludedFiles(){
                     if (myIncludedFiles == null) {
