@@ -42,9 +42,17 @@
 package org.netbeans.modules.web.core.jsploader;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Timer;
@@ -58,6 +66,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.web.core.palette.JSPPaletteFactory;
 import org.openide.filesystems.FileUtil;
 
@@ -84,11 +93,14 @@ import org.openide.util.NbBundle;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.palette.PaletteController;
+import org.openide.util.Parameters;
 import org.openide.util.UserCancelException;
 import org.openide.util.WeakListeners;
 
 class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie.Observable, OpenCookie,
         LineCookie, CloseCookie, PrintCookie, PropertyChangeListener {
+    
+    private static final Logger LOGGER = Logger.getLogger(BaseJspEditorSupport.class.getName());
     
     private static final int AUTO_PARSING_DELAY = 2000;//ms
     
@@ -398,6 +410,90 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
      */
     protected CloneableEditor createCloneableEditor() {
         return new BaseJspEditor(this);
+    }
+
+    @Override
+    protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
+        Parameters.notNull("doc", doc); // NOI18N
+        Parameters.notNull("kit", kit); // NOI18N
+
+        Charset c =  FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+        writeByteOrderMark(c, stream);
+        super.saveFromKitToStream(doc, kit, stream);
+    }
+    
+    private static final Set<String> UTF_16_CHARSETS = new HashSet<String>();
+    private static final Set<String> UTF_32_CHARSETS = new HashSet<String>();
+    
+    static {
+        Collections.addAll(UTF_16_CHARSETS, "UTF-16", "UTF-16LE", "UTF-16BE");
+        Collections.addAll(UTF_32_CHARSETS, "UTF-32", "UTF-32LE", "UTF-32BE");
+    }
+
+    /**
+     * This method handle byte order mark for charset that do not write it.
+     * 
+     * @param charset charset (UTF 16 or 32 based)
+     * @param os output stream where to write BOM
+     * @throws java.io.IOException
+     */
+    private void writeByteOrderMark(Charset charset, OutputStream os) throws IOException {        
+        if (!UTF_16_CHARSETS.contains(charset.name())
+                && !UTF_32_CHARSETS.contains(charset.name())) {
+            return;
+        }
+
+        /*
+         * We need to use writer because encode methods in Charset don't work.
+         */
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Writer writer = new OutputStreamWriter(out, charset);
+        try {
+            writer.write('\uFFFD'); // NOI18N
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            return;
+        } finally {
+            writer.close();
+        }
+
+        byte[] buffer = out.toByteArray();
+
+        if ((UTF_16_CHARSETS.contains(charset.name()) && buffer.length > 2)
+                || (UTF_32_CHARSETS.contains(charset.name()) && buffer.length > 4)) {
+            // charset writes BOM
+            return;
+        }
+
+        if (UTF_16_CHARSETS.contains(charset.name())) {
+            if (buffer.length < 2) {
+                // don't know what to do
+                return;
+            }
+
+            if (buffer[0] == (byte) 0xFF && buffer[1] == (byte) 0xFD) {
+                // big endian
+                os.write(new byte[] {(byte) 0xFE, (byte) 0xFF});
+            } else if (buffer[0] == (byte) 0xFD && buffer[1] == (byte) 0xFF) {
+                // little endian
+                os.write(new byte[] {(byte) 0xFF, (byte) 0xFE});
+            }
+        } else if (UTF_32_CHARSETS.contains(charset.name())) {
+            if (buffer.length < 4) {
+                // don't know what to do
+                return;
+            }
+
+            if (buffer[0] == (byte) 0xFF && buffer[1] == (byte) 0xFD
+                    && buffer[2] == (byte) 0x00 && buffer[3] == (byte) 0x00) {
+                // big endian
+                os.write(new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0xFE, (byte) 0xFF});
+            } else if (buffer[0] == (byte) 0x00 && buffer[1] == (byte) 0x00
+                    && buffer[2] == (byte) 0xFD && buffer[3] == (byte) 0xFF) {
+                // little endian
+                os.write(new byte[] {(byte) 0xFF, (byte) 0xFE, (byte) 0x00, (byte) 0x00});
+            }
+        }
     }
     
     public static class BaseJspEnv extends DataEditorSupport.Env {

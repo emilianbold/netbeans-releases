@@ -95,6 +95,7 @@ public final class View extends TopComponent implements SearchListener {
     createTabbed();
     myTabbed.addTrees(list, tree);
     open();
+    requestActive();
   }
 
   private void createTabbed() {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,32 +31,66 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bpel.validation.core;
 
-import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
-import org.netbeans.modules.bpel.validation.core.QuickFix;
+package org.netbeans.modules.web.jspparser;
+
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsps.parserapi.TldChangeEvent;
+import org.netbeans.modules.web.jsps.parserapi.TldChangeListener;
+import org.openide.util.Exceptions;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2007.12.07
+ * Heavily inspired by {@link org.openide.util.ChangeSupport}.
+ * @author Tomas Mysik
  */
-public final class Outcome extends ResultItem {
+public class TldChangeSupport {
+    private final List<TldChangeListener> listeners = new CopyOnWriteArrayList<TldChangeListener>();
+    private final Object source;
 
-  public Outcome(CoreValidator validator, ResultType type, Component component, String description) {
-    this(validator, type, component, description, null);
-  }
+    public TldChangeSupport(Object source) {
+        this.source = source;
+    }
 
-  public Outcome(CoreValidator validator, ResultType type, Component component, String description, QuickFix quickFix) {
-    super(validator, type, component, description);
-    myQuickFix = quickFix;
-  }         
+    public void addTldChangeListener(TldChangeListener listener) {
+        if (listener == null) {
+            return;
+        }
+        listeners.add(listener);
+    }
 
-  public QuickFix getQuickFix() {
-    return myQuickFix;
-  }
+    public void removeTldChangeListener(TldChangeListener listener) {
+        if (listener == null) {
+            return;
+        }
+        listeners.remove(listener);
+    }
 
-  private QuickFix myQuickFix;
+    public void fireChange(WebModule webModule) {
+        if (listeners.isEmpty()) {
+            return;
+        }
+        fireChange(new TldChangeEvent(source, webModule));
+    }
+
+    private void fireChange(TldChangeEvent event) {
+        assert event != null;
+        for (TldChangeListener listener : listeners) {
+            try {
+                listener.tldChange(event);
+            } catch (RuntimeException x) {
+                Exceptions.printStackTrace(x);
+            }
+        }
+    }
+
+    public boolean hasListeners() {
+        return !listeners.isEmpty();
+    }
 }
