@@ -78,18 +78,33 @@ public class MySQLOptions {
     static final String PROP_STOP_ARGS = "stop-args"; // NOI18N
     static final String PROP_COMMANDS_CONFIRMED = "commands-confirmed"; // NOI18N
     
+    // These options are not currently visible in the properties dialog, but
+    // can be set by users through direct editing of the preferences file
+    
+    // How long to wait on the network before giving up on an attempt to
+    // connect, in milliseconds
+    static final String PROP_CONNECT_TIMEOUT = "connect-timeout"; // NOII18N
+    
     // Currently not modifiable...
     private static final String DRIVER_CLASS = "com.mysql.jdbc.Driver";
     private static final String DEFAULT_PORT = "3306";
     private static final String DEFAULT_HOST = "localhost";
     private static final String DEFAULT_ADMIN_USER = "root";
     private static final String DEFAULT_ADMIN_PASSWORD = "";
+    // In milliseconds
+    private static final String DEFAULT_CONNECT_TIMEOUT = "15000";
     
     private CopyOnWriteArrayList<PropertyChangeListener> listeners = 
             new CopyOnWriteArrayList<PropertyChangeListener>();
     
     public static MySQLOptions getDefault() {
         return DEFAULT;
+    }
+    
+    private MySQLOptions() {
+        if ( Utils.isEmpty(getConnectTimeout()) ) {
+            setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
+        }
     }
     
     protected final void putProperty(String key, String value) {
@@ -305,16 +320,13 @@ public class MySQLOptions {
         putProperty(PROP_COMMANDS_CONFIRMED, confirmed);
     }
 
-    /* TODO - Implement support for database directory 
-    public String getDatabaseDirectory() {
-        return getProperty(PROP_PORT);
+    public String getConnectTimeout() {
+        return getProperty(PROP_CONNECT_TIMEOUT);
     }
-
-    public void setDatabaseDirectory(String dbdir) {
-        putProperty(PROP_DBDIR, dbdir);
-    }
-    */
     
+    public void setConnectTimeout(String timeout) {
+        putProperty(PROP_CONNECT_TIMEOUT, timeout);
+    }
 
     public static String getDriverClass() {
         return DRIVER_CLASS;

@@ -119,12 +119,16 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             
             dbCreated = true;
             
+            String user;
             if ( grantUser != null ) {
                 server.grantFullDatabaseRights(dbname, grantUser);
+                user = grantUser.getUser();
+            } else {
+                user = server.getUser();
             }
                
             DatabaseConnection dbconn = 
-                    createConnection(server, dbname, grantUser.getUser());
+                    createConnection(server, dbname, user);
             
             if ( dbconn != null && ServerInstance.isSampleName(dbname) ) {
                 server.createSample(dbname, dbconn);

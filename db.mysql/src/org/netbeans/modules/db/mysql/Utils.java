@@ -91,7 +91,7 @@ public class Utils {
     }
 
     private static boolean isValidPath(String path, boolean isDirectory, boolean emptyOK) {
-        if ( path == null || path.length() == 0 ) {
+        if ( isEmpty(path) ) {
             return emptyOK;
         }
         File file = new File(path).getAbsoluteFile();
@@ -111,7 +111,7 @@ public class Utils {
      * @return
      */
     public static boolean isValidURL(String url, boolean emptyOK) {
-        if ( url == null || url.length() == 0 ) {
+        if ( isEmpty(url) ) {
             return emptyOK;
         }
 
@@ -122,6 +122,10 @@ public class Utils {
         }
         
         return true;
+    }
+    
+    public static boolean isEmpty(String val) {
+        return val == null || val.length() == 0;
     }
     
     /**
@@ -140,17 +144,16 @@ public class Utils {
 
         return ( result == NotifyDescriptor.OK_OPTION );
     }
+    
+    public static void displayErrorMessage(String message) {
+        NotifyDescriptor ndesc = new NotifyDescriptor(
+                message, 
+                NbBundle.getMessage(Utils.class, "MSG_ErrorDialogTitle"),
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.ERROR_MESSAGE, 
+                new Object[] { NotifyDescriptor.OK_OPTION },
+                NotifyDescriptor.OK_OPTION);
 
-    /**
-     * Check to see if the admin command has been set and confirmed,
-     * raising the appropriate dialogs as needed.
-     * 
-     * @return true if the admin command is now set and confirmed,
-     *   false if the user cancelled.
-     */
-    // TODO - implement this once we have auto-detection working...
-    
-    
-    
-
+        DialogDisplayer.getDefault().notify(ndesc);
+    }
 }

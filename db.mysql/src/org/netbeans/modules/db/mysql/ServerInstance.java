@@ -69,6 +69,7 @@ import org.openide.loaders.DataObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -115,11 +116,13 @@ public class ServerInstance implements Node.Cookie {
     final ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
     // Cache this in cases where it is not being saved to disk
+    // Synchronized on the instance (this)
     private String adminPassword;
     
     // Cache list of databases, refresh only if connection is changed
     // or an explicit refresh is requested
-    ArrayList<DatabaseModel> databases;
+    // Synchronized on the instance (this)
+    ArrayList<DatabaseModel> databases = new ArrayList<DatabaseModel>();
     
     static synchronized ServerInstance getDefault() {
         if ( DEFAULT == null ) {
@@ -131,13 +134,6 @@ public class ServerInstance implements Node.Cookie {
     private String displayName;
     
     private ServerInstance() {  
-        // Try and set up an initial connection to the server
-        try {
-            adminConn.reconnect();
-        } catch ( DatabaseException e ) {
-            LOGGER.log(Level.FINE, null, e);
-        }
-        
         updateDisplayName();
     }
     
@@ -246,7 +242,7 @@ public class ServerInstance implements Node.Cookie {
         OPTIONS.setAdminUser(adminUser);
     }
 
-    public String getPassword() {
+    public synchronized String getPassword() {
         if ( adminPassword != null ) {
             return adminPassword;
         } else{
@@ -254,7 +250,7 @@ public class ServerInstance implements Node.Cookie {
         }
     }
 
-    public void setPassword(String adminPassword) {
+    public synchronized void setPassword(String adminPassword) {
         this.adminPassword = adminPassword == null ? "" : adminPassword;
 
         if ( isSavePassword() ) {
@@ -358,12 +354,9 @@ public class ServerInstance implements Node.Cookie {
         if ( isConnected() ) {
             setDisplayName(NbBundle.getMessage(ServerInstance.class,
                     "LBL_ServerDisplayName"));
-        } else if ( isRunning() ) {
-            setDisplayName(NbBundle.getMessage(ServerInstance.class,
-                    "LBL_ServerNotConnectedDisplayName"));
         } else {
             setDisplayName(NbBundle.getMessage(ServerInstance.class,
-                    "LBL_ServerNotRunningDisplayName"));
+                    "LBL_ServerNotConnectedDisplayName"));
         }
     }
     
@@ -389,17 +382,18 @@ public class ServerInstance implements Node.Cookie {
         }
     }
     
-    public void refreshDatabaseList() throws DatabaseException { 
-        databases = new ArrayList<DatabaseModel>();
-        
+    public void refreshDatabaseList() throws DatabaseException {        
         try {
-            if ( isConnected() ) {        
-                ResultSet rs = adminConn.getConnection()
-                        .prepareStatement(GET_DATABASES_SQL).
-                        executeQuery();
+            synchronized(this) {
+                databases = new ArrayList<DatabaseModel>();
+                if ( isConnected() ) {        
+                    ResultSet rs = adminConn.getConnection()
+                            .prepareStatement(GET_DATABASES_SQL)
+                            .executeQuery();
 
-                while ( rs.next() ) {
-                    databases.add(new DatabaseModel(this, rs.getString(1)));
+                    while ( rs.next() ) {
+                        databases.add(new DatabaseModel(this, rs.getString(1)));
+                    }
                 }
             }
         } catch ( SQLException ex ) {
@@ -415,9 +409,11 @@ public class ServerInstance implements Node.Cookie {
      * list is up-to-date, call <i>refreshDatabaseList</i>
      * 
      * @return
+     * @see #refreshDatabaseList()
      * @throws org.netbeans.api.db.explorer.DatabaseException
      */
-    public Collection<DatabaseModel> getDatabases() throws DatabaseException {
+    public synchronized Collection<DatabaseModel> getDatabases() 
+            throws DatabaseException {
         if ( databases == null ) {
             refreshDatabaseList();
         }
@@ -425,6 +421,10 @@ public class ServerInstance implements Node.Cookie {
         return databases;
     }
         
+    /**
+     * Connect to the server.  If we already have a connection, close
+     * it and open a new one
+     */
     public void connect() throws DatabaseException {
         try {
             adminConn.reconnect();
@@ -444,8 +444,13 @@ public class ServerInstance implements Node.Cookie {
         }
     }
     
+    /**
+     * Reconnect to the server, which means disconnect and then connect again
+     * 
+     * @throws DatabaseException if disconnect had an error
+     */
     public void reconnect() throws DatabaseException {
-        adminConn.disconnect();
+        disconnect();
         connect();
     }
 
@@ -573,29 +578,29 @@ public class ServerInstance implements Node.Cookie {
             
             // Spawn off a thread to poll the server and attempt to 
             // reconnect.  Give up after 5 minutes
-            new Thread() {
-                @Override
-                public void run() {
-                    long fiveMinutes = 1000 * 60 * 5;
-                    long runTime = 0;
-                    
-                    while ( runTime < fiveMinutes ) {
-                        try {
-                            sleep(1000);
-                        } catch ( InterruptedException e ) {
-                            return;
-                        }
-                        
-                        try {
-                            reconnect();
-                            return;
-                        } catch ( DatabaseException e ) {
-                        }
+            RequestProcessor.getDefault().post(
+                new Runnable() {
+                    public void run() {
+                        long fiveMinutes = 1000 * 60 * 5;
+                        long runTime = 0;
 
-                        runTime += 1000;
+                        while ( runTime < fiveMinutes ) {
+                            try {
+                                Thread.sleep(1000);
+                            } catch ( InterruptedException e ) {
+                                break;
+                            }
+
+                            try {
+                                reconnect();
+                                return;
+                            } catch ( DatabaseException e ) {
+                            }
+
+                            runTime += 1000;
+                        }                        
                     }
-                }
-            }.start();
+            });
 
         } catch ( Exception e ) {
             throw new DatabaseException(e);
@@ -700,6 +705,7 @@ public class ServerInstance implements Node.Cookie {
      * a connection property gets changed.
      */
     class AdminConnection {
+        // synchronized on the instance
         private Connection conn;
         
         private AdminConnection() {
