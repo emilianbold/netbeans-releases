@@ -53,8 +53,6 @@ var ONE_LEFT_SRC = "img/one_left.gif";
 var IMG_ONE      = '<img src="' + ONE_SRC + '"/>';
 var IMG_ONE_LEFT = '<img src="' + ONE_LEFT_SRC + '"/>';
 
-var JDK_LATEST_UPDATE = "4";
-
 var CHECKED_WHITE_SRC = "img/checked_badge_white.gif";
 var CHECKED_BEIGE_SRC = "img/checked_badge_beige.gif";
 var WARNING_WHITE_SRC = "img/warning_badge_white.gif";

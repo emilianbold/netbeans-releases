@@ -34,42 +34,11 @@
  * copyright holder.
  */
 
-PLATFORM_LONG_NAMES  [0] = "Windows 2000/XP/Vista";
-PLATFORM_SHORT_NAMES [0] = "Windows";
-PLATFORM_LONG_NAMES  [1] = "Linux (x86/x64)";
-PLATFORM_SHORT_NAMES [1] = "Linux";
-PLATFORM_LONG_NAMES  [2] = "Solaris (x86/x64)";
-PLATFORM_SHORT_NAMES [2] = "Solaris (x86/x64)";
-PLATFORM_LONG_NAMES  [3] = "Solaris (sparc)";
-PLATFORM_SHORT_NAMES [3] = "Solaris (sparc)";
-PLATFORM_LONG_NAMES  [4] = "Mac OS X";
-PLATFORM_SHORT_NAMES [4] = "Mac OS X";
-PLATFORM_LONG_NAMES  [5] = "OS Independent Zip";
-PLATFORM_SHORT_NAMES [5] = "OS Independent Zip";
-/*
-// Commented since NBI installers are not used for now
-// Translate these strings as well (if they can be translated) and leave them commented
-PLATFORM_LONG_NAMES  [4] = "Mac OS X (intel)";
-PLATFORM_SHORT_NAMES [4] = "Mac OS X";
 
-PLATFORM_LONG_NAMES  [5] = "Mac OS X (powerpc)";
-PLATFORM_SHORT_NAMES [5] = "Mac OS X";
-*/
+var BUILD_DISPLAY_VERSION       = "{build.display.version}";
+var BUILD_DISPLAY_VERSION_SHORT = "{build.display.version.short}";
 
-BUNDLE_SHORT_NAMES[0] = "Web&nbsp;&amp;&nbsp;Java&nbsp;EE";
-BUNDLE_SHORT_NAMES[1] = "Mobility";
-BUNDLE_SHORT_NAMES[2] = "Java&nbsp;SE";
-BUNDLE_SHORT_NAMES[3] = "Ruby";
-BUNDLE_SHORT_NAMES[4] = "C/C++";
-BUNDLE_SHORT_NAMES[5] = "";
+var ZIP_FILES_PREFIX            = "{nb.zip.files.prefix}";
+var BUNDLE_FILES_PREFIX         = "{nb.bundle.files.prefix}";
 
-BUNDLE_LONG_NAMES[0] = "Web&nbsp;&amp;&nbsp;Java&nbsp;EE";
-BUNDLE_LONG_NAMES[1] = "Mobility";
-BUNDLE_LONG_NAMES[2] = "Java&nbsp;SE";
-BUNDLE_LONG_NAMES[3] = "Ruby";
-BUNDLE_LONG_NAMES[4] = "C/C++";
-BUNDLE_LONG_NAMES[5] = "All";
-
-
-var RELEASE_NOTES_LINK  = "http://www.netbeans.org/community/releases/61/relnotes.html";
-var INSTALL_NOTES_LINK  = "http://www.netbeans.org/community/releases/61/install.html";
+var JDK_LATEST_UPDATE = "4";
