@@ -108,18 +108,6 @@ public class HtmlGSFParser implements Parser, PositionManager {
                         }
                     }
                 });
-                
-                
-                
-                // co jsme udelal ve vlaku:
-                // 1. oprava html navigatoru - ted uz se po modifikacich nerefreshuje
-                // 2. implementace jednoducheho error checkingu na unmatched tags
-                
-                //zadat Tomasovi bugy na parse tree - napr. 4 urovne zahloubeni nebo 
-                //unmatched trags fakt moc nefungujou :-(
-                
-                
-                
 
                 ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
                 job.listener.finished(doneEvent);
