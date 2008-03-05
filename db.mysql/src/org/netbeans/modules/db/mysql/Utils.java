@@ -146,7 +146,6 @@ public class Utils {
     }
     
     public static void displayErrorMessage(String message) {
-        LOGGER.log(Level.INFO, message);
         NotifyDescriptor ndesc = new NotifyDescriptor(
                 message, 
                 NbBundle.getMessage(Utils.class, "MSG_ErrorDialogTitle"),
