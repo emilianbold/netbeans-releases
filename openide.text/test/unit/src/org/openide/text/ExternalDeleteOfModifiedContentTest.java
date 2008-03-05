@@ -44,6 +44,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Date;
+import java.util.logging.Level;
 import org.openide.text.*;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -109,7 +110,16 @@ implements CloneableEditorSupport.Env  {
         //Test suite = new ExternalDeleteOfModifiedContentTest("testReloadOfABigFile");
         return suite;
     }
-    
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+
+    @Override
+    protected int timeOut() {
+        return 20000;
+    }
 
     @Override
     protected void setUp () throws Exception {
