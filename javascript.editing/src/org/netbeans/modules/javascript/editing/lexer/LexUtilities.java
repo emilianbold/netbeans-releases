@@ -531,9 +531,12 @@ public class LexUtilities {
         return  OffsetRange.NONE;
     }
     
-    public static OffsetRange getMultilineRange(BaseDocument doc, int offset) {
-        TokenSequence<? extends JsTokenId> ts = getPositionedSequence(doc, offset);
-        return findMultilineRange(ts);
+    public static OffsetRange getMultilineRange(BaseDocument doc, TokenSequence<? extends JsTokenId> ts) {
+        int index = ts.index();
+        OffsetRange offsetRange = findMultilineRange(ts);
+        ts.moveIndex(index);
+        ts.moveNext();
+        return offsetRange;
     }
     
     /**

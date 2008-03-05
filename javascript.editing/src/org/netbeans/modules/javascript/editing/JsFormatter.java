@@ -203,31 +203,20 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     
     private int getTokenBalanceDelta(TokenId id, BaseDocument doc, TokenSequence<? extends JsTokenId> ts) {
         try {
+            OffsetRange range = OffsetRange.NONE;
             if (id == JsTokenId.LBRACKET || id == JsTokenId.LBRACE) {
                 // block with braces, just record it to stack and return 1
                 stack.push(new StackItem(false, new OffsetRange(ts.offset(), ts.offset())));
                 return 1;
             } else if (id == JsTokenId.CASE || id == JsTokenId.DEFAULT) {
                 
-                // look at the beginning of next line if there is case or default
-                int lineEnd = Utilities.getRowEnd(doc, ts.offset());
-                int nextLineFirst = Utilities.getRowFirstNonWhite(doc, lineEnd + 1);
-                TokenSequence<? extends JsTokenId> ts2 = LexUtilities.getPositionedSequence(doc, nextLineFirst);
-                if (ts2.token().id() == JsTokenId.CASE || ts2.token().id() == JsTokenId.DEFAULT) {
-                    return 0;
-                }
+                int index = ts.index();
                 
                 // find colon ':'
-                ts2 = LexUtilities.getPositionedSequence(doc, ts.offset());
-                Token<? extends JsTokenId> token = LexUtilities.findNextIncluding(ts2, 
-                        Collections.singletonList(JsTokenId.COLON));
-
-                // find right curly closing switch block
-                TokenSequence<? extends JsTokenId> ts3 = LexUtilities.getPositionedSequence(doc, ts2.offset());
-                LexUtilities.findFwd(doc, ts3, JsTokenId.LBRACE, JsTokenId.RBRACE);
+                LexUtilities.findNextIncluding(ts, Collections.singletonList(JsTokenId.COLON));
 
                 // skip whitespaces, comments and newlines
-                token = LexUtilities.findNext(ts2, 
+                Token<? extends JsTokenId> token = LexUtilities.findNext(ts, 
                         Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
                 JsTokenId tokenId = token.id();
                 
@@ -235,8 +224,19 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     return 0;
                 } else if (tokenId == JsTokenId.RBRACE) {
                     return -1;
+                } else {
+                    // look at the beginning of next line if there is case or default
+                    LexUtilities.findNextIncluding(ts, Collections.singletonList(JsTokenId.EOL));
+                    LexUtilities.findNext(ts, 
+                            Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                    if (ts.token().id() == JsTokenId.CASE || ts.token().id() == JsTokenId.DEFAULT) {
+                        return 0;
+                    }
                 }
 
+                ts.moveIndex(index);
+                ts.moveNext();
+                
                 return 1;
             } else if (id == JsTokenId.RBRACKET || id == JsTokenId.RBRACE) {
                 /*
@@ -266,9 +266,9 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     delta -= blocks;
                 }
                 return delta;
-            } else if (LexUtilities.getMultilineRange(doc, ts.offset()) != OffsetRange.NONE) {
+            } else if ((range = LexUtilities.getMultilineRange(doc, ts)) != OffsetRange.NONE) {
                 // we found braceless block, let's record it in the stack
-                stack.push(new StackItem(true, LexUtilities.getMultilineRange(doc, ts.offset())));
+                stack.push(new StackItem(true, range));
             } else if (id == JsTokenId.EOL) {
 
                 // 'case', 'default' and end of switch () {}
