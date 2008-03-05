@@ -61,42 +61,47 @@ public class ExtendedTokenSequence {
         this.diffs = diffs;
     }
 
-    /*package local*/ void replacePrevious(Token<CppTokenId> previous, String space){
+    /*package local*/ Diff replacePrevious(Token<CppTokenId> previous, String space){
         String old = previous.text().toString();
         if (!old.equals(space) || old.indexOf('\t') >=0){ // NOI18N
-            diffs.addFirst(ts.offset() - previous.length(),
-                           ts.offset(), space);
+            return diffs.addFirst(ts.offset() - previous.length(),
+                                  ts.offset(), space);
         }
+        return null;
     }
 
-    /*package local*/ void addBeforeCurrent(String space){
+    /*package local*/ Diff addBeforeCurrent(String space){
         if (space.length()>0) {
-            diffs.addFirst(ts.offset(),
-                           ts.offset(), space);
+            return diffs.addFirst(ts.offset(),
+                                  ts.offset(), space);
         }
+        return null;
     }
 
-    /*package local*/ void replaceCurrent(Token<CppTokenId> current, String space){
+    /*package local*/ Diff replaceCurrent(Token<CppTokenId> current, String space){
         String old = current.text().toString();
         if (!old.equals(space) || old.indexOf('\t') >=0){ // NOI18N
-            diffs.addFirst(ts.offset(),
-                           ts.offset() + current.length(), space);
+            return diffs.addFirst(ts.offset(),
+                                  ts.offset() + current.length(), space);
         }
+        return null;
     }
 
-    /*package local*/ void addAfterCurrent(Token<CppTokenId> current, String space){
+    /*package local*/ Diff addAfterCurrent(Token<CppTokenId> current, String space){
         if (space.length()>0) {
-            diffs.addFirst(ts.offset() + current.length(),
-                           ts.offset() + current.length(), space);
+            return diffs.addFirst(ts.offset() + current.length(),
+                                  ts.offset() + current.length(), space);
         }
+        return null;
     }
 
-    /*package local*/ void replaceNext(Token<CppTokenId> current, Token<CppTokenId> next, String space){
+    /*package local*/ Diff replaceNext(Token<CppTokenId> current, Token<CppTokenId> next, String space){
         String old = next.text().toString();
         if (!old.equals(space) || old.indexOf('\t') >=0){ // NOI18N
-            diffs.addFirst(ts.offset()+current.length(),
-                           ts.offset()+current.length()+next.length(), space); 
+            return diffs.addFirst(ts.offset()+current.length(),
+                                  ts.offset()+current.length()+next.length(), space); 
         }
+        return null;
     }
     
     /*package local*/ int getTokenPosition(){
@@ -476,7 +481,51 @@ public class ExtendedTokenSequence {
             ts.moveNext();
         }
     }
-        
+
+    /*package local*/ int[] getNewLinesBeforeDeclaration(int start) {
+        int res[] = new int[] {-1,-1, 0};
+        int index = ts.index();
+        try {
+            boolean hasDoc = false;
+            ts.moveIndex(start);
+            while(true) {
+                if (!ts.movePrevious()){
+                    return res;
+                }
+                if (ts.token().id() == NEW_LINE || ts.token().id() == WHITESPACE){
+                    if(res[1]==-1){
+                        res[1] = ts.index();
+                    }
+                    res[0] = ts.index();
+                } else if (ts.token().id() == BLOCK_COMMENT ||
+                           ts.token().id() == DOXYGEN_COMMENT){
+                    if (hasDoc) {
+                        // second block comment?
+                        return res;
+                    }
+                    //if (res[0] == res[1]) {
+                        res[0] = -1;
+                        res[1] = -1;
+                    //}
+                    hasDoc = true;
+                } else if (ts.token().id() == PREPROCESSOR_DIRECTIVE){
+                    if (res[0] == -1) {
+                        res[0] = ts.index()+1;
+                        res[1] = ts.index();
+                    }
+                    return res;
+                } else {
+                    res[2] = 1;
+                    return res;
+                }
+            }
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+    
+    
     /* Stab implementation */
     
     public Language<CppTokenId> language() {

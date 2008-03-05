@@ -62,6 +62,7 @@ import org.netbeans.modules.bpel.model.api.CreateInstanceActivity;
 import org.netbeans.modules.bpel.model.api.Else;
 import org.netbeans.modules.bpel.model.api.ElseIf;
 import org.netbeans.modules.bpel.model.api.EventHandlers;
+import org.netbeans.modules.bpel.model.api.Exit;
 import org.netbeans.modules.bpel.model.api.FaultHandlers;
 import org.netbeans.modules.bpel.model.api.Flow;
 import org.netbeans.modules.bpel.model.api.ForEach;
@@ -321,15 +322,36 @@ public final class Validator extends BpelValidator {
     }
   }
 
-  // # 81404
   @Override
   public void visit(Process process) {
     List<Reply> replies = new ArrayList<Reply>();
     List<CorrelationsHolder> holders = new ArrayList<CorrelationsHolder>();
     visitEntities(process.getChildren(), replies, holders);
+    // # 81404
     checkReplies(replies);
     // # 109412
     checkHolders(holders);
+    // # 129266
+    checkExit(process);
+  }
+
+  private void checkExit(BpelEntity entity) {
+    List<BpelEntity> children = entity.getChildren();
+    boolean hasExit = false;
+
+    if ( !(entity instanceof Flow)) {
+      for (BpelEntity child : children) {
+        if (hasExit) {
+          addError("FIX_Activity_after_Exit", child); // NOI18N
+        }
+        if (child instanceof Exit) {
+          hasExit = true;
+        }
+      }
+    }
+    for (BpelEntity child : children) {
+      checkExit(child);
+    }
   }
 
   private void visitEntities(List<BpelEntity> entities, List<Reply> replies, List<CorrelationsHolder> holders) {
@@ -376,20 +398,48 @@ public final class Validator extends BpelValidator {
 //out();
 //out("reply1: " + reply1.getName());
 //out("reply2: " + reply2.getName());
+
     if ( !isInGate(reply1) && !isInGate(reply2)) {
       if (haveTheSamePartnerLink(reply1, reply2)) {
-        addErrorCheck("FIX_Replies_PartnerLink", reply1); // NOI18N
-        addErrorCheck("FIX_Replies_PartnerLink", reply2); // NOI18N
-        return;
+        if ( !hasNextExit(reply1) && !hasNextExit(reply2)) {
+          addErrorCheck("FIX_Replies_PartnerLink_Gate", reply1); // NOI18N
+          addErrorCheck("FIX_Replies_PartnerLink_Gate", reply2); // NOI18N
+          return;
+        }
       }
     }
     if (getParent(reply1) == getParent(reply2)) {
       if (haveTheSamePartnerLink(reply1, reply2)) {
-        addErrorCheck("FIX_Replies_PartnerLink", reply1); // NOI18N
-        addErrorCheck("FIX_Replies_PartnerLink", reply2); // NOI18N
+        addErrorCheck("FIX_Replies_PartnerLink_Scope", reply1); // NOI18N
+        addErrorCheck("FIX_Replies_PartnerLink_Scope", reply2); // NOI18N
         return;
       }
     }
+  }
+
+  private boolean hasNextExit(BpelEntity entity) {
+    if (entity == null) {
+      return false;
+    }
+    BpelEntity parent = entity.getParent();
+
+    if (parent == null) {
+      return false;
+    }
+    List<BpelEntity> children = parent.getChildren();
+    boolean findExit = false;
+
+    for (BpelEntity child : children) {
+      if (findExit) {
+        if (child instanceof Exit) {
+          return true;
+        }
+      }
+      if (child == entity) {
+        findExit = true;
+      }
+    }
+    return false;
   }
 
   private void checkHolders(CorrelationsHolder holder1, CorrelationsHolder holder2) {
@@ -401,17 +451,15 @@ public final class Validator extends BpelValidator {
 
     if ( !isInGate(holder1) && !isInGate(holder2)) {
       if (haveTheSameCorrelationWithInitiateYes(holder1, holder2, parent1, parent2)) {
-//out("111");
-        addErrorCheck("FIX_Holder_Correlation", holder1); // NOI18N
-        addErrorCheck("FIX_Holder_Correlation", holder2); // NOI18N
+        addErrorCheck("FIX_Holder_Correlation_Gate", holder1); // NOI18N
+        addErrorCheck("FIX_Holder_Correlation_Gate", holder2); // NOI18N
         return;
       }
     }
     if (parent1 == parent2) {
       if (haveTheSameCorrelationWithInitiateYes(holder1, holder2, parent1, parent2)) {
-//out("222");
-        addErrorCheck("FIX_Holder_Correlation", holder1); // NOI18N
-        addErrorCheck("FIX_Holder_Correlation", holder2); // NOI18N
+        addErrorCheck("FIX_Holder_Correlation_Scope", holder1); // NOI18N
+        addErrorCheck("FIX_Holder_Correlation_Scope", holder2); // NOI18N
         return;
       }
     }

@@ -71,7 +71,7 @@ public class TraceModelBase {
     private boolean pathsRelCurFile = false;
     
     public TraceModelBase() {
-        Logger openideLogger = Logger.getLogger("org.openide.loaders");
+        Logger openideLogger = Logger.getLogger("org.openide.loaders"); // NOI18N
         // reduce log level to prevent unnecessary messages in tests
         openideLogger.setLevel(Level.SEVERE);
 	RepositoryUtils.cleanCashes();

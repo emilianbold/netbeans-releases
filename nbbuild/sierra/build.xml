@@ -273,7 +273,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="eventHandlers/onEvent"/></antcall>
 
         <!-- exit -->
-        <antcall target="do-test-jbi"><param name="dir" value="exit/ExitBpel"/></antcall>
+        <!--antcall target="do-test-jbi"><param name="dir" value="exit/ExitBpel"/></antcall--> <!-- todo a? -->
     </target>
 
     <target name="test-7">

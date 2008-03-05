@@ -83,12 +83,6 @@ public class MeasureWebActions extends NbTestCase {
             "Type a character in JSP Editor"));
         suite.addTest(new TypingInJspEditor("BigJSP.jsp", 12, "measureTime",
             "Type a character in JSP Editor with large file"));
-        suite.addTest(new TypingInJspEditor("BigJSP2.jsp", 12, "measureTime",
-            "Type a character in JSP Editor at the beginning of another large file"));
-        suite.addTest(new TypingInJspEditor("BigJSP2.jsp", 250, "measureTime",
-            "Type a character in JSP Editor at the middle of another large file"));
-        suite.addTest(new TypingInJspEditor("BigJSP2.jsp", 500, "measureTime",
-            "Type a character in JSP Editor at the end of another large file"));
         suite.addTest(new ToggleBreakpoint("Test.jsp", "measureTime",
             "Toggle Breakpoint"));
         suite.addTest(new JavaCompletionInJspEditor("testScriptletCC",

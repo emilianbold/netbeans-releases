@@ -17,6 +17,7 @@ for( int i = 20; i < 100; i++) {
     {
         while(i%13>5)
             method( text + " ", number++);
+        toString("next");
     }
 }
 

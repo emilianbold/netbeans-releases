@@ -107,8 +107,7 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
                 //
                 // Check if the type of the last element of the XPath
                 if ( !propType.equals(gType)) {
-                    // Error. The type of the last XPath element differ from the type
-                    // of the correlaton property.
+                    // Error. The type of the last XPath element differ from the type of the correlaton property.
                     myContext.addResultItem(ResultType.ERROR, "QUERY_INCONSISTENT_TYPE", propType.getName()); // NOI18N
                 }
                 else {
@@ -320,6 +319,9 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
      * the specified property alias and obtains the schema type of that property. 
      */ 
     private GlobalType getPropertyType(PropertyAlias pa) {
+        if (pa == null) {
+          return null;
+        }
         NamedComponentReference<CorrelationProperty> cPropRef =
                 pa.getPropertyName();
         if (cPropRef == null) {
