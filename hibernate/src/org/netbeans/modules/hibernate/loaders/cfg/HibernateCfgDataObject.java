@@ -73,12 +73,12 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.text.DataEditorSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
+ * Represents the Hibernate Configuration file
  * 
  * @author Dongmei Cao
  */
@@ -98,7 +98,6 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
         super(pf, loader);
         
         // Make sure to reset the MIME type here. See bug 127051
-        
         getEditorSupport().setMIMEType(HibernateCfgDataLoader.REQUIRED_MIME);
 
         // Synchronize between the vew and XML file
@@ -116,6 +115,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
 
     /**
      * Parses the document.
+     * 
      * @return true if document could be parsed (it was valid), false otwherwise.
      */
     public boolean parseDocument() {
@@ -152,7 +152,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
         return true;
     }
     
-        /**
+    /**
      * Checks whether the preferred view can be displayed and switches to the
      * xml view and displays an appropriate warning if not. In case that
      * the preferred view is the design view, it
@@ -200,7 +200,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
             try {
                 configuration = HibernateCfgMetadata.getDefault().getRoot(getPrimaryFile());
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
         }
         assert configuration != null;
@@ -227,7 +227,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
             try {
                 edit.saveDocument();
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
         }
     }
@@ -256,21 +256,6 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
     public void modelUpdatedFromUI() {
         setModified(true);
         modelSynchronizer.requestUpdateData();
-    }
-
-    @Override
-    public boolean isDeleteAllowed() {
-        return true;
-    }
-
-    @Override
-    public boolean isCopyAllowed() {
-        return true;
-    }
-
-    @Override
-    public boolean isMoveAllowed() {
-        return true;
     }
 
     @Override

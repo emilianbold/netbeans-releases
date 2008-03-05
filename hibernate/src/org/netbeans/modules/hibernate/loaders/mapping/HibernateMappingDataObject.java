@@ -49,6 +49,7 @@ import org.netbeans.modules.hibernate.mapping.model.MyClass;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
+import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
@@ -92,14 +93,14 @@ public class HibernateMappingDataObject extends MultiDataObject {
             out = getPrimaryFile().getOutputStream();
             getHibernateMapping().write(out);
         } catch (FileAlreadyLockedException ex) {
-            Exceptions.printStackTrace(ex);
+            ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         } finally {
             try {
                 out.close();
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
         }
     }
@@ -116,7 +117,7 @@ public class HibernateMappingDataObject extends MultiDataObject {
             try {
                 mapping = HibernateMappingMetadata.getDefault().getRoot(getPrimaryFile());
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
         }
         assert mapping != null;
@@ -133,7 +134,7 @@ public class HibernateMappingDataObject extends MultiDataObject {
             try {
                 edit.saveDocument();
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
         }
     }
