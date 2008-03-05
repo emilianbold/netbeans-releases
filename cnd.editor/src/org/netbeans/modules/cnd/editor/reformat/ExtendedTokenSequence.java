@@ -508,8 +508,6 @@ public class ExtendedTokenSequence {
                         res[1] = -1;
                     //}
                     hasDoc = true;
-                } else if (ts.token().id() == LINE_COMMENT){
-                    return res;
                 } else if (ts.token().id() == PREPROCESSOR_DIRECTIVE){
                     if (res[0] == -1) {
                         res[0] = ts.index()+1;

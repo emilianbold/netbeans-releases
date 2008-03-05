@@ -30,6 +30,8 @@ import java.util.Vector;
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
 import org.netbeans.modules.bpel.debugger.api.ProcessInstance;
 import org.netbeans.modules.bpel.debugger.api.RuntimePartnerLink;
+import org.netbeans.modules.bpel.debugger.api.pem.PemEntity;
+import org.netbeans.modules.bpel.debugger.api.pem.ProcessExecutionModel;
 import org.netbeans.modules.bpel.debugger.ui.plinks.models.EndpointWrapper;
 import org.netbeans.modules.bpel.debugger.ui.plinks.models.PartnerLinkWrapper;
 import org.netbeans.modules.bpel.debugger.ui.plinks.models.RoleRefWrapper;
@@ -278,9 +280,24 @@ public class PLinksTreeModel implements TreeModel {
             pLinks.addAll(Arrays.asList(pLinksContainer.getPartnerLinks()));
         }
         
-        final String xpath = myDebugger.getCurrentProcessInstance().
-                getProcessExecutionModel().getLastStartedEntity().
-                getPsmEntity().getXpath();
+        final ProcessInstance currentInstance = 
+                myDebugger.getCurrentProcessInstance();
+        if (currentInstance == null) {
+            return pLinks.toArray(new PartnerLink[pLinks.size()]);
+        }
+        
+        final ProcessExecutionModel peModel = 
+                currentInstance.getProcessExecutionModel();
+        if (peModel == null) {
+            return pLinks.toArray(new PartnerLink[pLinks.size()]);
+        }
+        
+        final PemEntity lastStartedEntity = peModel.getLastStartedEntity();
+        if (lastStartedEntity == null) {
+            return pLinks.toArray(new PartnerLink[pLinks.size()]);
+        }
+        
+        final String xpath = lastStartedEntity.getPsmEntity().getXpath();
         
         int scopeIndex = xpath.indexOf("scope"); // NOI18N
         while (scopeIndex != -1) {
