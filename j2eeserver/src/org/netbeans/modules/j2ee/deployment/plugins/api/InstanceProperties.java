@@ -251,6 +251,7 @@ public abstract class InstanceProperties {
      *             instance does not exists
      * @throws InstanceCreationException when instance with same url already
      *             registered
+     * @see #removeInstance(String) 
      * @since 1.37.0
      */
     public static InstanceProperties createInstancePropertiesWithoutUI(String url, String username, 
@@ -260,6 +261,25 @@ public abstract class InstanceProperties {
         ServerInstance inst = registry.getServerInstance(url);
         InstanceProperties ip = inst.getInstanceProperties();
         return ip;
+    }
+
+    /**
+     * Removes the given server instance from the JavaEE server registry,
+     * making it unavailable to JavaEE projects.
+     *
+     * It the responsibility of the caller to make any changes in server state
+     * (e.g. stopping the server) that might be desired or required before
+     * calling this method.
+     *
+     * This method is intended to allow server plugins that registered a JavaEE
+     * server instance via {@link #createInstancePropertiesWithoutUI(String, String, String, String, Map) createInstancePropertiesWithoutUI}
+     * to remove those instances later.
+     *
+     * @param url the url connection string to get the instance deployment manager
+     * @since 1.41.0
+     */
+    public static void removeInstance(String url) {
+        ServerRegistry.getInstance().removeServerInstance(url);
     }
 
     /**

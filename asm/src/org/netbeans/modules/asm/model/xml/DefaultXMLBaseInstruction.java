@@ -77,7 +77,7 @@ public class DefaultXMLBaseInstruction extends XMLBaseInstruction {
         }
     }
     
-    private static final String ARG_PREFIX = "%arg";
+    private static final String ARG_PREFIX = "%arg"; // NOI18N
     private static Collection<Integer> parseArgs(List<String> args) {
         Collection<Integer> res = new ArrayList<Integer>();
         for (String arg : args) {
