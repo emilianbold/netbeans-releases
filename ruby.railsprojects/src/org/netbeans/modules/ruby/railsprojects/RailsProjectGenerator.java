@@ -173,7 +173,7 @@ public class RailsProjectGenerator {
         // Install goldspike if the user wants Rails deployment
         if (data.isDeploy()) {
             InstalledFileLocator locator = InstalledFileLocator.getDefault();
-            File goldspikeFile = locator.locate("goldspike-1.3.zip", "org.netbeans.modules.ruby.railsprojects", false);
+            File goldspikeFile = locator.locate("goldspike-1.5.zip", "org.netbeans.modules.ruby.railsprojects", false);
             if (goldspikeFile != null) {
                 FileObject fo = FileUtil.toFileObject(goldspikeFile);
                 if (fo != null) {

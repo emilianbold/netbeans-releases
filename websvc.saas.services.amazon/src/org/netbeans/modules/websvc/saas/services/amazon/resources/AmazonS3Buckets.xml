@@ -52,14 +52,14 @@
 
     <description>AmazonS3 Buckets Service</description>
     
-    <display-name>AmazonS3 Buckets</display-name>
+    <display-name>S3 Buckets Service</display-name>
 
     <saas-metadata>
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
 
         <group name="Amazon">
-            <group name="AmazonS3"/>
+            <group name="Simple Storage Service"/>
         </group>
 
         <authentication profile="SaaSServices/AmazonS3/profile.properties">
@@ -77,8 +77,9 @@
 
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="getBuckets" href="#amazons3.getBuckets"/>
     </methods>
-
+    -->
 </saas-services>

@@ -58,7 +58,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.saas.codegen.java.JaxRsCodeGenerator;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -359,6 +358,8 @@ public class Util {
     }
 
     private static Map<String,Class> primitiveTypes;
+    private static HashSet<String> keywords;
+    
     
     public static Class getType(Project project, String typeName) {    
         List<ClassPath> classPaths = SourceGroupSupport.gerClassPath(project);
@@ -405,6 +406,65 @@ public class Util {
             primitiveTypes.put("short[]", Short[].class);
         }
         return primitiveTypes.get(typeName);
+    }
+    
+    public static boolean isKeyword(String name) {
+        if (keywords == null) {
+            keywords = new HashSet<String>();
+            
+            keywords.add("abstract");
+            keywords.add("assert");
+            keywords.add("boolean");
+            keywords.add("break");
+            keywords.add("byte");
+            keywords.add("case");
+            keywords.add("catch");
+            keywords.add("char");
+            keywords.add("class");
+            keywords.add("const");
+            keywords.add("continue");
+            keywords.add("default");
+            keywords.add("do");
+            keywords.add("double");
+            keywords.add("else");
+            keywords.add("enum");
+            keywords.add("extends");
+            keywords.add("final");
+            keywords.add("finally");
+            keywords.add("float");
+            keywords.add("for");
+            keywords.add("goto");
+            keywords.add("if");
+            keywords.add("implements");
+            keywords.add("import");
+            keywords.add("instanceof");
+            keywords.add("int");
+            keywords.add("interface");
+            keywords.add("long");
+            keywords.add("native");
+            keywords.add("new");
+            keywords.add("package");
+            keywords.add("private");
+            keywords.add("protected");
+            keywords.add("public");
+            keywords.add("return");
+            keywords.add("short");
+            keywords.add("static");
+            keywords.add("strictfp");
+            keywords.add("super");
+            keywords.add("switch");
+            keywords.add("synchronized");
+            keywords.add("this");
+            keywords.add("throw");
+            keywords.add("throws");
+            keywords.add("transient");
+            keywords.add("try");
+            keywords.add("void");
+            keywords.add("volatile");
+            keywords.add("while");
+        }
+        
+        return keywords.contains(name);
     }
     
     public static Class getGenericRawType(String typeName, ClassLoader loader) {
@@ -555,6 +615,10 @@ public class Util {
         return Inflector.getInstance().camelize(normailizeName(name) + GenericResourceBean.RESOURCE_SUFFIX);
     }
 
+    public static String deriveMethodName(final String name) {
+        return Inflector.getInstance().camelize(normailizeName(name), true);
+    }
+    
     public static String deriveUriTemplate(final String name) {
         return Inflector.getInstance().camelize(normailizeName(name), true) + "/"; //NOI18N
     }
