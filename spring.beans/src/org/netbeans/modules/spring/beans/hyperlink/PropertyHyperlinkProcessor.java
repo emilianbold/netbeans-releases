@@ -113,7 +113,6 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
                             TypeMirror retType = props[0].getGetter().getReturnType();
                             if (retType.getKind() == TypeKind.DECLARED) {
                                 startType = retType;
-                                break;
                             } else {
                                 startType = null;
                             }
