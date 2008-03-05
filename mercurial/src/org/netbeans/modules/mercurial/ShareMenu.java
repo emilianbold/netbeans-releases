@@ -39,47 +39,55 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.setup;
+package org.netbeans.modules.mercurial;
 
-import javax.swing.tree.TreePath;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.BuildProjectAction;
-import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.jellytools.RuntimeTabOperator;
+import org.openide.util.NbBundle;
+import org.openide.awt.DynamicMenuContent;
 
-import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JMenuItemOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import org.netbeans.modules.mercurial.ui.pull.PullAction;
+import org.netbeans.modules.mercurial.ui.pull.PullOtherAction;
+import org.netbeans.modules.mercurial.ui.push.PushAction;
+import org.netbeans.modules.mercurial.ui.push.PushOtherAction;
+import org.netbeans.modules.versioning.spi.VCSContext;
 
-public class WebSetupTest extends org.netbeans.jellytools.JellyTestCase {
+/**
+ * Container menu for branch actions.
+ *
+ * @author Maros Sandor
+ */
+public class ShareMenu extends AbstractAction implements DynamicMenuContent {
+    private VCSContext ctx;
     
-    public WebSetupTest(java.lang.String testName) {
-        super(testName);
-    }
-    
-    public void testOpenWebProject() {
-        ProjectSupport.openProject(System.getProperty("xtest.data")+"/TestWebProject");
-        buildProject("TestWebProject");
-    }
-    
-    public void testOpenWebFoldersProject() {
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/PerformanceTestFolderWebApp");
-        buildProject("PerformanceTestFolderWebApp");
+    public ShareMenu(VCSContext ctx) {
+        super(NbBundle.getMessage(ShareMenu.class, "CTL_MenuItem_ShareMenu"));
+        this.ctx = ctx;
     }
 
-    
-    private void buildProject(String name) {
-        new BuildProjectAction().perform(new ProjectsTabOperator().
-            getProjectRootNode(name));
-        MainWindowOperator.getDefault().waitStatusText("Finished building");
+    public JComponent[] getMenuPresenters() {
+        return new JComponent [] { createMenu() };
+    }
+
+    public JComponent[] synchMenuPresenters(JComponent[] items) {
+        return new JComponent [] { createMenu() };
+    }
+
+    public boolean isEnabled() {
+        return true;
+    }
+
+    public void actionPerformed(ActionEvent ev) {
+        // no operation
+    }
+
+    private JMenu createMenu() {
+        JMenu menu = new JMenu(this);
+        menu.add(new PushAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PushLocal"), ctx)); // NOI18N
+        menu.add(new PushOtherAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PushOther"), ctx)); // NOI18N
+        menu.add(new PullAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PullLocal"), ctx)); // NOI18N
+        menu.add(new PullOtherAction(NbBundle.getMessage(MercurialAnnotator.class,"CTL_PopupMenuItem_PullOther"), ctx)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(ShareMenu.class, "CTL_MenuItem_ShareMenu")); // NOI18N
+        return menu;
     }
 }

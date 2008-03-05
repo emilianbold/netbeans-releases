@@ -876,9 +876,28 @@ public class HgCommand {
         
         return messages.toArray(new HgLogMessage[0]);
     }       
-   
     public static HgLogMessage[] getLogMessages(final String rootUrl, 
-            final Set<File> files, String fromRevision, String toRevision, boolean bShowMerges,  OutputLogger logger) {
+            final Set<File> files, String fromRevision, String toRevision, 
+            boolean bShowMerges, OutputLogger logger) {
+         return getLogMessages(rootUrl, files, fromRevision, toRevision, 
+                                bShowMerges, -1, logger);
+    }
+
+    public static HgLogMessage[] getLogMessages(final String rootUrl, int limit, OutputLogger logger) {
+         return getLogMessages(rootUrl, null, null, null, true, limit, logger);
+    }
+    
+    public static HgLogMessage[] getLogMessages(final String rootUrl, final Set<File> files, int limit, OutputLogger logger) {
+         return getLogMessages(rootUrl, files, null, null, true, limit, logger);
+    }
+    
+    public static HgLogMessage[] getLogMessages(final String rootUrl, final Set<File> files,  OutputLogger logger) {
+         return getLogMessages(rootUrl, files, null, null, true, -1, logger);
+    }
+
+     public static HgLogMessage[] getLogMessages(final String rootUrl, 
+            final Set<File> files, String fromRevision, String toRevision, 
+            boolean bShowMerges,  int limit, OutputLogger logger) {
         final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);  
         final File root = new File(rootUrl);
         
@@ -891,7 +910,7 @@ public class HgCommand {
             List<String> list = new LinkedList<String>();
             list = HgCommand.doLogForHistory(root, 
                     files != null ? new ArrayList<File>(files) : null,
-                    fromRevision, toRevision, headRev, bShowMerges, logger);
+                    fromRevision, toRevision, headRev, bShowMerges, limit, logger);
             processLogMessages(list, messages);
             
         } catch (HgException ex) {
@@ -1132,7 +1151,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static List<String> doLogForHistory(File repository, List<File> files, 
-            String from, String to, String headRev, boolean bShowMerges, OutputLogger logger) throws HgException {
+            String from, String to, String headRev, boolean bShowMerges, int limit, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         if (files != null && files.isEmpty()) return null;
         
@@ -1141,6 +1160,10 @@ public class HgCommand {
         command.add(getHgCommand());
         command.add(HG_VERBOSE_CMD);
         command.add(HG_LOG_CMD);
+        if (limit >= 0) {
+                command.add(HG_LOG_LIMIT_CMD);
+                command.add(Integer.toString(limit));
+        }
         boolean doFollow = true;
         if( files != null){
             for (File f : files) {
