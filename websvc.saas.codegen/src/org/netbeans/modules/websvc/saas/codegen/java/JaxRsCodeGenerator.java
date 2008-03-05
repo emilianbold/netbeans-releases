@@ -133,7 +133,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     }
     
     public String getSaasServiceMethodName() {
-        return "get" + getBean().getName();
+        return getBean().getName();
     }
     
     public HttpMethodType getHttpMethodName() {
@@ -265,18 +265,27 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 paramStr += "String.valueOf(System.currentTimeMillis());\n";
             } else if(p.isRequired()) {
                 if(p.getDefaultValue() != null)
-                    paramStr += "\""+p.getDefaultValue()+"\";\n";
+                    paramStr += getQuotedValue(p.getDefaultValue().toString())+";\n";
                 else
                     paramStr += "\"\";\n";
             } else {
                 if(p.getDefaultValue() != null)
-                    paramStr += "\""+p.getDefaultValue()+"\";\n";
+                    paramStr += getQuotedValue(p.getDefaultValue().toString())+";\n";
                 else
                     paramStr += "null;\n";
             }
         }
         paramStr += "\n";
         return paramStr;
+    }
+    
+    private String getQuotedValue(String value) {
+        String normalized = value;
+        if(normalized.startsWith("\""))
+            normalized = normalized.substring(1);
+        else if(normalized.endsWith("\""))
+            normalized = normalized.substring(0, normalized.length()-1);
+        return "\""+normalized+"\"";
     }
     
     /* 
@@ -288,14 +297,20 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         if(authType == SaasAuthenticationType.API_KEY) {
             methodBody += "        String apiKey = "+getGroupName()+"Authenticator.getApiKey();";
         } else if(authType == SaasAuthenticationType.SESSION_KEY) {
-            methodBody += "        "+getGroupName()+"Authenticator.login();\n";
-            methodBody += "        String apiKey = "+getGroupName()+"Authenticator.getApiKey();\n";
-            methodBody += "        String sessionKey = "+getGroupName()+"Authenticator.getSessionKey();\n";
             SessionKeyAuthentication sessionKey = (SessionKeyAuthentication)getBean().getAuthentication();
+            methodBody += "        "+getGroupName()+"Authenticator.login();\n";
+            methodBody += "        String "+
+                    getVariableName(sessionKey.getApiKeyName(), true, true, true)+" = "+
+                    getGroupName()+"Authenticator.getApiKey();\n";//apiKey
+            methodBody += "        String "+
+                    getVariableName(sessionKey.getSessionKeyName(), true, true, true)+" = "+
+                    getGroupName()+"Authenticator.getSessionKey();\n";//sessionKey
             List<ParameterInfo> signParams = sessionKey.getParameters();
             if(signParams != null && signParams.size() > 0) {
                 String paramStr = getSignParamDeclaration(signParams, getBean().getInputParameters());
-                paramStr += "        String sig = "+getGroupName()+"Authenticator.sign(\n";
+                paramStr += "        String "+
+                        getVariableName(sessionKey.getSigKeyName(), true, true, true)+" = "+
+                        getGroupName()+"Authenticator.sign(\n";//sig
                 paramStr += "                new String[][] {\n";
                 for(ParameterInfo p:signParams) {
                     paramStr += "                    {\""+p.getName()+"\", "+
@@ -321,7 +336,9 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             List<ParameterInfo> signParams = signedUrl.getParameters();
             if(signParams != null && signParams.size() > 0) {
                 String paramStr = getSignParamDeclaration(signParams, filterParameters());
-                paramStr += "        authorization = "+getGroupName()+"Authenticator.sign(\n";
+                paramStr += "        String "+
+                        getVariableName(signedUrl.getSigKeyName(), true, true, true)+" = "+
+                        getGroupName()+"Authenticator.sign(\n";
                 paramStr += "                new String[][] {\n";
                 for(ParameterInfo p:signParams) {
                     paramStr += "                    {\""+p.getName()+"\", "+
@@ -358,6 +375,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
      *  Insert the Saas client call
      */
     public void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
+        Util.checkScanning();
         try {
             String code = "";
             if(isInBlock) {
@@ -480,7 +498,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 String bodyText = "{ \n" + getServiceMethodBody() + "\n }";
 
                 //Further filter
-                List<ParameterInfo> filterParams = filterParametersByAuth(filterParameters());
+                List<ParameterInfo> filterParams = getBean().filterParametersByAuth(filterParameters());
                 String[] parameters = getGetParamNames(filterParams);
                 Object[] paramTypes = getGetParamTypes(filterParams);
 
@@ -500,23 +518,6 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             
         });
         result.commit();
-    }
-    
-    protected List<ParameterInfo> filterParametersByAuth(List<ParameterInfo> params) {
-        SaasAuthenticationType authType = getBean().getAuthenticationType();
-        List<ParameterInfo> filterParams = new ArrayList<ParameterInfo>();
-        for (ParameterInfo param : params) {
-            if(authType == SaasAuthenticationType.SESSION_KEY) {
-                SessionKeyAuthentication sessionKey = (SessionKeyAuthentication)getBean().getAuthentication();
-                if(param.getName().equals(sessionKey.getApiKeyName()) || 
-                        param.getName().equals(sessionKey.getSessionKeyName()) ||
-                            param.getName().equals(sessionKey.getSigKeyName())) {
-                    continue;
-                }
-            }
-            filterParams.add(param);
-        }
-        return filterParams;
     }
     
     /**

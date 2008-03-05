@@ -70,7 +70,7 @@ public class ServerNodeProvider implements NodeProvider {
         nodes.add(ServerNode.create(ServerInstance.getDefault()));
     }
 
-    public List<Node> getNodes() {
+    public synchronized List<Node> getNodes() {
          if ( options.isProviderRegistered() ) {
             return nodes;
         } else {

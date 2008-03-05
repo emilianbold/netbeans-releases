@@ -58,12 +58,14 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.ETLDataObject;
+import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
@@ -193,6 +195,14 @@ public class ETLCollaborationWizard extends ETLWizard {
             storeSettings(wiz, dbModels);
 
             Project project = Templates.getProject(wiz);
+            String prj_locn = project.getProjectDirectory().getPath();
+            try {
+                prj_locn = project.getProjectDirectory().getFileSystem().getRoot().toString() + prj_locn;
+                ETLEditorSupport.PRJ_PATH = prj_locn;
+            } catch (FileStateInvalidException ex) {
+                //Exceptions.printStackTrace(ex);
+            }
+            //java.util.logging.Logger.getLogger(ETLCollaborationWizard.class.getName()).info("ETLCollaborationWizard prj_locn ******* "+prj_locn);
             if (project != null) {
                 Sources sources = ProjectUtils.getSources(project);
                 SourceGroup[] groups = sources.getSourceGroups(

@@ -191,7 +191,7 @@ public class PhysicalView {
                 String n = group.getName();
                 if (n == null) {
                     n = "???"; // NOI18N
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "SourceGroup impl of type " + group.getClass().getName() + " specified a null getName(); this is illegal");
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, "SourceGroup impl of type " + group.getClass().getName() + " specified a null getName(); this is illegal"); // NOI18N
                 }
                 return n;
             }
@@ -381,7 +381,7 @@ public class PhysicalView {
                 String relPath = FileUtil.getRelativePath(groupRoot, fo);
 
                 ArrayList<String> path = new ArrayList<String>();
-                StringTokenizer strtok = new StringTokenizer(relPath, "/");
+                StringTokenizer strtok = new StringTokenizer(relPath, "/"); // NOI18N
                 while (strtok.hasMoreTokens()) {
                     path.add(strtok.nextToken());
                 }

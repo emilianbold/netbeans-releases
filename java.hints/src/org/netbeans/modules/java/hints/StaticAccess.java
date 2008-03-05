@@ -48,8 +48,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JComponent;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -63,7 +61,6 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**

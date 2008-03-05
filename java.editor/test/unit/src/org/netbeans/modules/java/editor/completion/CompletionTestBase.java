@@ -232,7 +232,10 @@ public class CompletionTestBase extends NbTestCase {
         }
         out.close();
         
-        File goldenFile = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/java/editor/completion/JavaCompletionProviderTest/" + goldenFileName);
+        String version = System.getProperty("java.specification.version");
+        version = "1.5".equals(version) ? "" : version + "/";
+        
+        File goldenFile = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/java/editor/completion/JavaCompletionProviderTest/" + version + goldenFileName);
         File diffFile = new File(getWorkDir(), getName() + ".diff");        
         assertFile(output, goldenFile, diffFile);
         

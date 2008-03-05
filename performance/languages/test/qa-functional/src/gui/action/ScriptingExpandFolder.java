@@ -42,7 +42,7 @@
 package gui.action;
 
 import gui.Projects;
-import org.netbeans.jellytools.ProjectsTabOperator;
+import gui.ScriptingUtilities;
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
 import org.netbeans.performance.test.guitracker.LoggingRepaintManager;
 
@@ -61,7 +61,7 @@ public class ScriptingExpandFolder extends ExpandNodesProjectsView {
 
     @Override
     public void initialize() {
-        projectTab = new ProjectsTabOperator();
+        projectTab = ScriptingUtilities.invokePTO();
         new MaximizeWindowAction().performAPI(projectTab);
         
         projectTab.getProjectRootNode(project).collapse();
