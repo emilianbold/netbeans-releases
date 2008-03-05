@@ -134,13 +134,13 @@ public class RepositoryListenerImpl implements RepositoryListener {
 
     /** RepositoryListener implementation */
     public boolean unitOpened(final String unitName) {
-	if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: unitOpened %s\n", unitName);
+	if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: unitOpened %s\n", unitName); // NOI18N
 	if( TRACE_PROJECT && TRACE_PROJECT_NAME.equals(unitName)) {
-	    trace("Watched project %s is opening\n", unitName);
+	    trace("Watched project %s is opening\n", unitName); // NOI18N
 	}
 	synchronized (lock) {
 	    if( ! explicitelyOpened.contains(unitName) ) {
-		if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: implicit open !!! %s\n", unitName);
+		if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: implicit open !!! %s\n", unitName); // NOI18N
 		unitTimers.put(unitName, new UnitTimer(unitName, IMPLICIT_CLOSE_INTERVAL*1000));
 	    }
 	}
@@ -149,9 +149,9 @@ public class RepositoryListenerImpl implements RepositoryListener {
 
     /** RepositoryListener implementation */
     public void unitClosed(final String unitName) {
-	if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: unitClosed %s\n", unitName);
+	if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: unitClosed %s\n", unitName); // NOI18N
 	if( TRACE_PROJECT && TRACE_PROJECT_NAME.equals(unitName)) {
-	    trace("Watched project %s is explicitly closing\n", unitName);
+	    trace("Watched project %s is explicitly closing\n", unitName); // NOI18N
 	}
 	synchronized (lock) {
 	    killTimer(unitName);
@@ -172,13 +172,13 @@ public class RepositoryListenerImpl implements RepositoryListener {
     private void killTimer(String unitName) {
 	UnitTimer unitTimer = unitTimers.remove(unitName);
 	if( unitTimer != null ) {
-	    if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: killing timer for %s\n", unitName);
+	    if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: killing timer for %s\n", unitName); // NOI18N
 	    unitTimer.cancel();
 	}
     }
     
     public void onExplicitOpen(String unitName) {
-	if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: onExplicitOpen %s\n", unitName);
+	if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: onExplicitOpen %s\n", unitName); // NOI18N
 	synchronized (lock) {
 	    killTimer(unitName);
 	    explicitelyOpened.add(unitName);
@@ -186,15 +186,15 @@ public class RepositoryListenerImpl implements RepositoryListener {
     }
     
     public void onExplicitClose(String unitName) {
-	if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: onExplicitClose %s\n", unitName);
+	if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: onExplicitClose %s\n", unitName); // NOI18N
     }
 
     private void timeoutElapsed(String unitName) {
-	if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: timeout elapsed for %s\n", unitName);
+	if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: timeout elapsed for %s\n", unitName); // NOI18N
 	synchronized (lock) {
 	    UnitTimer unitTimer = unitTimers.remove(unitName);
 	    if( unitTimer != null ) {
-		if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: scheduling closure for %s\n", unitName);
+		if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: scheduling closure for %s\n", unitName); // NOI18N
 		unitTimer.cancel();
 		scheduleClosing(unitName, Collections.EMPTY_SET);
 	    }
@@ -203,20 +203,20 @@ public class RepositoryListenerImpl implements RepositoryListener {
     
     private void scheduleClosing(final String unitName,  final Set<String> requiredUnits) {
 	if( explicitelyOpened.contains(unitName) ) {
-	    if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("Cancelling closure (A) for implicitely opened unit %s\n", unitName);
+	    if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("Cancelling closure (A) for implicitely opened unit %s\n", unitName); // NOI18N
 	    return;
 	}
 	ModelImpl.instance().enqueueModelTask(new Runnable() {
 	    public void run() {
 		synchronized (lock) {
 		    if( explicitelyOpened.contains(unitName) ) {
-			if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("Cancelling closure (B) for implicitely opened unit %s\n", unitName);
+			if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("Cancelling closure (B) for implicitely opened unit %s\n", unitName); // NOI18N
 			return;
 		    }
 		}
-		if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: closing implicitely opened unit %s\n", unitName);
+		if( TraceFlags.TRACE_REPOSITORY_LISTENER ) trace("RepositoryListener: closing implicitely opened unit %s\n", unitName); // NOI18N
 		if( TRACE_PROJECT && TRACE_PROJECT_NAME.equals(unitName)) {
-		    trace("Watched project %s is implicitely closing\n", unitName);
+		    trace("Watched project %s is implicitely closing\n", unitName); // NOI18N
 		}
 		RepositoryUtils.closeUnit(unitName, Collections.EMPTY_SET);
 	    }
@@ -229,6 +229,6 @@ public class RepositoryListenerImpl implements RepositoryListener {
 	for (int i = 0; i < args.length; i++) {
 	    newArgs[i+1] = args[i];
 	}
-	System.err.printf("RepositoryListener [%d] " + format, newArgs);
+	System.err.printf("RepositoryListener [%d] " + format, newArgs); // NOI18N
     }
 }

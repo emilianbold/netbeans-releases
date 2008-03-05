@@ -168,7 +168,7 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
             Register curReg = (Register)tableModel.getValueAt(i, RegisterTableModel.COLUMN_REGISTER);
             if (isTheSame(curReg, reg)) {
                 try {
-                    value += " (" + Integer.decode(value)  + ")";
+                    value += " (" + Integer.decode(value)  + ")"; // NOI18N
                 } catch (NumberFormatException nfe) {
                     // do nothing
                 }
@@ -212,7 +212,7 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
         
         for (Register reg : model.getRegisterSet()) {
             if (reg.getDirectParent() == null) {
-                tableModel.addRow(new Object[] { reg, "", "" } );               
+                tableModel.addRow(new Object[] { reg, "", "" } ); // NOI18N
             }
         }                
     }

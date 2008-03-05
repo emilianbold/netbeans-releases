@@ -845,19 +845,19 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             if (!valid) {
                 ArrayList<String> errors = new ArrayList<String>();
                 if (cbMakeRequired.isSelected() && !makeValid) {
-                    errors.add("Make is missing or invalid");
+                    errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedMake"));
                 }
                 if (cbCRequired.isSelected() && !cValid) {
-                    errors.add("C Compiler is missing or invalid");
+                    errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedCCompiler"));
                 }
                 if (cbCppRequired.isSelected() && !cppValid) {
-                    errors.add("C++ Compiler is missing or invalid");
+                    errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedCppCompiler"));
                 }
                 if (cbGdbRequired.isSelected() && !gdbValid) {
-                    errors.add("Debugger is missing or invalid");
+                    errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedDebugger"));
                 }
                 if (cbFortranRequired.isSelected() && !fortranValid) {
-                    errors.add("Fortran Compiler missing or invalid");
+                    errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedFortranCompiler"));
                 }
                 StringBuilder errorString = new StringBuilder();
                 for (int i = 0; i < errors.size(); i++) {
