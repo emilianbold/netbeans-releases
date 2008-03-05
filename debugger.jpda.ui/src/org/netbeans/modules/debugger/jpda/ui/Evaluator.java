@@ -46,7 +46,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.FocusTraversalPolicy;
 import java.awt.KeyboardFocusManager;
 import java.awt.datatransfer.Transferable;
@@ -54,8 +53,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -71,16 +68,15 @@ import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.text.JTextComponent;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ui.models.WatchesNodeModel;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.Model;
@@ -468,7 +464,7 @@ public class Evaluator extends javax.swing.JPanel {
                 if (autoClosed) {
                     DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
                     if (de == null) return ;
-                    JPDADebugger debugger = (JPDADebugger) de.lookupFirst(null, JPDADebugger.class);
+                    JPDADebugger debugger = de.lookupFirst(null, JPDADebugger.class);
                     if (debugger == null) return ;
                     open(debugger);
                     autoClosed = false;
@@ -626,18 +622,10 @@ public class Evaluator extends javax.swing.JPanel {
                 eval.csfListener = null;
                 DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
                 if (de == null) return ;
-                JPDADebugger debugger = (JPDADebugger) de.lookupFirst(null, JPDADebugger.class);
+                JPDADebugger debugger = de.lookupFirst(null, JPDADebugger.class);
                 eval.setDebugger(debugger);
             }
             updateModel ();
-        }
-    
-        private List joinLookups(DebuggerEngine e, DebuggerManager dm, Class service) {
-            List es = e.lookup (viewType, service);
-            List ms = dm.lookup(viewType, service);
-            ms.removeAll(es);
-            es.addAll(ms);
-            return es;
         }
     
         public synchronized void updateModel () {
@@ -655,31 +643,18 @@ public class Evaluator extends javax.swing.JPanel {
             List nodeActionsProviderFilters;
             List columnModels;
             List mm;
-            if (e != null) {
-                treeModels =            joinLookups(e, dm, TreeModel.class);
-                treeModelFilters =      joinLookups(e, dm, TreeModelFilter.class);
-                treeExpansionModels =   joinLookups(e, dm, TreeExpansionModel.class);
-                nodeModels =            joinLookups(e, dm, NodeModel.class);
-                nodeModelFilters =      joinLookups(e, dm, NodeModelFilter.class);
-                tableModels =           joinLookups(e, dm, TableModel.class);
-                tableModelFilters =     joinLookups(e, dm, TableModelFilter.class);
-                nodeActionsProviders =  joinLookups(e, dm, NodeActionsProvider.class);
-                nodeActionsProviderFilters = joinLookups(e, dm, NodeActionsProviderFilter.class);
-                columnModels =          joinLookups(e, dm, ColumnModel.class);
-                mm =                    joinLookups(e, dm, Model.class);
-            } else {
-                treeModels =            dm.lookup (viewType, TreeModel.class);
-                treeModelFilters =      dm.lookup (viewType, TreeModelFilter.class);
-                treeExpansionModels =   dm.lookup (viewType, TreeExpansionModel.class);
-                nodeModels =            dm.lookup (viewType, NodeModel.class);
-                nodeModelFilters =      dm.lookup (viewType, NodeModelFilter.class);
-                tableModels =           dm.lookup (viewType, TableModel.class);
-                tableModelFilters =     dm.lookup (viewType, TableModelFilter.class);
-                nodeActionsProviders =  dm.lookup (viewType, NodeActionsProvider.class);
-                nodeActionsProviderFilters = dm.lookup (viewType, NodeActionsProviderFilter.class);
-                columnModels =          dm.lookup (viewType, ColumnModel.class);
-                mm =                    dm.lookup (viewType, Model.class);
-            }
+            ContextProvider cp = e != null ? DebuggerManager.join(e, dm) : dm;
+            treeModels =            cp.lookup (viewType, TreeModel.class);
+            treeModelFilters =      cp.lookup (viewType, TreeModelFilter.class);
+            treeExpansionModels =   cp.lookup (viewType, TreeExpansionModel.class);
+            nodeModels =            cp.lookup (viewType, NodeModel.class);
+            nodeModelFilters =      cp.lookup (viewType, NodeModelFilter.class);
+            tableModels =           cp.lookup (viewType, TableModel.class);
+            tableModelFilters =     cp.lookup (viewType, TableModelFilter.class);
+            nodeActionsProviders =  cp.lookup (viewType, NodeActionsProvider.class);
+            nodeActionsProviderFilters = cp.lookup (viewType, NodeActionsProviderFilter.class);
+            columnModels =          cp.lookup (viewType, ColumnModel.class);
+            mm =                    cp.lookup (viewType, Model.class);
             
             List treeNodeModelsCompound = new ArrayList(11);
             treeNodeModelsCompound.add(treeModels);

@@ -39,7 +39,7 @@ public final class TracerAccess {
       if (provider == null) {
         throw new IllegalArgumentException("Can't return tracer for null");// NOI18N
       }
-      return getTracer ((Session) provider.lookupFirst(null, Session.class));
+      return getTracer (provider.lookupFirst(null, Session.class));
     }
 
     /**
@@ -54,9 +54,7 @@ public final class TracerAccess {
     private static TracerFactory getTracerFactory() {
         if (ourTracerFactory == null) {
             ourTracerFactory =
-              (TracerFactory) DebuggerManager.getDebuggerManager().lookupFirst(
-                null, TracerFactory.class
-              );
+              DebuggerManager.getDebuggerManager().lookupFirst(null, TracerFactory.class);
             assert ourTracerFactory != null : "Can't find Tracer Factory"; // NOI18N
         }
         return ourTracerFactory;
