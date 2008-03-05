@@ -65,6 +65,7 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
@@ -172,6 +173,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private String lastShare;
     private int shareToken;
     private final Disassembly disassembly;
+    private GdbBreakpoint currentBreakpoint = null;
         
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -369,14 +371,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     public void showCurrentSource() {
         final CallStackFrame csf = getCurrentCallStackFrame();
-        if (csf != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    // show current line
-                    EditorContextBridge.showSource(csf);
-                }
-            });
+        if (csf == null) {
+            return;
         }
+        final boolean inDis = (currentBreakpoint == null) ? Disassembly.isInDisasm() : (currentBreakpoint instanceof AddressBreakpoint);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // show current line
+                EditorContextBridge.showSource(csf, inDis);
+            }
+        });
     }
     
     public String[] getThreadsList() {
@@ -1884,5 +1888,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 
     public Disassembly getDisassembly() {
         return disassembly;
+    }
+
+    public void setCurrentBreakpoint(GdbBreakpoint currentBreakpoint) {
+        this.currentBreakpoint = currentBreakpoint;
     }
 }

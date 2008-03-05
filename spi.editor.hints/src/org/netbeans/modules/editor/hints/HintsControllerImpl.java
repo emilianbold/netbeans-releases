@@ -253,7 +253,7 @@ public final class HintsControllerImpl {
     
     public static class CompoundLazyFixList implements LazyFixList, PropertyChangeListener {
         
-        private List<LazyFixList> delegates;
+        final List<LazyFixList> delegates;
         
         private List<Fix> fixesCache;
         private Boolean computedCache;
