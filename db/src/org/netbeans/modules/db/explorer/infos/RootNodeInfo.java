@@ -221,6 +221,8 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
                 dbconn.disconnect();
             }
         }
+        
+        ConnectionList.getDefault().remove(dbconn);
     }
     
     public void addConnection(DBConnection cinfo) throws DatabaseException {
