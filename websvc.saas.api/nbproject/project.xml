@@ -128,6 +128,9 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.saas.services.youtube</code-name-base>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.websvc.saas.services.delicious</code-name-base>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>

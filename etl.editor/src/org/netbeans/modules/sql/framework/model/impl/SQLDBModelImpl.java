@@ -40,11 +40,6 @@
  */
 package org.netbeans.modules.sql.framework.model.impl;
 
-import com.sun.sql.framework.exception.DBSQLException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,14 +62,12 @@ import org.netbeans.modules.sql.framework.model.SQLModelObjectFactory;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetTable;
-import org.openide.util.Exceptions;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.jdbc.DBConnectionParameters;
-import com.sun.sql.framework.utils.Attribute;
 import java.io.File;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;

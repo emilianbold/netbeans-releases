@@ -157,7 +157,7 @@ import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
 import org.netbeans.modules.reportgenerator.api.CustomizeReportAction;
 import org.netbeans.modules.reportgenerator.api.GenerateReportAction;
 import org.netbeans.modules.bpel.search.api.SearchManager;
-import org.netbeans.modules.bpel.documentation.DocumentationCookie;
+import org.netbeans.modules.bpel.documentation.DocumentationGenerator;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.loaders.DataNode;
@@ -433,7 +433,7 @@ public class DesignerMultiViewElement extends TopComponent
             
             // vlv: report
             toolbar.add(new GenerateReportAction(myDataObject,
-              new DocumentationCookie(myDataObject, getDesignView().getProcessView())));
+              new DocumentationGenerator(myDataObject, getDesignView().getProcessView())));
             toolbar.add(new CustomizeReportAction(myDataObject));
             toolbar.addSeparator();
 

@@ -1660,10 +1660,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (!comp.hasHiddenState() 
                 && (genType == null || VALUE_GENERATE_CODE.equals(genType)))
         {   // not serialized
-            FormProperty[] props;
-            if (comp instanceof RADVisualComponent)
-                props = ((RADVisualComponent)comp).getAccessibilityProperties();
-            else return false;
+            FormProperty[] props = comp.getAccessibilityProperties();
 
             for (int i=0; i < props.length; i++) {
                 boolean gen = generateProperty(props[i], comp, null, initCodeWriter, codeData);
