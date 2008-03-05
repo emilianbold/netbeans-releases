@@ -520,7 +520,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "Makefile-impl.mk"); // NOI18N
         Configuration[] confs = getConfs().getConfs();
         for (int i = 0; i < confs.length; i++) {
-            metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "Makefile-" + confs[i].getName() + ".mk");
+            metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "Makefile-" + confs[i].getName() + ".mk"); // NOI18N
         } // NOI18N
         boolean allOk = true;
         for (int i = 0; i < metadataFiles.size(); i++) {
@@ -691,7 +691,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
      * Return real list
      */
     public List<String> getSourceRootsRaw() {
-        return sourceRoots;
+        synchronized (sourceRoots) {
+            return sourceRoots;
+        }
     }
 
     public void setSourceRoots(List list) {

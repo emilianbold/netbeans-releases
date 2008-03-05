@@ -123,7 +123,8 @@ public class Constants {
         XML("application/xml", "Xml"),      //NOI18N
         JSON("application/json", "Json"),   //NOI18N
         TEXT("text/plain", "Text"),         //NOI18N
-        HTML("text/html", "Html");          //NOI18N
+        HTML("text/html", "Html"),          //NOI18N
+        IMAGE("image/png", "Image");          //NOI18N
         
         private String value;
         private String suffix;

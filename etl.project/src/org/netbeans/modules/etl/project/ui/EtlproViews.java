@@ -42,6 +42,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
+import org.netbeans.modules.etl.project.EtlproProjectGenerator;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
@@ -56,7 +57,7 @@ class EtlproViews {
     static final class LogicalViewChildren extends Children.Keys implements FileChangeListener {
 
         private static final String KEY_SOURCE_DIR = "srcDir"; // NOI18N        
-        private static final String KEY_SETUP_DIR = "setupDir"; //NOI18N
+        private static final String KEY_DATA_DIR = "data"; //NOI18N
         private AntProjectHelper helper;
         private final PropertyEvaluator evaluator;
         private FileObject projectDir;
@@ -81,20 +82,20 @@ class EtlproViews {
         private void createNodes() {
             List l = new ArrayList();
 
-            DataFolder srcDir = getFolder(IcanproProjectProperties.SRC_DIR);
+            DataFolder srcDir = getFolder(IcanproProjectProperties.SRC_DIR);//EtlproProjectGenerator.DEFAULT_SRC_FOLDER);
             if (srcDir != null) {
                 l.add(KEY_SOURCE_DIR);
             }
 
-            FileObject setupFolder = getSetupFolder();
-            if (setupFolder != null && setupFolder.isFolder()) {
-                l.add(KEY_SETUP_DIR);
+            FileObject dataFolder = getDataFolder();
+            if (dataFolder != null && dataFolder.isFolder()) {
+                l.add(KEY_DATA_DIR);
             }
             setKeys(l);
         }
 
-        private FileObject getSetupFolder() {
-            return projectDir.getFileObject("setup"); //NOI18N
+        private FileObject getDataFolder() {
+            return projectDir.getFileObject(EtlproProjectGenerator.DEFAULT_DATA_DIR); //NOI18N
         }
 
         @Override
@@ -115,14 +116,14 @@ class EtlproViews {
                 } catch (DataObjectNotFoundException e) {
                     throw new AssertionError(e);
                 }
-
-            }
+            }            
             return n == null ? new Node[0] : new Node[]{n};
         }
 
-        private DataFolder getFolder(String propName) { 
+        private DataFolder getFolder(String propName) {             
             try{
                 FileObject fo = helper.resolveFileObject(evaluator.getProperty(propName));  
+                //FileObject fo = helper.resolveFileObject(propName);  
                 if (fo != null) {
                     DataFolder df = DataFolder.findFolder(fo);
                     return df;
@@ -144,7 +145,7 @@ class EtlproViews {
         }
 
         public void fileDeleted(org.openide.filesystems.FileEvent fe) {
-            createNodes();
+           // createNodes();
         }
 
         public void fileFolderCreated(org.openide.filesystems.FileEvent fe) {

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.JTextComponent;
@@ -145,8 +146,16 @@ public class CustomEditorDrop implements ActiveEditorDrop {
                         return;
                     }
 
-                    codegen.generate(dialog.getProgressHandle());
-                    Util.showMethod(targetFO, codegen.getSubresourceLocatorName());
+                    try {
+                        codegen.generate(dialog.getProgressHandle());
+                    } catch(IOException ex) {
+                        if(!ex.getMessage().equals(Util.SCANNING_IN_PROGRESS))
+                            errors.add(ex);
+                    }
+                    try {
+                        Util.showMethod(targetFO, codegen.getSubresourceLocatorName());
+                    } catch(IOException ex) {//ignore
+                    }
                 } catch (Exception ioe) {
                     errors.add(ioe);
                 } finally {

@@ -148,6 +148,11 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      */
     public TokenHierarchyOperation(Reader inputReader,
     Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
+        if (inputReader == null)
+            throw new IllegalArgumentException("inputReader cannot be null"); // NOI18N
+        if (language == null)
+            throw new IllegalArgumentException("language cannot be null");
+
         @SuppressWarnings("unchecked")
         I input = (I)inputReader;
         this.inputSource = input;
@@ -162,6 +167,11 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      */
     public TokenHierarchyOperation(CharSequence inputText, boolean copyInputText,
     Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
+        if (inputText == null)
+            throw new IllegalArgumentException("inputText cannot be null"); // NOI18N
+        if (language == null)
+            throw new IllegalArgumentException("language cannot be null");
+
         @SuppressWarnings("unchecked")
         I input = (I)inputText;
         this.inputSource = input;

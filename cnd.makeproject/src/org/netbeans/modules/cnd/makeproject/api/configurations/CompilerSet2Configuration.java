@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class CompilerSet2Configuration {
@@ -100,6 +101,7 @@ public class CompilerSet2Configuration {
     
     public void setValue(String name) {
         getCompilerSetName().setValue(name);
+        setCachedDisplayName(null);
     }
     
     /*
@@ -160,7 +162,7 @@ public class CompilerSet2Configuration {
     }
     
     public String createNotFoundName(String name) {
-        return name + " - not found"; // FIXUP
+        return name + getString("NOT_FOUND");
     }
     
     // Clone and assign
@@ -204,5 +206,10 @@ public class CompilerSet2Configuration {
     
     public String getOption() {
         return getCompilerSetName().getValue();
+    }
+    
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(CompilerSet2Configuration.class, s);
     }
 }

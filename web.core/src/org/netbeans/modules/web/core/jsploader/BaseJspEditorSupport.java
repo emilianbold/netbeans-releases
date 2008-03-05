@@ -74,7 +74,6 @@ import org.openide.text.DataEditorSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.MultiDataObject;
-import org.openide.cookies.*;
 import org.openide.text.CloneableEditor;
 import org.openide.util.Lookup;
 import org.openide.util.TaskListener;
@@ -93,6 +92,13 @@ import org.openide.util.NbBundle;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.palette.PaletteController;
+import org.openide.cookies.CloseCookie;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.cookies.PrintCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.util.Parameters;
 import org.openide.util.UserCancelException;
 import org.openide.util.WeakListeners;
@@ -414,8 +420,8 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
 
     @Override
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
-        Parameters.notNull("doc", doc); // NOI18N
-        Parameters.notNull("kit", kit); // NOI18N
+        Parameters.notNull("doc", doc);
+        Parameters.notNull("kit", kit);
 
         Charset c =  FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
         writeByteOrderMark(c, stream);
@@ -473,10 +479,12 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
 
             if (buffer[0] == (byte) 0xFF && buffer[1] == (byte) 0xFD) {
                 // big endian
-                os.write(new byte[] {(byte) 0xFE, (byte) 0xFF});
+                os.write(0xFE);
+                os.write(0xFF);
             } else if (buffer[0] == (byte) 0xFD && buffer[1] == (byte) 0xFF) {
                 // little endian
-                os.write(new byte[] {(byte) 0xFF, (byte) 0xFE});
+                os.write(0xFF);
+                os.write(0xFE);
             }
         } else if (UTF_32_CHARSETS.contains(charset.name())) {
             if (buffer.length < 4) {
@@ -487,11 +495,17 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             if (buffer[0] == (byte) 0xFF && buffer[1] == (byte) 0xFD
                     && buffer[2] == (byte) 0x00 && buffer[3] == (byte) 0x00) {
                 // big endian
-                os.write(new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0xFE, (byte) 0xFF});
+                os.write(0x00);
+                os.write(0x00);
+                os.write(0xFE);
+                os.write(0xFF);
             } else if (buffer[0] == (byte) 0x00 && buffer[1] == (byte) 0x00
                     && buffer[2] == (byte) 0xFD && buffer[3] == (byte) 0xFF) {
                 // little endian
-                os.write(new byte[] {(byte) 0xFF, (byte) 0xFE, (byte) 0x00, (byte) 0x00});
+                os.write(0xFF);
+                os.write(0xFE);
+                os.write(0x00);
+                os.write(0x00);
             }
         }
     }

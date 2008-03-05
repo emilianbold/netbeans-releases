@@ -302,7 +302,7 @@ public class AstRenderer {
      */
     private boolean findVariable(CharSequence name, int offset) {
         String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.VARIABLE) + 
-                OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + "::" + name;
+                OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + "::" + name; // NOI18N
         if( findGlobal(file.getProject(), uname, new ArrayList<CsmProject>()) ) {
             return true;
         }
@@ -404,16 +404,41 @@ public class AstRenderer {
     protected void renderVariableInClassifier(AST ast, CsmClassifier classifier,
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2){
         AST token = ast.getFirstChild();
+        boolean unnamedStaticUnion = false;
+        boolean _static = false;
+        int typeStartOffset = 0;
+        if (token != null) {
+            typeStartOffset = AstUtil.getFirstCsmAST(token).getOffset();
+            if (token.getType() == CPPTokenTypes.LITERAL_static) {
+                _static = true;
+                token = token.getNextSibling();
+                if (token != null) {
+                    if (token.getType() == CPPTokenTypes.LITERAL_union) {
+                        token = token.getNextSibling();
+                        if (token != null) {
+                            if (token.getType() == CPPTokenTypes.LCURLY) {
+                                unnamedStaticUnion = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
         for (; token != null; token = token.getNextSibling()){
             if (token.getType() == CPPTokenTypes.RCURLY){
                 break;
             }
         }
         if (token != null){
+            int rcurlyOffset = AstUtil.getFirstCsmAST(token).getEndOffset();
+            CsmOffsetable typeOffset = new OffsetableBase(file, typeStartOffset, rcurlyOffset);
+            token = token.getNextSibling();
+            boolean nothingBeforSemicolon = true;
             AST ptrOperator = null;
             for (; token != null; token = token.getNextSibling()){
                 switch( token.getType() ) {
                     case CPPTokenTypes.CSM_PTR_OPERATOR:
+                        nothingBeforSemicolon = false;
                         if( ptrOperator == null ) {
                             ptrOperator = token;
                         }
@@ -421,6 +446,7 @@ public class AstRenderer {
                     case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
                     case CPPTokenTypes.CSM_ARRAY_DECLARATION:
                     {
+                        nothingBeforSemicolon = false;
                         int arrayDepth = 0;
                         String name = null;
                         for( AST varNode = token.getFirstChild(); varNode != null; varNode = varNode.getNextSibling() ) {
@@ -435,8 +461,8 @@ public class AstRenderer {
                             }
                         }
                         if (name != null) {
-                            CsmType type = TypeFactory.createType(classifier, ptrOperator, arrayDepth, token, file);
-                            VariableImpl var = createVariable(token, file, type, name, false, container1, container2, null);
+                            CsmType type = TypeFactory.createType(classifier, ptrOperator, arrayDepth, token, file, typeOffset);
+                            VariableImpl var = createVariable(token, file, type, name, _static, container1, container2, null);
                             if( container2 != null ) {
                                 container2.addDeclaration(var);
                             }
@@ -447,11 +473,28 @@ public class AstRenderer {
                             ptrOperator = null;
                         }
                     }
+                    case CPPTokenTypes.SEMICOLON:
+                    {
+                        if (unnamedStaticUnion && nothingBeforSemicolon) {
+                            nothingBeforSemicolon = false;
+                            CsmType type = TypeFactory.createType(classifier, null, 0, null, file, typeOffset);
+                            VariableImpl var = new VariableImpl(new OffsetableBase(file, rcurlyOffset, rcurlyOffset),
+                                    file, type, "", null, true, false, (container1 != null) || (container2 != null)); // NOI18N
+                            if (container2 != null) {
+                                container2.addDeclaration(var);
+                            }
+                            // TODO! don't add to namespace if....
+                            if (container1 != null) {
+                                container1.addDeclaration(var);
+                            }
+                        }                        
+                    }
+                    default:
+                        nothingBeforSemicolon = false;
                 }
             }
         }
     }
-    
 
     protected CsmTypedef[] renderTypedef(AST ast, CsmClass cls, CsmObject container) {
         
