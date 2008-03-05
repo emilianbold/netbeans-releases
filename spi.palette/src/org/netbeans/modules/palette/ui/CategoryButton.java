@@ -197,7 +197,7 @@ class CategoryButton extends JCheckBox implements Autoscroll {
     /** Safe getter for autoscroll support. */
     AutoscrollSupport getSupport() {
         if( null == support ) {
-            support = new AutoscrollSupport( getParent().getParent() );
+            support = new AutoscrollSupport( PalettePanel.getDefault() );
         }
 
         return support;

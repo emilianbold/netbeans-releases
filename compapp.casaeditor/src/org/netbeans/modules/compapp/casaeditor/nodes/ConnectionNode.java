@@ -50,6 +50,7 @@
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Image;
+import java.beans.PropertyEditor;
 import java.util.List;
 import javax.swing.Action;
 import javax.xml.namespace.QName;
@@ -57,6 +58,7 @@ import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.ClearConfigExtensionsAction;
+import org.netbeans.modules.compapp.casaeditor.properties.NamespaceEditor;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -98,6 +100,15 @@ public class ConnectionNode extends CasaNode {
             public QName getValue() {
                 return casaConsumes.getServiceQName();
             }
+      
+            @Override
+            public PropertyEditor getPropertyEditor() {
+                return new NamespaceEditor(
+                        getModel(),
+                        getValue(),
+                        getDisplayName(),
+                        false);
+            }
         };
         Node.Property<String> consumerEndpointNameSupport = new PropertySupport.ReadOnly<String>(
                 "endpointName", // NOI18N
@@ -123,6 +134,15 @@ public class ConnectionNode extends CasaNode {
             public QName getValue() {
                 return casaProvides.getServiceQName();
             }
+            
+            @Override
+            public PropertyEditor getPropertyEditor() {
+                return new NamespaceEditor(
+                        getModel(),
+                        getValue(),
+                        getDisplayName(),
+                        false);
+            }
         };
         Node.Property<String> providerEndpointNameSupport = new PropertySupport.ReadOnly<String>(
                 "endpointName", // NOI18N
@@ -141,15 +161,7 @@ public class ConnectionNode extends CasaNode {
         // Add JBI extensions on connection
         ExtensionPropertyHelper.setupExtensionPropertySheet(this,
                 casaConnection, sheet, "connection", "all"); // NOI18N
-
-//        CasaComponent component = casaConnection;
-//        EndpointProperty endpointProperty = new EndpointProperty(this, component,
-//                "propertyType",
-//                String.class,
-//                "propertyName",
-//                "displayName",
-//                "description");
-//        providerProperties.put(endpointProperty);
+        
     }
 
     //The navigator title is unable to decode HTML text and showing the encoded chars (&#60;-&#62;) as is...

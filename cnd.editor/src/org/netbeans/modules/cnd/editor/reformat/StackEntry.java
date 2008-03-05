@@ -144,6 +144,14 @@ class StackEntry {
                     }
                     case NAMESPACE: //("namespace", "keyword"), //C++
                     case CLASS: //("class", "keyword"), //C++
+                    {
+                        if (paren == 0 && curly == 0 && triangle == 0) {
+                            importantKind = current.id();
+                            likeToFunction = false;
+                            return;
+                        }
+                        break;
+                    }
                     case STRUCT: //("struct", "keyword"),
                     case ENUM: //("enum", "keyword"),
                     case UNION: //("union", "keyword"),
@@ -177,6 +185,7 @@ class StackEntry {
                     {
                         if (paren == 0 && curly == 0 && triangle == 0) {
                             importantKind = current.id();
+                            likeToFunction = false;
                             return;
                         }
                         break;
@@ -207,6 +216,10 @@ class StackEntry {
 
     public boolean isLikeToFunction() {
         return likeToFunction;
+    }
+
+    public void setLikeToFunction(boolean likeToFunction) {
+        this.likeToFunction = likeToFunction;
     }
 
     public boolean isLikeToArrayInitialization() {

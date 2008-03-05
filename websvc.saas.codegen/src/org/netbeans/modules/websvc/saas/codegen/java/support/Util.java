@@ -70,11 +70,18 @@ import java.util.TreeSet;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
+import org.netbeans.modules.websvc.saas.codegen.java.AbstractGenerator;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
+import org.netbeans.modules.websvc.saas.codegen.java.model.GenericResourceBean;
+import org.netbeans.modules.websvc.saas.codegen.java.model.JaxwsOperationInfo;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.SaveCookie;
@@ -85,6 +92,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * Copy of j2ee/utilities Util class
@@ -101,6 +109,8 @@ public class Util {
     public static final String APOST = AT + Constants.POST_ANNOTATION;      //NOI18N
     public static final String APUT = AT + Constants.PUT_ANNOTATION;      //NOI18N
     public static final String ADELETE = AT + Constants.DELETE_ANNOTATION;      //NOI18N
+    public static final String SCANNING_IN_PROGRESS = "ScanningInProgress";//NOI18N
+    
     /*
      * Check if the primary file of d is a REST Resource
      */ 
@@ -128,7 +138,7 @@ public class Util {
         }
         return false;
     }
-    
+
     public static boolean isServlet(DataObject d) {
         try {
             if (d == null || !"java".equals(d.getPrimaryFile().getExt())) //NOI18N
@@ -348,6 +358,8 @@ public class Util {
     }
 
     private static Map<String,Class> primitiveTypes;
+    private static HashSet<String> keywords;
+    
     
     public static Class getType(Project project, String typeName) {    
         List<ClassPath> classPaths = SourceGroupSupport.gerClassPath(project);
@@ -394,6 +406,65 @@ public class Util {
             primitiveTypes.put("short[]", Short[].class);
         }
         return primitiveTypes.get(typeName);
+    }
+    
+    public static boolean isKeyword(String name) {
+        if (keywords == null) {
+            keywords = new HashSet<String>();
+            
+            keywords.add("abstract");
+            keywords.add("assert");
+            keywords.add("boolean");
+            keywords.add("break");
+            keywords.add("byte");
+            keywords.add("case");
+            keywords.add("catch");
+            keywords.add("char");
+            keywords.add("class");
+            keywords.add("const");
+            keywords.add("continue");
+            keywords.add("default");
+            keywords.add("do");
+            keywords.add("double");
+            keywords.add("else");
+            keywords.add("enum");
+            keywords.add("extends");
+            keywords.add("final");
+            keywords.add("finally");
+            keywords.add("float");
+            keywords.add("for");
+            keywords.add("goto");
+            keywords.add("if");
+            keywords.add("implements");
+            keywords.add("import");
+            keywords.add("instanceof");
+            keywords.add("int");
+            keywords.add("interface");
+            keywords.add("long");
+            keywords.add("native");
+            keywords.add("new");
+            keywords.add("package");
+            keywords.add("private");
+            keywords.add("protected");
+            keywords.add("public");
+            keywords.add("return");
+            keywords.add("short");
+            keywords.add("static");
+            keywords.add("strictfp");
+            keywords.add("super");
+            keywords.add("switch");
+            keywords.add("synchronized");
+            keywords.add("this");
+            keywords.add("throw");
+            keywords.add("throws");
+            keywords.add("transient");
+            keywords.add("try");
+            keywords.add("void");
+            keywords.add("volatile");
+            keywords.add("while");
+        }
+        
+        return keywords.contains(name);
     }
     
     public static Class getGenericRawType(String typeName, ClassLoader loader) {
@@ -445,7 +516,7 @@ public class Util {
         return sortedKeys;
     }
     
-    public static void showMethod(FileObject source, String methodName) {
+    public static void showMethod(FileObject source, String methodName) throws IOException {
         try {
             DataObject dataObj = DataObject.find(source);          
             JavaSource javaSource = JavaSource.forFileObject(source);
@@ -461,6 +532,7 @@ public class Util {
             LineCookie lc = (LineCookie) dataObj.getCookie(LineCookie.class);
             
             if (lc != null) {
+                Util.checkScanning(false);
                 final long[] position = JavaSourceHelper.getPosition(javaSource, methodName);
                 final Line line = lc.getLineSet().getOriginal((int) position[0]);
                 
@@ -471,8 +543,12 @@ public class Util {
                 });
             }
         } catch (Exception de) {
-            de.printStackTrace();
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
+            if(de instanceof IOException && de.getMessage().equals(Util.SCANNING_IN_PROGRESS)) {
+                throw new IOException(Util.SCANNING_IN_PROGRESS);
+            } else {
+                de.printStackTrace();
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
+            }
         }    
     }
 
@@ -533,5 +609,61 @@ public class Util {
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
 
         return templateDO.createFromTemplate(dataFolder, targetName);
+    }
+ 
+    public static String deriveResourceName(final String name) {
+        return Inflector.getInstance().camelize(normailizeName(name) + GenericResourceBean.RESOURCE_SUFFIX);
+    }
+
+    public static String deriveMethodName(final String name) {
+        return Inflector.getInstance().camelize(normailizeName(name), true);
+    }
+    
+    public static String deriveUriTemplate(final String name) {
+        return Inflector.getInstance().camelize(normailizeName(name), true) + "/"; //NOI18N
+    }
+    
+    public static MimeType[] deriveMimeTypes(JaxwsOperationInfo[] operations) {
+        if (String.class.getName().equals(operations[operations.length-1].getOperation().getReturnTypeName())) {
+            return new MimeType[] { MimeType.HTML };
+        } else {
+            return new MimeType[] { MimeType.XML };//TODO  MimeType.JSON };
+        }
+    }
+    
+    public static String normailizeName(final String name) {
+        String normalized = name;
+        normalized = normalized.replaceAll("\\p{Punct}", "_");
+        normalized = normalized.replaceAll("\\p{Space}", "_");
+        return normalized;
+    }
+
+    public static boolean isScanningInProgress(boolean showMessage) {
+        try {
+            Thread.sleep(2000);
+            if(SourceUtils.isScanInProgress()) {
+                if(showMessage) {
+                    String message = NbBundle.getMessage(AbstractGenerator.class, 
+                            "MSG_ScanningInProgress"); // NOI18N
+                    NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.WARNING_MESSAGE);
+                    DialogDisplayer.getDefault().notify(desc);
+                }
+                return true;
+            }
+        } catch (InterruptedException ex) {
+        }
+        return false;
+    }
+
+    public static void checkScanning() throws IOException{
+        if(Util.isScanningInProgress(true)) {
+            throw new IOException(SCANNING_IN_PROGRESS);
+        }
+    }
+    
+    public static void checkScanning(boolean showMessage) throws IOException{
+        if(Util.isScanningInProgress(showMessage)) {
+            throw new IOException(SCANNING_IN_PROGRESS);
+        }
     }
 }

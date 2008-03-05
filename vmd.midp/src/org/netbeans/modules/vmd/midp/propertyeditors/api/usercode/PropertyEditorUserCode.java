@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.vmd.midp.propertyeditors.api.usercode;
 
+import java.awt.event.FocusEvent;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ui.DialogBinding;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
@@ -58,6 +59,7 @@ import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.lang.ref.WeakReference;
 import java.util.*;
@@ -278,7 +280,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
         editor.getDocument().putProperty(BaseDocument.UNDO_MANAGER_PROP, um);
     }
 
-    private final class CustomEditor extends JPanel implements DocumentListener, ActionListener {
+    private final class CustomEditor extends JPanel implements DocumentListener, ActionListener, FocusListener {
 
         private Collection<PropertyEditorElement> elements;
         private JEditorPane userCodeEditorPane;
@@ -320,7 +322,12 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
             }
 
             userCodeRadioButton = new JRadioButton();
-            Mnemonics.setLocalizedText(userCodeRadioButton, NbBundle.getMessage(PropertyEditorUserCode.class, "LBL_USER_CODE", userCodeLabel)); // NOI18N
+            Mnemonics.setLocalizedText(userCodeRadioButton, NbBundle.getMessage(
+                    PropertyEditorUserCode.class, "LBL_USER_CODE", userCodeLabel)); // NOI18N
+            userCodeRadioButton.getAccessibleContext().setAccessibleName(
+                    NbBundle.getMessage(PropertyEditorUserCode.class, "ACSN_USER_CODE", userCodeLabel));
+            userCodeRadioButton.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(PropertyEditorUserCode.class, "ACSD_USER_CODE", userCodeLabel));
             userCodeRadioButton.addActionListener(this);
             buttonGroup.add(userCodeRadioButton);
 
@@ -332,9 +339,9 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
             constraints.weighty = 0.0;
             constraints.fill = GridBagConstraints.HORIZONTAL;
             add(userCodeRadioButton, constraints);
-
             JScrollPane jsp = new JScrollPane();
             userCodeEditorPane = new JEditorPane();
+            userCodeEditorPane.addFocusListener(this);
             //userCodeEditorPane.setFont(userCodeRadioButton.getFont());
             SwingUtilities.invokeLater(new Runnable() {
 
@@ -465,6 +472,17 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
             if (!wasSelected) {
                 userCodeEditorPane.requestFocus();
             }
+        }
+
+        public void focusGained(FocusEvent e) {
+            if (e.getSource() == userCodeEditorPane) {
+                userCodeRadioButton.setSelected(true);
+            }
+                
+        }
+
+        public void focusLost(FocusEvent e) {
+            
         }
     }
 }

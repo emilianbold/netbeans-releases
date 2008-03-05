@@ -157,10 +157,11 @@ import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
 import org.netbeans.modules.reportgenerator.api.CustomizeReportAction;
 import org.netbeans.modules.reportgenerator.api.GenerateReportAction;
 import org.netbeans.modules.bpel.search.api.SearchManager;
-import org.netbeans.modules.bpel.documentation.DocumentationCookie;
+import org.netbeans.modules.bpel.documentation.DocumentationGenerator;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.loaders.DataNode;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponentGroup;
@@ -432,7 +433,7 @@ public class DesignerMultiViewElement extends TopComponent
             
             // vlv: report
             toolbar.add(new GenerateReportAction(myDataObject,
-              new DocumentationCookie(myDataObject, getDesignView().getProcessView())));
+              new DocumentationGenerator(myDataObject, getDesignView().getProcessView())));
             toolbar.add(new CustomizeReportAction(myDataObject));
             toolbar.addSeparator();
 
@@ -582,6 +583,11 @@ public class DesignerMultiViewElement extends TopComponent
         }
         initActiveNodeContext();
         setVisible(true);
+        
+        getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(DesignerMultiViewElement.class, "ACSN_DesignerMultiviewElement", getName())); // NOI18N
+        getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(DesignerMultiViewElement.class, "ACSD_DesignerMultiviewElement", getName())); // NOI18N
     }
 
     private Component myFind;

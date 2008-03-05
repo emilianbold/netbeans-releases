@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.Map;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -95,7 +97,6 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
             if (number != null) {
                 breakpointNumber = Integer.parseInt(number);
                 setState(BPSTATE_VALIDATED);
-                breakpoint.setValid();
                 if (!breakpoint.isEnabled()) {
                     getDebugger().getGdbProxy().break_disable(breakpointNumber);
                 }
@@ -114,6 +115,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                     } catch (Exception ex) {
                     }
                 }
+                breakpoint.setValid();
             } else {
                 breakpoint.setInvalid(err);
                 setState(BPSTATE_VALIDATION_FAILED);
@@ -193,6 +195,12 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
             setRequests();
         }
     }
+    
+    protected final void setValidity(Breakpoint.VALIDITY validity, String reason) {
+        if (breakpoint instanceof ChangeListener) {
+            ((ChangeListener) breakpoint).stateChanged(new ValidityChangeEvent(validity, reason));
+        }
+    }
 
     public void propertyChange(PropertyChangeEvent evt) {
         String pname = evt.getPropertyName();
@@ -205,7 +213,13 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
             getDebugger().getGdbProxy().break_after(breakpointNumber, evt.getNewValue().toString());
         } else if (pname.equals(GdbBreakpoint.PROP_SUSPEND)) {
             suspend();
-        } else if (!pname.equals(GdbBreakpoint.PROP_LINE_NUMBER)) {
+        } else if (pname.equals(GdbBreakpoint.PROP_LINE_NUMBER) && getState().equals(BPSTATE_VALIDATED)) {
+            setState(BPSTATE_REVALIDATE);
+            update();
+        } else if (pname.equals(GdbBreakpoint.PROP_FUNCTION_NAME) && getState().equals(BPSTATE_VALIDATED)) {
+            setState(BPSTATE_REVALIDATE);
+            update();
+        } else if (!pname.equals(GdbBreakpoint.PROP_LINE_NUMBER) && !AddressBreakpoint.PROP_REFRESH.equals(pname)) {
             update();
         }
     }
@@ -213,6 +227,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     protected final void remove() {
         breakpoint.removePropertyChangeListener(this);
         setState(BPSTATE_DELETION_PENDING);
+        setValidity(Breakpoint.VALIDITY.UNKNOWN, null);
         if (breakpointNumber > 0) {
             getDebugger().getBreakpointList().remove(breakpointNumber);
         }
@@ -244,101 +259,19 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         }
         return resume;
     }
-    
-//    private boolean evaluateCondition(String condition, Value value) {
-//
-//        try {
-//            try {
-//                boolean result;
-//                GdbBreakpointEvent ev;
-//                synchronized (getDebugger().LOCK) {
-//                    StackFrame sf = thread.frame (0);
-//                    result = evaluateConditionIn (condition, sf);
-//                    ev = new GdbBreakpointEvent (
-//                        getBreakpoint (),
-//                        getDebugger(),
-//                        result ?
-//                            GdbBreakpointEvent.CONDITION_TRUE :
-//                            GdbBreakpointEvent.CONDITION_FALSE,
-//                        getDebugger().getThread (thread),
-//                        referenceType,
-//                        getDebugger().getVariable (value)
-//                    );
-//                }
-//                getDebugger().fireBreakpointEvent(getBreakpoint(), ev);
-//
-//                // condition true => stop here (do not resume)
-//                // condition false => resume
-//                if (verbose)
-//                    System.out.println ("B perform breakpoint (condition = " + result + "): " + this + " resume: " + (!result || ev.getResume ()));
-//                return !result || ev.getResume ();
-//            } catch (ParseException ex) {
-//                GdbBreakpointEvent ev = new GdbBreakpointEvent (
-//                    getBreakpoint (),
-//                    getDebugger(),
-//                    ex,
-//                    getDebugger().getThread (thread),
-//                    referenceType,
-//                    getDebugger().getVariable (value)
-//                );
-//                getDebugger().fireBreakpointEvent(getBreakpoint(), ev);
-//                return ev.getResume ();
-//            } catch (InvalidExpressionException ex) {
-//                GdbBreakpointEvent ev = new GdbBreakpointEvent (
-//                    getBreakpoint (),
-//                    getDebugger(),
-//                    ex,
-//                    getDebugger().getThread (thread),
-//                    referenceType,
-//                    getDebugger().getVariable (value)
-//                );
-//                getDebugger ().fireBreakpointEvent (
-//                    getBreakpoint (),
-//                    ev
-//                );
-//                return ev.getResume ();
-//            }
-//        } catch (IncompatibleThreadStateException ex) {
-//             should not occurre
-//            ex.printStackTrace ();
-//        }
-//        // some error occured during evaluation of expression => do not resume
-//
-//
-//        return false; // do not resume
-//    }
-//
-//    /**
-//     * Evaluates given condition. Returns value of condition evaluation.
-//     * Returns true othervise (bad expression).
-//     */
-//    private boolean evaluateConditionIn(String condExpr, Object frame)
-//                        throws ParseException, InvalidExpressionException {
-//        // 1) compile expression
-//        if (compiledCondition == null || !compiledCondition.getExpression().equals(condExpr)) {
-//            compiledCondition = Expression.parse(condExpr, Expression.LANGUAGE_CPLUSPLUS);
-//        }
-//
-//        // 2) evaluate expression
-//        // already synchronized (getDebugger().LOCK)
-//        Boolean value = getDebugger().evaluateIn(compiledCondition, frame);
-//        try {
-//            return value.booleanValue();
-//        } catch (ClassCastException e) {
-//            throw new InvalidExpressionException(e);
-//        }
-//    }
-//
-//    /**
-//     * Support method for simple patterns.
-//     */
-//    static boolean match(String name, String pattern) {
-//        String star = "*"; // NOI18N
-//        if (pattern.startsWith(star)) {
-//            return name.endsWith(pattern.substring(1));
-//        } else if (pattern.endsWith(star)) {
-//            return name.startsWith(pattern.substring(0, pattern.length() - 1));
-//        }
-//        return name.equals(pattern);
-//    }
+        
+    private static final class ValidityChangeEvent extends ChangeEvent {
+        
+        private String reason;
+        
+        public ValidityChangeEvent(Breakpoint.VALIDITY validity, String reason) {
+            super(validity);
+            this.reason = reason;
+        }
+        
+        @Override
+        public String toString() {
+            return reason;
+        }
+    }
 }

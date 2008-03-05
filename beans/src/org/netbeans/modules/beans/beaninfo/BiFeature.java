@@ -92,28 +92,33 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
     private boolean included = true;
 
     private String brackets = "]"; // NOI18N
+    private final BiAnalyser bia;
     /**
     * Creates empty BiFeature.
     */
-    public BiFeature( Pattern pattern ) {
-        this(pattern.getName());
+    public BiFeature( Pattern pattern, BiAnalyser bia ) {
+        this(pattern.getName(), bia);
     }
 
-    BiFeature(String name, String displayName) {
+    BiFeature(String name, String displayName, BiAnalyser bia) {
         this.name = name;
         this.displayName = displayName;
+        this.bia = bia;
     }
 
-    protected BiFeature() {        
-        this("beanDescriptor");//NOI18N GenerateBeanInfoAction.getString("CTL_NODE_DescriptorDisplayName");
+    protected BiFeature(BiAnalyser bia) {        
+        this("beanDescriptor", bia);//NOI18N GenerateBeanInfoAction.getString("CTL_NODE_DescriptorDisplayName");
     }
     
-    private BiFeature(String name) {
-        this(name, null);
+    private BiFeature(String name, BiAnalyser bia) {
+        this(name, null, bia);
     }
 
     abstract String getCreationString();
 
+    protected final void setModified() {
+        bia.setModified();
+    }
 
     // Definition of properties ....................................................................
 
@@ -123,6 +128,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+        setModified();
     }
 
     public boolean isExpert() {
@@ -131,6 +137,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
 
     public void setExpert(boolean expert) {
         this.expert = expert;
+        setModified();
     }
 
     public boolean isHidden() {
@@ -139,6 +146,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
 
     public void setHidden(boolean hidden) {
         this.hidden = hidden;
+        setModified();
     }
 
     public String getName() {
@@ -155,6 +163,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
 
     public void setPreferred(boolean preferred) {
         this.preferred = preferred;
+        setModified();
     }
 
     public String getShortDescription() {
@@ -163,6 +172,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
 
     public void setShortDescription(String shortDescription) {
         this.shortDescription = shortDescription;
+        setModified();
     }
 
     abstract String getBracketedName();
@@ -173,6 +183,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
     
     void setBrackets(String brackets){
         this.brackets = brackets;
+        setModified();
     }
 
     public boolean isIncluded() {
@@ -181,6 +192,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
 
     public void setIncluded(boolean included) {
         this.included = included;
+        setModified();
     }
     
     public String getToolTip() {
@@ -286,7 +298,8 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
         String customizer;
         private String beanName;
 
-        Descriptor( TypeElement ce ) throws GenerateBeanException {
+        Descriptor( TypeElement ce, BiAnalyser bia ) throws GenerateBeanException {
+            super(bia);
             this.element = ElementHandle.create(ce);
             this.beanName = ce.getQualifiedName().toString();
         }
@@ -339,6 +352,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
 
         public void setCustomizer(String customizer){
             this.customizer = customizer;
+            setModified();
         }
         
         //overrides BiFeature.isIncluded(), this property is always included ( disabled by setting get from Introspection )
@@ -369,8 +383,8 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
         private String getterName;
         private String setterName;
 
-        Property( PropertyPattern pp, CompilationInfo javac ) throws GenerateBeanException {
-            super( pp );
+        Property( PropertyPattern pp, CompilationInfo javac, BiAnalyser bia ) throws GenerateBeanException {
+            super( pp, bia );
             mode = pp.getMode();
             pattern = pp;
 
@@ -404,6 +418,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
 
         public void setBound(boolean bound) {
             this.bound = bound;
+            setModified();
         }
 
         public boolean isConstrained() {
@@ -412,6 +427,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
 
         public void setConstrained(boolean constrained) {
             this.constrained = constrained;
+            setModified();
         }
 
         public int getMode() {
@@ -420,6 +436,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
 
         public void setMode(int mode) {
             this.mode = mode;
+            setModified();
         }
 
         public boolean modeChangeable() {
@@ -432,6 +449,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
 
         public void setPropertyEditorClass(String propertyEditorClass) {
             this.propertyEditorClass = propertyEditorClass;
+            setModified();
         }
 
         /** Returns the call to constructor of PropertyDescriptor */
@@ -544,8 +562,8 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
         private String indexedGetterName;
         private String indexedSetterName;
 
-        IdxProperty( IdxPropertyPattern pp, CompilationInfo javac ) throws GenerateBeanException {
-            super( pp, javac );
+        IdxProperty( IdxPropertyPattern pp, CompilationInfo javac, BiAnalyser bia ) throws GenerateBeanException {
+            super( pp, javac, bia );
             pattern = pp;
 
             niGetter = hasNiGetter();
@@ -566,6 +584,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
 
         void setNiGetter( boolean niGetter ) {
             this.niGetter = hasNiGetter() ? niGetter : false;
+            setModified();
         }
 
         boolean isNiSetter() {
@@ -573,7 +592,8 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
         }
 
         void setNiSetter( boolean niSetter ) {
-            this.niGetter = hasNiSetter() ? niSetter : false;
+            this.niSetter = hasNiSetter() ? niSetter : false;
+            setModified();
         }
 
 
@@ -582,7 +602,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
         }
 
         boolean hasNiSetter() {
-            return pattern.getGetterMethod() != null;
+            return pattern.getSetterMethod() != null;
         }
 
         /** Returns the call to constructor of IndexedPropertyDescriptor */
@@ -644,9 +664,9 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
                     setMode( PropertyPattern.READ_ONLY );
 
                 // Analayses if there is restriction on non indexed getter or setter
-                if ( hasNiGetter() && params[2].equals( null ) )
+                if ( hasNiGetter() && params[2].equals( "null" ) ) // NOI18N
                     niGetter = false;
-                if ( hasNiGetter() && params[3].equals( null ) )
+                if ( hasNiGetter() && params[3].equals( "null" ) ) // NOI18N
                     niSetter = false;
 
             }
@@ -664,8 +684,8 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
         private boolean isInDefaultEventSet = true;
         private String creationString;
 
-        EventSet( EventSetPattern esp, CompilationInfo javac ) throws GenerateBeanException {
-            super( esp );
+        EventSet( EventSetPattern esp, CompilationInfo javac, BiAnalyser bia ) throws GenerateBeanException {
+            super( esp, bia );
             pattern = esp;
             creationString = initCreationString(javac);
         }
@@ -789,8 +809,8 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
         private String toolTip;
         private String creationString;
 
-        Method( ExecutableElement me, PatternAnalyser pa, CompilationInfo javac ) throws GenerateBeanException {
-            super( me.getSimpleName().toString(), "\"\"" ); //NOI18N
+        Method( ExecutableElement me, PatternAnalyser pa, CompilationInfo javac, BiAnalyser bia ) throws GenerateBeanException {
+            super( me.getSimpleName().toString(), "\"\"", bia ); //NOI18N
             element = ElementHandle.create(me);
             toolTip = initToolTip(me, javac);
             creationString = initCreationString(me);

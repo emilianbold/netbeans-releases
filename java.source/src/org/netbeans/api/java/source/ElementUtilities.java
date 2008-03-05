@@ -240,9 +240,21 @@ public final class ElementUtilities {
             Elements elements = JavacElements.instance(ctx);
             switch (type.getKind()) {
                 case DECLARED:
+                    HashMap<CharSequence, ArrayList<Element>> hiders = new HashMap<CharSequence, ArrayList<Element>>();
+                    Types types = JavacTypes.instance(ctx);
                     for (Element member : elements.getAllMembers((TypeElement)((DeclaredType)type).asElement())) {
-                        if (acceptor == null || acceptor.accept(member, type))
-                            members.add(member);
+                        if (acceptor == null || acceptor.accept(member, type)) {
+                            CharSequence name = member.getSimpleName();
+                            ArrayList<Element> h = hiders.get(name);
+                            if (!isHidden(member, h, types)) {
+                                members.add(member);
+                                if (h == null) {
+                                    h = new ArrayList<Element>();
+                                    hiders.put(name, h);
+                                }
+                                h.add(member);
+                            }
+                        }
                     }
                 case BOOLEAN:
                 case BYTE:
@@ -531,9 +543,12 @@ public final class ElementUtilities {
                             TypeMirror existingReturnType = existingType.getReturnType();
                             TypeMirror eeReturnType = eeType.getReturnType();
                             if (!types.isSubtype(existingReturnType, eeReturnType)) {
-                                if (existingReturnType.getKind() == TypeKind.DECLARED && eeReturnType.getKind() == TypeKind.DECLARED) {
+                                if (types.isSubtype(eeReturnType, existingReturnType)) {
+                                    undef.remove(existing);
+                                    undef.add(ee);
+                                } else if (existingReturnType.getKind() == TypeKind.DECLARED && eeReturnType.getKind() == TypeKind.DECLARED) {
                                     Env<AttrContext> env = Enter.instance(ctx).getClassEnv((TypeSymbol)impl);
-                                    DeclaredType subType = findCommonSubtype((DeclaredType)existingReturnType, (DeclaredType)eeReturnType, env);
+                                    DeclaredType subType = env != null ? findCommonSubtype((DeclaredType)existingReturnType, (DeclaredType)eeReturnType, env) : null;
                                     if (subType != null) {
                                         undef.remove(existing);
                                         MethodSymbol ms = ((MethodSymbol)existing).clone((Symbol)impl);

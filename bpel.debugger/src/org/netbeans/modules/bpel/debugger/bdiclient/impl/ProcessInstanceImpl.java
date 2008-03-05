@@ -404,6 +404,11 @@ public class ProcessInstanceImpl implements ProcessInstance {
                 doWait();
                 myBreakPosition = null;
                 setState(STATE_RUNNING);
+            } else {
+                // This call mught seem redundant, but it triggers a bunch of 
+                // important updates, like BpelDebugger.setCurrentPosition(null)
+                // which causes the annotations to be redrawn.
+                setState(STATE_RUNNING);
             }
         }
     }

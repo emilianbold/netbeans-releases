@@ -42,6 +42,8 @@
 package org.netbeans.modules.db.explorer.infos;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -69,6 +71,9 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     static RootNodeInfo rootInfo = null;
     
     private Collection<DbNodeLoader> nodeLoaders;
+    
+    private static Logger LOGGER = 
+            Logger.getLogger(RootNodeInfo.class.getName());
     
     public static RootNodeInfo getInstance() throws DatabaseException {
         if (rootInfo == null) {
@@ -103,7 +108,9 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         }
     }
 
-    private List<Node> getRegisteredNodes() {
+    private synchronized List<Node> getRegisteredNodes() {
+        LOGGER.log(Level.FINE, null, new Exception());
+        
         boolean registerListener = false;
         if ( nodeLoaders == null ) {
             nodeLoaders = DbNodeLoaderSupport.getLoaders();
@@ -177,9 +184,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
             }
         }
         
-        postUpdateChildren(children, newNodes.toArray(new Node[0]));
-
-        fireRefresh();        
+        children.replaceNodes(newNodes.toArray(new Node[0]));
     }
     
     private void postUpdateChildren(final DatabaseNodeChildren children, 

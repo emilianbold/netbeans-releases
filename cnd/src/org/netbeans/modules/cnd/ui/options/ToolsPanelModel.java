@@ -42,80 +42,60 @@
 
 package org.netbeans.modules.cnd.ui.options;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.settings.CppSettings;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
-
 /** Manage the data for the ToolsPanel */
 public abstract class ToolsPanelModel {
     
-    protected ArrayList getPath() {
-        ArrayList<String> path = new ArrayList();
-        StringTokenizer tok = new StringTokenizer(CppSettings.getDefault().getPath(), File.pathSeparator);
-        while (tok.hasMoreTokens()) {
-            path.add(tok.nextToken());
-        }
-        return path;
-    }
+//    protected ArrayList getPath() {
+//        ArrayList<String> path = new ArrayList();
+//        StringTokenizer tok = new StringTokenizer(CppSettings.getDefault().getPath(), File.pathSeparator);
+//        while (tok.hasMoreTokens()) {
+//            path.add(tok.nextToken());
+//        }
+//        return path;
+//    }
+//    
+//    protected void setPath(ArrayList<String> list) {
+//        StringBuffer path = new StringBuffer();
+//        for (String dir : list) {
+//            path.append(dir);
+//            path.append(File.pathSeparator);
+//        }
+//        CppSettings.getDefault().setPath(path.toString());
+//    }
+//    
+//    protected String getMakeName() {
+//        return CppSettings.getDefault().getMakeName();
+//    }
+//    
+//    protected void setMakeName(String name) {
+//        CppSettings.getDefault().setMakeName(name);
+//    }
+//    
+//    protected void setMakePath(String dir) {
+//        CppSettings.getDefault().setMakePath(dir);
+//    }
+//    
+//    public String getGdbName() {
+//        return CppSettings.getDefault().getGdbName();
+//    }
+//    
+//    public void setGdbName(String name) {
+//        CppSettings.getDefault().setGdbName(name);
+//    }
+//    
+//    public String getGdbPath() {
+//        return null;
+//    }
+//    
+//    public void setGdbPath(String dir) {
+//        CppSettings.getDefault().setGdbPath(dir);
+//    }
+//    
+//    public abstract void setGdbEnabled(boolean value);
     
-    protected void setPath(ArrayList<String> list) {
-        StringBuffer path = new StringBuffer();
-        for (String dir : list) {
-            path.append(dir);
-            path.append(File.pathSeparator);
-        }
-        CppSettings.getDefault().setPath(path.toString());
-    }
+    public abstract void setMakeRequired(boolean value);
     
-    protected String getMakeName() {
-        return CppSettings.getDefault().getMakeName();
-    }
-    
-    protected void setMakeName(String name) {
-        CppSettings.getDefault().setMakeName(name);
-    }
-    
-    protected void setMakePath(String dir) {
-        CppSettings.getDefault().setMakePath(dir);
-    }
-    
-    public String getGdbName() {
-        return CppSettings.getDefault().getGdbName();
-    }
-    
-    public void setGdbName(String name) {
-        CppSettings.getDefault().setGdbName(name);
-    }
-    
-    public String getGdbPath() {
-        return null;
-    }
-    
-    public void setGdbPath(String dir) {
-        CppSettings.getDefault().setGdbPath(dir);
-    }
-    
-    /**
-     * Check if the gdb module is enabled. Don't show the gdb line if it isn't.
-     *
-     * @return true if the gdb module is enabled, false if missing or disabled
-     */
-    protected boolean isGdbEnabled() {
-        Iterator iter = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class)).allInstances().iterator();
-        while (iter.hasNext()) {
-            ModuleInfo info = (ModuleInfo) iter.next();
-            if (info.getCodeNameBase().equals("org.netbeans.modules.cnd.debugger.gdb") && info.isEnabled()) { // NOI18N
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    public abstract void setGdbEnabled(boolean value);
+    public abstract boolean isMakeRequired();
     
     public abstract boolean isGdbRequired();
     
@@ -137,11 +117,19 @@ public abstract class ToolsPanelModel {
     
     public abstract String getCompilerSetName();
     
-    protected abstract void setCCompilerName(String name);
-    
-    protected abstract void setCppCompilerName(String name);
-    
-    protected abstract void setFortranCompilerName(String name);
+//    protected abstract void setCCompilerName(String name);
+//    
+//    protected abstract void setCppCompilerName(String name);
+//    
+//    protected abstract void setFortranCompilerName(String name);
     
     public abstract boolean showRequiredTools();
+    
+    public abstract void setShowRequiredBuildTools(boolean value);
+    
+    public abstract boolean showRequiredBuildTools();
+    
+    public abstract void setShowRequiredDebugTools(boolean value);
+    
+    public abstract boolean showRequiredDebugTools();
 }

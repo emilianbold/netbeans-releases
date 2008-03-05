@@ -293,8 +293,7 @@ final class ModuleListParser {
             String expectedDirName = abbreviate(cnb);
             String actualDirName = dir.getName();
             if (!actualDirName.equals(expectedDirName)) {
-                // XXX make this a fatal error later when all existing violations are corrected
-                project.log("Warning: expected module to be in dir named " + expectedDirName + " but was actually found in dir named " + actualDirName, Project.MSG_WARN);
+                throw new IOException("Expected module to be in dir named " + expectedDirName + " but was actually found in dir named " + actualDirName);
             }
         }
         // Clumsy but the best way I know of to evaluate properties.

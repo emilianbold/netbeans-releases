@@ -470,7 +470,7 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             }
 
             String servInstID = EarProject.this.getUpdateHelper().
-                    getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).
+                    getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).
                     getProperty(EarProjectProperties.J2EE_SERVER_INSTANCE);
             J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
             if (platform != null) {
@@ -525,7 +525,7 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             
             // unregister the property change listener on the prop evaluator
             if (librariesLocationUpdater != null) {
-                librariesLocationUpdater.unregister();
+                librariesLocationUpdater.destroy();
             }
 
             // Probably unnecessary, but just in case:

@@ -59,18 +59,31 @@ import org.openide.filesystems.FileUtil;
  * @author Alexander Simon
  */
 public class LogReader {
-    private static final String CURRENT_DIRECTORY = "Current working directory";
-    private static final String INVOKE_SUN_C = "cc -";
-    private static final String INVOKE_SUN_CC = "CC -";
-    private static final String INVOKE_GNU_C = "gcc -";
-    private static final String INVOKE_GNU_CC = "g++ -";
+    private static final boolean TRACE = true;
+    
+    private static final String CURRENT_DIRECTORY = "Current working directory"; //NOI18N
+    private static final String INVOKE_SUN_C = "cc -"; //NOI18N
+    private static final String INVOKE_SUN_CC = "CC -"; //NOI18N
+    private static final String INVOKE_GNU_C = "gcc -"; //NOI18N
+    private static final String INVOKE_GNU_CC = "g++ -"; //NOI18N
     
     private String workingDir;
-    private String root;
-    private List<SourceFileProperties> result = new ArrayList<SourceFileProperties>();
+    private final String root;
+    private final String fileName;
+    private List<SourceFileProperties> result;
     
     public LogReader(String fileName, String root){
         this.root = root;
+        this.fileName = fileName;
+       
+        // XXX
+        workingDir = root;
+    }
+    
+    private void run() {
+        if (TRACE) System.out.println("LogReader is run for " + fileName); //NOI18N
+
+        result = new ArrayList<SourceFileProperties>();
         File file = new File(fileName);
         if (file.exists() && file.canRead()){
             try {
@@ -85,8 +98,10 @@ public class LogReader {
                         i++;
                     }
                 }
-                System.out.println("Totally found "+i);
-                System.out.println("Result contains "+result.size());
+                if (TRACE) {
+                    System.out.println("Files found: "+i); //NOI18N
+                    System.out.println("Files included in result: "+ result.size()); //NOI18N
+                }
                 in.close();
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -94,7 +109,10 @@ public class LogReader {
         }
     }
     
-    public List<SourceFileProperties> getResults(){
+    public List<SourceFileProperties> getResults() {
+        if (result == null) {
+            run();
+        }
         return result;
     }
     
@@ -103,8 +121,8 @@ public class LogReader {
            workingDir= line.substring(CURRENT_DIRECTORY.length()+1).trim();
            return false;
        }
-       if (line.startsWith("/")){
-           if (line.indexOf(" ")<0){
+       if (line.startsWith("/")){  //NOI18N
+           if (line.indexOf(" ")<0){  //NOI18N
                if (new File(line).exists()){
                    workingDir= line.trim();
                    return false;
@@ -159,7 +177,7 @@ public class LogReader {
         List<String> list = DwarfSource.scanCommandLine(line);
         boolean hasQuotes = false;
         for(String s : list){
-            if (s.startsWith("\"")){
+            if (s.startsWith("\"")){  //NOI18N
                 hasQuotes = true;
                 break;
             }
@@ -170,15 +188,15 @@ public class LogReader {
                 String s = list.get(i);
                 if (s.startsWith("-D") && i+1 < list.size() && list.get(i+1).startsWith("\"")){ // NOI18N
                     String longString = null;
-                    for(int j = i+1; j < list.size() && list.get(j).startsWith("\""); j++){
+                    for(int j = i+1; j < list.size() && list.get(j).startsWith("\""); j++){  //NOI18N
                         if (longString != null) {
-                            longString += " " + list.get(j);
+                            longString += " " + list.get(j);  //NOI18N
                         } else {
                             longString = list.get(j);
                         }
                         i = j;
                     }
-                    newList.add(s+"'"+longString+"'");
+                    newList.add(s+"'"+longString+"'");  //NOI18N
                 } else {
                     newList.add(s);
                 }
@@ -193,14 +211,14 @@ public class LogReader {
         String option = null;
         if (st.hasNext()) {
             option = st.next();
-            if (option.equals("+") && st.hasNext()) {
+            if (option.equals("+") && st.hasNext()) { // NOI18N
                 option = st.next();
             }
         }
         while(st.hasNext()){
             option = st.next();
             if (option.startsWith("-D")){ // NOI18N
-                if (option.equals("-D") && st.hasNext()){
+                if (option.equals("-D") && st.hasNext()){  //NOI18N
                     option = st.next();
                 }
                 String macro = option.substring(2);
@@ -285,15 +303,17 @@ public class LogReader {
                 // Skip redurect
                 break;
             } else {
-                if (option.endsWith(".il") || option.endsWith(".o") || option.endsWith(".a") ||
-                    option.endsWith(".so") || option.endsWith(".so.1")) {
+                if (option.endsWith(".il") || option.endsWith(".o") || option.endsWith(".a") ||  //NOI18N
+                    option.endsWith(".so") || option.endsWith(".so.1")) {  //NOI18N
                     continue;
                 }
                 if (what == null) {
                     what = option;
                 } else {
-                    System.out.println("What is this "+option + " previous "+what);
-                    System.out.println("   in "+line);
+                    if (TRACE) {
+                        System.out.println("What is this "+option + " previous "+what); //NOI18N
+                        System.out.println("   in "+line); //NOI18N
+                    }
                 }
             }
         }
@@ -301,16 +321,18 @@ public class LogReader {
             return false;
         }
         String file = null;
-        if (what.startsWith("/")){
+        if (what.startsWith("/")){  //NOI18N
             file = what;
         } else {
-            file = workingDir+"/"+what;
+            file = workingDir+"/"+what;  //NOI18N
         }
         File f = new File(file);
         if (!f.exists() || !f.isFile()) {
             if (true){
-                System.out.println("Not found "+file);
-                System.out.println("    "+line);
+                if (TRACE)  {
+                    System.out.println("Not found "+file); //NOI18N
+                    System.out.println("    "+line); //NOI18N
+                }
             }
             return false;
         }
@@ -343,7 +365,7 @@ public class LogReader {
                 fullName = sourceName;
                 sourceName = DwarfSource.getRelativePath(compilePath, sourceName);
             } else {
-                fullName = compilePath+"/"+sourceName;
+                fullName = compilePath+"/"+sourceName; //NOI18N
             }
             File file = new File(fullName);
             fullName = FileUtil.normalizeFile(file).getAbsolutePath();

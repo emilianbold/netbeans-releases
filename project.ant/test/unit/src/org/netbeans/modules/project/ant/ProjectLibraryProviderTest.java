@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.project.ant;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -62,6 +63,7 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -148,6 +150,10 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         assertEquals(Arrays.asList(new URL("jar:file:jgraph.jar!/"), new URL("jar:file:../extra%20libs/jgraph-extras.jar!/")), lib.getRawContent("classpath"));
         assertEquals(Arrays.asList(new URL("file:api/jgraph-docs/"), new URL("jar:file:api/jgraph-docs.zip!/docs/api/")), lib.getRawContent("javadoc"));
         assertEquals(Collections.emptyList(), lib.getContent("src"));
+        
+        //if this field is null, it means the reflection won't work on Library instances
+        // and localized names fro libraries won't be found
+        assertNotNull(ProjectLibraryProvider.ProjectLibraryImplementation.libraryImplField);
     }
 
     public void testLibraryLoadingPrivateAbsolute() throws Exception {
@@ -278,6 +284,60 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         assertEquals(expected, loadProperties("libraries.properties"));
     }
 
+    public void testCreateLibraryUnderFSAtomicAction() throws Exception {
+        final LibraryManager mgr = LibraryManager.forLocation(new URL(base, "libraries.properties"));
+        final Map<String,List<URL>> content = new HashMap<String,List<URL>>();
+        content.put("classpath", Arrays.asList(new URL("jar:file:jh.jar!/"), new URL("jar:file:jh-search.jar!/")));
+        content.put("javadoc", Arrays.asList(new URL("file:jh-api/")));
+
+        FileSystem fs = projdir.getFileSystem();
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                Library lib = mgr.createLibrary("j2se", "javahelp", content);
+                assertEquals("j2se", lib.getType());
+                assertEquals("javahelp", lib.getName());
+                assertEquals(content.get("classpath"), lib.getRawContent("classpath"));
+                assertEquals(content.get("javadoc"), lib.getRawContent("javadoc"));
+                try {
+                    setLibraryContent(lib, "src", new URL(base, "separate/jgraph-src/"), new URL(base, "jgraph-other-src/"));
+                } catch (Exception e) {
+                    throw new IOException(e.toString());
+                }
+            }});
+    }
+
+    public void testCreateLibraryAndLibrariesEventFiring() throws Exception {
+        final LibraryManager mgr = LibraryManager.forLocation(new URL(base, "libraries.properties"));
+        final Map<String,List<URL>> content = new HashMap<String,List<URL>>();
+        content.put("classpath", Arrays.asList(new URL("jar:file:jh.jar!/"), new URL("jar:file:jh-search.jar!/")));
+        content.put("javadoc", Arrays.asList(new URL("file:jh-api/")));
+        final List<PropertyChangeEvent> list = new ArrayList<PropertyChangeEvent>();
+        final PropertyChangeListener l = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                list.add(evt);
+                if (evt.getPropertyName().equals(LibraryManager.PROP_LIBRARIES)) {
+                    // by the time we got this event library must be fully set up:
+                    assertTrue("must have one library", mgr.getLibraries().length == 1);
+                    assertEquals("library content must be set", content.get("classpath"), mgr.getLibraries()[0].getRawContent("classpath"));
+                    assertEquals("library content must be set", content.get("javadoc"), mgr.getLibraries()[0].getRawContent("javadoc"));
+                }
+            }
+        };
+        mgr.addPropertyChangeListener(l);
+        Library lib = mgr.createLibrary("j2se", "javahelp", content);
+        mgr.removePropertyChangeListener(l);
+        assertTrue(list.size() == 1);
+        mgr.removeLibrary(lib);
+        FileSystem fs = projdir.getFileSystem();
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                mgr.addPropertyChangeListener(l);
+                mgr.createLibrary("j2se", "javahelp", content);
+                mgr.removePropertyChangeListener(l);
+                assertTrue(list.size() == 2);
+            }});
+    }
+
     public void testPropertyProviderBasic() throws Exception {
         writeProperties("libs/libraries.properties",
                 "libs.jgraph.classpath=${base}/jgraph.jar:${base}/../extralibs/jgraph-extras.jar");
@@ -380,6 +440,10 @@ public class ProjectLibraryProviderTest extends NbTestCase {
      * Test of copyLibrary method, of class LibrariesSupport.
      */
     public void testCopyLibrary() throws Exception {
+        // disable all collocation queries:
+        MockLookup.setLookup(Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), libraryProvider),
+                // Filter out standard CQIs since they are bogus.
+                Lookups.exclude(Lookups.metaInfServices(ProjectLibraryProviderTest.class.getClassLoader()), CollocationQueryImplementation.class));
         File f = new File(this.getWorkDir(), "bertie.jar");
         createFakeJAR(f, "smth");
         File f1 = new File(this.getWorkDir(), "dog.jar");
@@ -390,6 +454,9 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         new File(this.getWorkDir(), "libraries").mkdir();
         File f3 = new File(this.getWorkDir(), "libraries/libs.properties");
         f3.createNewFile();
+        new File(this.getWorkDir(), "libraries2").mkdir();
+        File f4 = new File(this.getWorkDir(), "libraries2/libs.properties");
+        f4.createNewFile();
         FileUtil.toFileObject(getWorkDir()).refresh();
         LibraryImplementation l1 = LibrariesSupport.createLibraryImplementation("j2test", new String[]{"jars", "sources"});
         l1.setName("vino");
@@ -414,6 +481,18 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         //assertNotNull(LibrariesSupport.resolveLibraryEntryFileObject(u, result.getContent("sources").get(0)));
         assertEquals(new File(this.getWorkDir(), "libraries/vino/bertie-2.jar").getPath(), 
                 FileUtil.toFile(LibrariesSupport.resolveLibraryEntryFileObject(u, FileUtil.getArchiveFile(result.getRawContent("sources").get(0)))).getPath());
+        // enable test collocation query:
+        MockLookup.setLookup(Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir()), libraryProvider),
+                // Filter out standard CQIs since they are bogus.
+                Lookups.exclude(Lookups.metaInfServices(ProjectLibraryProviderTest.class.getClassLoader()), CollocationQueryImplementation.class));
+        u = f4.toURI().toURL();
+        result = ProjectLibraryProvider.copyLibrary(l, u, false);
+        assertNotNull(result);
+        assertEquals(u, result.getManager().getLocation());
+        assertEquals(Arrays.asList(new URL("jar:file:../bertie.jar!/"),
+                new URL("jar:file:../dog.jar!/")), result.getRawContent("jars"));
+        assertEquals(Arrays.asList(new URL("jar:file:../sources/bertie.jar!/docs/api/")), result.getRawContent("sources"));
+        
     }
     
     private void createFakeJAR(File f, String content) throws IOException {

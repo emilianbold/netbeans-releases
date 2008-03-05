@@ -19,34 +19,37 @@ public abstract class AbstractColumn extends ColumnModel {
     protected String myTooltip;
     protected Class myType;
     protected Properties myProperties;
+    protected boolean mySortable;
 
     public AbstractColumn() {
         myProperties = Properties.getDefault().
                 getProperties("debugger").getProperties("views"); // NOI18N
+        
+        mySortable = true;
     }
-
+    
     public String getID() {
         return myId;
     }
-
+    
     public String getDisplayName() {
         return getMessage(myName);
     }
-
+    
     public Class getType() {
         return myType;
     }
-
+    
     @Override
     public String getShortDescription() {
         return getMessage(myTooltip);
     }
-
+    
     @Override
     public int getCurrentOrderNumber() {
         return myProperties.getInt(getFieldId(ORDER_NUMBER), -1);
     }
-
+    
     @Override
     public void setCurrentOrderNumber(
             final int orderNumber) {
@@ -97,6 +100,11 @@ public abstract class AbstractColumn extends ColumnModel {
         return myProperties.getBoolean(getFieldId(DESCENDING), false);
     }
 
+    @Override
+    public boolean isSortable() {
+        return mySortable;
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // Private
     private String getFieldId(

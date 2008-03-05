@@ -53,6 +53,7 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.visitor.ChildVisitor;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.netbeans.modules.bpel.validation.core.WsdlValidator;
@@ -79,11 +80,13 @@ public final class Validator extends WsdlValidator {
 //out("Query: " + alias.getQuery());
 
         if (alias.getQuery() != null) {
+//out("1");
           return;
         }
         DocumentComponent query = getQuery(alias);
 
         if (query != null) {
+//out("2");
           addError("FIX_QUERY_PREFIX", alias); // NOI18N
           return;
         }
@@ -91,6 +94,7 @@ public final class Validator extends WsdlValidator {
         NamedComponentReference<CorrelationProperty> ref1 = alias.getPropertyName();
 
         if (ref1 == null) {
+//out("3");
           return;
         }
         CorrelationProperty property = ref1.get();
@@ -150,7 +154,7 @@ public final class Validator extends WsdlValidator {
           return;
         }
         // check
-        if (aliasType != propertyType) {
+        if (ValidationUtil.getBasedSimpleType(aliasType) != ValidationUtil.getBasedSimpleType(propertyType)) {
           addError("FIX_TYPE_IN_PROPERTY_ALIAS", alias, getTypeName(aliasType), getTypeName(propertyType)); // NOI18N
 //out("ERROR: " + getTypeName(aliasType) + " "  + getTypeName(propertyType));
         }

@@ -50,6 +50,7 @@ import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import java.io.IOException;
 import java.util.Collections;
 
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.openide.WizardDescriptor;
 
 /**
@@ -83,7 +84,7 @@ class J2SEInstallImpl extends org.netbeans.spi.java.platform.PlatformInstall {
         return tool != null;
     }
     
-    public WizardDescriptor.InstantiatingIterator createIterator(FileObject baseFolder) {
+    public WizardDescriptor.InstantiatingIterator<WizardDescriptor> createIterator(FileObject baseFolder) {
         try {
             return new J2SEWizardIterator(baseFolder);
         } catch (IOException ioe) {

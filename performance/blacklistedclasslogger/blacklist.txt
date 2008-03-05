@@ -1,8 +1,0 @@
-# Sample
-org.netbeans.ProxyClassLoader
-java.util.logging.ConsoleHandler
-
-#org.netbeans.BlacklistedClassLogger
-
-java.util.logging.SimpleFormatter
-org.netbeans.junit.AssertionFailedErrorException

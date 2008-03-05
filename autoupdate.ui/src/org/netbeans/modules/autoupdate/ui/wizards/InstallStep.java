@@ -42,6 +42,7 @@
 package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.awt.Dialog;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -205,8 +206,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         }
         runInBg = inBackground;
         if (inBackground) {
-            if (getComponent ().getRootPane () != null) {
-                getComponent ().getRootPane ().setVisible (false);
+            assert SwingUtilities.isEventDispatchThread () : "In AWT queue only.";
+            Window w = SwingUtilities.getWindowAncestor (getComponent ());
+            if (w != null) {
+                w.setVisible (false);
             }
             if (model.getPluginManager () != null) {
                 model.getPluginManager ().close ();
