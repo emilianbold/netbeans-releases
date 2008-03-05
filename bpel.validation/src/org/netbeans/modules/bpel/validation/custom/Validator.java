@@ -322,15 +322,34 @@ public final class Validator extends BpelValidator {
     }
   }
 
-  // # 81404
   @Override
   public void visit(Process process) {
     List<Reply> replies = new ArrayList<Reply>();
     List<CorrelationsHolder> holders = new ArrayList<CorrelationsHolder>();
     visitEntities(process.getChildren(), replies, holders);
+    // # 81404
     checkReplies(replies);
     // # 109412
     checkHolders(holders);
+    // # 129266
+    checkExit(process);
+  }
+
+  private void checkExit(BpelEntity entity) {
+    List<BpelEntity> children = entity.getChildren();
+    boolean hasExit = false;
+
+    for (BpelEntity child : children) {
+      if (hasExit) {
+        addError("FIX_Activity_after_Exit", child); // NOI18N
+      }
+      if (child instanceof Exit) {
+        hasExit = true;
+      }
+    }
+    for (BpelEntity child : children) {
+      checkExit(child);
+    }
   }
 
   private void visitEntities(List<BpelEntity> entities, List<Reply> replies, List<CorrelationsHolder> holders) {
@@ -405,9 +424,8 @@ public final class Validator extends BpelValidator {
     if (parent == null) {
       return false;
     }
-    boolean findExit = false;
-
     List<BpelEntity> children = parent.getChildren();
+    boolean findExit = false;
 
     for (BpelEntity child : children) {
       if (findExit) {
