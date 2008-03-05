@@ -92,6 +92,10 @@ public final class ContextUtilities {
     public static TokenItem getAttributeToken(TokenItem currentToken) {
         if(isValueToken(currentToken)) {
             TokenItem equalsToken = currentToken.getPrevious();
+            
+            if(equalsToken == null || equalsToken.getTokenID() == null )
+                return null;
+            
             while(equalsToken.getTokenID().getNumericID() != XMLDefaultTokenContext.OPERATOR_ID) {
                 equalsToken = equalsToken.getPrevious();
             }
