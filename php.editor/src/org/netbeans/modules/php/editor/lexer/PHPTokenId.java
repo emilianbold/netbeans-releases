@@ -71,7 +71,7 @@ public enum PHPTokenId implements TokenId {
     //	PHP_REFERENCE(null, "php"),
     PHP_SEMICOLON(null, "php"), //NOI18N
     PHP_CASE(null, "keyword"), //NOI18N
-    PHP_NUMBER(null, "php"), //NOI18N
+    PHP_NUMBER(null, "number"), //NOI18N
     //	PHP_DNUMBER(null, "php"),
     PHP_GLOBAL(null, "keyword"), //NOI18N
     PHP_ARRAY(null, "keyword"), //NOI18N
@@ -79,7 +79,7 @@ public enum PHPTokenId implements TokenId {
     PHP_FINAL(null, "keyword"), //NOI18N
     //	PHP_CLASS_C(null, "php"),
     PHP_PAAMAYIM_NEKUDOTAYIM(null, "php"), //NOI18N
-    PHP_EXTENDS(null, "php"), //NOI18N
+    PHP_EXTENDS(null, "keyword"), //NOI18N
     PHP_VAR_COMMENT(null, "comment"), //NOI18N
     PHP_USE(null, "php"), //NOI18N
     //	PHP_MINUS_EQUAL(null, "php"),
@@ -213,7 +213,7 @@ public enum PHPTokenId implements TokenId {
     PHP_IF("if", "keyword"), //NOI18N
     PHP_DECLARE(null, "php"), //NOI18N
     PHP_OBJECT_OPERATOR(null, "php"), //NOI18N
-    PHP_SELF(null, "php"), //NOI18N
+    PHP_SELF(null, "keyword"), //NOI18N
     PHPDOC_VAR(null, "phpdockeyword"), //NOI18N
     PHPDOC_SEE(null, "phpdockeyword"), //NOI18N
     PHP_COMMENT(null, "comment"), //NOI18N

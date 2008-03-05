@@ -45,8 +45,6 @@ package org.netbeans.swing.dirchooser;
 
 import java.util.logging.Level;
 import javax.swing.*;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.Timer;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -72,6 +70,7 @@ import java.lang.reflect.Constructor;
 import java.security.AccessControlException;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -96,6 +95,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+
+import sun.nio.cs.Surrogate;
 
 /**
  * An implementation of a customized filechooser.
@@ -2173,8 +2174,71 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     addNewDirectory = false;
                 }
             }
+            // Fix for IZ#123815 : Cannot refresh the tree content
+            refreshNode( path , node );
         }
         public void treeCollapsed(TreeExpansionEvent event) {
+        }
+        
+        // Fix for IZ#123815 : Cannot refresh the tree content
+        private void refreshNode( TreePath path, DirectoryNode node ){
+            File folder = node.getFile();
+            
+            // Additional fixes for IZ#116859 [60cat] Node update bug in the "open project" panel while deleting directories
+            if ( !folder.exists() ){
+                TreePath parentPath = path.getParentPath();
+                boolean refreshTree = false;
+                
+                if(tree.isExpanded(path)) {
+                    tree.collapsePath(path);
+                    refreshTree = true;
+                }
+                model.removeNodeFromParent( node );
+                if ( refreshTree ){
+                    tree.expandPath( parentPath );
+                }
+            }
+            
+            int count = node.getChildCount();
+            Map<String,DirectoryNode> currentFiles = 
+                new HashMap<String,DirectoryNode>( ); 
+            for( int i=0; i< count ; i++ ){
+                TreeNode child = node.getChildAt(i);
+                if ( child instanceof DirectoryNode ){
+                    File file = ((DirectoryNode)child).getFile();
+                    currentFiles.put( file.getName() , (DirectoryNode)child);
+                }
+            }
+            
+            HashSet<String> realDirs = new HashSet<String>();
+            
+            File[] files =  folder.listFiles(); 
+            files = files == null ? new File[0] : files;
+            for (File file : files) {
+                if ( !file.isDirectory() ){
+                    continue;
+                }
+                String name = file.getName();
+                realDirs.add( name );
+            }
+            
+            Set<String> realCloned = new HashSet<String>( realDirs );
+            if ( realCloned.removeAll( currentFiles.keySet()) ){
+                // Handle added folders
+                for ( String name : realCloned ){
+                    DirectoryNode added = new DirectoryNode( new File( folder, name ) );
+                    model.insertNodeInto( added, node, node.getChildCount());
+                }
+            }
+            Set<String> currentNames = new HashSet<String>( currentFiles.keySet());
+            if ( currentNames.removeAll( realDirs )){
+                // Handle deleted folders
+                for ( String name : currentNames ){
+                    DirectoryNode removed = currentFiles.get( name );
+                    model.removeNodeFromParent( removed );
+                }
+            }
+            
         }
     }
     

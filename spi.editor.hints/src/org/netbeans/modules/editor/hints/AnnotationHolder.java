@@ -597,14 +597,14 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         }
     }
     
-    private List<LazyFixList> computeFixes(List<ErrorDescription> errors) {
+    private LazyFixList computeFixes(List<ErrorDescription> errors) {
         List<LazyFixList> result = new ArrayList<LazyFixList>();
         
         for (ErrorDescription e : errors) {
             result.add(e.getFixes());
         }
         
-        return result;
+        return ErrorDescriptionFactory.lazyListForDelegates(result);
     }
     
     private void updateAnnotationOnLine(Position line) throws BadLocationException {
@@ -649,7 +649,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             }
         }
         
-        LazyFixList fixes = ErrorDescriptionFactory.lazyListForDelegates(computeFixes(hasErrors ? trueErrors : others));
+        FixData fixes = new FixData(computeFixes(trueErrors), computeFixes(others));
         
         ParseErrorAnnotation pea = new ParseErrorAnnotation(mostImportantSeverity, fixes, description.toString(), line, this);
         Annotation previous = line2Annotations.put(line, pea);

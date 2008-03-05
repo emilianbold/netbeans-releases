@@ -527,7 +527,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return walker.getFilteredTokenStream(getLanguageFilter());        
     }
     
-    private final String tokStreamLock = new String("TokenStream lock");
+    private final String tokStreamLock = new String("TokenStream lock"); // NOI18N
     private Reference<OffsetTokenStream> ref = new SoftReference(null);
     
     public TokenStream getTokenStream(int startOffset, int endOffset) {

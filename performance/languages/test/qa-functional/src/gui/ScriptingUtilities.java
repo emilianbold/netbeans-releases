@@ -44,11 +44,13 @@ package gui;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JMenuItemOperator;
 
 /**
  *
@@ -90,7 +92,9 @@ public class ScriptingUtilities extends gui.Utilities {
         } catch (TimeoutExpiredException tex) {
             MainWindowOperator mv = MainWindowOperator.getDefault();
             JMenuBarOperator menuBar = mv.menuBar();
-            menuBar.pushMenu("Window|Projects");
+            //menuBar.pushMenu("Window|Projects");
+            JMenuItemOperator item = menuBar.showMenuItem("Window|Projects");
+            item.clickMouse();
             testOp = new ProjectsTabOperator();
         }       
         return testOp;

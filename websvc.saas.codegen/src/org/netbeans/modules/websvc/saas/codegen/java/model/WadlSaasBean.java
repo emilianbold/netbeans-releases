@@ -72,7 +72,7 @@ public class WadlSaasBean extends SaasBean {
     private WadlSaasMethod m;
     
     public WadlSaasBean(WadlSaasMethod m)  throws IOException {
-        super(Util.deriveResourceName(m.getName()), null, 
+        super(Util.deriveMethodName(m.getName()), null, 
                 Util.deriveUriTemplate(m.getName()), new MimeType[]{MimeType.XML}, 
                 new String[]{"java.lang.String"},       //NOI18N
                 new HttpMethodType[]{HttpMethodType.GET});

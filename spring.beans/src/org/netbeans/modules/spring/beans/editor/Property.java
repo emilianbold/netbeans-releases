@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,54 +31,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.performance.test.utilities;
+package org.netbeans.modules.spring.beans.editor;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
+import javax.lang.model.element.ExecutableElement;
 
 /**
  *
- * @author mrkam@netbeans.org
+ * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class BlackListViolationException extends java.lang.Exception {
+public class Property {
+    private String name;
+    private ExecutableElement getter;
+    private ExecutableElement setter;
+
+    public Property(String name) {
+        this.name = name;
+    }
+
+    public ExecutableElement getGetter() {
+        return getter;
+    }
+
+    public void setGetter(ExecutableElement getter) {
+        this.getter = getter;
+    }
+
+    public ExecutableElement getSetter() {
+        return setter;
+    }
+
+    public void setSetter(ExecutableElement setter) {
+        this.setter = setter;
+    }
+
+    public String getName() {
+        return name;
+    }
     
-    private String instantiator;
-
-    public BlackListViolationException(String instantiator) {
-        super("Instantiator: " + instantiator);
-        this.instantiator = instantiator;
-    }
-
-    public String getInstantiator() {
-        return instantiator;
-    }
-
-    @Override
-    public void printStackTrace() {
-        System.out.println("   Instantiator: " + instantiator);
-        System.out.println("     Stack trace:");
-        for(StackTraceElement ste : getStackTrace()) {
-            System.out.println("           " + ste);
+    public PropertyType getType() {
+        if(this.getter != null && this.setter != null) {
+            return PropertyType.READ_WRITE;
+        } else if(this.getter != null) {
+            return PropertyType.READ_ONLY;
+        } else if(this.setter != null) {
+            return PropertyType.WRITE_ONLY;
         }
-    }
-
-    @Override
-    public void printStackTrace(PrintStream s) {
-        s.println("   Instantiator: " + instantiator);
-        s.println("     Stack trace:");
-        for(StackTraceElement ste : getStackTrace()) {
-            s.println("           " + ste);
-        }
-    }
-
-    @Override
-    public void printStackTrace(PrintWriter s) {
-        s.println("   Instantiator: " + instantiator);
-        s.println("     Stack trace:");
-        for(StackTraceElement ste : getStackTrace()) {
-            s.println("           " + ste);
-        }        
+        
+        return null; // Should never occur
     }
 }
