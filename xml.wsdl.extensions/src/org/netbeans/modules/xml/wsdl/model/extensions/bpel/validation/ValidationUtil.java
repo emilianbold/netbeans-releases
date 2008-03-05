@@ -38,13 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.xpath;
+package org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import javax.xml.namespace.QName;
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
@@ -61,8 +62,11 @@ public final class ValidationUtil {
     private ValidationUtil() {}
     
     // vlv 
-    public static SchemaComponent getBasedSimpleType(SchemaComponent component) {
-      SchemaComponent type = getBuiltInSimpleType(component);
+    public static Component getBasedSimpleType(Component component) {
+      if ( !(component instanceof SchemaComponent)) {
+        return component;
+      }
+      SchemaComponent type = getBuiltInSimpleType((SchemaComponent) component);
 
       if (type == null) {
         return component;

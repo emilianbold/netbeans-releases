@@ -46,6 +46,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext.SchemaCompPair;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathModelTracerVisitor;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
 
 /**
  * This visitor is intended to validate semantics of single XPath.
