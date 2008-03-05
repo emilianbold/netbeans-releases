@@ -48,6 +48,7 @@ import java.io.File;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.Set;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -86,7 +87,7 @@ public class PushOtherAction extends ContextAction implements PropertyChangeList
         if (repository == null) {
             int repositoryModeMask = Repository.FLAG_URL_EDITABLE | Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
             String title = org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Location");       // NOI18N
-            repository = new Repository(repositoryModeMask, title);
+            repository = new Repository(repositoryModeMask, title, true);
             repository.addPropertyChangeListener(this);
         }
         pushButton = new JButton();
@@ -126,7 +127,7 @@ public class PushOtherAction extends ContextAction implements PropertyChangeList
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() { 
-               PushAction.performPush(root, pushPath, fromPrjName, toPrjName); 
+               PushAction.performPush(root, pushPath, fromPrjName, toPrjName, this.getLogger()); 
             } 
         };
 
@@ -135,10 +136,9 @@ public class PushOtherAction extends ContextAction implements PropertyChangeList
     }
     
     public boolean isEnabled() {
-        File root = HgUtils.getRootFile(context);
-        if(root == null)
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) 
             return false;
-        else
-            return true;
+        return true; // #121293: Speed up menu display, warn user if not set when Push selected
     }
 }

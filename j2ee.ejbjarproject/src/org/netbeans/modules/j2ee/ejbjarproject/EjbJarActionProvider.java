@@ -43,15 +43,19 @@ package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
+import javax.lang.model.element.TypeElement;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -63,6 +67,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -282,9 +287,37 @@ class EjbJarActionProvider implements ActionProvider {
         } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
             FileObject[] files = findJavaSources(context);
             String path = null;
+            final String[] classes = { "" };
             if (files != null) {
                 path = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),files[0]), files[0]);
                 targetNames = new String[] {"debug-fix"}; // NOI18N
+                JavaSource js = JavaSource.forFileObject(files[0]);
+                if (js != null) {
+                    try {
+                        js.runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
+                            public void run(CompilationController ci) throws Exception {
+                                if (ci.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo(JavaSource.Phase.ELEMENTS_RESOLVED) < 0) {
+                                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                            "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                            "\nDiagnostics = "+ci.getDiagnostics()+
+                                            "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                                    return;
+                                }
+                                List<? extends TypeElement> types = ci.getTopLevelElements();
+                                if (types.size() > 0) {
+                                    for (TypeElement type : types) {
+                                        if (classes[0].length() > 0) {
+                                            classes[0] = classes[0] + " ";            // NOI18N
+                                        }
+                                        classes[0] = classes[0] + type.getQualifiedName().toString().replace('.', '/') + "*.class";  // NOI18N
+                                    }
+                                }
+                            }
+                        }, true);
+                    } catch (java.io.IOException ioex) {
+                        Exceptions.printStackTrace(ioex);
+                    }
+                }
             } else {
                 files = findTestSources(context, false);
                 path = FileUtil.getRelativePath(getRoot(project.getTestSourceRoots().getRoots(),files[0]), files[0]);
@@ -295,6 +328,7 @@ class EjbJarActionProvider implements ActionProvider {
                 path = path.substring(0, path.length() - 5);
             }
             p.setProperty("fix.includes", path); // NOI18N
+            p.setProperty("fix.classes", classes[0]); // NOI18N
         //COMPILATION PART
         } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             FileObject[] sourceRoots = project.getSourceRoots().getRoots();

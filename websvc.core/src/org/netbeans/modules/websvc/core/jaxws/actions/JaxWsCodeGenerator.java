@@ -44,9 +44,9 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
@@ -113,8 +113,8 @@ import org.openide.util.NbBundle;
 public class JaxWsCodeGenerator {
 
     private static final List IMPLICIT_JSP_OBJECTS = Arrays.asList(new String[]{
-        "request", "response", "session", "out", "page", "config", "application", "pageContext" //NOI18N
-    });
+                "request", "response", "session", "out", "page", "config", "application", "pageContext" //NOI18N
+            });
     private static final String HINT_INIT_ARGUMENTS = " // TODO initialize WS operation arguments here\n"; //NOI18N
     // {0} = service java name (as variable, e.g. "AddNumbersService")
     // {1} = port java name (e.g. "AddNumbersPort")
@@ -308,6 +308,27 @@ public class JaxWsCodeGenerator {
             "    '}'\n" + //NOI18N
             "'}'\n" + //NOI18N
             "%>\n"; //NOI18N
+    private static final String QNAME =
+            "\nQName portQName = new QName(\"{0}\" , \"{1}\"); ";
+    // {0} = service java name (as variable, e.g. "AddNumbersService")
+    // {1} =namespace URI of port
+    // {2} = java port name 
+    // {3} = XML message string
+    private static final String JSP_DISPATCH =
+            "    <%-- start web service invocation --%><hr/>\n" + //NOI18N
+            "    <%\n" + //NOI18N
+            "    try '{'\n" + //NOI18N
+            "\t{0} service = new {0}();\n" + //NOI18N
+            "\tjavax.xml.namespace.QName portQName = new javax.xml.namespace.QName(\"{1}\", \"{2}\");\n" +
+            "\tString req = \"{3}\";\n" +
+            "\tjavax.xml.ws.Dispatch<javax.xml.transform.Source> sourceDispatch = null;\n" +
+            "\tsourceDispatch = service.createDispatch(portQName, javax.xml.transform.Source.class, javax.xml.ws.Service.Mode.PAYLOAD);\n" +
+            "\tjavax.xml.transform.Source result = sourceDispatch.invoke(new javax.xml.transform.stream.StreamSource(new java.io.StringReader(req)));\n" +
+            "    '}' catch (Exception ex) '{'\n" + //NOI18N
+            "\t// TODO handle custom exceptions here\n" + //NOI18N
+            "    '}'\n" + //NOI18N
+            "    %>\n" + //NOI18N
+            "    <%-- end web service invocation --%><hr/>\n"; //NOI18N
 
     public static void insertMethodCall(int targetSourceType, DataObject dataObj, Node sourceNode, Node operationNode) {
         EditorCookie cookie = sourceNode.getCookie(EditorCookie.class);
@@ -515,7 +536,11 @@ public class JaxWsCodeGenerator {
             wsdlUrl = findWsdlLocation(client, NbEditorUtilities.getFileObject(document));
         }
 
-        insertMethod(document, pos, service, port, operation, wsdlUrl);
+        if (client.getUseDispatch()) {
+            insertDispatchMethod(document, pos, service, port, operation, wsdlUrl);
+        } else {
+            insertMethod(document, pos, service, port, operation, wsdlUrl);
+        }
     }
 
     public static void insertMethod(final Document document, final int pos,
@@ -726,7 +751,7 @@ public class JaxWsCodeGenerator {
                     Project project = FileOwnerQuery.getOwner(controller.getFileObject());
                     generateWsRefInjection[0] = JaxWsUtils.isEjbSupported(project);
                 }
-                
+
                 insertServiceDef[0] = !generateWsRefInjection[0];
                 if (isServletClass(controller, thisTypeEl)) {
                     // PENDING Need to compute pronter name from the method
@@ -923,6 +948,179 @@ public class JaxWsCodeGenerator {
         }
 
         public void cancel() {
+        }
+    }
+
+    static boolean foundImport(String importStatement, CompilationUnitTree tree) {
+        List<? extends ImportTree> imports = tree.getImports();
+        for (ImportTree imp : imports) {
+            if (importStatement.equals(imp.getQualifiedIdentifier().toString())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static final class DispatchCompilerTask implements CancellableTask<WorkingCopy> {
+
+        public void run(WorkingCopy workingCopy) throws Exception {
+            boolean changed = false;
+            workingCopy.toPhase(Phase.RESOLVED);
+            ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
+            TreeMaker make = workingCopy.getTreeMaker();
+            CompilationUnitTree cut = workingCopy.getCompilationUnit();
+            CompilationUnitTree copy = cut;
+            if (!foundImport("javax.xml.namespace.QName", copy)) {
+                copy = make.addCompUnitImport(copy,
+                        make.Import(make.Identifier("javax.xml.namespace.QName"), false));
+                changed = true;
+            }
+            if (!foundImport("javax.xml.transform.Source", copy)) {
+                copy = make.addCompUnitImport(copy,
+                        make.Import(make.Identifier("javax.xml.transform.Source"), false));
+                changed = true;
+            }
+            if (!foundImport("javax.xml.ws.Dispatch", copy)) {
+                copy = make.addCompUnitImport(copy,
+                        make.Import(make.Identifier("javax.xml.ws.Dispatch"), false));
+                changed = true;
+            }
+            if (!foundImport("javax.xml.transform.stream.StreamSource", copy)) {
+                copy = make.addCompUnitImport(copy,
+                        make.Import(make.Identifier("javax.xml.transform.stream.StreamSource"), false));
+                changed = true;
+            }
+            if (!foundImport("javax.xml.ws.Service", copy)) {
+                copy = make.addCompUnitImport(copy,
+                        make.Import(make.Identifier("javax.xml.ws.Service"), false));
+                changed = true;
+            }
+            if (!foundImport("java.io.StringReader", copy)) {
+                copy = make.addCompUnitImport(copy,
+                        make.Import(make.Identifier("java.io.StringReader"), false));
+                changed = true;
+            }
+            if (changed) {
+                workingCopy.rewrite(cut, copy);
+            }
+        }
+
+        public void cancel() {
+        }
+    }
+
+    public static String generateXMLMessage(WsdlPort port, WsdlOperation operation) {
+        StringBuffer message = new StringBuffer("");
+
+        String operationName = operation.getOperationName();
+        String namespace = port.getNamespaceURI();
+        message.append("<");
+        message.append(operationName);
+        message.append("  xmlns=\\\"");
+        message.append(namespace);
+        message.append("\\\">");
+        List<WsdlParameter> parameters = operation.getParameters();
+        for (WsdlParameter parameter : parameters) {
+            String name = parameter.getName();
+            message.append("<");
+            message.append(name);
+            message.append(">");
+            message.append("ENTER VALUE");
+            message.append("</");
+            message.append(name);
+            message.append(">");
+        }
+        message.append("</");
+        message.append(operationName);
+        message.append(">");
+        return message.toString();
+    }
+
+    private static String getDispatchInvocationMethod(WsdlPort port, WsdlOperation operation) {
+        StringBuffer invoke = new StringBuffer("");
+        invoke.append(MessageFormat.format(QNAME, new Object[]{port.getNamespaceURI(), port.getName()}));
+        invoke.append("\n");
+        invoke.append("String req = ");
+        invoke.append("\"");
+        invoke.append(generateXMLMessage(port, operation));
+        invoke.append("\";\n");
+        invoke.append(MessageFormat.format(JAVA_TRY, new Object[]{}));
+        invoke.append("\n");
+        invoke.append("Dispatch<Source> sourceDispatch = null;\n");
+        invoke.append("sourceDispatch = service.createDispatch(portQName, Source.class, Service.Mode.PAYLOAD);\n");
+        invoke.append("Source result = sourceDispatch.invoke(new StreamSource(new StringReader(req)));\n");
+        invoke.append(MessageFormat.format(JAVA_CATCH, new Object[]{}));
+        invoke.append("\n");
+        return invoke.toString();
+    }
+
+    private static String getJSPDispatchBody(Object[] args) {
+        return MessageFormat.format(JSP_DISPATCH, args);
+    }
+
+    public static void insertDispatchMethod(final Document document, final int pos,
+            WsdlService service, WsdlPort port, WsdlOperation operation, String wsdlUrl) {
+        boolean inJsp = "text/x-jsp".equals(document.getProperty("mimeType")); //NOI18N
+        if (inJsp) {
+            Object[] args = new Object[]{service.getJavaName(), port.getNamespaceURI(), port.getJavaName(), generateXMLMessage(port, operation)};
+            final String invocationBody = getJSPDispatchBody(args);
+            try {
+                document.insertString(pos, invocationBody, null);
+            } catch (javax.swing.text.BadLocationException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+            return;
+        }
+        try {
+
+            final FileObject targetFo = NbEditorUtilities.getFileObject(document);
+            JavaSource targetSource = JavaSource.forFileObject(targetFo);
+
+            String serviceJavaName = service.getJavaName();
+            String[] serviceFName = new String[]{"service"};
+            String[] argumentDeclPart = new String[]{""};
+            String[] argumentInitPart = new String[]{""};
+            CompilerTask compilerTask = new CompilerTask(serviceJavaName, serviceFName, argumentDeclPart, argumentInitPart);
+            targetSource.runUserActionTask(compilerTask, true);
+
+
+            IndentEngine eng = IndentEngine.find(document);
+            StringWriter textWriter = new StringWriter();
+            Writer indentWriter = eng.createWriter(document, pos, textWriter);
+
+            if (compilerTask.containsWsRefInjection()) { //if in J2SE
+                Object[] args = new Object[]{service.getJavaName(), null, null, null, null, null, null, "service"}; //TODO: compute proper var name
+                String serviceDeclForJava = MessageFormat.format(JAVA_SERVICE_DEF, args);
+                indentWriter.write(serviceDeclForJava);
+            }
+            // create the inserted text
+            String invocationBody = getDispatchInvocationMethod(port, operation);
+            indentWriter.write(invocationBody);
+            indentWriter.close();
+            String textToInsert = textWriter.toString();
+
+            try {
+                document.insertString(pos, textToInsert, null);
+            } catch (BadLocationException badLoc) {
+                try {
+                    document.insertString(pos + 1, textToInsert, null);
+                } catch (BadLocationException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
+
+            // @insert WebServiceRef injection
+            if (!compilerTask.containsWsRefInjection()) {
+                InsertTask modificationTask = new InsertTask(serviceJavaName, serviceFName[0], wsdlUrl);
+                targetSource.runModificationTask(modificationTask).commit();
+            }
+
+            DispatchCompilerTask task = new DispatchCompilerTask();
+            targetSource.runModificationTask(task).commit();
+
+
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 }

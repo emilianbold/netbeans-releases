@@ -41,18 +41,18 @@
 
 package org.netbeans.modules.beans.beaninfo;
 
-import java.lang.reflect.InvocationTargetException;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.Action;
-import org.netbeans.modules.beans.PatternAnalyser;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-
-import org.openide.nodes.Node;
+import javax.swing.GrayFilter;
+import org.netbeans.api.java.source.SourceUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Sheet;
+import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -70,8 +70,9 @@ public final class BiNode extends AbstractNode {
     //static final long                      serialVersionUID = -6346315017458451778L;
 
     private static String ICON_BASE = "org/netbeans/modules/beans/resources/beanInfo.gif"; // NOI18N
-    private static String ICON_BASE_PATTERNS = "org/netbeans/modules/beans/resources/patternGroup"; // NOI18N
-    private static String WAIT_ICON_BASE = "org/openide/src/resources/wait.gif"; // NOI18N
+    private static String ICON_BASE_PATTERNS = "org/netbeans/modules/beans/resources/patternGroup.gif"; // NOI18N
+    private static String WAIT_ICON_BASE = "org/netbeans/modules/beans/resources/wait.gif"; // NOI18N
+    private static String WARNING_ICON_BASE = "org/netbeans/modules/beans/resources/warning.gif"; // NOI18N
 
     private static String PROP_NULL_DESCRIPTOR = "nullDescriptor"; // NOI18N
     private static String PROP_NULL_PROPERTIES = "nullProperties"; // NOI18N
@@ -92,7 +93,7 @@ public final class BiNode extends AbstractNode {
     static javax.swing.GrayFilter grayFilter = null;
     
     static{
-        grayFilter = new javax.swing.GrayFilter(true, 5);
+        grayFilter = new GrayFilter(true, 5);
     }
 
     // variables ....................................................................................
@@ -100,19 +101,19 @@ public final class BiNode extends AbstractNode {
     private BiAnalyser biAnalyser;
     
     private PropertySupport[] descSubnodeDescriptor =  new PropertySupport[] {
-                new PropertySupport.ReadWrite (
+                new PropertySupport.ReadWrite<Boolean> (
                     PROP_NULL_DESCRIPTOR,
                     Boolean.TYPE,
                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_NULL_DESCRIPTOR ),
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NULL_DESCRIPTOR )
                 ) {
-                    public Object getValue () {
-                        return biAnalyser.isNullDescriptor () ? Boolean.TRUE : Boolean.FALSE;
+                    public Boolean getValue () {
+                        return biAnalyser.isNullDescriptor ();
                     }
-                    public void setValue (Object val) throws
+                    public void setValue (Boolean val) throws
                         IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                         try {                            
-                            biAnalyser.setNullDescriptor ( ((Boolean)val).booleanValue() );                            
+                            biAnalyser.setNullDescriptor ( val );                            
                         } catch (ClassCastException e) {
                             throw new IllegalArgumentException ();
                         }
@@ -123,19 +124,19 @@ public final class BiNode extends AbstractNode {
 
             
     private PropertySupport[] propSubnodeProperties =  new PropertySupport[] {
-                new PropertySupport.ReadWrite (
+                new PropertySupport.ReadWrite<Boolean> (
                     PROP_NULL_PROPERTIES,
                     Boolean.TYPE,
                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_NULL_PROPERTIES ),
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NULL_PROPERTIES )
                 ) {
-                    public Object getValue () {
-                        return biAnalyser.isNullProperties () ? Boolean.TRUE : Boolean.FALSE;
+                    public Boolean getValue () {
+                        return biAnalyser.isNullProperties ();
                     }
-                    public void setValue (Object val) throws
+                    public void setValue (Boolean val) throws
                         IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                         try {
-                            biAnalyser.setNullProperties ( ((Boolean)val).booleanValue() );
+                            biAnalyser.setNullProperties ( val );
                         } catch (ClassCastException e) {
                             throw new IllegalArgumentException ();
                         }
@@ -145,19 +146,19 @@ public final class BiNode extends AbstractNode {
             };
 
     private PropertySupport[] eventSubnodeProperties =  new PropertySupport[] {
-                new PropertySupport.ReadWrite (
+                new PropertySupport.ReadWrite<Boolean> (
                     PROP_NULL_EVENTS,
                     Boolean.TYPE,
                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_NULL_EVENTS ),
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NULL_EVENTS )
                 ) {
-                    public Object getValue () {
-                        return biAnalyser.isNullEventSets () ? Boolean.TRUE : Boolean.FALSE;
+                    public Boolean getValue () {
+                        return biAnalyser.isNullEventSets ();
                     }
-                    public void setValue (Object val) throws
+                    public void setValue (Boolean val) throws
                         IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                         try {
-                            biAnalyser.setNullEventSets ( ((Boolean)val).booleanValue() );
+                            biAnalyser.setNullEventSets ( val );
                         } catch (ClassCastException e) {
                             throw new IllegalArgumentException ();
                         }
@@ -167,19 +168,19 @@ public final class BiNode extends AbstractNode {
             };
 
     private PropertySupport[] methodSubnodeProperties =  new PropertySupport[] {
-                new PropertySupport.ReadWrite (
+                new PropertySupport.ReadWrite<Boolean> (
                     PROP_NULL_PROPERTIES,
                     Boolean.TYPE,
                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_NULL_METHODS ),
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NULL_METHODS )
                 ) {
-                    public Object getValue () {
-                        return biAnalyser.isNullMethods () ? Boolean.TRUE : Boolean.FALSE;
+                    public Boolean getValue () {
+                        return biAnalyser.isNullMethods ();
                     }
-                    public void setValue (Object val) throws
+                    public void setValue (Boolean val) throws
                         IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                         try {
-                            biAnalyser.setNullMethods ( ((Boolean)val).booleanValue() );
+                            biAnalyser.setNullMethods ( val );
                         } catch (ClassCastException e) {
                             throw new IllegalArgumentException ();
                         }
@@ -281,12 +282,11 @@ public final class BiNode extends AbstractNode {
 
         ps.put( new ImagePropertySupportRW (
                     PROP_BI_ICON_C16,
-                    String.class,
                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_ICON_C16 ),
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_ICON_C16 )
                 ) {
-                    public Object getValue () throws
-                        IllegalAccessException, InvocationTargetException {
+                    public String getValue () throws
+                            IllegalAccessException, InvocationTargetException {
                         if( biAnalyser.getIconC16() != null ) 
                             ie.setAsText(biAnalyser.getIconC16());
                         else
@@ -295,33 +295,20 @@ public final class BiNode extends AbstractNode {
                         return biAnalyser.getIconC16();                        
                     }
                     
-                    public void setValue (Object value) throws
-                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                        try {
-                            if( value == null )
-                                biAnalyser.setIconC16 ( null );
-                            else {
-                                if (value instanceof BiIconEditor.BiImageIcon) {
-                                    biAnalyser.setIconC16 ( ie.getSourceName() );
-                                }
-                                else{
-                                    biAnalyser.setIconC16( (String)value );
-                                }
-                            }
-                        } catch (ClassCastException e) {
-                            throw new IllegalArgumentException ();
-                        }
+                    public void setValue (String value) throws
+                            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                        
+                        biAnalyser.setIconC16(value);
                     }                                
                 }
               );
         ps.put( new ImagePropertySupportRW (
                     PROP_BI_ICON_M16,
-                    String.class,
                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_ICON_M16 ),
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_ICON_M16 )
                 ) {
-                    public Object getValue () throws
-                        IllegalAccessException, InvocationTargetException {
+                    public String getValue () throws
+                            IllegalAccessException, InvocationTargetException {
                         if( biAnalyser.getIconM16() != null ) 
                             ie.setAsText(biAnalyser.getIconM16());
                         else
@@ -329,33 +316,20 @@ public final class BiNode extends AbstractNode {
                         return biAnalyser.getIconM16();                        
                     }
                     
-                    public void setValue (Object value) throws
-                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                        try {
-                            if( value == null )
-                                biAnalyser.setIconM16 ( null );
-                            else {
-                                if (value instanceof BiIconEditor.BiImageIcon) {
-                                    biAnalyser.setIconM16 ( ie.getSourceName() );
-                                }
-                                else{
-                                    biAnalyser.setIconM16( (String)value );
-                                }
-                            }
-                        } catch (ClassCastException e) {
-                            throw new IllegalArgumentException ();
-                        }
+                    public void setValue (String value) throws
+                            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                        
+                        biAnalyser.setIconM16(value);
                     }
                 }
               );
         ps.put( new ImagePropertySupportRW (
                     PROP_BI_ICON_C32,
-                    String.class,
                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_ICON_C32 ),
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_ICON_C32 )
                 ) {
-                    public Object getValue () throws
-                        IllegalAccessException, InvocationTargetException {
+                    public String getValue () throws
+                            IllegalAccessException, InvocationTargetException {
                         if( biAnalyser.getIconC32() != null ) 
                             ie.setAsText(biAnalyser.getIconC32());
                         else
@@ -364,33 +338,20 @@ public final class BiNode extends AbstractNode {
                         return biAnalyser.getIconC32();
                     }
                     
-                    public void setValue (Object value) throws
-                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                        try {
-                            if( value == null )
-                                biAnalyser.setIconC32 ( null );
-                            else {
-                                if (value instanceof BiIconEditor.BiImageIcon) {
-                                    biAnalyser.setIconC32 ( ie.getSourceName() );
-                                }
-                                else{
-                                    biAnalyser.setIconC32( (String)value );
-                                }
-                            }
-                        } catch (ClassCastException e) {
-                            throw new IllegalArgumentException ();
-                        }
+                    public void setValue (String value) throws
+                            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                        
+                        biAnalyser.setIconC32( value );
                     }                    
                 }
               );
         ps.put( new ImagePropertySupportRW (
                     PROP_BI_ICON_M32,
-                    String.class,
                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_ICON_M32 ),
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_ICON_M32 )
                 ) {
-                    public Object getValue () throws
-                        IllegalAccessException, InvocationTargetException {
+                    public String getValue () throws
+                            IllegalAccessException, InvocationTargetException {
                         if( biAnalyser.getIconM32() != null ) 
                             ie.setAsText(biAnalyser.getIconM32());
                         else
@@ -399,22 +360,9 @@ public final class BiNode extends AbstractNode {
                         return biAnalyser.getIconM32();
                     }
                     
-                    public void setValue (Object value) throws
-                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                        try {
-                            if( value == null )
-                                biAnalyser.setIconM32 ( null );
-                            else {
-                                if (value instanceof BiIconEditor.BiImageIcon) {
-                                    biAnalyser.setIconM32 ( ie.getSourceName() );
-                                }
-                                else{
-                                    biAnalyser.setIconM32( (String)value );
-                                }
-                            }
-                        } catch (ClassCastException e) {
-                            throw new IllegalArgumentException ();
-                        }
+                    public void setValue (String value) throws
+                            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                        biAnalyser.setIconM32( value );
                     }                    
                 }
               );
@@ -452,18 +400,18 @@ public final class BiNode extends AbstractNode {
         }
     }
     
-    static class SubNode extends AbstractNode implements Node.Cookie {
+    static final class SubNode extends AbstractNode implements Node.Cookie {
 
         //private static SystemAction[] staticActions;
         private BiAnalyser biAnalyser;
-        private Class key; 
+        private Class<?> key; 
         
-        SubNode ( BiAnalyser biAnalyser, Class[] keys, String titleKey, String iconBase,
+        SubNode ( BiAnalyser biAnalyser, Class<?>[] keys, String titleKey, String iconBase,
                   Node.Property[] properties, Node.Property[] expert ) {
             super ( new BiChildren (  biAnalyser, keys ) );
             setDisplayName (NbBundle.getBundle(BiNode.class).
                             getString (titleKey));
-            setIconBaseWithExtension ( iconBase + ".gif" );
+            setIconBaseWithExtension ( iconBase );
                 
             this.biAnalyser = biAnalyser;
             this.key = keys[0];
@@ -476,7 +424,7 @@ public final class BiNode extends AbstractNode {
             }
             
             if( expert != null ){                
-                Sheet.Set eps = sheet.createExpertSet();
+                Sheet.Set eps = Sheet.createExpertSet();
 
                 for ( int i = 0; i < expert.length; i++ ) {
                     eps.put( expert[i] );
@@ -489,28 +437,30 @@ public final class BiNode extends AbstractNode {
             getCookieSet().add ( this );
         }
         
+        @Override
         public java.awt.Image getIcon( int type ){
             if( key == BiFeature.Descriptor.class && biAnalyser.isNullDescriptor() )
-                return grayFilter.createDisabledImage(super.getIcon(type));
+                return GrayFilter.createDisabledImage(super.getIcon(type));
             if( key == BiFeature.Property.class && biAnalyser.isNullProperties() )
-                return grayFilter.createDisabledImage(super.getIcon(type));
+                return GrayFilter.createDisabledImage(super.getIcon(type));
             if( key == BiFeature.EventSet.class && biAnalyser.isNullEventSets() )
-                return grayFilter.createDisabledImage(super.getIcon(type));
+                return GrayFilter.createDisabledImage(super.getIcon(type));
             if( key == BiFeature.Method.class && biAnalyser.isNullMethods() )
-                return grayFilter.createDisabledImage(super.getIcon(type));
+                return GrayFilter.createDisabledImage(super.getIcon(type));
 
             return super.getIcon(type);
         }
 
+        @Override
         public java.awt.Image getOpenedIcon( int type ){
             if( key == BiFeature.Descriptor.class && biAnalyser.isNullDescriptor() )
-                return grayFilter.createDisabledImage(super.getIcon(type));
+                return GrayFilter.createDisabledImage(super.getIcon(type));
             if( key == BiFeature.Property.class && biAnalyser.isNullProperties() )
-                return grayFilter.createDisabledImage(super.getIcon(type));
+                return GrayFilter.createDisabledImage(super.getIcon(type));
             if( key == BiFeature.EventSet.class && biAnalyser.isNullEventSets() )
-                return grayFilter.createDisabledImage(super.getIcon(type));
+                return GrayFilter.createDisabledImage(super.getIcon(type));
             if( key == BiFeature.Method.class && biAnalyser.isNullMethods() )
-                return grayFilter.createDisabledImage(super.getIcon(type));
+                return GrayFilter.createDisabledImage(super.getIcon(type));
 
             return super.getOpenedIcon(type);
         }
@@ -522,6 +472,7 @@ public final class BiNode extends AbstractNode {
         *
         * @return array of system actions that should be in popup menu
         */
+        @Override
         public Action[] getActions ( boolean context ) {
             if ( context ) {
                 return super.getActions( true );
@@ -575,38 +526,74 @@ public final class BiNode extends AbstractNode {
 
     // Inner Class ---------------------------------------------------------------
 
-    static class Wait extends AbstractNode {
+    static final class Wait extends AbstractNode {
 
         Wait () {
 
             super( Children.LEAF );
-            setDisplayName( JavaMetamodel.getManager().isScanInProgress()? NbBundle.getBundle( BiNode.class ).getString( "CTL_NODE_WaitScan" ) : NbBundle.getBundle( BiNode.class ).getString( "CTL_NODE_Wait" ) );
+            setDisplayName( SourceUtils.isScanInProgress()? NbBundle.getBundle( BiNode.class ).getString( "CTL_NODE_WaitScan" ) : NbBundle.getBundle( BiNode.class ).getString( "CTL_NODE_Wait" ) );
             setIconBaseWithExtension( WAIT_ICON_BASE );
 
         }
     }
+
+    private static final class Error extends AbstractNode {
+
+        Error (String name) {
+
+            super( Children.LEAF );
+            setDisplayName(name);
+            setIconBaseWithExtension( WARNING_ICON_BASE );
+
+        }
+    }
     
-    abstract class ImagePropertySupportRW extends PropertySupport.ReadWrite
+    public static Node createNoSourceNode(FileObject bi) {
+        String name = bi.getName();
+        name = name.substring(0, name.length() - "BeanInfo".length()); // NOI18N
+        String ext = bi.getExt();
+        if (ext.length() > 0) {
+            name += '.' + ext;
+        }
+        String msg = NbBundle.getMessage(BiNode.class, "CTL_NODE_MissingBeanFile", name);
+        return new Error(msg);
+    }
+    
+    public static Node createBiNode(BiAnalyser bia) {
+        if (!bia.bis.isNbBeanInfo()) {
+            String msg = NbBundle.getMessage(BiNode.class, "CTL_NODE_UnknownBeanInfoFormat");
+            return new Error(msg);
+        } else if (bia.bis.getSourceDataObject() == null) {
+            return createNoSourceNode(bia.bis.getDataObject().getPrimaryFile());
+        } else {
+            return new BiNode(bia);
+        }
+    }
+    
+    abstract class ImagePropertySupportRW extends PropertySupport.ReadWrite<String>
     {
         BiIconEditor ie = null;
         
-        ImagePropertySupportRW(String name, Class type,
-                              String displayName, String shortDescription) {
-            super(name, type, displayName, shortDescription);
-            ie = new BiIconEditor( PatternAnalyser.fileObjectForElement( biAnalyser.classElement ) );            
+        ImagePropertySupportRW(String name, String displayName, String shortDescription) {
+            super(name, String.class, displayName, shortDescription);
+            ie = new BiIconEditor( biAnalyser.bis.getSourceDataObject().getPrimaryFile() );            
         }
 
+        @Override
         public PropertyEditor getPropertyEditor() {
             return new PropertyEditorSupport() {
+                @Override
                 public java.awt.Component getCustomEditor() {
                     return ie.getCustomEditor();
                 }
                     
+                @Override
                 public boolean supportsCustomEditor() {
                     return true;
                 }
                 
-            public void setAsText(String text) throws java.lang.IllegalArgumentException {
+                @Override
+                public void setAsText(String text) throws java.lang.IllegalArgumentException {
                     ie.setAsText(text);
                     setValue(ie.getSourceName());
                 }
@@ -614,14 +601,14 @@ public final class BiNode extends AbstractNode {
         }
     }    
 
-    public static Node.Property createProperty (Object inst, Class type,
+    public static <T> Node.Property<T> createProperty (Object inst, Class<T> type,
                                                 String name, String dispName,
                                                 String shortDesc,
                                                 String getter, String setter ) {
-        Node.Property prop;
+        Node.Property<T> prop;
 
         try {
-            prop = new PropertySupport.Reflection (inst, type, getter, setter);
+            prop = new PropertySupport.Reflection<T> (inst, type, getter, setter);
         } catch (NoSuchMethodException e) {            
             throw new IllegalStateException (e.getMessage() + " " + getter); // NOI18N
         }

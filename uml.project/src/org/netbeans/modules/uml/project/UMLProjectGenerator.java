@@ -261,20 +261,22 @@ public class UMLProjectGenerator
             int umlProjectType)
             throws IOException
     {
-        dir.mkdirs();
+//        dir.mkdirs();
+//        
+//        // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
+//        File rootF = dir;
+//        while (rootF.getParentFile() != null)
+//        {
+//            rootF = rootF.getParentFile();
+//        }
+//        
+//        FileObject fo = FileUtil.toFileObject(rootF);
+//        assert fo != null : "At least disk roots must be mounted! " + rootF; // NOI18N
+//        
+//        fo.getFileSystem().refresh(false);
+//        FileObject dirFO = FileUtil.toFileObject(dir);
+        FileObject dirFO = FileUtil.createFolder(dir);
         
-        // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
-        File rootF = dir;
-        while (rootF.getParentFile() != null)
-        {
-            rootF = rootF.getParentFile();
-        }
-        
-        FileObject fo = FileUtil.toFileObject(rootF);
-        assert fo != null : "At least disk roots must be mounted! " + rootF; // NOI18N
-        
-        fo.getFileSystem().refresh(false);
-        FileObject dirFO = FileUtil.toFileObject(dir);
         assert dirFO != null: "No such dir on disk: " + dir; // NOI18N
         
         assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N

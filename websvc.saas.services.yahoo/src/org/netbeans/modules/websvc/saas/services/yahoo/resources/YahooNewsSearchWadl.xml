@@ -44,7 +44,11 @@ made subject to such option by the copyright holder.
   xmlns:yn="urn:yahoo:yn"
   xmlns:ya="urn:yahoo:api"
   xmlns:html="http://www.w3.org/1999/xhtml"
-  xmlns="http://research.sun.com/wadl/2006/10">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns="http://research.sun.com/wadl/2006/10"
+  xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
+     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+  >
 
   <grammars>
     <include href="NewsSearchResponse.xsd"/>

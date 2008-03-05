@@ -64,13 +64,13 @@ import java.util.logging.Logger;
 public class WSClassLoader extends URLClassLoader {
 
     private static final Logger LOGGER = Logger.getLogger(WSClassLoader.class.getName());
-    
+
     /**
      * A <code>HashMap</code> used to store all registered instances of the
      * loader
      */
     private static Map instances = new HashMap();
-    
+
     /**
      * A factory method.
      * It is responsible for maintaining a single instance of
@@ -93,21 +93,21 @@ public class WSClassLoader extends URLClassLoader {
             instance = new WSClassLoader(serverRoot, domainRoot);
             instances.put(domainRoot, instance);
         }
-        
+
         // return
         return instance;
     }
-    
+
     /**
      * Path to the server installation directory
      */
     private String serverRoot;
-    
+
     /**
      * Path to the profile root directory
      */
     private String domainRoot;
-    
+
     /**
      * Constructs an instance of the <code>WSClassLoader</code> with the
      * specified server installation directory and the profile root directory.
@@ -118,25 +118,25 @@ public class WSClassLoader extends URLClassLoader {
     private WSClassLoader(String serverRoot, String domainRoot) {
         // we have to isolate the loader from the netbeans main loader in order
         // to avoid conflicts with SOAP classes implementations
-        
+
         super(new URL[0], Thread.currentThread().getContextClassLoader());
-        
+
         System.out.println("serverRoot:" + serverRoot);
         System.out.println("domainRoot:" + domainRoot);
-        
+
         // save the instance variables
         this.serverRoot = serverRoot;
         this.domainRoot = domainRoot;
-        
+
         // following is to identify whether it is 6.0 or 6.1
         // 6.0 has cloudscape dir and 6.1 has derby
         String dbDir = "derby";
 
         if ((new File(serverRoot + File.separator + "cloudscape").exists())) {
             dbDir = "cloudscape";
-        }             
-       
-        // add the required directories to the class path 
+        }
+
+        // add the required directories to the class path
         File[] directories = null;
 
         if (dbDir.equals("cloudscape")) {
@@ -170,7 +170,7 @@ public class WSClassLoader extends URLClassLoader {
                     new File(serverRoot + "/etc/"),
                     new File(serverRoot + "/optionalLibraries/Apache/Struts/1.1/")};
         }
-        
+
         // for each directory add all the .jar files to the class path
         // and finally add the directory itself
         for (int i = 0; i < directories.length; i++) {
@@ -192,27 +192,37 @@ public class WSClassLoader extends URLClassLoader {
             }
         }
     }
-    
+
     /**
-     * Handle for the clasloader that was the context loader for the current 
+     * Handle for the clasloader that was the context loader for the current
      * thread before update
      */
     private ClassLoader oldLoader;
-    
+
     /**
-     * Updates the context classloader of the current thread. 
+     * Updates the context classloader of the current thread.
      * The old loader is saved so that a restore operation is possible.
      */
     public void updateLoader() {
         LOGGER.log(Level.FINEST, "updateLoader()"); // NOI18N
 
+        // This system property setting is terrible, but most likely inevitable :(
+
         // set the system properties that are required for correct functioning
         // of WebSphere
-        System.setProperty("websphere.home", serverRoot);              // NOI18N
-        System.setProperty("was.install.root", serverRoot);            // NOI18N
-        System.setProperty("was.repository.root", domainRoot +         // NOI18N
-                File.separator + "config");                            // NOI18N
-        
+        System.setProperty("websphere.home", serverRoot); // NOI18N
+        System.setProperty("was.install.root", serverRoot); // NOI18N
+        System.setProperty("was.repository.root", domainRoot // NOI18N
+                + File.separator + "config"); // NOI18N
+
+        try {
+            System.setProperty("com.ibm.SOAP.ConfigURL", new File(domainRoot // NOI18N
+                    + File.separator + "properties" + File.separator // NOI18N
+                    + "soap.client.props").toURI().toURL().toString()); // NOI18N
+        } catch (MalformedURLException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+
         // if debugging is enabled set the system property pointing to the WS
         // debug properties file
         if (LOGGER.isLoggable(Level.FINEST)) {
@@ -226,7 +236,7 @@ public class WSClassLoader extends URLClassLoader {
             Thread.currentThread().setContextClassLoader(this);
         }
     }
-    
+
     /**
      * Restores the thread's context classloader.
      * Set the current thread's context loader to the classloader stored in
@@ -241,17 +251,17 @@ public class WSClassLoader extends URLClassLoader {
             oldLoader = null;
         }
     }
-    
+
     /**
      * File filter that accepts only .jar files.
-     * 
+     *
      * @author Kirill Sorokin
      */
     private static class JarFileFilter implements FileFilter {
         /**
-         * Checks whether the supplied file complies with the filter 
+         * Checks whether the supplied file complies with the filter
          * requirements.
-         * 
+         *
          * @return whether the file complies with the requirements
          */
         public boolean accept(File file) {

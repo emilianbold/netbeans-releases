@@ -29,7 +29,6 @@ public class FPoint {
     public final float x;
     public final float y;
     
-    
     public FPoint(double x, double y) {
         this.x = (float) x;
         this.y = (float) y;

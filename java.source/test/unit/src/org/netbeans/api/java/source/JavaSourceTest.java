@@ -1189,7 +1189,7 @@ public class JavaSourceTest extends NbTestCase {
         CountDownLatch rutLatch = new CountDownLatch (1);
         CountDownLatch rutStart = new CountDownLatch (1);        
         RUT rut = new RUT (rutStart, rutLatch);
-        JavaSourceAccessor.INSTANCE.runSpecialTask(rut, JavaSource.Priority.MAX);
+        JavaSourceAccessor.getINSTANCE().runSpecialTask(rut, JavaSource.Priority.MAX);
         latch = new CountDownLatch (1);
         rutStart.await();
         res = js.runWhenScanFinished(new T(latch), true);
@@ -1206,7 +1206,7 @@ public class JavaSourceTest extends NbTestCase {
         rutLatch = new CountDownLatch (1);
         rutStart = new CountDownLatch (1);
         rut = new RUT (rutStart, rutLatch);
-        JavaSourceAccessor.INSTANCE.runSpecialTask(rut, JavaSource.Priority.MAX);
+        JavaSourceAccessor.getINSTANCE().runSpecialTask(rut, JavaSource.Priority.MAX);
         latch = new CountDownLatch (1);
         rutStart.await();
         res = js.runWhenScanFinished(new T(latch), true);

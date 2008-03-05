@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

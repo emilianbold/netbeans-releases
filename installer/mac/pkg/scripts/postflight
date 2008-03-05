@@ -46,7 +46,7 @@ dirname=`dirname "$0"`
 
 "$dirname"/add_gf.sh "$2/$NETBEANS_INSTALL_DIR" "/Applications/NetBeans/glassfish-v2ur1"
 
-"$dirname"/add_tc.sh "$2/$NETBEANS_INSTALL_DIR" "/Applications/NetBeans/apache-tomcat-6.0.14"
+"$dirname"/add_tc.sh "$2/$NETBEANS_INSTALL_DIR" "/Applications/NetBeans/apache-tomcat-6.0.16"
 
 jdk_home_1_5=/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home
 cd "$2/$NETBEANS_INSTALL_DIR"

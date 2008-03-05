@@ -24,6 +24,7 @@ import org.netbeans.modules.xml.xpath.XPathException;
 import org.netbeans.modules.xml.xpath.XPathExpression;
 import org.netbeans.modules.xml.xpath.XPathModel;
 import org.netbeans.modules.xslt.model.Attribute;
+import org.netbeans.modules.xslt.model.CopyOf;
 import org.netbeans.modules.xslt.model.Element;
 import org.netbeans.modules.xslt.model.ForEach;
 import org.netbeans.modules.xslt.model.If;
@@ -83,6 +84,9 @@ public class GetExpressionVisitor extends XslVisitorAdapter{
         setExpression(iff.getTest());
     }
     
+    public void visit(CopyOf cof){
+        setExpression(cof.getSelect());
+    }
     
     
     

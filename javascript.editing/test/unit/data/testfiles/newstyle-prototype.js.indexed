@@ -1,0 +1,20 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/newstyle-prototype.js
+
+
+
+Document 1
+Indexed:
+  base : initialize;Person;initialize|CONSTRUCTOR|;name;0;;;;
+  base : john;;john|GLOBAL|;;0;;;Pirate;
+  base : say;Person;say|FUNCTION|message;0;;;;
+  base : say;Pirate;say|DOCUMENTED|FUNCTION|,message;0;19e;;;
+  extend : pirate;Pirate;Person
+  fqn : john;;john|GLOBAL|;;0;;;Pirate;
+  fqn : person.initialize;;Person.initialize|CONSTRUCTOR|;name;0;;;;
+  fqn : person.say;;Person.say|FUNCTION|message;0;;;;
+  fqn : pirate.say;;Pirate.say|DOCUMENTED|FUNCTION|,message;0;19e;;;
+
+Not Indexed:

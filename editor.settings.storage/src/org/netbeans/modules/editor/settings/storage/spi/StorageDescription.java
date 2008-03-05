@@ -55,7 +55,13 @@ public interface StorageDescription<K extends Object, V extends Object> {
 
     public String getLegacyFileName();
 
-    public StorageReader<K, V> createReader(FileObject f);
-    public StorageWriter<K, V> createWriter(FileObject f);
+    /**
+     * @since 1.17
+     */
+    public StorageReader<K, V> createReader(FileObject f, String mimePath);
+    /**
+     * @since 1.17
+     */
+    public StorageWriter<K, V> createWriter(FileObject f, String mimePath);
     
 }

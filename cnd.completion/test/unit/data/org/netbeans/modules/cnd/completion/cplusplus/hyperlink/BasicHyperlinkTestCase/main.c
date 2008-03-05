@@ -11,3 +11,6 @@ int boo(int aa, double bb) {
 void method_name_with_underscore() {
     method_name_with_underscore();
 }
+
+const int VALUE = 10;
+const int VALUE_2 = 10 + VALUE;

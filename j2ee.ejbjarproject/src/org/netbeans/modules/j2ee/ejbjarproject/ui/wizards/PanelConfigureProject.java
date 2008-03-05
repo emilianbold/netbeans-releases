@@ -55,7 +55,6 @@ import org.openide.util.HelpCtx;
  * @author Jesse Glick
  */
 final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
-///final class PanelConfigureProject implements WizardDescriptor.Panel {
     
     private WizardDescriptor wizardDescriptor;
     private PanelConfigureProjectVisual component;
@@ -65,7 +64,7 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
     }
     
     public boolean isFinishPanel() {
-        return true;
+        return false;
     }
 
     public Component getComponent() {

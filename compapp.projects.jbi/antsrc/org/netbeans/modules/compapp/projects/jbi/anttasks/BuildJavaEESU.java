@@ -42,10 +42,13 @@
 package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.BuildException;
+import org.netbeans.modules.compapp.javaee.codegen.model.Endpoint;
+import org.netbeans.modules.compapp.javaee.codegen.model.EndpointCfg;
 import org.netbeans.modules.compapp.javaee.util.ProjectUtil;
 import org.netbeans.modules.compapp.javaee.codegen.model.JavaEEProject;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
@@ -105,7 +108,6 @@ public class BuildJavaEESU extends Task{
         Object obj = null;
         JavaEEProject javaeeProj = null;
         String instrumentedJarPath = null;
-        String jarName = null;
         
         try {
             p = this.getProject();
@@ -129,13 +131,47 @@ public class BuildJavaEESU extends Task{
                 this.subprojResource = projPath + this.subprojResource;
             }
             
+            String cofigDirPath = projPath + File.separator + confDir + File.separator;
+            File configDir = new File(cofigDirPath);
+            
             javaeeProj = ProjectUtil.getJavaEEProject(this.projName, this.subprojJar, 
-                    (projPath + File.separator + confDir + File.separator), this.subprojResource);
+                    cofigDirPath, this.subprojResource);
             buildDir = projPath + File.separator + caBuildDir;
             jbiExtractDir = projPath + File.separator + this.suExtractDir;
             createDir(buildDir);
             createDir(jbiExtractDir);
+            
+            List<EndpointCfg> cfgs = ProjectUtil.getEndpointCfgs(configDir, projName);
+            javaeeProj.setEndpointOverrides(cfgs);
+            
             instrumentedJarPath = javaeeProj.createJar(buildDir, jbiExtractDir);
+            
+            List<Endpoint> epts = javaeeProj.getEndpoints();
+            List<EndpointCfg> eptCfgs = javaeeProj.getEndpointOverrides();
+            boolean newEPAdded = false;
+            EndpointCfg epCfg = null;
+            if (eptCfgs == null){
+                eptCfgs = new ArrayList<EndpointCfg>();
+            }
+            if (epts != null){
+                for (Endpoint ep: epts){
+                    if (!eptCfgs.contains(ep)){
+                        newEPAdded = true;
+                        epCfg = new EndpointCfg();
+                        
+                        epCfg.setEndPointName(ep.getEndPointName());
+                        epCfg.setEndPointType(ep.getEndPointType());
+                        epCfg.setInterfaceName(ep.getInterfaceName());
+                        epCfg.setServiceName(ep.getServiceName());
+                        
+                        eptCfgs.add(epCfg);
+                    }
+                }
+            }
+            
+            if (newEPAdded){
+                ProjectUtil.saveEndpointCfgs(configDir, projName, eptCfgs);
+            }
             //jarName = javaeeProj.getJarName();
         } catch (Exception ex){
             ex.printStackTrace();

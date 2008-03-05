@@ -317,11 +317,16 @@ public class ReportTask extends Thread implements Cancellable
     
     public void processChildren(ITreeItem pItem)
     {
-        if (pItem != null && !elements.containsKey(pItem.getData().getModelElement().getXMIID()))
-            elements.put(pItem.getData().getModelElement().getXMIID(), pItem);
-        
-        if (pItem != null)
+        if (pItem != null && pItem.getData() != null)
         {
+            if (pItem.getData().getModelElement() != null) 
+            {
+                String id = pItem.getData().getModelElement().getXMIID();
+                if (id != null && !elements.containsKey(id))
+                {
+                    elements.put(id, pItem);
+                }
+            }
             // ask the ProjectTreeBuilder for the children of this tree item
             ITreeItem[] pTreeItems = m_Builder.retrieveChildItemsSorted(pItem);
             

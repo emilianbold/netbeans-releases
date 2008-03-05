@@ -42,12 +42,98 @@
 package org.netbeans.modules.cnd.api.model;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author Vladimir Kvashin
  */
 public interface CsmFunction<T> extends CsmOffsetableDeclaration<T>, CsmScope {
+    
+    public enum OperatorKind {
+        COMMA(",", true), //NOI18N
+        NOT("!", false), // NOI18N 
+        NOT_EQ("!=", true), // NOI18N 
+        MOD("%", true), // NOI18N 
+        MOD_EQ("%=", true), // NOI18N 
+        AND("&", true), // NOI18N 
+        ADDRESS("&", false), // NOI18N
+        AND_AND("&&", true), // NOI18N
+        AND_EQ("&=", true), // NOI18N
+        FUN_CALL("()", null), // NOI18N
+        CAST("()", false), // NOI18N
+        MUL("*", true), // NOI18N
+        POINTER("*", false), // NOI18N
+        MUL_EQ("*=", true), // NOI18N
+        PLUS("+", true), // NOI18N
+        PLUS_EQ("+=", true), // NOI18N
+        PLUS_UNARY("+", false), // NOI18N
+        PLUS_PLUS("++", false), // NOI18N
+        MINUS("-", true), // NOI18N
+        MINUS_EQ("-=", true), // NOI18N
+        MINUS_UNARY("-", false), // NOI18N
+        MINUS_MINUS("--", false), // NOI18N
+        ARROW("->", true), // NOI18N
+        ARROW_MBR("->*", true), // NOI18N
+        DIV("/", true), // NOI18N
+        DIV_EQ("/=", true), // NOI18N
+        LESS("<", true), // NOI18N
+        LEFT_SHIFT("<<", true), // NOI18N // often as serialize
+        LEFT_SHIFT_EQ("<<=", true), // NOI18N
+        LESS_EQ("<=", true), // NOI18N
+        EQ("=", true), // NOI18N
+        EQ_EQ("==", true), // NOI18N
+        GREATER(">", true), // NOI18N
+        GREATER_EQ(">=", true), // NOI18N
+        RIGHT_SHIFT(">>", true), // NOI18N
+        RIGHT_EQ(">>=", true), // NOI18N
+        ARRAY("[]", null), // NOI18N
+        XOR("^", true), // NOI18N
+        XOR_EQ("^=", true), // NOI18N
+        OR("|", true), // NOI18N
+        OR_EQ("|=", true), // NOI18N
+        OR_OR("||", true), // NOI18N
+        TILDE("~", false), // NOI18N
+        DELETE("delete", null), // NOI18N
+        NEW("new", null), // NOI18N
+        CONVERSION("", false), // NOI18N
+        NONE("", null);
+        
+        private final String img;
+        private final Boolean binary;
+        private OperatorKind(String img, Boolean binary) {
+            this.img = img;
+            this.binary = binary;
+        }
+        
+        public String getImage() {
+            return img;
+        }
+        
+        public Boolean isBinary() {
+            return binary;
+        }
+        
+        private static boolean inited = false;
+        private static Map<String, OperatorKind> kinds = new HashMap<String, OperatorKind>();
+        public static OperatorKind getKindByImage(String image) {
+            if (!inited) {
+                for (OperatorKind kind : OperatorKind.values()) {
+                    String img = kind.getImage();
+                    if (img.length() > 0) {
+                        kinds.put(img, kind);
+                    }
+                }
+                inited = true;
+            }
+            OperatorKind kind = kinds.get(image);
+            if (kind == null) {
+                kind = NONE;
+            }
+            return kind;
+        }
+    }
 
     /** Gets this function's declaration text */
     CharSequence getDeclarationText();
@@ -58,6 +144,13 @@ public interface CsmFunction<T> extends CsmOffsetableDeclaration<T>, CsmScope {
      */
     CsmFunctionDefinition getDefinition();
 
+    /** Returns this function declaration */
+    CsmFunction getDeclaration();
+    
+    boolean isOperator();
+    
+    OperatorKind getOperatorKind();
+    
     /**
      * Returns true if this class is template, otherwise false.
      * If isTemplate() returns true, this class is an instance of CsmTemplate

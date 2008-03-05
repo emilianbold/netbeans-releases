@@ -33,6 +33,7 @@ import org.netbeans.modules.bpel.debugger.api.psm.PsmEntity;
 import org.netbeans.modules.bpel.debugger.bdiclient.impl.ProcessInstanceImpl;
 import org.netbeans.modules.bpel.debugger.eventlog.ActivityCompletedRecord;
 import org.netbeans.modules.bpel.debugger.eventlog.ActivityStartedRecord;
+import org.netbeans.modules.bpel.debugger.eventlog.ActivityTerminatedRecord;
 import org.netbeans.modules.bpel.debugger.eventlog.BranchCompletedRecord;
 import org.netbeans.modules.bpel.debugger.eventlog.BranchStartedRecord;
 import org.netbeans.modules.bpel.debugger.eventlog.EventLog;
@@ -178,6 +179,8 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
                     update((ActivityStartedRecord) record);
                 } else if (record instanceof ActivityCompletedRecord) {
                     update((ActivityCompletedRecord) record);
+                } else if (record instanceof ActivityTerminatedRecord) {
+                    update((ActivityTerminatedRecord) record);
                 } else if (record instanceof BranchStartedRecord) {
                     update((BranchStartedRecord) record);
                 } else if (record instanceof BranchCompletedRecord) {
@@ -228,6 +231,21 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
     }
     
     private void update(
+            final ActivityTerminatedRecord record) {
+        final PsmEntity psmEntity = myPsm.find(record.getActivityXpath());
+        if (psmEntity == null) {
+            return;
+        }
+        
+        final BranchImpl branch = myBranches.get(record.getBranchId());
+        if (branch == null) {
+            return;
+        }
+        
+        branch.activityTerminated(psmEntity);
+    }
+    
+    private void update(
             final BranchStartedRecord record) {
         final String parentId = record.getParentBranchId();
         
@@ -239,8 +257,9 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
         final BranchImpl newBranch = 
                 new BranchImpl(record.getBranchId(), parentBranch);
         
-        if (((newBranch.getParent() == null) && (myCurrentBranch == null)) || 
-                newBranch.getParent().equals(myCurrentBranch)) {
+        final Branch parent = newBranch.getParent();
+        if (((parent == null) && (myCurrentBranch == null)) || 
+                ((parent != null) && (parent.equals(myCurrentBranch)))) {
             myCurrentBranch = newBranch;
         }
         
@@ -389,67 +408,68 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
         
         public void activityStarted(final PsmEntity psmEntity) {
             final PsmEntity psmParent = psmEntity.getParent();
-            final PemEntityImpl pemEntity = createEntity(psmEntity, myId, true);
             
-            if (!myCallStack.empty()) {
-                final PemEntityImpl pemParent = myCallStack.peek();
+            PemEntityImpl pemEntity = createEntity(psmEntity, myId, true);
+            
+            final String psmParentTag = psmParent.getTag();
+            if (psmParentTag.equals("compensationHandler") ||
+                    psmParentTag.equals("terminationHandler")) {
+                // If the current activity is the direct child of a 
+                // handler (there can be only one), we need to construct 
+                // the PEM entity for the handler, register the currently 
+                // executed one as its child and put the handler itself to 
+                // the model.
+                final PsmEntity handlerPsm = psmParent;
+                final PsmEntity scopePsm = psmParent.getParent();
                 
-                // Sometimes runtime can set duplicate STARTED events. The most 
-                // common case for this is in while and repeatUntil activities,
-                // where these duplicates are used to differentiate between 
-                // iterations. In this case we simply ignore them, but restore 
-                // the myLastStartedEntity variable's value.
-                if (pemParent.getPsmEntity() == psmEntity) {
-                    // Note that we update the myLastStartedEntity with 
-                    // pemParent, and not pemEntity, as the latter is 
-                    // synthetically constructed and does not belong to the 
-                    // model tree.
-                    myLastStartedEntity = pemParent;
+                final PemEntityImpl handlerPem = 
+                        createEntity(handlerPsm, myId, true);
+                        
+                handlerPem.addChild(pemEntity);
+                
+                // We need to find the PEM entity of the scope which 
+                // contains this handler. Then we'll attach the newly 
+                // created handler PEM entity to the scope's one.
+                final PemEntityImpl[] pems = find(scopePsm);
+                
+                if (pems.length == 0) {
                     return;
                 }
                 
-                final String psmParentTag = psmParent.getTag();
-                if (psmParentTag.equals("compensationHandler") ||
-                        psmParentTag.equals("terminationHandler")) {
-                    // If the current activity is the direct child of a 
-                    // handler (there can be only one), we need to construct 
-                    // the PEM entity for the handler, register the currently 
-                    // executed one as its child and put the handler itself to 
-                    // the model.
-                    final PsmEntity handlerPsm = psmParent;
-                    final PsmEntity scopePsm = psmParent.getParent();
+                // Choose the candidate with the largest index, which does 
+                // not already have a PEM handler attached. Note that it
+                // holds true for both compensation and termination 
+                // handlers as the former get executed in reverse order, 
+                // and for the latter -- only the latest one (whose scope 
+                // was terminated) will be executed.
+                PemEntityImpl scopePem = pems[0];
+                for (int i = 1; i < pems.length; i++) {
+                    if ((pems[i].getIndex() > scopePem.getIndex()) && 
+                            (pems[i].getChildren(handlerPsm).length == 0)) {
+                        scopePem = pems[i];
+                    }
+                }
+                
+                scopePem.addChild(handlerPem);
+                myCallStack.push(handlerPem);
+            } else {
+                if (!myCallStack.empty()) {
+                    final PemEntityImpl pemParent = myCallStack.peek();
                     
-                    final PemEntityImpl handlerPem = 
-                            createEntity(handlerPsm, myId, true);
-                    
-                    handlerPem.addChild(pemEntity);
-                    
-                    // We need to find the PEM entity of the scope which 
-                    // contains this handler. Then we'll attach the newly 
-                    // created handler PEM entity to the scope's one.
-                    final PemEntityImpl[] pems = find(scopePsm);
-                    
-                    if (pems.length == 0) {
+                    // Sometimes runtime can set duplicate STARTED events. The most 
+                    // common case for this is in while and repeatUntil activities,
+                    // where these duplicates are used to differentiate between 
+                    // iterations. In this case we simply ignore them, but restore 
+                    // the myLastStartedEntity variable's value.
+                    if (pemParent.getPsmEntity() == psmEntity) {
+                        // Note that we update the myLastStartedEntity with 
+                        // pemParent, and not pemEntity, as the latter is 
+                        // synthetically constructed and does not belong to the 
+                        // model tree.
+                        myLastStartedEntity = pemParent;
                         return;
                     }
                     
-                    // Choose the candidate with the largest index, which does 
-                    // not already have a PEM handler attached. Note that it
-                    // holds true for both compensation and termination 
-                    // handlers as the former get executed in reverse order, 
-                    // and for the latter -- only the latest one (whose scope 
-                    // was terminated) will be executed.
-                    PemEntityImpl scopePem = pems[0];
-                    for (int i = 1; i < pems.length; i++) {
-                        if ((pems[i].getIndex() > scopePem.getIndex()) && 
-                                (pems[i].getChildren(handlerPsm).length == 0)) {
-                            scopePem = pems[i];
-                        }
-                    }
-                    
-                    scopePem.addChild(handlerPem);
-                    myCallStack.push(handlerPem);
-                } else {
                     // In the general case try to rebuild the 'pem' tree part for 
                     // the given entity and then attach it to the current parent
                     final PemEntityImpl pemChild = 
@@ -462,53 +482,59 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
                             pemParent.addChild(pemChild);
                         }
                     }
-                }
-            } else {
-                if (myParent == null) {
-                    // It's a root branch or an event handler branch.
-                    if (psmEntity.getTag().equals("onAlarm") || 
-                            psmEntity.getTag().equals("onEvent")) {
-                        // We need to find (or create) a PEM entity of the 
-                        // <eventHandlers> tag. In the latter case we also need
-                        // to attach it to its PEM parent (process or scope).
-                        PemEntityImpl[] pems = find(psmParent);
-                        
-                        final PemEntityImpl handlersPem;
-                        if (pems.length == 0) {
-                            handlersPem = createEntity(psmParent, myId, true);
+                } else {
+                    if (myParent == null) {
+                        // It's a root branch or an event handler branch.
+                        if (psmEntity.getTag().equals("onAlarm") || 
+                                psmEntity.getTag().equals("onEvent")) {
+                            // We need to find (or create) a PEM entity of the 
+                            // <eventHandlers> tag. In the latter case we also need
+                            // to attach it to its PEM parent (process or scope).
+                            PemEntityImpl[] pems = find(psmParent);
                             
-                            pems = find(psmParent.getParent());
-                            
+                            final PemEntityImpl handlersPem;
                             if (pems.length == 0) {
-                                return;
-                            }
-                            
-                            PemEntityImpl scopePem = pems[0];
-                            for (int i = 1; i < pems.length; i++) {
-                                if ((pems[i].getIndex() > scopePem.getIndex()) && 
-                                        (pems[i].getChildren(psmEntity).length == 0)) {
-                                    scopePem = pems[i];
+                                handlersPem = createEntity(psmParent, myId, true);
+                                
+                                pems = find(psmParent.getParent());
+                                
+                                if (pems.length == 0) {
+                                    return;
                                 }
+                                
+                                PemEntityImpl scopePem = pems[0];
+                                for (int i = 1; i < pems.length; i++) {
+                                    if ((pems[i].getIndex() > scopePem.getIndex()) && 
+                                            (pems[i].getChildren(psmEntity).length == 0)) {
+                                        scopePem = pems[i];
+                                    }
+                                }
+                                
+                                scopePem.addChild(handlersPem);
+                            } else {
+                                handlersPem = pems[0];
                             }
                             
-                            scopePem.addChild(handlersPem);
+                            // If the handlers PEM entity does not contain a child 
+                            // of this type (<onAlarm> or <onEvent>) -- add it. 
+                            // Otherwise, just reuse the existing one.
+                            pems = handlersPem.getChildren(psmEntity);
+                            if (pems.length == 0) {
+                                handlersPem.addChild(pemEntity);
+                            } else {
+                                pemEntity = pems[0];
+                            }
+                            
+                            myCallStack.push(handlersPem);
                         } else {
-                            handlersPem = pems[0];
+                            myRoot.addChild(pemEntity);
                         }
-                        
-                        // Then we need to attach the current (<onAlarm> or 
-                        // <onEvent>) entity to this
-                        handlersPem.addChild(pemEntity);
-                        
-                        myCallStack.push(handlersPem);
-                    } else {
-                        myRoot.addChild(pemEntity);
+                    } else if (psmParent.getTag().equals("flow")) {
+                        // It's a flow branch
+                        myParent.getCurrentActivity().addChild(pemEntity);
                     }
-                } else if (psmParent.getTag().equals("flow")) {
-                    // It's a flow branch
-                    myParent.getCurrentActivity().addChild(pemEntity);
                 }
-            }
+            }            
             
             pemEntity.setState(PemEntity.State.STARTED);
             pemEntity.setLastStartedEventIndex(myLastEventIndex);
@@ -549,6 +575,27 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
                         myCallStack.pop();
                         
                         pemEntity.setState(PemEntity.State.COMPLETED);
+                    }
+                }
+            }
+        }
+        
+        public void activityTerminated(final PsmEntity psmEntity) {
+            if (!myCallStack.isEmpty()) {
+                // If the call stack is not empty -- try to remove all entities,
+                // that are "below" it
+                PsmEntity tip = myCallStack.peek().getPsmEntity();
+                while ((tip != null) && 
+                        tip.getXpath().startsWith(psmEntity.getXpath())) {
+                    
+                    final PemEntityImpl pemEntity = myCallStack.pop();
+                    
+                    pemEntity.setState(PemEntity.State.COMPLETED);
+                    
+                    if (myCallStack.isEmpty()) {
+                        tip = null;
+                    } else {
+                        tip = myCallStack.peek().getPsmEntity();
                     }
                 }
             }

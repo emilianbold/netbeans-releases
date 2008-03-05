@@ -74,13 +74,13 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="-init-wscompile" depends="-init-user">
-        <property name="jxrpc.base" value="${websvc.home}/${serviceName}/jaxrpc"/>
+        <property name="jxrpc.base" value="${websvc.home}/${serviceDirName}/jaxrpc"/>
         <mkdir dir="${jxrpc.base}/build"/>
         <mkdir dir="${jxrpc.base}/src"/>
     </target>
     
     <target name="-init-wsimport" depends="-init-user">
-        <property name="jaxws.base" value="${websvc.home}/${serviceName}/jaxws"/>
+        <property name="jaxws.base" value="${websvc.home}/${serviceDirName}/jaxws"/>
         <mkdir dir="${jaxws.base}/build"/>
         <mkdir dir="${jaxws.base}/src"/>
         <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">

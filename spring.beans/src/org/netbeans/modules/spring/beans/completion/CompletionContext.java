@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.spring.beans.completion;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
@@ -61,6 +63,7 @@ import org.w3c.dom.Node;
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
 public class CompletionContext {
+    private ArrayList<String> existingAttributes;
 
     public static enum CompletionType {
         TAG,
@@ -99,21 +102,21 @@ public class CompletionContext {
             case XMLDefaultTokenContext.TEXT_ID:
                 String chars = token.getImage().trim();
                 if (chars != null && chars.equals("") &&
-                        token.getPrevious().getImage().trim().equals("/>")) {
+                        token.getPrevious().getImage().trim().equals("/>")) { // NOI18N
                     completionType = CompletionType.NONE;
                     break;
                 }
                 if (chars != null && chars.equals("") &&
-                        token.getPrevious().getImage().trim().equals(">")) {
+                        token.getPrevious().getImage().trim().equals(">")) { // NOI18N
                     completionType = CompletionType.VALUE;
                     break;
                 }
                 if (chars != null && !chars.equals("<") &&
-                        token.getPrevious().getImage().trim().equals(">")) {
+                        token.getPrevious().getImage().trim().equals(">")) { // NOI18N
                     completionType = CompletionType.NONE;
                     break;
                 }
-                if (chars != null && chars.startsWith("<")) {
+                if (chars != null && chars.startsWith("<")) { // NOI18N
                     typedChars = chars.substring(1);
                 }
                 completionType = CompletionType.TAG;
@@ -127,8 +130,14 @@ public class CompletionContext {
                 }
                 if (element instanceof EmptyTag) {
                     if (token != null &&
-                            token.getImage().trim().equals("/>")) {
-                        completionType = CompletionType.NONE;
+                            token.getImage().trim().equals("/>")) { // NOI18N
+                        TokenItem prevToken = token.getPrevious();
+                        if(prevToken != null && prevToken.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID
+                                && caretOffset == token.getOffset()) {
+                            completionType = CompletionType.ATTRIBUTE;
+                        } else {
+                            completionType = CompletionType.NONE;
+                        }
                         break;
                     }
                     EmptyTag tag = (EmptyTag) element;
@@ -148,8 +157,14 @@ public class CompletionContext {
 
                 if (element instanceof StartTag) {
                     if (token != null &&
-                            token.getImage().trim().equals(">")) {
-                        completionType = CompletionType.NONE;
+                            token.getImage().trim().equals(">")) { // NOI18N
+                        TokenItem prevToken = token.getPrevious();
+                        if(prevToken != null && prevToken.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID
+                                && caretOffset == token.getOffset()) {
+                            completionType = CompletionType.ATTRIBUTE;
+                        } else {
+                            completionType = CompletionType.NONE;
+                        }
                         break;
                     }
                     if (element.getElementOffset() + 1 != this.caretOffset) {
@@ -189,12 +204,21 @@ public class CompletionContext {
             //user enters white-space character
             case XMLDefaultTokenContext.WS_ID:
                 completionType = CompletionType.NONE;
+                
+                if(token.getOffset() == caretOffset) {
+                    break;
+                }
+                
                 TokenItem prev = token.getPrevious();
                 while (prev != null &&
                         (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID)) {
                     prev = prev.getPrevious();
                 }
-                if ((prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
+                
+                if(prev.getTokenID().getNumericID() == XMLDefaultTokenContext.ARGUMENT_ID) {
+                    typedChars = prev.getImage();
+                    completionType = CompletionType.ATTRIBUTE;
+                } else if ((prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
                         (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID)) {
                     completionType = CompletionType.ATTRIBUTE;
                 }
@@ -218,6 +242,10 @@ public class CompletionContext {
         return this.doc;
     }
     
+    public DocumentContext getDocumentContext() {
+        return this.documentContext;
+    }
+    
     public int getCaretOffset() {
         return caretOffset;
     }
@@ -229,5 +257,23 @@ public class CompletionContext {
     
     public TokenItem getCurrentToken() {
         return documentContext.getCurrentToken();
+    }
+    
+    public List<String> getExistingAttributes() {
+        if(existingAttributes != null)
+            return existingAttributes;
+        existingAttributes = new ArrayList<String>();
+        TokenItem item = documentContext.getCurrentToken().getPrevious();
+        while(item != null) {
+            if(item.getTokenID().getNumericID() ==
+                    XMLDefaultTokenContext.TAG_ID)
+                break;
+            if(item.getTokenID().getNumericID() ==
+                    XMLDefaultTokenContext.ARGUMENT_ID) {
+                existingAttributes.add(item.getImage());
+            }
+            item = item.getPrevious();
+        }
+        return existingAttributes;
     }
 }

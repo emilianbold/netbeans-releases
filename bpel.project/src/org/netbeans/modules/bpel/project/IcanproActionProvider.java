@@ -63,9 +63,9 @@ class IcanproActionProvider implements ActionProvider {
     
     public IcanproActionProvider(IcanproProject project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
         commands = new HashMap();
-        commands.put(COMMAND_BUILD, new String[] {"dist"}); // NOI18N
+        commands.put(COMMAND_BUILD, new String[] {"dist_se"}); // NOI18N
         commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
-        commands.put(COMMAND_REBUILD, new String[] {"clean", "dist"}); // NOI18N
+        commands.put(COMMAND_REBUILD, new String[] {"clean", "dist_se"}); // NOI18N
         //commands.put(IcanproConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
         //commands.put(IcanproConstants.COMMAND_DEPLOY, new String[] {"run"}); // NOI18N
 

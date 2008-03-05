@@ -54,11 +54,8 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-public class SunCCompiler extends CCCCompiler {
+public class SunCCompiler extends SunCCCCompiler {
     private static final String compilerStderrCommand = " -xdryrun -E"; // NOI18N
-    private PersistentList systemIncludeDirectoriesList = null;
-    private PersistentList systemPreprocessorSymbolsList = null;
-    private boolean saveOK = true;
     
     private static final String[] DEVELOPMENT_MODE_OPTIONS = {
         "",  // Fast Build // NOI18N
@@ -143,45 +140,6 @@ public class SunCCompiler extends CCCCompiler {
         return value ? "-s" : ""; // NOI18N
     }
     
-    @Override
-    public boolean setSystemIncludeDirectories(List values) {
-        assert values != null;
-        if (values.equals(systemIncludeDirectoriesList)) {
-            return false;
-        }
-        systemIncludeDirectoriesList = new PersistentList(values);
-        normalizePaths(systemIncludeDirectoriesList);
-        return true;
-    }
-    
-    @Override
-    public boolean setSystemPreprocessorSymbols(List values) {
-        assert values != null;
-        if (values.equals(systemPreprocessorSymbolsList)) {
-            return false;
-        }
-        systemPreprocessorSymbolsList = new PersistentList(values);
-        return true;
-    }
-    
-    @Override
-    public List getSystemPreprocessorSymbols() {
-        if (systemPreprocessorSymbolsList != null)
-            return systemPreprocessorSymbolsList;
-        
-        getSystemIncludesAndDefines();
-        return systemPreprocessorSymbolsList;
-    }
-    
-    @Override
-    public List getSystemIncludeDirectories() {
-        if (systemIncludeDirectoriesList != null)
-            return systemIncludeDirectoriesList;
-        
-        getSystemIncludesAndDefines();
-        return systemIncludeDirectoriesList;
-    }
-    
     // To be overridden
     @Override
     public String getMTLevelOptions(int value) {
@@ -198,50 +156,6 @@ public class SunCCompiler extends CCCCompiler {
     @Override
     public String getLanguageExtOptions(int value) {
         return LANGUAGE_EXT_OPTIONS[value];
-    }
-    
-    @Override
-    public void saveSystemIncludesAndDefines() {
-        if (systemIncludeDirectoriesList != null && saveOK)
-            systemIncludeDirectoriesList.saveList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
-        if (systemPreprocessorSymbolsList != null && saveOK)
-            systemPreprocessorSymbolsList.saveList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
-    }
-    
-    private void restoreSystemIncludesAndDefines() {
-        systemIncludeDirectoriesList = PersistentList.restoreList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
-        systemPreprocessorSymbolsList = PersistentList.restoreList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
-    }
-    
-    private void getSystemIncludesAndDefines() {
-        restoreSystemIncludesAndDefines();
-        if (systemIncludeDirectoriesList == null || systemPreprocessorSymbolsList == null) {
-            getFreshSystemIncludesAndDefines();
-        }
-    }
-    
-    private void getFreshSystemIncludesAndDefines() {
-        systemIncludeDirectoriesList = new PersistentList();
-        systemPreprocessorSymbolsList = new PersistentList();
-        String path = getPath();
-        if (path == null || !new File(path).exists()) {
-            path = "cc"; // NOI18N
-        }
-        try {
-            getSystemIncludesAndDefines(path + compilerStderrCommand, false);
-            systemIncludeDirectoriesList.addUnique("/usr/include"); // NOI18N
-            saveOK = true;
-        } catch (IOException ioe) {
-            System.err.println("IOException " + ioe);
-            String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", path); // NOI18N
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
-            saveOK = false;
-        }
-    }
-    
-    @Override
-    public void resetSystemIncludesAndDefines() {
-        getFreshSystemIncludesAndDefines();
     }
     
     @Override
@@ -285,5 +199,21 @@ public class SunCCompiler extends CCCCompiler {
         for (int i = 0; i < systemPreprocessorSymbolsList.size(); i++) {
             System.out.println("-D" + systemPreprocessorSymbolsList.get(i)); // NOI18N
         }
+    }
+    
+    
+    @Override
+    protected String getDefaultPath() {
+        return "cc"; // NOI18N
+    }
+    
+    @Override
+    protected String getCompilerStderrCommand() {
+        return compilerStderrCommand;
+    }
+
+    @Override
+    protected String getCompilerStderrCommand2() {
+        return null;
     }
 }

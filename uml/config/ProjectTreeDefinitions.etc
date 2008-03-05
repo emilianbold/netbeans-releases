@@ -357,8 +357,6 @@
 			<aDefinition name="Abstraction"/>
 		</aDefinition>
 		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
-			<aDefinition name="IncomingTransitions" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion" displayName="PSK_INCOMINGTRANSITIONS" minimum="1" get="getIncomingTransitions" type="Transition"/>
-			<aDefinition name="OutgoingTransitions" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion" displayName="PSK_OUTGOINGTRANSITIONS" minimum="1" get="getOutgoingTransitions" type="Transition"/>
 			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
 			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
 		</aDefinition>

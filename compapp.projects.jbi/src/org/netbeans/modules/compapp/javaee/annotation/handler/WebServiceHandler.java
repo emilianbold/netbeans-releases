@@ -163,7 +163,6 @@ public class WebServiceHandler implements AnnotationHandler{
                 }
 
                 Endpoint ep = new Endpoint(Endpoint.EndPointType.Provider, portName, portType, service );
-                ep.isUsingDefaultNames(Boolean.valueOf(usedDefaultName));
                 endPoints.add(ep);
             }
         }

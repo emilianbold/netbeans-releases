@@ -76,7 +76,7 @@ public final class DialogBinding {
             throw new IllegalArgumentException("A JavaSource is already attached to the given component.");
         }
         
-        final JavaSource js = JavaSourceAccessor.INSTANCE.create(ClasspathInfo.create(fileObject), JavaSourceAccessor.INSTANCE.create(fileObject, offset, length, component), Collections.singletonList(fileObject));
+        final JavaSource js = JavaSourceAccessor.getINSTANCE().create(ClasspathInfo.create(fileObject), JavaSourceAccessor.getINSTANCE().create(fileObject, offset, length, component), Collections.singletonList(fileObject));
         
         doc.putProperty(JavaSource.class, new WeakReference<JavaSource>(null) {
             @Override

@@ -19,15 +19,18 @@
 
 package org.netbeans.modules.bpel.debugger.ui.execution;
 
-
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.JToolTip;
 import org.netbeans.modules.bpel.debugger.api.pem.PemEntity;
 import org.netbeans.modules.bpel.debugger.api.psm.PsmEntity;
+import org.netbeans.modules.bpel.debugger.ui.util.EditorUtil;
+import org.netbeans.modules.bpel.debugger.ui.util.ModelUtil;
+import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-
-import static org.netbeans.modules.bpel.debugger.ui.execution.Constants.*;
 
 /**
  * Model describing the table structure in the Process Execution View. Since 
@@ -38,82 +41,141 @@ import static org.netbeans.modules.bpel.debugger.ui.execution.Constants.*;
  * @author Kirill Sorokin
  */
 public class ProcessExecutionTableModel implements TableModel {
-    private ContextProvider myContextProvider;
-
+    private Map<PsmEntity, String> psm2Line = new HashMap<PsmEntity, String>();
+    
     /**{@inheritDoc}*/
     public ProcessExecutionTableModel(
             final ContextProvider contextProvider) {
-        myContextProvider = contextProvider;
+        // Does nothing
     }
     
     /**{@inheritDoc}*/
     public Object getValueAt(
-            final Object object, 
+            final Object stuff, 
             final String column) throws UnknownTypeException {
-        if (object instanceof PsmEntity) {
+        
+        Object object = stuff;
+        boolean isTooltip = false;
+        
+        if (stuff instanceof JToolTip) {
+            isTooltip = true;
+            object = ((JToolTip) stuff).
+                        getClientProperty("getShortDescription");
+        }
+        
+        if (object instanceof ProcessExecutionTreeModel.Dummy) {
             if (column.equals(ProcessExecutionColumnModel_Thread.COLUMN_ID)) {
+                return "";
+            }
+            
+            if (column.equals(ProcessExecutionColumnModel_Line.COLUMN_ID)) {
+                return "";
+            }
+            
+            if (column.equals(ProcessExecutionColumnModel_XPath.COLUMN_ID)) {
                 return "";
             }
         }
         
+        if (object instanceof PsmEntity) {
+            final PsmEntity psmEntity = (PsmEntity) object;
+            
+            if (column.equals(ProcessExecutionColumnModel_Thread.COLUMN_ID)) {
+                return "";
+            }
+            
+            if (column.equals(ProcessExecutionColumnModel_Line.COLUMN_ID)) {
+                if (psm2Line.get(psmEntity) == null) {
+                    final String url = ModelUtil.getUrl(
+                            psmEntity.getModel().getProcessQName());
+                    
+                    if (url == null) {
+                        return "";
+                    }
+                    
+                    final BpelModel model = EditorUtil.getBpelModel(url);
+                    
+                    if (model == null) {
+                        return "";
+                    }
+                    
+                    final int lineNumber = ModelUtil.getLineNumber(
+                                model, psmEntity.getXpath());
+                    
+                    final String line;
+                    final int slashIndex = url.lastIndexOf("/");
+                    if (slashIndex == -1) {
+                        line = url + ":" + lineNumber;
+                    } else {
+                        line = url.substring(slashIndex + 1) + ":" + lineNumber;
+                    }
+                    
+                    psm2Line.put(psmEntity, line);
+                    
+                    return line;
+                }
+                
+                return psm2Line.get(psmEntity);
+            }
+            
+            if (column.equals(ProcessExecutionColumnModel_XPath.COLUMN_ID)) {
+                return psmEntity.getXpath();
+            }
+        }
+        
         if (object instanceof PemEntity) {
+            final PemEntity pemEntity = (PemEntity) object;
+            
             if (column.equals(ProcessExecutionColumnModel_Thread.COLUMN_ID)) {
                 final String branchId = ((PemEntity) object).getBranchId();
                 
+                final String tagName = ((PemEntity) object).
+                        getPsmEntity().getTag();
+                
+                if (tagName.equals("onEvent") || 
+                        tagName.equals("eventHandlers")) {
+                    return "";
+                }
+                
                 return branchId == null ? "" : branchId;
+            }
+            
+            if (column.equals(ProcessExecutionColumnModel_Line.COLUMN_ID)) {
+                return getValueAt(pemEntity.getPsmEntity(), column);
+            }
+            
+            if (column.equals(ProcessExecutionColumnModel_XPath.COLUMN_ID)) {
+                return getValueAt(pemEntity.getPsmEntity(), column);
             }
         }
         
         throw new UnknownTypeException(object);
     }
-    
     
     /**{@inheritDoc}*/
     public void setValueAt(
             final Object object, 
             final String column, 
             final Object value) throws UnknownTypeException {
-        if (object instanceof PsmEntity) {
-            if (column.equals(ProcessExecutionColumnModel_Thread.COLUMN_ID)) {
-                return;
-            }
-        } 
         
-        if (object instanceof PemEntity) {
-            if (column.equals(ProcessExecutionColumnModel_Thread.COLUMN_ID)) {
-                return;
-            }
-        }
-        
-        throw new UnknownTypeException(object);
+        // Does nothing
     }
     
     /**{@inheritDoc}*/
     public boolean isReadOnly(
             final Object object, 
             final String column) throws UnknownTypeException {
-        if (object instanceof PsmEntity) {
-            if (column.equals(ProcessExecutionColumnModel_Thread.COLUMN_ID)) {
-                return true;
-            }
-        }
         
-        if (object instanceof PemEntity) {
-            if (column.equals(ProcessExecutionColumnModel_Thread.COLUMN_ID)) {
-                return true;
-            }
-        }
-            
-        throw new UnknownTypeException(object);
+        return true;
     }
     
     /**{@inheritDoc}*/
     public void addModelListener(final ModelListener listener) {
-        // des nothing
+        // Does nothing
     }
-
+    
     /**{@inheritDoc}*/
     public void removeModelListener(final ModelListener listener) {
-        // does nothing
+        // Does nothing
     }
 }

@@ -117,8 +117,7 @@ class CheckedInResponse implements Response {
      */
     protected DateFormat getDateFormatter() {
         if (dateFormatter == null) {
-            dateFormatter = new SimpleDateFormat(Entry.getLastModifiedDateFormatter().toPattern(), Locale.US);
-            dateFormatter.setTimeZone(Entry.getTimeZone());
+            dateFormatter = Entry.getLastModifiedDateFormatter();
         }
         return dateFormatter;
     }

@@ -286,7 +286,11 @@ SettingsChangeListener, FocusListener {
             BorderFactory.createEmptyBorder(0, 3, 0, 3)
         ));
         tt.setContentType("text/html"); //NOI18N
-        
+
+        // No actions and do not react to keybindings
+        tt.setActionMap(new ActionMap());
+        tt.setInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, null);
+
         return tt;
     }
     
@@ -790,7 +794,7 @@ SettingsChangeListener, FocusListener {
         ExtEditorUI ui = extEditorUI;
         if (ui != null) {
             JTextComponent component = ui.getComponent();
-            if (enabled && component != null && component.getCaret().isSelectionVisible()) {
+            if (enabled && component != null && Utilities.isSelectionShowing(component)) {
                 enterTimer.restart();
             }
         }

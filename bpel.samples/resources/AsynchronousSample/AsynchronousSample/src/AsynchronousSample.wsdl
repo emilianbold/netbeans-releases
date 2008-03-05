@@ -57,8 +57,8 @@
     
     <wsdl:portType name="MyPortType">
         <wsdl:operation name="asyncOperation">
-            <wsdl:input  message="tns:requestMessage" />
-        </wsdl:operation>             
+            <wsdl:input  message="tns:requestMessage"/>
+        </wsdl:operation>
     </wsdl:portType>
     
     <wsdl:portType name="MyCallbackPortType">
@@ -74,11 +74,11 @@
             <input>
                 <soap:body use="literal"/>
             </input>
-        </operation>           
+        </operation>
     </binding>
     
     <wsdl:service name="AsynchronousSample_asyncService">
-        <wsdl:port name="AsynchronousSample_asyncPortName" binding="tns:SoapBinding">                    
+        <wsdl:port name="AsynchronousSample_asyncPortName" binding="tns:SoapBinding">
             <soap:address location="http://localhost:18181/AsynchronousSample"/>
         </wsdl:port>
     </wsdl:service>
@@ -90,14 +90,14 @@
             <input>
                 <soap:body use="literal"/>
             </input>
-        </operation>           
-    </binding>    
+        </operation>
+    </binding>
     
     <wsdl:service name="AsynchronousClient_asyncCallbackService">
-        <wsdl:port name="AsynchronousClient_asyncCallbackPortName" binding="tns:CallbackSoapBinding">                    
+        <wsdl:port name="AsynchronousClient_asyncCallbackPortName" binding="tns:CallbackSoapBinding">
             <soap:address location="http://localhost:18181/AsynchronousSampleCallback"/>
         </wsdl:port>
-    </wsdl:service>     
+    </wsdl:service>
     
     <plnk:partnerLinkType name="AsyncPartnerLinkType">
         <plnk:role name="serviceProvider"

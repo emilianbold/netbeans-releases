@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,15 +43,17 @@ package org.netbeans.modules.ruby.platform.gems;
 
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.DefaultListModel;
@@ -68,9 +70,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.platform.Util;
@@ -88,13 +90,14 @@ import org.openide.util.RequestProcessor;
  * @todo Use a table instead of a list for the gem lists, use checkboxes to choose
  *   items to be uninstalled, and show the installation date (based
  *   on file timestamps)
- * @todo Split error output
- *
- * @author  Tor Norbye
  */
 public final class GemPanel extends JPanel implements Runnable {
+
+    private static final Logger LOGGER = Logger.getLogger(GemPanel.class.getName());
     
-    private static final String LAST_PLATFORM_ID = "gemPanellastPlatformID"; // NOI18N
+    private static final String LAST_GEM_DIRECTORY = "lastLocalGemDirectory"; // NOI18N
+
+    private static final String LAST_PLATFORM_ID = "gemPanelLastPlatformID"; // NOI18N
 
     static enum TabIndex { UPDATED, INSTALLED, NEW; }
     
@@ -110,17 +113,12 @@ public final class GemPanel extends JPanel implements Runnable {
     
     public GemPanel(String availableFilter) {
         initComponents();
-
-        RubyPlatform platform = null;
-        String lastPlatformID = Util.getPreferences().get(LAST_PLATFORM_ID, null);
-        if (lastPlatformID != null) {
-            platform = RubyPlatformManager.getPlatformByID(lastPlatformID);
+        Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
+        
+        RubyPlatform selPlatform = getSelectedPlatform();
+        if (selPlatform != null) {
+            this.gemManager = selPlatform.getGemManager();
         }
-        if (platform == null) {
-            platform = RubyPlatformManager.getDefaultPlatform();
-        }
-        platforms.setSelectedItem(platform);
-        this.gemManager = getSelectedPlatform().getGemManager();
 
         installedList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         installedList.getSelectionModel().addListSelectionListener(new MyListSelectionListener(installedList, installedDesc, uninstallButton));
@@ -136,12 +134,10 @@ public final class GemPanel extends JPanel implements Runnable {
             gemsTab.setSelectedIndex(TabIndex.NEW.ordinal());
         }
 
-        platforms.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    GemPanel.this.gemManager = getSelectedPlatform().getGemManager();
-                    updateAsynchronously();
-                }
+        PlatformComponentFactory.addPlatformChangeListener(platforms, new PlatformComponentFactory.PlatformChangeListener() {
+            public void platformChanged() {
+                GemPanel.this.gemManager = getSelectedPlatform().getGemManager();
+                updateAsynchronously();
             }
         });
         updateAsynchronously();
@@ -160,14 +156,12 @@ public final class GemPanel extends JPanel implements Runnable {
         // This will also update the New and Installed lists because Update depends on these
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (getSelectedPlatform().hasRubyGemsInstalled()) {
-                    gemHomeValue.setText(gemManager.getGemHome());
-                    gemHomeValue.setForeground(UIManager.getColor("Label.foreground"));
-                    setEnabledGUI(false);
-                    refreshUpdated();
-                } else {
-                    gemHomeValue.setForeground(PlatformComponentFactory.INVALID_PLAF_COLOR);
-                    gemHomeValue.setText(GemManager.getNotInstalledMessage());
+                boolean loading = PlatformComponentFactory.isLoadingPlatforms(platforms);
+                if (loading || !getSelectedPlatform().hasRubyGemsInstalled()) {
+                    if (!loading) {
+                        gemHomeValue.setForeground(PlatformComponentFactory.INVALID_PLAF_COLOR);
+                        gemHomeValue.setText(GemManager.getNotInstalledMessage());
+                    }
                     availableGems = Collections.emptyList();
                     installedGems = Collections.emptyList();
                     newGems = Collections.emptyList();
@@ -176,6 +170,11 @@ public final class GemPanel extends JPanel implements Runnable {
                     notifyGemsUpdated();
                     updateList(TabIndex.INSTALLED, true);
                     setEnabledGUI(false);
+                } else {
+                    gemHomeValue.setText(gemManager.getGemHome());
+                    gemHomeValue.setForeground(UIManager.getColor("Label.foreground")); // NOI18N
+                    setEnabledGUI(false);
+                    refreshUpdated();
                 }
             }
         });
@@ -201,12 +200,12 @@ public final class GemPanel extends JPanel implements Runnable {
         if (gem.getInstalledVersions() != null && gem.getAvailableVersions() != null) {
             // It's an update gem
             sb.append("<h3>"); // NOI18N
-            sb.append(NbBundle.getMessage(GemPanel.class, "InstalledVersion"));
+            sb.append(getMessage("InstalledVersion"));
             sb.append("</h3>"); // NOI18N
             sb.append(gem.getInstalledVersions());
 
             sb.append("<h3>"); // NOI18N
-            sb.append(NbBundle.getMessage(GemPanel.class, "AvailableVersion"));
+            sb.append(getMessage("AvailableVersion"));
             sb.append("</h3>"); // NOI18N
             sb.append(gem.getAvailableVersions());
             sb.append("<br>"); // NOI18N
@@ -218,9 +217,9 @@ public final class GemPanel extends JPanel implements Runnable {
             }
             if (version.indexOf(',') == -1) {
             // TODO I18N
-                sb.append(NbBundle.getMessage(GemPanel.class, "Version"));
+                sb.append(getMessage("Version"));
             } else {
-                sb.append(NbBundle.getMessage(GemPanel.class, "Versions"));
+                sb.append(getMessage("Versions"));
             }
             sb.append("</h3>"); // NOI18N
             sb.append(version);
@@ -228,7 +227,7 @@ public final class GemPanel extends JPanel implements Runnable {
 
         if (gem.getDescription() != null) {
             sb.append("<h3>"); // NOI18N
-            sb.append(NbBundle.getMessage(GemPanel.class, "Description"));
+            sb.append(getMessage("Description"));
             sb.append("</h3>"); // NOI18N
             sb.append(gem.getDescription());
         }
@@ -508,6 +507,7 @@ public final class GemPanel extends JPanel implements Runnable {
         newDesc = new javax.swing.JTextPane();
         newProgress = new javax.swing.JProgressBar();
         newProgressLabel = new javax.swing.JLabel();
+        installLocalButton = new javax.swing.JButton();
         settingsPanel = new javax.swing.JPanel();
         proxyButton = new javax.swing.JButton();
         rubyPlatformLabel = new javax.swing.JLabel();
@@ -714,6 +714,9 @@ public final class GemPanel extends JPanel implements Runnable {
 
         org.openide.awt.Mnemonics.setLocalizedText(newProgressLabel, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.newProgressLabel.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(installLocalButton, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.installLocalButton.text")); // NOI18N
+        installLocalButton.addActionListener(formListener);
+
         org.jdesktop.layout.GroupLayout newPanelLayout = new org.jdesktop.layout.GroupLayout(newPanel);
         newPanel.setLayout(newPanelLayout);
         newPanelLayout.setHorizontalGroup(
@@ -729,7 +732,9 @@ public final class GemPanel extends JPanel implements Runnable {
                         .add(searchNewText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 156, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(newPanelLayout.createSequentialGroup()
                         .add(installButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 468, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(installLocalButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 344, Short.MAX_VALUE)
                         .add(newProgressLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(newProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -753,7 +758,9 @@ public final class GemPanel extends JPanel implements Runnable {
                     .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(installButton)
+                    .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(installButton)
+                        .add(installLocalButton))
                     .add(newProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(newProgressLabel))
                 .addContainerGap())
@@ -794,11 +801,13 @@ public final class GemPanel extends JPanel implements Runnable {
 
         gemsTab.addTab(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.settingsPanel.TabConstraints.tabTitle"), settingsPanel); // NOI18N
 
+        rubyPlatformLabel.setLabelFor(platforms);
         org.openide.awt.Mnemonics.setLocalizedText(rubyPlatformLabel, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.rubyPlatformLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(manageButton, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.manageButton.text")); // NOI18N
         manageButton.addActionListener(formListener);
 
+        gemHome.setLabelFor(gemHomeValue);
         org.openide.awt.Mnemonics.setLocalizedText(gemHome, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.gemHome.text")); // NOI18N
 
         gemHomeValue.setEditable(false);
@@ -853,6 +862,13 @@ public final class GemPanel extends JPanel implements Runnable {
         );
 
         gemsTab.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.gemsTab.AccessibleContext.accessibleName")); // NOI18N
+        gemsTab.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.gemsTab.AccessibleContext.accessibleDescription")); // NOI18N
+        platforms.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.platforms.AccessibleContext.accessibleName")); // NOI18N
+        platforms.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.platforms.AccessibleContext.accessibleDescription")); // NOI18N
+        manageButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.manageButton.AccessibleContext.accessibleDescription")); // NOI18N
+        gemHomeValue.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.gemHomeValue.AccessibleContext.accessibleName")); // NOI18N
+        gemHomeValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.gemHomeValue.AccessibleContext.accessibleDescription")); // NOI18N
+        browseGemHome.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.browseGemHome.AccessibleContext.accessibleDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.AccessibleContext.accessibleDescription")); // NOI18N
@@ -892,6 +908,9 @@ public final class GemPanel extends JPanel implements Runnable {
             }
             else if (evt.getSource() == installButton) {
                 GemPanel.this.installButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == installLocalButton) {
+                GemPanel.this.installLocalButtonActionPerformed(evt);
             }
             else if (evt.getSource() == proxyButton) {
                 GemPanel.this.proxyButtonActionPerformed(evt);
@@ -946,9 +965,9 @@ public final class GemPanel extends JPanel implements Runnable {
                 // Get some information about the chosen gem
                 InstallationSettingsPanel panel = new InstallationSettingsPanel(chosen);
                 panel.getAccessibleContext().setAccessibleDescription(
-                        NbBundle.getMessage(GemPanel.class, "InstallationSettingsPanel.AccessibleContext.accessibleDescription"));
+                        getMessage("InstallationSettingsPanel.AccessibleContext.accessibleDescription"));
 
-                DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(GemPanel.class, "ChooseGemSettings"));
+                DialogDescriptor dd = new DialogDescriptor(panel, getMessage("ChooseGemSettings"));
                 dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
                 dd.setModal(true);
                 dd.setHelpCtx(new HelpCtx(GemPanel.class));
@@ -957,7 +976,7 @@ public final class GemPanel extends JPanel implements Runnable {
                     Gem gem = new Gem(panel.getGemName(), null, null);
                     // XXX Do I really need to refresh it right way?
                     GemListRefresher completionTask = new GemListRefresher(newList, TabIndex.INSTALLED);
-                    boolean changed = gemManager.install(new Gem[] { gem }, this, false, false, panel.getVersion(),
+                    gemManager.install(new Gem[] { gem }, this, false, false, panel.getVersion(),
                             panel.getIncludeDepencies(), true, completionTask);
                 }
             }
@@ -1032,6 +1051,27 @@ public final class GemPanel extends JPanel implements Runnable {
         }
     }//GEN-LAST:event_browseGemHomeActionPerformed
 
+    private void installLocalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installLocalButtonActionPerformed
+        JFileChooser chooser = new JFileChooser(Util.getPreferences().get(LAST_GEM_DIRECTORY, ""));
+        chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setFileFilter(new FileFilter() {
+            public boolean accept(File f) {
+                return f.isDirectory() || (f.isFile() && f.getName().toLowerCase(Locale.US).endsWith(".gem")); // NOI18N
+            }
+            public String getDescription() {
+                return getMessage("GemPanel.rubygems.files.filter");
+            }
+        });
+        int ret = chooser.showOpenDialog(this);
+        if (ret == JFileChooser.APPROVE_OPTION) {
+            File gem = FileUtil.normalizeFile(chooser.getSelectedFile());
+            Util.getPreferences().put(LAST_GEM_DIRECTORY, gem.getParentFile().getAbsolutePath());
+            GemListRefresher completionTask = new GemListRefresher(newList, TabIndex.INSTALLED);
+            gemManager.installLocal(gem, this, false, false, true, completionTask);
+        }
+    }//GEN-LAST:event_installLocalButtonActionPerformed
+
     public static File chooseGemRepository(final Component parent) {
         JFileChooser chooser = new JFileChooser();
         //        chooser.setAcceptAllFileFilterUsed(false);
@@ -1042,8 +1082,18 @@ public final class GemPanel extends JPanel implements Runnable {
             if (GemManager.isValidGemHome(gemHomeF)) {
                 return gemHomeF;
             }
-            // XXX if not a valid repo, offer to create/initialize it there
-            Util.notifyLocalized(GemPanel.class, "GemPanel.invalid.gemHome", gemHomeF.getAbsolutePath());
+            if (!gemHomeF.exists() || (gemHomeF.isDirectory() && gemHomeF.list().length == 0)) {
+                if (Util.confirmLocalized(GemPanel.class, "GemPanel.empty.create.gemrepo", gemHomeF.getAbsolutePath())) { // NOI18N
+                    try {
+                        GemManager.initializeRepository(gemHomeF);
+                        return gemHomeF;
+                    } catch (IOException ioe) {
+                        LOGGER.log(Level.SEVERE, ioe.getLocalizedMessage(), ioe);
+                    }
+                }
+            } else {
+                Util.notifyLocalized(GemPanel.class, "GemPanel.invalid.gemHome", gemHomeF.getAbsolutePath()); // NOI18N
+            }
         }
         return null;
     }
@@ -1111,7 +1161,7 @@ public final class GemPanel extends JPanel implements Runnable {
         for (String error : errors) {
             sb.append(error);
         }
-        Util.notifyLocalized(GemPanel.class, "GemPanel.NoNetwork", NotifyDescriptor.ERROR_MESSAGE, sb.toString());
+        Util.notifyLocalized(GemPanel.class, "GemPanel.NoNetwork", NotifyDescriptor.ERROR_MESSAGE, sb.toString()); // NOI18N
     }
 
     private void refreshGemLists() {
@@ -1167,7 +1217,7 @@ public final class GemPanel extends JPanel implements Runnable {
     }
 
     private RubyPlatform getSelectedPlatform() {
-        return (RubyPlatform) platforms.getSelectedItem();
+        return PlatformComponentFactory.getPlatform(platforms);
     }
 
     private class MyListSelectionListener implements ListSelectionListener {
@@ -1217,6 +1267,10 @@ public final class GemPanel extends JPanel implements Runnable {
             refreshGemList(tab);
         }
     }
+
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(GemPanel.class, key);
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseGemHome;
@@ -1226,6 +1280,7 @@ public final class GemPanel extends JPanel implements Runnable {
     private javax.swing.JLabel instSearchLbl;
     private javax.swing.JTextField instSearchText;
     private javax.swing.JButton installButton;
+    private javax.swing.JButton installLocalButton;
     private javax.swing.JTextPane installedDesc;
     private javax.swing.JList installedList;
     private javax.swing.JPanel installedPanel;

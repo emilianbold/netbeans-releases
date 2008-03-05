@@ -46,7 +46,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -94,7 +93,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
 
     //GUI Builder
     private TemplatesPanelGUI.Builder builder;
-    private WeakReference<Project> projectRef;
+    private Project project;
     private String category;
     private String template;
     private boolean isWarmUp = true;
@@ -114,16 +113,22 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         assert p != null : "Project can not be null";   //NOI18N
         boolean wf;
         synchronized (this) {
-            this.projectRef = new WeakReference<Project>(p);
+            this.project = p;
             this.category = category;
             this.template = template;
             wf = this.isWarmUp;
         }
         if (!wf) {
-            this.selectProject (projectRef.get());
+            this.selectProject ( project );
             ((TemplatesPanelGUI)this.templatesPanel).setSelectedCategoryByName (this.category);
             ((TemplatesPanelGUI)this.templatesPanel).setSelectedTemplateByName (this.template);
         }
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        project = null;
     }
 
     /** Called from readSettings, to initialize the GUI with proper components
@@ -167,7 +172,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             wf = isWarmUp;
         }
         if (wf) {
-            return this.projectRef.get();
+            return this.project;
         }
         else {
             return (Project)projectsComboBox.getSelectedItem();
@@ -199,7 +204,6 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         ((TemplatesPanelGUI)this.templatesPanel).setSelectedCategoryByName (category);
     }
     
-    @Override
     public void addNotify () {
         if (firstTime) {
             //77244 prevent multiple initializations..
@@ -207,12 +211,6 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             firstTime = false;
         }
         super.addNotify ();
-    }
-    
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
-        projectsComboBox.setModel(new DefaultComboBoxModel());
     }
     
     /** This method is called from within the constructor to
@@ -507,7 +505,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             Project p;
             String c,t;
             synchronized (this) {
-                p = projectRef.get();
+                p = this.project;
                 c = this.category;
                 t = this.template;
             }

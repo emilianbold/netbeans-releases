@@ -90,15 +90,26 @@ final class Deleter extends Plugin {
     for (Component root : roots) {
       List<Element> founds = find(reference, root);
 
-      if (founds != null) {
+//out();
+//out("Founds: " + founds);
+//out("  root: " + root);
+
+      if (founds != null && founds.size() > 0) {
+//out("  size: " + founds.size());
+//out("   see: " + founds.get(0).getUserObject() + " " + founds.get(0).getText());
         myElements.addAll(founds);
       }
     }
-    if (myElements.size() > 0) {
+    if (myElements.size() > 1) {
       List<Model> models = getModels(myElements);
       List<ErrorItem> errors = RefactoringUtil.precheckUsageModels(models, true);
 
-      if (errors != null && errors.size() > 0) {
+      if (errors == null) {
+        errors = new ArrayList<ErrorItem>();
+      }
+      populateErrors(errors);
+
+      if (errors.size() > 0) {
         return processErrors(errors);
       } 
     } 
@@ -106,14 +117,34 @@ final class Deleter extends Plugin {
       myRequest.getContext().lookup(XMLRefactoringTransaction.class);
     transaction.register(this, myElements);
     refactoringElements.registerTransaction(transaction);
+//out();
+//out("refactoringElements: " + refactoringElements);
 
     for (Element element : myElements) {
       element.setTransactionObject(transaction);
       refactoringElements.add(myRequest, element);
+//out("    element: " + element);
     }      
     return null;
   }
 
+  private void populateErrors(List<ErrorItem> errors) {
+    for (Element element : myElements) {
+      Object object = element.getUserObject();
+
+      if (object instanceof PropertyAlias) {
+        continue;
+      }
+      ErrorItem error = new ErrorItem(
+        object,
+        i18n(Deleter.class, "ERR_Cascade_Delete_For_PropertyAlias_Only"), // NOI18N
+        ErrorItem.Level.FATAL);
+
+      errors.add(error);
+      break;
+    }
+  }
+      
   public Problem fastCheckParameters() {
     return null;
   }

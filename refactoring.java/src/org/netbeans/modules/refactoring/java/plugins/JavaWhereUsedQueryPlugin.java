@@ -261,8 +261,13 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler); // NOI18N
                 return;
             }
-            Element element = refactoring.getRefactoringSource().lookup(TreePathHandle.class).resolveElement(compiler);
-            assert element != null;
+            TreePathHandle handle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+            Element element = handle.resolveElement(compiler);
+            if (element==null) {
+                ErrorManager.getDefault().log(ErrorManager.ERROR, "element is null for handle " + handle); // NOI18N
+                return;
+            }
+            
             Collection<TreePath> result = new ArrayList<TreePath>();
             if (isFindUsages()) {
                 FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler, refactoring.getBooleanValue(refactoring.SEARCH_IN_COMMENTS));

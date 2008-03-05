@@ -194,7 +194,7 @@ public class BPELSourceMultiViewElement extends CloneableEditor
         editor.addUndoManagerToDocument();
 //        addUndoManager();
         
-        getValidationController().triggerValidation( true );
+        getValidationController().triggerValidation(true);
     }
     
     public void componentClosed() {
@@ -584,7 +584,7 @@ public class BPELSourceMultiViewElement extends CloneableEditor
             myPreviousTask.cancel();
         }
         if (myPreviousTask != null && !myPreviousTask.isFinished()
-                && RequestProcessor.getDefault().isRequestProcessorThread()) // issue 125439
+                && RequestProcessor.getDefault().isRequestProcessorThread()) // issue 125 439
         {
             myPreviousTask.waitFinished();
             myPreviousTask = null;

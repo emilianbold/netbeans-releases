@@ -56,6 +56,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
+import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
 /**
@@ -120,9 +122,9 @@ public class GdbProxy implements GdbMiDefinitions {
     }
     
     /** Attach to a running program */
-    public int target_attach(String pid) {
+    public int target_attach(CommandBuffer cb, String pid) {
 //        return engine.sendCommand("-target-attach " + pid); // NOI18N - no implementaion
-        return engine.sendCommand("attach " + pid); // NOI18N
+        return engine.sendCommand(cb, "attach " + pid); // NOI18N
     }
     
     /** Detach from a running program */
@@ -198,12 +200,16 @@ public class GdbProxy implements GdbMiDefinitions {
      *  Note: In gdb 6.5.50 the -threads-list-all-threads command isn't implemented so we
      *  revert to the gdb command "info threads".
      */
+    public int info_threads(CommandBuffer cb) {
+        return engine.sendCommand(cb, "info threads"); // NOI18N;
+    }
+    
     public int info_threads() {
         return engine.sendCommand("info threads"); // NOI18N;
     }
     
-    public int info_files() {
-        return engine.sendCommand("info files"); // NOI18N
+    public int info_files(CommandBuffer cb) {
+        return engine.sendCommand(cb, "info files"); // NOI18N
     }
 
     /** Set the current thread */
@@ -218,12 +224,57 @@ public class GdbProxy implements GdbMiDefinitions {
     public int info_proc() {
         return engine.sendCommand("info proc"); // NOI18N
     }
+    
+    public int info_share() {
+        return engine.sendCommand("info share"); // NOI18N
+    }
+    
+    public int info_share(CommandBuffer cb) {
+        return engine.sendCommand(cb, "info share"); // NOI18N
+    }
+
+    /**
+     *  Use this to call _CndSigInit() to initialize signals in Cygwin processes.
+     */
+    public int data_evaluate_expression(CommandBuffer cb, String string) {
+        return engine.sendCommand(cb, "-data-evaluate-expression " + string); // NOI18N
+    }
 
     /**
      *  Use this to call _CndSigInit() to initialize signals in Cygwin processes.
      */
     public int data_evaluate_expression(String string) {
         return engine.sendCommand("-data-evaluate-expression " + string); // NOI18N
+    }
+    
+    /**
+     */
+    public int data_list_register_names(String regIds) {
+        return engine.sendCommand("-data-list-register-names " + regIds); // NOI18N
+    }
+    
+    /**
+     */
+    public int data_list_register_values(String regIds) {
+        return engine.sendCommand("-data-list-register-values x " + regIds); // NOI18N
+    }
+    
+    /*
+     * @param filename - source file to disassemble
+     */
+    public int data_disassemble(String filename, int line) {
+        return engine.sendCommand("-data-disassemble -f " + filename + " -l " + line + " -- 0"); // NOI18N
+    }
+    
+    /*
+     * @param size - size in bytes
+     */
+    public int data_disassemble(int size) {
+        return engine.sendCommand("-data-disassemble -s $pc -e \"$pc+" + size + "\" -- 0"); // NOI18N
+    }
+    
+    public int print(CommandBuffer cb, String expression) {
+        return engine.sendCommand(cb, "print " + expression); // NOI18N
     }
 
     /**
@@ -278,6 +329,13 @@ public class GdbProxy implements GdbMiDefinitions {
     public int exec_next() {
         return engine.sendCommand("-exec-next"); // NOI18N
     }
+    
+    /**
+     * Execute single instruction
+     */
+    public int exec_instruction() {
+        return engine.sendCommand("-exec-step-instruction"); // NOI18N
+    }
 
     /**
      * Send "-exec-finish" to the debugger (finish this function)
@@ -329,6 +387,7 @@ public class GdbProxy implements GdbMiDefinitions {
         }
         return engine.sendCommand(cmd);
     }
+    
 
     /**
      * Send "-break-insert function" to the debugger
@@ -337,20 +396,21 @@ public class GdbProxy implements GdbMiDefinitions {
      *
      * @param flags One or more flags aout this breakpoint
      * @param name A function name
+     * @param threadID The thread number for this breakpoint
      * @return token number
      */
-    public int break_insert(int flags, String name) {
+    public int break_insert(int flags, String name, String threadID) {
         StringBuilder cmd = new StringBuilder();
 
         if (GdbUtils.isMultiByte(name)) {
-            if ((flags & GdbDebugger.GDB_TMP_BREAKPOINT) != 0) {
+            if ((flags == GdbDebugger.GDB_TMP_BREAKPOINT)) {
                 cmd.append("tbreak "); // NOI18N
             } else {
                 cmd.append("break "); // NOI18N
             }
         } else {
             cmd.append("-break-insert "); // NOI18N
-            if ((flags & GdbDebugger.GDB_TMP_BREAKPOINT) != 0) {
+            if ((flags == GdbDebugger.GDB_TMP_BREAKPOINT)) {
                 cmd.append("-t "); // NOI18N
             }
         }
@@ -362,8 +422,25 @@ public class GdbProxy implements GdbMiDefinitions {
         } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
             cmd.append("-l 1 "); // NOI18N - Always use 1st choice
         }
+        if (flags == GdbBreakpoint.SUSPEND_THREAD) {
+            // FIXME - Does the Mac support -p?
+            cmd.append("-p " + threadID + " "); // NOI18N
+        }
         cmd.append(name);
         return engine.sendCommand(cmd.toString());
+    }
+    
+    /**
+     * Send "-break-insert function" to the debugger
+     * This command inserts a regular breakpoint in all functions
+     * whose names match the given name.
+     *
+     * @param flags One or more flags aout this breakpoint
+     * @param name The function name or linenumber information
+     * @return token number
+     */
+    public int break_insert(int flags, String name) {
+        return break_insert(flags, name, "");
     }
 
     /**
@@ -375,7 +452,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * @return token number
      */
     public int break_insert(String name) {
-        return break_insert(0, name);
+        return break_insert(0, name, null);
     }
 
     /**
@@ -409,6 +486,14 @@ public class GdbProxy implements GdbMiDefinitions {
      */
     public int break_disable(int number) {
         return engine.sendCommand("-break-disable " + Integer.toString(number)); // NOI18N
+    }
+    
+    public int break_condition(int number, String condition) {
+        return engine.sendCommand("-break-condition " + Integer.toString(number) + " " + condition); // NOI18N
+    }
+    
+    public int break_after(int number, String count) {
+        return engine.sendCommand("-break-after " + Integer.toString(number) + " " + count); // NOI18N
     }
 
     /** Send "-stack-list-locals" to the debugger */
@@ -487,8 +572,8 @@ public class GdbProxy implements GdbMiDefinitions {
      * Request the type of a symbol. As of gdb 6.6, this is unimplemented so we send a
      * non-mi command "ptype". We should only be called when symbol is in scope.
      */
-    public int symbol_type(String symbol) {
-        return engine.sendCommand("ptype " + symbol); // NOI18N
+    public int symbol_type(CommandBuffer cb, String symbol) {
+        return engine.sendCommand(cb, "ptype " + symbol); // NOI18N
     }
 
     /**
@@ -496,8 +581,8 @@ public class GdbProxy implements GdbMiDefinitions {
      * so we send a gdb "whatis" command. This is different from -system-type in the case
      * of abstract data structures (structs and classes). Its the same for other types.
      */
-    public int whatis(String symbol) {
-        return engine.sendCommand("whatis " + symbol); // NOI18N
+    public int whatis(CommandBuffer cb, String symbol) {
+        return engine.sendCommand(cb, "whatis " + symbol); // NOI18N
     }
 
     /**

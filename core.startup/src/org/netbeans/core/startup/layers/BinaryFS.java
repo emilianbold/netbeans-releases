@@ -130,6 +130,9 @@ public class BinaryFS extends FileSystem {
         } catch (PropertyVetoException ex) {
             throw (IOException)new IOException().initCause(ex);
         }
+        
+        LayerCacheManager.err.fine("Reading " + binaryFile + " buffer: " + buff.limit());
+        
         this.binaryFile = binaryFile;
 
         // verify the magic in header and expected image length
@@ -142,6 +145,7 @@ public class BinaryFS extends FileSystem {
         if (buff.limit() != storedLen) {
             throw new IOException("Corrupted image, correct length=" + storedLen); // NOI18N
         }
+        LayerCacheManager.err.log(Level.FINER, "Stored Len OK: {0}", storedLen);
 
 
         // fill the modifications array
@@ -154,7 +158,9 @@ public class BinaryFS extends FileSystem {
 
         // prepare the content buffer and root
         content = buff.slice().order(ByteOrder.LITTLE_ENDIAN);
+        LayerCacheManager.err.log(Level.FINER, "Reading root");
         root = new BFSFolder("", null, 0);
+        LayerCacheManager.err.log(Level.FINER, "Root ready: {0}", root);
     }
 
     /** Finds a file given its full resource path.
@@ -837,6 +843,9 @@ public class BinaryFS extends FileSystem {
                     childrenMap.put(nm, isFolder == 0 ?
                         new BFSFile(nm, this, off) :
                         new BFSFolder(nm, this, off));
+                }
+                if (LayerCacheManager.err.isLoggable(Level.FINEST)) {
+                    LayerCacheManager.err.log(Level.FINEST, "  children for " + getPath() + " are: " + childrenMap.keySet());
                 }
             }
         }

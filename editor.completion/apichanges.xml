@@ -105,6 +105,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="CompletionResultSet.setHasAdditionalItemsText">
+            <api name="completion"/>
+            <summary>Addition of CompletionResultSet.setHasAdditionalItemsText()</summary>
+            <version major="1" minor="11"/>
+            <date day="7" month="2" year="2008"/>
+            <author login="dbalek"/>
+            <compatibility addition="yes"/>
+            <description>
+            <p>
+                <code>void CompletionResultSet.setHasAdditionalItemsText(String text)</code> was added
+                to allow for customization of the text displayed in a completion popup whenever
+                a CompletionProvider indicates that additional items could be added to the result set.
+            </p>
+            </description>
+            <issue number="124351"/>
+        </change>
+
         <change id="CompletionResultSet.setHasAdditionalItems">
             <api name="completion"/>
             <summary>Addition of CompletionResultSet.setHasAdditionalItems()</summary>

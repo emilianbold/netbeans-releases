@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.mercurial.ui.log;
 
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
@@ -56,19 +55,20 @@ import java.awt.event.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
-import java.util.List;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.List;
-import java.util.List;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.mercurial.ExceptionHandler;
 import org.netbeans.modules.mercurial.HgException;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.VersionsCache;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
-import org.netbeans.modules.mercurial.ui.update.RevertModifications;
+import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
+import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 
 /**
@@ -81,7 +81,9 @@ import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
  */
 class SummaryView implements MouseListener, ComponentListener, MouseMotionListener, DiffSetupSource {
 
+    private static final String SUMMARY_DIFF_PROPERTY = "Summary-Diff-";
     private static final String SUMMARY_REVERT_PROPERTY = "Summary-Revert-";
+    private static final String SUMMARY_EXPORTDIFFS_PROPERTY = "Summary-ExportDiffs-";
 
     private final SearchHistoryPanel master;
     
@@ -97,7 +99,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         this.master = master;
         this.results = results;
         this.dispResults = expandResults(results);
-        FontColorSettings fcs = (FontColorSettings) MimeLookup.getMimeLookup("text/x-java").lookup(FontColorSettings.class); // NOI18N
+        FontColorSettings fcs = (FontColorSettings) MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class); // NOI18N
         searchHiliteAttrs = fcs.getFontColors("highlight-search"); // NOI18N
         message = master.getCriteria().getCommitMessage();
         resultsList = new JList(new SummaryListModel());
@@ -136,6 +138,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         // not interested
     }
     
+    @SuppressWarnings("unchecked")
     private List expandResults(List<RepositoryRevision> results) {
         ArrayList newResults = new ArrayList(results.size());
         for (RepositoryRevision repositoryRevision : results) {
@@ -153,7 +156,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (idx == -1) return;
         Rectangle rect = resultsList.getCellBounds(idx, idx);
         Point p = new Point(e.getX() - rect.x, e.getY() - rect.y);
-        Rectangle diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Diff-" + idx); // NOI18N
+        Rectangle diffBounds = (Rectangle) resultsList.getClientProperty(SUMMARY_DIFF_PROPERTY + idx); // NOI18N
         if (diffBounds != null && diffBounds.contains(p)) {
             diffPrevious(idx);
         }
@@ -161,8 +164,13 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (diffBounds != null && diffBounds.contains(p)) {
             revertModifications(new int [] { idx });
         }
+        diffBounds = (Rectangle) resultsList.getClientProperty(SUMMARY_EXPORTDIFFS_PROPERTY + idx); // NOI18N
+        if (diffBounds != null && diffBounds.contains(p)) {
+            System.out.println("ExportDiffs: " + idx); // DEBUG
+            exportDiffs(idx);
+        }
     }
-
+    
     public void mouseEntered(MouseEvent e) {
         // not interested
     }
@@ -191,12 +199,17 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (idx == -1) return;
         Rectangle rect = resultsList.getCellBounds(idx, idx);
         Point p = new Point(e.getX() - rect.x, e.getY() - rect.y);
-        Rectangle diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Diff-" + idx); // NOI18N
+        Rectangle diffBounds = (Rectangle) resultsList.getClientProperty(SUMMARY_DIFF_PROPERTY + idx); // NOI18N
         if (diffBounds != null && diffBounds.contains(p)) {
             resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             return;
         }
         diffBounds = (Rectangle) resultsList.getClientProperty(SUMMARY_REVERT_PROPERTY + idx); // NOI18N
+        if (diffBounds != null && diffBounds.contains(p)) {
+            resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            return;
+        }
+        diffBounds = (Rectangle) resultsList.getClientProperty(SUMMARY_EXPORTDIFFS_PROPERTY + idx); // NOI18N
         if (diffBounds != null && diffBounds.contains(p)) {
             resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             return;
@@ -286,8 +299,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }
         long revision = Long.parseLong(container.getLog().getRevision());
 
-        final boolean rollbackToEnabled = !missingFile && !revisionSelected && oneRevisionMultiselected;
-        final boolean rollbackChangeEnabled = !missingFile && oneRevisionMultiselected && (drev.length == 0 || noExDeletedExistingFiles); // drev.length == 0 => the whole revision was selected
+        final boolean revertToEnabled = !missingFile && !revisionSelected && oneRevisionMultiselected;
+        final boolean backoutChangeEnabled = !missingFile && oneRevisionMultiselected && (drev.length == 0); // drev.length == 0 => the whole revision was selected
         final boolean viewEnabled = selection.length == 1 && !revisionSelected && drev[0].getFile() != null && drev[0].getFile().exists() &&  !drev[0].getFile().isDirectory();
         final boolean diffToPrevEnabled = selection.length == 1;
         
@@ -302,39 +315,27 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }));
         }
 
-        /* TBD - Support Rollback Changes:
-         * Need to figure out how to implement SVN functionality to allow you to rollback a change
-         * currently for svn this cmd runs: merge -R <revX>:<revY> it basically diffs the two revs
-         * and creates a patch which is then applied ot the file in the working dir, effectively removing
-         * the change applied between revX and revY
-         * In hg we'd need to do a hg diff -r revX -r revY, generate a patch and then apply it to the working dir copy
-         * /
-        menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackChange")) { // NOI18N
-            {
-                setEnabled(false); // rollbackChangeEnabled); 
-            }
-            public void actionPerformed(ActionEvent e) {
-                revertModifications(selection);
-            }
-        }));
-        */
-        if (!revisionSelected) {
+        if (revisionSelected) {
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackChange")) { // NOI18N
+
+                {
+                    setEnabled(backoutChangeEnabled);
+                }
+
+                public void actionPerformed(ActionEvent e) {
+                    backout(selection[0]);
+                }
+            }));
+        }else{
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", "" + revision)) { // NOI18N
                 {                    
-                    setEnabled(rollbackToEnabled);
+                    setEnabled(revertToEnabled);
                 }
                 public void actionPerformed(ActionEvent e) {
                     revertModifications(selection);
-                }
-                
-                /*public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {                            
-                            rollback(drev);
-                        }
-                    });
-                }*/
+                }                
             }));
+            
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { // NOI18N
                 {
                     setEnabled(viewEnabled);
@@ -347,52 +348,48 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     });
                 }
             }));
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ExportFileDiff")) { // NOI18N
+                {
+                    setEnabled(viewEnabled);
+                }
+                public void actionPerformed(ActionEvent e) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            exportFileDiff(selection[0]);
+                        }
+                    });
+                }
+            }));
         }
 
         menu.show(resultsList, p.x, p.y);
     }
-
-    /**
-     * Overwrites local file with this revision.
-     *
-     * @param event
-     */
-    static void rollback(RepositoryRevision.Event event) {
-        rollback(new RepositoryRevision.Event[ ]{event});
-    }    
     
     /**
-     * Overwrites local file with this revision.
+     * Rollback this changeset only
      *
      * @param event
      */
-    static void rollback(final RepositoryRevision.Event[] events) {
-        String repository = events[0].getLogInfoHeader().getRepositoryRootUrl();
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
-        HgProgressSupport support = new HgProgressSupport() {
-            public void perform() {
-                for(RepositoryRevision.Event event : events) {
-                    rollback(event, this);   
-                }                
-            }
-        };
-        support.start(rp, repository, NbBundle.getMessage(SummaryView.class, "MSG_Rollback_Progress")); // NOI18N
-}
-
-    private static void rollback(RepositoryRevision.Event event, HgProgressSupport progress) {
-        File file = event.getFile();
-        File parent = file.getParentFile();
-        parent.mkdirs();
-        try {
-            File oldFile = VersionsCache.getInstance().getFileRevision(event.getFile(), event.getLogInfoHeader().getLog().getRevision());
-            file.delete();
-            FileUtil.copyFile(FileUtil.toFileObject(oldFile), FileUtil.toFileObject(parent), file.getName(), "");
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
+    private void backout(int idx) {
+        Object o = dispResults.get(idx);
+        if (o instanceof RepositoryRevision) {
+            RepositoryRevision repoRev = (RepositoryRevision) o;
+            BackoutAction.backout(repoRev);
+        }        
+    }
+    
+    static void backout(final RepositoryRevision.Event event) {
+        RepositoryRevision repoRev = event.getLogInfoHeader();
+        BackoutAction.backout(repoRev);
     }
 
-    private void revertModifications(int[] selection) {
+    static void revertModifications(final RepositoryRevision.Event event) {
+        Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
+        events.add(event);
+        revert(null, (RepositoryRevision.Event[]) events.toArray(new RepositoryRevision.Event[events.size()]));
+    }
+
+    public void revertModifications(int[] selection) {
         Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
         Set<RepositoryRevision> revisions = new HashSet<RepositoryRevision>();
         for (int idx : selection) {
@@ -403,38 +400,43 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 events.add((RepositoryRevision.Event) o);
             }
         }
-        revert(master, revisions.toArray(new RepositoryRevision[revisions.size()]), (RepositoryRevision.Event[]) events.toArray(new RepositoryRevision.Event[events.size()]));
+        revert(revisions.toArray(new RepositoryRevision[revisions.size()]), (RepositoryRevision.Event[]) events.toArray(new RepositoryRevision.Event[events.size()]));
     }
 
-    static void revert(final SearchHistoryPanel master, final RepositoryRevision [] revisions, final RepositoryRevision.Event [] events) {
-        String url;
-        try {
-            url = master.getSearchRepositoryRootUrl();        
-        } catch (HgException ex) {
-            ExceptionHandler eh = new ExceptionHandler(ex);
-            eh.notifyException();                
-            return;
-        }                   
+    static void revert(final RepositoryRevision [] revisions, final RepositoryRevision.Event [] events) {
+        String url;        
+        if(revisions == null || revisions.length == 0){
+            if(events == null || events.length == 0 || events[0].getLogInfoHeader() == null) return;
+            url = events[0].getLogInfoHeader().getRepositoryRootUrl();             
+        }else{
+            url = revisions[0].getRepositoryRootUrl(); 
+        }
+        
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(url);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
-                revertImpl(master, revisions, events, this);
+                revertImpl(revisions, events, this);
             }
         };
         support.start(rp, url, NbBundle.getMessage(SummaryView.class, "MSG_Revert_Progress")); // NOI18N
     }
 
-    private static void revertImpl(SearchHistoryPanel master, RepositoryRevision[] revisions, RepositoryRevision.Event[] events, HgProgressSupport progress) {
+    private static void revertImpl(RepositoryRevision[] revisions, RepositoryRevision.Event[] events, HgProgressSupport progress) {
         List<File> revertFiles = new ArrayList<File>();
-        for (RepositoryRevision revision : revisions) {
-            File root = new File(revision.getRepositoryRootUrl());
-            for(RepositoryRevision.Event event: revision.getEvents()){
-                if (event.getFile() == null) continue;
-                revertFiles.add(event.getFile());
+        boolean doBackup = HgModuleConfig.getDefault().getBackupOnRevertModifications();
+        if (revisions != null) {
+            for (RepositoryRevision revision : revisions) {
+                File root = new File(revision.getRepositoryRootUrl());
+                for (RepositoryRevision.Event event : revision.getEvents()) {
+                    if (event.getFile() == null) {
+                        continue;
+                    }
+                    revertFiles.add(event.getFile());
+                }
+                RevertModificationsAction.performRevert(
+                        root, revision.getLog().getRevision(), revertFiles, doBackup, progress.getLogger());
+                revertFiles.clear();
             }
-            RevertModificationsAction.performRevert(
-                        root, revision.getLog().getRevision(), revertFiles);
-            revertFiles.clear();
         }
         
         Map<File, List<RepositoryRevision.Event>> revertMap = new HashMap<File, List<RepositoryRevision.Event>>();
@@ -463,7 +465,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 if(revEvents != null && !revEvents.isEmpty()){
                     // Assuming all files in a given repository reverting to same revision
                     RevertModificationsAction.performRevert(
-                        root, revEvents.get(0).getLogInfoHeader().getLog().getRevision(), revertFiles);
+                        root, revEvents.get(0).getLogInfoHeader().getLog().getRevision(), revertFiles, doBackup, progress.getLogger());
                 }
             }                       
         }
@@ -492,6 +494,22 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         } else {
             RepositoryRevision container = (RepositoryRevision) o;
             master.showDiff(container);
+        }
+    }
+
+    private void exportDiffs(int idx) {
+        Object o = dispResults.get(idx);
+        if (o instanceof RepositoryRevision) {
+            RepositoryRevision repoRev = (RepositoryRevision) o;
+            ExportDiffAction.exportDiffRevision(repoRev);
+        }        
+    }
+    
+    private void exportFileDiff(int idx) {
+        Object o = dispResults.get(idx);
+        if (o instanceof RepositoryRevision.Event) {
+            RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
+            ExportDiffAction.exportDiffFileRevision(drev);
         }
     }
 
@@ -530,6 +548,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         private int             index;
         private HyperlinkLabel  diffLink;
         private HyperlinkLabel  revertLink;
+        private HyperlinkLabel  exportDiffsLink;
 
         public SummaryCellRenderer() {
             selectedStyle = textPane.addStyle("selected", null); // NOI18N
@@ -560,7 +579,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             actionsPane.add(diffLink);
 
             revertLink = new HyperlinkLabel();
+            revertLink.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
             actionsPane.add(revertLink);
+            
+            exportDiffsLink = new HyperlinkLabel();
+            actionsPane.add(exportDiffsLink);
             
             textPane.setBorder(null);
         }
@@ -636,8 +659,9 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             
             actionsPane.setVisible(true);
             if(!master.isIncomingSearch()){
-                diffLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Diff"), foregroundColor, backgroundColor);
+                diffLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Diff"), foregroundColor, backgroundColor);// NOI18N
                 revertLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Revert"), foregroundColor, backgroundColor); // NOI18N
+                exportDiffsLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_ExportDiffs"), foregroundColor, backgroundColor); // NOI18N
             }
     }
 
@@ -701,12 +725,16 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             {
                 Rectangle bounds = diffLink.getBounds();
                 bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
-                resultsList.putClientProperty("Summary-Diff-" + index, bounds); // NOI18N
+                resultsList.putClientProperty(SUMMARY_DIFF_PROPERTY + index, bounds); // NOI18N
             }
 
             Rectangle bounds = revertLink.getBounds();
             bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
             resultsList.putClientProperty(SUMMARY_REVERT_PROPERTY + index, bounds); // NOI18N
+
+            Rectangle edBounds = exportDiffsLink.getBounds();
+            edBounds.setBounds(edBounds.x, edBounds.y + apb.y, edBounds.width, edBounds.height);
+            resultsList.putClientProperty(SUMMARY_EXPORTDIFFS_PROPERTY + index, edBounds); // NOI18N            
         }
     }
     

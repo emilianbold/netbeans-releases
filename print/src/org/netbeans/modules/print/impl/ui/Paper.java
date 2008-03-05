@@ -61,12 +61,7 @@ import static org.netbeans.modules.print.impl.util.UI.*;
  */
 final class Paper extends JComponent {
 
-  Paper(
-    PrintPage page,
-    String name,
-    Date modified,
-    double scale)
-  {
+  Paper(PrintPage page, String name, Date modified) {
     myPage = page;
     myName = name;
     myLastModifiedDate = modified;
@@ -77,6 +72,24 @@ final class Paper extends JComponent {
     myPageY = Option.getDefault().getPageY();
     myPageWidth = Option.getDefault().getPageWidth();
     myPageHeight = Option.getDefault().getPageHeight();
+
+    myHasBorder = Option.getDefault().hasBorder();
+    myBorderColor = Option.getDefault().getBorderColor();
+
+    myIsPainting = true;
+  }
+
+  void setCoordinate(int number, int row, int column, double scale) {
+    myNumber = number;
+    myRow = row;
+    myColumn = column;
+    myRowNumber = String.valueOf(row + 1);
+    myColumnNumber = String.valueOf(column + 1);
+    setScale(scale);
+  }
+
+  void setCount(int count) {
+    myCount = String.valueOf(count);
 
     myHeaderY = Option.getDefault().getHeaderY();
     myHasHeader = Option.getDefault().hasHeader();
@@ -93,26 +106,6 @@ final class Paper extends JComponent {
     myFooterRight = expandTitle(Option.getDefault().getFooterRight());
     myFooterColor = Option.getDefault().getFooterColor();
     myFooterFont = Option.getDefault().getFooterFont();
-
-    myHasBorder = Option.getDefault().hasBorder();
-    myBorderColor = Option.getDefault().getBorderColor();
-    myIsPainting = true;
-
-    setScale(scale);
-  }
-
-  void setInfo(
-    int number,
-    int row,
-    int column,
-    int count)
-  {
-    myNumber = number;
-    myRow = row;
-    myColumn = column;
-    myRowNumber = String.valueOf(row + 1);
-    myColumnNumber = String.valueOf(column + 1);
-    myCount = String.valueOf(count);
   }
 
   int getRow() {

@@ -41,8 +41,7 @@ public class LocalsNodeModel implements NodeModel, Constants {
     public LocalsNodeModel(
             final ContextProvider contextProvider) {
         
-        myDebugger = (BpelDebugger) contextProvider.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
         myHelper = new VariablesUtil(myDebugger);
     }
     /**{@inheritDoc}*/
@@ -51,8 +50,14 @@ public class LocalsNodeModel implements NodeModel, Constants {
         
         if (object == TreeModel.ROOT) {
             return NbBundle.getMessage(
-                LocalsNodeModel.class, 
-                "CTL_Variable_Column_Name"); // NOI18N
+                    LocalsNodeModel.class, 
+                    "CTL_Variable_Column_Name"); // NOI18N
+        }
+        
+        if (object instanceof LocalsTreeModel.Dummy) {
+            return NbBundle.getMessage(
+                    LocalsNodeModel.class, 
+                    "CTL_Empty_Model"); // NOI18N
         }
         
         return myHelper.getDisplayName(object);
@@ -74,6 +79,11 @@ public class LocalsNodeModel implements NodeModel, Constants {
     /**{@inheritDoc}*/
     public String getIconBase(
             final Object object) throws UnknownTypeException {
+        
+        if (object instanceof LocalsTreeModel.Dummy) {
+            return null;
+        }
+        
         return myHelper.getIconBase(object);
     }
     

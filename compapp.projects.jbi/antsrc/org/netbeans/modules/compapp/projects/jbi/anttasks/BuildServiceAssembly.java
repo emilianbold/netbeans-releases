@@ -42,6 +42,7 @@
 package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
 import java.io.*;
+import java.net.URI;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -72,7 +73,8 @@ import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
@@ -204,8 +206,12 @@ public class BuildServiceAssembly extends Task {
 
         // create project wsdl repository...
         try {
-            FileUtil.toFileObject(p.getBaseDir()).getFileSystem().refresh(true);
-        } catch (FileStateInvalidException ex) {
+            FileObject baseDirFO = FileUtil.toFileObject(p.getBaseDir());
+            if (baseDirFO != null) {
+                FileSystem fs = baseDirFO.getFileSystem();
+                fs.refresh(true);
+            }
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
         mRepo = new wsdlRepository(p, this);
@@ -462,12 +468,26 @@ public class BuildServiceAssembly extends Task {
         for (int i = 0; i < systemNodes.getLength(); i++) {
             Element systemNode = (Element) systemNodes.item(i);
             String uri = systemNode.getAttribute("uri");
-            if (uri != null && 
-                    // make sure the catalog data is along with the catalog.xml
-                    new File(sesuDir, uri).exists()) {
-                uri = sesuName + "/" + uri;
-                systemNode.setAttribute("uri", uri);
+            
+            if (uri != null) {
+                URI realUri = new URI(uri);
+                
+                if (realUri.getScheme() == null) {
+                    uri = "../" + sesuName + "/META-INF/" + uri;
+                    
+                    // correct the URI (get rid of "META-INF/../")
+                    uri = uri.replace("/META-INF/..", "");
+                    
+                    systemNode.setAttribute("uri", uri);
+                }
             }
+            
+//            if (uri != null && 
+//                    // make sure the catalog data is along with the catalog.xml
+//                    new File(sesuDir, uri).exists()) {
+//                uri = sesuName + "/" + uri;
+//                systemNode.setAttribute("uri", uri);
+//            }
         }
         
         return doc;
@@ -515,6 +535,9 @@ public class BuildServiceAssembly extends Task {
             dd.buildDOMTree(connectionResolver, saName, saDescription, casaDocument);
             dd.writeToFile(conFileLoc);
             
+            if (jbiDocument == null) {
+              return;
+            }
             NodeList sas = jbiDocument.getElementsByTagName("service-assembly");
             if ((sas != null) && (sas.getLength() > 0)) {
                 Element sa = (Element) sas.item(0);

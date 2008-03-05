@@ -55,12 +55,12 @@ import org.w3c.dom.Text;
 public class RaveSourceDocument extends AbstractRaveDocument {
 
     // memory leak probing
-    private static final Logger TIMERS = Logger.getLogger("TIMER.raveSourceDocuments"); // NOI18N
+    private static final Logger TIMERS = Logger.getLogger("TIMER.visualweb"); // NOI18N
 
     /** Creates a new instance of RaveSourceDocument */
     public RaveSourceDocument() {
-        if (TIMERS.isLoggable(Level.FINE)) {
-            LogRecord rec = new LogRecord(Level.FINE, "RaveSourceDocument"); // NOI18N
+        if (TIMERS.isLoggable(Level.FINER)) {
+            LogRecord rec = new LogRecord(Level.FINER, "RaveSourceDocument"); // NOI18N
             rec.setParameters(new Object[]{this            });
             TIMERS.log(rec);
         }

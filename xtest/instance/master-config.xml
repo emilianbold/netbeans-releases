@@ -114,4 +114,26 @@ made subject to such option by the copyright holder.
   <config name="commit-validation-ruby">
       <module name="ide.kit" testtypes="qa-functional" attributes="ruby"/>
   </config>
+  
+  <!-- All commit configs in one. You can run them using:
+       ant -f nbbuild/build.xml commit-validation
+           -D"xtest.userdata|com.sun.aas.installRoot"=<glassfish install dir>
+           -Dwtk.dir=<path to wtk22_win.zip or wtk22_linux.zip>
+           -Dxtest.config=commit-validation-all 
+  -->
+  <config name="commit-validation-all">
+      <module name="o.n.core" testtypes="unit" attributes="commit"/>
+      <module name="core.windows" testtypes="unit" attributes="commit" />
+      <module name="javahelp" testtypes="unit" attributes="commit" />
+      <module name="editor" testtypes="qa-functional" attributes="commit" />
+      <!--module name="enterprise/bpel" testtypes="qa-functional" attributes="commit"/-->
+      <module name="ide.kit" testtypes="qa-functional" attributes="cnd,commit,j2ee,profiler,ruby"/>
+      <module name="mobility.project" testtypes="qa-functional" attributes="commit">
+          <!-- Propagate wtk.dir property to build-qa-functional.xml. -->
+          <property name="wtk.dir" value="${wtk.dir}"/>
+      </module>
+      <module name="soa.kit" testtypes="qa-functional" attributes="commit"/>
+      <module name="uml.kit" testtypes="qa-functional" attributes="commit"/>
+      <module name="xml.schema" testtypes="qa-functional" attributes="commit"/>
+  </config>  
 </testconfig>

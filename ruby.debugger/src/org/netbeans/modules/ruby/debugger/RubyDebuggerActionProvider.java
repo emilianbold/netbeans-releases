@@ -57,9 +57,6 @@ import org.rubyforge.debugcommons.RubyDebugEventListener;
 import org.rubyforge.debugcommons.RubyDebugEvent;
 import org.rubyforge.debugcommons.RubyDebuggerException;
 
-/**
- * @author Martin Krauskopf
- */
 public final class RubyDebuggerActionProvider extends ActionsProviderSupport implements RubyDebugEventListener {
     
     private static final Set<Object> ACTIONS;

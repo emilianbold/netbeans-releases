@@ -66,7 +66,7 @@ public class LocalVariableFixCustomizer extends javax.swing.JPanel {
 
         inPlace = new javax.swing.JCheckBox();
 
-        inPlace.setText(org.openide.util.NbBundle.getBundle(LocalVariableFixCustomizer.class).getString("LocalVariableFixCustomizer.inPlace.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(inPlace, org.openide.util.NbBundle.getBundle(LocalVariableFixCustomizer.class).getString("LocalVariableFixCustomizer.inPlace.text")); // NOI18N
         inPlace.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 inPlaceActionPerformed(evt);
@@ -92,7 +92,7 @@ public class LocalVariableFixCustomizer extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void inPlaceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inPlaceActionPerformed
-    ErrorFixesFakeHint.setCreateLocalVariableInPlace(inPlace.isSelected());
+    ErrorFixesFakeHint.setCreateLocalVariableInPlace(p, inPlace.isSelected());
 }//GEN-LAST:event_inPlaceActionPerformed
 
 

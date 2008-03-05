@@ -283,8 +283,9 @@ public class Utils {
         System.setProperty("nbi.utils.log.to.console", "false");
         System.setProperty("user.home", data.getWorkDirCanonicalPath());
         //there is no build nuber for RC1
-        //NbTestCase.assertNotNull("Determine build number", Utils.determineBuildNumber(data));
-        data.setBuildNumber(null);
+        if (Boolean.valueOf(System.getProperty("test.use.build.number")))
+            NbTestCase.assertNotNull("Determine build number", Utils.determineBuildNumber(data));
+        //data.setBuildNumber(null);
     }
 
     public static void phaseOnePTwo(TestData data) {
@@ -360,7 +361,9 @@ public class Utils {
         JDialogOperator customizeInstallation = new JDialogOperator("Customize Installation");
         JListOperator featureList = new JListOperator(customizeInstallation);
         featureList.selectItem(name);
-        featureList.pressKey(KeyEvent.VK_SPACE);
+
+        //cuz behaviour of feature list is changed
+        //featureList.pressKey(KeyEvent.VK_SPACE);
         new JButtonOperator(customizeInstallation, "OK").push();
     }
 
@@ -522,9 +525,10 @@ public class Utils {
     }
 
     public static String constructURL(TestData data) {
-        String val = System.getProperty("installer.url.prefix");
-        String prefix = (data.getBuildNumber() != null) ? "http://bits.netbeans.org/netbeans/6.0/nightly/latest/bundles/netbeans-6.0-" + data.getBuildNumber() : val;
+        String prefix = System.getProperty("test.installer.url.prefix");
+        //String prefix = (data.getBuildNumber() != null) ? "http://bits.netbeans.org/netbeans/6.0/nightly/latest/bundles/netbeans-6.0-" + data.getBuildNumber() : val;
 
+        
         String bundleType = data.getInstallerType();
         if (bundleType == null || bundleType.equals("all")) {
             bundleType = "";
@@ -532,6 +536,10 @@ public class Utils {
             bundleType = "-" + bundleType;
         }
 
-        return prefix + bundleType + "-" + data.getPlatformName() + "." + data.getPlatformExt();
+        String build_number = (Boolean.valueOf(System.getProperty("test.use.build.number"))) ? "-" + data.getBuildNumber() : "";
+        return prefix + "/" + "bundles" + 
+                "/" + "netbeans-trunk-nightly" +  
+                build_number + bundleType + "-" + 
+                data.getPlatformName() + "." + data.getPlatformExt();
     }
 }

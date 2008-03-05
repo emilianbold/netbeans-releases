@@ -481,7 +481,24 @@ public class BaseKit extends DefaultEditorKit {
         
         return mimeType;
     }
-    
+
+    /* package */ static String kitsTracker_setContextMimeType(String mimeType) {
+        if (!noKitsTracker) {
+            try {
+                ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+                Class clazz = cl.loadClass("org.netbeans.modules.editor.impl.KitsTracker"); //NOI18N
+                Method getInstanceMethod = clazz.getDeclaredMethod("getInstance"); //NOI18N
+                Method setContextMimeTypeMethod = clazz.getDeclaredMethod("setContextMimeType", String.class); //NOI18N
+                Object kitsTracker = getInstanceMethod.invoke(null);
+                return (String) setContextMimeTypeMethod.invoke(kitsTracker, mimeType);
+            } catch (Exception e) {
+                // ignore
+                noKitsTracker = true;
+            }
+        }
+        return null;
+    }
+
     /**
      * Creates a new instance of <code>BaseKit</code>.
      * 
@@ -597,27 +614,32 @@ public class BaseKit extends DefaultEditorKit {
     }
 
     public MultiKeymap getKeymap() {
-        synchronized (Settings.class) {
-            MultiKeymap km = (MultiKeymap)kitKeymaps.get(this.getClass());
-            if (km == null) { // keymap not yet constructed
-                // construct new keymap
-                km = new MultiKeymap("Keymap for " + this.getClass()); // NOI18N
-                // retrieve key bindings for this kit and super kits
-                Settings.KitAndValue kv[] = Settings.getValueHierarchy(
-                                                this.getClass(), SettingsNames.KEY_BINDING_LIST);
-                // go through all levels and collect key bindings
-                for (int i = kv.length - 1; i >= 0; i--) {
-                    List keyList = (List)kv[i].value;
-                    JTextComponent.KeyBinding[] keys = new JTextComponent.KeyBinding[keyList.size()];
-                    keyList.toArray(keys);
-                    km.load(keys, getActionMap());
-                }
-                
-                km.setDefaultAction((Action)getActionMap().get(defaultKeyTypedAction));
+        kitsTracker_setContextMimeType(getContentType());
+        try {
+            synchronized (Settings.class) {
+                MultiKeymap km = (MultiKeymap)kitKeymaps.get(this.getClass());
+                if (km == null) { // keymap not yet constructed
+                    // construct new keymap
+                    km = new MultiKeymap("Keymap for " + this.getClass()); // NOI18N
+                    // retrieve key bindings for this kit and super kits
+                    Settings.KitAndValue kv[] = Settings.getValueHierarchy(
+                                                    this.getClass(), SettingsNames.KEY_BINDING_LIST);
+                    // go through all levels and collect key bindings
+                    for (int i = kv.length - 1; i >= 0; i--) {
+                        List keyList = (List)kv[i].value;
+                        JTextComponent.KeyBinding[] keys = new JTextComponent.KeyBinding[keyList.size()];
+                        keyList.toArray(keys);
+                        km.load(keys, getActionMap());
+                    }
 
-                kitKeymaps.put(this.getClass(), km);
+                    km.setDefaultAction((Action)getActionMap().get(defaultKeyTypedAction));
+
+                    kitKeymaps.put(this.getClass(), km);
+                }
+                return km;
             }
-            return km;
+        } finally {
+            kitsTracker_setContextMimeType(null);
         }
     }
 
@@ -1025,7 +1047,7 @@ public class BaseKit extends DefaultEditorKit {
                             try {
                                 boolean doInsert = true; // editorUI.getAbbrev().checkAndExpand(ch, evt);
                                 if (doInsert) {
-                                    if (caret.isSelectionVisible()) { // valid selection
+                                    if (Utilities.isSelectionShowing(caret)) { // valid selection
                                         boolean ovr = (overwriteMode != null && overwriteMode.booleanValue());
                                         try {
                                             doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, true);
@@ -1186,7 +1208,6 @@ public class BaseKit extends DefaultEditorKit {
 
                 BaseDocument doc = (BaseDocument)target.getDocument();
                 Caret caret = target.getCaret();
-                int dotPos = caret.getDot();
 
                 Formatter formatter = doc.getFormatter();
                 formatter.indentLock();
@@ -1194,9 +1215,9 @@ public class BaseKit extends DefaultEditorKit {
                 DocumentUtilities.setTypingModification(doc, true);
                 try{
                     target.replaceSelection("");
-                    int newDotPos = dotPos; 		  // dot stays where it was
+                    final int dotPos = caret.getDot();      // dot stays where it was
                     formatter.indentNewLine(doc, dotPos);   // newline
-                    caret.setDot(newDotPos);
+                    caret.setDot(dotPos);
                 } finally {
                     DocumentUtilities.setTypingModification(doc, false);
                     doc.atomicUnlock();
@@ -1228,7 +1249,7 @@ public class BaseKit extends DefaultEditorKit {
                 doc.atomicLock();
                 DocumentUtilities.setTypingModification(doc, true);
                 try {
-                if (caret.isSelectionVisible()) { // block selected
+                if (Utilities.isSelectionShowing(caret)) { // block selected
                     try {
                         doc.getFormatter().changeBlockIndent(doc,
                                 target.getSelectionStart(), target.getSelectionEnd(), +1);
@@ -1908,7 +1929,7 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 try {
                     int pos;
-                    if (!select && caret.isSelectionVisible())
+                    if (!select && Utilities.isSelectionShowing(caret))
                     {
                         pos = target.getSelectionEnd(); 
                         if (pos != caret.getDot()) {
@@ -2052,7 +2073,7 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 try {
                     int pos;
-                    if (!select && caret.isSelectionVisible())
+                    if (!select && Utilities.isSelectionShowing(caret))
                     {
                         pos = target.getSelectionStart(); 
                         if (pos != caret.getDot()) {
@@ -2373,20 +2394,35 @@ public class BaseKit extends DefaultEditorKit {
     }
 
     /** Select line around caret */
-    public static class SelectLineAction extends KitCompoundAction {
+    public static class SelectLineAction extends LocalBaseAction {
 
         static final long serialVersionUID =-7407681863035740281L;
 
         public SelectLineAction() {
-            super(selectLineAction,
-                  new String[] {
-                      lineFirstColumnAction,
-                      selectionEndLineAction
-                      //selectionForwardAction //#41371
-                  }
-                 );
+            super(selectLineAction);
         }
 
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            if (target != null) {
+                Caret caret = target.getCaret();
+                BaseDocument doc = (BaseDocument)target.getDocument();
+                doc.atomicLock();
+                DocumentUtilities.setTypingModification(doc, true);
+                try {
+                    int dotPos = caret.getDot();
+                    int bolPos = Utilities.getRowStart(target, dotPos);
+                    int eolPos = Utilities.getRowEnd(target, dotPos);
+                    eolPos = Math.min(eolPos + 1, doc.getLength()); // include '\n'
+                    caret.setDot(bolPos);
+                    caret.moveDot(eolPos);
+                } catch (BadLocationException e) {
+                    target.getToolkit().beep();
+                } finally {
+                    DocumentUtilities.setTypingModification(doc, false);
+                    doc.atomicUnlock();
+                }
+            }
+        }
     }
 
     /** Select text of whole document */

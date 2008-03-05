@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
+import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import java.awt.Dialog;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
@@ -47,18 +49,14 @@ import org.openide.util.NbBundle;
 public class AddCorrelationSetAction extends BpelNodeAction {
     private static final long serialVersionUID = 1L;
 
-
     public AddCorrelationSetAction() {
         putValue(SHORT_DESCRIPTION, NbBundle.getMessage(getClass(), 
                 "CTL_DESC_AddCorrelationSetAction")); // NOI18N
     }    
     
-    
-    
     protected String getBundleName() {
         return NbBundle.getMessage(getClass(), "CTL_AddCorrelationSetAction"); // NOI18N
     }
-    
     
     public ActionType getType() {
         return ActionType.ADD_CORRELATION_SET;
@@ -67,6 +65,7 @@ public class AddCorrelationSetAction extends BpelNodeAction {
     protected void performAction(BpelEntity[] bpelEntities) {
     }
     
+    @Override
     public void performAction(Node[] nodes) {
         //
         final BaseScope baseScope;
@@ -107,6 +106,10 @@ public class AddCorrelationSetAction extends BpelNodeAction {
         });
         //
         Dialog dialog = SoaDialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
+            getClass(), "A11_DESCRIPTOR_AddCorrelationSetDialog"));
+        dialog.getAccessibleContext().setAccessibleName(NbBundle.getMessage(
+            getClass(), "A11_NAME_AddCorrelationSetDialog"));
         dialog.setVisible(true);
     }
     
@@ -168,6 +171,8 @@ public class AddCorrelationSetAction extends BpelNodeAction {
 ////        container.addCorrelationSet(newCorrSet);
 //    }
 //
+
+    @Override
     protected boolean enable(BpelEntity[] bpelEntities) {
         if (!super.enable(bpelEntities)) {
             return false;

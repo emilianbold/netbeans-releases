@@ -42,19 +42,22 @@
     <import namespace="http://localhost/BluePrint5/Reservation"
             location="Reservation.wsdl"
             importType="http://schemas.xmlsoap.org/wsdl/"></import>
+
     <import namespace="http://localhost/BluePrint5/AirLineReservation"
             location="AirLineReservation.wsdl"
             importType="http://schemas.xmlsoap.org/wsdl/"></import>
+    
     <import namespace="http://localhost/BluePrint5/CarReservation"
             location="CarReservation.wsdl"
             importType="http://schemas.xmlsoap.org/wsdl/"></import>
+    
     <import namespace="http://localhost/BluePrint5/HotelReservation"
             location="HotelReservation.wsdl"
             importType="http://schemas.xmlsoap.org/wsdl/"></import>
+    
     <import namespace="http://ReservationSystem.org/xsd/reserve"
             location="reservation.xsd"
             importType="http://www.w3.org/2001/XMLSchema"></import>
-    
     
     <partnerLinks>
         <partnerLink name="reservationPLink"
@@ -80,35 +83,25 @@
                      myRole="statusReceivingRole"/>
     </partnerLinks>
     <variables>
-        <variable name="reserve"
-                  messageType="ns0:reserveMesg"></variable>
-        <variable name="reservationStatus"
-                  messageType="ns0:reservationStatus"></variable>
-        <variable name="reservationFault"
-                  messageType="ns0:reservationFailed"></variable>
-        <variable name="reserveAirlineVar"
-                  messageType="ns1:AirlineReservation"></variable>
-        <variable name="airlineStatusVar"
-                  messageType="ns1:AirlineReservationStatus"></variable>
-        <variable name="reserveCarVar"
-                  messageType="ns2:CarReservation"></variable>
-        <variable name="carStatusVar"
-                  messageType="ns2:CarReservationStatus"></variable>
-        <variable name="reserveHotelVar"
-                  messageType="ns3:HotelReservation"></variable>
-        <variable name="hotelStatusVar"
-                  messageType="ns3:HotelReservationStatus"></variable>                  
-        <variable name="tempCarStatusVar"
-                  messageType="ns2:CarReservationStatus"></variable>
-        <variable name="tempAirlineStatusVar"
-                  messageType="ns1:AirlineReservationStatus"></variable>
-        <variable name="tempHotelStatusVar"
-                  messageType="ns3:HotelReservationStatus"></variable>
+        <variable name="reserve" messageType="ns0:reserveMesg"></variable>
+        <variable name="reservationStatus" messageType="ns0:reservationStatus"></variable>
+        <variable name="reservationFault" messageType="ns0:reservationFailed"></variable>
+        <variable name="reserveAirlineVar" messageType="ns1:AirlineReservation"></variable>
+        <variable name="airlineStatusVar" messageType="ns1:AirlineReservationStatus"></variable>
+        <variable name="reserveCarVar" messageType="ns2:CarReservation"></variable>
+        <variable name="carStatusVar" messageType="ns2:CarReservationStatus"></variable>
+        <variable name="reserveHotelVar" messageType="ns3:HotelReservation"></variable>
+        <variable name="hotelStatusVar" messageType="ns3:HotelReservationStatus"></variable>
+        <variable name="tempCarStatusVar" messageType="ns2:CarReservationStatus"></variable>
+        <variable name="tempAirlineStatusVar" messageType="ns1:AirlineReservationStatus"></variable>
+        <variable name="tempHotelStatusVar" messageType="ns3:HotelReservationStatus"></variable>
     </variables>
+
     <correlationSets>
         <correlationSet name="reservationCorrelationSet"
                         properties="ns0:reservationID "/>
     </correlationSets>
+    
     <sequence>
         <receive name="reserve"
                  partnerLink="reservationPLink"
@@ -121,6 +114,7 @@
                              initiate="yes"/>
             </correlations>
         </receive>
+        
         <assign name="Assign_1">
             <copy>
                 <from>$reserve.reservePart/rsrv:reservationID</from>
@@ -147,6 +141,7 @@
                 <to>$reserveHotelVar.reserveHotelPart/rsrv:description</to>
             </copy>
         </assign>
+        
         <flow name="Flow2">
             <invoke name="reserveAirline"
                     partnerLink="airlineReservation"
@@ -164,6 +159,7 @@
                     operation="reserveHotel"
                     inputVariable="reserveHotelVar"></invoke>
         </flow>
+
         <flow name="Flow">
             <pick name="receiveHotelStatus">
                 <onMessage partnerLink="hotelReservationStatusPLink"
@@ -194,6 +190,7 @@
                     </assign>
                 </onAlarm>
             </pick>
+        
             <pick name="receiveCarStatus">
                 <onMessage partnerLink="carReservationStatusPLink"
                            portType="ns2:CarStatusPortType"
@@ -253,6 +250,7 @@
                 </onAlarm>
             </pick>
         </flow>
+
         <assign name="Assign2">
             <copy>
                 <from>$tempAirlineStatusVar.status/rsrv:reservationStatus</from>

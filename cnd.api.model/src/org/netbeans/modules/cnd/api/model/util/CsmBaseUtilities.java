@@ -46,16 +46,21 @@ import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 
 /**
  *
@@ -105,6 +110,65 @@ public class CsmBaseUtilities {
         return false;
     }
     
+    private static boolean TRACE_XREF_REPOSITORY = Boolean.getBoolean("cnd.modelimpl.trace.xref.repository");
+    
+    public static CsmFunction getOperator(CsmClassifier cls, CsmFunction.OperatorKind opKind) {
+        if (!CsmKindUtilities.isClass(cls)) {
+            return null;
+        }
+        for (CsmMember member : ((CsmClass)cls).getMembers()) {
+            if (CsmKindUtilities.isOperator(member)) {
+                if (((CsmFunction)member).getOperatorKind() == opKind) {
+                    return (CsmFunction)member;
+                }
+            }
+        }        
+        return null;
+    }
+    
+    /**
+     * 
+     * @param target
+     * @return new CsmObject[] { declaration, definion }
+     */
+    public static CsmObject[] getDefinitionDeclaration(CsmObject target, boolean unboxInstantiation) {
+        CsmObject decl;
+        CsmObject def; 
+        if (unboxInstantiation && CsmKindUtilities.isTemplateInstantiation(target)) {
+            target = ((CsmInstantiation)target).getTemplateDeclaration();
+        }
+        if (CsmKindUtilities.isVariableDefinition(target)) {
+            decl = ((CsmVariableDefinition)target).getDeclaration();
+            if (decl == null) {
+                decl = target;
+                if (TRACE_XREF_REPOSITORY) {
+                    System.err.println("not found declaration for variable definition " + target);
+                }
+            }
+            def = target;
+        } else if (CsmKindUtilities.isVariableDeclaration(target)) {
+            decl = target;
+            def = ((CsmVariable)target).getDefinition();
+        } else if (CsmKindUtilities.isFunctionDefinition(target)) {
+            decl = ((CsmFunctionDefinition)target).getDeclaration();
+            if (decl == null) {
+                decl = target;
+                if (TRACE_XREF_REPOSITORY) {
+                    System.err.println("not found declaration for function definition " + target);
+                }
+            }
+            def = target;
+        } else if (CsmKindUtilities.isFunctionDeclaration(target)) {
+            decl = target;
+            def = ((CsmFunction)target).getDefinition();
+        } else {
+            decl = target;
+            def = null;
+        }
+        assert decl != null;
+        return new CsmObject[] { decl, def };
+    }
+    
     public static CsmClass getFunctionClass(CsmFunction fun) {
         assert (fun != null) : "must be not null";
         CsmClass clazz = null;
@@ -115,6 +179,41 @@ public class CsmBaseUtilities {
         return clazz;
     }   
         
+    public static CsmClass getObjectClass(CsmObject obj) {
+        CsmClass objClass = null;
+        if (CsmKindUtilities.isFunction(obj)) {
+            objClass = CsmBaseUtilities.getFunctionClass((CsmFunction)obj);
+        } else if (CsmKindUtilities.isClass(obj)) {
+            objClass = (CsmClass)obj;
+        } else if (CsmKindUtilities.isEnumerator(obj)) {
+            objClass = getObjectClass(((CsmEnumerator)obj).getEnumeration());
+        } else if (CsmKindUtilities.isScopeElement(obj)) {
+            CsmScope scope = ((CsmScopeElement)obj).getScope();
+            if (CsmKindUtilities.isClass(scope)) {
+                objClass = (CsmClass)scope;
+            }
+        }
+        return objClass;
+    }
+    
+    public static CsmNamespace getObjectNamespace(CsmObject obj) {
+        CsmNamespace objNs = null;
+        if (CsmKindUtilities.isNamespace(obj)) {
+            objNs = (CsmNamespace)obj;
+        } else if (CsmKindUtilities.isFunction(obj)) {
+            objNs = CsmBaseUtilities.getFunctionNamespace((CsmFunction)obj);
+        } else if (CsmKindUtilities.isClass(obj)) {
+            objNs = CsmBaseUtilities.getClassNamespace((CsmClassifier)obj);
+        } else if (CsmKindUtilities.isEnumerator(obj)) {
+            objNs = getObjectNamespace(((CsmEnumerator)obj).getEnumeration());
+        } else if (CsmKindUtilities.isScopeElement(obj)) {
+            CsmScope scope = ((CsmScopeElement)obj).getScope();
+            if (CsmKindUtilities.isNamespace(scope)) {
+                objNs = (CsmNamespace)scope;
+            }
+        }
+        return objNs;
+    }
     
     public static CsmNamespace getFunctionNamespace(CsmFunction fun) {
         if (CsmKindUtilities.isFunctionDefinition(fun)) {
@@ -157,6 +256,14 @@ public class CsmBaseUtilities {
         return funDecl;
     }    
     
+    public static boolean isFileLocalFunction(CsmFunction fun) {
+        CsmFunction decl = getFunctionDeclaration(fun);
+        if (decl != null && CsmKindUtilities.isFile(decl.getScope())) {
+            return true;
+        }
+        return false;
+    }
+    
     public static CsmClass getContextClass(CsmOffsetableDeclaration contextDeclaration) {
         if (contextDeclaration == null) {
             return null;
@@ -186,7 +293,7 @@ public class CsmBaseUtilities {
     public static CsmClassifier getOriginalClassifier(CsmClassifier orig) {
         // FIXUP: after fixing IZ# the code shold be changed to simple loop
         if (orig == null) {
-            throw new NullPointerException("orig parameter must be not null");
+            throw new NullPointerException("orig parameter must be not null"); // NOI18N
         }
         CsmClassifier out = orig;
         Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);

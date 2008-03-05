@@ -80,16 +80,16 @@ public class ModuleListTest extends TestBase {
     }
     
     public void testParseProperties() throws Exception {
-        File basedir = file("ant/browsetask");
-        PropertyEvaluator eval = ModuleList.parseProperties(basedir, nbCVSRootFile(), false, false, "org.netbeans.modules.ant.browsetask");
+        File basedir = file("ant.browsetask");
+        PropertyEvaluator eval = ModuleList.parseProperties(basedir, nbRootFile(), false, false, "org.netbeans.modules.ant.browsetask");
         String nbdestdir = eval.getProperty("netbeans.dest.dir");
         assertNotNull(nbdestdir);
         assertEquals(file("nbbuild/netbeans"), PropertyUtils.resolveFile(basedir, nbdestdir));
         assertEquals("modules/org-netbeans-modules-ant-browsetask.jar", eval.getProperty("module.jar"));
         assertEquals(file("nbbuild/netbeans/" + TestBase.CLUSTER_JAVA), PropertyUtils.resolveFile(basedir, eval.getProperty("cluster")));
         assertNull(eval.getProperty("suite.dir"));
-        basedir = file("openide/loaders");
-        eval = ModuleList.parseProperties(basedir, nbCVSRootFile(), false, false, "org.openide.loaders");
+        basedir = file("openide.loaders");
+        eval = ModuleList.parseProperties(basedir, nbRootFile(), false, false, "org.openide.loaders");
         assertEquals("modules/org-openide-loaders.jar", eval.getProperty("module.jar"));
         basedir = new File(suite1, "action-project");
         eval = ModuleList.parseProperties(basedir, suite1, true, false, "org.netbeans.examples.modules.action");
@@ -125,7 +125,7 @@ public class ModuleListTest extends TestBase {
 
     public void testNetBeansOrgEntries() throws Exception {
         long start = System.currentTimeMillis();
-        ModuleList ml = ModuleList.getModuleList(file("ant/browsetask")); // should be arbitrary
+        ModuleList ml = ModuleList.getModuleList(file("ant.browsetask")); // should be arbitrary
         System.err.println("Time to scan netbeans.org sources: " + (System.currentTimeMillis() - start) + "msec");
         System.err.println("Directories traversed: " + ModuleList.directoriesChecked);
         System.err.println("XML files parsed: " + ModuleList.xmlFilesParsed + " in " + ModuleList.timeSpentInXmlParsing + "msec");
@@ -133,8 +133,8 @@ public class ModuleListTest extends TestBase {
         assertNotNull("have org.netbeans.modules.java.project", e);
         assertEquals("right jarLocation", file("nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/modules/org-netbeans-modules-java-project.jar"), e.getJarLocation());
         assertTrue("in all entries", ml.getAllEntries().contains(e));
-        assertEquals("right path", "java/project", e.getNetBeansOrgPath());
-        assertEquals("right source location", file("java/project"), e.getSourceLocation());
+        assertEquals("right path", "java.project", e.getNetBeansOrgPath());
+        assertEquals("right source location", file("java.project"), e.getSourceLocation());
         assertTrue("same by JAR", ModuleList.getKnownEntries(e.getJarLocation()).contains(e));
         /* will fail if nbbuild/netbeans/nbproject/private/scan-cache-full.ser exists:
         assertTrue("same by other random file", ModuleList.getKnownEntries(file("nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/config/Modules/org-netbeans-modules-java-project.xml")).contains(e));
@@ -148,20 +148,20 @@ public class ModuleListTest extends TestBase {
         assertNotNull("long description", e.getLongDescription());
         assertNotNull("release version", e.getReleaseVersion());
         assertNotNull("specification version", e.getSpecificationVersion());
-        assertEquals("number of public packages for " + e, new Integer(6), new Integer(e.getPublicPackages().length));
+        assertEquals("number of public packages for " + e, new Integer(7), new Integer(e.getPublicPackages().length));
         assertFalse("not deprecated", e.isDeprecated());
         // Test something in a different cluster and dir:
         e = ml.getEntry("org.openide.filesystems");
         assertNotNull("have org.openide.filesystems", e);
         assertEquals("right jarLocation", file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/core/org-openide-filesystems.jar"), e.getJarLocation());
-        assertEquals("right source location", file("openide/fs"), e.getSourceLocation());
+        assertEquals("right source location", file("openide.filesystems"), e.getSourceLocation());
         assertTrue("same by JAR", ModuleList.getKnownEntries(e.getJarLocation()).contains(e));
-        assertEquals("right path", "openide/fs", e.getNetBeansOrgPath());
+        assertEquals("right path", "openide.filesystems", e.getNetBeansOrgPath());
         // Test class-path extensions:
         e = ml.getEntry("org.netbeans.libs.xerces");
         assertNotNull(e);
         assertEquals("correct CP extensions (using <binary-origin> and relative paths)",
-            ":" + file("libs/xerces/external/xerces-2.8.0.jar"),
+            ":" + file("libs.xerces/external/xerces-2.8.0.jar"),
             e.getClassPathExtensions());
         /* XXX unmaintained:
         e = ml.getEntry("javax.jmi.model");
@@ -248,7 +248,7 @@ public class ModuleListTest extends TestBase {
         assertEquals("number of public packages for " + e, new Integer(1), new Integer(e.getPublicPackages().length));
         e = ml.getEntry("org.netbeans.libs.xerces");
         assertNotNull("can find nb.org binary module too", e);
-        assertEquals("have sources for that", file("libs/xerces"), e.getSourceLocation());
+        assertEquals("have sources for that", file("libs.xerces"), e.getSourceLocation());
         assertEquals("and correct JAR location", file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-libs-xerces.jar"), e.getJarLocation());
         assertEquals("and correct CP exts (using Class-Path only)",
             ":" + file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/ext/xerces-2.8.0.jar"),
@@ -278,10 +278,8 @@ public class ModuleListTest extends TestBase {
     }
     
     public void testFindNetBeansOrg() throws Exception {
-        assertEquals(nbCVSRootFile(), ModuleList.findNetBeansOrg(file("xml")));
-        assertEquals(nbCVSRootFile(), ModuleList.findNetBeansOrg(file("xml/tax")));
-        assertEquals(nbCVSRootFile(), ModuleList.findNetBeansOrg(file("xml/tax/lib")));
-        assertEquals(null, ModuleList.findNetBeansOrg(file("xml/tax/lib/src")));
+        assertEquals(nbRootFile(), ModuleList.findNetBeansOrg(file("xml.tax")));
+        assertEquals(null, ModuleList.findNetBeansOrg(file("xml.tax/lib")));
         assertEquals(null, ModuleList.findNetBeansOrg(File.listRoots()[0]));
     }
     

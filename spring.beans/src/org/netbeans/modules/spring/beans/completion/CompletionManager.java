@@ -50,35 +50,48 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementScanner6;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.Action;
+import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
-import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
+import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
+import org.netbeans.modules.spring.beans.editor.Property;
+import org.netbeans.modules.spring.beans.editor.PropertyFinder;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Node;
 
 /**
  *
@@ -101,6 +114,7 @@ public final class CompletionManager {
     private static final String ENTRY_TAG = "entry"; // NOI18N
     private static final String PROPERTY_TAG = "property"; // NOI18N
     private static final String LOOKUP_METHOD_TAG = "lookup-method"; // NOI18N
+    private static final String REPLACED_METHOD_TAG = "replaced-method";  // NOI18N
     private static final String DEPENDS_ON_ATTRIB = "depends-on"; // NOI18N
     private static final String PARENT_ATTRIB = "parent"; // NOI18N
     private static final String FACTORY_BEAN_ATTRIB = "factory-bean"; // NOI18N
@@ -127,6 +141,8 @@ public final class CompletionManager {
     private static final String LOCAL_ATTRIB = "local"; // NOI18N
     private static final String KEY_REF_ATTRIB = "key-ref"; // NOI18N
     private static final String VALUE_REF_ATTRIB = "value-ref"; // NOI18N
+    private static final String REPLACER_ATTRIB = "replacer";  // NOI18N
+    private static final String FACTORY_METHOD_ATTRIB = "factory-method"; // NOI18N
     private static Map<String, Completor> completors = new HashMap<String, Completor>();
 
     private CompletionManager() {
@@ -135,23 +151,36 @@ public final class CompletionManager {
 
     private void setupCompletors() {
 
-        String[] autowireItems = new String[]{
+        String[] defaultAutoWireItems = new String[]{
             "no", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_no"), // NOI18N
             "byName", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_byName"), // NOI18N
             "byType", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_byType"), // NOI18N
             "constructor", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_constructor"), // NOI18N
             "autodetect", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_autodetect") // NOI18N
         };
-        AttributeValueCompletor completor = new AttributeValueCompletor(autowireItems);
-        registerCompletor(BEAN_TAG, AUTOWIRE_ATTRIB, completor);
+        AttributeValueCompletor completor = new AttributeValueCompletor(defaultAutoWireItems);
         registerCompletor(BEANS_TAG, DEFAULT_AUTOWIRE_ATTRIB, completor);
-
+        
+        String[] autoWireItems = new String[defaultAutoWireItems.length + 2];
+        System.arraycopy(defaultAutoWireItems, 0, autoWireItems, 0, defaultAutoWireItems.length);
+        autoWireItems[defaultAutoWireItems.length] = "default"; // NOI18N
+        autoWireItems[defaultAutoWireItems.length + 1] = null; // XXX: Documentation
+        completor = new AttributeValueCompletor(autoWireItems);
+        registerCompletor(BEAN_TAG, AUTOWIRE_ATTRIB, completor);
+        
         String[] defaultLazyInitItems = new String[]{
             "true", null, //XXX: Documentation // NOI18N
             "false", null, //XXX: Documentation // NOI18N
         };
         completor = new AttributeValueCompletor(defaultLazyInitItems);
         registerCompletor(BEANS_TAG, DEFAULT_LAZY_INIT_ATTRIB, completor);
+        
+        String[] lazyInitItems = new String[] {
+            defaultLazyInitItems[0], defaultLazyInitItems[1],
+            defaultLazyInitItems[2], defaultLazyInitItems[3],
+            "default", null // XXX: Documentation // NOI18N
+        };
+        completor = new AttributeValueCompletor(lazyInitItems);
         registerCompletor(BEAN_TAG, LAZY_INIT_ATTRIB, completor);
         
         String[] defaultMergeItems = new String[] {
@@ -169,6 +198,11 @@ public final class CompletionManager {
         };
         completor = new AttributeValueCompletor(defaultDepCheckItems);
         registerCompletor(BEANS_TAG, DEFAULT_DEPENDENCY_CHECK_ATTRIB, completor);
+
+        String[] depCheckItems = new String[defaultDepCheckItems.length + 2];
+        depCheckItems[defaultDepCheckItems.length] = "default"; // NOI18N
+        depCheckItems[defaultDepCheckItems.length + 1] = null; // XXX Documentation
+        completor = new AttributeValueCompletor(depCheckItems);
         registerCompletor(BEAN_TAG, DEPENDENCY_CHECK_ATTRIB, completor);
         
         String[] abstractItems = new String[] {
@@ -181,6 +215,7 @@ public final class CompletionManager {
         String[] autowireCandidateItems = new String[] {
             "true", null, // XXX: documentation? // NOI18N
             "false", null, // XXX: documentation? // NOI18N
+            "default", null, // XXX: documentation? // NOI18N
         };
         completor = new AttributeValueCompletor(autowireCandidateItems);
         registerCompletor(BEAN_TAG, AUTOWIRE_CANDIDATE_ATTRIB, completor);
@@ -188,6 +223,7 @@ public final class CompletionManager {
         String[] mergeItems = new String[] {
             "true", null, // XXX: documentation? // NOI18N
             "false", null, // XXX: documentation? // NOI18N
+            "default", null, // XXX: documentation? // NOI18N
         };
         completor = new AttributeValueCompletor(mergeItems);
         registerCompletor(LIST_TAG, MERGE_ATTRIB, completor);
@@ -219,10 +255,26 @@ public final class CompletionManager {
         registerCompletor(ENTRY_TAG, VALUE_REF_ATTRIB, beansRefCompletor);
         registerCompletor(PROPERTY_TAG, REF_ATTRIB, beansRefCompletor);
         registerCompletor(LOOKUP_METHOD_TAG, BEAN_ATTRIB, beansRefCompletor);
+        registerCompletor(REPLACED_METHOD_TAG, REPLACER_ATTRIB, beansRefCompletor);
         
         beansRefCompletor = new BeansRefCompletor(false);
         registerCompletor(REF_TAG, LOCAL_ATTRIB, beansRefCompletor);
         registerCompletor(IDREF_TAG, LOCAL_ATTRIB, beansRefCompletor);
+        
+        InitDestroyMethodCompletor javaMethodCompletor = new InitDestroyMethodCompletor();
+        registerCompletor(BEAN_TAG, INIT_METHOD_ATTRIB, javaMethodCompletor);
+        registerCompletor(BEAN_TAG, DESTROY_METHOD_ATTRIB, javaMethodCompletor);
+        registerCompletor(LOOKUP_METHOD_TAG, NAME_ATTRIB, javaMethodCompletor);
+        registerCompletor(REPLACED_METHOD_TAG, NAME_ATTRIB, javaMethodCompletor);
+        
+        FactoryMethodCompletor factoryMethodCompletor = new FactoryMethodCompletor();
+        registerCompletor(BEAN_TAG, FACTORY_METHOD_ATTRIB, factoryMethodCompletor);
+        
+        PropertyCompletor propertyCompletor = new PropertyCompletor();
+        registerCompletor(PROPERTY_TAG, NAME_ATTRIB, propertyCompletor);
+        
+        PNamespaceBeanRefCompletor pNamespaceBeanRefCompletor = new PNamespaceBeanRefCompletor();
+        registerCompletor(BEAN_TAG, null, pNamespaceBeanRefCompletor);
     }
     private static CompletionManager INSTANCE = new CompletionManager();
 
@@ -244,8 +296,56 @@ public final class CompletionManager {
         }
     }
 
-    public void completeAttributes(CompletionResultSet resultSet, CompletionContext context) {
-        // TBD
+    public void completeAttributes(final CompletionResultSet resultSet, final CompletionContext context) {
+        String tagName = context.getTag().getNodeName();
+        if(tagName.equals(BEAN_TAG) && ContextUtilities.isPNamespaceAdded(context.getDocumentContext())) {
+            try {
+                final JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(context.getDocument());
+                if (js == null) {
+                    return;
+                }
+
+                final String typedPrefix = context.getTypedPrefix();
+                final String pNamespacePrefix = context.getDocumentContext().getNamespacePrefix(ContextUtilities.P_NAMESPACE);
+                final int substitutionOffset = context.getCaretOffset() - typedPrefix.length();
+                js.runUserActionTask(new Task<CompilationController>() {
+
+                    public void run(CompilationController cc) throws Exception {
+                        String className = new BeanClassFinder(context.getTag(), context.getDocument()).findImplementationClass();
+                        if (className == null) {
+                            return;
+                        }
+                        TypeElement te = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, cc);
+                        if (te == null) {
+                            return;
+                        }
+                        ElementUtilities eu = cc.getElementUtilities();
+                        Property[] props = new PropertyFinder(te.asType(), "", eu).findProperties(); // NOI18N
+                        for (Property prop : props) {
+                            if(prop.getSetter() == null) {
+                                continue;
+                            } 
+                            String attribName = pNamespacePrefix + ":" + prop.getName(); // NOI18N
+                            if (!context.getExistingAttributes().contains(attribName) && attribName.startsWith(typedPrefix)) {
+                                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
+                                        attribName, prop);
+                                resultSet.addItem(item);
+                            }
+                            attribName += "-ref"; // NOI18N
+                            if (!context.getExistingAttributes().contains(attribName) && attribName.startsWith(typedPrefix)) {
+                                SpringXMLConfigCompletionItem refItem = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
+                                        attribName, prop); // NOI18N
+                                resultSet.addItem(refItem);
+                            }
+                        }
+                    }
+                }, true);
+                
+                resultSet.setAnchorOffset(substitutionOffset);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     public void completeElements(CompletionResultSet resultSet, CompletionContext context) {
@@ -293,6 +393,11 @@ public final class CompletionManager {
     private Completor locateCompletor(String nodeName, String attributeName) {
         String key = createRegisteredName(nodeName, attributeName);
         if (completors.containsKey(key)) {
+            return completors.get(key);
+        }
+        
+        key = createRegisteredName(nodeName, null);
+        if(completors.containsKey(key)) {
             return completors.get(key);
         }
 
@@ -344,7 +449,7 @@ public final class CompletionManager {
 
                     public void run(SpringBeans sb) {
                         List<SpringBean> beans = includeGlobal ? sb.getBeans() : sb.getBeans(FileUtil.toFile(fo));
-                        Map<String, SpringBean> name2Bean = getName2Beans(beans);
+                        Map<String, SpringBean> name2Bean = getName2Beans(beans, includeGlobal); // if local beans, then add only bean ids;
                         for(String beanName : name2Bean.keySet()) {
                             if(!beanName.startsWith(prefix) || cNames.contains(beanName)) {
                                 continue;
@@ -357,16 +462,18 @@ public final class CompletionManager {
                         }
                     }
 
-                    private Map<String, SpringBean> getName2Beans(List<SpringBean> beans) {
+                    private Map<String, SpringBean> getName2Beans(List<SpringBean> beans, boolean addNames) {
                         Map<String, SpringBean> name2Bean = new HashMap<String, SpringBean>();
                         for (SpringBean bean : beans) {
                             String beanId = bean.getId();
-                            List<String> beanNames = bean.getNames();
                             if (beanId != null) {
                                 name2Bean.put(beanId, bean);
                             }
-                            for (String beanName : beanNames) {
-                                name2Bean.put(beanName, bean);
+                            if (addNames) {
+                                List<String> beanNames = bean.getNames();
+                                for (String beanName : beanNames) {
+                                    name2Bean.put(beanName, bean);
+                                }
                             }
                         }
 
@@ -452,12 +559,10 @@ public final class CompletionManager {
                     ClassIndex ci = cc.getJavaSource().getClasspathInfo().getClassIndex();
                     int index = substitutionOffset;
                     String packName = typedPrefix;
-                    String classPrefix = "";
                     int dotIndex = typedPrefix.lastIndexOf('.'); // NOI18N
                     if (dotIndex != -1) {
                         index += (dotIndex + 1);  // NOI18N
                         packName = typedPrefix.substring(0, dotIndex);
-                        classPrefix = (dotIndex + 1 < typedPrefix.length()) ? typedPrefix.substring(dotIndex + 1) : "";
                     }
                     addPackages(ci, results, typedPrefix, index);
 
@@ -465,13 +570,13 @@ public final class CompletionManager {
                     if (pkgElem == null) {
                         return;
                     }
-                    List<? extends Element> pkgChildren = pkgElem.getEnclosedElements();
-                    for (Element pkgChild : pkgChildren) {
-                        if ((pkgChild.getKind() == ElementKind.CLASS) && pkgChild.getSimpleName().toString().startsWith(classPrefix)) {
-                            TypeElement typeElement = (TypeElement) pkgChild;
+                    
+                    // get this as well as non-static inner classes
+                    List<TypeElement> tes = new TypeScanner().scan(pkgElem);
+                    for (TypeElement te : tes) {
+                        if (ElementUtilities.getBinaryName(te).startsWith(typedPrefix)) {
                             SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                    typeElement, ElementHandle.create(typeElement), 
-                                    cc.getElements().isDeprecated(pkgChild), false);
+                                    te, ElementHandle.create(te), cc.getElements().isDeprecated(te), false);
                             results.add(item);
                         }
                     }
@@ -480,8 +585,8 @@ public final class CompletionManager {
                 }
             }, true);
         }
-
-        private void doSmartJavaCompletion(JavaSource js, final List<SpringXMLConfigCompletionItem> results, 
+        
+        private void doSmartJavaCompletion(final JavaSource js, final List<SpringXMLConfigCompletionItem> results, 
                 final String typedPrefix, final int substitutionOffset) throws IOException {
             js.runUserActionTask(new Task<CompilationController>() {
 
@@ -496,18 +601,20 @@ public final class CompletionManager {
                             NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(SearchScope.class));
                     for (ElementHandle<TypeElement> eh : matchingTypes) {
                         if (eh.getKind() == ElementKind.CLASS) {
-                            TypeElement typeElement = eh.resolve(cc);
-                            if (typeElement != null) {
-                                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                        typeElement, eh, cc.getElements().isDeprecated(typeElement), true);
-                                results.add(item);
-                            }
+                            LazyTypeCompletionItem item = LazyTypeCompletionItem.create(substitutionOffset, eh, js);
+                            results.add(item);
                         }
                     }
                 }
             }, true);
             
             setAnchorOffset(substitutionOffset);
+        }
+        
+        private static boolean isAccessibleClass(TypeElement te) {
+            NestingKind nestingKind = te.getNestingKind();
+            return (nestingKind == NestingKind.TOP_LEVEL) 
+                    || (nestingKind == NestingKind.MEMBER && te.getModifiers().contains(Modifier.STATIC));
         }
         
         private void addPackages(ClassIndex ci, List<SpringXMLConfigCompletionItem> results, String typedPrefix, int substitutionOffset) {
@@ -519,6 +626,369 @@ public final class CompletionManager {
                 }
             }
         }
+        
+        private static final class TypeScanner extends ElementScanner6<List<TypeElement>, Void> {
+
+            public TypeScanner() {
+                super(new ArrayList<TypeElement>());
+            }
+            
+            @Override
+            public List<TypeElement> visitType(TypeElement typeElement, Void arg) {
+                if(typeElement.getKind() == ElementKind.CLASS && isAccessibleClass(typeElement)) {
+                    DEFAULT_VALUE.add(typeElement);
+                }
+                return super.visitType(typeElement, arg);
+            }
+            
+        }
+    }
+    
+    private static abstract class JavaMethodCompletor extends Completor {
+
+        @Override
+        public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
+            final List<SpringXMLConfigCompletionItem> results = new  ArrayList<SpringXMLConfigCompletionItem>();
+            try {
+                final String classBinaryName = getTypeName(context);
+                final Public publicFlag = getPublicFlag(context);
+                final Static staticFlag = getStaticFlag(context);
+                final int argCount = getArgCount(context);
+                
+                if (classBinaryName == null || classBinaryName.equals("")) { // NOI18N
+                    return Collections.emptyList();
+                }
+                Document doc = context.getDocument();
+
+                final JavaSource javaSource = SpringXMLConfigEditorUtils.getJavaSource(doc);
+                if (javaSource == null) {
+                    return Collections.emptyList();
+                }
+
+                javaSource.runUserActionTask(new Task<CompilationController>() {
+
+                    public void run(CompilationController controller) throws Exception {
+                        controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                        TypeElement classElem = SpringXMLConfigEditorUtils.findClassElementByBinaryName(classBinaryName, controller);
+                        if (classElem == null) {
+                            return;
+                        }
+                        
+                        ElementUtilities eu = controller.getElementUtilities();
+                        ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+
+                            public boolean accept(Element e, TypeMirror type) { 
+                                // XXX : display methods of java.lang.Object? 
+                                // Displaying them adds unnecessary clutter in the completion window
+                                if (e.getKind() == ElementKind.METHOD) {
+                                    TypeElement te = (TypeElement) e.getEnclosingElement();
+                                    if(te.getQualifiedName().contentEquals("java.lang.Object")) { // NOI18N
+                                        return false;
+                                    }
+
+                                    // match name
+                                    if(!e.getSimpleName().toString().startsWith(context.getTypedPrefix())) {
+                                        return false;
+                                    }
+                                    
+                                    ExecutableElement method = (ExecutableElement) e;
+                                    // match argument count
+                                    if(argCount != -1 && method.getParameters().size() != argCount) {
+                                        return false;
+                                    }
+                                
+                                    // match static
+                                    if (staticFlag != Static.DONT_CARE) {
+                                        boolean isStatic = method.getModifiers().contains(Modifier.STATIC);
+                                        if ((isStatic && staticFlag == Static.NO) || (!isStatic && staticFlag == Static.YES)) {
+                                            return false;
+                                        }
+                                    }
+                                    
+                                    // match public
+                                    if (publicFlag != Public.DONT_CARE) {
+                                        boolean isPublic = method.getModifiers().contains(Modifier.PUBLIC);
+                                        if ((isPublic && publicFlag == Public.NO) || (!isPublic && publicFlag == Public.YES)) {
+                                            return false;
+                                        }
+                                    }
+                                    
+                                    return true;
+                                }
+                                
+                                return false;
+                            }
+                        };
+
+                        int substitutionOffset = context.getCurrentToken().getOffset() + 1;
+                        Iterable<? extends Element> methods = eu.getMembers(classElem.asType(), acceptor);
+                        
+                        methods = filter(methods);
+                        
+                        for (Element e : methods) {
+                            SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createMethodItem(
+                                    substitutionOffset, (ExecutableElement) e, e.getEnclosingElement() != classElem,
+                                    controller.getElements().isDeprecated(e));
+                            results.add(item);
+                        }
+                        
+                        setAnchorOffset(substitutionOffset);
+
+                    }
+                }, false);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            return results;
+
+        }
+        
+        /**
+         * Should the method be public
+         */
+        protected abstract Public getPublicFlag(CompletionContext context);
+        
+        /**
+         * Should the method be static
+         */
+        protected abstract Static getStaticFlag(CompletionContext context);
+
+        /**
+         * Number of arguments of the method
+         */
+        protected abstract int getArgCount(CompletionContext context);
+
+        /**
+         * Binary name of the class which should be searched for methods
+         */
+        protected abstract String getTypeName(CompletionContext context);
+
+        /**
+         * Post process applicable methods, for eg. return only those
+         * methods which return do not return void
+         */
+        protected Iterable<? extends Element> filter(Iterable<? extends Element> methods) {
+            return methods;
+        }
+    }
+    
+    private static class InitDestroyMethodCompletor extends JavaMethodCompletor {
+
+        public InitDestroyMethodCompletor() {
+        }
+
+        @Override
+        protected Public getPublicFlag(CompletionContext context) {
+            return Public.DONT_CARE;
+        }
+
+        @Override
+        protected Static getStaticFlag(CompletionContext context) {
+            return Static.NO;
+        }
+
+        @Override
+        protected int getArgCount(CompletionContext context) {
+            return 0;
+        }
+
+        @Override
+        protected String getTypeName(CompletionContext context) {
+            Node tag = context.getTag();
+            return new BeanClassFinder(tag, context.getDocument()).findImplementationClass();
+        }
+    }
+    
+    private static class FactoryMethodCompletor extends JavaMethodCompletor {
+
+        private Static staticFlag = Static.YES;
+        
+        @Override
+        protected Public getPublicFlag(CompletionContext context) {
+            return Public.DONT_CARE;
+        }
+
+        @Override
+        protected Static getStaticFlag(CompletionContext context) {
+            return staticFlag;
+        }
+
+        @Override
+        protected int getArgCount(CompletionContext context) {
+            return -1;
+        }
+
+        @Override
+        protected String getTypeName(CompletionContext context) {
+            Node tag = context.getTag();
+            SpringBean mergedBean = SpringXMLConfigEditorUtils.getMergedBean(tag, context.getDocument());
+            if(mergedBean == null) {
+                return null;
+            }
+            
+            final String[] className = {mergedBean.getClassName()};
+
+            // if factory-bean has been defined, resolve it and get it's class name
+            if (mergedBean.getFactoryBean() != null) {
+                final String factoryBeanName = mergedBean.getFactoryBean();
+                FileObject fo = NbEditorUtilities.getFileObject(context.getDocument());
+                if (fo == null) {
+                    return null;
+                }
+                SpringConfigModel model = SpringConfigModel.forFileObject(fo);
+                try {
+                    model.runReadAction(new Action<SpringBeans>() {
+
+                        public void run(SpringBeans beans) {
+                            SpringBean bean = beans.findBean(factoryBeanName);
+                            if (bean == null) {
+                                className[0] = null;
+                                return;
+                            }
+                            className[0] = bean.getClassName();
+                        }
+                    });
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                    className[0] = null;
+                }
+
+                staticFlag = Static.NO;
+            }
+            
+            return className[0];
+        }
+
+        @Override
+        protected Iterable<? extends Element> filter(Iterable<? extends Element> methods) {
+            List<ExecutableElement> ret = new ArrayList<ExecutableElement>();
+            for(Element e : methods) {
+                ExecutableElement method = (ExecutableElement) e;
+                if(method.getReturnType().getKind() != TypeKind.VOID) {
+                    ret.add(method);
+                }
+            }
+            
+            return ret;
+        }
+    }
+    
+    private static class PropertyCompletor extends Completor {
+
+        public PropertyCompletor() {
+        }
+
+        @Override
+        public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
+            final List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
+            final String propertyPrefix = context.getTypedPrefix();
+            final JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(context.getDocument());
+            if (js == null) {
+                return Collections.emptyList();
+            }
+            
+            try {
+                // traverse the properties
+                final int dotIndex = propertyPrefix.lastIndexOf("."); // NOI18N
+                js.runUserActionTask(new Task<CompilationController>() {
+
+                    public void run(CompilationController cc) throws Exception {
+                        String className = new BeanClassFinder(
+                                SpringXMLConfigEditorUtils.getBean(context.getTag()), 
+                                context.getDocument()).findImplementationClass();
+                        if (className == null) {
+                            return;
+                        }
+                        TypeElement te = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, cc);
+                        if (te == null) {
+                            return;
+                        }
+                        TypeMirror startType = te.asType();
+                        ElementUtilities eu = cc.getElementUtilities();
+                        
+                        // property chain
+                        if(dotIndex != -1) {
+                            String getterChain = propertyPrefix.substring(0, dotIndex);
+                            StringTokenizer tokenizer = new StringTokenizer(getterChain, "."); // NOI18N
+                            while (tokenizer.hasMoreTokens() && startType != null) {
+                                String propertyName = tokenizer.nextToken();
+                                Property[] props = new PropertyFinder(startType, propertyName, eu).findProperties();
+                                
+                                // no matching element found
+                                if (props.length == 0 || props[0].getGetter() == null) {
+                                    startType = null;
+                                    break;
+                                }
+
+                                TypeMirror retType = props[0].getGetter().getReturnType();
+                                if (retType.getKind() == TypeKind.DECLARED) {
+                                    startType = retType;
+                                } else {
+                                    startType = null;
+                                }
+                            }
+                        }
+                        
+                        if(startType == null) {
+                            return;
+                        }
+                        
+                        String setterPrefix = "";
+                        if(dotIndex != propertyPrefix.length() - 1) {
+                            setterPrefix = propertyPrefix.substring(dotIndex + 1);
+                        }
+                        
+                        Property[] props = new PropertyFinder(startType, setterPrefix, eu).findProperties();
+                        int substitutionOffset = context.getCurrentToken().getOffset() + 1;
+                        if(dotIndex != -1) {
+                            substitutionOffset += dotIndex + 1;
+                        }
+                        
+                        for (Property prop : props) {
+                            if(prop.getSetter() == null) {
+                                continue;
+                            }
+                            results.add(SpringXMLConfigCompletionItem.createPropertyItem(substitutionOffset, prop));
+                        }
+                    }
+                }, false);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
+            return results;
+        }
+    }
+    
+    private static class PNamespaceBeanRefCompletor extends Completor {
+
+        public PNamespaceBeanRefCompletor() {
+        }
+        
+        @Override
+        public List<SpringXMLConfigCompletionItem> doCompletion(CompletionContext context) {
+            TokenItem attribToken = ContextUtilities.getAttributeToken(context.getCurrentToken());
+            if (attribToken == null) {
+                return Collections.emptyList();
+            }
+
+            String attribName = attribToken.getImage();
+            if (!ContextUtilities.isPNamespaceName(context.getDocumentContext(), attribName)) {
+                return Collections.emptyList();
+            }
+
+            if (!attribName.endsWith("-ref")) { // NOI18N
+                return Collections.emptyList();
+
+            }
+
+            // XXX: Ideally find out the property name and it's expected type
+            // to list bean proposals intelligently
+            BeansRefCompletor beansRefCompletor = new BeansRefCompletor(true);
+            return beansRefCompletor.doCompletion(context);
+        }
+        
     }
 
     private static class ResourceCompletor extends Completor {
@@ -568,7 +1038,7 @@ public final class CompletionManager {
             Enumeration<? extends FileObject> files = fileObject.getData(false);
             while (files.hasMoreElements()) {
                 FileObject fo = files.nextElement();
-                if (fo.getName().startsWith(prefix) && fo.getMIMEType().equals(SpringXMLConfigDataLoader.REQUIRED_MIME)) {
+                if (fo.getName().startsWith(prefix) && SpringConstants.CONFIG_MIME_TYPE.equals(fo.getMIMEType())) {
                     results.add(SpringXMLConfigCompletionItem.createSpringXMLFileItem(context.getCaretOffset() - prefix.length(), fo));
                 }
             }

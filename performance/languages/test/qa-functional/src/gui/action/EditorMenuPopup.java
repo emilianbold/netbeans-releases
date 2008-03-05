@@ -42,6 +42,7 @@
 package gui.action;
 
 import gui.Projects;
+import gui.ScriptingUtilities;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -86,7 +87,7 @@ public class EditorMenuPopup extends org.netbeans.performance.test.utilities.Per
     
     protected Node getProjectNode(String projectName) {
         if(projectsTab==null)
-            projectsTab = new ProjectsTabOperator();
+            projectsTab = ScriptingUtilities.invokePTO();
         
         return projectsTab.getProjectRootNode(projectName);
     }
@@ -103,7 +104,7 @@ public class EditorMenuPopup extends org.netbeans.performance.test.utilities.Per
     public void prepare() {
         log("::prepare"); 
         new OpenAction().performAPI(fileToBeOpened);
-        editorOperator = EditorWindowOperator.getEditor(docName);        
+        editorOperator = EditorWindowOperator.getEditor(docName);  
     }
 
     @Override
@@ -134,7 +135,7 @@ public class EditorMenuPopup extends org.netbeans.performance.test.utilities.Per
         docName = "ruby20kb.rb"; 
         doMeasurement();
     } 
-    public void test_RTML_EditorPopup() {
+    public void test_RHTML_EditorPopup() {
         testProject = Projects.RAILS_PROJECT;
         pathName = "Views"+"|";
         docName = "rhtml20kb.rhtml"; 

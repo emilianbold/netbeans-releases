@@ -239,7 +239,7 @@ public class BracesMatchHighlighting extends AbstractHighlightsContainer
             return new HighlightsLayer [] {
                 HighlightsLayer.create(
                     "org-netbeans-modules-editor-bracesmatching-BracesMatchHighlighting", //NOI18N
-                    ZOrder.SHOW_OFF_RACK.forPosition(600), 
+                    ZOrder.SHOW_OFF_RACK.forPosition(400), 
                     true, 
                     new BracesMatchHighlighting(context.getComponent(), context.getDocument())
                 )

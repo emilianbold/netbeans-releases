@@ -48,7 +48,6 @@ import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
@@ -60,7 +59,6 @@ import org.netbeans.installer.product.filters.OrFilter;
 import org.netbeans.installer.product.filters.ProductFilter;
 import org.netbeans.installer.product.filters.RegistryFilter;
 import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
@@ -68,6 +66,7 @@ import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
@@ -108,7 +107,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         setProperty(WELCOME_TEXT_HEADER_PROPERTY,
                 (type.isJDKBundle() ?
                     DEFAULT_WELCOME_TEXT_HEADER_JDK :
-                    DEFAULT_WELCOME_TEXT_HEADER ));
+                    (type.equals(BundleType.JAVA_TOOLS) ? 
+                           DEFAULT_WELCOME_TEXT_HEADER_JTB : 
+                                   DEFAULT_WELCOME_TEXT_HEADER )));
         
         setProperty(WELCOME_TEXT_DETAILS_PROPERTY,
                 ResourceUtils.getString(NbWelcomePanel.class,
@@ -248,7 +249,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         product.setStatus(Status.NOT_INSTALLED);
                     }
                 } else if(type.isJDKBundle() && product.getUid().equals("jdk")) { // current checking product in global registry is jdk
-                    if(product.getStatus() == Status.TO_BE_INSTALLED){
+                    if(product.getStatus() == Status.TO_BE_INSTALLED && 
+                        ExecutionMode.getCurrentExecutionMode() == ExecutionMode.NORMAL) {
                         // check if jdk is already installed                        
                         if(JavaUtils.findJDKHome(product.getVersion())!=null) {
                             product.setStatus(Status.NOT_INSTALLED);
@@ -527,21 +529,23 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 }
             }
             
-            try {
-                final long availableSize = SystemUtils.getFreeSpace(
-                        Installer.getInstance().getLocalDirectory());
-                
-                long requiredSize = 0;
-                for (Product product: products) {
-                    requiredSize += product.getDownloadSize();
-                }
-                requiredSize += REQUIRED_SPACE_ADDITION;
-                
-                if (availableSize < requiredSize) {
-                    return StringUtils.format(
-                            template,
-                            Installer.getInstance().getLocalDirectory(),
-                            StringUtils.formatSize(requiredSize - availableSize));
+            try {                
+                if(!Boolean.getBoolean(SystemUtils.NO_SPACE_CHECK_PROPERTY)) {                     
+                    final long availableSize = SystemUtils.getFreeSpace(
+                            Installer.getInstance().getLocalDirectory());
+                    
+                    long requiredSize = 0;
+                    for (Product product: products) {
+                        requiredSize += product.getDownloadSize();
+                    }
+                    requiredSize += REQUIRED_SPACE_ADDITION;
+                    
+                    if (availableSize < requiredSize) {
+                        return StringUtils.format(
+                                template,
+                                Installer.getInstance().getLocalDirectory(),
+                                StringUtils.formatSize(requiredSize - availableSize));
+                    }
                 }
             } catch (NativeException e) {
                 ErrorManager.notifyError(
@@ -649,7 +653,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             NbiTextPane separatorPane =  new NbiTextPane();
             BundleType type = BundleType.getType(
                     System.getProperty(WELCOME_PAGE_TYPE_PROPERTY));
-            if(!type.equals(BundleType.JAVAEE) && !type.equals(BundleType.JAVAEE_JDK)) {
+            if(!type.equals(BundleType.JAVAEE) && !type.equals(BundleType.JAVAEE_JDK) && 
+                    !type.equals(BundleType.JAVA_TOOLS)) {
                 add(scrollPane, new GridBagConstraints(
                         1, dy++,                           // x, y
                         4, 1,                              // width, height
@@ -776,7 +781,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 customizeButton.setOpaque(false);
             }
             
-            if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.CUSTOMIZE_JDK)) {
+            if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.CUSTOMIZE_JDK) ||
+                    type.equals(BundleType.JAVA_TOOLS)) {
                 customizeButton.setVisible(true);
             } else {
                 customizeButton.setVisible(false);
@@ -851,7 +857,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         JAVAME_JDK("javame.jdk"),
         RUBY_JDK("ruby.jdk"),
         CND_JDK("cnd.jdk"),
-        CUSTOMIZE_JDK("customize.jdk");
+        CUSTOMIZE_JDK("customize.jdk"),
+        JAVA_TOOLS("java.tools");
         
         private String name;
         private BundleType(String s) {
@@ -923,6 +930,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String DEFAULT_WELCOME_TEXT_HEADER_JDK =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.text.header.jdk"); // NOI18N
+    public static final String DEFAULT_WELCOME_TEXT_HEADER_JTB =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.welcome.text.header.jtb"); // NOI18N
     public static final String WELCOME_TEXT_HEADER_APPENDING_PROPERTY =
             "NWP.welcome.text.header"; // NOI18N
     

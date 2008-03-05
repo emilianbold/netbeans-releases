@@ -44,6 +44,9 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.netbeans.api.java.source.JavaSource;
@@ -61,7 +64,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -250,8 +252,6 @@ public class RestUtils {
                 String classAnonType = annotation.getAnnotationType().toString();
                 if (Constants.XML_ROOT_ELEMENT.equals(classAnonType)) {
                     return true;
-                } else {
-                    return false;
                 }
             }
         }
@@ -296,8 +296,6 @@ public class RestUtils {
         MethodTree method = null;
         List<MethodTree> rTrees = JavaSourceHelper.getAllMethods(rSrc);
         for (MethodTree tree : rTrees) {
-            String mName = tree.getName().toString();
-            ClientStubModel.Method m = null;
             boolean isHttpGetMethod = false;
             boolean isXmlMime = false;
             List<? extends AnnotationTree> mAnons = tree.getModifiers().getAnnotations();
@@ -306,8 +304,13 @@ public class RestUtils {
                     String mAnonType = mAnon.getAnnotationType().toString();
                     if (RestConstants.GET_ANNOTATION.equals(mAnonType) || RestConstants.GET.equals(mAnonType)) {
                         isHttpGetMethod = true;
-                    } else if (RestConstants.PRODUCE_MIME_ANNOTATION.equals(mAnonType) || RestConstants.PRODUCE_MIME.equals(mAnonType)) {
-                        isXmlMime = true;
+                    } else if (RestConstants.PRODUCE_MIME_ANNOTATION.equals(mAnonType) || 
+                            RestConstants.PRODUCE_MIME.equals(mAnonType)) {
+                        List<String> mimes = getMimeAnnotationValue(mAnon);
+                         if (mimes.contains(Constants.MimeType.JSON.value()) ||
+                            mimes.contains(Constants.MimeType.XML.value())) {
+                            isXmlMime = true;
+                        }
                     }
                 }
                 if (isHttpGetMethod && isXmlMime) {
@@ -325,15 +328,15 @@ public class RestUtils {
         attrName = attrName.substring(0, 1).toLowerCase() + attrName.substring(1);
         return attrName;
     }
-
+  
     public static String getValueFromAnnotation(AnnotationMirror annotation) {
         return getValueFromAnnotation(annotation.getElementValues().values().toString());
     }
-
+     
     public static String getValueFromAnnotation(AnnotationTree mAnon) {
         return getValueFromAnnotation(mAnon.toString());
     }
-
+    
     public static String getValueFromAnnotation(ExpressionTree eAnon) {
         return getValueFromAnnotation(eAnon.toString());
     }
@@ -342,6 +345,16 @@ public class RestUtils {
         if (value.indexOf("\"") != -1)
             value = value.substring(value.indexOf("\"") + 1, value.lastIndexOf("\""));
         return value;
+    }
+    
+    public static List<String> getMimeAnnotationValue(AnnotationTree ant) {
+        List<? extends ExpressionTree> ets = ant.getArguments();
+        if (ets.size() > 0) {
+            String value = getValueFromAnnotation(ets.get(0));
+            value = value.replace("\"", "");
+            return Arrays.asList(value.split(","));
+        }
+        return Collections.emptyList();
     }     
 
     public static String createGetterMethodName(ClientStubModel.RepresentationNode n) {

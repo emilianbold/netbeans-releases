@@ -42,6 +42,8 @@
 package org.netbeans.modules.j2ee.dd.impl.common;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.*;
@@ -57,6 +59,8 @@ import org.xml.sax.*;
 public class ParseUtils {
   
     public static final String EXCEPTION_PREFIX="version:"; //NOI18N
+    
+    private static final Logger LOGGER = Logger.getLogger(ParseUtils.class.getName());
     
     /** Parsing just for detecting the version  SAX parser used
      */
@@ -134,6 +138,10 @@ public class ParseUtils {
     
     public static SAXParseException parseDD(InputSource is, EntityResolver ddResolver) 
             throws org.xml.sax.SAXException, java.io.IOException {
+        // additional logging for #127276
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Parsing with ddResolver: " + ddResolver);
+        }
         ErrorHandler errorHandler = new ErrorHandler();
         try {
             XMLReader reader = XMLUtil.createXMLReader();

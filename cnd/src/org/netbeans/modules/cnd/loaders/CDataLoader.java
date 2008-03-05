@@ -48,14 +48,14 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
-
 import org.netbeans.modules.cnd.MIMENames;
+import org.openide.loaders.ExtensionList;
 
 /**
  *
  * @author Alexander Simon
  */
-public class CDataLoader extends CndAbstractDataLoader {
+public class CDataLoader extends CndAbstractDataLoaderExt {
     
     private static CDataLoader instance;
 
@@ -92,34 +92,15 @@ public class CDataLoader extends CndAbstractDataLoader {
         return new CDataObject(primaryFile, this);
     }
 
-    public String getDefaultExtension() {
-        String l = (String)getProperty (PROP_DEFAULT_EXTENSIONS);
-        if (l == null) {
-            l = cExtensions[0];
-            putProperty (PROP_DEFAULT_EXTENSIONS, l, false);
-        }
-        return l;
+    public ExtensionList getDefaultExtensionList() {
+        return arrayToExtensionList(cExtensions);
     }
 
-    public void setDefaultExtension(String defaultExtension) {
-        String oldExtension = getDefaultExtension();
-        if (!defaultExtension.equals(oldExtension) && getExtensions().isRegistered("a."+defaultExtension)){ // NOI18N
-            TemplateExtensionUtils.renameCExtension(defaultExtension);
-            putProperty (PROP_DEFAULT_EXTENSIONS, defaultExtension, true);
-        }
+    public String getDisplayNameForExtensionList() {
+	return NbBundle.getMessage(CDataLoader.class, "CDataLoader_Name_ForExtList"); // NOI18N
     }
 
-    @Override
-    public void writeExternal (java.io.ObjectOutput oo) throws IOException {
-        super.writeExternal (oo);
-        oo.writeObject (getProperty (PROP_DEFAULT_EXTENSIONS));
+    public String getDefaultDefaultExtension() {
+        return cExtensions[0];
     }
-
-    @Override
-    public void readExternal (java.io.ObjectInput oi)  throws IOException, ClassNotFoundException {
-        super.readExternal (oi);
-        setDefaultExtension((String)oi.readObject ());
-    }
-
-    public static final String PROP_DEFAULT_EXTENSIONS = "defaultExtension"; // NOI18N
 }

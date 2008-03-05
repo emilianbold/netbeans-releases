@@ -48,7 +48,7 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
-import org.netbeans.modules.web.project.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -63,6 +63,7 @@ import org.openide.util.NbBundle;
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
     
     public static final String PROP_PROJECT_NAME = "projectName"; //NOI18N
+    public static final String PROP_PROJECT_LOCATION = "projectLocation"; //NOI18N
     private static final String PROJECT_NAME_FORMATER = NbBundle.getMessage(PanelProjectLocationVisual.class,"LBL_NPW1_DefaultProjectName"); //NOI18N
     
     private String generatedProjectName = "";
@@ -87,6 +88,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     public String getProjectName () {
         return this.projectNameTextField.getText ();
     }
+
+    public String getProjectLocation() {
+        return projectLocationTextField.getText();
+    }
+    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -285,7 +291,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         
         String projectName = (String) settings.getProperty ("name"); //NOI18N
         if (projectName == null) {
-                int baseCount = FoldersListSettings.getDefault().getNewProjectCount() + 1;
+                int baseCount = UserProjectSettings.getDefault().getNewProjectCount() + 1;
                 String formater = NbBundle.getMessage(PanelProjectLocationVisual.class,"LBL_NPW1_DefaultProjectName");
                 while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null)
                     baseCount++;                
@@ -325,6 +331,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
             firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
         }
+        if (this.projectLocationTextField.getDocument() == e.getDocument()) {
+            firePropertyChange (PROP_PROJECT_LOCATION,null,this.projectLocationTextField.getText());
+        }
     }
     
     public void insertUpdate( DocumentEvent e ) {
@@ -332,12 +341,18 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
             firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
         }
+        if (this.projectLocationTextField.getDocument() == e.getDocument()) {
+            firePropertyChange (PROP_PROJECT_LOCATION,null,this.projectLocationTextField.getText());
+        }
     }
     
     public void removeUpdate( DocumentEvent e ) {
         updateTexts( e );
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
             firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
+        }
+        if (this.projectLocationTextField.getDocument() == e.getDocument()) {
+            firePropertyChange (PROP_PROJECT_LOCATION,null,this.projectLocationTextField.getText());
         }
     }
     
@@ -382,7 +397,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     }
 
     private static int getValidProjectNameIndex(int currentIndex, File projectLocation) {
-        int index = currentIndex > 0 ? currentIndex : FoldersListSettings.getDefault().getNewProjectCount() + 1;
+        int index = currentIndex > 0 ? currentIndex : UserProjectSettings.getDefault().getNewProjectCount() + 1;
         if(projectLocation != null) {
             while (new File(projectLocation, getProjectName(index)).exists()) {
                 index++;

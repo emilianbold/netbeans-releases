@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.css.visual.ui;
 
+import javax.swing.JEditorPane;
+import javax.swing.text.Document;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.netbeans.modules.css.visual.api.StyleBuilderPanel;
 import java.awt.BorderLayout;
@@ -50,7 +52,7 @@ import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import org.netbeans.modules.css.model.CssRule;
+import org.netbeans.modules.css.editor.model.CssRule;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -96,6 +98,43 @@ public final class StyleBuilderTopComponent extends TopComponent {
         BROKEN_MODEL_PANEL = makeMsgPanel(NbBundle.getMessage(StyleBuilderTopComponent.class, "Broken_Model"));
         
     }
+    
+//    private Document document;
+//    
+//    public void setEditorPane(JEditorPane pane) {
+//        
+//        //hack - the fix should be done in the caller - CSSTCController
+//        if(this.document == doc) {
+//            return;
+//        }
+//        
+//        if(doc == null) {
+//            deactivate();
+//        } else {
+//            activate(doc);
+//        }
+//        
+//    }
+//    
+//    private void activate(Document doc) {
+//        deactivate(); //deactivate the old document
+//        
+//        //and activate the new one
+//        System.out.println("+SB: activating document " + doc);
+//        this.document = doc;
+//        
+//        //attach the caret listener
+//        //attach the parser listener
+//    }
+//    
+//    //called when the css file has been closed or switched 
+//    private void deactivate() {
+//        System.out.println("-SB: deactivating document " + this.document);
+//        this.document = null;
+//        
+//        //detattach the caret listener
+//        //detattach the parser listener
+//    }
     
     private JPanel makeMsgPanel(String message) {
         JPanel p = new JPanel();

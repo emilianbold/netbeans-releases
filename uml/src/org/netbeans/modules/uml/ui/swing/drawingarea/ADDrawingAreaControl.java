@@ -68,7 +68,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -155,7 +154,14 @@ import com.tomsawyer.util.TSProperty;
 import com.tomsawyer.xml.editor.TSEEnumerationTable;
 import com.tomsawyer.xml.editor.TSEVisualizationXMLReader;
 import com.tomsawyer.xml.editor.TSEVisualizationXMLWriter;
+import java.io.BufferedWriter;
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -210,6 +216,7 @@ import org.netbeans.modules.uml.core.scm.ISCMItem;
 import org.netbeans.modules.uml.core.scm.ISCMItemGroup;
 import org.netbeans.modules.uml.core.scm.SCMFeatureKind;
 import org.netbeans.modules.uml.core.support.Debug;
+import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.netbeans.modules.uml.core.support.umlmessagingcore.MsgCoreConstants;
 import org.netbeans.modules.uml.core.support.umlmessagingcore.UMLMessagingHelper;
 import org.netbeans.modules.uml.core.support.umlsupport.ETDeviceRect;
@@ -363,11 +370,12 @@ import org.openide.NotifyDescriptor;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -387,10 +395,11 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
 //            TSELocalization.setBundlePath("com.tomsawyer.module.resources.");
         TSELocalization.setBundlePath("org.netbeans.modules.uml.tomsawyer.");
     }
+    private static final Logger logger = Logger.getLogger("uml.ui.swing.drawingarea.ADDrawingAreaControl");
     private Hashtable<String, String> m_CachedPreferences = new Hashtable<String, String>();
     private boolean m_isDirty = false;
     private INamespace m_Namespace = null;
-    private String m_PreCommitFileName = "";
+    //private String m_PreCommitFileName = "";
     private String m_FileName = "";
     private Vector m_ViewsReadWriteFromETLFile = new Vector();
     private String m_Name = "";
@@ -8047,25 +8056,37 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
     /**
      * Save this diagram.
      */
-    public void save()
+    public synchronized void save()
     {
         if (getIsDirty())
         {
-            Mutex m = new Mutex();
-
-            m.writeAccess(new Mutex.Action()
-            {
-
-                public Object run()
-                {
-                    preCommit();
-                    commit();
-                    return null;
-                }
-            });
+            // Directly save to real diagram files.  No need to save to temp files;
+            // hence no need to call preCommit.
+            //preCommit();
+            commit();
+            getDiagram().setIsDirty(false);
         }
-        getDiagram().setIsDirty(false);
     }
+    
+//    public void save()
+//    {
+//        if (getIsDirty())
+//        {
+//            Mutex m = new Mutex();
+//
+//            m.writeAccess(new Mutex.Action()
+//            {
+//
+//                public Object run()
+//                {
+//                    preCommit();
+//                    commit();
+//                    return null;
+//                }
+//            });
+//        }
+//        getDiagram().setIsDirty(false);
+//    }
 
     /**
      * Allows the diagram to perform some cleanup before the diagram is actually
@@ -10523,73 +10544,73 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
      * Take the temp files generated in the precommit and move them into the original
      * files to commit them.
      */
-    public void commit()
-    {
-        if (m_PreCommitFileName.length() > 0)
-        {
-            String tempFile = m_PreCommitFileName;
-            String tempETLFile = StringUtilities.ensureExtension(tempFile,
-                    FileExtensions.DIAGRAM_PRECOMMIT_LAYOUT_EXT);
-
-            String tempETLPFile = StringUtilities.ensureExtension(tempFile,
-                    FileExtensions.DIAGRAM_PRECOMMIT_PRESENTATION_EXT);
-            String realTOMFile = StringUtilities.ensureExtension(tempFile,
-                    FileExtensions.DIAGRAM_LAYOUT_EXT);
-            String realPRSFile = StringUtilities.ensureExtension(tempFile,
-                    FileExtensions.DIAGRAM_PRESENTATION_EXT);
-
-            m_PreCommitFileName = "";
-
-            // Make sure both of the temp files are there
-            File tempETL = new File(tempETLFile);
-            File tempETLP = new File(tempETLPFile);
-            File realTOM = new File(realTOMFile);
-            File realPRS = new File(realPRSFile);
-
-            if (tempETL.exists() && tempETLP.exists()) 
-            {
-                try
-                {
-                    if (realTOM.exists())
-                    {
-                        realTOM.delete();
-                    }
-                    if (realPRS.exists())
-                    {
-                        realPRS.delete();
-                    }
-                    boolean rename1 = tempETL.renameTo(realTOM);
-                    boolean rename2 = tempETLP.renameTo(realPRS);
-                    if (rename1 && rename2)
-                    {
-                        setIsDirty(false);
-
-                        // Let folks know that the diagram has been saved
-                        if (getDrawingAreaDispatcher() != null)
-                        {
-                            IEventPayload payload = m_drawingAreaDispatcher.createPayload("DrawingAreaPostSave");
-                            IProxyDiagram pProxy = getProxyDiagram();
-                            if (pProxy != null)
-                            {
-                                m_drawingAreaDispatcher.fireDrawingAreaPostSave(pProxy,
-                                        payload);
-                            }
-                        }
-                    } else {
-                        assert rename1 : "failed to rename "+tempETLFile;
-                        assert rename2 : "failed to rename "+tempETLPFile;
-                    }
-                } catch (Exception e)
-                {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            } else
-            {
-                assert false : "could not find commit temporary files " + tempETLFile +" or/and "+ tempETLPFile;
-            }
-        }
-    }
+//    public void commit()
+//    {
+//        if (m_PreCommitFileName.length() > 0)
+//        {
+//             String tempFile = m_PreCommitFileName;
+//            String tempETLFile = StringUtilities.ensureExtension(tempFile,
+//                    FileExtensions.DIAGRAM_PRECOMMIT_LAYOUT_EXT);
+//
+//            String tempETLPFile = StringUtilities.ensureExtension(tempFile,
+//                    FileExtensions.DIAGRAM_PRECOMMIT_PRESENTATION_EXT);
+//            String realTOMFile = StringUtilities.ensureExtension(tempFile,
+//                    FileExtensions.DIAGRAM_LAYOUT_EXT);
+//            String realPRSFile = StringUtilities.ensureExtension(tempFile,
+//                    FileExtensions.DIAGRAM_PRESENTATION_EXT);
+//
+//            m_PreCommitFileName = "";
+//
+//            // Make sure both of the temp files are there
+//            File tempETL = new File(tempETLFile);
+//            File tempETLP = new File(tempETLPFile);
+//            File realTOM = new File(realTOMFile);
+//            File realPRS = new File(realPRSFile);
+//
+//            if (tempETL.exists() && tempETLP.exists()) 
+//            {
+//                try
+//                {
+//                    if (realTOM.exists())
+//                    {
+//                        realTOM.delete();
+//                    }
+//                    if (realPRS.exists())
+//                    {
+//                        realPRS.delete();
+//                    }
+//                    boolean rename1 = tempETL.renameTo(realTOM);
+//                    boolean rename2 = tempETLP.renameTo(realPRS);
+//                    if (rename1 && rename2)
+//                    {
+//                        setIsDirty(false);
+//
+//                        // Let folks know that the diagram has been saved
+//                        if (getDrawingAreaDispatcher() != null)
+//                        {
+//                            IEventPayload payload = m_drawingAreaDispatcher.createPayload("DrawingAreaPostSave");
+//                            IProxyDiagram pProxy = getProxyDiagram();
+//                            if (pProxy != null)
+//                            {
+//                                m_drawingAreaDispatcher.fireDrawingAreaPostSave(pProxy,
+//                                        payload);
+//                            }
+//                        }
+//                    } else {
+//                        assert rename1 : "failed to rename "+tempETLFile;
+//                        assert rename2 : "failed to rename "+tempETLPFile;
+//                    }
+//                } catch (Exception e)
+//                {
+//                    // TODO Auto-generated catch block
+//                    e.printStackTrace();
+//                }
+//            } else
+//            {
+//                assert false : "could not find commit temporary files " + tempETLFile +" or/and "+ tempETLPFile;
+//            }
+//        }
+//    }
 
     /**
      * Creates a fullpath filename for this diagram
@@ -10689,9 +10710,12 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
      * ITwoPhaseCommit interface.  Creates a temporary file in preparation for
      * committing.
      */
-    public void preCommit()
+    public void preCommit() {
+        UMLLogger.logMessage(logger, "preCommit() is no longer needed. Used commit() instead.", Level.FINE); // NOI18N
+    }
+    
+    public synchronized void commit()
     {
-        boolean retVal = true;
         if (m_isDirty)
         {
 //          getGraph().updateBounds();
@@ -10705,45 +10729,104 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
             }
 
             boolean proceed = true;
-
+            IDrawingAreaEventDispatcher drawingDispatcher = getDrawingAreaDispatcher();
+            
             // Let folks know that the diagram is being saved
-            if (getDrawingAreaDispatcher() != null)
+            if (drawingDispatcher != null)
             {
-                IEventPayload payload = m_drawingAreaDispatcher.createPayload("DrawingAreaPreSave");
+                IEventPayload payload = drawingDispatcher.createPayload("DrawingAreaPreSave");
                 IProxyDiagram pProxy = getProxyDiagram();
                 if (pProxy != null)
                 {
-                    m_drawingAreaDispatcher.fireDrawingAreaPreSave(pProxy,
-                            payload);
+                    drawingDispatcher.fireDrawingAreaPreSave(pProxy,payload);
                 }
             }
 
             if (proceed)
             {
-                m_PreCommitFileName = "";
                 if (m_FileName.length() > 0)
                 {
                     // Create the file names for our two diagram files
                     String fileName = m_FileName;
-                    String tempETLDFilename = StringUtilities.ensureExtension(fileName,
-                            FileExtensions.DIAGRAM_PRECOMMIT_LAYOUT_EXT);
-                    String tempETLPFilename = StringUtilities.ensureExtension(fileName,
-                            FileExtensions.DIAGRAM_PRECOMMIT_PRESENTATION_EXT);
+                    String ETLDFilename = StringUtilities.ensureExtension(fileName,
+                            FileExtensions.DIAGRAM_LAYOUT_EXT);
+                    String ETLPFilename = StringUtilities.ensureExtension(fileName,
+                            FileExtensions.DIAGRAM_PRESENTATION_EXT);
 
-                    saveETLDAndETLPFiles(tempETLDFilename, tempETLPFilename);
-                    m_PreCommitFileName = tempETLDFilename;
-                    // dirty state should be changed after commit()
-//               setIsDirty(false);
-                } else
-                {
-                    retVal = false;
-                }
-            } else
-            {
-                retVal = false;
-            }
+                    saveETLDAndETLPFiles(ETLDFilename, ETLPFilename);
+                    setIsDirty(false);
+                    
+                    // Let folks know that the diagram has been saved
+                    if (drawingDispatcher != null)
+                    {
+                        IEventPayload payload = drawingDispatcher.
+                                createPayload("DrawingAreaPostSave");
+                        IProxyDiagram pProxy = getProxyDiagram();
+                        if (pProxy != null)
+                        {
+                            drawingDispatcher.fireDrawingAreaPostSave(pProxy,
+                                    payload);
+                        }
+                    }
+                } 
+            } 
         }
     }
+//    public void preCommit()
+//    {
+//        boolean retVal = true;
+//        if (m_isDirty)
+//        {
+////          getGraph().updateBounds();
+//            m_nZoomLevelFromArchive = this.getCurrentZoom();
+//            // Save the viewport center.
+//            IETRect logicalViewPort = getLogicalViewPortRect();
+//
+//            if (logicalViewPort != null)
+//            {
+//                m_CenterFromArchive = logicalViewPort.getCenterPoint();
+//            }
+//
+//            boolean proceed = true;
+//
+//            // Let folks know that the diagram is being saved
+//            if (getDrawingAreaDispatcher() != null)
+//            {
+//                IEventPayload payload = m_drawingAreaDispatcher.createPayload("DrawingAreaPreSave");
+//                IProxyDiagram pProxy = getProxyDiagram();
+//                if (pProxy != null)
+//                {
+//                    m_drawingAreaDispatcher.fireDrawingAreaPreSave(pProxy,
+//                            payload);
+//                }
+//            }
+//
+//            if (proceed)
+//            {
+//                m_PreCommitFileName = "";
+//                if (m_FileName.length() > 0)
+//                {
+//                    // Create the file names for our two diagram files
+//                    String fileName = m_FileName;
+//                    String tempETLDFilename = StringUtilities.ensureExtension(fileName,
+//                            FileExtensions.DIAGRAM_PRECOMMIT_LAYOUT_EXT);
+//                    String tempETLPFilename = StringUtilities.ensureExtension(fileName,
+//                            FileExtensions.DIAGRAM_PRECOMMIT_PRESENTATION_EXT);
+//
+//                    saveETLDAndETLPFiles(tempETLDFilename, tempETLPFilename);
+//                    m_PreCommitFileName = tempETLDFilename; 
+//                    // dirty state should be changed after commit()
+////               setIsDirty(false);
+//                } else
+//                {
+//                    retVal = false;
+//                }
+//            } else
+//            {
+//                retVal = false;
+//            }
+//        }
+//    }
 
     /**
      * Part of the ITwoPhaseCommit interface.  Is this drawing dirty?
@@ -10805,21 +10888,17 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
     }
 
     /**
-     * Save this drawing to the etl and etlp files
+     * Save this drawing to the etld and etlp files
      *
      * @param sTOMFilename [in] The etl file to save our TS information to.
      * @param sPRSFilename [in] The etlp file to save our presentation information to.
-     * @param pFileCode [out,retval] A code indicating the result of the save operation.
      */
-    private void saveETLDAndETLPFiles(String sTOMFilename,
-            String sPRSFilename)
+    private void saveETLDAndETLPFiles(String sTOMFilename, String sPRSFilename)
     {
         TSGraphManager pGraphMgr = getCurrentGraphManager();
 
         if (pGraphMgr != null)
         {
-            //IProductArchive prodArchive = getProductArchive();
-            //new ProductArchiveImpl();
             IProductArchive prodArchive = new ProductArchiveImpl();
 
             // Save the persistent track bar information
@@ -10834,9 +10913,14 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
             {
                 IDiagram dia = getDiagram();
                 prod.setSerializingDiagram(dia);
+                OutputStreamWriter out = null;
+                Writer writer = null;
                 try
                 {
-                    FileWriter writer = new FileWriter(sTOMFilename);
+                    FileObject etldFO = FileUtil.createData(new File(sTOMFilename));
+                    
+                    out = new OutputStreamWriter(etldFO.getOutputStream());
+                    writer = new BufferedWriter(out);
 
                     xmlWriter = new TSEVisualizationXMLWriter(writer);
                     xmlWriter.setGraphManager(this.getGraphManager());
@@ -10845,11 +10929,21 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
                     xmlWriter.setUsingTemplates(false);
                     xmlWriter.write();
                     postWriteGMFFile(prodArchive);
-                    writer.close();
-                } catch (IOException e)
-                {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                } 
+                catch (Exception ex) {
+                    UMLLogger.logException(logger, ex, Level.WARNING);
+                }
+                finally {
+                   try {
+                       if (out != null) {
+                           out.close();
+                       }
+                       if (writer != null) {
+                           writer.close();
+                       }
+                   } catch (IOException ex) {
+                       UMLLogger.logMessage(logger, ex.getMessage(), Level.WARNING);
+                   }
                 }
                 prod.setSerializingDiagram(null);
             }
@@ -10860,8 +10954,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
             // Everything is working so save the product archive to file
             if (prodArchive != null)
             {
-                boolean saveWorked = false;
-                saveWorked = prodArchive.save(sPRSFilename);
+                boolean saveWorked = prodArchive.save(sPRSFilename);
             }
         }
     }
@@ -11172,7 +11265,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
         UMLMessagingHelper helper = new UMLMessagingHelper();
         helper.sendMessage(type, finalMessage);
     }
-
+    
     /**
      * @param i
      * @param type

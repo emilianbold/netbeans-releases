@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.netbeans.modules.cnd.editor/1"/>
+    <instanceof class="org.openide.ServiceType"/>
+    <instanceof class="org.openide.text.IndentEngine"/>
+    <instanceof class="org.netbeans.modules.editor.FormatterIndentEngine"/>
+    <instanceof class="org.netbeans.modules.cnd.editor.cplusplus.BaseIndentEngine"/>
+    <instanceof class="org.netbeans.modules.cnd.editor.cplusplus.CCIndentEngine"/>
+    <instance class="org.netbeans.modules.cnd.editor.cplusplus.CCIndentEngine"/>
+</settings>

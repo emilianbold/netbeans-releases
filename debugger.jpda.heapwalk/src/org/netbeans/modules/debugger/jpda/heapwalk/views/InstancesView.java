@@ -220,7 +220,7 @@ public class InstancesView extends TopComponent {
             int state = JPDADebugger.STATE_DISCONNECTED;
             DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
             if (de != null) {
-                JPDADebugger d = (JPDADebugger) de.lookupFirst(null, JPDADebugger.class);
+                JPDADebugger d = de.lookupFirst(null, JPDADebugger.class);
                 if (d != null) {
                     state = getThreadsState(d);
                     synchronized (this) {

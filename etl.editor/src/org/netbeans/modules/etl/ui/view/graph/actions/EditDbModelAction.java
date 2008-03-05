@@ -41,12 +41,14 @@
 package org.netbeans.modules.etl.ui.view.graph.actions;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.net.URL;
 import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
+import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
@@ -78,8 +80,10 @@ public class EditDbModelAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(dbmodelNamesUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("PRSR001: Edit Database Properties");
+        String nbBundle2 = mLoc.t("PRSR001: Edit Database Properties (Cntl-D)");
         this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
+        // Acceleratot Cntl-D
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('D', InputEvent.CTRL_MASK));
     }
 
     /**

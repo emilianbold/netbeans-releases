@@ -46,7 +46,6 @@
 package org.netbeans.modules.uml.core.support.umlmessagingcore;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -56,7 +55,6 @@ import org.dom4j.Node;
 
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
@@ -309,15 +307,7 @@ public class MessageDataFilter implements IMessageDataFilter
 				}
 			}
 		}
-		try
-		{
-			XMLManip.save(pDoc,m_FileLocation);
-		}
-		catch(IOException ex)
-		{
-			ex.printStackTrace();
-		}
-		
+		XMLManip.save(pDoc,m_FileLocation);
 	}
 	
 	/**

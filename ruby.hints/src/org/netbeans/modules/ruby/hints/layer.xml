@@ -64,8 +64,19 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-ruby-hints-UnsafeIdentifierChars.instance"/>
                     <file name="org-netbeans-modules-ruby-hints-AttributeIsLocal.instance"/>
                     <file name="org-netbeans-modules-ruby-hints-AccidentalAssignment.instance"/>
+                    <file name="org-netbeans-modules-ruby-hints-ConvertConditionals.instance"/>
+                    <file name="org-netbeans-modules-ruby-hints-ConvertIfToUnless.instance"/>
+                    <file name="org-netbeans-modules-ruby-hints-Deprecations.instance"/>
                 </folder>    
                 
+                <folder name="ruby19">
+                    <attr name="position" intvalue="285"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.hints.Bundle"/>
+                    <file name="org-netbeans-modules-ruby-hints-RetryOutsideRescue.instance"/>
+                    <file name="org-netbeans-modules-ruby-hints-ColonToThen.instance"/>
+                    <file name="org-netbeans-modules-ruby-hints-HashListConvert.instance"/>
+                </folder>    
+
                 <folder name="rails">
                     <attr name="position" intvalue="200"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.hints.Bundle"/>
@@ -97,7 +108,7 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-ruby">
                 <file name="hints.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.HintsProvider"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.HintsProvider"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.hints.infrastructure.RubyHintsProvider"/>
                 </file>
             </folder>
@@ -105,7 +116,7 @@ made subject to such option by the copyright holder.
         <folder name="application">
             <folder name="x-httpd-eruby">
                 <file name="hints.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.HintsProvider"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.HintsProvider"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.hints.infrastructure.RubyHintsProvider"/>
                 </file>
             </folder>

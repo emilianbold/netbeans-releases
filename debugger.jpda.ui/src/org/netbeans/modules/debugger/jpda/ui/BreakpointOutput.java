@@ -91,10 +91,9 @@ PropertyChangeListener {
     
     public BreakpointOutput (ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
-        this.debugger = (JPDADebugger) contextProvider.lookupFirst 
-            (null, JPDADebugger.class);
+        this.debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
         debugger.addPropertyChangeListener (
-            debugger.PROP_STATE,
+            JPDADebugger.PROP_STATE,
             this
         );
         hookBreakpoints ();

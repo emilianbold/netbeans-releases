@@ -77,8 +77,14 @@ public class PLinksNodeModel implements NodeModel, Constants {
         
         if (object == TreeModel.ROOT) {
             return NbBundle.getMessage(
-                PLinksNodeModel.class, 
-                "CTL_Column_Name"); // NOI18N
+                    PLinksNodeModel.class, 
+                    "CTL_Column_Name"); // NOI18N
+        }
+        
+        if (object instanceof PLinksTreeModel.Dummy) {
+            return NbBundle.getMessage(
+                    PLinksNodeModel.class, 
+                    "CTL_Empty_Model"); // NOI18N
         }
         
         if (object instanceof PartnerLinkWrapper) {
@@ -130,6 +136,10 @@ public class PLinksNodeModel implements NodeModel, Constants {
         
         if (object == TreeModel.ROOT) {
             return ""; // NOI18N
+        }
+        
+        if (object instanceof PLinksTreeModel.Dummy) {
+            return null;
         }
         
         if (object instanceof PartnerLinkWrapper) {

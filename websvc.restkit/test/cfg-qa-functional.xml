@@ -48,12 +48,17 @@ made subject to such option by the copyright holder.
     <testbag testattribs="validation" executor="ide" name="qa-functional tests">
         <testset dir="qa-functional/src">
             <patternset>
+                <include name="org/netbeans/modules/ws/qaf/rest/InstallPluginsTest.class"/>
+                <include name="org/netbeans/modules/ws/qaf/rest/InstallPluginsTest.class/testInstallRest" expectedFail="RESTful plugin is installed"/>
+                <include name="org/netbeans/modules/ws/qaf/rest/InstallPluginsTest.class/testInstallJMaki" expectedFail="jMaki plugin is installed"/>
                 <include name="org/netbeans/modules/ws/qaf/rest/CRUDTSuite.class"/>
                 <include name="org/netbeans/modules/ws/qaf/rest/PatternsTSuite.class"/>
-                <!--
                 <include name="org/netbeans/modules/ws/qaf/rest/RestSamplesTest.class"/>
                 <include name="org/netbeans/modules/ws/qaf/rest/CStubsTSuite.class"/>
-                -->
+                <include name="org/netbeans/modules/ws/qaf/rest/RestNodeTest.class"/>
+                <include name="org/netbeans/modules/ws/qaf/rest/JMakiTest.class"/>
+                <include name="org/netbeans/modules/ws/qaf/rest/UnInstallPluginsTest.class"/>
+                <include name="org/netbeans/modules/ws/qaf/rest/UnInstallPluginsTest.class/testUnInstallPlugins" expectedFail="Plugins already uninstalled"/>
             </patternset>
         </testset>
     </testbag>

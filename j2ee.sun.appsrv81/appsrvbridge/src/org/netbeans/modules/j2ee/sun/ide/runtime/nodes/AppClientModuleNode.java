@@ -155,7 +155,4 @@ public class AppClientModuleNode extends AppserverMgmtLeafNode
         ((DeployedItemsController)getController()).undeploy();
     }
     
-    protected List getPropertiesToIgnore() {
-        return Arrays.asList(NodeTypes.APP_CLIENT_MODULE);        
-    }
 }

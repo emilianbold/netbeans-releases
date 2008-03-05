@@ -96,12 +96,18 @@ class LibraryChooserGUI extends JPanel implements ExplorerManager.Provider, Help
         inset.add(this);
         String title;
         String buttonLabel;
+        String buttonA11YName;
+        String buttonA11YDesc;
         if (addOperatation) {
             title = NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.add.title");
             buttonLabel = NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.add.button");
+            buttonA11YName = NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.add.button");
+            buttonA11YDesc = NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.add.button.a11y.desc");
         } else {
             title = NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.import.title");
             buttonLabel = NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.import.button");
+            buttonA11YName = NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.import.button");
+            buttonA11YDesc = NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.import.button.a11y.desc");
             createButton.setVisible(false);
         }
         DialogDescriptor dd = new DialogDescriptor(inset, title);
@@ -109,6 +115,8 @@ class LibraryChooserGUI extends JPanel implements ExplorerManager.Provider, Help
         final JButton add = new JButton(buttonLabel);
         add.setEnabled(false);
         add.setDefaultCapable(true);
+        add.getAccessibleContext().setAccessibleName(buttonA11YName);
+        add.getAccessibleContext().setAccessibleDescription(buttonA11YDesc);
         explorer.addPropertyChangeListener(new PropertyChangeListener() {
            public void propertyChange(PropertyChangeEvent evt) {
                add.setEnabled(!getSelectedLibraries().isEmpty());
@@ -259,21 +267,21 @@ class LibraryChooserGUI extends JPanel implements ExplorerManager.Provider, Help
         tree.setPopupAllowed(false);
         tree.setRootVisible(false);
 
-        createButton.setText(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.createButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(createButton, org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.createButton.text")); // NOI18N
         createButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 createButtonActionPerformed(evt);
             }
         });
 
-        importButton.setText(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.importButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(importButton, org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.importButton.text")); // NOI18N
         importButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 importButtonActionPerformed(evt);
             }
         });
 
-        manageLibrariesButton.setText(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.manageLibrariesButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(manageLibrariesButton, org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.manageLibrariesButton.text")); // NOI18N
         manageLibrariesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 manageLibrariesButtonActionPerformed(evt);
@@ -286,7 +294,7 @@ class LibraryChooserGUI extends JPanel implements ExplorerManager.Provider, Help
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(librariesLabel)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(tree, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
+                .add(tree, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(createButton)
@@ -310,6 +318,15 @@ class LibraryChooserGUI extends JPanel implements ExplorerManager.Provider, Help
                 .add(manageLibrariesButton))
         );
 
+        librariesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "ACSD_AvailableLibraries")); // NOI18N
+        tree.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "ACSD_AvailableLibrariesTree")); // NOI18N
+        createButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.create.a11y.name")); // NOI18N
+        createButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.create.a11y.desc")); // NOI18N
+        importButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.import.a11y.name")); // NOI18N
+        importButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.import.a11y.desc")); // NOI18N
+        manageLibrariesButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "ACSD_ManageLibraries")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 

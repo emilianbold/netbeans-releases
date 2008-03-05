@@ -45,6 +45,8 @@ import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
+import java.util.List;
+
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.print.impl.util.Option;
@@ -56,7 +58,7 @@ import static org.netbeans.modules.print.impl.util.UI.*;
  */
 final class Printer implements Printable {
 
-  void print(Paper [] papers) {
+  void print(List<Paper> papers) {
     PrinterJob job = PrinterJob.getPrinterJob();
     myPapers = papers;
 //out("SET PAPER: " + myPapers);
@@ -85,15 +87,15 @@ final class Printer implements Printable {
     PageFormat pageFormat,
     int index) throws PrinterException 
   {
-//out("PAPER IS: " + myPapers.length);
-    if (index == myPapers.length) {
+//out("PAPER IS: " + myPapers.size());
+    if (index == myPapers.size()) {
       return NO_SUCH_PAGE;
     }
 //out("  print: " + index);
-    myPapers [index].print(g);
+    myPapers.get(index).print(g);
   
     return PAGE_EXISTS;
   }
 
-  private Paper [] myPapers;
+  private List<Paper> myPapers;
 }

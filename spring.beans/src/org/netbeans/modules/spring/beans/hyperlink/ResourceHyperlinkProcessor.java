@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class ResourceHyperlinkProcessor implements HyperlinkProcessor {
+public class ResourceHyperlinkProcessor extends HyperlinkProcessor {
 
     public ResourceHyperlinkProcessor() {
     }

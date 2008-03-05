@@ -47,6 +47,7 @@ import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 
@@ -86,7 +87,7 @@ public class OpenSchemaView extends org.netbeans.performance.test.utilities.Perf
         schemaName = "fields";
         doMeasurement();
     }
-    
+
     public void prepare() {
         log(":: prepare");
     }
@@ -94,12 +95,19 @@ public class OpenSchemaView extends org.netbeans.performance.test.utilities.Perf
     public ComponentOperator open() {
         log("::open");
         Node schemaNode = new Node(EPUtilities.getProcessFilesNode(projectName),schemaName+".xsd");
-        new OpenAction().performPopup(schemaNode);
+        schemaNode.callPopup().pushMenuNoBlock("Open");
+        //new OpenAction().performPopup(schemaNode);
         return XMLSchemaComponentOperator.findXMLSchemaComponentOperator(schemaName+".xsd");
+    }
+
+    @Override
+    protected void shutdown() {
+        super.shutdown();
     }
     
     public void close(){
         new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
+        new EventTool().waitNoEvent(2000);
     }
     
 }

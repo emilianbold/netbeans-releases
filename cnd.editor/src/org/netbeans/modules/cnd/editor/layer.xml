@@ -8,6 +8,223 @@
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
                 <attr name="position" intvalue="400"/>
             </file>
+            <folder name="FormatterPreviewExamples">
+                <attr name="position" intvalue="2000"/>
+                <file name="SAMPLE_Spaces.cpp" url="resources/cplusplus/SAMPLE_Spaces.cpp"/>
+                <file name="SAMPLE_Spaces.c" url="resources/cplusplus/SAMPLE_Spaces.c"/>
+                <file name="SAMPLE_BlankLines.cpp" url="resources/cplusplus/SAMPLE_BlankLines.cpp"/>
+                <file name="SAMPLE_BlankLines.c" url="resources/cplusplus/SAMPLE_BlankLines.c"/>
+                <file name="SAMPLE_AlignBraces.cpp" url="resources/cplusplus/SAMPLE_AlignBraces.cpp"/>
+                <file name="SAMPLE_AlignBraces.c" url="resources/cplusplus/SAMPLE_AlignBraces.c"/>
+                <file name="SAMPLE_TabsIndents.cpp" url="resources/cplusplus/SAMPLE_TabsIndents.cpp"/>
+                <file name="SAMPLE_TabsIndents.c" url="resources/cplusplus/SAMPLE_TabsIndents.c"/>
+            </folder>     
         </folder>     
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="x-c++" url="resources/cplusplus/CCExample"/>
+                <file name="x-c" url="resources/cplusplus/CExample"/>
+            </folder>
+        </folder>
     </folder>
+
+    <folder name="Editors">
+        
+        <folder name="text">
+            <folder name="x-c++">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
+                
+                <file name="Settings.settings" url="resources/CCOptions.settings"/>
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
+                </file>
+                
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/cplusplus/Netbeans-CC-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="keybindings.xml" url="resources/DefaultKeyBindings.xml"/>
+                            <file name="keybindings-mac.xml" url="resources/DefaultKeyBindings-Mac.xml"> 
+                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="codetemplates.xml" url="resources/cplusplus/CC-DefaultAbbrevs.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                
+                <folder name="Popup">
+                    <folder name="goto">
+                        <attr name="position" intvalue="100"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>                      
+                    </folder>
+                    
+                    <file name="SeparatorBeforeFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1142"/>
+                    </file>
+                    <file name="format">
+                        <attr name="position" intvalue="1284"/>
+                    </file>                    
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1426"/>
+                    </file>
+                    <file name="SeparatorAfterPaste.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4100"/>
+                    </file>
+                </folder>
+                
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <file name="Separator-before-comment-c++.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="19110"/>
+                        </file>
+                        <file name="comment">
+                            <attr name="position" intvalue="19200"/>
+                        </file>
+                        <file name="uncomment">
+                            <attr name="position" intvalue="19300"/>
+                        </file>
+                    </folder>
+                </folder>
+                
+                <folder name="BracesMatchers">
+                    <file name="org-netbeans-modules-cnd-editor-cplusplus-CppBracesMatcher.instance">
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                </folder>
+            </folder>
+            
+            <folder name="x-c">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
+                
+                <file name="Settings.settings" url="resources/COptions.settings"/>
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
+                </file>
+                
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/cplusplus/Netbeans-CC-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="keybindings.xml" url="resources/DefaultKeyBindings.xml"/>
+                            <file name="keybindings-mac.xml" url="resources/DefaultKeyBindings-Mac.xml"> 
+                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="codetemplates.xml" url="resources/cplusplus/C-DefaultAbbrevs.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                
+                <folder name="Popup">
+                    <folder name="goto">
+                        <attr name="position" intvalue="100"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
+                    </folder>
+                    
+                    <file name="SeparatorBeforeFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1142"/>
+                    </file>
+                    <file name="format">
+                        <attr name="position" intvalue="1284"/>
+                    </file>                    
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1426"/>
+                    </file>
+                    <file name="SeparatorAfterPaste.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4100"/>
+                    </file>
+                </folder>
+                
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <file name="Separator-before-comment-c.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="19110"/>
+                        </file>
+                        <file name="comment">
+                            <attr name="position" intvalue="19200"/>
+                        </file>
+                        <file name="uncomment">
+                            <attr name="position" intvalue="19300"/>
+                        </file>
+                    </folder>
+                </folder>    
+                
+                <folder name="BracesMatchers">
+                    <file name="org-netbeans-modules-cnd-editor-cplusplus-CppBracesMatcher.instance">
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                </folder>
+             </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Services">
+        <folder name="IndentEngine">
+            <file name="org-netbeans-modules-cnd-editor-cplusplus-CCIndentEngine.settings" url="resources/CCIndentEngine.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
+                <attr name="hidden" boolvalue="true"/>
+            </file>
+            <file name="org-netbeans-modules-cnd-editor-cplusplus-CIndentEngine.settings" url="resources/CIndentEngine.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
+                <attr name="hidden" boolvalue="true"/>
+            </file>
+        </folder> <!-- IndentEngine -->
+    </folder>	<!-- Services -->
+
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-c">
+                <file name="Reformatter.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.reformat.Reformatter$Factory"/>
+                </file>
+            </folder>
+            <folder name="x-c++">
+                <file name="Reformatter.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.reformat.Reformatter$Factory"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>

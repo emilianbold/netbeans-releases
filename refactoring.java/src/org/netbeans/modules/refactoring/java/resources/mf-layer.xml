@@ -51,11 +51,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-refactoring-java-api-ui-ChangeParametersAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.changeParametersAction"/>
                 <attr name="position" intvalue="430"/>
-            </file>
-            <file name="org-netbeans-modules-refactoring-java-api-ui-EncapsulateFieldAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.encapsulateFieldsAction"/>
-                <attr name="position" intvalue="450"/>
-            </file>
+            </file>            
             <file name="separator-in-java-refactoring.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="470"/>
@@ -80,9 +76,17 @@ made subject to such option by the copyright holder.
                  <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.useSuperTypeAction"/>
                 <attr name="position" intvalue="900"/>
             </file>
+            <file name="SecondSeparator.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="930"/>
+            </file>
             <file name="org-netbeans-modules-refactoring-java-api-ui-InnerToOuterAction.instance">
                  <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.innerToOuterAction"/>
                 <attr name="position" intvalue="1000"/>
+            </file>
+            <file name="org-netbeans-modules-refactoring-java-api-ui-EncapsulateFieldAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.encapsulateFieldsAction"/>
+                <attr name="position" intvalue="1800"/>
             </file>
         </folder>    
      </folder>   

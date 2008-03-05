@@ -423,10 +423,10 @@ public abstract class ModelSet implements FileChangeListener {
      */
     public URLClassLoader getProjectClassLoader() {
         if (classLoader == null) {
-            Set urls1Set = new LinkedHashSet();
+            Set<URL> urls1Set = new LinkedHashSet<URL>();
 
 			// Add design time and run time jars from COMPLIBS
-            LibraryManager libraryManager = LibraryManager.getDefault();
+            LibraryManager libraryManager = JsfProjectUtils.getProjectLibraryManager(project);
             Library jaxrpc16Library = null;         
             Library[] libraries = libraryManager.getLibraries();
             for (int i = 0; i < libraries.length; i++) {
@@ -440,13 +440,13 @@ public abstract class ModelSet implements FileChangeListener {
                     }
                 }
             
-                if (JsfProjectUtils.hasLibraryReference(project, library, ClassPath.COMPILE)) {
-                    // TODO The following hardcoded constants are defined in
-                    // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider
-                    // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ThemeLibraryTypeProvider
-                    // However this class is not part of a public package.
-                    if (library.getType().equals("complib") || 
-                            library.getType().equals("theme")) { // NOI18N
+                // TODO The following hardcoded constants are defined in
+                // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider
+                // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ThemeLibraryTypeProvider
+                // However this class is not part of a public package.
+                if (library.getType().equals("complib") || 
+                        library.getType().equals("theme")) { // NOI18N
+                    if (JsfProjectUtils.hasLibraryReference(project, library, ClassPath.COMPILE)) {
                         for (String volumeType : volumeTypes) {
                             if (library.getType().equals("theme") && // NOI18N
                                     (!volumeType.equals("classpath"))) { // NOI18N
@@ -487,7 +487,21 @@ public abstract class ModelSet implements FileChangeListener {
                 String platformVersion = JsfProjectUtils.getJ2eePlatformVersion(project);
                 if (platformVersion.equals(JsfProjectUtils.J2EE_1_3) || 
                         platformVersion.equals(JsfProjectUtils.J2EE_1_4)) {
-                    if (jaxrpc16Library != null) {           
+                    if (jaxrpc16Library == null) {
+                    	// Hmmm...project does not have a reference to the jaxrpc16 
+                    	// library so we need to get it from global library manager                    	
+                    	Library[] globalLibraries = LibraryManager.getDefault().getLibraries();
+                        for (Library library : globalLibraries) {                                                      
+                            if (library.getType().equals("j2se")) {
+                                if (library.getName().equals("jaxrpc16")) {
+                                    // cache
+                                    jaxrpc16Library = library;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (jaxrpc16Library != null) {
                         // Add the jars from jaxrpc16Library
                         addEntriesInLibraryVolume(jaxrpc16Library, "classpath", urls1Set); // NOI18N
                     }
@@ -630,14 +644,14 @@ public abstract class ModelSet implements FileChangeListener {
         private final URL[] urls;
         
         // Memory leak probing
-        private static final Logger TIMERS = Logger.getLogger("TIMER.projectClassLoaders"); // NOI18N
+        private static final Logger TIMERS = Logger.getLogger("TIMER.visualweb"); // NOI18N
         
         public ProjectClassLoader(URL[] urls, ClassLoader parent) {
             super(urls, parent);
             this.urls = urls;
             
-            if (TIMERS.isLoggable(Level.FINE)) {
-                LogRecord rec = new LogRecord(Level.FINE, "ModelSet$ProjectClassLoader"); // NOI18N
+            if (TIMERS.isLoggable(Level.FINER)) {
+                LogRecord rec = new LogRecord(Level.FINER, "ModelSet$ProjectClassLoader"); // NOI18N
                 rec.setParameters(new Object[]{ this });
                 TIMERS.log(rec);
             }

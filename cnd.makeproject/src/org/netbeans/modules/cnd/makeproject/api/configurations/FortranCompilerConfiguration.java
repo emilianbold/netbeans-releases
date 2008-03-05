@@ -63,6 +63,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
 	super.assign(conf);
     }
 
+    @Override
     public Object clone() {
 	FortranCompilerConfiguration clone = new FortranCompilerConfiguration(getBaseDir(), (FortranCompilerConfiguration)getMaster());
 	// BasicCompilerConfiguration
@@ -77,6 +78,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
     }
 
     // Interface OptionsProvider
+    @Override
     public String getOptions(BasicCompiler compiler) {
 	String options = "$(COMPILE.f) "; // NOI18N
 	options += getAllOptions2(compiler) + " "; // NOI18N
@@ -132,25 +134,17 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
         set4.setName("Tool"); // NOI18N
         set4.setDisplayName(getString("ToolTxt1"));
         set4.setShortDescription(getString("ToolHint1"));
-        set4.put(new StringNodeProp(getTool(), fortranCompiler.getName(), "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
+        set4.put(new StringNodeProp(getTool(), fortranCompiler.getName(), false, "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
 	sheet.put(set4);
-
-	return sheet;
-    }
-
-    public Sheet getCommandLineSheet(Configuration conf) {
-	Sheet sheet = new Sheet();
+        
 	String[] texts = new String[] {getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
-        CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(((MakeConfiguration)conf).getCompilerSet().getValue());
-        BasicCompiler cCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
-
 	Sheet.Set set2 = new Sheet.Set();
         set2.setName("CommandLine"); // NOI18N
         set2.setDisplayName(getString("CommandLineTxt"));
         set2.setShortDescription(getString("CommandLineHint"));
-	set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, cCompiler, null, texts));
+	set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, fortranCompiler, null, texts));
 	sheet.put(set2);
-
+        
 	return sheet;
     }
     

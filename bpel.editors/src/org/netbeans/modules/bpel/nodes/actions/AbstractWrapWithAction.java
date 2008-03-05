@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
+import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.bpel.model.api.Activity;

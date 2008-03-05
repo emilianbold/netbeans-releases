@@ -89,12 +89,7 @@ public class TreeLoader extends LazyTreeLoader {
 
     private Context context;
     private ClasspathInfo cpInfo;
-    private final ThreadLocal<Map<ClassSymbol, StringBuilder>> couplingErrors = new  ThreadLocal<Map<ClassSymbol, StringBuilder>>();
-    private final ThreadLocal<Integer> recursiveDepth = new ThreadLocal<Integer>() {
-        protected Integer initialValue() {
-            return 0;
-        }
-    };
+    private Map<ClassSymbol, StringBuilder> couplingErrors;
 
     private TreeLoader(Context context, ClasspathInfo cpInfo) {
         this.context = context;
@@ -103,7 +98,7 @@ public class TreeLoader extends LazyTreeLoader {
     
     @Override
     public boolean loadTreeFor(final ClassSymbol clazz) {
-        assert JavaSourceAccessor.INSTANCE.isJavaCompilerLocked();
+        assert JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
         
         if (clazz != null) {
             try {
@@ -112,28 +107,17 @@ public class TreeLoader extends LazyTreeLoader {
                 if (fo != null && jti != null) {
                     Log.instance(context).nerrors = 0;
                     JavaFileObject jfo = FileObjects.nbFileObject(fo, null);
+                    Map<ClassSymbol, StringBuilder> oldCouplingErrors = couplingErrors;
                     try {
-                        recursiveDepth.set(recursiveDepth.get() + 1);
-
-                        if (recursiveDepth.get() > 1) {
-                            Logger.getLogger(TreeLoader.class.getName()).log(Level.WARNING, "Recursive loadTreeFor", new Exception());
-                        }
-
-                        if (recursiveDepth.get() == 1) {
-                            couplingErrors.set(new HashMap<ClassSymbol, StringBuilder>());
-                        }
+                        couplingErrors = new HashMap<ClassSymbol, StringBuilder>();
                         jti.analyze(jti.enter(jti.parse(jfo)));
                         dumpSymFile(clazz);
                         return true;
                     } finally {
-                        if (recursiveDepth.get() == 1) {
-                            for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.get().entrySet()) {
-                                logCouplingError(e.getKey(), e.getValue().toString());
-                            }
-                            couplingErrors.set(null);
+                        for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.entrySet()) {
+                            logCouplingError(e.getKey(), e.getValue().toString());
                         }
-                        
-                        recursiveDepth.set(recursiveDepth.get() - 1);
+                        couplingErrors = oldCouplingErrors;
                     }
                 }
             } catch (IOException ex) {
@@ -163,7 +147,6 @@ public class TreeLoader extends LazyTreeLoader {
                 info.append("TREE: <unknown>"); //NOI18N
                 break;
         }
-        Map<ClassSymbol, StringBuilder> couplingErrors = this.couplingErrors.get();
         if (clazz != null && couplingErrors != null) {
             StringBuilder sb = couplingErrors.get(clazz);            
             if (sb != null)
@@ -185,6 +168,8 @@ public class TreeLoader extends LazyTreeLoader {
 
     private void dumpSymFile(ClassSymbol clazz) throws IOException {
         PrintWriter writer = null;
+        File outputFile = null;
+        boolean deleteResult = false;
         try {
             JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
             String binaryName = null;
@@ -218,9 +203,10 @@ public class TreeLoader extends LazyTreeLoader {
                 if (!classes.exists())
                     classes.mkdirs();
             }
-            File outputFile = new File(classes, name + '.' + FileObjects.SIG);
+            outputFile = new File(classes, name + '.' + FileObjects.SIG);
             if (outputFile.exists())
                 return ;//no point in dumping again already existing sig file
+            deleteResult = true;
             writer = new PrintWriter(outputFile, "UTF-8");
             Symbol owner;
             if (clazz.owner.kind == Kinds.PCK) {
@@ -232,10 +218,15 @@ public class TreeLoader extends LazyTreeLoader {
             else {
                 owner = clazz.owner;
             }
-            SymbolDumper.dump(writer, Types.instance(context), TransTypes.instance(context), clazz, owner);
+            deleteResult = SymbolDumper.dump(writer, Types.instance(context), TransTypes.instance(context), clazz, owner);
         } finally {
             if (writer != null)
                 writer.close();
+            if (deleteResult) {
+                assert outputFile != null;
+                
+                outputFile.delete();
+            }
         }
     }
 }

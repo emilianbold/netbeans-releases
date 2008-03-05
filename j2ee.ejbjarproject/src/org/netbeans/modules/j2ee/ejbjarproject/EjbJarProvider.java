@@ -57,6 +57,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
@@ -119,7 +120,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
         if (metaInfFo != null) {
             ddFO = metaInfFo.getFileObject(FILE_DD);
         }
-        if (ddFO == null && !EjbJarProjectProperties.JAVA_EE_5.equals(getJ2eePlatformVersion())) {
+        if (ddFO == null && !ProjectProperties.JAVA_EE_5.equals(getJ2eePlatformVersion())) {
             // ...generate the DD from template...
         }
         return ddFO;
@@ -153,8 +154,8 @@ public final class EjbJarProvider extends J2eeModuleProvider
     
     /** Package-private for unit test only. */
     static boolean needConfigurationFolder(final String version) {
-        return EjbJarProjectProperties.J2EE_1_3.equals(version) ||
-                EjbJarProjectProperties.J2EE_1_4.equals(version);
+        return ProjectProperties.J2EE_1_3.equals(version) ||
+                ProjectProperties.J2EE_1_4.equals(version);
     }
     
     public File getMetaInfAsFile() {
@@ -237,7 +238,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
     }
     
     public FileObject getContentDirectory() {
-        return getFileObject(EjbJarProjectProperties.BUILD_CLASSES_DIR);
+        return getFileObject(ProjectProperties.BUILD_CLASSES_DIR);
     }
     
     public FileObject getBuildDirectory() {
@@ -245,7 +246,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
     }
     
     public File getContentDirectoryAsFile() {
-        return getFile(EjbJarProjectProperties.BUILD_CLASSES_DIR);
+        return getFile(ProjectProperties.BUILD_CLASSES_DIR);
     }
     
     public <T> MetadataModel<T> getMetadataModel(Class<T> type) {

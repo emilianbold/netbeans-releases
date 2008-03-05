@@ -1,0 +1,84 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2008 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>JSF 1.2 Bubble Help Component</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>JSF 1.2 Bubble Help Component</h2>
+<p><small><a href="#seealso">See Also  </a></small>
+
+<p>The Bubble Help component <img src="../../../images/bubble.png" alt="Bubble help component icon">&nbsp;is a pop-up type window that provides detailed information to the end user when a mouse hovers on a particular screen element. A Bubble Help component can contain  an icon depicting an alert message (information, warning,
+error, or success, or a user-defined type specified in the <code>indicators</code> property) and a summary message, plus an optional detail message. The Bubble Help component can also contain a hyperlink.</p>
+<ul class="note">
+      <li>
+        This component is a JavaServer Faces 1.2 component. You see components that use this
+        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,
+        see:<br>
+         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value=
+          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">
+          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>
+      </li>
+</ul>
+
+<p>The Bubble Help component contains the following structure elements:
+<ul>
+<li><b>Bubble Title.</b> This title appears in the title bar area.</li>
+<li><b>Bubble Remove Control. </b>This element closes the bubble window. It appears to the right of the bubble title bar.</li>
+<li><b>Bubble Content Area.</b> The main text of the bubble.</li>
+</ul> 
+<p>After dragging the button to from the Woodstock Composite category of the Palette to the Visual Designer, you can:</p>
+<ul>
+  <li>Select the Bubble Help component and edit its properties in the Bubble Help's <a href="propsheets/bubble_props.html">Properties window</a>. Some typical properties you might set are:
+	  <ul>
+		  <li><b>id.</b> The name of the component. In the JSP file, this name is the value of the component's <code>id</code> attribute. In the page bean, this property's value is the name of the <code>Bubble</code> object.</li>
+		  <li><b>duration.</b> The number of milliseconds after which the popup help window should close.</li>
+          <li><strong>openDelay.</strong> This property determines the  delay in milliseconds before opening the bubble. </li>
+          <li><strong>closeButton.</strong> Use this property to display a close button for the bubble. </li>
+    </ul>
+  </li>
+  <li>Right-click the Bubble Help component and choose one of several actions:<ul><li><b>Bind to Data. </b>Dynamically set the summary text. The text comes from the object or data provider you specify, such as a column of a database table. For more information, see <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>. </li>
+			<li><b>Property Bindings</b>. Opens a dialog box that enables you to bind  properties of the component in addition to the <code>summary</code> property to other objects or bean properties that update this component's properties automatically.</li>
+		    <li><b>Snap to Grid</b>. This option aligns the component along the grid lines in the Visual Designer. </li>
+		    <li> <b>Preview in Browser</b>. See how the page renders in the default web browser for your system. </li>
+    </ul>
+  </li>
+</ul>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>  
+<dd><a href="propsheets/bubble_props.html">Bubble Component Properties Window</a></dd>
+<dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+	<dd><a href="../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+	
+	<dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Alert Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+  <tr>
+  <td>&nbsp;</td>
+  </tr>
+</table>
+
+</body>
+</html>

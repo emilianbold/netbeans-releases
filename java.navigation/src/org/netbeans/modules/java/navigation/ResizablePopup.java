@@ -62,12 +62,14 @@ final class ResizablePopup {
     static final String HELP_COOKIE = "help"; // NOI18N
     
     private static final WindowListener windowListener = new WindowAdapter() {
-        public void windowDeactivated(WindowEvent windowEvent) {
-            Window window = windowEvent.getWindow();
-            if (!aboutToShowHelp(window)) {
-                cleanup(window);
-            }
-        }
+        
+// Violates UI guide        
+//        public void windowDeactivated(WindowEvent windowEvent) {
+//            Window window = windowEvent.getWindow();
+//            if (!aboutToShowHelp(window)) {
+//                cleanup(window);
+//            }
+//        }
 
         public void windowClosing(WindowEvent windowEvent) {
             cleanup(windowEvent.getWindow());

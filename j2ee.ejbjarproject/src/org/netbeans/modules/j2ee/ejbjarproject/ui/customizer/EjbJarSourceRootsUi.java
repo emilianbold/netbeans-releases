@@ -80,7 +80,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.j2ee.ejbjarproject.SourceRoots;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileUtil;

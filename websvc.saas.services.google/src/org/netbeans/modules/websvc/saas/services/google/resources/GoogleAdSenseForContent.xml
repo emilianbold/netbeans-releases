@@ -10,25 +10,33 @@
     api-doc="http://code.google.com/apis/adsense/">
     
     <!-- This is the description for this SaaS component. It is not localized. -->
-    <description>Enables a developer to obtain a code snippet that adds the 
-        Google search box to a publisher's web page. The search can be a full web search 
-        or restricted to one of several domains. When an end user performs a search, 
-        ads are displayed.  When a user clicks through, Google credits a payment.
-    </description>
+    <description>Generates ad code snippets to include in a publisher's web pages displaying contextual advertising</description>
     
     <display-name>GoogleAdSenseForContent</display-name>
 
-    <xi:include url="GoogleMetaData.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+    <saas-metadata>
+        <localizing-bundle>org.netbeans.modules.websvc.components.google.Bundle</localizing-bundle>
+        <group name="Google"/>
+        <code-gen>
+            <artifacts targets="java,servlet"/>
+        </code-gen>
+        <!-- http-basic, api-key, custom -->
+        <authentication profile="SaaSServices/Google/profile.properties">
+            <api-key id="zwsid"/>
+        </authentication>
+    </saas-metadata>
 
     <!-- The method elements are used to specified a subset of important operations
          in cases where the wsdl contains a large number of operations. -->
-         
-    <method href="xpath expression">
-        <input>
-            <params>
-                <!-- Overrides the default values specified in the wsdl -->
-                <param name="..." type="string" default="..."/>
-            </params>
-        </input>
-    </method>             
+    <!-- TODO -->     
+    <methods>
+        <method name="GoogleAdSenseForContent" serviceName="AdSenseForContentServiceService"
+                portName="AdSenseForContentService" operationName="generateAdCode">
+            <documentation>
+                Allows a developer to generate ad code snippets to include in a publisher's web pages to start serving and displaying contextual advertising. When an end-user clicks through an ad, Google credits a payment.
+            </documentation>
+        </method>
+    </methods>
+        
+    
 </saas-services>

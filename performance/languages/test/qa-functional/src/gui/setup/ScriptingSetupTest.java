@@ -43,6 +43,7 @@ package gui.setup;
 
 import gui.Projects;
 import gui.ScriptingUtilities;
+import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
@@ -66,8 +67,14 @@ public class ScriptingSetupTest extends IDESetupTest {
     }
     
     public void OpenScriptingProject() {
-        ScriptingUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +Projects.SCRIPTING_PROJECT);
-        ScriptingUtilities.waitForPendingBackgroundTasks();             
+        String projectPath = System.getProperty("xtest.tmpdir")+ java.io.File.separator +Projects.SCRIPTING_PROJECT;
+        ProjectSupport.openProject(projectPath);
+        closeAllModal();
+        ScriptingUtilities.waitScanFinished();
+        ScriptingUtilities.waitForPendingBackgroundTasks();
+        closeAllModal();
+        ScriptingUtilities.verifyAndResolveMissingWebServer(Projects.SCRIPTING_PROJECT, "GlassFish V2");
+        ScriptingUtilities.waitForPendingBackgroundTasks();        
     }
 
 }

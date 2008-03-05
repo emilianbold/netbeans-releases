@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.bpel.debugger.ui.plinks;
 
+import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.bpel.debugger.ui.util.AbstractColumn;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
@@ -42,7 +43,7 @@ public final class PLinksColumnModel_Value extends AbstractColumn {
 //    public PropertyEditor getPropertyEditor() {
 //        return new ColumnPropertyEditor();
 //    }
-//    
+    
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     public static class ColumnPropertyEditor extends PropertyEditorSupport
@@ -50,6 +51,15 @@ public final class PLinksColumnModel_Value extends AbstractColumn {
             
         public ColumnPropertyEditor() {
             // does nothing
+        }
+
+        @Override
+        public boolean supportsCustomEditor() {
+            if ("".equals(getValue())) {
+                return false;
+            }
+            
+            return super.supportsCustomEditor();
         }
         
         public void attachEnv(

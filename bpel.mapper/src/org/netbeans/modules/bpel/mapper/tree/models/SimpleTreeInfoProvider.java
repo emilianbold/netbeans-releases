@@ -83,7 +83,7 @@ public class SimpleTreeInfoProvider implements TreeItemInfoProvider {
         return null;
     }
 
-    public String getTooltipText(Object treeItem) {
+    public String getToolTipText(Object treeItem) {
         return null;
     }
 

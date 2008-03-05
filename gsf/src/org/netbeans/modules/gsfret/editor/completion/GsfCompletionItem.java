@@ -52,8 +52,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.gsf.CompletionProposal;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.modules.gsf.api.CompletionProposal;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
@@ -70,17 +71,17 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  */
 public abstract class GsfCompletionItem implements CompletionItem {
     /** Cache for looking up tip proposal - usually null (shortlived) */
-    static org.netbeans.api.gsf.CompletionProposal tipProposal;
+    static org.netbeans.modules.gsf.api.CompletionProposal tipProposal;
     
     protected CompilationInfo info;
     
     protected static int SMART_TYPE = 1000;
         
     private static class DelegatedItem extends GsfCompletionItem {
-        private org.netbeans.api.gsf.CompletionProposal item;
+        private org.netbeans.modules.gsf.api.CompletionProposal item;
         private static ImageIcon icon[][] = new ImageIcon[2][4];
         
-        private DelegatedItem(CompilationInfo info, org.netbeans.api.gsf.CompletionProposal item) {
+        private DelegatedItem(CompilationInfo info, org.netbeans.modules.gsf.api.CompletionProposal item) {
             super(item.getAnchorOffset());
             this.item = item;
             this.info = info;
@@ -93,12 +94,16 @@ public abstract class GsfCompletionItem implements CompletionItem {
             case PARAMETER: return item.isSmart() ? 105 - SMART_TYPE : 105;
             case CALL: return item.isSmart() ? 110 - SMART_TYPE : 110;
             case CONSTRUCTOR: return item.isSmart() ? 400 - SMART_TYPE : 400;
+            case PACKAGE:
             case MODULE: return item.isSmart() ? 900 - SMART_TYPE : 900;
             case CLASS: return item.isSmart() ? 800 - SMART_TYPE : 800;
             case ATTRIBUTE:
+            case TAG: return item.isSmart() ? 480 - SMART_TYPE : 480;
+            case PROPERTY:
             case METHOD: return item.isSmart() ? 500 - SMART_TYPE : 500;
             case FIELD: return item.isSmart() ? 300 - SMART_TYPE : 300;
             case CONSTANT:
+            case GLOBAL:
             case VARIABLE: return item.isSmart() ? 200 - SMART_TYPE : 200;
             case KEYWORD: return item.isSmart() ? 600 - SMART_TYPE : 600;
             case OTHER: 
@@ -152,9 +157,11 @@ public abstract class GsfCompletionItem implements CompletionItem {
             return truncateRhs(rhs, length);
         }
         
+        @Override
         public CompletionTask createDocumentationTask() {
-            if (item.getElement() != null) {
-                return GsfCompletionProvider.createDocTask(item.getElement(), info);
+            final ElementHandle element = item.getElement();
+            if (element != null) {
+                return GsfCompletionProvider.createDocTask(element,info);
             }
             
             return null;
@@ -345,8 +352,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
             if (getInsertPrefix().length() == 0) {
                 return;
             }
-            Completion.get().hideDocumentation();
-            Completion.get().hideCompletion();
+            Completion.get().hideAll();
             int caretOffset = component.getSelectionEnd();
             substituteText(component, substitutionOffset, caretOffset - substitutionOffset, null);
         }
@@ -359,8 +365,8 @@ public abstract class GsfCompletionItem implements CompletionItem {
                 case ',':
                 case '(':
                 case '.':
-                    Completion.get().hideDocumentation();
-                    Completion.get().hideCompletion();
+                case '\n':
+                    Completion.get().hideAll();
 //                case '.':
 //                    JTextComponent component = (JTextComponent)evt.getSource();
 //                    int caretOffset = component.getSelectionEnd();

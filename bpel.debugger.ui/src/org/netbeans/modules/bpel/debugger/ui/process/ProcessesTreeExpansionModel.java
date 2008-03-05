@@ -20,7 +20,11 @@ package org.netbeans.modules.bpel.debugger.ui.process;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
+import org.netbeans.modules.bpel.debugger.api.BpelProcess;
 import org.netbeans.modules.bpel.debugger.api.CorrelationSet;
+import org.netbeans.modules.bpel.debugger.api.ProcessInstance;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
@@ -31,24 +35,51 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  */
 public class ProcessesTreeExpansionModel implements TreeExpansionModel {
     
+    private BpelDebugger myDebugger;
     private Set<Object> myExpandedNodes = new HashSet<Object>();
+    private Set<Object> myCollapsedNodes = new HashSet<Object>();
+    
+    public ProcessesTreeExpansionModel(
+            final ContextProvider lookupProvider) {
+        
+        myDebugger = lookupProvider.lookupFirst(null, BpelDebugger.class);
+    }
     
     /**{@inheritDoc}*/
     public synchronized boolean isExpanded(
             final Object object) throws UnknownTypeException {
-        return myExpandedNodes.contains(getKey(object));
+        final Object key = getKey(object);
+        
+        final ProcessInstance currentInstance =
+                myDebugger.getCurrentProcessInstance();
+        
+        if ((object instanceof BpelProcess) && 
+                !myCollapsedNodes.contains(key) &&
+                (currentInstance != null) &&
+                currentInstance.getProcess().equals(object)) {
+            return true;
+        }
+        
+        return myExpandedNodes.contains(key) && 
+                !myCollapsedNodes.contains(key);
     }
     
     /**{@inheritDoc}*/
     public synchronized void nodeExpanded(
             final Object object) {
-        myExpandedNodes.add(getKey(object));
+        final Object key = getKey(object);
+        
+        myExpandedNodes.add(key);
+        myCollapsedNodes.remove(key);
     }
     
     /**{@inheritDoc}*/
     public synchronized void nodeCollapsed(
             final Object object) {
-        myExpandedNodes.remove(getKey(object));
+        final Object key = getKey(object);
+        
+        myExpandedNodes.remove(key);
+        myCollapsedNodes.add(key);
     }
     
     private Object getKey(Object node) {

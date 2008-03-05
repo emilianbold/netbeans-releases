@@ -25,6 +25,7 @@ import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.schema.model.GlobalAttribute;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.SimpleType;
 import org.netbeans.modules.xml.schema.model.LocalAttribute;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.TypeContainer;
@@ -86,6 +87,7 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
         GlobalType propType = null;
         //
         WSDLComponent comp = myContext.getWsdlContext();
+
         if (comp instanceof PropertyAlias) {
             PropertyAlias pa = (PropertyAlias)comp;
             propType = getPropertyType(pa);
@@ -97,21 +99,29 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
             Set<GlobalType> lastStepTypes = getLastStepSchemaTypeSet(locationPath);
             if (lastStepTypes == null || lastStepTypes.isEmpty()) {
                 // Error. Can not resolve type of the last location path element.
-                myContext.addResultItem(ResultType.ERROR, "UNRESOLVED_XPATH_TAIL"); // NOI18N
+//vlv                myContext.addResultItem(ResultType.ERROR, "UNRESOLVED_XPATH_TAIL"); // NOI18N
                 return;
             } 
             if (lastStepTypes.size() == 1) {
                 GlobalType gType = lastStepTypes.iterator().next();
                 //
                 // Check if the type of the last element of the XPath
-                if (!propType.equals(gType)) {
+                if ( !propType.equals(gType)) {
                     // Error. The type of the last XPath element differ from the type
                     // of the correlaton property.
-                    myContext.addResultItem(ResultType.ERROR, 
-                            "QUERY_INCONSISTENT_TYPE",
-                            propType.getName()); // NOI18N
+                    myContext.addResultItem(ResultType.ERROR, "QUERY_INCONSISTENT_TYPE", propType.getName()); // NOI18N
                 }
-            } else {
+                else {
+                // # 83335 vlv
+//System.out.println();
+//System.out.println("TYPE IS: " + gType.getClass().getName());
+//System.out.println();
+                  if ( !(gType instanceof SimpleType)) {
+                    myContext.addResultItem(ResultType.ERROR, "TYPE_MUST_BE_SIMPLE"); // NOI18N
+                  }
+                }
+            } 
+            else {
                 boolean hasConsistentType = false; 
                 for (GlobalType gType : lastStepTypes) {
                     if (propType.equals(gType)) {
@@ -228,9 +238,7 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
                 // Error. A global type has to be specified for the last element (attribute)
                 // of the Location path.
                 String lastElementName = ((Named)sComp).getName();
-                myContext.addResultItem(ResultType.ERROR, 
-                        "QUERY_TAIL_NOT_GLOBAL_TYPE",
-                        lastElementName); // NOI18N
+//vlv                myContext.addResultItem(ResultType.ERROR, "QUERY_TAIL_NOT_GLOBAL_TYPE", lastElementName); // NOI18N
                 return null;
             } else {
                 return Collections.singleton(type);
@@ -255,9 +263,7 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
                 // Error. The set of possible schema components for the tail 
                 // of location path doesn't contain any object with global type. 
                 String lastElementName = ((Named)sComp).getName();
-                myContext.addResultItem(ResultType.ERROR, 
-                        "QUERY_TAIL_NOT_GLOBAL_TYPE",
-                        lastElementName); // NOI18N
+//vlv                myContext.addResultItem(ResultType.ERROR, "QUERY_TAIL_NOT_GLOBAL_TYPE", lastElementName); // NOI18N
                 return null;
             } else if (!allTailsAreGlobal) {
                 // Error. The set of possible schema components for the tail 
@@ -314,6 +320,9 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
      * the specified property alias and obtains the schema type of that property. 
      */ 
     private GlobalType getPropertyType(PropertyAlias pa) {
+        if (pa == null) {
+          return null;
+        }
         NamedComponentReference<CorrelationProperty> cPropRef =
                 pa.getPropertyName();
         if (cPropRef == null) {
@@ -357,5 +366,4 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
             return result;
         }
     }
- 
 }

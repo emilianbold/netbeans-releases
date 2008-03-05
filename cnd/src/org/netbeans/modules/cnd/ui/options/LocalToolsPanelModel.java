@@ -42,46 +42,49 @@
 
 package org.netbeans.modules.cnd.ui.options;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.settings.CppSettings;
 
 /** Manage the data for the ToolsPanel */
 public class LocalToolsPanelModel extends ToolsPanelModel {
     
     private String compilerSetName;
-    private String cCompilerName;
-    private String cppCompilerName;
-    private String fortranCompilerName;
-    private String gdbPath;
-    private boolean gdbEnabled;
+//    private String cCompilerName;
+//    private String cppCompilerName;
+//    private String fortranCompilerName;
+//    private String gdbPath;
+//    private boolean gdbEnabled;
+    private boolean makeRequired;
     private boolean gdbRequired;
     private boolean cRequired;
     private boolean cppRequired;
     private boolean fortranRequired;
+    private boolean showBuildTools;
+    private boolean showDebugTools;
     
     public LocalToolsPanelModel() {
         compilerSetName = null;
-        cCompilerName = null;
-        cppCompilerName = null;
-        fortranCompilerName = null;
-        gdbPath = null;
-        gdbEnabled = super.isGdbEnabled();
-        gdbRequired = CppSettings.getDefault().isGdbRequired();
-        cRequired = CppSettings.getDefault().isCRequired();
-        cppRequired = CppSettings.getDefault().isCppRequired();
-        fortranRequired = CppSettings.getDefault().isFortranRequired();
+//        cCompilerName = null;
+//        cppCompilerName = null;
+//        fortranCompilerName = null;
+//        gdbPath = null;
+//        gdbEnabled = super.isGdbEnabled();
+        makeRequired = false;
+        gdbRequired = false;
+        cRequired = false;
+        cppRequired = false;
+        fortranRequired = false;
+        showBuildTools = false;
+        showDebugTools = false;
     }
     
-    public boolean isGdbEnabled() {
-        return gdbEnabled;
-    }
-    
-    public void setGdbEnabled(boolean enabled) {
-        gdbEnabled = enabled;
-    }
+//    @Override
+//    public boolean isGdbEnabled() {
+//        return gdbEnabled;
+//    }
+//    
+//    public void setGdbEnabled(boolean enabled) {
+//        // gdbEnabled = enabled;
+//    }
     
     public void setCompilerSetName(String name) {
         compilerSetName = name;
@@ -94,49 +97,59 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
         return compilerSetName;
     }
     
-    protected void setCompilerSetDirectories(String directories) {
-        CppSettings.getDefault().setCompilerSetDirectories(directories);
+//    protected void setCompilerSetDirectories(String directories) {
+//        CppSettings.getDefault().setCompilerSetDirectories(directories);
+//    }
+//    
+//    protected String getCCompilerName() {
+//        if (cCompilerName == null) {
+//            cCompilerName = CppSettings.getDefault().getCCompilerName();
+//        }
+//        return cCompilerName;
+//    }
+//    
+//    protected void setCCompilerName(String name) {
+//        cCompilerName = name;
+//    }
+//    
+//    protected String getCppCompilerName() {
+//        if (cppCompilerName == null) {
+//            cppCompilerName = CppSettings.getDefault().getCppCompilerName();
+//        }
+//        return cppCompilerName;
+//    }
+//    
+//    protected void setCppCompilerName(String name) {
+//        cppCompilerName = name;
+//    }
+//    
+//    protected String getFortranCompilerName() {
+//        if (fortranCompilerName == null) {
+//            fortranCompilerName = CppSettings.getDefault().getFortranCompilerName();
+//        }
+//        return fortranCompilerName;
+//    }
+//    
+//    protected void setFortranCompilerName(String name) {
+//        fortranCompilerName = name;
+//    }
+//    
+//    @Override
+//    public String getGdbPath() {
+//        return gdbPath;
+//    }
+//    
+//    @Override
+//    public void setGdbPath(String gdbPath) {
+//        this.gdbPath = gdbPath;
+//    }
+    
+    public boolean isMakeRequired() {
+        return makeRequired;
     }
     
-    protected String getCCompilerName() {
-        if (cCompilerName == null) {
-            cCompilerName = CppSettings.getDefault().getCCompilerName();
-        }
-        return cCompilerName;
-    }
-    
-    protected void setCCompilerName(String name) {
-        cCompilerName = name;
-    }
-    
-    protected String getCppCompilerName() {
-        if (cppCompilerName == null) {
-            cppCompilerName = CppSettings.getDefault().getCppCompilerName();
-        }
-        return cppCompilerName;
-    }
-    
-    protected void setCppCompilerName(String name) {
-        cppCompilerName = name;
-    }
-    
-    protected String getFortranCompilerName() {
-        if (fortranCompilerName == null) {
-            fortranCompilerName = CppSettings.getDefault().getFortranCompilerName();
-        }
-        return fortranCompilerName;
-    }
-    
-    protected void setFortranCompilerName(String name) {
-        fortranCompilerName = name;
-    }
-    
-    public String getGdbPath() {
-        return gdbPath;
-    }
-    
-    public void setGdbPath(String gdbPath) {
-        this.gdbPath = gdbPath;
+    public void setMakeRequired(boolean enabled) {
+        makeRequired = enabled;
     }
     
     public boolean isGdbRequired() {
@@ -169,5 +182,25 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     
     public void setFortranRequired(boolean enabled) {
         fortranRequired = enabled;
+    }
+    
+    public boolean showRequiredTools() {
+        return true;
+    }
+    
+    public void setShowRequiredBuildTools(boolean enabled) {
+        showBuildTools = enabled;
+    }
+    
+    public boolean showRequiredBuildTools() {
+        return showBuildTools;
+    }
+    
+    public void setShowRequiredDebugTools(boolean enabled) {
+        showDebugTools = enabled;
+    }
+    
+    public boolean showRequiredDebugTools() {
+        return showDebugTools;
     }
 }

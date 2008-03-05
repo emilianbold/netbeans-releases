@@ -123,16 +123,7 @@ public final class FileUtil extends Object {
     private static final Map<FileObject, Boolean> archiveFileCache = new WeakHashMap<FileObject,Boolean>();
     private static FileSystem diskFileSystem;
 
-    private FileUtil() {
-    }
-    
-    /**
-     * Refreshes all necessary filesystems. Not all instances of <code>FileObject</code> are refreshed
-     * but just those that represent passed <code>files</code> and their children recursively.
-     * @param files
-     * @since 7.6
-     */
-    public static void refreshFor(File... files) {
+    private static FileSystem getDiskFileSystemFor(File... files) {
         FileSystem fs = getDiskFileSystem();
         if (fs == null) {
             for (File file : files) {
@@ -143,6 +134,20 @@ public final class FileUtil extends Object {
                 }
             }
         }
+        return fs;
+    }
+
+    private FileUtil() {
+    }
+    
+    /**
+     * Refreshes all necessary filesystems. Not all instances of <code>FileObject</code> are refreshed
+     * but just those that represent passed <code>files</code> and their children recursively.
+     * @param files
+     * @since 7.6
+     */
+    public static void refreshFor(File... files) {
+        FileSystem fs = getDiskFileSystemFor(files);
         if (fs != null) {
             try {
                 fs.getRoot().setAttribute("request_for_refreshing_files_be_aware_this_is_not_public_api", files);
@@ -151,6 +156,48 @@ public final class FileUtil extends Object {
             }
         } 
     }         
+
+    /**
+     * Refreshes all <code>FileObject</code> that represent files <code>File.listRoots()</code> 
+     * and their children recursively.
+     * @since 7.7
+     */
+    public static void refreshAll() {
+        refreshFor(File.listRoots());
+    }         
+    
+    /**
+     * Registers <code>listener</code> so that it will receive
+     * <code>FileEvent</code>s from <code>FileSystem</code>s providing instances
+     * of <code>FileObject</code> convertible to <code>java.io.File</code>. 
+     * @param fcl
+     * @see #toFileObject
+     * @since 7.7
+     */
+    public static void addFileChangeListener(FileChangeListener fcl) {
+        FileSystem fs = getDiskFileSystem();
+        if (fs == null) {fs = getDiskFileSystemFor(File.listRoots());}
+        if (fs != null) {
+            fs.addFileChangeListener(fcl);
+        }
+    }
+    
+    /**
+     * Unregisters <code>listener</code> so that it will no longer receive
+     * <code>FileEvent</code>s from <code>FileSystem</code>s providing instances
+     * of <code>FileObject</code> convertible to <code>java.io.File</code>      
+     * @param fcl
+     * @see #toFileObject
+     * @since 7.7
+     */
+    public static void removeFileChangeListener(FileChangeListener fcl) {
+        FileSystem fs = getDiskFileSystem();
+        if (fs == null) {fs = getDiskFileSystemFor(File.listRoots());}
+        if (fs != null) {
+            fs.addFileChangeListener(fcl);
+        }
+    }
+    
     
     /**
      * Executes atomic action. For more info see {@link FileSystem#runAtomicAction}. 
@@ -200,29 +247,30 @@ public final class FileUtil extends Object {
      * @since 7.0
      */
     public static FileObject createFolder (final File folder) throws IOException {
-        FileObject retval = null;
-        File root = getRoot(folder);
-        if (!root.exists()) {
+        File existingFolder = folder;
+        while(existingFolder != null && !existingFolder.isDirectory()) {
+            existingFolder = existingFolder.getParentFile();
+        }
+        if (existingFolder == null) {
             throw new IOException(folder.getAbsolutePath());
-        }
-        FileObject rootFo = FileUtil.toFileObject(root);
-        if (rootFo == null) {
-            throw new IllegalStateException("Cannot get a FileObject for " + root + " while trying to create " + folder +
-                "; URLMapper's=" + Lookup.getDefault().lookupAll(URLMapper.class));
-        }
-        final String relativePath = getRelativePath(root, folder);                                
+        }        
+                      
+        FileObject retval = null;
+        FileObject folderFo = FileUtil.toFileObject(existingFolder);        
+        assert folderFo != null : existingFolder.getAbsolutePath();
+        final String relativePath = getRelativePath(existingFolder, folder);
         try {
-            retval = FileUtil.createFolder(rootFo,relativePath);        
+            retval = FileUtil.createFolder(folderFo,relativePath);        
         } catch (IOException ex) {
             //thus retval = null;
         }
-        //if refresh needed because of external changes
+        //if refresh needed because of external changes        
         if (retval == null || !retval.isValid()) {
-            rootFo.getFileSystem().refresh(false);
-            retval = FileUtil.createFolder(rootFo,relativePath);
+            folderFo.getFileSystem().refresh(false);
+            retval = FileUtil.createFolder(folderFo,relativePath);
         }        
         assert retval != null;        
-        return retval;
+        return retval;        
     } 
     
     /**Returns FileObject for a data file.
@@ -235,23 +283,27 @@ public final class FileUtil extends Object {
      * @since 7.0
      */
     public static FileObject createData (final File data) throws IOException {        
-        FileObject retval = null;
-        File root = getRoot(data);
-        if (!root.exists()) {
+        File folder = data;
+        while(folder != null && !folder.isDirectory()) {
+            folder = folder.getParentFile();
+        }
+        if (folder == null) {
             throw new IOException(data.getAbsolutePath());
         }        
-        FileObject rootFo = FileUtil.toFileObject(root);        
-        assert rootFo != null : root.getAbsolutePath();
-        final String relativePath = getRelativePath(root, data);        
+                      
+        FileObject retval = null;
+        FileObject folderFo = FileUtil.toFileObject(folder);
+        assert folderFo != null : folder.getAbsolutePath();
+        final String relativePath = getRelativePath(folder, data);
         try {
-            retval = FileUtil.createData(rootFo,relativePath);        
+            retval = FileUtil.createData(folderFo,relativePath);        
         } catch (IOException ex) {
             //thus retval = null;
         }
         //if refresh needed because of external changes        
         if (retval == null || !retval.isValid()) {
-            rootFo.getFileSystem().refresh(false);
-            retval = FileUtil.createData(rootFo,relativePath);
+            folderFo.getFileSystem().refresh(false);
+            retval = FileUtil.createData(folderFo,relativePath);
         }        
         assert retval != null;        
         return retval;

@@ -41,9 +41,9 @@ package org.netbeans.modules.cnd.editor.reformat;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.editor.indent.spi.Context;
@@ -66,38 +66,69 @@ public class Reformatter implements ReformatTask {
 
     public Reformatter(Document doc, CodeStyle codeStyle) {
         this.doc = doc;
-         this.codeStyle = codeStyle;
+        this.codeStyle = codeStyle;
     }
 
     public void reformat() throws BadLocationException {
         if (codeStyle == null){
-            codeStyle = CodeStyle.getDefault(null);
+            codeStyle = CodeStyle.getDefault(doc);
         }
         if (context != null) {
             for (Context.Region region : context.indentRegions()) {
                 reformatImpl(region);
             }
         } else {
-            int startOffset = doc.getLength();
-            TokenHierarchy th = TokenHierarchy.get(doc);
-            TokenSequence<CppTokenId> ts = th != null ? CndLexerUtilities.getCppTokenSequence(th, startOffset) : null;
-            if (ts != null) {
-                reformatImpl(ts, 0, startOffset);
+            int endOffset = doc.getLength();
+            TokenHierarchy hierarchy = TokenHierarchy.get(doc);
+            if (hierarchy == null) {
+                return;
             }
+            reformatImpl(hierarchy, 0, endOffset);
         }
     }
-    
-        
+
     private void reformatImpl(Context.Region region) throws BadLocationException {
         int startOffset = region.getStartOffset();
         int endOffset = region.getEndOffset();
-        if (!("text/x-c++".equals(context.mimePath())||
-              "text/x-c".equals(context.mimePath()))) { //NOI18N
-            TokenHierarchy th = TokenHierarchy.get(doc);
-            TokenSequence<CppTokenId> ts = th != null ? CndLexerUtilities.getCppTokenSequence(th, startOffset) : null;
-            if (ts != null) {
-                reformatImpl(ts, startOffset, endOffset);
+        if ("text/x-c++".equals(context.mimePath())) { //NOI18N
+            reformatLanguage(CppTokenId.languageCpp(), startOffset, endOffset);
+        } else if ("text/x-c".equals(context.mimePath())) { //NOI18N
+            reformatLanguage(CppTokenId.languageC(), startOffset, endOffset);
+        }
+    }
+
+    private void reformatLanguage(Language<CppTokenId> language, int startOffset, int endOffset) throws BadLocationException {
+        TokenHierarchy hierarchy = TokenHierarchy.create(doc.getText(0, doc.getLength()), language);
+        if (hierarchy == null) {
+            return;
+        }
+        reformatImpl(hierarchy, startOffset, endOffset);
+    }
+
+                
+    private void reformatImpl(TokenHierarchy hierarchy, int startOffset, int endOffset) throws BadLocationException {
+        TokenSequence<?> ts = hierarchy.tokenSequence();
+        ts.move(startOffset);
+        if (ts.moveNext() && ts.token().id() != CppTokenId.NEW_LINE){
+            while (ts.movePrevious()){
+                startOffset = ts.offset();
+                if (ts.token().id() != CppTokenId.NEW_LINE) {
+                    break;
+                }
             }
+        }
+        while (ts != null && (startOffset == 0 || ts.moveNext())) {
+            ts.move(startOffset);
+            if (ts.language() == CppTokenId.languageC() ||
+                ts.language() == CppTokenId.languageCpp() ||
+                ts.language() == CppTokenId.languagePreproc()) {
+                reformatImpl((TokenSequence<CppTokenId>) ts, startOffset, endOffset);
+                return;
+            }
+            if (!ts.moveNext() && !ts.movePrevious()) {
+                return;
+            }
+            ts = ts.embedded();
         }
     }
     
@@ -110,12 +141,19 @@ public class Reformatter implements ReformatTask {
                 continue;
             }
             if (endOffset < end) {
-                if (text != null && text.length() > 0)
+                if (text != null && text.length() > 0) {
                     text = end - endOffset >= text.length() ? null : 
                            text.substring(0, text.length() - end + endOffset);
+                }
                 end = endOffset;
             }
             if (end - start > 0) {
+                if (!checkRemoved(doc.getText(start, end - start))){
+                    // Reformat
+                    System.out.println("Reformatting failed. Reformatter try to remove: "+doc.getText(start, end - start));
+                    System.out.println("    Changeset:"+diff);
+                    break;
+                }
                 doc.remove(start, end - start);
             }
             if (text != null && text.length() > 0) {
@@ -124,6 +162,17 @@ public class Reformatter implements ReformatTask {
         }
     }
 
+    private boolean checkRemoved(String whatRemoved){
+        for(int i = 0; i < whatRemoved.length(); i++){
+            char c = whatRemoved.charAt(i);
+            if (c == ' ' || c == '\n' || c == '\t') {
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+    
     public ExtraLock reformatLock() {
         return new Lock();
     }
@@ -160,6 +209,31 @@ public class Reformatter implements ReformatTask {
 
         public String getText() {
             return text;
+        }
+
+        public void setText(String text) {
+            this.text = text;
+        }
+        
+        public void replaceSpaces(String space){
+            int i = text.lastIndexOf('\n'); // NOI18N
+            if (i >= 0) {
+                text = text.substring(0, i + 1)+space;
+            } else {
+                text = space; // NOI18N
+            }
+        }
+
+        public boolean hasNewLine(){
+            return text.lastIndexOf('\n') >= 0; // NOI18N
+        }
+
+        public int spaceLength() {
+            int i = text.lastIndexOf('\n'); // NOI18N
+            if (i >= 0) {
+                return text.length()-i+1;
+            }
+            return text.length();
         }
 
         @Override

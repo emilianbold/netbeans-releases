@@ -130,53 +130,54 @@ public abstract class XMLGenerateAction extends CookieAction {
 
     //////////////////////////////////////
     // class GenerateDocumentHandlerAction
-    public static class GenerateDocumentHandlerAction extends XMLGenerateAction implements CollectDTDAction.DTDAction {
+   // public static class GenerateDocumentHandlerAction extends XMLGenerateAction implements CollectDTDAction.DTDAction {
         /** generated Serialized Version UID */
-        private static final long serialVersionUID = 1342753912956042368L;
+   //     private static final long serialVersionUID = 1342753912956042368L;
 
         /* Human presentable name of the action. This should be
          * presented as an item in a menu.
          * @return the name of the action
          */
-        public String getName () {
-            return NbBundle.getMessage(XMLGenerateAction.class, "PROP_GenerateSAXHandler");
-        }
+   //     public String getName () {
+   //         return NbBundle.getMessage(XMLGenerateAction.class, "PROP_GenerateSAXHandler");
+   //     }
 
         /* Help context where to find more about the action.
          * @return the help context for this action
          */
-        public HelpCtx getHelpCtx () {
-            return new HelpCtx (GenerateDocumentHandlerAction.class);
-        }
+   //     public HelpCtx getHelpCtx () {
+   //         return new HelpCtx (GenerateDocumentHandlerAction.class);
+   //     }
 
-        protected Class getOwnCookieClass () {
-            return SAXGeneratorSupport.class;
-        }
-    } // end of inner class GenerateDocumentHandlerAction
+   //     protected Class getOwnCookieClass () {
+   //         return SAXGeneratorSupport.class;
+   //     }
+  //  } // end of inner class GenerateDocumentHandlerAction
 
     /////////////////////////////////
     // class GenerateDOMScannerAction
-    public static class GenerateDOMScannerAction extends XMLGenerateAction implements CollectDTDAction.DTDAction {
+ //   public static class GenerateDOMScannerAction extends XMLGenerateAction implements CollectDTDAction.DTDAction {
         /** generated Serialized Version UID */
-        private static final long serialVersionUID = 2567846356902367312L;
+  //      private static final long serialVersionUID = 2567846356902367312L;
 
         /* Human presentable name of the action. This should be
          * presented as an item in a menu.
          * @return the name of the action
          */
-        public String getName () {
-            return NbBundle.getMessage(XMLGenerateAction.class, "PROP_GenerateDOMScanner");
-        }
+  //      public String getName () {
+  //          return NbBundle.getMessage(XMLGenerateAction.class, "PROP_GenerateDOMScanner");
+  //      }
 
         /* Help context where to find more about the action.
          * @return the help context for this action
          */
-        public HelpCtx getHelpCtx () {
-            return new HelpCtx (GenerateDOMScannerAction.class);
-        }
+  //      public HelpCtx getHelpCtx () {
+   //         return new HelpCtx (GenerateDOMScannerAction.class);
+  //      }
 
-        protected Class getOwnCookieClass () {
-            return GenerateDOMScannerSupport.class;
-        }
-    } // end of inner class GenerateDOMScannerAction
+  //      protected Class getOwnCookieClass () {
+  //          return GenerateDOMScannerSupport.class;
+  //      }
+  //  } // end of inner class GenerateDOMScannerAction
+    
 }

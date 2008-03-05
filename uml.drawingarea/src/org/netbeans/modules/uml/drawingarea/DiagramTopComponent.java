@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.swing.AbstractAction;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
@@ -241,6 +242,7 @@ public class DiagramTopComponent extends CloneableTopComponent
             return ""; // NOI18N
         
         StringBuffer fullNameSpace = new StringBuffer();
+
         IProject project = mControl.getNamespace().getProject();
         IElement owner = mControl.getDiagram().getOwner();
         
@@ -1243,10 +1245,18 @@ public class DiagramTopComponent extends CloneableTopComponent
     
     public Lookup getThisLookup()
     {
-        if ( paletteContrl == null)
+        if ( paletteContrl == null) 
             paletteContrl = this.getAssociatedPalette();
-        //return Lookups.fixed(new Object[] {mControl, paletteContrl, diagramDO});
-        return Lookups.fixed(new Object[] {mControl, paletteContrl, getDiagramDO() } );
+
+        ArrayList objs = new ArrayList();
+        if (mControl != null) 
+            objs.add(mControl);
+        if (paletteContrl != null)
+            objs.add(paletteContrl);
+        if (getDiagramDO() != null)
+            objs.add(getDiagramDO());
+        
+        return Lookups.fixed(objs.toArray());
     }
     
     ///////////////////////////////////////////////////////////////////////////

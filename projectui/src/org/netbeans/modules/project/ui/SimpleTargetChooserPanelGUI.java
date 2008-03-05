@@ -45,13 +45,10 @@ import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
@@ -98,7 +95,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         if ( bottomPanel != null ) {
             bottomPanelContainer.add( bottomPanel, java.awt.BorderLayout.CENTER );
         }
-        initValues( null, null );
+        initValues( null, null, null );
         
         browseButton.addActionListener( this );
         locationComboBox.addActionListener( this );
@@ -106,10 +103,6 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         folderTextField.getDocument().addDocumentListener( this );
         
         setName (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_SimpleTargetChooserPanel_Name")); // NOI18N
-    }
-    
-    public void initValues( FileObject template, FileObject preselectedFolder ) {
-        initValues(template, preselectedFolder, null);
     }
     
     public void initValues( FileObject template, FileObject preselectedFolder, String documentName ) {
@@ -153,23 +146,22 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             displayName = template.getName ();
         }
         putClientProperty ("NewFileWizard_Title", displayName);// NOI18N        
-        
         if (template != null) {
+            final String baseName = NEW_FILE_PREFIX + template.getName ();
             if (documentName == null) {
-                final String baseName = NEW_FILE_PREFIX + template.getName ();
                 documentName = baseName;
-                if (preselectedFolder != null) {
-                    int index = 0;
-                    while (true) {
-                        FileObject _tmp = preselectedFolder.getFileObject(documentName, template.getExt());
-                        if (_tmp == null) {
-                            break;
-                        }
-                        documentName = baseName + ++index;
-                    }
-                }
-                
             }
+            if (preselectedFolder != null) {
+                int index = 0;
+                while (true) {
+                    FileObject _tmp = preselectedFolder.getFileObject(documentName, template.getExt());
+                    if (_tmp == null) {
+                        break;
+                    }
+                    documentName = baseName + ++index;
+                }
+            }
+                
             documentNameTextField.setText (documentName);
             documentNameTextField.selectAll ();
         }
@@ -214,6 +206,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     }
     
         
+    @Override
     public java.awt.Dimension getPreferredSize() {
         return PREF_DIM;
     }

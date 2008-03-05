@@ -260,6 +260,7 @@ public class InstallManager extends InstalledFileLocator{
                 }*/
             
             for (File cluster : UpdateTracking.clusters (true)) {       
+                cluster = FileUtil.normalizeFile (cluster);
                 if (isParentOf (cluster, configFile)) {
                     res = cluster;
                     break;

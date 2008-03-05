@@ -85,7 +85,7 @@ import java.text.MessageFormat;
  * 
  * @author Maros Sandor
  */
-class DiffSidebar extends JComponent implements DocumentListener, ComponentListener, FoldHierarchyListener, FileChangeListener {
+class DiffSidebar extends JPanel implements DocumentListener, ComponentListener, FoldHierarchyListener, FileChangeListener {
     
     private static final int BAR_WIDTH = 9;
     
@@ -385,9 +385,11 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         if (editorUI != null) {
             try{
                 JTextComponent component = editorUI.getComponent();
-                BaseTextUI textUI = (BaseTextUI)component.getUI();
-                int clickOffset = textUI.viewToModel(component, new Point(0, e.getY()));
-                line = Utilities.getLineOffset(document, clickOffset);
+                if (component != null) {
+                    BaseTextUI textUI = (BaseTextUI)component.getUI();
+                    int clickOffset = textUI.viewToModel(component, new Point(0, e.getY()));
+                    line = Utilities.getLineOffset(document, clickOffset);
+                }
             }catch (BadLocationException ble){
                 Logger.getLogger(DiffSidebar.class.getName()).log(Level.WARNING, "getLineFromMouseEvent", ble); // NOI18N
             }

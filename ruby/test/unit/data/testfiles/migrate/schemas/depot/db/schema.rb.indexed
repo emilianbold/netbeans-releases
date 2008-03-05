@@ -3,16 +3,11 @@
 Document 0
 Delete:  source : <TESTURL>/schema.rb
 
-Indexed:
-
-Not Indexed:
 
 
 Document 1
-Delete:
 Indexed:
   dbtable : line_items
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : order_id;integer
@@ -23,10 +18,8 @@ Not Indexed:
 
 
 Document 2
-Delete:
 Indexed:
   dbtable : orders
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : address;text
@@ -37,10 +30,8 @@ Not Indexed:
 
 
 Document 3
-Delete:
 Indexed:
   dbtable : products
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : description;text
@@ -51,10 +42,8 @@ Not Indexed:
 
 
 Document 4
-Delete:
 Indexed:
   dbtable : sessions
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : data;text
@@ -64,10 +53,8 @@ Not Indexed:
 
 
 Document 5
-Delete:
 Indexed:
   dbtable : users
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : hashed_password;string

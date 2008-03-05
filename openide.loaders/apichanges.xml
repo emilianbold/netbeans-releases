@@ -106,6 +106,22 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+     <change id="xml.mimetypes">
+        <api name="loaders"/>
+        <summary>XMLDataObject no longer enforces text/xml as document mimetype</summary>
+        <version major="6" minor="9"/>
+        <date day="20" month="2" year="2008"/>
+        <author login="mkleint"/>
+        <compatibility addition="yes" binary="compatible" />
+        <description>
+        <p>
+            Whenever possible the editor support and editor components will 
+            use the underlying FileObject's mimetype (as resolved by the mimetype resolvers).
+        </p>
+        </description>
+        <class package="org.openide.loaders" name="XMLDataObject" />
+    </change>
+      
      <change id="scripting.wizard.prefix">
         <api name="loaders"/>
         <summary>Prefixing attributes from TemplateWizard with <code>wizard.</code></summary>

@@ -1,12 +1,12 @@
 /* 
- * File:   %<%NAME%>%.h
+ * File:   %<%NAME%>%.%<%EXTENSION%>%
  * Author: %<%USER%>%
  *
  * Created on %<%DATE%>%, %<%TIME%>%
  */
 
-#ifndef _%<%GUARD_NAME%>%_H
-#define	_%<%GUARD_NAME%>%_H
+#ifndef _%<%GUARD_NAME%>%
+#define	_%<%GUARD_NAME%>%
 
 #ifdef	__cplusplus
 extern "C" {
@@ -19,5 +19,5 @@ extern "C" {
 }
 #endif
 
-#endif	/* _%<%GUARD_NAME%>%_H */
+#endif	/* _%<%GUARD_NAME%>% */
 

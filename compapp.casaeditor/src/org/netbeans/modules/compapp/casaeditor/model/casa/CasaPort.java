@@ -55,11 +55,13 @@ public interface CasaPort extends CasaComponent {
     // The bindingType can not be derived by its binding component name, e.g.,  
     // both SOAP and HTTP type shared the same binding component, sun-http-binding.
     public static final String BINDINGTYPE_PROPERTY = "bindingType";    // NOI18N
-//    public static final String PORTTYPE_PROPERTY = "portType";          // NOI18N
-//
-//    String getPortType();
-//    void setPortType(String portType);
-//    
+
+    /** 
+     * Gets the <b>explicit</b> bindingType attribute value on the corresponding 
+     * DOM element. Note that to get the explicit or implicit bindingType, use  
+     * the convenience method provided in <code>CasaWrapperModel</code>.
+     * @see org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel#getBindingType(CasaPort)
+     */
     String getBindingType();
     void setBindingType(String bindingType);
     

@@ -61,6 +61,7 @@ import org.netbeans.modules.bpel.debugger.api.CorrelationSet;
 import org.netbeans.modules.bpel.debugger.api.Fault;
 import org.netbeans.modules.bpel.debugger.api.RuntimePartnerLink;
 import org.netbeans.modules.bpel.debugger.api.pem.ProcessExecutionModel.Branch;
+import org.netbeans.modules.bpel.debugger.eventlog.ActivityTerminatedRecord;
 import org.netbeans.modules.bpel.debuggerbdi.rmi.api.BPELPartnerLink;
 import org.netbeans.modules.bpel.debuggerbdi.rmi.api.BPELProcessRef;
 import org.w3c.dom.Element;
@@ -403,6 +404,11 @@ public class ProcessInstanceImpl implements ProcessInstance {
                 doWait();
                 myBreakPosition = null;
                 setState(STATE_RUNNING);
+            } else {
+                // This call mught seem redundant, but it triggers a bunch of 
+                // important updates, like BpelDebugger.setCurrentPosition(null)
+                // which causes the annotations to be redrawn.
+                setState(STATE_RUNNING);
             }
         }
     }
@@ -443,7 +449,12 @@ public class ProcessInstanceImpl implements ProcessInstance {
             
             // add the fault to the list, so it can be displayed by the 
             // processes view
-            if (faultData.isWSDLMessage()) {
+            if (faultData == null) {
+                myFaults.add(new FaultImpl(
+                        faultQName, 
+                        position.getXpath(), 
+                        null));
+            } else if (faultData.isWSDLMessage()) {
                 myFaults.add(new FaultImpl(
                         faultQName, 
                         position.getXpath(), 
@@ -533,12 +544,12 @@ public class ProcessInstanceImpl implements ProcessInstance {
     }
     
     protected void onTerminate(
-            final DebugFrame frame) {
-        
-//        if (getRootFrame() == frame) {
-//            setState(STATE_TERMINATED);
-//            mModel.processInstanceCompleted(this);
-//        }
+            final BreakPosition position) {
+        if (myEventLog != null) {
+            myEventLog.addRecord(new ActivityTerminatedRecord(
+                    position.getFrame().getId(),
+                    position.getXpath()));
+        }
     }
     
     protected void onExit(

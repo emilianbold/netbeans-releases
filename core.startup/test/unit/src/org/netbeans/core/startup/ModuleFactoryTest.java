@@ -37,6 +37,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.core.startup;
 
 import java.io.File;
@@ -56,10 +57,7 @@ import org.netbeans.JarClassLoader;
 import org.netbeans.Module;
 import org.netbeans.ModuleFactory;
 import org.netbeans.ModuleManager;
-import org.openide.util.Lookup;
-import org.openide.util.Union2;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.test.MockLookup;
 
 /**
  * These tests verify that the module manager behaves basically the
@@ -68,19 +66,8 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public class ModuleFactoryTest extends ModuleManagerTest {
 
-    // #88772: MockServices does not work here, probably because MainLookup ignores CCL.
     static {
-        System.setProperty("org.openide.util.Lookup", L.class.getName());
-        assertTrue(Lookup.getDefault() instanceof L);
-    }
-    public static final class L extends ProxyLookup {
-        public L() {
-            super(new Lookup[] {
-                Lookups.fixed(new Object[] {
-                    new MyModuleFactory()
-                }),
-            });
-        }
+        MockLookup.setInstances(new MyModuleFactory());
     }
 
     public ModuleFactoryTest(String name) {
@@ -183,8 +170,8 @@ public class ModuleFactoryTest extends ModuleManagerTest {
         }
     }
     
-    public static final class MyModuleFactory extends ModuleFactory {
-        public Module create(File jar, Object history, boolean reloadable, boolean autoload, boolean eager, ModuleManager mgr, Events ev) throws IOException {
+    private static final class MyModuleFactory extends ModuleFactory {
+        public @Override Module create(File jar, Object history, boolean reloadable, boolean autoload, boolean eager, ModuleManager mgr, Events ev) throws IOException {
             if (testingDummyModule || testingParentClassloaders) {
                 return new DummyModule(mgr, ev, history, reloadable, autoload, eager);
             }
@@ -197,13 +184,13 @@ public class ModuleFactoryTest extends ModuleManagerTest {
             return super.createFixed(mani, history, loader, autoload, eager, mgr, ev);
         }
         
-        public boolean removeBaseClassLoader() {
+        public @Override boolean removeBaseClassLoader() {
             if (testingParentClassloaders) {
                 return true;
             }
             return super.removeBaseClassLoader();
         }
-        public ClassLoader getClasspathDelegateClassLoader(ModuleManager mgr, ClassLoader del) {
+        public @Override ClassLoader getClasspathDelegateClassLoader(ModuleManager mgr, ClassLoader del) {
             if (testingParentClassloaders) {
                 return new NoOpClassLoader();
             }
@@ -256,7 +243,10 @@ public class ModuleFactoryTest extends ModuleManagerTest {
     }
     
     private static final class NoOpClassLoader extends ClassLoader {
-        protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        NoOpClassLoader() {
+	    super(ClassLoader.getSystemClassLoader());
+	}
+        protected @Override Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
             if ("java.lang.String".equals(name)) {
                 throw new ClassNotFoundException("NoOpClassLoader cannot load " + name);
             }

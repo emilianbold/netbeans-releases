@@ -48,13 +48,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JEditorPane;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
@@ -62,13 +66,18 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
+import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
@@ -77,9 +86,11 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.ReferenceRepositoryImpl;
+import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.ContextEntry;
+import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.DeclarationScope;
+import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.IncludeLevel;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 
 /**
@@ -152,10 +163,10 @@ public class TraceXRef extends TraceModel {
                 }
                 
                 ReferenceRepositoryImpl xRefRepository = new ReferenceRepositoryImpl();
-                CsmObject[] decDef = getDefinitionDeclaration(object);
+                CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(object, true);
                 CsmObject decl = decDef[0];
                 CsmObject def = decDef[1];                
-                Collection<CsmReference> refs = xRefRepository.getReferences(decl, getProject(), true);
+                Collection<CsmReference> refs = xRefRepository.getReferences(decl, getProject(), CsmReferenceKind.ALL);
                 if (super.isShowTime()) {
                     time = System.currentTimeMillis() - time;
                 }            
@@ -163,7 +174,6 @@ public class TraceXRef extends TraceModel {
                 if (super.isShowTime()) {
                     System.out.println("search took " + time + "ms"); // NOI18N
                 }       
-                ReferenceRepositoryImpl.getDefinitionDeclaration(object);
             }
         }
         finally {
@@ -175,17 +185,7 @@ public class TraceXRef extends TraceModel {
             }            
         }        
     }
-
-    /**
-     * 
-     * @param target
-     * @return new CsmObject[] { declaration, definion }
-     */    
-    public static CsmObject[] getDefinitionDeclaration(CsmObject target) {
-        CsmObject[] decDef = ReferenceRepositoryImpl.getDefinitionDeclaration(target);
-        return decDef;
-    }
-    
+   
     @SuppressWarnings("deprecation")
     private static void setUp() {
         // this is the only way to init extension-based recognizer
@@ -234,20 +234,28 @@ public class TraceXRef extends TraceModel {
         return false;
     }
     
-    public static void traceProjectRefsStatistics(NativeProject prj, PrintWriter out) {
-        try {
-            CsmProject csmPrj = CsmModelAccessor.getModel().getProject(prj);
-            out.println("analyzing project " + prj.getProjectDisplayName() + "...");
-            Thread.sleep(10000);
-            out.println("finished");
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+    public static void traceProjectRefsStatistics(NativeProject prj, PrintWriter printOut, CsmProgressListener callback) {
+        CsmProject csmPrj = CsmModelAccessor.getModel().getProject(prj);
+        XRefResultSet bag = new XRefResultSet();
+        Collection<CsmFile> allFiles = csmPrj.getAllFiles();
+        if (callback != null) {
+            callback.projectFilesCounted(csmPrj, allFiles.size());
         }
+        for (CsmFile file : allFiles) {
+            if (callback != null) {
+                callback.fileParsingStarted(file);
+            }
+            analyzeFile(file, bag, printOut);
+        }
+        if (callback != null) {
+            callback.projectParsingFinished(csmPrj);
+        }
+        traceStatistics(bag, printOut);
     }
     
     public static void traceRefs(Collection<CsmReference> out, CsmObject target, PrintStream streamOut) {
         assert target != null;
-        CsmObject[] decDef = ReferenceRepositoryImpl.getDefinitionDeclaration(target);
+        CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, true);
         CsmObject decl = decDef[0];
         CsmObject def = decDef[1];        
         assert decl != null;
@@ -268,14 +276,16 @@ public class TraceXRef extends TraceModel {
     
     public static String toString(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
         String out = CsmTracer.getOffsetString(ref, true);
-        ReferenceRepositoryImpl.ReferenceKind kind = ReferenceRepositoryImpl.getReferenceKind(ref, targetDecl, targetDef);
+        CsmReferenceKind kind = ref.getKind();
         String postfix;
-        if (kind == ReferenceRepositoryImpl.ReferenceKind.DECLARATION) {
+        if (kind == CsmReferenceKind.DECLARATION) {
             postfix = " (DECLARATION)"; // NOI18N
-        } else if (kind == ReferenceRepositoryImpl.ReferenceKind.DEFINITION) {
+        } else if (kind == CsmReferenceKind.DEFINITION) {
             postfix = " (DEFINITION)"; // NOI18N
+        } else if (CsmReferenceKind.ANY_USAGE.contains(kind)) {
+            postfix = "";
         } else {
-            assert kind == ReferenceRepositoryImpl.ReferenceKind.USAGE : "unknown reference kind" + kind;
+            System.err.println("unknown reference kind " + kind + " for " + ref);           
             postfix = "";
         }
         return out + postfix;
@@ -316,33 +326,66 @@ public class TraceXRef extends TraceModel {
         }          
     };  
 
-    private static void handleFunction(final CsmFunction fun, final XRefResultSet bag) {
-        final XRefResultSet.ContextScope funScope = classifyFunctionScope(fun);
-        bag.incrementScopeCounter(funScope);
-        CsmFileReferences.getDefault().accept(
-                fun, 
-                new CsmFileReferences.Visitor() {
-                    public void visit(CsmReference ref) {
-                        XRefResultSet.ContextEntry entry = createEntry(ref, funScope, fun);
-                        if (entry != null) {
-                            bag.addEntry(funScope, entry);
-                        }
-                    }
-                });
+    private static void analyzeFile(CsmFile file, XRefResultSet bag, PrintWriter out) {
+        long time = System.currentTimeMillis();
+        visitDeclarations(file.getDeclarations(), bag, out);
+        time = System.currentTimeMillis() - time;
+        out.println(file.getAbsolutePath() + " took " + time + "ms");
     }
     
-    private static XRefResultSet.ContextEntry createEntry(CsmReference ref, 
-            XRefResultSet.ContextScope funScope, CsmFunction fun) {
+    private static void visitDeclarations(Collection<? extends CsmOffsetableDeclaration> decls, XRefResultSet bag, PrintWriter printOut) {
+        for (CsmOffsetableDeclaration decl : decls) {
+            if (CsmKindUtilities.isFunctionDefinition(decl)) {
+                handleFunctionDefinition((CsmFunctionDefinition)decl, bag, printOut);
+            } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
+                visitDeclarations(((CsmNamespaceDefinition)decl).getDeclarations(), bag, printOut);
+            } else if (CsmKindUtilities.isClass(decl)) {
+                visitDeclarations(((CsmClass)decl).getMembers(), bag, printOut);
+            }
+        }
+    }
+    
+    private static void handleFunctionDefinition(final CsmFunctionDefinition fun, final XRefResultSet bag, final PrintWriter printOut) {
+        final CsmScope scope = fun.getBody();
+        if (scope != null) {
+            final XRefResultSet.ContextScope funScope = classifyFunctionScope(fun, printOut);
+            final ObjectContext<CsmFunctionDefinition> funContext = createContextObject(fun, printOut);
+            final Set<CsmObject> objectsUsedInScope = new HashSet<CsmObject>();
+            bag.incrementScopeCounter(funScope);
+            CsmFileReferences.getDefault().accept(
+                    scope, 
+                    new CsmFileReferences.Visitor() {
+                        public void visit(CsmReference ref) {
+                            XRefResultSet.ContextEntry entry = createEntry(objectsUsedInScope, ref, funContext, printOut);
+                            if (entry != null) {
+                                bag.addEntry(funScope, entry);
+                            }
+                        }
+                    },
+                    EnumSet.<CsmReferenceKind>of(CsmReferenceKind.DIRECT_USAGE));
+        } else {
+            printOut.println("function definition without body " + fun);
+        }
+    }
+    
+    private static XRefResultSet.ContextEntry createEntry(Set<CsmObject> objectsUsedInScope, CsmReference ref, ObjectContext<CsmFunctionDefinition> fun, PrintWriter printOut) {
         XRefResultSet.ContextEntry entry;
         CsmObject target = ref.getReferencedObject();
         if (target == null) {
             entry = XRefResultSet.ContextEntry.UNRESOLVED;
         } else {
-            if (ReferenceRepositoryImpl.getReferenceKind(ref) == ReferenceRepositoryImpl.ReferenceKind.USAGE) { 
-                XRefResultSet.DeclarationKind declaration = classifyDeclaration(target);
-                XRefResultSet.DeclarationScope declarationScope = classifyDeclarationScope(declaration, target, fun);
-                XRefResultSet.IncludeLevel declarationIncludeLevel = classifyIncludeLevel(target, fun.getContainingFile());
-                entry = new XRefResultSet.ContextEntry(declaration, declarationScope, declarationIncludeLevel);
+            CsmReferenceKind kind = ref.getKind();
+            if (kind == CsmReferenceKind.DIRECT_USAGE) { 
+                XRefResultSet.DeclarationKind declaration = classifyDeclaration(target, printOut);
+                XRefResultSet.DeclarationScope declarationScope = classifyDeclarationScopeForFunction(declaration, target, fun, printOut);
+                XRefResultSet.IncludeLevel declarationIncludeLevel = classifyIncludeLevel(target, fun.objFile, printOut);
+                XRefResultSet.UsageStatistics usageStat = XRefResultSet.UsageStatistics.FIRST_USAGE;
+                if (objectsUsedInScope.contains(target)) {
+                    usageStat = XRefResultSet.UsageStatistics.NEXT_USAGE;
+                } else {
+                    objectsUsedInScope.add(target);
+                }
+                entry = new XRefResultSet.ContextEntry(declaration, declarationScope, declarationIncludeLevel, usageStat);
             } else {
                 entry = null;
             }
@@ -350,12 +393,12 @@ public class TraceXRef extends TraceModel {
         return entry;
     }
     
-    private static XRefResultSet.ContextScope classifyFunctionScope(CsmFunction fun) {
+    private static XRefResultSet.ContextScope classifyFunctionScope(CsmFunction fun, PrintWriter printOut) {
         assert fun != null;
         XRefResultSet.ContextScope out = XRefResultSet.ContextScope.UNRESOLVED;
         CsmScope outScope = fun.getScope();
         if (outScope == null) {
-            System.err.println("ERROR: no scope for function " + fun);
+            printOut.println("ERROR: no scope for function " + fun);
             return out;
         }
         if (CsmKindUtilities.isConstructor(fun)) {
@@ -379,12 +422,12 @@ public class TraceXRef extends TraceModel {
             }
         }
         if (out == XRefResultSet.ContextScope.UNRESOLVED) {
-            System.err.println("ERROR: non classified function " + fun);            
+            printOut.println("ERROR: non classified function " + fun);            
         }
         return out;
     }   
  
-    private static XRefResultSet.DeclarationKind classifyDeclaration(CsmObject obj) {
+    private static XRefResultSet.DeclarationKind classifyDeclaration(CsmObject obj, PrintWriter printOut) {
         XRefResultSet.DeclarationKind out = XRefResultSet.DeclarationKind.UNRESOLVED;
         if (CsmKindUtilities.isClassifier(obj)) {
             out = XRefResultSet.DeclarationKind.CLASSIFIER;
@@ -403,12 +446,12 @@ public class TraceXRef extends TraceModel {
         } else if (CsmKindUtilities.isClassForwardDeclaration(obj)) {
             out = XRefResultSet.DeclarationKind.CLASS_FORWARD;
         } else if (obj != null) {
-            System.err.println("ERROR: non classified declaration " + obj);            
+            printOut.println("ERROR: non classified declaration " + obj);            
         }
         return out;
     }
     
-    private static XRefResultSet.IncludeLevel classifyIncludeLevel(CsmObject obj, CsmFile file) {
+    private static XRefResultSet.IncludeLevel classifyIncludeLevel(CsmObject obj, CsmFile file, PrintWriter printOut) {
         XRefResultSet.IncludeLevel out = XRefResultSet.IncludeLevel.UNRESOLVED;
         CsmInclude incl = null;
         CsmProject objPrj = null;
@@ -442,76 +485,479 @@ public class TraceXRef extends TraceModel {
                 }            
             }
         } else {
-            System.err.println("ERROR: non classified declaration " + obj); 
+            printOut.println("ERROR: non classified declaration " + obj); 
         }
         if (out != XRefResultSet.IncludeLevel.THIS_FILE) {
             if (incl != null) {
                 out = incl.isSystem() ? XRefResultSet.IncludeLevel.LIBRARY_DIRECT : XRefResultSet.IncludeLevel.PROJECT_DIRECT;
             } else {
-                out = file.getProject().equals(objPrj) ? XRefResultSet.IncludeLevel.PROJECT_DEEP : XRefResultSet.IncludeLevel.PROJECT_DIRECT;
+                out = file.getProject().equals(objPrj) ? XRefResultSet.IncludeLevel.PROJECT_DEEP : XRefResultSet.IncludeLevel.LIBRARY_DEEP;
             }
         }
         return out;
-    }
+    }   
     
-    private static XRefResultSet.DeclarationScope classifyDeclarationScope(XRefResultSet.DeclarationKind kind, CsmObject obj, CsmObject scope) {
+    private static XRefResultSet.DeclarationScope classifyDeclarationScopeForFunction(XRefResultSet.DeclarationKind kind, CsmObject obj, 
+            ObjectContext<CsmFunctionDefinition> csmFunction, PrintWriter printOut) {
         XRefResultSet.DeclarationScope out = XRefResultSet.DeclarationScope.UNRESOLVED;
-        if (CsmKindUtilities.isFunction(scope)) {
-            out = classifyDeclarationScopeForFunction(kind, obj, (CsmFunction)scope);
-        }
-        return out;
-    }
-    
-//    public enum DeclarationScope {
-//        UNRESOLVED,
-//        PROJECT,
-//        LIBRARY,
-//        PROJECT_NAMESPACE,
-//        LIBRARY_NAMESPACE,
-//        FILE,
-//        FUNCTION,
-//        NAMESPACE_THIS,
-//        NAMESPACE,
-//        CLASSIFIER_THIS,
-//        CLASSIFIER_PARENT
-//    }
-    
-    private static XRefResultSet.DeclarationScope classifyDeclarationScopeForFunction(XRefResultSet.DeclarationKind kind, CsmObject obj, CsmFunction csmFunction) {
-        XRefResultSet.DeclarationScope out = XRefResultSet.DeclarationScope.UNRESOLVED;
+        ObjectContext<CsmObject> objContext = createContextObject(obj, printOut);
         switch (kind) {
             case NAMESPACE:
             {
+                out = checkNamespaceContainers(objContext, csmFunction);
                 break;
             }
             case CLASSIFIER:
-            case CLASS_FORWARD:
-            case ENUMERATOR:
+            {
+                if (objContext.objClass != null) {
+                    out = checkClassContainers(objContext, csmFunction);
+                } else if (objContext.objNs != null) {
+                    out = checkNamespaceContainers(objContext, csmFunction);
+                } else if (CsmKindUtilities.isFunction(objContext.objScope) &&
+                        csmFunction.csmObject.equals(objContext.objScope)) {
+                    // function local classifier
+                    out = XRefResultSet.DeclarationScope.FUNCTION_THIS;
+                } else if (printOut != null) {
+                    printOut.println("unknown classifier " + objContext.csmObject + " in context of " + csmFunction.csmObject); // NOI18N
+                }
+                break;
+            }
             case FUNCTION:
+            {
+                out = checkFileClassNamespaceContainers(objContext, csmFunction, printOut);
+                break;
+            }
             case MACRO:
             {
-                
+                out = checkFileContainer(objContext, csmFunction);           
+                break;
             }
             case PARAMETER:
             {
-                out = XRefResultSet.DeclarationScope.FUNCTION;
+                out = XRefResultSet.DeclarationScope.FUNCTION_THIS;
                 break;
             }
+            case ENUMERATOR:
             case VARIABLE:
+            {
+                int stOffset = ((CsmOffsetable)obj).getStartOffset();
+                if (csmFunction.csmObject.getStartOffset() < stOffset &&
+                        stOffset < csmFunction.csmObject.getEndOffset()) {
+                    out = XRefResultSet.DeclarationScope.FUNCTION_THIS;
+                } else {
+                    out = checkFileClassNamespaceContainers(objContext, csmFunction, printOut);
+                }
+                break;
+            }
             case UNRESOLVED:
+                break;
+            case CLASS_FORWARD:
             default:
-                System.err.println("unhandled kind " + kind);
+                printOut.println("unhandled kind " + kind + " for object " + objContext.csmObject);
         }
         return out;
     }
     
+    private static XRefResultSet.DeclarationScope checkFileContainer(
+                                        ObjectContext<CsmObject> objContext,
+                                        ObjectContext<CsmFunctionDefinition> csmFunction) {
+        XRefResultSet.DeclarationScope out = XRefResultSet.DeclarationScope.UNRESOLVED;
+        if (csmFunction.objFile.equals(objContext.objFile)) {
+            out = XRefResultSet.DeclarationScope.FILE_THIS;
+        } else if (csmFunction.objPrj.equals(objContext.objPrj)) {
+            out = XRefResultSet.DeclarationScope.PROJECT_FILE;
+        } else {
+            out = XRefResultSet.DeclarationScope.LIBRARY_FILE;
+        }        
+        return out;
+    }
+    
+    private static XRefResultSet.DeclarationScope checkNamespaceContainers(
+                                        ObjectContext<CsmObject> objContext,
+                                        ObjectContext<CsmFunctionDefinition> csmFunction) {
+        XRefResultSet.DeclarationScope out = XRefResultSet.DeclarationScope.UNRESOLVED;
+        if (objContext.objNs != null) {
+            boolean isNested = false;
+            if (!objContext.objNs.isGlobal() && (csmFunction.objNs != null) &&
+                    !csmFunction.objNs.isGlobal()) {
+                CsmNamespace ns = csmFunction.objNs;
+                if (ns.equals(objContext.objNs)) {
+                    out = XRefResultSet.DeclarationScope.NAMESPACE_THIS;
+                    isNested = true;
+                } else {
+                    while (ns != null && !ns.isGlobal()) {
+                        if (ns.equals(objContext.objNs)) {
+                            out = XRefResultSet.DeclarationScope.NAMESPACE_PARENT;
+                            isNested = true;
+                            break;
+                        }
+                        ns = ns.getParent();
+                    }
+                }
+            }
+            if (!isNested) {
+                if (objContext.objNs.isGlobal()) {
+                    out = csmFunction.objPrj.equals(objContext.objPrj) ? XRefResultSet.DeclarationScope.PROJECT_GLOBAL : XRefResultSet.DeclarationScope.LIBRARY_GLOBAL;
+                } else {
+                    out = csmFunction.objPrj.equals(objContext.objPrj) ? XRefResultSet.DeclarationScope.PROJECT_NAMESPACE : XRefResultSet.DeclarationScope.LIBRARY_NAMESPACE;
+                }
+            }
+        }
+        return out;
+    }
+    
+    private static XRefResultSet.DeclarationScope checkClassContainers(
+                                        ObjectContext<CsmObject> objContext,
+                                        ObjectContext<CsmFunctionDefinition> csmFunction) {
+        XRefResultSet.DeclarationScope out = XRefResultSet.DeclarationScope.UNRESOLVED;
+        if (objContext.objClass != null) {
+            boolean isInherited = false;
+            if (csmFunction.objClass != null) {
+                // check inheritance 
+                if (csmFunction.objClass.equals(objContext.objClass)) {
+                    out = XRefResultSet.DeclarationScope.CLASSIFIER_THIS;
+                    isInherited = true;
+                } else if (CsmInheritanceUtilities.isAssignableFrom(objContext.objClass, csmFunction.objClass)) {
+                    out = XRefResultSet.DeclarationScope.CLASSIFIER_PARENT;
+                    isInherited = true;
+                }
+            }
+            if (!isInherited) {
+                if (csmFunction.objPrj.equals(objContext.objPrj)) {
+                    out = XRefResultSet.DeclarationScope.PROJECT_CLASSIFIER;
+                } else {
+                    out = XRefResultSet.DeclarationScope.LIBRARY_CLASSIFIER;
+                }
+            }
+        }   
+        return out;
+    }
+    
+    private static XRefResultSet.DeclarationScope checkFileClassNamespaceContainers(
+                                        ObjectContext<CsmObject> objContext,
+                                        ObjectContext<CsmFunctionDefinition> csmFunction,
+                                        PrintWriter printOut) {
+        XRefResultSet.DeclarationScope out = XRefResultSet.DeclarationScope.UNRESOLVED;
+        if (CsmKindUtilities.isFile(objContext.objScope)) {
+            out = checkFileContainer(objContext, csmFunction);
+        } else if (objContext.objClass != null) {
+            out = checkClassContainers(objContext, csmFunction);
+        } else if (objContext.objNs != null) {
+            out = checkNamespaceContainers(objContext, csmFunction);
+        } else if (printOut != null) {
+            printOut.println("unknown scope of " + objContext.csmObject + " in context of " + csmFunction.csmObject); // NOI18N
+        }
+        return out;
+    }
+
     private static CsmInclude findFirstLevelInclude(CsmFile startFile, CsmFile searchFile) {
         assert startFile != null : "start file must be not null";
         assert searchFile != null : "search file must be not null";
         for (CsmInclude incl : startFile.getIncludes()) {
-            if (searchFile.equals(incl.getIncludeFile())) {
+            CsmFile included = incl.getIncludeFile();
+            if (searchFile.equals(included)) {
                 return incl;
+            } else if (included != null && included.getDeclarations().isEmpty()) {
+                // this is a fake include only file
+                return findFirstLevelInclude(included, searchFile);
             }
         }
         return null;
+    }
+
+    private static void traceStatistics(XRefResultSet bag, PrintWriter printOut) {
+        printOut.println("Number of analyzed contexts " + bag.getNumberOfAllContexts());
+        String contextFmt = "%20s\t|%6s\t| %2s |\n";
+        String msg = String.format(contextFmt, "Name", "Num", "%");
+        printOut.println(msg);
+        Collection<XRefResultSet.ContextScope> sortedContextScopes = XRefResultSet.sortedContextScopes(bag, false);
+        for (XRefResultSet.ContextScope scope : sortedContextScopes) {
+            Collection<XRefResultSet.ContextEntry> entries = bag.getEntries(scope);
+            if (scope == XRefResultSet.ContextScope.UNRESOLVED) {
+                if (entries.isEmpty()) {
+                    continue;
+                }
+            }
+            msg = String.format(contextFmt, scope, bag.getNumberOfContexts(scope, false), bag.getNumberOfContexts(scope, true));
+            printOut.print(msg);
+        }
+        printOut.println("\nAnalyzed entries per scopes ");
+        boolean printTitle = true;
+        sortedContextScopes = XRefResultSet.sortedContextScopes(bag, true);
+        for (XRefResultSet.ContextScope scope : sortedContextScopes) {
+            Collection<XRefResultSet.ContextEntry> entries = bag.getEntries(scope);
+            traceEntriesStatistics(scope, entries, printTitle, printOut);
+            printTitle = false;
+        }
+        printOut.println("\nNumbers for \"first\" items approach");
+        printTitle = true;
+        for (XRefResultSet.ContextScope scope : sortedContextScopes) {
+            Collection<XRefResultSet.ContextEntry> entries = bag.getEntries(scope);
+            traceFirstItemsStatistics(scope, entries, printTitle, printOut);
+            printTitle = false;
+        }         
+        printOut.println("\nDetails about file inclusion level");
+        printTitle = true;
+        for (XRefResultSet.ContextScope scope : sortedContextScopes) {
+            Collection<XRefResultSet.ContextEntry> entries = bag.getEntries(scope);
+            traceFileBasedEntriesStatistics(scope, entries, printTitle, printOut);
+            printTitle = false;
+        }
+        printOut.println("\nDetails about scope of referenced declarations");
+        printTitle = true;
+        for (XRefResultSet.ContextScope scope : sortedContextScopes) {
+            Collection<XRefResultSet.ContextEntry> entries = bag.getEntries(scope);
+            traceUsedDeclarationScopeEntriesStatistics(scope, entries, printTitle, printOut);
+            printTitle = false;
+        }     
+    }
+    
+    private static void traceFirstItemsStatistics(XRefResultSet.ContextScope scope, 
+                                                    Collection<XRefResultSet.ContextEntry> entries, 
+                                                    boolean printTitle, PrintWriter printOut) {
+        String entryFmtFileInfo = "%20s\t|%10s\t|%20s\t|%20s\t|%20s\t|%20s\t|%20s\n";
+        if (printTitle) {
+            String title = String.format(entryFmtFileInfo, "scope name", "All", "local+cls+ns", "file+#incl-1", "local+cls+ns+#incl-1",
+                    "was usages", "context+used");
+            printOut.print(title);
+        }
+        if (scope == XRefResultSet.ContextScope.UNRESOLVED) {
+            if (entries.isEmpty()) {
+                return;
+            }
+        }
+
+        EnumSet<IncludeLevel> nearestIncludes = EnumSet.of(XRefResultSet.IncludeLevel.THIS_FILE, XRefResultSet.IncludeLevel.PROJECT_DIRECT, XRefResultSet.IncludeLevel.LIBRARY_DIRECT);
+        EnumSet<DeclarationScope> nearestScopes = EnumSet.of(
+                XRefResultSet.DeclarationScope.FUNCTION_THIS, 
+                XRefResultSet.DeclarationScope.CLASSIFIER_THIS, 
+                XRefResultSet.DeclarationScope.CLASSIFIER_PARENT, 
+                XRefResultSet.DeclarationScope.FILE_THIS, 
+                XRefResultSet.DeclarationScope.NAMESPACE_THIS, 
+                XRefResultSet.DeclarationScope.NAMESPACE_PARENT);
+        EnumSet<DeclarationScope> nonScopes = EnumSet.noneOf(XRefResultSet.DeclarationScope.class);
+        EnumSet<IncludeLevel> nonIncludes = EnumSet.noneOf(XRefResultSet.IncludeLevel.class);
+        EnumSet<XRefResultSet.UsageStatistics> nonUsages = EnumSet.noneOf(XRefResultSet.UsageStatistics.class);
+        EnumSet<XRefResultSet.UsageStatistics> wasUsages = EnumSet.of(XRefResultSet.UsageStatistics.SECOND_USAGE, XRefResultSet.UsageStatistics.NEXT_USAGE);
+        String msg = String.format(entryFmtFileInfo, scope,
+                entries.size(),
+                getDeclScopeAndIncludeLevelInfo(entries, nearestScopes, nonIncludes, nonUsages),
+                getDeclScopeAndIncludeLevelInfo(entries, nonScopes, nearestIncludes, nonUsages),
+                getDeclScopeAndIncludeLevelInfo(entries, nearestScopes, nearestIncludes, nonUsages),
+                getDeclScopeAndIncludeLevelInfo(entries, nonScopes, nonIncludes, wasUsages),
+                getDeclScopeAndIncludeLevelInfo(entries, nearestScopes, nearestIncludes, wasUsages)
+                );
+        printOut.print(msg);        
+    }
+    
+    private static void traceFileBasedEntriesStatistics(XRefResultSet.ContextScope scope, 
+                                                    Collection<XRefResultSet.ContextEntry> entries, 
+                                                    boolean printTitle, PrintWriter printOut) {
+        String entryFmtFileInfo = "%20s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\n";
+        if (printTitle) {
+            String title = String.format(entryFmtFileInfo, "scope name", "this file", "direct \"\"", "direct <>", "project", "library", "unresolved", "All");
+            printOut.print(title);
+        }
+        if (scope == XRefResultSet.ContextScope.UNRESOLVED) {
+            if (entries.isEmpty()) {
+                return;
+            }
+        }
+        String msg = String.format(entryFmtFileInfo, scope,
+                getIncludeLevelInfo(entries, XRefResultSet.IncludeLevel.THIS_FILE),
+                getIncludeLevelInfo(entries, XRefResultSet.IncludeLevel.PROJECT_DIRECT),
+                getIncludeLevelInfo(entries, XRefResultSet.IncludeLevel.LIBRARY_DIRECT),
+                getIncludeLevelInfo(entries, XRefResultSet.IncludeLevel.PROJECT_DEEP),
+                getIncludeLevelInfo(entries, XRefResultSet.IncludeLevel.LIBRARY_DEEP),
+                getIncludeLevelInfo(entries, XRefResultSet.IncludeLevel.UNRESOLVED),
+                entries.size());
+        printOut.print(msg);
+    }
+    
+    private static void traceUsedDeclarationScopeEntriesStatistics(XRefResultSet.ContextScope scope, 
+                                                    Collection<XRefResultSet.ContextEntry> entries, 
+                                                    boolean printTitle, PrintWriter printOut) {
+        String entryDeclScopeInfo = "%20s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s|\n";
+        if (printTitle) {
+            String title = String.format(entryDeclScopeInfo, 
+                    "scope name", 
+//                    "All this", "All parent", "This+Parent",
+                    "this fun", 
+                    "this class", "parent class", "prj class", "lib class",
+                    "this ns", "parent ns", "prj ns", "lib ns", 
+                    "this file", "prj file", "lib file",
+                    "project", "library",
+                    "unresolved", "All");
+            printOut.print(title);
+        }
+        if (scope == XRefResultSet.ContextScope.UNRESOLVED) {
+            if (entries.isEmpty()) {
+                return;
+            }
+        }
+        String msg = String.format(entryDeclScopeInfo, scope,
+                getDeclarationScopeInfo(entries, XRefResultSet.DeclarationScope.FUNCTION_THIS),
+                getDeclarationScopeInfo(entries, XRefResultSet.DeclarationScope.CLASSIFIER_THIS),
+                getDeclarationScopeInfo(entries, XRefResultSet.DeclarationScope.CLASSIFIER_PARENT),
+                getDeclarationScopeInfo(entries, XRefResultSet.DeclarationScope.PROJECT_CLASSIFIER),
+                getDeclarationScopeInfo(entries, XRefResultSet.DeclarationScope.LIBRARY_CLASSIFIER),
+                getDeclarationScopeInfo(entries, XRefResultSet.DeclarationScope.NAMESPACE_THIS),
+                getDeclarationScopeInfo(entries, XRefResultSet.DeclarationScope.NAMESPACE_PARENT),
+                getDeclarationScopeInfo(entries, XRefResultSet.DeclarationScope.PROJECT_NAMESPACE),
+                getDeclarationScopeInfo(entries, XRefResultSet.DeclarationScope.LIBRARY_NAMESPACE),
+                getDeclarationScopeInfo(entries, XRefResultSet.DeclarationScope.FILE_THIS),
+                getDeclarationScopeInfo(entries, XRefResultSet.DeclarationScope.PROJECT_FILE),
+                getDeclarationScopeInfo(entries, XRefResultSet.DeclarationScope.LIBRARY_FILE),
+                getDeclarationScopeInfo(entries, XRefResultSet.DeclarationScope.PROJECT_GLOBAL),
+                getDeclarationScopeInfo(entries, XRefResultSet.DeclarationScope.LIBRARY_GLOBAL),
+                getDeclarationScopeInfo(entries, XRefResultSet.DeclarationScope.UNRESOLVED),
+                entries.size());
+        printOut.print(msg);
+    }    
+    
+    
+    private static String getDeclScopeAndIncludeLevelInfo(Collection<ContextEntry> entries,
+            EnumSet<XRefResultSet.DeclarationScope> declScopes,
+            EnumSet<XRefResultSet.IncludeLevel> levels,EnumSet<XRefResultSet.UsageStatistics> usages) {
+        int num = 0;
+        
+        for (XRefResultSet.ContextEntry contextEntry : entries) {
+            if (declScopes.contains(contextEntry.declarationScope) ||
+                levels.contains(contextEntry.declarationIncludeLevel) ||
+                usages.contains(contextEntry.usageStatistics)) {
+                num++;
+            }
+        }
+        return toRelString(num, entries.size());        
+    }
+    
+    private static String getIncludeLevelInfo(Collection<XRefResultSet.ContextEntry> entries, XRefResultSet.IncludeLevel level) {
+        int num = 0;
+        for (XRefResultSet.ContextEntry contextEntry : entries) {
+            if (contextEntry.declarationIncludeLevel == level) {
+                num++;
+            }
+        }
+        return toRelString(num, entries.size());
+    }
+    
+    private static String getDeclarationScopeInfo(Collection<XRefResultSet.ContextEntry> entries, XRefResultSet.DeclarationScope declScope) {
+        int num = 0;
+        for (XRefResultSet.ContextEntry contextEntry : entries) {
+            if (contextEntry.declarationScope == declScope) {
+                num++;
+            }
+        }
+        return toRelString(num, entries.size());
+    }
+    
+    private static String getDeclarationKindInfo(Collection<XRefResultSet.ContextEntry> entries, XRefResultSet.DeclarationKind declKind) {
+        int num = 0;
+        for (XRefResultSet.ContextEntry contextEntry : entries) {
+            if (contextEntry.declaration == declKind) {
+                num++;
+            }
+        }
+        return toRelString(num, entries.size());
+    }
+    
+    private static String toRelString(int num, int size) {
+        assert (size != 0) || (num == 0);
+        int rel = (num == 0) ? 0 : (num *100) / size;
+        return rel + "%(" + num + ")";        
+    }
+    
+    private static void traceEntriesStatistics(XRefResultSet.ContextScope scope, 
+                                                Collection<XRefResultSet.ContextEntry> entries, 
+                                                boolean printTitle, PrintWriter printOut) {
+        String entryFmt = "%20s\t|%10s\t|%10s\t|%10s|\n";
+        if (printTitle) {
+            String title = String.format(entryFmt, "Entries for scope", "Num", "Resolved", "Unresolved");
+            printOut.print(title);
+        }
+        if (scope == XRefResultSet.ContextScope.UNRESOLVED) {
+            if (entries.isEmpty()) {
+                return;
+            }
+        }        
+        int unresolved = 0;
+        for (XRefResultSet.ContextEntry contextEntry : entries) {
+            if (contextEntry.declaration == XRefResultSet.DeclarationKind.UNRESOLVED) {
+                unresolved++;
+            }
+        }
+        String msg = String.format(entryFmt, scope, entries.size(), (entries.size() - unresolved), unresolved);
+        printOut.print(msg);
+    }
+    
+    private static <T extends CsmObject> ObjectContext<T> createContextObject(T obj, PrintWriter printOut) {
+        T     csmObject = obj;
+        CsmClass      objClass = null;
+        CsmFile       objFile = null;
+        CsmProject    objPrj = null;
+        CsmNamespace  objNs = null;
+        CsmScope      objScope = null;
+        // init project and file
+        if (CsmKindUtilities.isOffsetable(obj)) {
+            objFile = ((CsmOffsetable)obj).getContainingFile();
+            assert objFile != null;
+            objPrj = objFile.getProject();
+        } else if (CsmKindUtilities.isNamespace(obj)) {
+            objPrj = ((CsmNamespace)obj).getProject();
+        } else {
+            printOut.println("not handled object " + obj);
+        }
+        // init namespace
+        objNs = CsmBaseUtilities.getObjectNamespace(obj);
+        // init class
+        objClass = CsmBaseUtilities.getObjectClass(obj);
+        // init scope
+        if (CsmKindUtilities.isEnumerator(obj)) {
+            objScope = ((CsmEnumerator)obj).getEnumeration().getScope();
+        } else if (CsmKindUtilities.isScopeElement(obj)) {
+            objScope = ((CsmScopeElement)obj).getScope();
+        }
+        while (objScope != null) {
+            if (CsmKindUtilities.isNamespaceDefinition(objScope) ||
+                    CsmKindUtilities.isClass(objScope) ||
+                    CsmKindUtilities.isFunction(objScope)) {
+                break;
+            } else if (CsmKindUtilities.isScopeElement(objScope)) {
+                objScope = ((CsmScopeElement)objScope).getScope();
+            } else {
+                break;
+            }
+        }
+        return new ObjectContext<T>(csmObject, objClass, objFile, objPrj, objNs, objScope);
+    }
+    
+    private static final class ObjectContext<T extends CsmObject> {
+        private final T     csmObject;
+        private final CsmClass      objClass;
+        private final CsmFile       objFile;
+        private final CsmProject    objPrj;
+        private final CsmNamespace  objNs;
+        private final CsmScope      objScope;
+
+        public ObjectContext(T csmObject, CsmClass objClass, CsmFile objFile, CsmProject objPrj, CsmNamespace objNs, CsmScope objScope) {
+            this.csmObject = csmObject;
+            this.objClass = objClass;
+            this.objFile = objFile;
+            this.objPrj = objPrj;
+            this.objNs = objNs;
+            this.objScope = objScope;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder buf = new StringBuilder();
+            buf.append("Object: ").append(csmObject);//NOI18N
+            buf.append("\nFile: ").append(objFile);//NOI18N
+            buf.append("\nClass: ").append(objClass);//NOI18N
+            buf.append("\nNS: ").append(objNs);//NOI18N
+            buf.append("\nProject: ").append(objPrj);//NOI18N
+            buf.append("\nScope: ").append(objScope);//NOI18N
+            return buf.toString();
+        }
     }
 }

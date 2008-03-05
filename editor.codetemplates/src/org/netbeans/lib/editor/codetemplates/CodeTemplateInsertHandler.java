@@ -41,6 +41,7 @@
 
 package org.netbeans.lib.editor.codetemplates;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -55,16 +56,22 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.DrawLayer;
-import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
@@ -77,6 +84,10 @@ import org.netbeans.lib.editor.util.CharacterConversions;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
+import org.netbeans.spi.editor.highlighting.HighlightsLayer;
+import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
+import org.netbeans.spi.editor.highlighting.ZOrder;
+import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.ErrorManager;
 
 /**
@@ -89,9 +100,9 @@ public final class CodeTemplateInsertHandler
 implements DocumentListener, KeyListener {
     
     /**
-     * Property preventing nested template expanding.
+     * Property used while nested template expanding.
      */
-    private static final Object EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N
+    private static final Object CT_HANDLER_DOC_PROPERTY = "code-template-insert-handler"; // NOI18N
     
     private final CodeTemplate codeTemplate;
     
@@ -121,6 +132,8 @@ implements DocumentListener, KeyListener {
     
     private boolean released;
     
+    private boolean suspended;
+    
     private Position caretPosition;
     
     private boolean completionInvoke;
@@ -129,20 +142,15 @@ implements DocumentListener, KeyListener {
     
     private ActionMap componentOrigActionMap;
     
-    private List<DrawLayer> drawLayers;
-    
     private Document doc;
 
     private MutablePositionRegion positionRegion;
     
     /**
-     * Whether an expanding of a template was requested
-     * when still editing parameters of an outer template.
-     * <br>
-     * It is only permitted to expand the nested abbreviation
-     * without editing of the parameters.
+     * When expanding of a template was requested when still editing parameters
+     * of an outer template remember the outer template's handler
      */
-    private boolean nestedTemplateExpanding;
+    private CodeTemplateInsertHandler outerHandler;
     
     /**
      * Parameter implementation for which the value is being explicitly
@@ -171,6 +179,12 @@ implements DocumentListener, KeyListener {
      * Whether currently synchronizing the document changes.
      */
     private boolean syncingDocModification;
+
+    private AttributeSet attribs = null;
+    private AttributeSet attribsLeft = null;
+    private AttributeSet attribsRight = null;
+    private AttributeSet attribsMiddle = null;
+    private AttributeSet attribsAll = null;
     
     public CodeTemplateInsertHandler(
         CodeTemplate codeTemplate,
@@ -278,7 +292,7 @@ implements DocumentListener, KeyListener {
     }
     
     CodeTemplateParameter getActiveMaster() {
-        return (activeMasterIndex < editableMasters.size())
+        return (!suspended && activeMasterIndex < editableMasters.size())
             ? editableMasters.get(activeMasterIndex)
             : null;
     }
@@ -290,8 +304,8 @@ implements DocumentListener, KeyListener {
     
     public void insertTemplate() {
         doc = component.getDocument();
-        nestedTemplateExpanding = (Boolean.TRUE.equals(doc.getProperty(
-                EDITING_TEMPLATE_DOC_PROPERTY)));
+        outerHandler = (CodeTemplateInsertHandler)doc.getProperty(CT_HANDLER_DOC_PROPERTY);
+        doc.putProperty(CT_HANDLER_DOC_PROPERTY, this);
         
         String completeInsertString = getInsertText();
 
@@ -310,7 +324,7 @@ implements DocumentListener, KeyListener {
         try {
             // First check if there is a caret selection and if so remove it
             Caret caret = component.getCaret();
-            if (caret.isSelectionVisible()) {
+            if (Utilities.isSelectionShowing(caret)) {
                 int removeOffset = component.getSelectionStart();
                 int removeLength = component.getSelectionEnd() - removeOffset;
                 doc.remove(removeOffset, removeLength);
@@ -370,9 +384,10 @@ implements DocumentListener, KeyListener {
     }
     
     public void installActions() {
-        if (!nestedTemplateExpanding && editableMasters.size() > 0) {
-            doc.putProperty(EDITING_TEMPLATE_DOC_PROPERTY, Boolean.TRUE);
-
+        if (editableMasters.size() > 0) {
+            if (outerHandler != null)
+                outerHandler.suspended = true;
+            
             // Install the post modification document listener to sync regions
             if (doc instanceof BaseDocument) {
                 ((BaseDocument)doc).setPostModificationDocumentListener(this);
@@ -381,15 +396,6 @@ implements DocumentListener, KeyListener {
 
             componentOrigActionMap = CodeTemplateOverrideAction.installOverrideActionMap(
                     component, this);
-
-            EditorUI editorUI = Utilities.getEditorUI(component);
-            drawLayers = new ArrayList<DrawLayer>(editableMasters.size());
-            for (Iterator<CodeTemplateParameter> it = editableMasters.iterator(); it.hasNext();) {
-                CodeTemplateParameterImpl paramImpl = paramImpl(it.next());
-                CodeTemplateDrawLayer drawLayer = new CodeTemplateDrawLayer(paramImpl);
-                drawLayers.add(drawLayer);
-                editorUI.addLayer(drawLayer, CodeTemplateDrawLayer.VISIBILITY);
-            }
 
             component.addKeyListener(this);
             tabUpdate();
@@ -443,7 +449,7 @@ implements DocumentListener, KeyListener {
         checkNotifyParameterUpdate();
 
         activeMasterIndex++;
-        if (activeMasterIndex == editableMasters.size()) { 
+        if (activeMasterIndex >= editableMasters.size()) { 
             forceCaretPosition();
             release();
             if (completionInvoke) {
@@ -467,11 +473,11 @@ implements DocumentListener, KeyListener {
     }
     
     public String getDocParameterValue(CodeTemplateParameterImpl paramImpl) {
-        MutablePositionRegion positionRegion = paramImpl.getPositionRegion();
-        int offset = positionRegion.getStartOffset();
+        MutablePositionRegion preg = paramImpl.getPositionRegion();
+        int offset = preg.getStartOffset();
         String parameterText;
         try {
-            parameterText = doc.getText(offset, positionRegion.getEndOffset() - offset);
+            parameterText = doc.getText(offset, preg.getEndOffset() - offset);
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
             parameterText = ""; //NOI18N
@@ -520,6 +526,8 @@ implements DocumentListener, KeyListener {
             syncInsert(evt);
             syncingDocModification = false;
         }
+        
+        requestRepaint();
     }
     
     public void removeUpdate(DocumentEvent evt) {
@@ -528,12 +536,16 @@ implements DocumentListener, KeyListener {
             syncRemove(evt);
             syncingDocModification = false;
         }
+        
+        requestRepaint();
     }
     
     public void changedUpdate(DocumentEvent evt) {
     }
     
     public void keyPressed(KeyEvent e) {
+        if (suspended)
+            return;
         if (KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0).equals(KeyStroke.getKeyStrokeForEvent(e))) {
             release();
             e.consume();
@@ -613,27 +625,71 @@ implements DocumentListener, KeyListener {
     
     private void tabUpdate() {
         updateLastRegionBounds();
-        SyncDocumentRegion active = getActiveMasterImpl().getRegion();
-        component.select(active.getFirstRegionStartOffset(),
-                active.getFirstRegionEndOffset());
-        
+        CodeTemplateParameterImpl activeMasterImpl = getActiveMasterImpl();
+        if (activeMasterImpl != null) {
+            SyncDocumentRegion active = activeMasterImpl.getRegion();
+            component.select(active.getFirstRegionStartOffset(),
+                    active.getFirstRegionEndOffset());
+        }
         // Repaint the selected blocks according to the current master
         requestRepaint();
     }
     
     private void requestRepaint() {
-        int startOffset = Integer.MAX_VALUE;
-        int endOffset = 0;
-        for (Iterator it = editableMasters.iterator(); it.hasNext();) {
-            SyncDocumentRegion region = paramImpl(((CodeTemplateParameter)it.next())).getRegion();
-            startOffset = Math.min(startOffset,
-                    region.getSortedRegion(0).getStartOffset());
-            endOffset = Math.max(endOffset, region.getSortedRegion(
-                    region.getRegionCount() - 1).getEndOffset());
-        }
-        JTextComponent component = getComponent();
-        if (endOffset != 0) {
-            component.getUI().damageRange(component, startOffset, endOffset);
+        if (released) {
+            OffsetsBag bag = getBag(doc);
+            bag.clear();
+            attribs = null;
+        } else {
+            CodeTemplateParameterImpl ctpi = getActiveMasterImpl();
+            if (ctpi != null) {
+                // Compute attributes
+                if (attribs == null) {
+                    attribs = getSyncedTextBlocksHighlight();
+                    Color foreground = (Color) attribs.getAttribute(StyleConstants.Foreground);
+                    Color background = (Color) attribs.getAttribute(StyleConstants.Background);
+                    attribsLeft = AttributesUtilities.createImmutable(
+                            StyleConstants.Background, background,
+                            EditorStyleConstants.LeftBorderLineColor, foreground, 
+                            EditorStyleConstants.TopBorderLineColor, foreground, 
+                            EditorStyleConstants.BottomBorderLineColor, foreground
+                    );
+                    attribsRight = AttributesUtilities.createImmutable(
+                            StyleConstants.Background, background,
+                            EditorStyleConstants.RightBorderLineColor, foreground, 
+                            EditorStyleConstants.TopBorderLineColor, foreground, 
+                            EditorStyleConstants.BottomBorderLineColor, foreground
+                    );
+                    attribsMiddle = AttributesUtilities.createImmutable(
+                            StyleConstants.Background, background,
+                            EditorStyleConstants.TopBorderLineColor, foreground, 
+                            EditorStyleConstants.BottomBorderLineColor, foreground
+                    );
+                    attribsAll = AttributesUtilities.createImmutable(
+                            StyleConstants.Background, background,
+                            EditorStyleConstants.LeftBorderLineColor, foreground, 
+                            EditorStyleConstants.RightBorderLineColor, foreground,
+                            EditorStyleConstants.TopBorderLineColor, foreground, 
+                            EditorStyleConstants.BottomBorderLineColor, foreground
+                    );
+                }
+                
+                OffsetsBag nue = new OffsetsBag(doc);
+                PositionRegion region = ctpi.getPositionRegion();
+                int size = region.getEndOffset() - region.getStartOffset();
+                if (size == 1) {
+                    nue.addHighlight(region.getStartOffset(), region.getEndOffset(), attribsAll);
+                } else if (size > 1) {
+                    nue.addHighlight(region.getStartOffset(), region.getStartOffset() + 1, attribsLeft);
+                    nue.addHighlight(region.getEndOffset() - 1, region.getEndOffset(), attribsRight);
+                    if (size > 2) {
+                        nue.addHighlight(region.getStartOffset() + 1, region.getEndOffset() - 1, attribsMiddle);
+                    }
+                }
+
+                OffsetsBag bag = getBag(doc);
+                bag.setHighlights(nue);
+            }
         }
     }
 
@@ -645,30 +701,38 @@ implements DocumentListener, KeyListener {
             this.released = true;
         }
 
-        if (!nestedTemplateExpanding && editableMasters.size() > 0) {
+        if (editableMasters.size() > 0) {
             if (doc instanceof BaseDocument) {
                 ((BaseDocument)doc).setPostModificationDocumentListener(null);
             }
-            doc.putProperty(EDITING_TEMPLATE_DOC_PROPERTY, Boolean.FALSE);
 
             component.removeKeyListener(this);
 
             // Restore original action map
-            JTextComponent component = getComponent();
-            component.setActionMap(componentOrigActionMap);
+            JTextComponent c = getComponent();
+            c.setActionMap(componentOrigActionMap);
 
-            // Free the draw layers
-            EditorUI editorUI = Utilities.getEditorUI(component);
-            if (editorUI != null) {
-                for (DrawLayer drawLayer : drawLayers) {
-                    editorUI.removeLayer(drawLayer.getName());
+            if (outerHandler != null) {
+                outerHandler.suspended = false;
+                if (doc instanceof BaseDocument)
+                    ((BaseDocument)doc).setPostModificationDocumentListener(outerHandler);
+                CodeTemplateParameterImpl activeMasterImpl = outerHandler.getActiveMasterImpl();
+                doc.putProperty("abbrev-ignore-modification", Boolean.TRUE); // NOI18N
+                try {
+                    activeMasterImpl.getRegion().sync(0);
+                } finally {
+                    doc.putProperty("abbrev-ignore-modification", Boolean.FALSE); // NOI18N
                 }
+                activeMasterImpl.setValue(outerHandler.getDocParameterValue(activeMasterImpl), false);
+                activeMasterImpl.markUserModified();
+                outerHandler.notifyParameterUpdate(activeMasterImpl.getParameter(), true);
+                outerHandler.updateLastRegionBounds();
+                outerHandler.requestRepaint();
+            } else {
+                requestRepaint();
             }
-            component.putClientProperty(DrawLayer.TEXT_FRAME_START_POSITION_COMPONENT_PROPERTY, null);
-            component.putClientProperty(DrawLayer.TEXT_FRAME_END_POSITION_COMPONENT_PROPERTY, null);
-
-            requestRepaint();
         }
+        doc.putProperty(CT_HANDLER_DOC_PROPERTY, outerHandler);
 
         // Notify processors
         for (CodeTemplateProcessor processor : processors) {
@@ -766,5 +830,33 @@ implements DocumentListener, KeyListener {
     private String buildInsertText() {
         return parametrizedTextParser.buildInsertText(allParameters);
     }
+
+    private static synchronized OffsetsBag getBag(Document document) {
+        String propName = CodeTemplateInsertHandler.class.getName() + "-OffsetsBag"; //NOI18N
+        OffsetsBag bag = (OffsetsBag) document.getProperty(propName);
+        if (bag == null) {
+            bag = new OffsetsBag(document);
+            document.putProperty(propName, bag);
+        }
+        return bag;
+    }
+
+    private static AttributeSet getSyncedTextBlocksHighlight() {
+        FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
+        AttributeSet as = fcs.getFontColors("synchronized-text-blocks-ext"); //NOI18N
+        return as == null ? SimpleAttributeSet.EMPTY : as;
+    }
     
+    public static final class HLFactory implements HighlightsLayerFactory {
+        public HighlightsLayer[] createLayers(Context context) {
+            return new HighlightsLayer[] {
+                HighlightsLayer.create(
+                    "org.netbeans.lib.editor.codetemplates.CodeTemplateParametersHighlights", //NOI18N
+                    ZOrder.SHOW_OFF_RACK.forPosition(490), 
+                    true, 
+                    getBag(context.getDocument())
+                )
+            };
+        }
+    } // End of HLFactory class
 }

@@ -41,9 +41,7 @@
 
 package org.netbeans.modules.java.j2seproject.ui;
 
-import java.awt.Component;
 import java.awt.Image;
-import java.awt.Panel;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -80,11 +78,11 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.modules.java.j2seproject.UpdateHelper;
 
 
 

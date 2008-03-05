@@ -46,9 +46,6 @@ import java.io.File;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-/**
- * @author Martin Krauskopf
- */
 public final class RubyBreakpointTest extends TestBase {
     
     public RubyBreakpointTest(String testName) {

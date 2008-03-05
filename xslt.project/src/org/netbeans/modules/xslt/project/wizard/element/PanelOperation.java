@@ -48,7 +48,6 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -60,30 +59,18 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-import org.netbeans.modules.xml.schema.model.Schema;
 
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
-import org.netbeans.modules.xml.wsdl.model.Import;
-import org.netbeans.modules.xml.wsdl.model.Input;
-import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.OperationParameter;
-import org.netbeans.modules.xml.wsdl.model.Output;
-import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.Types;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
-import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLModelVisitor;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLUtilities;
-import org.netbeans.modules.xml.wsdl.ui.view.ElementOrType;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -208,7 +195,8 @@ final class PanelOperation<T> extends Panel<T> {
     c.gridwidth = 1;
     c.weightx = 0.0;
     c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
-    label = createLabel(i18n("LBL_Operation")); // NOI18N
+    label = createLabel(i18n(myIsInput ? "LBL_Operation" : "LBL_Operation2")); // NOI18N
+    a11y(label, "ACSN_LBL_Operation", "ACSD_LBL_Operation"); // NOI18N
     panel.add(label, c);
 
     c.weightx = 1.0;
@@ -254,7 +242,8 @@ final class PanelOperation<T> extends Panel<T> {
       c1.gridy = c.gridy;
       c1.anchor = GridBagConstraints.WEST;
       c1.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
-      label = createLabel(i18n("LBL_XSL_File")); // NOI18N
+      label = createLabel(i18n(myIsInput ? "LBL_XSL_File" : "LBL_XSL_File2")); // NOI18N
+      a11y(label, "ACSN_LBL_XSL_File", "ACSD_LBL_XSL_File"); // NOI18N
       panel.add(label, c1);
 
       c1 = new GridBagConstraints();
@@ -278,7 +267,8 @@ final class PanelOperation<T> extends Panel<T> {
     c.weightx = 0.0;
     c.fill = GridBagConstraints.NONE;
     c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
-    label = createLabel(i18n("LBL_Partner_Role_Port")); // NOI18N
+    label = createLabel(i18n(myIsInput ? "LBL_Partner_Role_Port" : "LBL_Partner_Role_Port2")); // NOI18N
+    a11y(label, "ACSN_LBL_Partner_Role_Port", "ACSD_LBL_Partner_Role_Port"); // NOI18N
     panel.add(label, c);
 
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
@@ -307,6 +297,7 @@ final class PanelOperation<T> extends Panel<T> {
     c.weightx = 0.0;
     c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
     label = createLabel(i18n("LBL_Input_Type")); // NOI18N
+    a11y(label, "ACSN_LBL_Input_Type", "ACSD_LBL_Input_Type"); // NOI18N
     panel.add(label, c);
 
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
@@ -325,6 +316,7 @@ final class PanelOperation<T> extends Panel<T> {
     c.weighty = 1.0;
     c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
     label = createLabel(i18n("LBL_Output_Type")); // NOI18N
+    a11y(label, "ACSN_LBL_Output_Type", "ACSD_LBL_Output_Type"); // NOI18N
     panel.add(label, c);
 
     c.gridwidth = GridBagConstraints.REMAINDER;

@@ -189,6 +189,102 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         performTest("package test;\npublic class Test implements XX {\npublic Test(){\n} }\ninterface XX {public <T extends java.util.List> void test(T t);}", new AddAllAbstractMethodsTask(30), null);
     }
     
+    public void testImplementAllAbstractMethodsb() throws Exception {
+        performTest("package test;\npublic class Test implements java.util.List{\npublic Test(){\n} }\n", new AddAllAbstractMethodsTask(30), null);
+    }
+    
+    public void testImplementAllAbstractMethodsc() throws Exception {
+        performTest("package test;\npublic class Test implements java.util.List<String>{\npublic Test(){\n} }\n", new AddAllAbstractMethodsTask(30), null);
+    }
+    
+    public void testImplementAllAbstractMethodsd() throws Exception {
+        performTest("package test;\npublic class Test implements B {\npublic Test(){\n} }\ninterface A {\npublic Number f();}\ninterface B extends A {\npublic Integer f();}", new AddAllAbstractMethodsTask(30), null);
+    }
+    
+    public void testOverrideAnnotation1() throws Exception {
+        performTest("package test;\npublic class Test extends C implements B { }\ninterface A {public void test1(); public void test4();}\ninterface B {public void test2();}\nabstract class C implements A {public abstract void test3(); public abstract void test4();}\n", "1.5", new AddAllAbstractMethodsTask(30), new Validator() {
+            public void validate(CompilationInfo info) {
+                ClassTree ct = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
+                
+                for (Tree member : ct.getMembers()) {
+                    MethodTree m = (MethodTree) member;
+                    
+                    if ("test1".equals(m.getName().toString())) {
+                        assertTrue(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test2".equals(m.getName().toString())) {
+                        assertTrue(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test3".equals(m.getName().toString())) {
+                        assertFalse(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test4".equals(m.getName().toString())) {
+                        assertFalse(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                }
+            }
+        });
+    }
+    
+    public void testOverrideAnnotation2() throws Exception {
+        performTest("package test;\npublic class Test extends C implements B { }\ninterface A {public void test1(); public void test4();}\ninterface B {public void test2();}\nabstract class C implements A {public abstract void test3(); public abstract void test4();}\n", "1.6", new AddAllAbstractMethodsTask(30), new Validator() {
+            public void validate(CompilationInfo info) {
+                ClassTree ct = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
+                
+                for (Tree member : ct.getMembers()) {
+                    MethodTree m = (MethodTree) member;
+                    
+                    if ("test1".equals(m.getName().toString())) {
+                        assertFalse(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test2".equals(m.getName().toString())) {
+                        assertFalse(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test3".equals(m.getName().toString())) {
+                        assertFalse(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test4".equals(m.getName().toString())) {
+                        assertFalse(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                }
+            }
+        });
+    }
+    
+    public void testOverrideAnnotation3() throws Exception {
+        performTest("package test;\npublic class Test extends C implements B { }\ninterface A {public void test1(); public void test4();}\ninterface B {public void test2();}\nabstract class C implements A {public abstract void test3(); public abstract void test4();}\n", "1.4", new AddAllAbstractMethodsTask(30), new Validator() {
+            public void validate(CompilationInfo info) {
+                ClassTree ct = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
+                
+                for (Tree member : ct.getMembers()) {
+                    MethodTree m = (MethodTree) member;
+                    
+                    if ("test1".equals(m.getName().toString())) {
+                        assertTrue(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test2".equals(m.getName().toString())) {
+                        assertTrue(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test3".equals(m.getName().toString())) {
+                        assertTrue(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test4".equals(m.getName().toString())) {
+                        assertTrue(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                }
+            }
+        });
+    }
+    
     public void testOverrideMethods1() throws Exception {
         performTest("package test;\npublic class Test {\npublic Test(){\n}\n }\n", new SimpleOverrideMethodsTask(34), new CloneAndToStringValidator());
     }
@@ -708,7 +804,11 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         
     }
     
-    private void performTest(String sourceCode, final CancellableTask<WorkingCopy> task, final Validator validator) throws Exception {
+    private void performTest(String sourceCode, final Task<WorkingCopy> task, final Validator validator) throws Exception {
+        performTest(sourceCode, "1.5", task, validator);
+    }
+    
+    private void performTest(String sourceCode, String sourceLevel, final Task<WorkingCopy> task, final Validator validator) throws Exception {
         FileObject root = makeScratchDir(this);
         
         FileObject sourceDir = root.createFolder("src");
@@ -720,6 +820,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         writeIntoFile(source, sourceCode);
         
         SourceUtilsTestUtil.prepareTest(sourceDir, buildDir, cacheDir, new FileObject[0]);
+        SourceUtilsTestUtil.setSourceLevel(source, sourceLevel);
         
         JavaSource js = JavaSource.forFileObject(source);
         

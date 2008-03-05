@@ -51,6 +51,9 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.Utilities;
@@ -58,6 +61,7 @@ import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -95,11 +99,11 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
         
         private String filterPrefix;
         
-        protected void prepareQuery(JTextComponent component) {
+        protected @Override void prepareQuery(JTextComponent component) {
             this.component = component;
         }
         
-        protected boolean canFilter(JTextComponent component) {
+        protected @Override boolean canFilter(JTextComponent component) {
             int caretOffset = component.getSelectionStart();
             Document doc = component.getDocument();
             filterPrefix = null;
@@ -118,7 +122,7 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
             return (filterPrefix != null);
         }
         
-        protected void filter(CompletionResultSet resultSet) {
+        protected @Override void filter(CompletionResultSet resultSet) {
             if (filterPrefix != null && queryResult != null) {
                 resultSet.addAllItems(getFilteredData(queryResult, filterPrefix));
             }
@@ -148,32 +152,43 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
         }
         
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            CodeTemplateManagerOperation op = CodeTemplateManagerOperation.get(doc);
+            String langPath = null;
             String identifierBeforeCursor = null;
             if (doc instanceof AbstractDocument) {
                 AbstractDocument adoc = (AbstractDocument)doc;
                 adoc.readLock();
                 try {
-                    if (adoc instanceof BaseDocument) {
-                        identifierBeforeCursor = Utilities.getIdentifierBefore(
-                                (BaseDocument)adoc, caretOffset);
+                    try {
+                        if (adoc instanceof BaseDocument) {
+                            identifierBeforeCursor = Utilities.getIdentifierBefore((BaseDocument)adoc, caretOffset);
+                        }
+                    } catch (BadLocationException e) {
+                        // leave identifierBeforeCursor null
                     }
-                } catch (BadLocationException e) {
-                    // leave identifierBeforeCursor null
+                    List<TokenSequence<?>> list = TokenHierarchy.get(doc).embeddedTokenSequences(caretOffset, true);
+                    if (list.size() > 1) {
+                        langPath = list.get(list.size() - 1).languagePath().mimePath();
+                    }
                 } finally {
                     adoc.readUnlock();
                 }
             }
             
-            op.waitLoaded();
+            if (langPath == null) {
+                langPath = NbEditorUtilities.getMimeType(doc);
+            }
 
             queryCaretOffset = caretOffset;
             queryAnchorOffset = (identifierBeforeCursor != null) ? caretOffset - identifierBeforeCursor.length() : caretOffset;
-            if (identifierBeforeCursor != null) {
+            if (langPath != null && identifierBeforeCursor != null) {
                 boolean ignoreCase = !SettingsUtil.getBoolean(component.getUI().getEditorKit(component).getClass(), ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
                         ExtSettingsDefaults.defaultCompletionCaseSensitive);
+                
+                CodeTemplateManagerOperation op = CodeTemplateManagerOperation.get(MimePath.parse(langPath));
+                op.waitLoaded();
+                
                 Collection<? extends CodeTemplate> cts = op.findByParametrizedText(identifierBeforeCursor, ignoreCase);
-                Collection<? extends CodeTemplateFilter> filters = op.getTemplateFilters(component, queryAnchorOffset);
+                Collection<? extends CodeTemplateFilter> filters = CodeTemplateManagerOperation.getTemplateFilters(component, queryAnchorOffset);
                 
                 queryResult = new ArrayList<CodeTemplateCompletionItem>(cts.size());
                 for (CodeTemplate ct : cts) {
@@ -183,6 +198,7 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
                 }
                 resultSet.addAllItems(queryResult);
             }
+            
             resultSet.setAnchorOffset(queryAnchorOffset);
             resultSet.finish();
         }

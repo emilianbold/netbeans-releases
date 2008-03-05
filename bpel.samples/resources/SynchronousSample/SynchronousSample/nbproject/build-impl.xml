@@ -1,258 +1,138 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-        *** GENERATED FROM project.xml - DO NOT EDIT  ***
-        ***         EDIT ../build.xml INSTEAD         ***
-
-        For the purpose of easier reading the script
-        is divided into following sections:
-
-        - initialization
-        - compilation
-        - dist
-        - execution
-        - debugging
-        - cleanup
-
-        -->
-<project name="-impl" default="build" basedir="..">
-    <target name="default" depends="dist" description="Build whole project."/>
+    *** GENERATED FROM project.xml - DO NOT EDIT  ***
+    ***         EDIT ../build.xml INSTEAD         ***
+    
+    For the purpose of easier reading the script
+    is divided into following sections:
+    
+    - initialization
+    - dist
+    - cleanup
+-->
+<project name="SynchronousSample-impl" default="default" basedir="..">
+    <target name="default" depends="dist_se" description="Build whole project."/>
     <!-- 
-                ======================
-                INITIALIZATION SECTION 
-                ======================
-            -->
-    <target name="pre-init">
+        ======================
+        INITIALIZATION SECTION 
+        ======================
+    -->
+    <target name="-pre-init">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
-    <target name="init-private" depends="pre-init">
+    <target name="-init-private" depends="-pre-init">
         <property file="nbproject/private/private.properties"/>
     </target>
-    <target name="init-userdir" depends="pre-init,init-private">
+    <target name="-init-userdir" depends="-pre-init,-init-private">
         <property name="user.properties.file" location="${netbeans.user}/build.properties"/>
     </target>
-    <target name="init-user" depends="pre-init,init-private,init-userdir">
+    <target name="-init-user" depends="-pre-init,-init-private,-init-userdir">
         <property file="${user.properties.file}"/>
     </target>
-    <target name="init-project" depends="pre-init,init-private,init-userdir,init-user">
+    <target name="-init-project" depends="-pre-init,-init-private,-init-userdir,-init-user">
         <property file="nbproject/project.properties"/>
     </target>
-    <target name="do-init" depends="pre-init,init-private,init-userdir,init-user,init-project">
-        <!-- The two properties below are usually overridden -->
-        <!-- by the active platform. Just a fallback. -->
-        <property name="default.javac.source" value="1.4"/>
-        <property name="default.javac.target" value="1.4"/>
-        <condition property="no.javadoc.preview">
-            <isfalse value="${javadoc.preview}"/>
-        </condition>
+    <target name="-do-init" depends="-pre-init,-init-private,-init-userdir,-init-user,-init-project">
         <available file="${src.dir}/../retrieved" property="retrieved.exists"/>
     </target>
-    <target name="post-init">
+    <target name="-post-init">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
-    <target name="init-check" depends="pre-init,init-private,init-userdir,init-user,init-project,do-init">
+    <target name="-init-check" depends="-pre-init,-init-private,-init-userdir,-init-user,-init-project,-do-init">
         <fail unless="src.dir">Must set src.dir</fail>
         <fail unless="build.dir">Must set build.dir</fail>
-        <fail unless="build.generated.dir">Must set build.generated.dir</fail>
         <fail unless="dist.dir">Must set dist.dir</fail>
-        <fail unless="build.classes.dir">Must set build.classes.dir</fail>
         <fail unless="dist.jar">Must set dist.jar</fail>
     </target>
-    <target name="init-taskdefs" if="from.commandline">
-        <path id="ant.task.classpath.models">
-            <pathelement location="${netbeans.home}/ide9/modules/ext/resolver-1_1_nb.jar"/>
-            <pathelement location="${netbeans.home}/ide9/modules/org-apache-xml-resolver.jar"/>
-            <pathelement location="${netbeans.home}/ide9/modules/org-netbeans-modules-xml-xam.jar"/>
-            <pathelement location="${netbeans.home}/ide9/modules/org-netbeans-modules-xml-schema-model.jar"/>
-            <pathelement location="${netbeans.home}/ide9/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
-            <pathelement location="${netbeans.home}/ide9/modules/org-netbeans-modules-xml-retriever.jar"/>
-            <pathelement location="${netbeans.home}/platform8/lib/org-openide-util.jar"/>
-            <pathelement location="${netbeans.home}/platform8/modules/org-openide-loaders.jar"/>
-            <pathelement location="${netbeans.home}/soa2/ant/nblib/org-netbeans-modules-bpel-project.jar"/>
-            <pathelement location="${netbeans.home}/soa2/modules/org-netbeans-modules-bpel-project.jar"/>
-            <pathelement location="${netbeans.home}/soa2/modules/org-netbeans-modules-bpel-model.jar"/>
-            <pathelement location="${netbeans.home}/xml2/modules/org-netbeans-modules-xml-xpath-ext.jar"/>
-            <pathelement location="${netbeans.home}/xml2/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
+    <target name="-init-taskdefs" if="from.commandline">
+        <path id="ant.task.classpath">
+            <pathelement location="${netbeans.home}/../ide9/modules/ext/resolver-1.2.jar"/>
+            <pathelement location="${netbeans.home}/../ide9/modules/org-apache-xml-resolver.jar"/>
+            <pathelement location="${netbeans.home}/../ide9/modules/org-netbeans-modules-project-ant.jar"/>
+            <pathelement location="${netbeans.home}/../ide9/modules/org-netbeans-modules-projectapi.jar"/>
+            <pathelement location="${netbeans.home}/../ide9/modules/org-netbeans-modules-xml-xam.jar"/>
+            <pathelement location="${netbeans.home}/../ide9/modules/org-netbeans-modules-xml-schema-model.jar"/>
+            <pathelement location="${netbeans.home}/../ide9/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
+            <pathelement location="${netbeans.home}/../ide9/modules/org-netbeans-modules-xml-retriever.jar"/>
+            <pathelement location="${netbeans.home}/../platform8/core/org-openide-filesystems.jar"/>
+            <pathelement location="${netbeans.home}/../platform8/lib/org-openide-util.jar"/>
+            <pathelement location="${netbeans.home}/../platform8/modules/org-openide-dialogs.jar"/>
+            <pathelement location="${netbeans.home}/../platform8/modules/org-openide-loaders.jar"/>
+            <pathelement location="${netbeans.home}/../platform8/modules/org-netbeans-modules-masterfs.jar"/>
+            <pathelement location="${netbeans.home}/../platform8/modules/org-netbeans-modules-queries.jar"/>
+            <pathelement location="${netbeans.home}/../soa2/modules/org-netbeans-modules-soa-ui.jar"/>
+            <pathelement location="${netbeans.home}/../soa2/modules/org-netbeans-modules-bpel-model.jar"/>
+            <pathelement location="${netbeans.home}/../soa2/modules/org-netbeans-modules-bpel-project.jar"/>
+            <pathelement location="${netbeans.home}/../soa2/modules/org-netbeans-modules-bpel-validation.jar"/>
+            <pathelement location="${netbeans.home}/../soa2/ant/nblib/org-netbeans-modules-bpel-project.jar"/>
+            <pathelement location="${netbeans.home}/../xml2/modules/ext/jxpath/jxpath1.1.jar"/>
+            <pathelement location="${netbeans.home}/../xml2/modules/org-netbeans-modules-xml-xpath.jar"/>
+            <pathelement location="${netbeans.home}/../xml2/modules/org-netbeans-modules-xml-xpath-ext.jar"/>
+            <pathelement location="${netbeans.home}/../xml2/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
         </path>
-        <path id="ant.task.classpath.validation">
-            <pathelement location="${netbeans.home}/ide9/modules/ext/resolver-1_1_nb.jar"/>
-            <pathelement location="${netbeans.home}/ide9/modules/org-apache-xml-resolver.jar"/>
-            <pathelement location="${netbeans.home}/ide9/modules/org-netbeans-modules-xml-xam.jar"/>
-            <pathelement location="${netbeans.home}/ide9/modules/org-netbeans-modules-xml-schema-model.jar"/>
-            <pathelement location="${netbeans.home}/ide9/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
-            <pathelement location="${netbeans.home}/ide9/modules/org-netbeans-modules-xml-retriever.jar"/>
-            <pathelement location="${netbeans.home}/platform8/lib/org-openide-util.jar"/>
-            <pathelement location="${netbeans.home}/platform8/modules/org-openide-dialogs.jar"/>
-            <pathelement location="${netbeans.home}/platform8/modules/org-openide-loaders.jar"/>
-            <pathelement location="${netbeans.home}/soa2/modules/org-netbeans-modules-soa-ui.jar"/>
-            <pathelement location="${netbeans.home}/soa2/modules/org-netbeans-modules-bpel-model.jar"/>
-            <pathelement location="${netbeans.home}/soa2/modules/org-netbeans-modules-bpel-project.jar"/>
-            <pathelement location="${netbeans.home}/soa2/modules/org-netbeans-modules-bpel-validation.jar"/>
-            <pathelement location="${netbeans.home}/soa2/ant/nblib/org-netbeans-modules-bpel-project.jar"/>
-            <pathelement location="${netbeans.home}/xml2/modules/ext/jxpath/jxpath1.1.jar"/>
-            <pathelement location="${netbeans.home}/xml2/modules/org-netbeans-modules-xml-xpath.jar"/>
-            <pathelement location="${netbeans.home}/xml2/modules/org-netbeans-modules-xml-xpath-ext.jar"/>
-            <pathelement location="${netbeans.home}/xml2/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
-        </path>
-        <taskdef name="BpelProjectJBIGen" classname="org.netbeans.modules.bpel.project.anttasks.GenerateJBIDescriptorTask">
-            <classpath refid="ant.task.classpath.models"/>
+        <taskdef name="validate-project" classname="org.netbeans.modules.bpel.project.anttasks.cli.CliValidateBpelProjectTask">
+            <classpath refid="ant.task.classpath"/>
         </taskdef>
-        <taskdef name="BpelProjectValidate" classname="org.netbeans.modules.bpel.project.anttasks.ValidateBPELProjectTask">
-            <classpath refid="ant.task.classpath.validation"/>
+        <taskdef name="generate-catalog-xml" classname="org.netbeans.modules.bpel.project.anttasks.cli.CliGenerateCatalogTask">
+            <classpath refid="ant.task.classpath"/>
+        </taskdef>
+        <taskdef name="generate-jbi-xml" classname="org.netbeans.modules.bpel.project.anttasks.cli.CliGenerateJbiDescriptorTask">
+            <classpath refid="ant.task.classpath"/>
         </taskdef>
     </target>
-    <target name="init" depends="pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-taskdefs"/>
+    <target name="init" depends="-pre-init,-init-private,-init-userdir,-init-user,-init-project,-do-init,-post-init,-init-check,-init-taskdefs"/>
     <!--
-                ===================
-                COMPILATION SECTION
-                ===================
-            -->
-    <target name="deps-jar" depends="init" unless="${no.dependencies}"/>
-    <target name="pre-pre-compile" depends="init,deps-jar">
-        <mkdir dir="${build.classes.dir}"/>
-    </target>
-    <target name="pre-compile">
+        =====================
+        DIST BUILDING SECTION
+        =====================
+    -->
+    <target name="-pre-dist">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
-    <target name="library-inclusion-in-archive" depends="compile"/>
-    <target name="library-inclusion-in-manifest" depends="compile">
-        <manifest file="${build.classes.dir}/META-INF/MANIFEST.MF" mode="update">
-            <attribute name="Class-Path" value=""/>
-        </manifest>
-    </target>
-    <target name="do-compile" depends="init,deps-jar,pre-pre-compile,pre-compile"/>
-    <target name="post-compile">
-        <!-- Empty placeholder for easier customization. -->
-        <!-- You can override this target in the ../build.xml file. -->
-    </target>
-    <target name="compile" depends="init,deps-jar,pre-pre-compile,pre-compile,do-compile,post-compile" description="Compile project."/>
-    <target name="pre-compile-single">
-        <!-- Empty placeholder for easier customization. -->
-        <!-- You can override this target in the ../build.xml file. -->
-    </target>
-    <target name="do-compile-single" depends="init,deps-jar,pre-pre-compile">
-        <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
-        <ejbproject:javac xmlns:ejbproject="http://www.netbeans.org/ns/j2ee-ejbjarproject/1">
-            <customize>
-                <include name="${javac.includes}"/>
-            </customize>
-        </ejbproject:javac>
-    </target>
-    <target name="post-compile-single">
-        <!-- Empty placeholder for easier customization. -->
-        <!-- You can override this target in the ../build.xml file. -->
-    </target>
-    <target name="compile-single" depends="init,deps-jar,pre-pre-compile,pre-compile-single,do-compile-single,post-compile-single"/>
-    <!--
-                ====================
-                DIST BUILDING SECTION
-                ====================
-            -->
-    <target name="pre-dist">
-        <!-- Empty placeholder for easier customization. -->
-        <!-- You can override this target in the ../build.xml file. -->
+    <target name="-deps-jar-dist" depends="init" unless="${no.dependencies}"/>
+    <target name="-do-dist" depends="init,-pre-dist">
         <mkdir dir="${build.dir}"/>
         <!-- run the validation task here. -->
-        <BpelProjectValidate buildDirectory="${basedir}/${build.dir}" sourceDirectory="${basedir}/${src.dir}" projectClassPath="${javac.classpath}" buildDependentProjectDir="${basedir}/${build.dir}/dependentProjectFiles" classpathRef="ant.task.classpath.validation" allowBuildWithError="${allow.build.with.error}"/>
+        <validate-project buildDirectory="${basedir}/${build.dir}" sourceDirectory="${basedir}/${src.dir}" projectClassPath="${javac.classpath}" buildDependentProjectDir="${basedir}/${build.dir}/dependentProjectFiles" classpathRef="ant.task.classpath" allowBuildWithError="${allow.build.with.error}"/>
         <!-- copy all files from project source directory to build directory. -->
         <copy todir="${build.dir}" preservelastmodified="true">
             <fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd, **/*.xsl, **/*.xslt" dir="${src.dir}"/>
         </copy>
-        <!-- build sub-projects and copy them to the build dir -->
-        <antcall target="deps-sub-project" inheritAll="true"/>
-        <antcall target="PackageRetrievedFiles" inheritAll="true"/>
-        <!-- generate portmap.xml in build directory. -->
-        <BpelProjectJBIGen buildDirectory="${basedir}/${build.dir}" sourceDirectory="${basedir}/${src.dir}" projectClassPath="${javac.classpath}" classpathRef="ant.task.classpath.models"/>
-        <!-- extract wsdl/xsd files from dependent projects and copy to build/dependentProjectFiles. -->
-        <delete dir="${build.dir}/dependentProjectFiles"/>
-        <mkdir dir="${build.dir}/dependentProjectFiles"/>
-    </target>
-    <!-- BUILD ALL SUB-PROJECTS and copy xsd/wsdl files-->
-    <target name="deps-sub-project" depends="init" unless="${no.dependencies}"/>
-    <target name="PackageRetrievedFiles" if="retrieved.exists">
-        <copy todir="${build.dir}/META-INF" preservelastmodified="true" failonerror="false">
-            <fileset dir="${src.dir}/../retrieved"/>
-        </copy>
-    </target>
-    <target name="dist_se" depends="init,pre-dist">
+        <generate-catalog-xml buildDirectory="${basedir}/${build.dir}" sourceDirectory="${basedir}/${src.dir}" projectClassPath="${javac.classpath}" classpathRef="ant.task.classpath"/>
+        <generate-jbi-xml buildDirectory="${basedir}/${build.dir}" sourceDirectory="${basedir}/${src.dir}" projectClassPath="${javac.classpath}" classpathRef="ant.task.classpath"/>
         <jar compress="${jar.compress}" jarfile="${build.dir}/SEDeployment.jar">
             <fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd, **/*.xsl, **/*.xslt" dir="${basedir}/${build.dir}"/>
             <fileset dir="${basedir}/${build.dir}">
                 <include name="**/jbi.xml"/>
                 <include name="**/catalog.xml"/>
             </fileset>
-            <fileset dir="${build.dir}/dependentProjectFiles">
-                <include name="*.wsdl"/>
-                <include name="*.xsd"/>
-            </fileset>
         </jar>
     </target>
-    <target name="do-dist" depends="init,pre-dist, dist_se"/>
-    <target name="post-dist">
+    <target name="-post-dist">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
-    <target name="dist" depends="init,pre-dist,do-dist,post-dist" description="Build distribution (JAR)."/>
+    <target name="dist_se" depends="init,-pre-dist,-deps-jar-dist,-do-dist,-post-dist" description="Build distribution."/>
     <!--
-                =================
-                DEBUGGING SECTION
-                =================
-            -->
-    <target name="debug" description="Debug project in IDE." depends="init,compile" if="netbeans.home">
-        <nbdeploy debugmode="true" clientUrlPart="${client.urlPart}"/>
-        <nbjpdaconnect name="${name}" host="${jpda.host}" address="${jpda.address}" transport="${jpda.transport}">
-            <classpath>
-                <path path="${debug.classpath}"/>
-            </classpath>
-            <sourcepath>
-                <path path="${web.docbase.dir}"/>
-            </sourcepath>
-        </nbjpdaconnect>
+        ===============
+        CLEANUP SECTION
+        ===============
+    -->
+    <target name="-pre-clean">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
     </target>
-    <target name="pre-debug-fix" depends="init">
-        <fail unless="fix.includes">Must set fix.includes</fail>
-        <property name="javac.includes" value="${fix.includes}.java"/>
-    </target>
-    <target name="do-debug-fix" if="netbeans.home" depends="init,pre-debug-fix,compile-single">
-        <j2seproject:nbjpdareload xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
-    </target>
-    <target name="debug-fix" if="netbeans.home" depends="init,pre-debug-fix,do-debug-fix"/>
-    <!--
-                ===============
-                JAVADOC SECTION
-                ===============
-            -->
-    <target name="javadoc-build" depends="init">
-        <mkdir dir="${dist.javadoc.dir}"/>
-        <javadoc destdir="${dist.javadoc.dir}" source="${javac.source}" notree="${javadoc.notree}" use="${javadoc.use}" nonavbar="${javadoc.nonavbar}" noindex="${javadoc.noindex}" splitindex="${javadoc.splitindex}" author="${javadoc.author}" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}" private="${javadoc.private}">
-            <classpath>
-                <path path="${javac.classpath}"/>
-            </classpath>
-            <sourcepath>
-                <pathelement location="${src.dir}"/>
-            </sourcepath>
-            <fileset dir="${src.dir}"/>
-        </javadoc>
-    </target>
-    <target name="javadoc-browse" if="netbeans.home" unless="no.javadoc.preview" depends="init,javadoc-build">
-        <nbbrowse file="${dist.javadoc.dir}/index.html"/>
-    </target>
-    <target name="javadoc" depends="init,javadoc-build,javadoc-browse" description="Build Javadoc."/>
-    <!--
-                ===============
-                CLEANUP SECTION
-                ===============
-            -->
-    <target name="deps-clean" depends="init" unless="${no.dependencies}"/>
-    <target name="do-clean" depends="init">
+    <target name="-deps-clean" depends="init" unless="${no.dependencies}"/>
+    <target name="-do-clean" depends="init,-pre-clean">
         <delete dir="${build.dir}"/>
         <delete dir="${dist.dir}"/>
     </target>
-    <target name="post-clean">
+    <target name="-post-clean">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
-    <target name="clean" depends="init,deps-clean,do-clean,post-clean" description="Clean build products."/>
+    <target name="clean" depends="init,-pre-clean,-deps-clean,-do-clean,-post-clean" description="Clean build products."/>
 </project>

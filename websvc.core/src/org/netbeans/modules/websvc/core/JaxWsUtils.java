@@ -38,23 +38,25 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.core;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -108,7 +110,12 @@ import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import java.util.Iterator;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
+import javax.swing.SwingUtilities;
 import javax.xml.namespace.QName;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
@@ -123,6 +130,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeader;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.cookies.EditCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -132,101 +140,104 @@ import org.openide.loaders.DataFolder;
  * @author mkuchtiak
  */
 public class JaxWsUtils {
+
     public static final String HANDLER_TEMPLATE = "Templates/WebServices/MessageHandler.java"; //NOI18N
+    private static final String SOAP12_NAMESPACE = "http://java.sun.com/xml/ns/jaxws/2003/05/soap/bindings/HTTP/"; //NOI18N
+    private static final String BINDING_TYPE_ANNOTATION = "javax.xml.ws.BindingType"; //NOI18N
     private static int projectType;
-    
     protected static final int JSE_PROJECT_TYPE = 0;
     protected static final int WEB_PROJECT_TYPE = 1;
     protected static final int EJB_PROJECT_TYPE = 2;
-    
     private static boolean jwsdpSupported = false;
     private static boolean jsr109Supported = false;
     private static boolean jaxWsInJ2ee14Supported = false;
-    
+
     /** Creates a new instance of JaxWsUtils */
     public JaxWsUtils() {
     }
-    
+
     /** This method is called from Refresh Service action
      */
     public static void generateJaxWsImplementationClass(Project project, FileObject targetFolder, String targetName, WsdlModel wsdlModel, org.netbeans.modules.websvc.api.jaxws.project.config.Service service) throws Exception {
         WsdlService wsdlService = wsdlModel.getServiceByName(service.getServiceName());
         WsdlPort wsdlPort = null;
-        if (wsdlService != null)
+        if (wsdlService != null) {
             wsdlPort = wsdlService.getPortByName(service.getPortName());
-        if (wsdlService!=null && wsdlPort!=null) {
+        }
+        if (wsdlService != null && wsdlPort != null) {
             String serviceID = service.getName();
-            if(wsdlPort.isProvider()){
-                generateProviderImplClass(project, targetFolder, targetName, wsdlService, wsdlPort, serviceID);
-            }else{
+            if (wsdlPort.isProvider()/*from customization*/ || service.isUseProvider() /*from ws creation wizard*/) {
+                generateProviderImplClass(project, targetFolder, null, targetName, wsdlService, wsdlPort, serviceID);
+            } else {
                 generateJaxWsImplClass(project, targetFolder, targetName, null, wsdlService, wsdlPort, false, serviceID);
             }
         }
     }
-    
+
     /** This method is called from Create Web Service from WSDL wizard
      */
-    public static void generateJaxWsImplementationClass(Project project, FileObject targetFolder, String targetName, URL wsdlURL, WsdlService service, WsdlPort port) throws Exception {
-        generateJaxWsImplClass(project, targetFolder, targetName, wsdlURL, service, port, true, null);
+    public static void generateJaxWsImplementationClass(Project project, FileObject targetFolder, String targetName, URL wsdlURL, WsdlService service, WsdlPort port, boolean useProvider) throws Exception {
+        if (useProvider) {
+            generateJaxWsProvider(project, targetFolder, targetName, wsdlURL, service, port);
+        } else {
+            generateJaxWsImplClass(project, targetFolder, targetName, wsdlURL, service, port, true, null);
+        }
     }
-    
+
     /** This method is called from Create Web Service from WSDL wizard
      */
     public static void generateJaxWsArtifacts(Project project, FileObject targetFolder, String targetName, URL wsdlURL, String service, String port) throws Exception {
         initProjectInfo(project);
         JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        String artifactsPckg =  "service."+targetName.toLowerCase(); //NOI18N
+        String artifactsPckg = "service." + targetName.toLowerCase(); //NOI18N
         ClassPath classPath = ClassPath.getClassPath(targetFolder, ClassPath.SOURCE);
         String serviceImplPath = classPath.getResourceName(targetFolder, '.', false);
-        jaxWsSupport.addService(targetName, serviceImplPath+"."+targetName, wsdlURL.toExternalForm(), service, port, artifactsPckg, jaxWsInJ2ee14Supported || (jsr109Supported && Util.isJavaEE5orHigher(project)));
+        jaxWsSupport.addService(targetName, serviceImplPath + "." + targetName, wsdlURL.toExternalForm(), service, port, artifactsPckg, jaxWsInJ2ee14Supported || (jsr109Supported && Util.isJavaEE5orHigher(project)), false);
     }
-    
-    
-    public static void generateProviderImplClass(Project project, FileObject targetFolder,
-            String targetName, final WsdlService service, final WsdlPort port, String serviceID) throws Exception{
-        
+
+    public static void generateProviderImplClass(Project project, FileObject targetFolder, FileObject implClass,
+            String targetName, final WsdlService service, final WsdlPort port, String serviceID) throws Exception {
         JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        
-        FileObject implClassFo = GenerationUtils.createClass(targetFolder, targetName, null);
-        implClassFo.setAttribute("jax-ws-service", Boolean.TRUE);
-        implClassFo.setAttribute("jax-ws-service-provider", Boolean.TRUE);
-        DataObject.find(implClassFo).setValid(false);
-        
+        FileObject implClassFo = implClass;
+        if (implClassFo == null) {
+            implClassFo = GenerationUtils.createClass(targetFolder, targetName, null);
+            implClassFo.setAttribute("jax-ws-service", Boolean.TRUE);
+            implClassFo.setAttribute("jax-ws-service-provider", Boolean.TRUE);
+            DataObject.find(implClassFo).setValid(false);
+        }
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
-            
+
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
-                if (javaClass!=null) {
+                if (javaClass != null) {
                     TreeMaker make = workingCopy.getTreeMaker();
                     GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                    
+
                     // add implementation clause
                     ExpressionTree implClause = make.Identifier("javax.xml.ws.Provider<javax.xml.transform.Source>"); //NOI18N
                     ClassTree modifiedClass = make.addClassImplementsClause(javaClass, implClause);
-                    
+
                     // add @Stateless annotation
                     if (projectType == EJB_PROJECT_TYPE) {//EJB project
                         TypeElement StatelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
                         AnnotationTree StatelessAnnotation = make.Annotation(
                                 make.QualIdent(StatelessAn),
-                                Collections.<ExpressionTree>emptyList()
-                                );
+                                Collections.<ExpressionTree>emptyList());
                         modifiedClass = genUtils.addAnnotation(modifiedClass, StatelessAnnotation);
                     }
                     TypeElement serviceModeAn = workingCopy.getElements().getTypeElement("javax.xml.ws.ServiceMode"); //NOI18N
                     List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
                     IdentifierTree idTree = make.Identifier("javax.xml.ws.Service.Mode.PAYLOAD");
                     attrs.add(
-                            make.Assignment(make.Identifier("value"), idTree));
+                            make.Assignment(make.Identifier("value"), idTree));  //NOI18N
                     AnnotationTree serviceModeAnnotation = make.Annotation(
                             make.QualIdent(serviceModeAn),
-                            attrs
-                            );
+                            attrs);
                     modifiedClass = genUtils.addAnnotation(modifiedClass, serviceModeAnnotation);
-                    
+
                     TypeElement wsProviderAn = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
                     attrs = new ArrayList<ExpressionTree>();
                     attrs.add(
@@ -237,20 +248,18 @@ public class JaxWsUtils {
                             make.Assignment(make.Identifier("targetNamespace"), make.Literal(port.getNamespaceURI()))); //NOI18N
                     attrs.add(
                             make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlLocation))); //NOI18N
-                    
+
                     AnnotationTree providerAnnotation = make.Annotation(
                             make.QualIdent(wsProviderAn),
-                            attrs
-                            );
+                            attrs);
                     modifiedClass = genUtils.addAnnotation(modifiedClass, providerAnnotation);
-                    
-                    String type= "javax.xml.transform.Source";
+
+                    String type = "javax.xml.transform.Source";
                     List<VariableTree> params = new ArrayList<VariableTree>();
                     params.add(make.Variable(
                             make.Modifiers(
                             Collections.<Modifier>emptySet(),
-                            Collections.<AnnotationTree>emptyList()
-                            ),
+                            Collections.<AnnotationTree>emptyList()),
                             "source", // name
                             make.Identifier(type), // parameter type
                             null // initializer - does not make sense in parameters.
@@ -258,8 +267,7 @@ public class JaxWsUtils {
                     // create method
                     ModifiersTree methodModifiers = make.Modifiers(
                             Collections.<Modifier>singleton(Modifier.PUBLIC),
-                            Collections.<AnnotationTree>emptyList()
-                            );
+                            Collections.<AnnotationTree>emptyList());
                     MethodTree method = make.Method(
                             methodModifiers, // public
                             "invoke", // operation name
@@ -270,28 +278,29 @@ public class JaxWsUtils {
                             "{ //TODO implement this method\nthrow new UnsupportedOperationException(\"Not implemented yet.\") }", // body text
                             null // default value - not applicable here, used by annotations
                             );
-                    
-                    modifiedClass =  make.addClassMember(modifiedClass, method);
+
+                    modifiedClass = make.addClassMember(modifiedClass, method);
                     workingCopy.rewrite(javaClass, modifiedClass);
                 }
             }
-            
+
             public void cancel() {
             }
         };
         targetSource.runModificationTask(task).commit();
         //open in editor
-        
+
         DataObject dobj = DataObject.find(implClassFo);
         List<Service> services = jaxWsSupport.getServices();
-        if (serviceID!=null) {
-            for (Service serv:services) {
+        if (serviceID != null) {
+            for (Service serv : services) {
                 if (serviceID.equals(serv.getName())) {
-                    
+
                     final EditCookie editCookie = dobj.getCookie(EditCookie.class);
-                    if (editCookie!=null) {
-                        RequestProcessor.getDefault().post(new Runnable(){
-                            public void run(){
+                    if (editCookie != null) {
+                        RequestProcessor.getDefault().post(new Runnable() {
+
+                            public void run() {
                                 editCookie.edit();
                             }
                         }, 1000);
@@ -301,41 +310,59 @@ public class JaxWsUtils {
             }
         }
     }
-    
+
+    private static void generateJaxWsProvider(Project project, FileObject targetFolder, String targetName, URL wsdlURL, final WsdlService service, final WsdlPort port) throws Exception {
+        initProjectInfo(project);
+        JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
+        String portJavaName = port.getJavaName();
+        String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));
+        FileObject implClassFo = GenerationUtils.createClass(targetFolder, targetName, null);
+        implClassFo.setAttribute("jax-ws-service", Boolean.TRUE);
+        implClassFo.setAttribute("jax-ws-service-provider", Boolean.TRUE);
+        DataObject.find(implClassFo).setValid(false);
+        ClassPath classPath = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
+        String serviceImplPath = classPath.getResourceName(implClassFo, '.', false);
+        String serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(),
+                port.getName(), artifactsPckg, jaxWsInJ2ee14Supported || (jsr109Supported && Util.isJavaEE5orHigher(project)), true);
+
+        generateProviderImplClass(project, targetFolder, implClassFo, targetName, service, port, serviceID);
+
+    }
+
     private static void generateJaxWsImplClass(Project project, FileObject targetFolder, String targetName, URL wsdlURL, final WsdlService service, final WsdlPort port, boolean addService, String serviceID) throws Exception {
         initProjectInfo(project);
-        
+
         // Use Progress API to display generator messages.
         //ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(JaxWsUtils.class, "TXT_WebServiceGeneration")); //NOI18N
         //handle.start(100);
         JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        
+
         FileObject implClassFo = GenerationUtils.createClass(targetFolder, targetName, null);
         implClassFo.setAttribute("jax-ws-service", Boolean.TRUE);
         DataObject.find(implClassFo).setValid(false);
-        
+
         ClassPath classPath = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
         String serviceImplPath = classPath.getResourceName(implClassFo, '.', false);
         String portJavaName = port.getJavaName();
         String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));
         if (addService) {
-            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jaxWsInJ2ee14Supported || (jsr109Supported && Util.isJavaEE5orHigher(project)));
+            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jaxWsInJ2ee14Supported || (jsr109Supported && Util.isJavaEE5orHigher(project)), false);
         }
-        
+
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
-            
+
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
-                if (javaClass!=null) {
+                if (javaClass != null) {
                     TreeMaker make = workingCopy.getTreeMaker();
                     GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                    
+
                     // add implementation clause
                     ClassTree modifiedClass = genUtils.addImplementsClause(javaClass, port.getJavaName());
-                    
+
                     //add @WebService annotation
                     TypeElement WSAn = workingCopy.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
                     List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
@@ -349,46 +376,43 @@ public class JaxWsUtils {
                             make.Assignment(make.Identifier("targetNamespace"), make.Literal(port.getNamespaceURI()))); //NOI18N
                     attrs.add(
                             make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlLocation))); //NOI18N
-                    
+
                     AnnotationTree WSAnnotation = make.Annotation(
                             make.QualIdent(WSAn),
-                            attrs
-                            );
+                            attrs);
                     modifiedClass = genUtils.addAnnotation(modifiedClass, WSAnnotation);
-                    
+
                     // add @Stateless annotation
                     if (projectType == EJB_PROJECT_TYPE) {//EJB project
                         TypeElement StatelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
                         AnnotationTree StatelessAnnotation = make.Annotation(
                                 make.QualIdent(StatelessAn),
-                                Collections.<ExpressionTree>emptyList()
-                                );
+                                Collections.<ExpressionTree>emptyList());
                         modifiedClass = genUtils.addAnnotation(modifiedClass, StatelessAnnotation);
                     }
-                    
+
                     List<WsdlOperation> operations = port.getOperations();
-                    for(WsdlOperation operation: operations) {
-                        
+                    for (WsdlOperation operation : operations) {
+
                         // return type
                         String returnType = operation.getReturnTypeName();
-                        
+
                         // create parameters
                         List<WsdlParameter> parameters = operation.getParameters();
                         List<VariableTree> params = new ArrayList<VariableTree>();
-                        for (WsdlParameter parameter:parameters) {
+                        for (WsdlParameter parameter : parameters) {
                             // create parameter:
                             // final ObjectOutput arg0
                             params.add(make.Variable(
                                     make.Modifiers(
                                     Collections.<Modifier>emptySet(),
-                                    Collections.<AnnotationTree>emptyList()
-                                    ),
+                                    Collections.<AnnotationTree>emptyList()),
                                     parameter.getName(), // name
                                     make.Identifier(parameter.getTypeName()), // parameter type
                                     null // initializer - does not make sense in parameters.
                                     ));
                         }
-                        
+
                         // create exceptions
                         Iterator<String> exceptions = operation.getExceptions();
                         List<ExpressionTree> exc = new ArrayList<ExpressionTree>();
@@ -397,12 +421,11 @@ public class JaxWsUtils {
                             TypeElement excEl = workingCopy.getElements().getTypeElement(exception);
                             exc.add(make.QualIdent(excEl));
                         }
-                        
+
                         // create method
                         ModifiersTree methodModifiers = make.Modifiers(
                                 Collections.<Modifier>singleton(Modifier.PUBLIC),
-                                Collections.<AnnotationTree>emptyList()
-                                );
+                                Collections.<AnnotationTree>emptyList());
                         MethodTree method = make.Method(
                                 methodModifiers, // public
                                 operation.getJavaName(), // operation name
@@ -413,50 +436,51 @@ public class JaxWsUtils {
                                 "{ //TODO implement this method\nthrow new UnsupportedOperationException(\"Not implemented yet.\") }", // body text
                                 null // default value - not applicable here, used by annotations
                                 );
-                        
-                        modifiedClass =  make.addClassMember(modifiedClass, method);
+
+                        modifiedClass = make.addClassMember(modifiedClass, method);
                     }
                     workingCopy.rewrite(javaClass, modifiedClass);
                 }
             }
-            
+
             public void cancel() {
             }
         };
         targetSource.runModificationTask(task).commit();
         //open in editor
-        
+
         DataObject dobj = DataObject.find(implClassFo);
         List<Service> services = jaxWsSupport.getServices();
-        if (serviceID!=null) {
-            for (Service serv:services) {
+        if (serviceID != null) {
+            for (Service serv : services) {
                 if (serviceID.equals(serv.getName())) {
                     openFileInEditor(dobj, serv);
                 }
             }
         }
     }
-    
-    
-    public static void openFileInEditor(DataObject dobj, Service service){
-        
+
+    public static void openFileInEditor(DataObject dobj, Service service) {
+
         final OpenCookie openCookie = dobj.getCookie(OpenCookie.class);
-        if (openCookie!=null) {
-            RequestProcessor.getDefault().post(new Runnable(){
-                public void run(){
+        if (openCookie != null) {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
                     openCookie.open();
                 }
             }, 1000);
         } else {
             final EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            RequestProcessor.getDefault().post(new Runnable(){
-                public void run(){
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
                     ec.open();
                 }
             }, 1000);
         }
     }
-    
+
     // Retouche
     //    private static String createBody(Type type) {
     //        String initVal;
@@ -479,23 +503,20 @@ public class JaxWsUtils {
     //        }
     //        return "return ".concat(initVal).concat(";"); // NOI18N
     //    }
-    
-    
-    public static String getPackageName(String fullyQualifiedName){
+    public static String getPackageName(String fullyQualifiedName) {
         String packageName = "";
         int index = fullyQualifiedName.lastIndexOf(".");
-        if(index != -1){
+        if (index != -1) {
             packageName = fullyQualifiedName.substring(0, index);
         }
         return packageName;
     }
-    
-    
+
     private static void initProjectInfo(Project project) {
         JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
         if (wss != null) {
             Map properties = wss.getAntProjectHelper().getStandardPropertyEvaluator().getProperties();
-            String serverInstance = (String)properties.get("j2ee.server.instance"); //NOI18N
+            String serverInstance = (String) properties.get("j2ee.server.instance"); //NOI18N
             if (serverInstance != null) {
                 J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
                 if (j2eePlatform != null) {
@@ -505,42 +526,46 @@ public class JaxWsUtils {
                 }
             }
         }
-        
+
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         EjbJar em = EjbJar.getEjbJar(project.getProjectDirectory());
-        if (em != null)
+        if (em != null) {
             projectType = EJB_PROJECT_TYPE;
-        else if (wm != null)
+        } else if (wm != null) {
             projectType = WEB_PROJECT_TYPE;
-        else
+        } else {
             projectType = JSE_PROJECT_TYPE;
+        }
     }
-    
+
     public static boolean isProjectReferenceable(Project clientProject, Project targetProject) {
-        if (clientProject==targetProject) {
+        if (clientProject == targetProject) {
             return true;
         } else {
             AntArtifactProvider antArtifactProvider = clientProject.getLookup().lookup(AntArtifactProvider.class);
-            if (antArtifactProvider!=null) {
+            if (antArtifactProvider != null) {
                 AntArtifact jarArtifact = getJarArtifact(antArtifactProvider);
-                if (jarArtifact!=null) return true;
+                if (jarArtifact != null) {
+                    return true;
+                }
             }
             return false;
         }
     }
+
     /** Adding clientProject reference to targetProject
      * 
-     */ 
+     */
     public static boolean addProjectReference(Project clientProject, FileObject targetFile) {
         try {
-            assert clientProject!=null && targetFile!=null;
+            assert clientProject != null && targetFile != null;
             Project targetProject = FileOwnerQuery.getOwner(targetFile);
-            if (clientProject!=targetProject) {
+            if (clientProject != targetProject) {
                 AntArtifactProvider antArtifactProvider = clientProject.getLookup().lookup(AntArtifactProvider.class);
-                if (antArtifactProvider!=null) {
+                if (antArtifactProvider != null) {
                     AntArtifact jarArtifact = getJarArtifact(antArtifactProvider);
-                    if (jarArtifact!=null) {
-                        AntArtifact[] jarArtifacts = new AntArtifact[]{jarArtifact}; 
+                    if (jarArtifact != null) {
+                        AntArtifact[] jarArtifacts = new AntArtifact[]{jarArtifact};
                         URI[] artifactsUri = jarArtifact.getArtifactLocations();
                         ProjectClassPathModifier.addAntArtifacts(jarArtifacts, artifactsUri, targetFile, ClassPath.COMPILE);
                         return true;
@@ -554,29 +579,33 @@ public class JaxWsUtils {
         }
         return false;
     }
-    
+
     private static AntArtifact getJarArtifact(AntArtifactProvider antArtifactProvider) {
         AntArtifact[] artifacts = antArtifactProvider.getBuildArtifacts();
-        for (int i=0;i<artifacts.length;i++) {
-            if (JavaProjectConstants.ARTIFACT_TYPE_JAR.equals(artifacts[i].getType())) return artifacts[i];
+        for (int i = 0; i < artifacts.length; i++) {
+            if (JavaProjectConstants.ARTIFACT_TYPE_JAR.equals(artifacts[i].getType())) {
+                return artifacts[i];
+            }
         }
         return null;
     }
-    
+
     public static class WsImportServiceFailedMessage extends NotifyDescriptor.Message {
+
         public WsImportServiceFailedMessage(Throwable ex) {
-            super(NbBundle.getMessage(JaxWsUtils.class,"TXT_CannotGenerateService",ex.getLocalizedMessage()),
+            super(NbBundle.getMessage(JaxWsUtils.class, "TXT_CannotGenerateService", ex.getLocalizedMessage()),
                     NotifyDescriptor.ERROR_MESSAGE);
         }
     }
-    
+
     public static class WsImportClientFailedMessage extends NotifyDescriptor.Message {
+
         public WsImportClientFailedMessage(Throwable ex) {
-            super(NbBundle.getMessage(JaxWsUtils.class,"TXT_CannotGenerateClient",ex.getLocalizedMessage()),
+            super(NbBundle.getMessage(JaxWsUtils.class, "TXT_CannotGenerateClient", ex.getLocalizedMessage()),
                     NotifyDescriptor.ERROR_MESSAGE);
         }
     }
-    
+
     /**
      * Utility for changing the wsdlLocation attribute in external JAXWS external files
      * @param bindingFile FileObject of the external binding file
@@ -585,13 +614,13 @@ public class JaxWsUtils {
      */
     public static boolean addRelativeWsdlLocation(FileObject bindingFile, String relativePath) {
         GlobalBindings gb = null;
-        
+
         ModelSource ms = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(bindingFile, true);
-        if(ms != null){
-            BindingsModel bindingsModel =  BindingsModelFactory.getDefault().getModel(ms);
-            if(bindingsModel != null){
+        if (ms != null) {
+            BindingsModel bindingsModel = BindingsModelFactory.getDefault().getModel(ms);
+            if (bindingsModel != null) {
                 gb = bindingsModel.getGlobalBindings();
-                if(gb != null){
+                if (gb != null) {
                     bindingsModel.startTransaction();
                     gb.setWsdlLocation(relativePath);
                     bindingsModel.endTransaction();
@@ -601,59 +630,60 @@ public class JaxWsUtils {
         }
         return false;
     }
+
     /** Package name validation
      */
     public static boolean isJavaPackage(String pkg) {
         boolean result = false;
-        
-        if(pkg != null && pkg.length() > 0) {
+
+        if (pkg != null && pkg.length() > 0) {
             int state = 0;
-            for(int i = 0, pkglength = pkg.length(); i < pkglength && state < 2; i++) {
-                switch(state) {
-                case 0:
-                    if(Character.isJavaIdentifierStart(pkg.charAt(i))) {
-                        state = 1;
-                    } else {
-                        state = 2;
-                    }
-                    break;
-                case 1:
-                    if(pkg.charAt(i) == '.') {
-                        state = 0;
-                    } else if(!Character.isJavaIdentifierPart(pkg.charAt(i))) {
-                        state = 2;
-                    }
-                    break;
+            for (int i = 0, pkglength = pkg.length(); i < pkglength && state < 2; i++) {
+                switch (state) {
+                    case 0:
+                        if (Character.isJavaIdentifierStart(pkg.charAt(i))) {
+                            state = 1;
+                        } else {
+                            state = 2;
+                        }
+                        break;
+                    case 1:
+                        if (pkg.charAt(i) == '.') {
+                            state = 0;
+                        } else if (!Character.isJavaIdentifierPart(pkg.charAt(i))) {
+                            state = 2;
+                        }
+                        break;
                 }
             }
-            
-            if(state == 1) {
+
+            if (state == 1) {
                 result = true;
             }
         }
-        
+
         return result;
     }
-    
+
     /** Class/Identifier validation
      */
     public static boolean isJavaIdentifier(String id) {
         boolean result = true;
-        
-        if(id == null || id.length() == 0 || !Character.isJavaIdentifierStart(id.charAt(0))) {
+
+        if (id == null || id.length() == 0 || !Character.isJavaIdentifierStart(id.charAt(0))) {
             result = false;
         } else {
-            for(int i = 1, idlength = id.length(); i < idlength; i++) {
-                if(!Character.isJavaIdentifierPart(id.charAt(i))) {
+            for (int i = 1, idlength = id.length(); i < idlength; i++) {
+                if (!Character.isJavaIdentifierPart(id.charAt(i))) {
                     result = false;
                     break;
                 }
             }
         }
-        
+
         return result;
     }
-    
+
     /** This method ensures the list of steps displayed in the left hand panel
      *  of the wizard is correct for any given displayed panel.
      *
@@ -668,7 +698,7 @@ public class JaxWsUtils {
         } else if (before.length > 0) {
             diff = ("...".equals(before[before.length - 1])) ? 1 : 0; // NOI18N
         }
-        String[] res = new String[ (before.length - diff) + panels.length];
+        String[] res = new String[(before.length - diff) + panels.length];
         for (int i = 0; i < res.length; i++) {
             if (i < (before.length - diff)) {
                 res[i] = before[i];
@@ -678,67 +708,68 @@ public class JaxWsUtils {
         }
         return res;
     }
-    
+
     public static boolean isEjbJavaEE5orHigher(Project project) {
         ProjectInfo projectInfo = new ProjectInfo(project);
         return isEjbJavaEE5orHigher(projectInfo);
     }
-    
+
     public static boolean isEjbJavaEE5orHigher(ProjectInfo projectInfo) {
         int projType = projectInfo.getProjectType();
         if (projType == ProjectInfo.EJB_PROJECT_TYPE) {
             FileObject ddFolder = JAXWSSupport.getJAXWSSupport(projectInfo.getProject().getProjectDirectory()).getDeploymentDescriptorFolder();
-            if (ddFolder==null || ddFolder.getFileObject("ejb-jar.xml")==null) { //NOI18N
+            if (ddFolder == null || ddFolder.getFileObject("ejb-jar.xml") == null) { //NOI18N
                 return true;
             }
         }
         return false;
     }
-    
+
     public static boolean isCarProject(Project project) {
         ProjectInfo projectInfo = new ProjectInfo(project);
         return isCarProject(projectInfo);
     }
-    
+
     public static boolean isCarProject(ProjectInfo projectInfo) {
         int projType = projectInfo.getProjectType();
         return projType == ProjectInfo.CAR_PROJECT_TYPE;
     }
-    
+
     /** Setter for WebService annotation attribute, e.g. serviceName = "HelloService"
      *
      */
     public static void setWebServiceAttrValue(FileObject implClassFo, final String attrName, final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree classTree = SourceUtils.getPublicTopLevelTree(workingCopy);
-                if (classTree!=null) {
+                if (classTree != null) {
                     TreeMaker make = workingCopy.getTreeMaker();
                     GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                    
+
                     ExpressionTree attrExpr =
-                            (attrValue==null?null:genUtils.createAnnotationArgument(attrName, attrValue));
-                    
+                            (attrValue == null ? null : genUtils.createAnnotationArgument(attrName, attrValue));
+
                     ModifiersTree modif = classTree.getModifiers();
                     List<? extends AnnotationTree> annotations = modif.getAnnotations();
                     List<AnnotationTree> newAnnotations = new ArrayList<AnnotationTree>();
-                    
-                    for (AnnotationTree an:annotations) {
+
+                    for (AnnotationTree an : annotations) {
                         IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
                         TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
-                        TypeElement anElement = (TypeElement)workingCopy.getTrees().getElement(anTreePath);
-                        if(anElement!=null && anElement.getQualifiedName().contentEquals("javax.jws.WebService")) { //NOI18N
+                        TypeElement anElement = (TypeElement) workingCopy.getTrees().getElement(anTreePath);
+                        if (anElement != null && anElement.getQualifiedName().contentEquals("javax.jws.WebService")) { //NOI18N
                             List<? extends ExpressionTree> expressions = an.getArguments();
                             List<ExpressionTree> newExpressions = new ArrayList<ExpressionTree>();
-                            boolean attrFound=false;
-                            for (ExpressionTree expr:expressions) {
-                                AssignmentTree as = (AssignmentTree)expr;
-                                IdentifierTree id = (IdentifierTree)as.getVariable();
+                            boolean attrFound = false;
+                            for (ExpressionTree expr : expressions) {
+                                AssignmentTree as = (AssignmentTree) expr;
+                                IdentifierTree id = (IdentifierTree) as.getVariable();
                                 if (id.getName().contentEquals(attrName)) {
-                                    attrFound=true;
-                                    if (attrExpr!=null) {
+                                    attrFound = true;
+                                    if (attrExpr != null) {
                                         newExpressions.add(attrExpr);
                                     }
                                 } else {
@@ -748,7 +779,7 @@ public class JaxWsUtils {
                             if (!attrFound) {
                                 newExpressions.add(attrExpr);
                             }
-                            
+
                             TypeElement webServiceEl = workingCopy.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
                             AnnotationTree webServiceAn = make.Annotation(make.QualIdent(webServiceEl), newExpressions);
                             newAnnotations.add(webServiceAn);
@@ -756,12 +787,12 @@ public class JaxWsUtils {
                             newAnnotations.add(an);
                         }
                     }
-                    
+
                     ModifiersTree newModifier = make.Modifiers(modif, newAnnotations);
                     workingCopy.rewrite(modif, newModifier);
                 }
             }
-            
+
             public void cancel() {
             }
         };
@@ -771,77 +802,239 @@ public class JaxWsUtils {
             ErrorManager.getDefault().notify(ex);
         }
     }
+
+    private boolean resolveServiceUrl(Object moduleType, CompilationController controller, TypeElement targetElement, TypeElement wsElement, String[] serviceName, String[] name) throws IOException {
+        boolean foundWsAnnotation = false;
+        List<? extends AnnotationMirror> annotations = targetElement.getAnnotationMirrors();
+        for (AnnotationMirror anMirror : annotations) {
+            if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
+                foundWsAnnotation = true;
+                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
+                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : expressions.entrySet()) {
+                    if (entry.getKey().getSimpleName().contentEquals("serviceName")) {
+                        serviceName[0] = (String) expressions.get(entry.getKey()).getValue();
+                        if (serviceName[0] != null) {
+                            serviceName[0] = URLEncoder.encode(serviceName[0], "UTF-8"); //NOI18N
+                        }
+                    } else if (entry.getKey().getSimpleName().contentEquals("name")) {
+                        name[0] = (String) expressions.get(entry.getKey()).getValue();
+                        if (name[0] != null) {
+                            name[0] = URLEncoder.encode(name[0], "UTF-8");
+                        }
+                    }
+                    if (serviceName[0] != null && name[0] != null) {
+                        break;
+                    }
+                }
+                break;
+            } // end if
+        } // end for
+        return foundWsAnnotation;
+    }
+
+    public static boolean isSoap12(FileObject implClassFo) {
+        final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
+        final String[] version = new String[1];
+        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
+                boolean foundAnnotation = false;
+                TypeElement bindingElement = controller.getElements().getTypeElement(BINDING_TYPE_ANNOTATION); 
+                for (AnnotationMirror anMirror : annotations) {
+                    if (controller.getTypes().isSameType(bindingElement.asType(), anMirror.getAnnotationType())) {
+                        Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
+                        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : expressions.entrySet()) {
+                            if (entry.getKey().getSimpleName().contentEquals("value")) {   //NOI18N
+                                version[0] = (String) expressions.get(entry.getKey()).getValue();
+                                foundAnnotation = true;
+                                break;
+                            }
+                        }
+
+                    }
+                    if (foundAnnotation) {
+                        break;
+                    }
+                }
+            }
+            public void cancel() {
+            }
+        };
+        try {
+            javaSource.runUserActionTask(task, true);
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+        return version[0] != null && version[0].equals(SOAP12_NAMESPACE);
+    }
+
+    public static void setSOAP12Binding(final FileObject implClassFo, final boolean isSOAP12) {
+        final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
+                ClassTree javaClass = workingCopy.getTrees().getTree(typeElement);
+
+                TypeElement bindingElement = workingCopy.getElements().getTypeElement(BINDING_TYPE_ANNOTATION); 
+                if (bindingElement != null) {
+                    AnnotationTree bindingAnnotation = null;
+                    List<? extends AnnotationTree> annots = javaClass.getModifiers().getAnnotations();
+                    for (AnnotationTree an : annots) {
+                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
+                        TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
+                        TypeElement anElement = (TypeElement) workingCopy.getTrees().getElement(anTreePath);
+                        if (anElement != null && anElement.getQualifiedName().contentEquals(BINDING_TYPE_ANNOTATION)) { 
+                            bindingAnnotation = an;
+                            break;
+                        }
+                    }
+                    if (isSOAP12 && bindingAnnotation == null) {
+  
+                        ModifiersTree modifiersTree = javaClass.getModifiers();
+                        AssignmentTree soapVersion = make.Assignment(make.Identifier("value"), make.Literal(SOAP12_NAMESPACE)); //NOI18N
+                        AnnotationTree soapVersionAnnotation = make.Annotation(
+                                make.QualIdent(bindingElement),
+                                Collections.<ExpressionTree>singletonList(soapVersion));
+
+                        ModifiersTree newModifiersTree = make.addModifiersAnnotation(modifiersTree, soapVersionAnnotation);
+   
+                        workingCopy.rewrite(modifiersTree, newModifiersTree); 
+                    } else if (!isSOAP12 && bindingAnnotation != null) {
+                        ModifiersTree modifiers = javaClass.getModifiers();
+                        ModifiersTree newModifiers = make.removeModifiersAnnotation(modifiers, bindingAnnotation);
+                        workingCopy.rewrite(modifiers, newModifiers);
+                        CompilationUnitTree compileUnitTree = workingCopy.getCompilationUnit();
+                        List<? extends ImportTree> imports = compileUnitTree.getImports();
+                        for (ImportTree imp : imports) {
+                            Tree impTree = imp.getQualifiedIdentifier();
+                            TreePath impTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), impTree);
+                            TypeElement impElement = (TypeElement) workingCopy.getTrees().getElement(impTreePath);
+                            if (impElement != null && impElement.getQualifiedName().contentEquals(BINDING_TYPE_ANNOTATION)) { 
+                                CompilationUnitTree newCompileUnitTree = make.removeCompUnitImport(compileUnitTree, imp);
+                                workingCopy.rewrite(compileUnitTree, newCompileUnitTree);
+                                break;
+                            }
+                        }
+
+                    }
+                }
+            }
+
+            public void cancel() {
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
+                    try {
+                        javaSource.runModificationTask(modificationTask).commit();
+                        saveFile(implClassFo);
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                }
+            });
+        } else {
+            try {
+                javaSource.runModificationTask(modificationTask).commit();
+                saveFile(implClassFo);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        }
+    }
     
+     private static void saveFile(FileObject file) throws IOException {
+        DataObject dataObject = DataObject.find(file);
+        if (dataObject!=null) {
+            SaveCookie cookie = dataObject.getCookie(SaveCookie.class);
+            if (cookie!=null) cookie.save();
+        }        
+    }
+
     /** Setter for WebMethod annotation attribute, e.g. operationName = "HelloOperation"
      *
      */
-    public static void setWebMethodAttrValue(FileObject implClassFo, final ElementHandle method, final String attrName, final String attrValue) {
+    public static void setWebMethodAttrValue(FileObject implClassFo, final ElementHandle method,
+            final String attrName,
+            final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                 if (genUtils != null) {
                     TreeMaker make = workingCopy.getTreeMaker();
-                    
+
                     ExpressionTree attrExpr =
-                            (attrValue == null?null:genUtils.createAnnotationArgument(attrName, attrValue));
-                    
+                            (attrValue == null ? null : genUtils.createAnnotationArgument(attrName, attrValue));
+
                     Element methodEl = method.resolve(workingCopy);
                     MethodTree methodTree = (MethodTree) workingCopy.getTrees().getTree(methodEl);
-                    
+
                     ModifiersTree modif = methodTree.getModifiers();
                     List<? extends AnnotationTree> annotations = modif.getAnnotations();
                     List<AnnotationTree> newAnnotations = new ArrayList<AnnotationTree>();
-                    
+
                     boolean foundWebMethodAn = false;
-                    
-                    for (AnnotationTree an:annotations) {
+
+                    for (AnnotationTree an : annotations) {
                         IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
                         TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
-                        TypeElement anElement = (TypeElement)workingCopy.getTrees().getElement(anTreePath);
-                        if(anElement!=null && anElement.getQualifiedName().contentEquals("javax.jws.WebMethod")) { //NOI18N
-                            foundWebMethodAn=true;
+                        TypeElement anElement = (TypeElement) workingCopy.getTrees().getElement(anTreePath);
+                        if (anElement != null && anElement.getQualifiedName().contentEquals("javax.jws.WebMethod")) { //NOI18N
+                            foundWebMethodAn = true;
                             List<? extends ExpressionTree> expressions = an.getArguments();
                             List<ExpressionTree> newExpressions = new ArrayList<ExpressionTree>();
-                            boolean attrFound=false;
-                            for (ExpressionTree expr:expressions) {
-                                AssignmentTree as = (AssignmentTree)expr;
-                                IdentifierTree id = (IdentifierTree)as.getVariable();
+                            boolean attrFound = false;
+                            for (ExpressionTree expr : expressions) {
+                                AssignmentTree as = (AssignmentTree) expr;
+                                IdentifierTree id = (IdentifierTree) as.getVariable();
                                 if (id.getName().contentEquals(attrName)) {
-                                    attrFound=true;
-                                    if (attrExpr!=null) {
+                                    attrFound = true;
+                                    if (attrExpr != null) {
                                         newExpressions.add(attrExpr);
                                     }
+
                                 } else {
                                     newExpressions.add(expr);
                                 }
+
                             }
                             if (!attrFound) {
                                 newExpressions.add(attrExpr);
                             }
-                            
+
                             TypeElement webMethodEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
                             AnnotationTree webMethodAn = make.Annotation(make.QualIdent(webMethodEl), newExpressions);
                             newAnnotations.add(webMethodAn);
                         } else {
                             newAnnotations.add(an);
                         }
+
                     }
-                    
-                    if (!foundWebMethodAn && attrExpr!=null) {
+
+                    if (!foundWebMethodAn && attrExpr != null) {
                         TypeElement webMethodEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
                         AnnotationTree webMethodAn = make.Annotation(
                                 make.QualIdent(webMethodEl),
                                 Collections.<ExpressionTree>singletonList(attrExpr));
                         newAnnotations.add(webMethodAn);
                     }
-                    
+
                     ModifiersTree newModifier = make.Modifiers(modif, newAnnotations);
                     workingCopy.rewrite(modif, newModifier);
                 }
+
             }
-            
+
             public void cancel() {
             }
         };
@@ -850,28 +1043,33 @@ public class JaxWsUtils {
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
+
     }
-    
+
     /** Setter for WebParam annotation attribute, e.g. name = "x"
      *
      */
-    public static void setWebParamAttrValue(FileObject implClassFo, final ElementHandle methodHandle, final String paramName, final String attrName, final String attrValue) {
+    public static void setWebParamAttrValue(FileObject implClassFo, final ElementHandle methodHandle,
+            final String paramName,
+            final String attrName,
+            final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                 if (genUtils != null) {
                     TreeMaker make = workingCopy.getTreeMaker();
-                    
+
                     ExpressionTree attrExpr =
-                            (attrValue == null?null:genUtils.createAnnotationArgument(attrName, attrValue));
-                    
+                            (attrValue == null ? null : genUtils.createAnnotationArgument(attrName, attrValue));
+
                     Element methodEl = methodHandle.resolve(workingCopy);
-                    MethodTree methodTree = (MethodTree)workingCopy.getTrees().getTree(methodEl);
+                    MethodTree methodTree = (MethodTree) workingCopy.getTrees().getTree(methodEl);
                     List<? extends VariableTree> parameters = methodTree.getParameters();
-                    
-                    for (VariableTree paramTree:parameters) {
+
+                    for (VariableTree paramTree : parameters) {
                         if (paramTree.getName().contentEquals(paramName)) {
                             ModifiersTree modif = paramTree.getModifiers();
                             List<? extends AnnotationTree> annotations = modif.getAnnotations();
@@ -879,26 +1077,28 @@ public class JaxWsUtils {
 
                             boolean foundWebParamAn = false;
 
-                            for (AnnotationTree an:annotations) {
+                            for (AnnotationTree an : annotations) {
                                 IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
                                 TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
-                                TypeElement anElement = (TypeElement)workingCopy.getTrees().getElement(anTreePath);
-                                if(anElement!=null && anElement.getQualifiedName().contentEquals("javax.jws.WebParam")) { //NOI18N
+                                TypeElement anElement = (TypeElement) workingCopy.getTrees().getElement(anTreePath);
+                                if (anElement != null && anElement.getQualifiedName().contentEquals("javax.jws.WebParam")) { //NOI18N
                                     foundWebParamAn = true;
                                     List<? extends ExpressionTree> expressions = an.getArguments();
                                     List<ExpressionTree> newExpressions = new ArrayList<ExpressionTree>();
-                                    boolean attrFound=false;
-                                    for (ExpressionTree expr:expressions) {
-                                        AssignmentTree as = (AssignmentTree)expr;
-                                        IdentifierTree id = (IdentifierTree)as.getVariable();
+                                    boolean attrFound = false;
+                                    for (ExpressionTree expr : expressions) {
+                                        AssignmentTree as = (AssignmentTree) expr;
+                                        IdentifierTree id = (IdentifierTree) as.getVariable();
                                         if (id.getName().contentEquals(attrName)) {
-                                            attrFound=true;
-                                            if (attrExpr!=null) {
+                                            attrFound = true;
+                                            if (attrExpr != null) {
                                                 newExpressions.add(attrExpr);
                                             }
+
                                         } else {
                                             newExpressions.add(expr);
                                         }
+
                                     }
                                     if (!attrFound) {
                                         newExpressions.add(attrExpr);
@@ -910,24 +1110,28 @@ public class JaxWsUtils {
                                 } else {
                                     newAnnotations.add(an);
                                 }
+
                             }
-            
-                            if (!foundWebParamAn && attrExpr!=null) {
+
+                            if (!foundWebParamAn && attrExpr != null) {
                                 TypeElement webParamEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
                                 AnnotationTree webParamAn = make.Annotation(
                                         make.QualIdent(webParamEl),
                                         Collections.<ExpressionTree>singletonList(attrExpr));
                                 newAnnotations.add(webParamAn);
                             }
-                            
+
                             ModifiersTree newModifier = make.Modifiers(modif, newAnnotations);
-                            workingCopy.rewrite(modif, newModifier);                            
+                            workingCopy.rewrite(modif, newModifier);
                             break;
+
                         }
+
+
                     }
                 }
             }
-            
+
             public void cancel() {
             }
         };
@@ -936,8 +1140,9 @@ public class JaxWsUtils {
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
+
     }
-    
+
     /**
      * @param model the WSDL model the handler is for.
      * @return true if the WSDL model operation parameters could be set in SOAP header
@@ -946,59 +1151,61 @@ public class JaxWsUtils {
         //TODO
         return false;
     }
-    
+
     /**
      * Retrieve map of SOAP header element QName and its java type name.
      * @param model the WSDL model the handler is for.
      * @return map of SOAP header element QName and its java type name.
      */
-    public static Map<QName,String> getSoapHandlerParameterTypes(WsdlModel model) {
+    public static Map<QName, String> getSoapHandlerParameterTypes(WsdlModel model) {
         return null;
     }
-    
-    
-    public static Map<QName,String> getSoapHandlerParameterTypes(PortType portType) {
-        Map<QName,String> paramMap = new HashMap<QName,String>();
-        
+
+    public static Map<QName, String> getSoapHandlerParameterTypes(PortType portType) {
+        Map<QName, String> paramMap = new HashMap<QName, String>();
+
         Definitions definitions = portType.getModel().getDefinitions();
         Collection<Binding> bindings = definitions.getBindings();
         Binding binding = null;
-        for(Binding b : bindings){
+        for (Binding b : bindings) {
             NamedComponentReference<PortType> portTypeRef = b.getType();
-            if(portTypeRef.get().equals(portType)){
+            if (portTypeRef.get().equals(portType)) {
                 binding = b;
                 break;
+
             }
+
         }
-        if(binding != null){
+        if (binding != null) {
             //Determine if it is a SOAP binding
             List<SOAPBinding> soapBindings = binding.getExtensibilityElements(SOAPBinding.class);
-            if(soapBindings.size() > 0){ //we can assume that this is the only SOAP binding
+            if (soapBindings.size() >
+                    0) { //we can assume that this is the only SOAP binding
                 Collection<BindingOperation> bindingOperations = binding.getBindingOperations();
-                for(BindingOperation bOp : bindingOperations){
+                for (BindingOperation bOp : bindingOperations) {
                     BindingInput bindingInput = bOp.getBindingInput();
                     Collection<SOAPHeader> headers = bindingInput.getExtensibilityElements(SOAPHeader.class);
-                    for(SOAPHeader header : headers){
+                    for (SOAPHeader header : headers) {
                         NamedComponentReference<Message> messageRef = header.getMessage();
                         Message message = messageRef.get();
                         String partName = header.getPart();
                         Collection<Message> messages = definitions.getMessages();
-                        for(Message m : messages){
-                            if(m.equals(message)){
+                        for (Message m : messages) {
+                            if (m.equals(message)) {
                                 Collection<Part> parts = m.getParts();
-                                for(Part part : parts){
-                                    if(part.getName().equals(partName)){
+                                for (Part part : parts) {
+                                    if (part.getName().equals(partName)) {
                                         NamedComponentReference<GlobalElement> elementRef = part.getElement();
-                                        if(elementRef != null){
+                                        if (elementRef != null) {
                                             QName qname = elementRef.getQName();
-                                            if(!paramMap.containsKey(qname)){
+                                            if (!paramMap.containsKey(qname)) {
                                                 paramMap.put(qname, "");
                                             }
-                                        } else{
+                                        } else {
                                             NamedComponentReference<GlobalType> typeRef = part.getType();
-                                            if(typeRef != null){
+                                            if (typeRef != null) {
                                                 QName qname = typeRef.getQName();
-                                                if(!paramMap.containsKey(qname)){
+                                                if (!paramMap.containsKey(qname)) {
                                                     paramMap.put(qname, "");
                                                 }
                                             }
@@ -1012,72 +1219,79 @@ public class JaxWsUtils {
                 }
             }
         }
-        
+
         return paramMap;
     }
-    
+
     /**
      * Retrieve SOAP handler for given WSDL model.
      * @param model the WSDL model the handler is for.
      * @return the hanlder or null if none exist.
      */
-    public static FileObject getSoapHandler(WsdlModel model) {
+    public static FileObject getSoapHandler(
+            WsdlModel model) {
         //TODO
         return null;
     }
-    
-    
-    public static FileObject createSoapHandler(FileObject dest, PortType portType, Map<QName,Object> soapHeaderValues) 
-    throws IOException{
+
+    public static FileObject createSoapHandler(
+            FileObject dest, PortType portType, Map<QName, Object> soapHeaderValues)
+            throws IOException {
         String handlerName = portType.getName() + "_handler.java";
         DataObject dataObj = createDataObjectFromTemplate(HANDLER_TEMPLATE, dest, handlerName);
-        
+
         //TODO Generate code for initializing the header values.
         return dataObj.getPrimaryFile();
     }
-    
+
     /**
      * Create SOAP handler for given WSDL model.
      * @param destdir destination directory.
      * @param model the WSDL model the handler is for.
      * @param soapHeaderValues values for SOAP header elements.
      */
-    public static FileObject createSoapHandler(FileObject dest, WsdlModel model, Map<QName,Object> soapHeaderValues) {
+    public static FileObject createSoapHandler(
+            FileObject dest, WsdlModel model, Map<QName, Object> soapHeaderValues) {
         return null;
- 
+
     }
-    
-    public static DataObject createDataObjectFromTemplate(String template,
+
+    public static DataObject createDataObjectFromTemplate(
+            String template,
             FileObject targetFolder, String targetName) throws IOException {
         assert template != null;
         assert targetFolder != null;
         assert targetName != null && targetName.trim().length() > 0;
-        
+
         FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
         FileObject templateFO = defaultFS.findResource(template);
         DataObject templateDO = DataObject.find(templateFO);
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
-        
+
         return templateDO.createFromTemplate(dataFolder, targetName);
     }
-    
+
     public static boolean isInSourceGroup(Project prj, String serviceClass) {
 
         SourceGroup[] sourceGroups = ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        for(SourceGroup group:sourceGroups) {
-            String resource = serviceClass.replace('.', '/')+".java"; //NOI18N
-            if (group.getRootFolder().getFileObject(resource) != null) return true;
+        for (SourceGroup group : sourceGroups) {
+            String resource = serviceClass.replace('.', '/') + ".java"; //NOI18N
+            if (group.getRootFolder().getFileObject(resource) != null) {
+                return true;
+            }
+
         }
         return false;
     }
-    
+
     /** Test if EJBs are supported in J2EE Container, e.g. in Tomcat they are not
      * 
      * @param project
      * @return
      */
     public static boolean isEjbSupported(Project project) {
-        J2eeModuleProvider j2eeModuleProvider = project.getLookup ().lookup (J2eeModuleProvider.class);
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+
         if (j2eeModuleProvider != null) {
             String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
             if (serverInstanceId == null) {

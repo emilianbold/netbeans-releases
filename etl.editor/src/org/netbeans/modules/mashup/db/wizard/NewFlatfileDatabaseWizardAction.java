@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.util.Properties;
 import javax.swing.JComponent;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.netbeans.modules.mashup.db.ui.AxionDBConfiguration;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
@@ -26,13 +29,16 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
 
     private WizardDescriptor.Panel[] panels;
     public static final String DEFAULT_FLATFILE_JDBC_URL_PREFIX = "jdbc:axiondb:";
-
+    private static transient final Logger mLogger = LogUtil.getLogger(NewFlatfileDatabaseWizardAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    public String nbBundle1 = mLoc.t("PRSR001: Create Mashup Database");
     public void performAction() {
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle("Create Mashup Database");
+        wizardDescriptor.setTitle(Localizer.parse(nbBundle1));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        dialog.getAccessibleContext().setAccessibleDescription("This is the Dialog which lets the user create a mashup database");
         dialog.setSize(630, 334);
         dialog.setVisible(true);
         dialog.toFront();
@@ -41,8 +47,9 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
             String dbName = (String) wizardDescriptor.getProperty("dbName");
             boolean status = handle(dbName);
             if (status) {
+                String nbBundle2 = mLoc.t("PRSR001: Database {0} successfully created.",dbName);
                 NotifyDescriptor d =
-                        new NotifyDescriptor.Message("Database '" + dbName + "' successfully created.", NotifyDescriptor.INFORMATION_MESSAGE);
+                        new NotifyDescriptor.Message(Localizer.parse(nbBundle2), NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
             }
         }
@@ -83,7 +90,7 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
     }
 
     public String getName() {
-        return "Create Mashup Database";
+        return Localizer.parse(nbBundle1);
     }
 
     @Override
@@ -132,12 +139,14 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
         File f = new File(location + name);
         char[] ch = name.toCharArray();
         if (ch == null) {
+            String nbBundle3 = mLoc.t("PRSR001: No Database name specified.");
             NotifyDescriptor d =
-                    new NotifyDescriptor.Message("No Database name specified.", NotifyDescriptor.INFORMATION_MESSAGE);
+                    new NotifyDescriptor.Message(Localizer.parse(nbBundle3), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
         } else if (f.exists()) {
+            String nbBundle4 = mLoc.t("PRSR001: Database {0} already exists.",name);
             NotifyDescriptor d =
-                    new NotifyDescriptor.Message("Database '" + name + " already exists.", NotifyDescriptor.INFORMATION_MESSAGE);
+                    new NotifyDescriptor.Message(Localizer.parse(nbBundle4), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
         } else {
             Connection conn = null;
@@ -147,8 +156,9 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
                     status = true;
                 }
             } catch (Exception ex) {
+                String nbBundle5 = mLoc.t("PRSR001: Axion driver could not be loaded.");
                 NotifyDescriptor d =
-                        new NotifyDescriptor.Message("Axion driver could not be loaded.", NotifyDescriptor.INFORMATION_MESSAGE);
+                        new NotifyDescriptor.Message(Localizer.parse(nbBundle5), NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
             } finally {
                 try {

@@ -207,6 +207,7 @@ public class DiffStreamSource extends StreamSource {
                         newRemoteFile.deleteOnExit();
                         if (isBase) {
                             remoteFile = newRemoteFile;
+                            Utils.associateEncoding(file, newRemoteFile);
                         }
                     } catch (Exception e) {
                         if (isBase) throw e;

@@ -39,31 +39,37 @@
              xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
              xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:res="http://localhost/BluePrint5/Reservation">
     <import location="Reservation.wsdl" namespace="http://localhost/BluePrint5/Reservation"/>
+    
     <types>
         <xsd:schema targetNamespace="http://localhost/BluePrint5/AirLineReservation">
             <xsd:import schemaLocation="reservation.xsd" namespace="http://ReservationSystem.org/xsd/reserve"/>
         </xsd:schema>
-    </types>    
+    </types>
+    
     <message name="AirlineReservation">
         <part name="reserveAirlinePart"
               element="ns:reserve"></part>
     </message>
+    
     <message name="AirlineReservationStatus">
         <part name="status"
               element="ns:reserveStatus"></part>
     </message>
+    
     <portType name="AirlineReservationPortType">
         <operation name="reserveAirline">
             <input name="reserveMesg"
                    message="tns:AirlineReservation"></input>
         </operation>
     </portType>
+    
     <portType name="AirlineStatusPortType">
         <operation name="sendAirlineStatus">
             <input name="statusMesg"
                    message="tns:AirlineReservationStatus"></input>
         </operation>
     </portType>
+    
     <binding name="AirlineReservationBinding"
              type="tns:AirlineReservationPortType">
         <soap:binding style="document"
@@ -76,6 +82,7 @@
             </input>
         </operation>
     </binding>
+    
     <binding name="AirlineReservationStatusBinding"
              type="tns:AirlineStatusPortType">
         <soap:binding style="document"
@@ -88,32 +95,39 @@
             </input>
         </operation>
     </binding>
+
     <service name="AirlineService">
         <port name="AirlineServicePort"
               binding="tns:AirlineReservationBinding">
-            <soap:address location="http://localhost:12100/wsdl/AirlineService/ServiceLocation"/>
+            <soap:address location="http://localhost:18181/wsdl/AirlineService/ServiceLocation"/>
         </port>
     </service>
+    
     <service name="AirlineStatusService">
         <port name="AirlineStatusServicePort"
               binding="tns:AirlineReservationStatusBinding">
-            <soap:address location="http://localhost:12100/wsdl/AirlineStatusService/ServiceLocation"/>
+            <soap:address location="http://localhost:18181/wsdl/AirlineStatusService/ServiceLocation"/>
         </port>
-    </service>    
+    </service>
+    
     <plink:partnerLinkType name="AirlineReservationPLinkType">
         <plink:role portType="tns:AirlineReservationPortType"
                     name="reservingRole"></plink:role>
     </plink:partnerLinkType>
+    
     <plink:partnerLinkType name="AirLineReservStatusPLinkType">
         <plink:role portType="tns:AirlineStatusPortType"
                     name="statusReceivingRole"></plink:role>
     </plink:partnerLinkType>
+    
     <bpws:propertyAlias part="status"
                         propertyName="res:reservationID"
                         messageType="tns:AirlineReservationStatus">
         <bpws:query>/ns:reserveStatus/ns:reservationID</bpws:query>
     </bpws:propertyAlias>
-    <bpws:property name="air" type="xsd:boolean"/>
+    
+    <bpws:property name="air" type="ns:reserveType"/>
+    
     <bpws:propertyAlias propertyName="tns:air" 
                         messageType="tns:AirlineReservation" 
                         part="reserveAirlinePart"/>

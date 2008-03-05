@@ -101,6 +101,7 @@ public final class PrintPreviewAction extends IconAction {
 
   private List<PrintProvider> getPrintProviders() {
 //out();
+//out("get print providers");
     List<PrintProvider> providers = getComponentProviders();
 
     if (providers != null) {
@@ -153,68 +154,75 @@ public final class PrintPreviewAction extends IconAction {
   }
 
   private PrintProvider getComponentProvider(TopComponent top, DataObject data) {
-    JComponent component = getComponent(top, ""); // NOI18N
+    List<JComponent> components = getComponents(top);
 
-    if (component == null) {
+    if (components.size() == 0) {
       return null;
     }
-    Object object = component.getClientProperty(Printable.class);
-    String name = null;
-
-    if (object instanceof String && !object.equals("")) { // NOI18N
-      name = (String) object;
-    }
-    else {
-      if (data != null) {
-        name = data.getName();
-      }
-      if (name == null) {
-        name = top.getDisplayName();
-      }
-    }
-    object = component.getClientProperty(Date.class);
-    Date date;
-
-    if (object instanceof Date) {
-      date = (Date) object;
-    }
-    else {
-      if (data == null) {
-        date = new Date(System.currentTimeMillis());
-      }
-      else {
-        date = getDate(data);
-      }
-    }
-    return new ComponentProvider(component, name, date);
+    return new ComponentProvider(
+      components,
+      getName(components, top, data),
+      getDate(components, data));
   }
 
-  private JComponent getComponent(Container container, String indent) {
+  private String getName(List<JComponent> components, TopComponent top, DataObject data) {
+    for (JComponent component : components) {
+      Object object = component.getClientProperty(Printable.class);
+
+      if (object instanceof String && !object.equals("")) { // NOI18N
+        return (String) object;
+      }
+    }
+    if (data == null) {
+      return top.getDisplayName();
+    }
+    return data.getName();
+  }
+
+  private Date getDate(List<JComponent> components, DataObject data) {
+    for (JComponent component : components) {
+      Object object = component.getClientProperty(Date.class);
+
+      if (object instanceof Date) {
+        return (Date) object;
+      }
+    }
+    if (data != null) {
+      return getDate(data);
+    }
+    return new Date(System.currentTimeMillis());
+  }
+
+  private List<JComponent> getComponents(Container container) {
+//out();
+    List<JComponent> printable = new ArrayList<JComponent>();
+    getPrintable(container, printable);
+//out();
+    return printable;
+  }
+
+  private void getPrintable(Container container, List<JComponent> printable) {
     if (
       container.isShowing() &&
       container instanceof JComponent &&
       ((JComponent) container).getClientProperty(Printable.class) != null)
     {
-      return (JComponent) container;
+//out("see: " + container.getClass().getName());
+      printable.add((JComponent) container);
     }
     Component[] components = container.getComponents();
 
     for (Component component : components) {
       if (component instanceof Container) {
-        JComponent jcomponent =
-          getComponent((Container) component, "    " + indent); // NOI18N
-
-        if (jcomponent != null) {
-          return jcomponent;
-        }
+        getPrintable((Container) component, printable);
       }
     }
-    return null;
   }
 
   private List<PrintProvider> getNodeProviders() {
     Node [] nodes = getSelectedNodes();
 //out();
+//out("get node provider");
     if (nodes == null) {
 //out("NODES NULL");
       return null;
@@ -246,19 +254,24 @@ public final class PrintPreviewAction extends IconAction {
   }
 
   private PrintProvider getEditorProvider(Node node) {
+//out("get editor provider");
     DataObject data = getDataObject(node);
 
     if (data == null) {
+//out("get editor provider.1");
       return null;
     }
     EditorCookie editor = (EditorCookie) data.getCookie(EditorCookie.class);
 
     if (editor == null) {
+//out("get editor provider.2");
       return null;
     }
     if (editor.getDocument() == null) {
+//out("get editor provider.3");
       return null;
     }
+//out("get editor provider.4");
     return new TextProvider(editor, getDate(data));
   }
 
@@ -282,6 +295,7 @@ public final class PrintPreviewAction extends IconAction {
       return true;
     }
 //out("IS ENABLED: " + (getPrintProviders() != null || getPrintCookie() != null));
+//out("          : " + getPrintProviders());
     return getPrintProviders() != null || getPrintCookie() != null;
   }
 

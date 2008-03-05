@@ -92,7 +92,7 @@ public class AllRefactoringsPluginFactory implements RefactoringPluginFactory {
                             for (FileObject f : JavaSourceSupportAccessor.ACCESSOR.getVisibleEditorsFiles()) {
                                 JavaSource source = JavaSource.forFileObject(f);
                                 if (source != null) {
-                                    JavaSourceAccessor.INSTANCE.revalidate(source);
+                                    JavaSourceAccessor.getINSTANCE().revalidate(source);
                                 }
                             }
                         }

@@ -49,7 +49,7 @@
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://youtube.com/dev_api_ref"
-               url="/org/netbeans/modules/websvc/saas/services/youtube/resources/YouTubeVideosWadl.xml">
+               url="org/netbeans/modules/websvc/saas/services/youtube/resources/YouTubeVideosWadl.xml">
 
     <description>YouTube Video Service</description>
     
@@ -58,20 +58,18 @@
     <!-- xi:include href="YouTubeVideosMetaData.xml"/ -->
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.youtube.Bundle</localizing-bundle>
-        <icon16>org/netbeans/modules/websvc/saas/services/youtube/resources/youtube16.png</icon16>
         <group name="YouTube">
-            <group name="Videos"/>
         </group>
 
-        <authentication profile="Templates/WebServices/profile.properties">
+        <authentication profile="SaaSServices/YouTube/profile.properties">
             <api-key id="dev_id"/>
         </authentication>
     </saas-metadata>
 
     <methods>
-        <method name="ListByTag" href="//resource[1]/method[1]"/>
-        <method name="ListFeatured" href="//resource[1]/method[2]"/>
-        <method name="ListPopular" href="//resource[1]/method[3]"/>
+        <method name="ListByTag" href="#youtube.listByTag"/>
+        <method name="ListFeatured" href="#youtube.listFeatured"/>
+        <method name="ListPopular" href="#youtube.listPopular"/>
     </methods>
 
 </saas-services>

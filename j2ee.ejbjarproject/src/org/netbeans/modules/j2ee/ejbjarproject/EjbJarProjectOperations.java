@@ -49,8 +49,8 @@ import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.ejbjarproject.classpath.EjbJarProjectClassPathExtender;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
@@ -153,9 +153,6 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
         assert targetNames.length > 0;
         
         ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
-        
-        EjbJarProjectClassPathExtender extender = project.getLookup().lookup(EjbJarProjectClassPathExtender.class);
-        extender.notifyDeleting();
     }
     
     public void notifyDeleted() throws IOException {

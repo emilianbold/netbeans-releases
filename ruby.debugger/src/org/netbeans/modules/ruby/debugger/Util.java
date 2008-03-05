@@ -51,12 +51,10 @@ import org.netbeans.modules.ruby.platform.DebuggerPreferences;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor.Message;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-/**
- * @author Martin Krauskopf
- */
 public final class Util {
     
     public static final Logger LOGGER = Logger.getLogger(Util.class.getName());
@@ -130,7 +128,7 @@ public final class Util {
     public static RubySession getCurrentSession() {
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         return (currentEngine == null) ? null :
-            (RubySession) currentEngine.lookupFirst(null, RubySession.class);
+            currentEngine.lookupFirst(null, RubySession.class);
     }
     
     static boolean offerToInstallFastDebugger(final RubyPlatform platform) {
@@ -144,7 +142,6 @@ public final class Util {
         }
         String problems = platform.getFastDebuggerProblemsInHTML();
         if (problems == null) {
-            turnOnRubyDebugOptions(platform);
             return true;
         }
         if (!strict && DebuggerPreferences.getInstance().isDoNotAskAgain()) {
@@ -154,21 +151,19 @@ public final class Util {
         RubyDebugInstallPanel rubyDebugPanel = new RubyDebugInstallPanel(strict, message);
         DialogDescriptor descriptor = new DialogDescriptor(rubyDebugPanel,
                 NbBundle.getMessage(Util.class, "Util.installation.panel.title"));
-        JButton installButton = new JButton(getMessage("Util.installation.panel.installbutton"));
-        JButton nonInstallButton;
+
+        JButton installButton = new JButton();
+        Mnemonics.setLocalizedText(installButton, getMessage("Util.installation.panel.installbutton")); // NOI18N
+        JButton nonInstallButton = new JButton();
         if (strict) {
-            nonInstallButton = new JButton(getMessage("Util.installation.panel.cancelbutton"));
+            Mnemonics.setLocalizedText(nonInstallButton, getMessage("Util.installation.panel.cancelbutton")); // NOI18N
         } else {
-            nonInstallButton = new JButton(getMessage("Util.installation.panel.continuebutton"));
+            Mnemonics.setLocalizedText(nonInstallButton, getMessage("Util.installation.panel.continuebutton")); // NOI18N
         }
         Object[] options = new Object[] { installButton, nonInstallButton };
         descriptor.setOptions(options);
-        if (DialogDisplayer.getDefault().notify(descriptor) == installButton) {
-            if (platform.installFastDebugger()) {
-                turnOnRubyDebugOptions(platform);
-            } else {
-                Util.showWarning(getMessage("Util.fast.debugger.install.failed"));
-            }
+        if (DialogDisplayer.getDefault().notify(descriptor) == installButton && !platform.installFastDebugger()) {
+            Util.showWarning(getMessage("Util.fast.debugger.install.failed"));
         }
         if (!strict) {
             DebuggerPreferences.getInstance().setDoNotAskAgain(rubyDebugPanel.isDoNotAskAgain());
@@ -178,13 +173,6 @@ public final class Util {
     
     private static String getMessage(final String key) {
         return NbBundle.getMessage(Util.class, key);
-    }
-    
-    private static void turnOnRubyDebugOptions(final RubyPlatform platform) {
-        DebuggerPreferences prefs = DebuggerPreferences.getInstance();
-        if (platform.hasFastDebuggerInstalled()) {
-            prefs.setUseClassicDebugger(platform, false);
-        }
     }
     
 }

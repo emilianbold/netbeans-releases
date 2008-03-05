@@ -18,9 +18,9 @@
 ==============================================================
 'supportMetric', tokenID=identifier, offset=2250 [49:5/2250-49:18/2263]
 --OWNER:
-    FUNCTION_DEFINITION System()  [48:1/2227-50:2/2270] ReferencesTestCase/system.cc
+    EXPR null text='supportMetric(0'
 --RESOLVED TO:
-    null
+    VARIABLE supportMetric [65:5/2540-65:23/2558] ReferencesTestCase/system.h  TYPE: int TEXT=int  [65:5/2540-65:8/2543]  INIT: null  SCOPE: System 
 ==============================================================
 'System', tokenID=identifier, offset=2277 [52:6/2277-52:12/2283]
 --OWNER:

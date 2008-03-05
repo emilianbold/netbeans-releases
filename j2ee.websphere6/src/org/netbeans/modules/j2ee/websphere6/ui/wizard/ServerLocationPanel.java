@@ -298,7 +298,8 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
         
         // wait for the user to choose the directory and if he clicked the OK
         // button store the selected directory in the server location field
-        if (fileChooser.showOpenDialog(this) == fileChooser.APPROVE_OPTION) {
+        if (fileChooser.showOpenDialog(SwingUtilities.getWindowAncestor(this))
+                == JFileChooser.APPROVE_OPTION) {
             locationField.setText(fileChooser.getSelectedFile().getPath());
             fireChangeEvent();
         }

@@ -45,14 +45,17 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.SystemColor;
+import java.awt.Toolkit;
 import java.awt.event.ActionListener;
+import java.util.Map;
 import javax.swing.ComboBoxEditor;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
 
 
 /**
@@ -78,7 +81,17 @@ ListCellRenderer, ComboBoxEditor {
         setFocusable (true);
     }
 
+    @Override
     public void paint (Graphics g) {
+        
+        //AntiAliasing check
+        Object aa = Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
+
+        if (aa != null) {
+            ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                    RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        }
+        
         Color oldColor = g.getColor ();
         Dimension size = getSize ();
         if (isFocusOwner ())
@@ -124,6 +137,7 @@ ListCellRenderer, ComboBoxEditor {
         setEnabled (list.isEnabled ());
         setBackground (isSelected ? 
             SystemColor.textHighlight : SystemColor.text
+            //Color.RED
         );
         setForeground (isSelected ? 
             SystemColor.textHighlightText : SystemColor.textText

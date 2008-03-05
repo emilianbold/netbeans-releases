@@ -143,6 +143,22 @@ made subject to such option by the copyright holder.
     The code completion is the only client of this module at this moment.
    </p>
   </usecase>
+  <usecase id="registering-nodes" name="Registering nodes in the Database Explorer">
+   <p>
+    This feature allows modules to add nodes to the Datbase Explorer under
+    the "Databases" node in the Services tab.  This is done by registering
+    an implementation of the <code>NodeProvider</code> interface in
+    the <code>Databases/NodeProviders</code> folder of the system file system.
+    In particular, this feature is used to register database support modules
+    that want to register a node for managing a local server.  
+    </p>
+  <usecase id="registering-actions" name="Registering actions in the Database Explorer">
+   <p>
+    This feature allows modules to add actions to the Datbase Explorer under
+    the "Databases" node in the Services tab.  This is done by registering
+    an implementation of the <code>ActionProvider</code> interface in
+    the <code>Databases/ActionProviders</code> folder of the system file system.
+    </p>
   <usecase id="sql-keywords" name="Determining whether an identifier is an SQL-99 keyword">
    <p>
     The SQL editor and the J2EE verifier need to determine whether an identifier

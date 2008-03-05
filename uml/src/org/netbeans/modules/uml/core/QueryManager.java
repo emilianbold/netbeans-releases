@@ -47,16 +47,15 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.CRC32;
 
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Node;
-import org.dom4j.ProcessingInstruction;
-import org.dom4j.tree.DefaultProcessingInstruction;
 
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProductEventDispatcher;
@@ -73,7 +72,6 @@ import org.netbeans.modules.uml.core.metamodel.structure.IStructureEventDispatch
 import org.netbeans.modules.uml.core.support.umlsupport.FileSysManip;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
 import org.netbeans.modules.uml.core.support.umlsupport.IStrings;
-import org.netbeans.modules.uml.core.support.umlsupport.PathManip;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
@@ -81,17 +79,20 @@ import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 public class QueryManager implements IQueryManager, ICoreProductInitEventsSink,
                                     IExternalElementEventsSink,
                                     IProjectEventsSink
 {
-        public static final String QUERY_CACHE = ".QueryCache"; //NOI18N
-	private boolean m_deInitialized = false;
-	private String m_CacheDir = "";
-	
-	//Hashtable<String, ETList<IQueryUpdater>> m_Updaters = null;
-	private Hashtable m_Updaters = new Hashtable();
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.uml.core");
+    public static final String QUERY_CACHE = ".QueryCache"; //NOI18N
+    private boolean m_deInitialized = false;
+    private String m_CacheDir = "";
+
+    //Hashtable<String, ETList<IQueryUpdater>> m_Updaters = null;
+    private Hashtable m_Updaters = new Hashtable();
 	
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.IQueryManager#initialize()
@@ -628,50 +629,29 @@ public class QueryManager implements IQueryManager, ICoreProductInitEventsSink,
 	 * @return HRESULT
 	 *
 	 */
-	private void saveCache(Document doc, IProject pProject)
-	{
-        if (doc == null || pProject == null) return ;
-        
-		String path = getQueryCachePath(pProject);
-		
-		// The path to the .QueryCache file will be the absolute path to 
-		// the directory that the Project is in, in every case EXCEPT when
-		// the Project is created. In this case, we won't actually save the
-		// .QueryCache file. We still NEED to go through the motions of establishing
-		// the cache file, as necessary updaters are established etc.
-		if (path != null && !path.equals(".QueryCache"))
-		{
-			// If the file is readonly we don't want to throw, just send a message
-			File file = new File(path);
-			if (!file.exists())
-			{
-				try
-				{
-					file.createNewFile();
-				}
-				catch (IOException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			if (file.canWrite())
-			{
-				try
-				{
-					XMLManip.save(doc, path);
-				}
-				catch (IOException e)
-				{
-					e.printStackTrace();
-				}
-			}
-			else
-			{
-				//show an error message.
-			}
-		}
-	}
+        private void saveCache(Document doc, IProject pProject) {
+            if (doc == null || pProject == null) {
+                return;
+            }
+
+            String path = getQueryCachePath(pProject);
+
+            // The path to the .QueryCache file will be the absolute path to 
+            // the directory that the Project is in, in every case EXCEPT when
+            // the Project is created. In this case, we won't actually save the
+            // .QueryCache file. We still NEED to go through the motions of establishing
+            // the cache file, as necessary updaters are established etc.
+            if (path != null && !path.equals(".QueryCache")) {
+                try {
+                    File file = new File(path);
+                    FileObject fo = FileUtil.createData(file);
+                    XMLManip.save(doc, path);
+                } catch (IOException ex) {
+                    String mesg = ex.getMessage();
+                    logger.log(Level.WARNING, mesg != null ? mesg : "", ex);
+                }
+            }
+        }
 
 	/**
 	 *

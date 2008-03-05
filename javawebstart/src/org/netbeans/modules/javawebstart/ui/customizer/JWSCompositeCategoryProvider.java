@@ -108,7 +108,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
         JComponent component = null;
         if (CAT_WEBSTART.equals(name)) {
             jwsProps = new JWSProjectProperties(context);
-            category.setOkButtonListener(new SavePropsListener(jwsProps, context.lookup(Project.class)));
+            category.setStoreListener(new SavePropsListener(jwsProps, context.lookup(Project.class)));
             component = new JWSCustomizerPanel(jwsProps);
         }
         return component;
@@ -139,11 +139,10 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
             }
-            boolean enabled = Boolean.valueOf(jwsProps.getProperty(JWSProjectProperties.JNLP_ENABLED)).booleanValue();
             final ProjectConfigurationProvider configProvider = 
                     j2seProject.getLookup().lookup(ProjectConfigurationProvider.class);
             try {
-                if (enabled) {
+                if (jwsProps.isJWSEnabled()) {
                     // XXX logging
                     // test if the file already exists, if so do not generate, just set as active
                     J2SEProjectConfigurations.createConfigurationFiles(j2seProject, "JWS_generated",

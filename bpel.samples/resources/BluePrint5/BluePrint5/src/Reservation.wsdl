@@ -45,7 +45,7 @@
     </types>
     <message name="reserveMesg">
         <part name="reservePart"
-              element="ns:reserve"></part>              
+              element="ns:reserve"></part>
     </message>
     <message name="reservationStatus">
         <part name="reservationStatusPart"
@@ -63,7 +63,7 @@
                     message="tns:reservationStatus"></output>
             <fault name="reservationFailed"
                    message="tns:reservationFailed"></fault>
-        </operation>        
+        </operation>
     </portType>
     <binding name="reservationBinding"
              type="tns:doReservePortType">
@@ -87,7 +87,7 @@
     <service name="reservationService">
         <port name="reservationServicePort"
               binding="tns:reservationBinding">
-            <soap:address location="http://localhost:12100/wsdl/ReservationService/ServiceLocation"/>
+            <soap:address location="http://localhost:18181/wsdl/ReservationService/ServiceLocation"/>
         </port>
     </service>
     <plink:partnerLinkType name="reservationPLinkType">
@@ -98,6 +98,6 @@
     <bpws:propertyAlias part="reservePart"
                         propertyName="tns:reservationID"
                         messageType="tns:reserveMesg">
-        <bpws:query>/ns:reserve/ns:reservationID</bpws:query>                            
-    </bpws:propertyAlias>        
+        <bpws:query>/ns:reserve/ns:reservationID</bpws:query>
+    </bpws:propertyAlias>
 </definitions>

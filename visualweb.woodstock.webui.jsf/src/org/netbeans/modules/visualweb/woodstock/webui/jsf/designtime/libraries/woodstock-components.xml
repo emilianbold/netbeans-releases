@@ -51,8 +51,6 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst:///modules/ext/webui-jsf.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/commons-fileupload-1.0.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/json-2.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/prototype-1.5.0.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/dojo-1.0.1.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jsf-extensions-common-0.1.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jsf-extensions-dynamic-faces-0.1.jar!/</resource>
     </volume>

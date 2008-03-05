@@ -28,7 +28,7 @@ import org.netbeans.modules.xml.xam.Reference;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.properties.editors.CorrelationPropertyMainPanel;
 import org.netbeans.modules.bpel.properties.editors.controls.SimpleCustomEditor;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;

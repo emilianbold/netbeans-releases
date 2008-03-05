@@ -46,12 +46,17 @@ import java.net.URI;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * A CollocationQueryImplementation implementation that collocates files based on
  * projects they are in.
  * @author Milos Kleint
  * @since org.netbeans.modules.project.ant/1 1.18
+ * 
+ * TODO should this class move to project.api module? Som that the behaviour stays
+ * even if ant based projects are disabled or missing
  */
 public class FileOwnerCollocationQueryImpl implements CollocationQueryImplementation {
 
@@ -67,10 +72,12 @@ public class FileOwnerCollocationQueryImpl implements CollocationQueryImplementa
         if (prj == null) {
             return null;
         }
-        while (prj != null && f != null) {
-            f = f.getParentFile();
-            if (f != null) {
-                prj = FileOwnerQuery.getOwner(f.toURI());
+        File parentF = f;
+        while (prj != null && parentF != null) {
+            f = parentF;
+            parentF = parentF.getParentFile();
+            if (parentF != null) {
+                prj = FileOwnerQuery.getOwner(parentF.toURI());
             } else {
                 prj = null;
             }

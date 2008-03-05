@@ -51,9 +51,12 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -131,7 +134,6 @@ public final class RailsServerManager {
     private File dir;
     private boolean debug;
     private boolean switchToDebugMode;
-    
     private Semaphore debugSemaphore;
     
     public RailsServerManager(RailsProject project) {
@@ -231,19 +233,42 @@ public final class RailsServerManager {
             assert instance != null : "No servers found for " + platform;
         }
         if (!(instance instanceof RubyServer)){
-            //XXX: handle glassfish..
-            RequestProcessor.getDefault().post(finishedAction);
+            final Future<RubyInstance.OperationState> result = 
+                    instance.runApplication(platform, projectName, dir);
+
+            final RubyInstance serverInstance = instance;
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        RubyInstance.OperationState state = result.get();
+                        if(state == RubyInstance.OperationState.COMPLETED) {
+                            synchronized(RailsServerManager.this) {
+                                port = serverInstance.getRailsPort();
+                                status = ServerStatus.RUNNING;
+                            }
+                        } else {
+                            synchronized(RailsServerManager.this) {
+                                status = ServerStatus.NOT_STARTED;
+                            }
+                        }
+                    } catch (Exception ex) {
+                        LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                        
+                        // Ensure status value is reset on exceptions too...
+                        synchronized(RailsServerManager.this) {
+                            status = ServerStatus.NOT_STARTED;
+                        }
+                    }
+                }
+            });
+                
             return;
         }
         server = (RubyServer) instance;
         String displayName = getServerTabName(server, projectName, port);
         String serverPath = server.getServerPath();
         ExecutionDescriptor desc = new ExecutionDescriptor(RubyPlatform.platformFor(project), displayName, dir, serverPath);
-        if (server.getStartupParam() != null){
-            desc.additionalArgs(server.getStartupParam(), "--port", Integer.toString(port)); // NOI18N
-        } else {
-            desc.additionalArgs("--port", Integer.toString(port)); // NOI18N
-        }
+        desc.additionalArgs(buildStartupArgs());
         desc.postBuild(finishedAction);
         desc.classPath(classPath);
         desc.addStandardRecognizers();
@@ -258,6 +283,21 @@ public final class RailsServerManager {
         IN_USE_PORTS.add(port);
         execution = new RubyExecution(desc, charsetName);
         execution.run();
+    }
+    
+    private String[] buildStartupArgs() {
+        List<String> result = new  ArrayList<String>();
+        if (server.getStartupParam() != null) {
+            result.add(server.getStartupParam());
+        } 
+        String railsEnv = project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV);
+        if (railsEnv != null && !"".equals(railsEnv.trim())) {
+            result.add("-e");
+            result.add(railsEnv);
+        }
+        result.add("--port");
+        result.add(Integer.toString(port));
+        return result.toArray(new String[result.size()]);
     }
     
     private static String getServerTabName(RubyServer server, String projectName, int port) {
@@ -443,7 +483,9 @@ public final class RailsServerManager {
 
     public static JComboBox getServerComboBox(RubyPlatform platform) {
         JComboBox result = new JComboBox();
-        result.setModel(new ServerListModel(platform));
+        if (platform != null) {
+            result.setModel(new ServerListModel(platform));
+        }
         result.setRenderer(new ServerListCellRendered());
         return result;
     }
@@ -486,13 +528,12 @@ public final class RailsServerManager {
         }
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-
             RubyInstance server = (RubyInstance) value;
-
-            setText(server.getDisplayName());
-            setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
-            setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
-
+            if (server != null) {
+                setText(server.getDisplayName());
+                setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
+                setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+            }
             return this;
         }
     }

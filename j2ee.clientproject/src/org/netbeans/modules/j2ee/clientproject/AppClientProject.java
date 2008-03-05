@@ -63,17 +63,12 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
-import org.netbeans.modules.j2ee.clientproject.classpath.AppClientProjectClassPathExtender;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.clientproject.queries.AppClientProjectEncodingQueryImpl;
-import org.netbeans.modules.j2ee.clientproject.queries.CompiledSourceForBinaryQuery;
-import org.netbeans.modules.j2ee.clientproject.queries.JavadocForBinaryQueryImpl;
-import org.netbeans.modules.j2ee.clientproject.queries.SourceLevelQueryImpl;
-import org.netbeans.modules.j2ee.clientproject.queries.UnitTestForSourceQueryImpl;
+import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.clientproject.ui.AppClientLogicalViewProvider;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerProviderImpl;
@@ -81,15 +76,27 @@ import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectJAXWSCli
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectJAXWSVersionProvider;
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesClientSupport;
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesSupportProvider;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.classpath.LibrariesLocationUpdater;
+import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarFactory;
+import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
+import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
+import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
+import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -164,8 +171,11 @@ public final class AppClientProject implements Project, AntProjectListener, File
     private final Car apiJar;
     private JarContainerImpl enterpriseResourceSupport;
     private FileObject libFolder;
-    private final AppClientProjectClassPathExtender classpathExtender;
+    private final ClassPathExtender classPathExtender;
+    private final ClassPathModifier cpMod;
     private final ClassPathProviderImpl cpProvider;
+    private LibrariesLocationUpdater librariesLocationUpdater;
+    private ClassPathUiSupport.Callback classPathUiSupportCallback;
     
     // use AntBuildExtender to enable Ant Extensibility
     private AntBuildExtender buildExtender;
@@ -177,8 +187,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
         refHelper = new ReferenceHelper(helper, aux, eval);
         buildExtender = AntBuildExtenderFactory.createAntExtender(new AppClientExtenderImplementation());
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
-        this.updateHelper = new UpdateHelper(this, this.helper, this.aux, this.genFilesHelper,
-                UpdateHelper.createDefaultNotifier());
+        UpdateImplementation updateProject = new UpdateProjectImpl(this, this.helper, aux);
+        this.updateHelper = new UpdateHelper(updateProject, helper);
         carProjectWebServicesClientSupport = new AppClientProjectWebServicesClientSupport(this, helper, refHelper);
         jaxWsClientSupport = new AppClientProjectJAXWSClientSupport(this, helper);
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport(carProjectWebServicesClientSupport);
@@ -187,11 +197,52 @@ public final class AppClientProject implements Project, AntProjectListener, File
         appClient = new AppClientProvider(this, helper, cpProvider);
         apiJar = CarFactory.createCar(appClient);
         enterpriseResourceSupport = new JarContainerImpl(this, refHelper, helper);
-        classpathExtender = new AppClientProjectClassPathExtender(this, updateHelper, evaluator(), refHelper);
+        cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
+            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), 
+            getClassPathUiSupportCallback(), new String[]{ProjectProperties.JAVAC_CLASSPATH});
+        classPathExtender = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
+        librariesLocationUpdater = new LibrariesLocationUpdater(this, updateHelper, eval, cpMod.getClassPathSupport(),
+                ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES, 
+                null, null);
         lookup = createLookup(aux, cpProvider);
         helper.addAntProjectListener(this);
     }
     
+    private ClassPathModifier.Callback createClassPathModifierCallback() {
+        return new ClassPathModifier.Callback() {
+            public String getClassPathProperty(SourceGroup sg, String type) {
+                assert sg != null : "SourceGroup cannot be null";  //NOI18N
+                assert type != null : "Type cannot be null";  //NOI18N
+                final String classPathProperty = getClassPathProvider().getPropertyName (sg, type);
+                if (classPathProperty == null) {
+                    throw new UnsupportedOperationException ("Modification of [" + sg.getRootFolder().getPath() +", " + type + "] is not supported"); //NOI8N
+                }
+                return classPathProperty;
+            }
+
+            public String getElementName(String classpathProperty) {
+                if (ProjectProperties.JAVAC_CLASSPATH.equals(classpathProperty)) {
+                    return ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES;
+                }
+                return null;
+            }
+        };        
+    }
+
+    public synchronized ClassPathUiSupport.Callback getClassPathUiSupportCallback() {
+        if (classPathUiSupportCallback == null) {
+            classPathUiSupportCallback = new ClassPathUiSupport.Callback() {
+                public void initItem(ClassPathSupport.Item item) {
+                    if (item.getType() != ClassPathSupport.Item.TYPE_LIBRARY || !item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
+                        item.setAdditionalProperty(ClassPathSupportCallbackImpl.INCLUDE_IN_DEPLOYMENT, "true");
+                    }
+                }
+            };
+            
+        }
+        return classPathUiSupportCallback;
+    }
+
     /**
      * Returns the project directory
      * @return the directory the project is located in
@@ -255,19 +306,20 @@ public final class AppClientProject implements Project, AntProjectListener, File
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),
             new ClassPathProviderMerger(cpProvider),
-            new CompiledSourceForBinaryQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
-            new JavadocForBinaryQueryImpl(this.helper, evaluator()), //Does not use APH to get/put properties/cfgdata
+            QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
+            QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
-            new UnitTestForSourceQueryImpl(getSourceRoots(),getTestSourceRoots()),
-            new SourceLevelQueryImpl(evaluator()),
+            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(),getTestSourceRoots()),
+            QuerySupport.createSourceLevelQuery(evaluator()),
             new AppClientSources(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
-            new AppClientSharabilityQuery(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
-            new AppClientFileBuiltQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
-            new AppClientProjectEncodingQueryImpl(evaluator()), 
+            QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
+                    AppClientProjectProperties.META_INF),
+            QuerySupport.createFileBuiltQuery(helper,  evaluator(), getSourceRoots(), getTestSourceRoots()),
+            QuerySupport.createFileEncodingQuery(evaluator(), AppClientProjectProperties.SOURCE_ENCODING),
             new RecommendedTemplatesImpl(this.updateHelper),
-            classpathExtender,
+            classPathExtender,
             buildExtender,
             AppClientProject.this, // never cast an externally obtained Project to AppClientProject - use lookup instead
             new AppClientProjectOperations(this),
@@ -280,7 +332,11 @@ public final class AppClientProject implements Project, AntProjectListener, File
             enterpriseResourceSupport,
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
-            LookupProviderSupport.createSourcesMerger()
+            LookupProviderSupport.createSourcesMerger(),
+            ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
+            LookupMergerSupport.createSFBLookupMerger(),
+            ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
+            LookupMergerSupport.createJFBLookupMerger(),
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-clientproject/Lookup"); //NOI18N
     }
@@ -310,20 +366,20 @@ public final class AppClientProject implements Project, AntProjectListener, File
      */
     public synchronized SourceRoots getSourceRoots() {
         if (this.sourceRoots == null) { //Local caching, no project metadata access
-            this.sourceRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "source-roots", false, "src.{0}{1}.dir"); //NOI18N
+            this.sourceRoots = SourceRoots.create(updateHelper, evaluator(), getReferenceHelper(), AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots", false, "src.{0}{1}.dir"); //NOI18N
         }
         return this.sourceRoots;
     }
     
     public synchronized SourceRoots getTestSourceRoots() {
         if (this.testRoots == null) { //Local caching, no project metadata access
-            this.testRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "test-roots", true, "test.{0}{1}.dir"); //NOI18N
+            this.testRoots = SourceRoots.create(this.updateHelper, evaluator(), getReferenceHelper(), AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, "test-roots", true, "test.{0}{1}.dir"); //NOI18N
         }
         return this.testRoots;
     }
     
     File getTestClassesDirectory() {
-        String testClassesDir = evaluator().getProperty(AppClientProjectProperties.BUILD_TEST_CLASSES_DIR);
+        String testClassesDir = evaluator().getProperty(ProjectProperties.BUILD_TEST_CLASSES_DIR);
         if (testClassesDir == null) {
             return null;
         }
@@ -402,7 +458,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
         
         if (fo.getParent ().equals (libFolder)) {
             try {
-                classpathExtender.addArchiveFile(fo);
+                classPathExtender.addArchiveFile(fo);
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
@@ -416,9 +472,16 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 if (evt.getPropertyName().equals(J2eePlatform.PROP_CLASSPATH)) {
                     ProjectManager.mutex().writeAccess(new Runnable() {
                         public void run() {
-                            EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                            String classpath = Utils.toClasspathString(platform.getClasspathEntries());
-                            ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                            EditableProperties ep = helper.getProperties(
+                                    AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                            EditableProperties projectProps = helper.getProperties(
+                                    AntProjectHelper.PROJECT_PROPERTIES_PATH);
+
+                            if (!ProjectProperties.isUsingServerLibrary(projectProps,
+                                    AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH)) { 
+                                String classpath = Utils.toClasspathString(platform.getClasspathEntries());
+                                ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                            }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                             try {
                                 ProjectManager.getDefault().saveProject(AppClientProject.this);
@@ -627,7 +690,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
                         }
                         FileObject[] libsArray = new FileObject[libs.size()];
                         libs.toArray(libsArray);
-                        classpathExtender.addArchiveFiles(AppClientProjectProperties.JAVAC_CLASSPATH, libsArray, ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES);
+                        classPathExtender.addArchiveFiles(ProjectProperties.JAVAC_CLASSPATH, libsArray, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
                         libFolder.addFileChangeListener (AppClientProject.this);
                 }
                 
@@ -718,7 +781,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             if (null != earBuildDir) {
                 // there is an BUILD_EAR_CLASSES_DIR property... we may
                 //  need to change its value
-                String buildDir = ep.getProperty(AppClientProjectProperties.BUILD_CLASSES_DIR);
+                String buildDir = ep.getProperty(ProjectProperties.BUILD_CLASSES_DIR);
                 if (null != buildDir) {
                     // there is a value that we may need to change the
                     // BUILD_EAR_CLASSES_DIR property value to match.
@@ -758,6 +821,11 @@ public final class AppClientProject implements Project, AntProjectListener, File
             J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
             if (platform != null) {
                 unregisterJ2eePlatformListener(platform);
+            }
+
+            // unregister the property change listener on the prop evaluator
+            if (librariesLocationUpdater != null) {
+                librariesLocationUpdater.destroy();
             }
 
             // Probably unnecessary, but just in case:

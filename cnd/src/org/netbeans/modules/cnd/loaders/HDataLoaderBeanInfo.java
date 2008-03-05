@@ -43,9 +43,8 @@ package org.netbeans.modules.cnd.loaders;
 
 import java.awt.Image;
 import java.beans.*;
-
 import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
+import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Utilities;
 
 /** Description of {@link HDataLoader}.
@@ -53,33 +52,19 @@ import org.openide.util.Utilities;
  */
 public class HDataLoaderBeanInfo extends SimpleBeanInfo {
 
-    private static final String PROP_DEF_EXT = NbBundle.getBundle(HDataLoaderBeanInfo.class).getString("PROP_C_Def_Extension"); // NOI18N
-    private static final String HINT_DEF_EXT = NbBundle.getBundle(HDataLoaderBeanInfo.class).getString("HINT_C_Def_Extension"); // NOI18N
-
     @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
-        PropertyDescriptor[] properties = new PropertyDescriptor[1];
-        try {
-            properties[0] = new PropertyDescriptor("defaultExtension", HDataLoader.class, "getDefaultExtension", "setDefaultExtension"); // NOI18N
-            properties[0].setDisplayName(PROP_DEF_EXT);
-            properties[0].setShortDescription(HINT_DEF_EXT);
-        } catch( IntrospectionException e) {
-            e.printStackTrace();
-            return null;
-        }
-        return properties;
+        return new PropertyDescriptor[0];
     }
 
     @Override
-    public BeanInfo[] getAdditionalBeanInfo() {
-	try {
-	    // I.e. MultiDataLoader.class or UniFileLoader.class.
-	    return new BeanInfo[] {
-		Introspector.getBeanInfo(HDataLoader.class.getSuperclass()) };
-	} catch (IntrospectionException ie) {
-	    ErrorManager.getDefault().notify(ie);
-	    return null;
-	}
+    public BeanInfo[] getAdditionalBeanInfo () {
+        try {
+            return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
+        } catch (IntrospectionException ie) {
+            ErrorManager.getDefault().notify(ie);
+            return null;
+        }
     }
 
     @Override

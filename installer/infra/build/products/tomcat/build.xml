@@ -60,17 +60,24 @@
     -->
     <target name="-pre-package">
         <move todir="${data.directory}">
-            <fileset dir="${data.directory}/apache-tomcat-6.0.14">
+            <fileset dir="${data.directory}/apache-tomcat-6.0.16">
                 <include name="**/*"/>
             </fileset>
         </move>
         
         <delete includeemptydirs="true">
             <fileset dir="${data.directory}">
-                <include name="apache-tomcat-6.0.14"/>
-                <include name="apache-tomcat-6.0.14/**"/>
+                <include name="apache-tomcat-6.0.16"/>
+                <include name="apache-tomcat-6.0.16/**"/>
             </fileset>
         </delete>
+
+	<!-- In default ZIP distribution of tomcat bin/*.sh files do not have executable permissions-->
+	<!-- Do not fail on error e.g if running on windows with no cygwin installed -->
+        <exec executable="sh" failonerror="false" dir="${data.directory}">
+            <arg value="-c"/>
+            <arg value="chmod a+x bin/*.sh"/>
+        </exec>
     </target>
     
     <!-- ============================================================================

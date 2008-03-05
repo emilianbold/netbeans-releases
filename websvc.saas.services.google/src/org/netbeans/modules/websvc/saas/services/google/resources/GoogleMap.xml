@@ -53,10 +53,24 @@
     
     <display-name>GoogleMap</display-name>
 
-    <xi:include url="GoogleMetaData.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+    <saas-metadata>
+        <localizing-bundle>org.netbeans.modules.websvc.components.google.Bundle</localizing-bundle>
+        <group name="Google">
+        </group>
+        <code-gen>
+            <artifacts targets="servlet,resource">
+                <artifact id="GoogleMap" type="template"
+                    url="Templates/SaaSServices/GoogleMapResource.java"/>
+            </artifacts>
+        </code-gen>
+        <!-- http-basic, api-key, custom -->
+        <authentication profile="SaaSServices/Google/profile.properties">
+            <api-key id="key"/>
+        </authentication>
+    </saas-metadata>
 
     <methods>
-        <method name="generateGoogleMapCode" href="GoogleMapResource">      
+        <method name="getGoogleMap" href="GoogleMap">      
             <input>
                 <params>
                     <param name="apiKey" type="string"/>

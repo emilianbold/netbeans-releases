@@ -136,7 +136,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             sourceModel.addExtensionModel(sourceVariableModel);
             PartnerLinkTreeExtModel pLinkExtModel = 
                     new PartnerLinkTreeExtModel(assign, true);
-            sourceModel.addExtensionModel(pLinkExtModel);
+            //sourceModel.addExtensionModel(pLinkExtModel);   [Issue 125124]
             //
             EmptyTreeModel targetModel = new EmptyTreeModel();
             VariableTreeModel targetVariableModel = new VariableTreeModel(context);
@@ -366,36 +366,16 @@ public class BpelMapperModelFactory implements MapperModelFactory {
                 XPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang));
         //
         ArrayList<XPathExpression> exprList = new ArrayList<XPathExpression>();
-        boolean hasConnectedExpr = true;
+        boolean hasConnectedExpr = exprText != null && !exprText.trim()
+                .startsWith(XPathModelFactory.XPATH_EXPR_DELIMITER);
         if (isXPathExpr && exprText != null && exprText.length() != 0) {
-            if (exprText.contains(XPathModelFactory.XPATH_EXPR_DELIMITER)) {
-                String[] partsArr = exprText.split(
-                        XPathModelFactory.XPATH_EXPR_DELIMITER);
-                boolean isFirst = true;
-                for (String anExprText : partsArr) {
-                    if (anExprText == null || anExprText.length() == 0) {
-                        if (isFirst) {
-                            // The first compartment is empty.
-                            // It means that the first char is ";"
-                            hasConnectedExpr = false;
-                        }
-                    } else {
-                        XPathExpression newXPathExpr = 
-                                parseExpression(contextEntity, anExprText);
-                        if (newXPathExpr != null) {
-                            exprList.add(newXPathExpr);
-                        }
-                    }
-                    isFirst = false;
-                }
-            } else {
+            String[] partsArr = XPathModelFactory.split(exprText);
+            for (String anExprText : partsArr) {
                 XPathExpression newXPathExpr = 
-                        parseExpression(contextEntity, exprText);
+                        parseExpression(contextEntity, anExprText);
                 if (newXPathExpr != null) {
                     exprList.add(newXPathExpr);
                 }
-//                preProcessSingleExpr(contextEntity, exprText, graph, 
-//                        leftTreeModel, true);
             }
             //
             // Collecting all predicates first!
@@ -522,4 +502,6 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         }
         
     }
+    
+    
 }

@@ -60,12 +60,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
 import org.netbeans.modules.java.j2seplatform.wizard.NewJ2SEPlatform;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.J2SEProjectType;
-import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -162,7 +162,7 @@ public final class ImportUtils {
             if (!isDependency) {
                 addProgresInfo(projectDefinition.getName());
             }
-            AntProjectHelper helper = J2SEProjectGenerator.createProject(destination, projectDefinition.getName(), srcFiles, new File[]{}, null, null);
+            AntProjectHelper helper = J2SEProjectGenerator.createProject(destination, projectDefinition.getName(), srcFiles, new File[]{}, null, null, null);
             
             assert helper != null;
             nbProject = (J2SEProject)ProjectManager.getDefault().findProject(projectDirectory);

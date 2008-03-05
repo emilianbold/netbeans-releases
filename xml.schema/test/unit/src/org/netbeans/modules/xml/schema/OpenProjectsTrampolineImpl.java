@@ -10,6 +10,7 @@
 package org.netbeans.modules.xml.schema;
 
 import java.beans.PropertyChangeListener;
+import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 
@@ -59,6 +60,10 @@ public class OpenProjectsTrampolineImpl  implements OpenProjectsTrampoline {
 
     public void addPropertyChangeListenerAPI(PropertyChangeListener listener,
                                              Object source) {
+    }
+
+    public Future<Project[]> openProjectsAPI() {
+        return null;
     }
     
 }

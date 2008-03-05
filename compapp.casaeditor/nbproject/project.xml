@@ -357,7 +357,12 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.compapp.configextension</friend>
+                <package>org.netbeans.modules.compapp.casaeditor.model.casa</package>
+                <package>org.netbeans.modules.compapp.casaeditor.nodes</package>
+                <package>org.netbeans.modules.compapp.casaeditor.properties.spi</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

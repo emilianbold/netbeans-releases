@@ -44,7 +44,6 @@ import java.util.logging.Logger;
 import javax.swing.KeyStroke;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.CodeTemplateDescription;
-import org.netbeans.api.editor.settings.CodeTemplateSettings;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
 import org.openide.util.Lookup;
 
@@ -127,14 +126,6 @@ public final class CodeTemplateSettingsImpl {
         }
     }
 
-    public Object createInstanceForLookup() {
-        Map<String, CodeTemplateDescription> map = getCodeTemplates();
-        return new Immutable(
-            Collections.unmodifiableList(new ArrayList<CodeTemplateDescription>(map.values())), 
-            getExpandKey()
-        );
-    }
-    
     public void addPropertyChangeListener(PropertyChangeListener l) {
         pcs.addPropertyChangeListener(l);
     }
@@ -183,51 +174,4 @@ public final class CodeTemplateSettingsImpl {
             // ignore
         }
     }
-    
-    private static final class Immutable extends CodeTemplateSettings {
-        
-        private final List<CodeTemplateDescription> codeTemplates;
-        private final KeyStroke expansionKey;
-        
-        public Immutable(List<CodeTemplateDescription> codeTemplates, KeyStroke expansionKey) {
-            this.codeTemplates = codeTemplates;
-            this.expansionKey = expansionKey;
-        }
-        
-        public List<CodeTemplateDescription> getCodeTemplateDescriptions() {
-            return codeTemplates;
-        }
-
-        public KeyStroke getExpandKey() {
-            return expansionKey;
-        }
-    } // End of Immutable class
-    
-//    private static final class CodeTemplateDescriptionComparator implements Comparator<CodeTemplateDescription> {
-//        public int compare(CodeTemplateDescription t1, CodeTemplateDescription t2) {
-//            if (t1.getAbbreviation().equals(t2.getAbbreviation()) &&
-//                compareTexts(t1.getDescription(), t2.getDescription()) &&
-//                compareTexts(t1.getParametrizedText(), t2.getParametrizedText()) &&
-//                Utilities.compareObjects(t1.getContexts(), t2.getContexts())
-//            ) {
-//                return 0;
-//            } else {
-//                return -1;
-//            }
-//        }
-//    } //NOI18N
-//    
-//    private static boolean compareTexts(String t1, String t2) {
-//        if (t1 == null || t1.length() == 0) {
-//            t1 = null;
-//        }
-//        if (t2 == null || t2.length() == 0) {
-//            t2 = null;
-//        }
-//        if (t1 != null && t2 != null) {
-//            return t1.equals(t2);
-//        } else {
-//            return t1 == null && t2 == null;
-//        }
-//    }
 }

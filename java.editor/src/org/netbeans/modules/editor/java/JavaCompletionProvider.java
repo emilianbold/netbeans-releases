@@ -274,6 +274,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (results != null)
                                 resultSet.addAllItems(results);
                             resultSet.setHasAdditionalItems(hasAdditionalItems);
+                            if (hasAdditionalItems)
+                                resultSet.setHasAdditionalItemsText(NbBundle.getMessage(JavaCompletionProvider.class, "JCP-imported-items")); //NOI18N
                         } else if (queryType == TOOLTIP_QUERY_TYPE) {
                             if (toolTip != null)
                                 resultSet.setToolTip(toolTip);
@@ -419,18 +421,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                     public boolean accept(Element e, TypeMirror t) {
                                         switch (e.getKind()) {
-                                            case LOCAL_VARIABLE:
-                                            case EXCEPTION_PARAMETER:
-                                            case PARAMETER:
-                                                return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)) &&
-                                                        !illegalForwardRefs.contains(e);
-                                            case FIELD:
-                                                if (illegalForwardRefs.contains(e))
-                                                    return false;
-                                                if (e.getSimpleName().contentEquals(THIS_KEYWORD) || e.getSimpleName().contentEquals(SUPER_KEYWORD))
-                                                    return !isStatic;
-                                            default:
+                                            case CONSTRUCTOR:
+                                                return !e.getModifiers().contains(PRIVATE);
+                                            case METHOD:
                                                 return (!isStatic || e.getModifiers().contains(STATIC)) && tu.isAccessible(scope, e, t);
+                                            default:
+                                                return false;
                                         }
                                     }
                                 };
@@ -2572,8 +2568,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                         break;
                     case CONSTRUCTOR:
-                    case METHOD:
                         ExecutableType et = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
+                        results.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, et, anchorOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, isOfSmartType(env, type, smartTypes)));
+                        break;
+                    case METHOD:
+                        et = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
                         results.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, et, anchorOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, isOfSmartType(env, et.getReturnType(), smartTypes)));
                         break;
                     case CLASS:
@@ -2742,7 +2741,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     TypeElement elem = (TypeElement)head.asElement();
                     if (!elems.add(elem))
                         continue;
-                    if (startsWith(env, elem.getSimpleName().toString(), prefix) && trees.isAccessible(scope, elem))
+                    if (startsWith(env, elem.getSimpleName().toString(), prefix))
                         subtypes.add(head);
                     List<? extends TypeMirror> tas = head.getTypeArguments();
                     boolean isRaw = !tas.iterator().hasNext();

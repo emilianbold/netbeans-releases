@@ -131,10 +131,7 @@ public class ClassPathUiSupport {
                           && selectionModel.getMinSelectionIndex() != -1;
         if (can) {
             ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.get(selectionModel.getMinSelectionIndex());
-            can =  item.getType() == ClassPathSupport.Item.TYPE_JAR || item.getType() == ClassPathSupport.Item.TYPE_LIBRARY;
-            if (item.isBroken()) {
-                can = false;
-            }
+            can = item.canEdit();
         }
         return can;
     }

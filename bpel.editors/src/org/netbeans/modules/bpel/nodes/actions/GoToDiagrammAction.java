@@ -18,6 +18,9 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
+import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
+import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.nodes.BpelNode;
@@ -35,12 +38,13 @@ import org.openide.windows.WindowManager;
  */
 public class GoToDiagrammAction extends BpelNodeAction {
     private static final long serialVersionUID = 1L;
-    public static final KeyStroke GOTODIAGRAMM_KEYSTROKE = KeyStroke.getKeyStroke(
-            NbBundle.getMessage(GoToDiagrammAction.class,"ACT_GoToDiagrammAction"));// NOI18N
+    public static final KeyStroke GOTODIAGRAMM_KEYSTROKE = KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.ALT_DOWN_MASK);
+            //KeyStroke.getKeyStroke(
+            //NbBundle.getMessage(GoToDiagrammAction.class,"ACT_GoToDiagrammAction"));// NOI18N
 
     public GoToDiagrammAction() {
         super();
-        putValue(GoToDiagrammAction.ACCELERATOR_KEY, GOTODIAGRAMM_KEYSTROKE);
+//        putValue(GoToDiagrammAction.ACCELERATOR_KEY, GOTODIAGRAMM_KEYSTROKE);
     }
 
     protected String getBundleName() {

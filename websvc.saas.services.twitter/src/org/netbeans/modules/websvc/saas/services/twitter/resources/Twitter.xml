@@ -48,7 +48,7 @@
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://groups.google.com/group/twitter-development-talk/web/api-documentation"
-               url="nbres:/org/netbeans/modules/websvc/saas/services/twitter/resources/TwitterWadl.xml">
+               url="org/netbeans/modules/websvc/saas/services/twitter/resources/TwitterWadl.xml">
 
     <description>Twitter Service</description>
     
@@ -58,12 +58,10 @@
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.twitter.Bundle</localizing-bundle>
 
-        <icon16>org/netbeans/modules/websvc/saas/services/twitter/resources/twitter16.png</icon16>
-
         <group name="Twitter">
         </group>
 
-        <authentication profile="Templates/WebServices/profile.properties">
+        <authentication profile="SaaSServices/Twitter/profile.properties">
             <http-basic/>
         </authentication>
 
@@ -71,11 +69,11 @@
 
     <methods>
         <method name="getPublicTimeline" 
-            href="//resource[@path='statuses']/resource[@path='public_timeline.{format}']/method[@id='twitter.getPublicTimeline']"/>
+            href="#twitter.getPublicTimeline"/>
         <method name="getDirectMessages" 
-            href="//resource[@path='direct_messages.{format}']/method[@id='twitter.getDirectMessages']"/>
+            href="#twitter.getDirectMessages"/>
         <method name="sendDirectMessage" 
-            href="//resource[@path='direct_messages']/resource[@path='new.{format}']/method[@id='twitter.sendDirectMessage']"/>
+            href="#twitter.sendDirectMessage"/>
     </methods>
 
 </saas-services>

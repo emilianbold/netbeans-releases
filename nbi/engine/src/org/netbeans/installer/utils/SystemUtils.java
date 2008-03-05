@@ -1084,6 +1084,8 @@ public final class SystemUtils {
             System.getProperty("java.home");//NOI18N
     public static final String USER_HOME = 
             System.getProperty("user.home");//NOI18N
+    public static final String NO_SPACE_CHECK_PROPERTY = 
+            "no.space.check";//NOI18N
     public static final String ERROR_CANNOT_PARSE_PATTERN_KEY =
             "SU.error.cannot.parse.pattern";//NOI18N
     public static final String ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY =

@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -66,9 +67,9 @@ import org.netbeans.modules.visualweb.websvcmgr.codegen.WrapperClientWriter;
 import org.netbeans.modules.visualweb.websvcmgr.util.Util;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
-import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor.JarEntry;
 import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
 import org.netbeans.modules.websvc.manager.util.ManagerUtil;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor.JarEntry;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -89,6 +90,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
     public static final String CONSUMER_ID = DesignerWebServiceExtImpl.class.getName();    
     private static final String WEBSVC_HOME_PROP = "websvc.home";
     private static final String USER_FILE_PROP = "user.properties.file";
+    private static final String WSDL_DIRNAME_PROP = "serviceDirName";
     private static final String WSDL_NAME_PROP = "serviceName";
     private static final String WSDL_FILE_NAME_PROP = "wsdlFileName";
     private static final String PACKAGE_NAME = "packageName";
@@ -182,6 +184,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
         }
         
         String wsdlFileName = wsdlFile.getAbsolutePath();
+        String serviceDirName = wsMetadataDesc.getXmlDescriptorFile().getParentFile().getParentFile().getName();
         String serviceName = wsMetadataDesc.getName();
         
         Properties properties = new Properties();
@@ -190,6 +193,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
         // INFO - This build properties file contains the classpath information
         // about all the library reference in the IDE
         properties.put(USER_FILE_PROP, userDir+"/build.properties");
+        properties.put(WSDL_DIRNAME_PROP, serviceDirName);
         properties.put(WSDL_NAME_PROP, serviceName);
         properties.put(WSDL_FILE_NAME_PROP, wsdlFileName);
         properties.put(PACKAGE_NAME, wsMetadataDesc.getPackageName());
@@ -278,16 +282,41 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                                         wsMetadataDesc.getWsType() == WebServiceDescriptor.JAX_WS_TYPE).toArray(new URL[0]), 
                     this.getClass().getClassLoader());
                 
+                String portImplMethod = null;
+                String portImplClassName = null;
+                Class serviceClass = null;
                 
                 // Verify that the port getter method exists in the Service class, otherwise
                 // the code generation in WrapperClientWriter will fail
                 try {
-                    String portImplMethod = port.getPortGetter();
-                    Class serviceClass = classLoader.loadClass(serviceClassName);
+                    serviceClass = classLoader.loadClass(serviceClassName);
+                }catch (ClassNotFoundException e) {
+                    try {
+                        serviceClassName = wsMetadataDesc.getPackageName() + "." + wsMetadataDesc.getModel().getName(); // NOI18N
+                        serviceClass = classLoader.loadClass(serviceClassName);
+                    }catch (ClassNotFoundException cnfe) {
+                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Unable to load service class for port: " + port.getName());
+                        continue;                        
+                    }
+                }
+                
+                try {
+                    portImplMethod = port.getPortGetter();
                     serviceClass.getMethod(portImplMethod);
-                }catch (Exception ex) {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Invalid port: " + port.getName());
-                    continue;
+                }catch (NoSuchMethodException e) {
+                    for (Method method : serviceClass.getMethods()) {
+                        String name = method.getName();
+                        if (name.startsWith("get") && name.toLowerCase().contains(port.getName().toLowerCase())) { // NOI18N
+                            portImplMethod = method.getName();
+                            portImplClassName = method.getReturnType().getName();
+                            break;
+                        }
+                    }
+                    
+                    if (portImplClassName == null) {
+                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Unable to find getter method for port: " + port.getName());
+                        continue;
+                    }
                 }
 
                 // Use reflection to get the proxy class methods; needed because the JAX-WS model is not
@@ -295,9 +324,19 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 Class proxyClass = null;
                 try {
                     proxyClass = classLoader.loadClass(javaName);
+                    portImplClassName = null;
                 }catch (ClassNotFoundException cnfe) {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Could not load class: " + javaName);
-                    continue;
+                    if (portImplClassName == null) {
+                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Could not load class: " + javaName);
+                        continue;                        
+                    }else {
+                        try {
+                            proxyClass = classLoader.loadClass(portImplClassName);
+                        } catch (ClassNotFoundException ex) {
+                            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Could not load class: " + portImplClassName);
+                            continue;
+                        }
+                    }
                 }
                 
                 java.lang.reflect.Method[] methods = proxyClass.getDeclaredMethods();
@@ -316,6 +355,8 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 beanWriter.setContainedClassInfo(serviceClassName);
                 beanWriter.addImport(wsMetadataDesc.getPackageName() + ".*");
                 beanWriter.setPort(port);
+                beanWriter.setPortGetterMethod(portImplMethod);
+                beanWriter.setPortClassName(portImplClassName);
                 beanWriter.writeClass();
                 beanWriter.flush();
                 beanWriter.close();
@@ -392,27 +433,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
         
         return result;
     }
-    
-    public Action[] getWebServicesRootActions(Node node) {
-        return EMPTY_ACTIONS;
-    }
 
-    public Action[] getGroupActions(Node node) {
-        return EMPTY_ACTIONS;
-    }
-
-    public Action[] getWebServiceActions(Node node) {
-        return EMPTY_ACTIONS;
-    }
-
-    public Action[] getPortActions(Node node) {
-        return EMPTY_ACTIONS;
-    }
-
-    public Action[] getMethodActions(Node node) {
-        return EMPTY_ACTIONS;
-    }
-    
     private void copyIcons(File dtSourceDir){
         
         /**

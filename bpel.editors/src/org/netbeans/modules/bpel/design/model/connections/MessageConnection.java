@@ -35,6 +35,7 @@ import org.netbeans.modules.bpel.design.model.PartnerRole;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 import org.netbeans.modules.bpel.design.selection.EntitySelectionModel;
 import org.netbeans.modules.bpel.design.DiagramView;
+import org.netbeans.modules.bpel.design.geometry.Triangle;
 import org.netbeans.modules.bpel.design.model.patterns.PartnerlinkPattern;
 
 
@@ -44,6 +45,8 @@ import org.netbeans.modules.bpel.design.model.patterns.PartnerlinkPattern;
  */
 public class MessageConnection extends Connection {
     private static HashSet<Integer> usedSlots = new HashSet<Integer>() ;
+    
+    private int direct;
     /** 
      * Creates a new instance of MessageConnection.
      */
@@ -83,6 +86,7 @@ public class MessageConnection extends Connection {
         boolean isOutcoming = (getTarget().getPattern() != getPattern());
 
         FPoint pl_point = isOutcoming ? getEndPoint() : getStartPoint();
+       // FPoint pl_point = getPLSidePoint();
         Direction dir = isOutcoming ? getTargetDirection() : getSourceDirection();
 
         GeneralPath path = new GeneralPath();
@@ -91,7 +95,11 @@ public class MessageConnection extends Connection {
         
         path.lineTo(pl_point.x + ((dir == Direction.RIGHT) ? 100 : -100), pl_point.y);
                 
-        paintCurvedConnection(g2, path, 1, COLOR);
+        if (isPatternSelected()) {
+            paintCurvedConnection(g2, path, 2, pl_point, COLOR_SELECTED, isOutcoming, dir);
+        } else {
+            paintCurvedConnection(g2, path, 1,  pl_point, COLOR, isOutcoming, dir);
+        }
 
     }
     /*
@@ -103,17 +111,21 @@ public class MessageConnection extends Connection {
 
     @Override
     public void paint(Graphics2D g2) {
-
-
         FPoint pt_pl = getPLSidePoint();
 
         boolean isOutcoming = (getTarget().getPattern() != getPattern());
 
-        Shape path = (isOutcoming) ? 
+        GeneralPath path = (isOutcoming) ? 
             getPath(getStartPoint(), pt_pl) : 
             getPath(pt_pl, getEndPoint());
 
-        paintCurvedConnection(g2, path, 1, COLOR);
+        if (isPatternSelected()) {
+            paintCurvedConnection(g2, path, 2, endPoint, 
+                    COLOR_SELECTED, isOutcoming, direct);
+        } else {
+            paintCurvedConnection(g2, path, 1, endPoint, COLOR, 
+                    isOutcoming, direct);
+        }    
 
     }
 
@@ -147,11 +159,13 @@ public class MessageConnection extends Connection {
         DiagramView process_view = view.getProcessView();
 
 
-
         
-        pl_point = process_view.convertPointFromParent(pl_view.convertPointToParent(pl_point));
-
-
+        int y0 = process_view.convertPointToParent(new FPoint(0,0)).y;
+        int y1 = pl_view.convertPointToParent(new FPoint(0,0)).y;
+        FPoint delta0 = process_view.convertPointFromParent(new Point(0, 0));
+        FPoint delta1 = process_view.convertPointFromParent(new Point(0, y1 - y0));
+        FPoint delta = new FPoint(0, delta1.y - delta0.y);
+        
         Point tmp = process_view.convertDiagramToScreen(pl_point);
         
         Rectangle r = process_view.getVisibleRect();
@@ -160,19 +174,21 @@ public class MessageConnection extends Connection {
 
 
 
-        return process_view.convertScreenToDiagram(tmp);
-
-
-
-
+        FPoint left = process_view.convertScreenToDiagram(tmp);
+        
+        FPoint result = new FPoint(left.x, pl_point.y + delta.y);
+        
+        return result;
     }
+    
     private static int STEP = 8;
     private static int SLOT_STEP = 4;
 
     public GeneralPath getPath(FPoint start, FPoint end) {
         float x1, x2, x6, x5;
 
-        float direction = (start.x < end.x) ? 1 : -1;
+        int direction = (start.x < end.x) ? 1 : -1;
+        direct = direction; 
         x1 = start.x;
         x2 = x1 + STEP * direction;
 
@@ -209,16 +225,14 @@ public class MessageConnection extends Connection {
         
         path.lineTo(x6, y2);
         return path;
-
-
     }
 
     public static void paintCurvedConnection(Graphics2D g2, Shape path, double width,
-            Color color) {
-        if (path == null) {
+            FPoint startPoint, Color color, boolean isOutcoming, Direction dir ) 
+    {
+       if (path == null) {
             return;
         }
-
 
         if (color == null) {
             color = COLOR;
@@ -231,38 +245,91 @@ public class MessageConnection extends Connection {
         g2.setPaint(color);
         g2.setStroke(new FStroke(width, 3).createStroke(g2));
 
-
+        
+        g2.translate(0.5, 0.5);
         g2.draw(path);
+        g2.translate(-0.5, -0.5);   
+                
+        if (!isOutcoming) { return; }
+        
+        float x2 = 0;
+        float y2 = (float) startPoint.y;
+        float x1 = 0;
+        int step = 8;
+        int d = Math.max(1, (step - 1) / 2 - 1);
+        if (dir == Direction.RIGHT) {
+            x2 = (float) startPoint.x + 2;
+            x1 = x2 + step - 2;
+        } else {
+            x2 = (float) startPoint.x - 2;
+            x1 = x2 - step + 2;
+       }
+        g2.translate(0.5, 0.5);
+        g2.setPaint(color);
+        Shape shape = new Triangle(x2, y2, x1, y2 - d, x1, y2 + d);
+        g2.fill(shape);
+        g2.draw(shape);
+        g2.translate(-0.5, -0.5);
+    }
+            
+    public static void paintCurvedConnection(Graphics2D g2, GeneralPath path, double width,
+            FPoint endPoint, Color color, boolean isOutcoming, int direct) 
+    {
+        if (path == null) {
+            return;
+        }
 
+        if (color == null) {
+            color = COLOR;
+        }
 
+        g2.setRenderingHint(
+                RenderingHints.KEY_STROKE_CONTROL,
+                RenderingHints.VALUE_STROKE_NORMALIZE);
+
+        g2.setPaint(color);
+        g2.setStroke(new FStroke(width, 3).createStroke(g2));
+
+        g2.translate(0.5, 0.5);
+        g2.draw(path);
+        g2.translate(-0.5, -0.5);
+        //path.
     /*        
     if (paintDashed) {
     g2.setStroke(new FStroke(width).createStroke(g2));
     }
-    /*
-    if (paintArrow) {
-    FCoords coords = path.coords(1.0);
-    FPoint p1 = coords.getPoint(-4.0, 2.0);
-    FPoint p2 = coords.getPoint(-4.0, -2.0);
-    Shape arrowShape = new Triangle(coords.x, coords.y, p1.x, p1.y, 
-    p2.x, p2.y);
-    g2.fill(arrowShape);
-    g2.draw(arrowShape);
-    }
-    if (paintSlash) {
-    FCoords coords = path.coords(0.0);
-    FPoint p1 = coords.getPoint(5.0, -4.0);
-    FPoint p2 = coords.getPoint(11.0, 4.0);
-    g2.draw(new Line2D.Float(p1.x, p1.y, p2.x, p2.y));
-    }
-    if (paintCircle) {
-    FPoint center = path.coords(0.0).getPoint(2.0, 0);
-    Shape s = new Ellipse2D.Double(center.x - 2, center.y - 2, 4, 4);
-    g2.setPaint(CIRCLE_FILL);
-    g2.fill(s);
-    g2.setPaint(color);
-    g2.draw(s);
-    }*/
+    */
+        float x2 = 0;
+        float y2 = (float) endPoint.y;
+        float x1 = 0;
+        int step = 8;
+        int d = Math.max(1, (step - 1) / 2 - 1);
+        
+        if (isOutcoming) { return; }
+        
+        if (direct < 0) {
+            x2 = (float) endPoint.x + 2;
+            x1 = x2 + step - 2;
+        } else {
+            x2 = (float) endPoint.x - 2;
+            x1 = x2 - step + 2;
+        }
+        g2.translate(0.5, 0.5);
+        g2.setPaint(color);
+        Shape shape = new Triangle(x2, y2, x1, y2 - d, x1, y2 + d);
+        g2.fill(shape);
+        g2.draw(shape);
+        g2.translate(-0.5, -0.5);
+
+//   // if (paintCircle) {
+//    FPoint center = path1.coords(0.0).getPoint(2.0, 0);
+//    Shape s = new Ellipse2D.Double(center.x - 2, center.y - 2, 4, 4);
+//    g2.setPaint(CIRCLE_FILL);
+//    g2.fill(s);
+//    g2.setPaint(color);
+//    g2.draw(s);
+//   // }
+
     }
 
     public void paintTail(Graphics2D g2) {
@@ -276,5 +343,7 @@ public class MessageConnection extends Connection {
     isPaintArrow(), isPaintSlash(), isPaintCircle(), null);
     }*/
     }
+    private static final Color COLOR = new Color(0x5668CA);
     private static final Color COLOR_SELECTED = new Color(0x5D985C);
+    
 }

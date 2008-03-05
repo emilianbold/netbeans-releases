@@ -143,7 +143,9 @@ public class DomainTemplate
     public FileOutputStream getTemplateFileOutputStream()
         throws FileNotFoundException 
     {
+        //TODO: using FileObject
         return new FileOutputStream(getTemplateFile());
+        // return this.getTemplateFileObject().getOutputStream();
     }
     
     public void setTemplateFilename(String val)

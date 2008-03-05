@@ -48,6 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import javax.swing.JButton;
+import javax.swing.JPanel;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
@@ -119,11 +120,12 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
             }
         }
         tp = new ToolsPanel(model);
+        JPanel panel = new JPanel();
         tp.addPropertyChangeListener(this);
         jOK = new JButton(NbBundle.getMessage(BuildToolsAction.class, "BTN_OK")); // NOI18N
-        tp.setPreferredSize(new Dimension(500, 365));
+        tp.setPreferredSize(new Dimension(700, 400));
         tp.update();
-        DialogDescriptor dd = new DialogDescriptor((Object) tp, getTitle(), true, 
+        DialogDescriptor dd = new DialogDescriptor((Object) constructOuterPanel(tp), getTitle(), true, 
                 new Object[] { jOK, DialogDescriptor.CANCEL_OPTION},
                 DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
@@ -133,6 +135,18 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
             return true;
         }
         return false;
+    }
+    
+    private JPanel constructOuterPanel(JPanel innerPanel) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new java.awt.GridBagLayout());
+        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
+        panel.add(innerPanel, gridBagConstraints);
+        return panel;
     }
     
     public void actionPerformed(ActionEvent ev) {

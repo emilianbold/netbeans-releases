@@ -45,8 +45,8 @@ package org.netbeans.modules.web.core.syntax;
 import java.util.Map;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
-import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
 import java.awt.event.ActionEvent;
@@ -91,7 +91,7 @@ import org.openide.util.RequestProcessor;
  * @author Marek.Fukala@Sun.COM
  * @version 1.5
  */
-public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpCtx.Provider{
+public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider{
     
     public static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
@@ -103,18 +103,21 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
     
     /** Default constructor */
     public JSPKit() {
-        super(JSP_MIME_TYPE);
+        super();
     }
     
+    @Override
     public String getContentType() {
         return JSP_MIME_TYPE;
     }
     
+    @Override
     public Object clone() {
         return new JSPKit();
     }
     
     /** Creates a new instance of the syntax coloring parser */
+    @Override
     public Syntax createSyntax(Document doc) {
         //TODO - place the coloring listener initialization to
         //more appropriate place. The createSyntax method is likely
@@ -302,7 +305,14 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
 
         public void actionPerformed(ActionEvent e, JTextComponent target) {
             if (target != null) {
-                TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
+                TokenSequence javaTokenSequence;
+                AbstractDocument adoc = (AbstractDocument)target.getDocument();
+                adoc.readLock();
+                try {
+                    javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
+                } finally {
+                    adoc.readUnlock();
+                }
 
                 if (javaTokenSequence != null) {
                     JavaKit jkit = (JavaKit) getKit(JavaKit.class);
@@ -323,7 +333,14 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
 
         public void actionPerformed(ActionEvent e, JTextComponent target) {
             if (target != null) {
-                TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
+                TokenSequence javaTokenSequence;
+                AbstractDocument adoc = (AbstractDocument)target.getDocument();
+                adoc.readLock();
+                try {
+                    javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
+                } finally {
+                    adoc.readUnlock();
+                }
 
                 if (javaTokenSequence != null) {
                     JavaKit jkit = (JavaKit) getKit(JavaKit.class);

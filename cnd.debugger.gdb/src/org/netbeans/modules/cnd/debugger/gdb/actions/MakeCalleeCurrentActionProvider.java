@@ -63,7 +63,7 @@ public class MakeCalleeCurrentActionProvider extends ActionsProviderSupport impl
     
     
     public MakeCalleeCurrentActionProvider(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
         this.lookupProvider = lookupProvider;
         debugger.addPropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
     }
@@ -77,11 +77,11 @@ public class MakeCalleeCurrentActionProvider extends ActionsProviderSupport impl
         if (i == 0) {
 	    return;
 	}
-        MakeCallerCurrentActionProvider.setCurrentCallStackFrameIndex(debugger, --i);
+        MakeCallerCurrentActionProvider.setCurrentCallStackFrameIndex(debugger, i-1);
     }
     
     protected void checkEnabled(String debuggerState) {
-        if (debuggerState == debugger.STATE_STOPPED) {
+        if (GdbDebugger.STATE_STOPPED.equals(debuggerState)) {
 	    int i = MakeCallerCurrentActionProvider.getCurrentCallStackFrameIndex(debugger);
 	    setEnabled(ActionsManager.ACTION_MAKE_CALLEE_CURRENT, i > 0);
         } else {

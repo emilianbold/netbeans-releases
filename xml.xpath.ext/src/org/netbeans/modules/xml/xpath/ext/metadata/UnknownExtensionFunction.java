@@ -22,7 +22,7 @@ package org.netbeans.modules.xml.xpath.ext.metadata;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 import org.netbeans.modules.xml.xpath.ext.XPathExtensionFunction;
-import org.netbeans.modules.xml.xpath.ext.impl.XPathModelImpl;
+import org.netbeans.modules.xml.xpath.ext.XPathModel;
 
 /**
  * Represents an unknown extension XPath function. 
@@ -42,7 +42,7 @@ public class UnknownExtensionFunction extends XPathExtensionFunction {
      * Instantiates a new XPathExtensionFunction with the given name.
      * @param name the function name
      */
-    public UnknownExtensionFunction(XPathModelImpl model, QName name) {
+    public UnknownExtensionFunction(XPathModel model, QName name) {
         super(model);
         mName = name;
     }

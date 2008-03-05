@@ -1667,8 +1667,8 @@ public class FormUtils
         public boolean equals(Object o) {
             if (o instanceof TypeHelper) {
                 TypeHelper t = (TypeHelper)o;
-                return ((name == null) ? (t.name == null) : t.name.equals(name))
-                        && ((type == null) ? (t.type == null) : t.type.equals(type));
+                return ((name == null) ? (t.name == null) : name.equals(t.name))
+                        && ((type == null) ? (t.type == null) : type.equals(t.type));
             } else {
                 return false;
             }
@@ -1728,15 +1728,33 @@ public class FormUtils
      * that may be broken or malformed. This is a replacement for Introspector.getBeanInfo().
      * @see java.beans.Introspector.getBeanInfo(Class)
      */
-    public static java.beans.BeanInfo getBeanInfo(Class clazz) throws java.beans.IntrospectionException {
+    public static BeanInfo getBeanInfo(Class clazz) throws IntrospectionException {
         try {
             return Utilities.getBeanInfo(clazz);//, java.beans.Introspector.USE_ALL_BEANINFO);
-        } catch (Error ex1) { // why is Error thrown instead of IntrospectionException?
+        } catch (Exception ex) {
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            return getBeanInfo(clazz, Introspector.IGNORE_IMMEDIATE_BEANINFO);
+        } catch (Error err) {
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, err);
+            return getBeanInfo(clazz, Introspector.IGNORE_IMMEDIATE_BEANINFO);
+        }
+    }
+
+    // helper method for getBeanInfo(Class)
+    private static BeanInfo getBeanInfo(Class clazz, int mode) throws IntrospectionException {
+        if (mode == Introspector.IGNORE_IMMEDIATE_BEANINFO) {
             try {
-                return Introspector.getBeanInfo(clazz, java.beans.Introspector.IGNORE_IMMEDIATE_BEANINFO);
-            } catch (Error ex2) {
-                return Introspector.getBeanInfo(clazz, java.beans.Introspector.IGNORE_ALL_BEANINFO);
+                return Introspector.getBeanInfo(clazz, Introspector.IGNORE_IMMEDIATE_BEANINFO);
+            } catch (Exception ex) {
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                return getBeanInfo(clazz, Introspector.IGNORE_ALL_BEANINFO);
+            } catch (Error err) {
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, err);
+                return getBeanInfo(clazz, Introspector.IGNORE_ALL_BEANINFO);
             }
+        } else {
+            assert mode == Introspector.IGNORE_ALL_BEANINFO;
+            return Introspector.getBeanInfo(clazz, Introspector.IGNORE_ALL_BEANINFO);
         }
     }
 }

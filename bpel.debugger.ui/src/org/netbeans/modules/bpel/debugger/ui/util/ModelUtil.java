@@ -74,7 +74,7 @@ public final class ModelUtil {
         }
         
         final SourcePath sourcePath = 
-                (SourcePath) engine.lookupFirst(null, SourcePath.class);
+                engine.lookupFirst(null, SourcePath.class);
                 
         if (sourcePath == null) {
             return null;
@@ -271,6 +271,10 @@ public final class ModelUtil {
     
     public static int getLineNumber(
             final UniqueId bpelEntityId) {
+        
+        if (bpelEntityId == null) {
+            return -1;
+        }
         
         final BpelModel model = bpelEntityId.getModel();
         

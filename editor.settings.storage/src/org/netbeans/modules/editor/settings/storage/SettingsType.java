@@ -41,25 +41,32 @@
 
 package org.netbeans.modules.editor.settings.storage;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.editor.settings.storage.fontscolors.ColoringStorage;
 import org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage;
 import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -94,7 +101,7 @@ public final class SettingsType {
     }
     
     public static interface Locator {
-        public void scan(FileObject baseFolder, String mimeType, String profileId, boolean fullScan, boolean scanModules, boolean scanUsers, Map<String, List<Object []>> results);
+        public void scan(FileObject baseFolder, String mimeType, String profileId, boolean fullScan, boolean scanModules, boolean scanUsers, boolean resolveLinks, Map<String, List<Object []>> results);
         public String getWritableFileName(String mimeType, String profileId, String fileId, boolean modulesFile);
         public boolean isUsingProfiles();
     }
@@ -182,12 +189,15 @@ public final class SettingsType {
         private static final String WRITABLE_FILE_SUFFIX = ".xml"; //NOI18N
         private static final String FA_TARGET_OS = "nbeditor-settings-targetOS"; //NOI18N
         
+        private static final String LINK_EXTENSION = "shadow"; //NOI18N
+        
         protected final String settingTypeId;
         protected final boolean isUsingProfiles;
         protected final String mimeType;
         protected final String legacyFileName;
         protected final String writableFilePrefix;
         protected final String modulesWritableFilePrefix;
+        protected final ThreadLocal<FileObject> threadsBaseFolder = new  ThreadLocal<FileObject>();
         
         public DefaultLocator(String settingTypeId, boolean hasProfiles, String mimeType, String legacyFileName) {
             this.settingTypeId = settingTypeId;
@@ -206,34 +216,39 @@ public final class SettingsType {
             boolean fullScan, 
             boolean scanModules,
             boolean scanUsers,
+            boolean resolveLinks,
             Map<String, List<Object []>> results
         ) {
             assert results != null : "The parameter results can't be null"; //NOI18N
+            threadsBaseFolder.set(baseFolder);
+            try {
+                FileObject mimeFolder = null;
+                FileObject legacyMimeFolder = null;
 
-            FileObject mimeFolder = null;
-            FileObject legacyMimeFolder = null;
+                if (baseFolder != null) {
+                    mimeFolder = getMimeFolder(baseFolder, mimeType);
+                    legacyMimeFolder = getLegacyMimeFolder(baseFolder, mimeType);
+                }
 
-            if (baseFolder != null) {
-                mimeFolder = getMimeFolder(baseFolder, mimeType);
-                legacyMimeFolder = getLegacyMimeFolder(baseFolder, mimeType);
-            }
-            
-            if (scanModules) {
-                if (legacyMimeFolder != null && legacyMimeFolder.isFolder()) {
-                    addModulesLegacyFiles(legacyMimeFolder, profileId, fullScan, results);
+                if (scanModules) {
+                    if (legacyMimeFolder != null && legacyMimeFolder.isFolder()) {
+                        addModulesLegacyFiles(legacyMimeFolder, profileId, fullScan, results);
+                    }
+                    if (mimeFolder != null && mimeFolder.isFolder()) {
+                        addModulesFiles(mimeFolder, profileId, fullScan, results, resolveLinks);
+                    }
                 }
-                if (mimeFolder != null && mimeFolder.isFolder()) {
-                    addModulesFiles(mimeFolder, profileId, fullScan, results);
-                }
-            }
 
-            if (scanUsers) {
-                if (legacyMimeFolder != null && legacyMimeFolder.isFolder()) {
-                    addUsersLegacyFiles(legacyMimeFolder, profileId, fullScan, results);
+                if (scanUsers) {
+                    if (legacyMimeFolder != null && legacyMimeFolder.isFolder()) {
+                        addUsersLegacyFiles(legacyMimeFolder, profileId, fullScan, results);
+                    }
+                    if (mimeFolder != null && mimeFolder.isFolder()) {
+                        addUsersFiles(mimeFolder, profileId, fullScan, results);
+                    }
                 }
-                if (mimeFolder != null && mimeFolder.isFolder()) {
-                    addUsersFiles(mimeFolder, profileId, fullScan, results);
-                }
+            } finally {
+                threadsBaseFolder.remove();
             }
         }
 
@@ -302,7 +317,7 @@ public final class SettingsType {
             return mimeType == null ? baseFolder : baseFolder.getFileObject(mimeType);
         }
 
-        private void addModulesFiles(FileObject mimeFolder, String profileId, boolean fullScan, Map<String, List<Object []>> files) {
+        private void addModulesFiles(FileObject mimeFolder, String profileId, boolean fullScan, Map<String, List<Object []>> files, boolean resolveLinks) {
             if (profileId == null) {
                 FileObject settingHome = mimeFolder.getFileObject(settingTypeId);
                 if (settingHome != null && settingHome.isFolder()) {
@@ -316,20 +331,20 @@ public final class SettingsType {
                             String id = f.getNameExt();
                             FileObject folder = f.getFileObject(MODULE_FILES_FOLDER);
                             if (folder != null && folder.isFolder()) {
-                                addFiles(folder, fullScan, files, id, f, true);
+                                addFiles(folder, fullScan, files, id, f, true, resolveLinks);
                             }
                         }
                     } else {
                         FileObject folder = settingHome.getFileObject(MODULE_FILES_FOLDER);
                         if (folder != null && folder.isFolder()) {
-                            addFiles(folder, fullScan, files, null, null, true);
+                            addFiles(folder, fullScan, files, null, null, true, resolveLinks);
                         }
                     }
                 }
             } else {
                 FileObject folder = mimeFolder.getFileObject(settingTypeId + "/" + profileId + "/" + MODULE_FILES_FOLDER); //NOI18N
                 if (folder != null && folder.isFolder()) {
-                    addFiles(folder, fullScan, files, profileId, folder.getParent(), true);
+                    addFiles(folder, fullScan, files, profileId, folder.getParent(), true, resolveLinks);
                 }
             }
         }
@@ -343,32 +358,43 @@ public final class SettingsType {
                         for(FileObject f : profileHomes) {
                             if (f.isFolder()) {
                                 String id = f.getNameExt();
-                                addFiles(f, fullScan, files, id, f, false);
+                                addFiles(f, fullScan, files, id, f, false, false);
                             }
                         }
                     } else {
-                        addFiles(settingHome, fullScan, files, null, null, false);
+                        addFiles(settingHome, fullScan, files, null, null, false, false);
                     }
                 }
             } else {
                 FileObject folder = mimeFolder.getFileObject(settingTypeId + "/" + profileId); //NOI18N
                 if (folder != null && folder.isFolder()) {
-                    addFiles(folder, fullScan, files, profileId, folder, false);
+                    addFiles(folder, fullScan, files, profileId, folder, false, false);
                 }
             }
         }
         
-        private final void addFiles(FileObject folder, boolean fullScan, Map<String, List<Object []>> files, String profileId, FileObject profileHome, boolean moduleFiles) {
+        private final void addFiles(FileObject folder, boolean fullScan, Map<String, List<Object []>> files, String profileId, FileObject profileHome, boolean moduleFiles, boolean resolveLinks) {
             List<Object []> writableFiles = new ArrayList<Object []>();
             List<Object []> osSpecificFiles = new ArrayList<Object []>();
             
-            FileObject [] ff = getOrderedChildren(folder);
+            List<FileObject> ff = FileUtil.getOrder(Arrays.asList(folder.getChildren()), false);
             for(FileObject f : ff) {
                 if (!f.isData()) {
                     continue;
                 }
-                
-                if (f.getMIMEType().equals(mimeType)) {
+
+                if (resolveLinks && LINK_EXTENSION.equals(f.getExt())) {
+                    FileObject linkTarget = resolveLink(f);
+                    if (linkTarget != null) {
+                        List<Object []> infos = files.get(profileId);
+                        if (infos == null) {
+                            infos = new ArrayList<Object[]>();
+                            files.put(profileId, infos);
+                        }
+                        Object [] oo = new Object [] { profileHome, f , true, linkTarget, false };
+                        infos.add(oo);
+                    }
+                } else if (f.getMIMEType().equals(mimeType)) {
                     Object targetOs = f.getAttribute(FA_TARGET_OS);
                     if (targetOs != null) {
                         try {
@@ -387,7 +413,7 @@ public final class SettingsType {
                         infos = new ArrayList<Object[]>();
                         files.put(profileId, infos);
                     }
-                    Object [] oo = new Object [] { profileHome, f, moduleFiles };
+                    Object [] oo = new Object [] { profileHome, f, moduleFiles, null, false };
                     
                     // There can be a writable file in the modules folder and it
                     // needs to be added last so that it does not get hidden by
@@ -438,63 +464,83 @@ public final class SettingsType {
             }
         }
         
-        protected static FileObject [] getOrderedChildren(FileObject folder) {
-            // Collect all children
-            Map<String, FileObject> children = new HashMap<String, FileObject>();
-            for (FileObject f : folder.getChildren()) {
-                String name = f.getNameExt();
-                children.put(name, f);
-            }
-
-            // Collect all edges
-            Map<FileObject, Set<FileObject>> edges = new HashMap<FileObject, Set<FileObject>>();
-            for (Enumeration<String> attrNames = folder.getAttributes(); attrNames.hasMoreElements(); ) {
-                String attrName = attrNames.nextElement();
-                Object attrValue = folder.getAttribute(attrName);
-
-                // Check whether the attribute affects sorting
-                int slashIdx = attrName.indexOf('/'); //NOI18N
-                if (slashIdx == -1 || !(attrValue instanceof Boolean)) {
-                    continue;
+        private FileObject resolveLink(FileObject link) {
+            String targetFilePath = null;
+            String targetFilesystem = null;
+            
+            // read the link file
+            if ( link.getSize() == 0 ) {
+                Object fileName = link.getAttribute("originalFile"); // NOI18N
+                if ( fileName instanceof String ) {
+                    targetFilePath = (String) fileName;
+                } else if (fileName instanceof URL) {
+                    targetFilePath = ((URL) fileName).toExternalForm();
+                } else {
+                    LOG.warning("Invalid originalFile '" + fileName + "', ignoring editor settings link " + link.getPath()); //NOI18N
                 }
-
-                // Get the file names
-                String name1 = attrName.substring(0, slashIdx);
-                String name2 = attrName.substring(slashIdx + 1);
-                if (!((Boolean) attrValue).booleanValue()) {
-                    // Swap the names
-                    String s = name1;
-                    name1 = name2;
-                    name2 = s;
+                
+                Object filesystemName = link.getAttribute("originalFileSystem"); // NOI18N
+                if (filesystemName instanceof String) {
+                    targetFilesystem = (String) filesystemName;
                 }
-
-                // Get the files and add them among the edges
-                FileObject from = children.get(name1);
-                FileObject to = children.get(name2);
-
-                if (from != null && to != null) {
-                    Set<FileObject> vertices = edges.get(from);
-                    if (vertices == null) {
-                        vertices = new HashSet<FileObject>();
-                        edges.put(from, vertices);
+            } else {
+                try {
+                    BufferedReader ois = new BufferedReader(new InputStreamReader(link.getInputStream(), "UTF-8")); // NOI18N
+                    try {
+                        targetFilePath = ois.readLine();
+                        targetFilesystem = ois.readLine();
+                    } finally {
+                        ois.close();
                     }
-                    vertices.add(to);
+                } catch (IOException ioe) {
+                    LOG.log(Level.WARNING, "Can't read editor settings link, ignoring " + link.getPath(), ioe); //NOI18N
+                    targetFilePath = null;
+                }
+            }
+
+            if (targetFilesystem != null && !targetFilesystem.equals("SystemFileSystem")) { //NOI18N
+                LOG.warning("Editor settings links can only link targets on SystemFileSystem, ignoring link " + link.getPath()); //NOI18N
+                targetFilePath = null;
+            }
+            
+            // resolve the target FileObject
+            FileObject targetFile = null;
+            if (targetFilePath != null) {
+                URI u;
+                try {
+                    u = new URI(targetFilePath);
+                } catch (URISyntaxException e) {
+                    u = null;
+                }
+                if (u != null && u.isAbsolute()) {
+                    try {
+                        FileObject ff = URLMapper.findFileObject(u.toURL());
+                        if (ff != null) {
+                            if (ff.getFileSystem() == Repository.getDefault().getDefaultFileSystem()) {
+                                targetFile = ff;
+                            } else {
+                                LOG.warning("Editor settings links can only link targets on SystemFileSystem, ignoring link " + link.getPath()); //NOI18N
+                            }
+                        }
+                    } catch (IOException ioe) {
+                        LOG.log(Level.WARNING, "Can't resolve editor settings link, ignoring link " + link.getPath(), ioe); //NOI18N
+                    }
+                } else {
+                    targetFile = Repository.getDefault().getDefaultFileSystem().findResource(targetFilePath);
+                }
+            }
+
+            // sanity checks
+            if (targetFile != null) {
+                FileObject baseFolder = threadsBaseFolder.get();
+                if (!targetFile.isFolder() || targetFile == baseFolder || !FileUtil.isParentOf(baseFolder, targetFile)) {
+                    LOG.warning("Editor settings link '" + link.getPath() + "' is not pointing to " //NOI18N
+                        + "a real subfolder of '" + baseFolder.getPath() + "', but to '" + targetFile.getPath() + "'. Ignoring the link."); //NOI18N
+                    targetFile = null;
                 }
             }
             
-            // Sort the children
-            List<FileObject> sorted;
-            
-            try {
-                sorted = Utilities.topologicalSort(children.values(), edges);
-            } catch (TopologicalSortException e) {
-                LOG.log(Level.WARNING, "Can't sort folder children.", e); //NOI18N
-                @SuppressWarnings("unchecked")
-                List<FileObject> whyTheHellDoINeedToDoThis = e.partialSort();
-                sorted = whyTheHellDoINeedToDoThis;
-            }
-            
-            return sorted.toArray(new FileObject[sorted.size()]);
+            return targetFile;
         }
         
         private void addLegacyFiles(FileObject mimeFolder, String profileId, String filePath, Map<String, List<Object []>> files, boolean moduleFiles) {
@@ -547,7 +593,7 @@ public final class SettingsType {
                 pair = new ArrayList<Object[]>();
                 files.put(profileId, pair);
             }
-            pair.add(new Object [] { profileHome, file, moduleFiles });
+            pair.add(new Object [] { profileHome, file, moduleFiles, null, true });
             
             if (LOG.isLoggable(Level.INFO)) {
                 Utils.logOnce(LOG, Level.INFO, settingTypeId + " settings " + //NOI18N
@@ -630,7 +676,7 @@ public final class SettingsType {
                         pair = new ArrayList<Object[]>();
                         files.put(profileId, pair);
                     }
-                    pair.add(new Object [] { profileHome, f, moduleFiles });
+                    pair.add(new Object [] { profileHome, f, moduleFiles, null, true });
 
                     if (LOG.isLoggable(Level.INFO)) {
                         Utils.logOnce(LOG, Level.INFO, settingTypeId + " settings " + //NOI18N

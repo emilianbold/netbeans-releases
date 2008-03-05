@@ -47,11 +47,11 @@ import java.util.Set;
 
 import javax.swing.text.Document;
 
-import org.netbeans.api.gsf.Modifier;
-import org.netbeans.api.gsf.ParserFile;
-import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
-import org.netbeans.spi.gsf.DefaultParserFile;
+import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.openide.filesystems.FileObject;
 
 
@@ -141,7 +141,7 @@ public abstract class IndexedElement extends RubyElement {
                 return null;
             }
 
-            document = AstUtilities.getBaseDocument(fileObject, true);
+            document = NbUtilities.getBaseDocument(fileObject, true);
         }
 
         return document;

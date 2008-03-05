@@ -41,32 +41,29 @@
 
 package org.netbeans.modules.beans.beaninfo;
 
-import java.awt.*;
-
-import org.openide.DialogDescriptor;
-import org.openide.NotifyDescriptor;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.actions.NodeAction;
-
+import java.awt.Dialog;
+import java.util.concurrent.Future;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.beans.PatternAnalyser;
-import org.netbeans.modules.beans.BeanUtils;
-import org.netbeans.modules.beans.GenerateBeanException;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-
-import javax.jmi.reflect.JmiException;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
+import org.openide.util.actions.NodeAction;
 
 /**
 * Generate BI action.
 *
 * @author   Petr Hrebejk
 */
-public class GenerateBeanInfoAction extends NodeAction implements java.awt.event.ActionListener {
+public final class GenerateBeanInfoAction extends NodeAction implements java.awt.event.ActionListener {
     private Dialog biDialog;
 
     /** generated Serialized Version UID */
@@ -86,6 +83,7 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
     /** The action's icon location.
     * @return the action's icon location
     */
+    @Override
     protected String iconResource () {
         return null;
         //return "/org/netbeans/modules/javadoc/resources/searchDoc.gif"; // NOI18N
@@ -99,18 +97,12 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
     }
 
     protected boolean enable( Node[] activatedNodes ) {
-        if (activatedNodes.length != 1 )
+        if (activatedNodes.length != 1) {
             return false;
-        else {
-            PatternAnalyser pa = (PatternAnalyser)activatedNodes[0].getCookie( PatternAnalyser.class );
-            if (pa == null) {
-                return false;
-            }
-            JavaClass theClass = pa.getClassElementHandle();
-            BeanUtils.beginTrans(false);
-            try  finally {
-                BeanUtils.endTrans();
-            }
+        } else {
+            FileObject fo = findFileObject(activatedNodes[0]);
+            return fo != null && JavaSource.forFileObject(fo) != null
+                    && !fo.getName().endsWith("BeanInfo"); //NOI18N
         }
     }
 
@@ -122,82 +114,24 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
     */
     public void performAction ( final Node[] nodes ) {
 
-        if ( nodes.length < 1 )
+        if (nodes.length != 1)
             return;
 
         // Open the diaog for bean info generation
 
-        final BiPanel biPanel;
-
-        DialogDescriptor dd = new DialogDescriptor( (biPanel = new BiPanel()),
-                              getString( "CTL_TITLE_GenerateBeanInfo"),     // Title
-                              true,                                                 // Modal
-                              NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
-                              NotifyDescriptor.OK_OPTION,                           // Default
-                              DialogDescriptor.BOTTOM_ALIGN,                        // Align
-                              new HelpCtx (BiPanel.BEANINFO_HELP), // Help // NOI18N                              
-                              null );
-
-        biDialog = DialogDisplayer.getDefault().createDialog( dd );
-        
-        initAccessibility();
+        final BiPanel biPanel = new BiPanel();
 
         // Get pattern analyser & bean info and create BiAnalyser & BiNode
 
-        final BiAnalyserReference biaReference = new BiAnalyserReference();
-        
-        final Task analyseTask = new Task( new Runnable() {
-            public void run() {
-                PatternAnalyser pa = (PatternAnalyser)nodes[0].getCookie( PatternAnalyser.class );
-                
-                try {
-                    BeanUtils.beginTrans(true);
-                    boolean rollback = true;
-                    BiAnalyser bia;
-                    try  finally {
-                        BeanUtils.endTrans(rollback);
-                    }
-                    final Node biNode = new BiNode( bia );
-                    
-                    javax.swing.SwingUtilities.invokeLater( new Runnable() {
-                        public void run() {
-                            biPanel.setContext( biNode );
-                            biPanel.expandAll();
-                        }
-                    } );
-                    
-                    biaReference.setReference( bia );
-                    
-                } catch (GenerateBeanException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
-                } catch (JmiException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
-                }
-            }
-        } );
+        FileObject javaFile = findFileObject(nodes[0]);
+        final BeanInfoWorker performer = new BeanInfoWorker(javaFile, biPanel);
+        performer.analyzePatterns();
 
-        RequestProcessor.getDefault().post( analyseTask );
-
-        biDialog.setVisible(true);
-
-        if ( biaReference.getReference() != null && dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
-
-            Task task = new Task( new Runnable() {
-                public void run () {
-                    analyseTask.waitFinished();
-                    biaReference.getReference().regenerateSource();
-                    BeanUtils.beginTrans(true);
-                    boolean rollback = true;
-                    try  finally {
-                        BeanUtils.endTrans(rollback);
-                    }
-                }
-            } );
-            RequestProcessor.getDefault().post( task );
-        }
-
+        performer.waitFinished();
+        performer.bia.openSource();
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -206,21 +140,150 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
         biDialog.getAccessibleContext().setAccessibleDescription(getString("ACSD_BeanInfoEditorDialog"));
     }    
     
+    private static FileObject findFileObject(Node n) {
+        DataObject dobj = n.getCookie(DataObject.class);
+        return dobj != null? dobj.getPrimaryFile() : null;
+    }
+    
     static String getString(String key) {
         return NbBundle.getBundle("org.netbeans.modules.beans.beaninfo.Bundle").getString(key);
     }
+    
+    static final class BeanInfoWorker implements Runnable, org.netbeans.api.java.source.Task<CompilationController> {
 
-    private static final class BiAnalyserReference {
-        private BiAnalyser analyser = null;
-        JavaClass syntheticClass = null;
+        private final BiPanel biPanel;
+        private final FileObject javaFile;
+        private boolean isCancelled = false;
+        private Node biNode;
+        private BiAnalyser bia;
+        private Task task;
+        private int state = 0;
 
-        private void setReference( BiAnalyser analyser ) {
-            this.analyser = analyser;
+        public BeanInfoWorker(FileObject javaFile, BiPanel biPanel) {
+            this.javaFile = javaFile;
+            this.biPanel = biPanel;
+        }
+        
+        public Task analyzePatterns() {
+            checkState(0);
+            task = RequestProcessor.getDefault().post(this);
+            return task;
+        }
+        
+        public void updateUI() {
+            waitFinished();
+            checkState(1);
+            state = 2;
+            fillBiPanel();
+        }
+        
+        public void generateSources() {
+            waitFinished();
+            checkState(2);
+            state = 3;
+//            task.schedule(0);
+            run();
+        }
+        
+        public boolean isCancelled() {
+            return isCancelled;
+        }
+        
+        public void waitFinished() {
+            if (task == null) {
+                throw new IllegalStateException();
+            }
+            task.waitFinished();
+        }
+        
+        public boolean isModelModified() {
+            waitFinished();
+            return bia.isModified();
+        }
+        
+        public void run() {
+            if (isCancelled) {
+                return;
+            }
+            switch(state) {
+                case 0:
+                    analyzePatternsImpl();
+                    break;
+                case 2:
+                    fillBiPanel();
+                    break;
+                case 3:
+                    generateSourcesImpl();
+                    break;
+            }
         }
 
-        private BiAnalyser getReference() {
-            return analyser;
+        public void run(CompilationController javac) throws Exception {
+            if (isCancelled) {
+                return;
+            }
+            javac.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            switch(state) {
+                case 1:
+                    analyzePatternsImpl(javac);
+                    break;
+            }
         }
-
+        
+        private void analyzePatternsImpl(CompilationInfo javac) {
+            checkState(1);
+            String clsname = javaFile.getName();
+            TypeElement clselm = null;
+            for (TypeElement top : javac.getTopLevelElements()) {
+                if (clsname.contentEquals(top.getSimpleName())) {
+                    clselm = top;
+                }
+            }
+            
+            PatternAnalyser pa = new PatternAnalyser(javaFile, null);
+            pa.analyzeAll(javac, clselm);
+            // XXX analyze also superclasses here
+            try {
+                bia = new BiAnalyser(pa, javac);
+            } catch (Exception ex) {
+                isCancelled = true;
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+        private void analyzePatternsImpl() {
+            if (javaFile == null) {
+                isCancelled = true;
+                return;
+            }
+            checkState(0);
+            state = 1;
+            try {
+                Future<Void> f = JavaSource.forFileObject(javaFile).runWhenScanFinished(this, true);
+                f.get();
+                isCancelled = f.isCancelled();
+            } catch (Exception ex) {
+                isCancelled = true;
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+        private void fillBiPanel() {
+            biNode = BiNode.createBiNode( bia );
+            biPanel.setContext( biNode );
+            biPanel.expandAll();
+        }
+        
+        private void generateSourcesImpl() {
+            if (!isCancelled()) {
+                bia.regenerateSource();
+            }
+        }
+        
+        private void checkState(int expected) {
+            if (state != expected) {
+                throw new IllegalStateException();
+            }
+        }
     }
 }

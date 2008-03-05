@@ -59,7 +59,7 @@ public interface CsmTemplateParameter extends CsmNamedElement {
     
     /** Gets this parameter text  */
     // TODO: perhaps we'd  better move this to some common interface
-    CharSequence getText();
+    //CharSequence getText();
     
     
 }

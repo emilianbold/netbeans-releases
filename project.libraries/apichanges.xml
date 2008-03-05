@@ -127,24 +127,34 @@ is the proper place.
             <p>
                 There is a new API and SPI for project libraries
                 (or, more generally, libraries with specific storage locations).
-                <code>LibraryChooser</code>, <code>ArealLibraryProvider</code>,
+                <code>ArealLibraryProvider</code>,
                 and <code>LibraryStorageArea</code> are new, as are methods
                 <code>Library.getManager</code>,
+                <code>Library.getRawContent(String)</code>
                 <code>LibraryManager.getDisplayName</code>,
                 <code>LibraryManager.getLocation</code>,
                 <code>LibraryManager.createLibrary</code>,
                 <code>LibraryManager.forLocation</code>, and
                 <code>LibraryManager.getOpenManagers</code>.
                 (<code>LibraryProvider</code> was also generified.)
+                <code>LibrariesSupport</code> has few additional helper methods.
+            </p>
+            <p>
+                There's also new methods and classes for UI customizations of Libraries, eg.
+                <code>LibrariesCustomizer.showCreateNewLibraryCustomizer(LibraryManager)</code>,
+                <code>LibrariesCustomizer.showCustomizer(Library, LibraryManager)</code>,
+                <code>LibrariesCustomizer.showSingleLibraryCustomizer(Library)</code>,
+                and <code>LibraryChooser</code> class.
             </p>
         </description>
         <class package="org.netbeans.api.project.libraries" name="LibraryManager"/>
         <class package="org.netbeans.api.project.libraries" name="Library"/>
         <class package="org.netbeans.api.project.libraries" name="LibraryChooser"/>
+        <class package="org.netbeans.api.project.libraries" name="LibrariesCustomizer"/>
         <class package="org.netbeans.spi.project.libraries" name="LibraryProvider"/>
         <class package="org.netbeans.spi.project.libraries" name="ArealLibraryProvider"/>
         <class package="org.netbeans.spi.project.libraries" name="LibraryStorageArea"/>
-        <class package="org.netbeans.spi.project.libraries" name="LibrariesSupport"/>
+        <class package="org.netbeans.spi.project.libraries.support" name="LibrariesSupport"/>
         <issue number="44035"/>
     </change>
     

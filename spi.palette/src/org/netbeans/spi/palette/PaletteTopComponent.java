@@ -104,21 +104,31 @@ final class PaletteTopComponent extends TopComponent implements PropertyChangeLi
     /** Overriden to explicitely set persistence type of PaletteTopComponent
      * to PERSISTENCE_ALWAYS */
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
+        return TopComponent.PERSISTENCE_NEVER;
     }
     
     public void componentOpened() {
         PaletteSwitch switcher = PaletteSwitch.getDefault();
         
         switcher.addPropertyChangeListener( this );
-        setPaletteController( switcher.getCurrentPalette() );
+        PaletteController pc = switcher.getCurrentPalette();
+        setPaletteController( pc );
+        if( Utils.isOpenedByUser(this) ) {
+            //only change the flag when the Palette window was opened from ShowPaletteAction
+            //i.e. user clicked the menu item or used keyboard shortcut - ignore window system load & restore
+            PaletteVisibility.setVisible( pc, true );
+        }
     }
     
     public void componentClosed() {
         // palette is closed so reset its contents
-        setPaletteController( null );
+        PaletteSwitch switcher = PaletteSwitch.getDefault();
         
-        PaletteSwitch.getDefault().removePropertyChangeListener( this );
+        switcher.removePropertyChangeListener( this );
+        PaletteController pc = switcher.getCurrentPalette();
+        PaletteVisibility.setVisible( pc, false );
+//        if( null != pc )
+//            PaletteVisibility.setVisible( null, false );
     }
 
     /** replaces this in object stream */

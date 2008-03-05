@@ -1,0 +1,23 @@
+/*
+ *  __NAME__
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package Templates.Classes;
+
+/**
+ * __NAME__ Service
+ *
+ * @author __USER__
+ */
+
+public class __NAME__ {
+
+    /** Creates a new instance of __NAME__ */
+    public __NAME__() {
+    }
+}

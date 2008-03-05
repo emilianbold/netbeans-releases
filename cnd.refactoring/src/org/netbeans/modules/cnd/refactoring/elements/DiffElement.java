@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.refactoring.elements;
 import org.netbeans.modules.cnd.refactoring.support.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
@@ -85,7 +84,7 @@ public class DiffElement extends SimpleRefactoringElementImplementation {
     public Lookup getLookup() {
         Object composite = null;
         if (bounds!=null) {
-            composite = diff.getReferenceObject();
+            composite = ElementGripFactory.getDefault().get(parentFile, bounds.getBegin().getOffset());
         }
         if (composite==null) {
             composite = parentFile;

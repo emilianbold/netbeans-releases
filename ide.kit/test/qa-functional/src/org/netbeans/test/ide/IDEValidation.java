@@ -119,6 +119,8 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
+import org.netbeans.xtest.plugin.ide.BlacklistedClassesHandler;
+
 /**
  * Overall validation suite for IDE.
  *
@@ -1399,6 +1401,16 @@ public class IDEValidation extends JellyTestCase {
         WatchProjects.assertProjects();
     }
 
+    public void testBlacklistedClassesHandler() throws Exception {
+        BlacklistedClassesHandler bcHandler = BlacklistedClassesHandler.getBlacklistedClassesHandler();
+        assertNotNull("BlacklistedClassesHandler should be available", bcHandler);
+        try {
+            assertTrue(bcHandler.listViolations(), bcHandler.noViolations());
+        } finally {
+            bcHandler.remove();
+        }        
+    }
+    
     /** Closes help window if any. It should not stay open between test cases.
      *  Otherwise it can break next tests.
      */

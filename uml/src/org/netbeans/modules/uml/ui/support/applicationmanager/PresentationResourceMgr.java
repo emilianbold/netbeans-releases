@@ -58,7 +58,6 @@ import org.netbeans.modules.uml.core.configstringframework.ConfigStringTranslato
 import org.netbeans.modules.uml.core.configstringframework.IConfigStringTranslator;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ConfigManager;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
@@ -70,7 +69,6 @@ import org.netbeans.modules.uml.ui.support.drawingproperties.ETFontType;
 import org.netbeans.modules.uml.ui.support.drawingproperties.FontProperty;
 import org.netbeans.modules.uml.ui.support.drawingproperties.IColorProperty;
 import org.netbeans.modules.uml.ui.support.drawingproperties.IDrawingProperty;
-import org.netbeans.modules.uml.ui.support.drawingproperties.IDrawingPropertyProvider;
 import org.netbeans.modules.uml.ui.support.drawingproperties.IFontProperty;
 
 /**

@@ -107,6 +107,18 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         }
     }
     
+    public VariableImpl(CsmOffsetable pos, CsmFile file, CsmType type, String name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
+        super(file, pos);
+        this._static = _static;
+        this._extern = _extern;
+        this.name = QualifiedNameCache.getManager().getString(name);
+        this.type = type;
+	_setScope(scope);
+        if (registerInProject) {
+            registerInProject();
+        }
+    }
+    
     protected final void registerInProject() {
         CsmProject project = getContainingFile().getProject();
         if( project instanceof ProjectBase ) {
@@ -275,7 +287,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         CsmScope scope = this.scopeRef;
         if (scope == null) {
             scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
-            assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
+            // scope could be null when enclosing context is invalidated
         }
         return scope;
     }

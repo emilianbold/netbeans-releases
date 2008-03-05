@@ -85,7 +85,7 @@ public class PullOtherAction extends ContextAction implements PropertyChangeList
         if (repository == null) {
             int repositoryModeMask = Repository.FLAG_URL_EDITABLE | Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
             String title = org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Location");       // NOI18N
-            repository = new Repository(repositoryModeMask, title);
+            repository = new Repository(repositoryModeMask, title, true);
             repository.addPropertyChangeListener(this);
         }
 
@@ -126,17 +126,13 @@ public class PullOtherAction extends ContextAction implements PropertyChangeList
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
                         public void perform() { 
-                            PullAction.performPull(PullAction.PullType.OTHER, ctx, root, pullPath, fromPrjName, toPrjName); } };
+                            PullAction.performPull(PullAction.PullType.OTHER, ctx, root, pullPath, fromPrjName, toPrjName, this.getLogger()); } };
 
         support.start(rp, repository, 
                 org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")); // NOI18N
     }
     
     public boolean isEnabled() {
-        File root = HgUtils.getRootFile(context);
-        if(root == null)
-            return false;
-        else
-            return true;
+        return HgUtils.getRootFile(context) != null;
     }
 }

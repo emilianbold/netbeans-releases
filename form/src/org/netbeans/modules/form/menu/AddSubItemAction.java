@@ -42,18 +42,17 @@ package org.netbeans.modules.form.menu;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
-import javax.swing.Action;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import org.netbeans.modules.form.ComponentInspector;
-import org.netbeans.modules.form.FormDesigner;
-import org.netbeans.modules.form.FormEditor;
-import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.RADComponentNode;
 import org.netbeans.modules.form.actions.AlignAction;
@@ -67,10 +66,9 @@ import org.openide.util.actions.NodeAction;
 /**
  * Action class providing popup menu presenter for add submenu for JMenu components.
  *
- * @author Joshua Marinacci
+ * @author Joshua Marinacci, Jan Stola
  */
 public class AddSubItemAction extends NodeAction {
-    private JMenuItem[] items;
     
     //fix this
     protected boolean enable(Node[] nodes) {
@@ -94,9 +92,9 @@ public class AddSubItemAction extends NodeAction {
 
     /**
      * Returns a JMenuItem that presents this action in a Popup Menu.
+     * 
      * @return the JMenuItem representation for the action
      */
-    
     @Override
     public JMenuItem getPopupPresenter() {
         JMenu popupMenu = new JMenu(NbBundle.getMessage(AddSubItemAction.class, "ACT_AddFromPalette")); //NOI18N
@@ -118,83 +116,50 @@ public class AddSubItemAction extends NodeAction {
     }
 
     
-    // this add listener works by finding a matching item in the palette
-    // and calling the usual addComponentToEndOfMenu routine to do the
-    // actual adding.
     private class AddListener implements ActionListener {
-        private Class clazz;
+        private PaletteItem pItem;
         
-        public AddListener(Class clazz) {
-            this.clazz = clazz;
+        public AddListener(PaletteItem pItem) {
+            this.pItem = pItem;
         }
+
         public void actionPerformed(ActionEvent e) {
-            //List components = FormUtils.getSelectedLayoutComponents(nodes);
             Node[] nds = getNodes();
             for(Node nd : nds) {
                 if(nd instanceof RADComponentNode) {
                     RADComponentNode rnode = (RADComponentNode) nd;
                     RADComponent comp = rnode.getRADComponent();
-                    PaletteItem[] items = PaletteUtils.getAllItems();
-                    for(PaletteItem item : items) {
-                        if(clazz == item.getComponentClass()) {
-                            MenuEditLayer.addComponentToEndOfMenu(comp, item);
-                            return;
-                        }
-                    }
+                    MenuEditLayer.addComponentToEndOfMenu(comp, pItem);
                 }
             }
         }
     };
     
     
-    /* This creates a menu of components to add. It's based on the contents of
-     * the 'SwingMenus' palette category, but JMenuBar and JPopupMenu are excluded
-     * because they cannot be added as children of JMenu.
-     * 
-     * */
     private void createInsertSubmenu(JMenu menu) {
-        final Node[] nodes = getActivatedNodes();
-        final List components = FormUtils.getSelectedLayoutComponents(nodes);
         //only create this menu the first time it is called
         if (!(menu.getMenuComponentCount() > 0)) {
-            // extract the list of menu related components from the palette
-            Node[] categories = PaletteUtils.getCategoryNodes(PaletteUtils.getPaletteNode(), false);
-            //p("categories");
-            for(Node cat : categories) {
-                if("SwingMenus".equals(cat.getName())) {
-                    Node[] items = PaletteUtils.getItemNodes(cat, false);
-                    for(Node item : items) {
-                        PaletteItem paletteItem = item.getLookup().lookup( PaletteItem.class );
-                        if( null != paletteItem) {
-                            
-                            if(JMenuBar.class.isAssignableFrom(paletteItem.getComponentClass())) continue;
-                            if(JPopupMenu.class.isAssignableFrom(paletteItem.getComponentClass())) continue;
-                            
-                            JMenuItem menuitem = new JMenuItem(paletteItem.getNode().getDisplayName());
-                            menuitem.addActionListener(new AddListener(paletteItem.getComponentClass()));
-                            menu.add(menuitem);
-                        }
-                    }
+            Set<Class> classes = new HashSet<Class>();
+            SortedSet<PaletteItem> items = new TreeSet<PaletteItem>(new Comparator<PaletteItem>() {
+                public int compare(PaletteItem item1, PaletteItem item2) {
+                    String name1 = item1.getNode().getDisplayName();
+                    String name2 = item2.getNode().getDisplayName();
+                    return name1.compareTo(name2);
+                }
+            });
+            for (PaletteItem item : PaletteUtils.getAllItems()) {
+                Class clazz = item.getComponentClass();
+                if ((clazz != null) && !classes.contains(clazz) &&
+                        (JMenuItem.class.isAssignableFrom(clazz) || JSeparator.class.isAssignableFrom(clazz))) {
+                    classes.add(clazz);
+                    items.add(item);
                 }
             }
-        }
-        updateState(components);
-    }
-
-    //i'm not sure what this does. it came from AlignAction
-    private void updateState(List components) {
-        if ((components == null) || (components.size()<2)) {
-            return;
-        }
-        RADComponent rc = (RADComponent)components.get(0);
-        FormDesigner formDesigner = FormEditor.getFormDesigner(rc.getFormModel());
-        java.util.Collection<Action> col = formDesigner.getDesignerActions(true);
-        int n = col.size();
-        assert n == (items.length / 2);
-        Action[] actions = col.toArray(new Action[n]);
-        for (int i=0; i < n; i++) {
-            items[i].setEnabled(actions[i].isEnabled());
-            items[i+n].setEnabled(actions[i].isEnabled());
+            for (PaletteItem item : items) {
+                JMenuItem menuitem = new JMenuItem(item.getNode().getDisplayName());
+                menuitem.addActionListener(new AddListener(item));
+                menu.add(menuitem);
+            }
         }
     }
 

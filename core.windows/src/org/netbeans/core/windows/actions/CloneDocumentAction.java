@@ -43,6 +43,7 @@
 package org.netbeans.core.windows.actions;
 
 
+import java.awt.EventQueue;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
@@ -58,14 +59,18 @@ import java.beans.PropertyChangeListener;
 /**
  * @author   Peter Zavadsky
  */
-public class CloneDocumentAction extends AbstractAction
-implements PropertyChangeListener {
+public class CloneDocumentAction extends AbstractAction implements PropertyChangeListener, Runnable {
 
     public CloneDocumentAction() {
         putValue(NAME, NbBundle.getMessage(CloneDocumentAction.class, "CTL_CloneDocumentAction"));
         TopComponent.getRegistry().addPropertyChangeListener(
             WeakListeners.propertyChange(this, TopComponent.getRegistry()));
-        updateEnabled();
+        // #126355 - may be called outside dispatch thread
+        if (EventQueue.isDispatchThread()) {
+            updateEnabled();
+        } else {
+            SwingUtilities.invokeLater(this);
+        }
     }
     
     /** Perform the action. Sets/unsets maximzed mode. */
@@ -93,9 +98,16 @@ implements PropertyChangeListener {
     
     private void updateEnabled() {
         TopComponent tc = TopComponent.getRegistry().getActivated();
-        ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tc);
-        setEnabled(tc instanceof TopComponent.Cloneable
-            && mode != null && mode.getKind() == Constants.MODE_KIND_EDITOR);
+        if (tc != null) {
+            ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tc);
+            setEnabled(tc instanceof TopComponent.Cloneable
+                && mode != null && mode.getKind() == Constants.MODE_KIND_EDITOR);
+        }
+    }
+
+    /** Runnable implementation, for invokeLater */
+    public void run() {
+        updateEnabled();
     }
     
 }

@@ -112,7 +112,7 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
     public void testResolveSpecialNBSrcPaths() throws Exception {
         String[] srcDirs = {"xtest/nbjunit/src",
                             "xtest/nbjunit/ide/src",
-                            "performance/insanelib/src"};
+                            "o.n.insane/src"};
         String[] xtestJars = {"xtest/lib/nbjunit.jar",
                             "xtest/lib/nbjunit-ide.jar",
                             "xtest/lib/insanelib.jar"};

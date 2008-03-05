@@ -30,6 +30,8 @@ import java.util.Vector;
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
 import org.netbeans.modules.bpel.debugger.api.ProcessInstance;
 import org.netbeans.modules.bpel.debugger.api.RuntimePartnerLink;
+import org.netbeans.modules.bpel.debugger.api.pem.PemEntity;
+import org.netbeans.modules.bpel.debugger.api.pem.ProcessExecutionModel;
 import org.netbeans.modules.bpel.debugger.ui.plinks.models.EndpointWrapper;
 import org.netbeans.modules.bpel.debugger.ui.plinks.models.PartnerLinkWrapper;
 import org.netbeans.modules.bpel.debugger.ui.plinks.models.RoleRefWrapper;
@@ -38,6 +40,7 @@ import org.netbeans.modules.bpel.debugger.ui.util.VariablesUtil;
 import org.netbeans.modules.bpel.debugger.ui.util.XmlUtil;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
+import org.netbeans.modules.bpel.model.api.PartnerLinkContainer;
 import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -58,6 +61,7 @@ import org.w3c.dom.NodeList;
 public class PLinksTreeModel implements TreeModel {
     
     private BpelDebugger myDebugger;
+    private ProcessInstance myInstance;
     
     private PositionListener myListener;
     private Vector myListeners = new Vector();
@@ -69,20 +73,34 @@ public class PLinksTreeModel implements TreeModel {
      */
     public PLinksTreeModel(
             final ContextProvider contextProvider) {
-        myDebugger = (BpelDebugger) contextProvider.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
     }
     
     /**{@inheritDoc}*/
     public Object getRoot() {
         return ROOT;
     }
-
+    
     /**{@inheritDoc}*/
     public Object[] getChildren(
             final Object object, 
             final int from, 
             final int to) throws UnknownTypeException {
+        
+        if (myInstance == null) {
+            if (object.equals(ROOT)) {
+                return new Object[] {
+                    new Dummy()
+                };
+            }
+            
+            if (object instanceof Dummy) {
+                return new Object[0];
+            }
+            
+            throw new UnknownTypeException(object);
+        }
+        
         if (ROOT.equals(object)) {
             return getPartnerLinks();
         }
@@ -104,6 +122,10 @@ public class PLinksTreeModel implements TreeModel {
             }
             
             return children.toArray();
+        }
+        
+        if (object instanceof RoleRefWrapper) {
+            return new Object[0];
         }
         
         if (object instanceof EndpointWrapper) {
@@ -161,42 +183,48 @@ public class PLinksTreeModel implements TreeModel {
         
         throw new UnknownTypeException(object);
     }
-
+    
     /**{@inheritDoc}*/
     public int getChildrenCount(
             final Object object) throws UnknownTypeException {
         return getChildren(object, 0, 0).length;
     }
-
+    
     /**{@inheritDoc}*/
     public boolean isLeaf(
             final Object object) throws UnknownTypeException {
         return getChildrenCount(object) == 0;
     }
-
+    
     /**{@inheritDoc}*/
     public void addModelListener(
             final ModelListener listener) {
         
         myListeners.add(listener);
         
-        if (myListener == null) {
+        if ((myListener == null) && (myDebugger != null)) {
             myListener = new PositionListener(this, myDebugger);
         }
     }
-
+    
     /**{@inheritDoc}*/
     public void removeModelListener(
             final ModelListener listener) {
         
         myListeners.remove(listener);
         
-        if (myListeners.size() == 0) {
+        if ((myListeners.size() == 0) && (myListener != null)) {
             myListener.destroy();
             myListener = null;
         }
     }
-
+    
+    // Package /////////////////////////////////////////////////////////////////
+    void setProcessInstance(
+            final ProcessInstance instance) {
+        myInstance = instance;
+    }
+    
     // Private /////////////////////////////////////////////////////////////////
     private void fireTreeChanged() {
         final Vector clone = (Vector) myListeners.clone();
@@ -208,16 +236,13 @@ public class PLinksTreeModel implements TreeModel {
     }
     
     private Object[] getPartnerLinks() {
-        final ProcessInstance processInstance = 
-                myDebugger.getCurrentProcessInstance();
-        
-        if (processInstance == null) {
+        if (myInstance == null) {
             return new Object[0];
         }
         
         final PartnerLink[] pLinks = getStaticPartnerLinks();
         final RuntimePartnerLink[] rLinks = 
-                processInstance.getRuntimePartnerLinks();
+                myInstance.getRuntimePartnerLinks();
         
         final PartnerLinkWrapper[] result = 
                 new PartnerLinkWrapper[pLinks.length];
@@ -247,11 +272,32 @@ public class PLinksTreeModel implements TreeModel {
         final List<PartnerLink> pLinks = new LinkedList<PartnerLink>();
         
         // Add the variables from the process
-        pLinks.addAll(Arrays.asList(model.getProcess().
-                getPartnerLinkContainer().getPartnerLinks()));
+        PartnerLinkContainer pLinksContainer = 
+                model.getProcess().getPartnerLinkContainer();
+        if ((pLinksContainer != null) && 
+                (pLinksContainer.sizeOfPartnerLink() > 0)) {
+            
+            pLinks.addAll(Arrays.asList(pLinksContainer.getPartnerLinks()));
+        }
         
-        final String xpath = myDebugger.getCurrentProcessInstance().
-                getCurrentPosition().getXpath();
+        final ProcessInstance currentInstance = 
+                myDebugger.getCurrentProcessInstance();
+        if (currentInstance == null) {
+            return pLinks.toArray(new PartnerLink[pLinks.size()]);
+        }
+        
+        final ProcessExecutionModel peModel = 
+                currentInstance.getProcessExecutionModel();
+        if (peModel == null) {
+            return pLinks.toArray(new PartnerLink[pLinks.size()]);
+        }
+        
+        final PemEntity lastStartedEntity = peModel.getLastStartedEntity();
+        if (lastStartedEntity == null) {
+            return pLinks.toArray(new PartnerLink[pLinks.size()]);
+        }
+        
+        final String xpath = lastStartedEntity.getPsmEntity().getXpath();
         
         int scopeIndex = xpath.indexOf("scope"); // NOI18N
         while (scopeIndex != -1) {
@@ -262,8 +308,13 @@ public class PLinksTreeModel implements TreeModel {
             
             final Scope scope = helper.getScopeEntity(scopeXpath);
             if (scope != null) {
-                pLinks.addAll(Arrays.asList(
-                        scope.getPartnerLinkContainer().getPartnerLinks()));
+                pLinksContainer = scope.getPartnerLinkContainer();
+                if ((pLinksContainer != null) && 
+                        (pLinksContainer.sizeOfPartnerLink() > 0)) {
+                        
+                    pLinks.addAll(
+                            Arrays.asList(pLinksContainer.getPartnerLinks()));
+                }
             }
             
             scopeIndex = index == -1 ? 
@@ -277,10 +328,10 @@ public class PLinksTreeModel implements TreeModel {
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     private static class PositionListener implements PropertyChangeListener {
-
+        
         private BpelDebugger myDebugger;
         private WeakReference myModel;
-
+        
         // currently waiting / running refresh task
         // there is at most one
         private RequestProcessor.Task task;
@@ -291,7 +342,7 @@ public class PLinksTreeModel implements TreeModel {
             myDebugger = debugger;
             myModel = new WeakReference(model);
             
-            debugger.addPropertyChangeListener(this);
+            myDebugger.addPropertyChangeListener(this);
         }
 
         private void destroy() {
@@ -319,6 +370,12 @@ public class PLinksTreeModel implements TreeModel {
         public void propertyChange(
                 final PropertyChangeEvent event) {
             
+            if (BpelDebugger.PROP_CURRENT_PROCESS_INSTANCE.equals(
+                    event.getPropertyName())) {
+                getModel().setProcessInstance(
+                        myDebugger.getCurrentProcessInstance());
+            }
+            
             if (BpelDebugger.PROP_CURRENT_POSITION.equals(
                     event.getPropertyName())) {
                 final PLinksTreeModel model = getModel();
@@ -340,5 +397,9 @@ public class PLinksTreeModel implements TreeModel {
                 }, 500);
             }
         }
+    }
+    
+    static class Dummy {
+        // Empty, stub class
     }
 }

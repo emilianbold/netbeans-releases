@@ -22,6 +22,7 @@ package org.netbeans.modules.bpel.mapper.multiview;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
+import java.util.EventObject;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -177,7 +178,7 @@ public class DesignContextControllerImpl implements DesignContextController {
         nodeUpdateTimer.start();
     }
     
-    public synchronized void reloadMapper(ChangeEvent event) {
+    public synchronized void reloadMapper(EventObject event) {
         //
         // Ignore reload if is has been initiated by the mapper itself 
         if (event.getSource() == getBpelModelUpdateSource()) {
@@ -357,5 +358,9 @@ public class DesignContextControllerImpl implements DesignContextController {
 
     public void cleanup() {
         // TODO a
+    }
+
+    public void processDataObject(Object dataObject) {
+        // Do nothing. This DCC implementation is never used.
     }
 }

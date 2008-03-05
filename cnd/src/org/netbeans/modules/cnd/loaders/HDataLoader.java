@@ -58,7 +58,7 @@ import org.openide.util.SharedClassObject;
  *  This data loader recognizes .h header data files, creates a data object for
  *  each file, and sets up an appropriate action menus for .h file objects.
  */
-public final class HDataLoader extends CndAbstractDataLoader {
+public final class HDataLoader extends CndAbstractDataLoaderExt {
     
     private static HDataLoader instance = null;
 
@@ -92,7 +92,7 @@ public final class HDataLoader extends CndAbstractDataLoader {
         for (String name : newExt) {
             newList.addExtension(name);
         }   
-        putProperty(PROP_EXTENSIONS, newList, true);
+        setExtensions(newList);
     }
     
     protected String getMimeType(){
@@ -123,36 +123,15 @@ public final class HDataLoader extends CndAbstractDataLoader {
 	return new HDataObject(primaryFile, this);
     }
 
-    public String getDefaultExtension() {
-        String l = (String)getProperty (PROP_DEFAULT_EXTENSIONS);
-        if (l == null) {
-            l = hdrExtensions[0];
-            putProperty (PROP_DEFAULT_EXTENSIONS, l, false);
-        }
-        return l;
+    public ExtensionList getDefaultExtensionList() {
+        return arrayToExtensionList(hdrExtensions);
     }
 
-    public void setDefaultExtension(String defaultExtension) {
-        String oldExtension = getDefaultExtension();
-        if (!defaultExtension.equals(oldExtension) && getExtensions().isRegistered("a."+defaultExtension)){ // NOI18N
-            TemplateExtensionUtils.renameCppHExtension(defaultExtension);
-            TemplateExtensionUtils.renameCHExtension(defaultExtension);
-            putProperty (PROP_DEFAULT_EXTENSIONS, defaultExtension, true);
-        }
+    public String getDisplayNameForExtensionList() {
+	return NbBundle.getMessage(HDataLoader.class, "HDataLoader_Name_ForExtList"); // NOI18N
     }
 
-    @Override
-    public void writeExternal (java.io.ObjectOutput oo) throws IOException {
-        super.writeExternal (oo);
-        oo.writeObject (getProperty (PROP_DEFAULT_EXTENSIONS));
+    public String getDefaultDefaultExtension() {
+        return hdrExtensions[0];
     }
-
-    @Override
-    public void readExternal (java.io.ObjectInput oi)  throws IOException, ClassNotFoundException {
-        super.readExternal (oi);
-        setDefaultExtension((String)oi.readObject ());
-    }
-
-    public static final String PROP_DEFAULT_EXTENSIONS = "defaultExtension"; // NOI18N
 }
-

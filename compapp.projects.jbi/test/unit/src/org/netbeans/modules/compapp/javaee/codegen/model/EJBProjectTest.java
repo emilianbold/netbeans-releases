@@ -73,7 +73,7 @@ public class EJBProjectTest extends NbTestCase {
     public void tearDown() throws Exception {
         TestUtil.deleteRec(scratchDir);
     }
-    
+
     public void testSUForEJBJarMissingPortName() throws Exception {
         File f = new File(getDataDir().getAbsolutePath(), PORT_NAME_MISSING_EJB_JAR1);
         File eF = new File(getDataDir().getAbsolutePath(), PORT_NAME_MISSING_SU_EJB_JAR1);
@@ -84,7 +84,7 @@ public class EJBProjectTest extends NbTestCase {
         JarFile actual = new JarFile(ret);
         assertTrue("Generated jar with jbi.xml did not macth:", CompAppTestUtil.compareJar(expected, actual));
     }
-    
+
     public void testSUForWebAppAllDefault() throws Exception {
         File f = new File(getDataDir().getAbsolutePath(), ALL_DEFAULT_WEB_APP);
         File eF = new File(getDataDir().getAbsolutePath(), ALL_DEFAULT_SU_WEB_APP);
@@ -106,5 +106,4 @@ public class EJBProjectTest extends NbTestCase {
         JarFile actual = new JarFile(ret);
         assertTrue("Generated jar with jbi.xml did not macth:", CompAppTestUtil.compareJar(expected, actual));
     }
-    
 }

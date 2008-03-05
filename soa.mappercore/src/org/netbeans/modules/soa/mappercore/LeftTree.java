@@ -56,8 +56,10 @@ import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
+import org.netbeans.modules.soa.mappercore.search.Navigation;
 import org.netbeans.modules.soa.mappercore.utils.ScrollPaneWrapper;
 import org.netbeans.modules.soa.mappercore.utils.Utils;
+import org.openide.util.NbBundle;
 
 /**
  * @author anjeleevich
@@ -77,11 +79,18 @@ public class LeftTree extends JTree implements
         super((TreeModel) null);
         this.mapper = mapper;
 
+        // vlv: print
+        putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
+        putClientProperty(java.lang.Integer.class, new Integer(0));
+
         scrollPane = new JScrollPane(this,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         scrollPane.getVerticalScrollBar().addAdjustmentListener(this);
-        scrollPaneWrapper = new ScrollPaneWrapper(scrollPane);
+        
+        // vlv
+        //scrollPaneWrapper = new ScrollPaneWrapper(scrollPane);
+        scrollPaneWrapper = new Navigation(this, scrollPane, new ScrollPaneWrapper(scrollPane));
         
         addTreeExpansionListener(this);
         setCellRenderer(new DefaultLeftTreeCellRenderer(mapper));
@@ -134,6 +143,14 @@ public class LeftTree extends JTree implements
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.CTRL_DOWN_MASK),
                 "press-right-control");
         aMap.put("press-right-control", new RightControlAction());
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK), "show-popupMenu");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_CONTEXT_MENU, 0), "show-popupMenu");
+        aMap.put("show-popupMenu", new ShowPopupMenuAction());
+        
+        getAccessibleContext().setAccessibleName(NbBundle
+                .getMessage(LeftTree.class, "ACSN_LeftTree")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle
+                .getMessage(LeftTree.class, "ACSD_LeftTree")); // NOI18N
     }
     
     public void registrAction(MapperKeyboardAction action) {
@@ -494,5 +511,29 @@ public class LeftTree extends JTree implements
             path = mapper.getRightTreePathForLink(link);
             mapper.getSelectionModel().setSelected(path, link);    
         }
+    }
+    
+    private class ShowPopupMenuAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            LeftTree tree = LeftTree.this;
+            TreePath path = tree.getSelectionPath();
+            if (path == null) { return; }
+            
+            int row = tree.getRowForPath(path);
+            if (row < 0) { return; }
+            
+            Rectangle rect = tree.getRowBounds(row);
+            Object lastComp = path.getLastPathComponent();
+            if (lastComp == null) { return; }
+            
+            JPopupMenu popup = tree.mapper.getContext().
+                    getLeftPopupMenu(tree.mapper.getModel(),
+                    lastComp);
+                   
+            if (popup != null) {
+                popup.show(tree, rect.x, rect.y);
+            }  
+        }
+        
     }
 }

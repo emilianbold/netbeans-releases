@@ -234,7 +234,6 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
             SwingUtilities.invokeLater(layout);
         } catch (Exception ex) {
             // Safely ignore this exception
-
             mLogger.errorNoloc(mLoc.t("PRSR155: Can't refresh condition graph view{0}", LOG_CATEGORY), ex);
         }
     }

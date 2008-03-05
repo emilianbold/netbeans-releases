@@ -52,7 +52,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
@@ -96,9 +95,18 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         }
     }
     
-    public void setBody (JPanel bodyPanel) {
-        this.bodyPanel = bodyPanel;
-        initBodyPanel ();
+    public void setBody (final JPanel newBodyPanel) {
+        if (SwingUtilities.isEventDispatchThread ()) {
+            this.bodyPanel = newBodyPanel;
+            initBodyPanel ();
+        } else {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    bodyPanel = newBodyPanel;
+                    initBodyPanel ();
+                }
+            });
+        }
     }
     
     public void setWaitingState (boolean isWaiting) {
@@ -186,8 +194,16 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         }
     }
     
-    public void setHeadAndContent (String heading, String content) {
-        writeToHeader (heading, content);
+    public void setHeadAndContent (final String heading, final String content) {
+        if (SwingUtilities.isEventDispatchThread ()) {
+            writeToHeader (heading, content);
+        } else {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    writeToHeader (heading, content);
+                }
+            });
+        }
     }
     
     private void writeToHeader (String heading, String msg) {
@@ -213,6 +229,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         tpPanelHeader.setContentType("text/html"); // NOI18N
         tpPanelHeader.setEditable(false);
         spPanelHeader.setViewportView(tpPanelHeader);
+        tpPanelHeader.getAccessibleContext().setAccessibleName(head);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -228,6 +245,9 @@ public class PanelBodyContainer extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(pBodyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelBodyContainer.class, "PanelBodyContainer_ACN")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelBodyContainer.class, "PanelBodyContainer_ACD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

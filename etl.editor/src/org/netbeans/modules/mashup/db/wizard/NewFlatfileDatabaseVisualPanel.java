@@ -12,9 +12,14 @@ import javax.swing.JPanel;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.netbeans.modules.mashup.db.ui.AxionDBConfiguration;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 public final class NewFlatfileDatabaseVisualPanel extends JPanel {
-
+    private static transient final Logger mLogger = LogUtil.getLogger(NewFFDBAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    public String nbBundle1 = mLoc.t("PRSR001: Create Mashup Database");
     class NameFieldKeyAdapter extends KeyAdapter {
 
         /**
@@ -52,7 +57,7 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
 
     @Override
     public String getName() {
-        return "Create Mashup Database";
+        return Localizer.parse(nbBundle1);
     }
 
     public void clearText() {
@@ -113,16 +118,20 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
 
         setMaximumSize(new java.awt.Dimension(10000, 4000));
         setPreferredSize(new java.awt.Dimension(10, 4));
+        String nbBundle7 = mLoc.t("PRSR001: Database Name");
+        jLabel1.setDisplayedMnemonic(Localizer.parse(nbBundle7).charAt(0));
+        jLabel1.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle7));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "Database Name");
-
-        dbName.setToolTipText("Database name should start with an alphabet.");
+        String nbBundle2 = mLoc.t("PRSR001: Database name should start with an alphabet.");
+        dbName.setToolTipText(Localizer.parse(nbBundle2));
         dbName.addKeyListener(new NameFieldKeyAdapter());
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, "Location");
-
-        org.openide.awt.Mnemonics.setLocalizedText(driver, "Driver Class");
-
+        String nbBundle3 = mLoc.t("PRSR001: Location");
+        String nbBundle4 = mLoc.t("PRSR001: Driver Class");
+        jLabel2.setDisplayedMnemonic(Localizer.parse(nbBundle3).charAt(0));
+        jLabel2.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle3));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, Localizer.parse(nbBundle3));
+        driver.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle4));
+        org.openide.awt.Mnemonics.setLocalizedText(driver, Localizer.parse(nbBundle4));
         org.openide.awt.Mnemonics.setLocalizedText(driverClass, "org.axiondb.jdbc.AxionDriver");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -149,10 +158,12 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
         char[] ch = name.toCharArray();
         if (ch.length != 0) {
             if (f.exists()) {
-                errorMsg.setText("Database '" + name + "' already exists.");
+                String nbBundle5 = mLoc.t("PRSR001: Database {0} already exists. ",name);
+                errorMsg.setText(Localizer.parse(nbBundle5));
                 canProceed = false;
             } else if (Character.isDigit(ch[0])) {
-                errorMsg.setText("Database name should start with an alphabet.");
+                String nbBundle6 = mLoc.t("PRSR001: Database name should start with an alphabet.");
+                errorMsg.setText(Localizer.parse(nbBundle6));
                 canProceed = false;
             } else {
                 errorMsg.setText("");

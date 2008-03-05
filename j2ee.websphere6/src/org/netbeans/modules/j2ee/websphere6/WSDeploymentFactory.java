@@ -151,7 +151,8 @@ public class WSDeploymentFactory implements DeploymentFactory {
         DeploymentManager manager = managers.get(ip);
 
         if (null == manager) {
-            manager = new WSDeploymentManager(uri, version);
+            manager = new WSDeploymentManager(uri, username, password, version);
+            // TODO add name and password to the key (?)
             managers.put(ip, manager);
         }
 

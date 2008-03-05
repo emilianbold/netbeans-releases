@@ -106,7 +106,26 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-        
+        <change id="ant-project-libraries">
+            <api name="general"/>
+            <summary>Support for project-specific libraries</summary>
+            <version major="1" minor="15"/>
+            <date day="7" month="2" year="2008"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p> A new utility class for helping project types create UI for
+                sharable Libraries.
+                </p>
+                <p> An additional protected method for use in <code>ProjectClassPathModifierImplementation</code> subclasses named
+                <code>performSharabilityHeuristics(URL,AntProjectHelper)</code> that takes classpath roots and tries to find the best way to reference that jar/folder.
+                </p>
+                
+            </description>
+            <class package="org.netbeans.spi.java.project.support.ui" name="SharableLibrariesUtils"/>
+            <class package="org.netbeans.spi.java.project.classpath" name="ProjectClassPathModifierImplementation"/>
+            <issue number="44035"/>
+        </change>        
     <change id="AttachJavadocSourceToJar">
         <api name="ui"/>
         <summary>Added support classes for attaching javadoc/source to jar-based classpath items</summary>

@@ -119,26 +119,18 @@ public class ProductArchiveImpl implements IProductArchive
 	public boolean save(String sFilename)
 	{
 		boolean retVal = false;
-
-		try
-		{
-			if ((sFilename != null) && (sFilename.length() > 0))
-			{
-				setArchiveFilename(sFilename);
-			}
-
-			if ((m_Document != null) && (m_Loaded))
-			{
-				XMLManip.savePretty(m_Document, m_ArchiveFilename);
-				retVal = true;
-			}
-		} catch (IOException e)
-		{
-			// TODO: Send a message to the message center.
-		}
-
+                if ((sFilename != null) && (sFilename.length() > 0))
+                {
+                    setArchiveFilename(sFilename);
+                    if ((m_Document != null) && (m_Loaded))
+                    {
+                            retVal = XMLManip.savePretty(m_Document, m_ArchiveFilename);
+                    }
+                }
 		return retVal;
 	}
+        
+        
 
 	/**
 	 * Temporarily loads the xml file sFilename and populates our list of archive elements.

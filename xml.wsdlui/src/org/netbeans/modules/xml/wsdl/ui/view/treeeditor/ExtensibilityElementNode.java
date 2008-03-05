@@ -48,9 +48,12 @@
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -71,6 +74,10 @@ import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityEle
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElementsFactory;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.impl.ExtensibilityUtils;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
+import org.netbeans.modules.xml.wsdl.ui.property.model.ElementProperties;
+import org.netbeans.modules.xml.wsdl.ui.property.model.GroupedProperty;
+import org.netbeans.modules.xml.wsdl.ui.property.model.PropertyModelException;
+import org.netbeans.modules.xml.wsdl.ui.property.model.PropertyModelFactory;
 import org.netbeans.modules.xml.wsdl.ui.property.view.PropertyViewFactory;
 import org.netbeans.modules.xml.wsdl.ui.schema.visitor.SchemaDocumentationFinderVisitor;
 import org.netbeans.modules.xml.wsdl.ui.spi.ExtensibilityElementConfigurator;
@@ -89,10 +96,9 @@ import org.openide.actions.PasteAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
-
-
 
 /**
  * @author radval
@@ -102,27 +108,16 @@ import org.openide.util.actions.SystemAction;
  */
 public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WSDLNamedElementNode<ExtensibilityElement> {
 
-    
-    private static final Image ICON  = Utilities.loadImage
-        ("org/netbeans/modules/xml/wsdl/ui/view/resources/generic.png");
-
-    
+    private static final Image ICON = Utilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/resources/generic.png");
     private ExtensibilityElement mWSDLConstruct;
-   
     private Node mLayerDelegateNode;
-    
-    
     private Element mSchemaElement;
-    
     private boolean canRename = false;
-    
     private QName mQName = null;
-    
     private ExtensibilityElementConfigurator mConfigurator;
-
-
     private ResourceBundle bundle;
-    
+    private Map<String, String> groupNameMap = new HashMap<String, String>();
+
     public ExtensibilityElementNode(ExtensibilityElement wsdlConstruct) {
         super(new GenericWSDLComponentChildren<ExtensibilityElement>(wsdlConstruct), wsdlConstruct);
         mWSDLConstruct = wsdlConstruct;
@@ -135,8 +130,8 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
         } else {
             mQName = qName;
         }
-        
-        String displayName = mQName != null ?  Utility.fromQNameToString(mQName) : "Missing Name"; 
+
+        String displayName = mQName != null ? Utility.fromQNameToString(mQName) : "Missing Name";
         mConfigurator = new ExtensibilityElementConfiguratorFactory().getExtensibilityElementConfigurator(mQName);
         boolean isNameSet = false;
         if (isNamedReferenceable()) {
@@ -145,7 +140,7 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
         } else {
             if (mConfigurator != null) {
                 String attributeName = mConfigurator.getDisplayAttributeName(wsdlConstruct, mQName);
-                
+
                 if (attributeName != null) {
                     setNamedPropertyAdapter(attributeName, new ExtensibilityElementNamedPropertyAdapter(attributeName));
                     String value = wsdlConstruct.getAttribute(attributeName);
@@ -156,70 +151,70 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
                     canRename = true;
                 }
             }
-            
+
             if (!isNameSet) {
                 this.setDisplayName(displayName);
-                setShortDescription(mQName != null ?  mQName.toString() : "Missing Name");
+                setShortDescription(mQName != null ? mQName.toString() : "Missing Name");
             }
         }
-        
+
         WSDLExtensibilityElementInfo info = null;
         try {
             WSDLComponent parentComponent = mWSDLConstruct.getParent();
             String extensibilityElementType = ExtensibilityUtils.getExtensibilityElementType(parentComponent);
-            if(extensibilityElementType != null) {
+            if (extensibilityElementType != null) {
                 WSDLExtensibilityElements elements = WSDLExtensibilityElementsFactory.getInstance().getWSDLExtensibilityElements();
                 WSDLExtensibilityElement mExtensibilityElement = elements.getWSDLExtensibilityElement(extensibilityElementType);
-                if(mExtensibilityElement != null) {
+                if (mExtensibilityElement != null) {
                     info = mExtensibilityElement.getWSDLExtensibilityElementInfos(mQName);
-                    if(info != null && info.getElement() != null) {
+                    if (info != null && info.getElement() != null) {
                         this.mLayerDelegateNode = getLayerDelegateNode(info);
-                        
+
                         this.mSchemaElement = info.getElement();
                         bundle = info.getBundle();
-                        /*SchemaElementCookie sCookie = new SchemaElementCookie(mElement);
-                        getLookupContents().add(sCookie);*/
+                    /*SchemaElementCookie sCookie = new SchemaElementCookie(mElement);
+                    getLookupContents().add(sCookie);*/
                     }
                 }
             } else {
                 mSchemaElement = ExtensibilityUtils.getElement(mWSDLConstruct);
-                
-/*                SchemaElementCookie sCookie = (SchemaElementCookie) parent.getCookie(SchemaElementCookie.class);
-                if(sCookie != null && sCookie.getElement() != null) {
-                    Element parentElement = sCookie.getElement();
-                    if(parentElement != null) {
-                        SchemaElementFinderVisitor seFinder = new SchemaElementFinderVisitor(qName.getLocalPart());
-                        parentElement.accept(seFinder);
-                        this.mElement = seFinder.getSuccessorElement();
-                        if(this.mElement != null) {
-                            sCookie = new SchemaElementCookie(mElement);
-                            getLookupContents().add(sCookie);
-                        }
-                    }
-                    XMLType type = parentElement.getType();
-                     if(type instanceof ComplexType) {
-                     ComplexType cType = (ComplexType) type;
-                     this.mElement = cType.getElementDecl(this.mWSDLConstruct.getLocalName());
-                     if(this.mElement != null) {
-                     sCookie = new SchemaElementCookie(mElement);
-                     getLookupContents().add(sCookie);
-                     }
-                     }
-                } else {
-                    mLogger.warning("Failed to find SchemaElementCookie in parent " + wsdlConstruct.toString() + " or SchemaElementCookie has null schema element");
-                }*/
+
+            /*                SchemaElementCookie sCookie = (SchemaElementCookie) parent.getCookie(SchemaElementCookie.class);
+            if(sCookie != null && sCookie.getElement() != null) {
+            Element parentElement = sCookie.getElement();
+            if(parentElement != null) {
+            SchemaElementFinderVisitor seFinder = new SchemaElementFinderVisitor(qName.getLocalPart());
+            parentElement.accept(seFinder);
+            this.mElement = seFinder.getSuccessorElement();
+            if(this.mElement != null) {
+            sCookie = new SchemaElementCookie(mElement);
+            getLookupContents().add(sCookie);
             }
-        } catch(Exception ex) {
+            }
+            XMLType type = parentElement.getType();
+            if(type instanceof ComplexType) {
+            ComplexType cType = (ComplexType) type;
+            this.mElement = cType.getElementDecl(this.mWSDLConstruct.getLocalName());
+            if(this.mElement != null) {
+            sCookie = new SchemaElementCookie(mElement);
+            getLookupContents().add(sCookie);
+            }
+            }
+            } else {
+            mLogger.warning("Failed to find SchemaElementCookie in parent " + wsdlConstruct.toString() + " or SchemaElementCookie has null schema element");
+            }*/
+            }
+        } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }
-        
-        if(this.mSchemaElement != null) {
+
+        if (this.mSchemaElement != null) {
             SchemaDocumentationFinderVisitor sdFinder = new SchemaDocumentationFinderVisitor();
             this.mSchemaElement.accept(sdFinder);
             String docStr = sdFinder.getDocumentation();
-            if(docStr != null && docStr.length() > 0) {
+            if (docStr != null && docStr.length() > 0) {
                 String shortDesc = docStr;
-                
+
                 if (info != null) {
                     if (bundle != null) {
                         try {
@@ -231,24 +226,42 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
                 }
                 this.setShortDescription(shortDesc);
             }
+            
+            try {
+                ElementProperties elemProps = PropertyModelFactory.getInstance().getElementProperties(mQName);
+                if (elemProps != null) {
+                    for (GroupedProperty gProp : elemProps.getGroupedProperty()) {
+                        String groupedNames = gProp.getGroupedAttributeNames();
+                        String[] splits = groupedNames.split(" ");
+                        String groupDisplayName = gProp.getDisplayName();
+                        for (String split : splits) {
+                            groupNameMap.put(split, groupDisplayName);
+                        }
+                    }
+                }
+
+            } catch (PropertyModelException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
         }
     }
-    
+
     private Node getLayerDelegateNode(WSDLExtensibilityElementInfo elementInfo) {
         Node delegateNode = elementInfo.getDataObject().getNodeDelegate();
         return delegateNode;
     }
-    
+
     private boolean isNamedReferenceable() {
         if (mWSDLConstruct instanceof NamedReferenceable) {
             return true;
         }
         return false;
     }
-    
+
     @Override
     public Image getIcon(int type) {
-        if(mLayerDelegateNode != null) {
+        if (mLayerDelegateNode != null) {
             return mLayerDelegateNode.getIcon(type);
         }
         return ICON;
@@ -256,19 +269,17 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
 
     @Override
     public Image getOpenedIcon(int type) {
-        if(mLayerDelegateNode != null) {
+        if (mLayerDelegateNode != null) {
             return mLayerDelegateNode.getOpenedIcon(type);
         }
         return ICON;
     }
-    
+
     @Override
     public Action[] getActions(boolean context) {
         return createDynamicActions();
     }
-    
-    
-    
+
     @Override
     public NewTypesFactory getNewTypesFactory() {
         return new ExtensibilityElementChildNewTypesFactory(mSchemaElement);
@@ -281,7 +292,7 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
 
     private Action[] createDynamicActions() {
         List<Action> actions = new ArrayList<Action>();
-        
+
         //add these always
         actions.add(SystemAction.get(CutAction.class));
         actions.add(SystemAction.get(CopyAction.class));
@@ -299,7 +310,7 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
             }
             actions.add(SystemAction.get(GoToAction.class));
             if (isNamedReferenceable()) {
-               // actions.add(SystemAction.get(FindUsagesAction.class));
+                // actions.add(SystemAction.get(FindUsagesAction.class));
                 actions.add(RefactoringActionsFactory.whereUsedAction());
                 actions.add(null);
                 actions.add(RefactoringActionsFactory.editorSubmenuAction());
@@ -311,12 +322,12 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
             actions.add(null);
             actions.add(SystemAction.get(PropertiesAction.class));
         }
-        
+
         return actions.toArray(new Action[actions.size()]);
     }
-    
+
     @Override
-    protected void refreshAttributesSheetSet(Sheet sheet)  {
+    protected void refreshAttributesSheetSet(Sheet sheet) {
         Sheet.Set defaultSet = null;
         if (mSchemaElement != null) {
             try {
@@ -325,22 +336,24 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
                     for (Sheet.Set set : sets) {
                         sheet.put(set);
                     }
-                    if (sets.length > 0)
+                    if (sets.length > 0) {
                         defaultSet = sets[sets.length - 1];
+                    }
                 }
                 if (defaultSet != null) {
                     List<Node.Property> properties = createAlwaysPresentAttributeProperty();
-                    if(properties != null) {
+                    if (properties != null) {
                         Iterator<Node.Property> itP = properties.iterator();
-                        while(itP.hasNext()) {
+                        while (itP.hasNext()) {
                             Node.Property property = itP.next();
                             //if property is not present then add it
-                            if(defaultSet.get(property.getName()) == null) {
+                            if (defaultSet.get(property.getName()) == null) {
                                 defaultSet.put(property);
                             }
                         }
                     }
                 }
+
             } catch (Exception e) {
                 ErrorManager.getDefault().notify(e);
             }
@@ -348,12 +361,18 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
             super.refreshAttributesSheetSet(sheet);
         }
     }
-    
-    
+
+    @Override
+    public String getMappedPropertyName(String propName) {
+        String gName = groupNameMap.get(propName);
+        if (gName != null) return gName;
+        return propName;
+    }
+
     public class ExtensibilityElementNamedPropertyAdapter implements NamedPropertyAdapter {
+
         String attributeName;
-        
-        
+
         public ExtensibilityElementNamedPropertyAdapter(String attributeName) {
             this.attributeName = attributeName;
         }
@@ -361,53 +380,55 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
         public void setName(String name) {
             mWSDLConstruct.getModel().startTransaction();
             mWSDLConstruct.setAttribute(attributeName, name);
-                mWSDLConstruct.getModel().endTransaction();
+            mWSDLConstruct.getModel().endTransaction();
         }
 
         public String getName() {
             return mWSDLConstruct.getAttribute(attributeName);
         }
-        
+
         public boolean isWritable() {
             return XAMUtils.isWritable(mWSDLConstruct.getModel());
         }
-        
     }
+
     public class ExtensibilityElementConstrainedNamedPropertyAdapter extends ConstraintNamedPropertyAdapter {
+
         public ExtensibilityElementConstrainedNamedPropertyAdapter() {
             super(getWSDLComponent());
         }
-
 
         @Override
         public boolean isNameExists(String name) {
             return false;
         }
-        
     }
-
 
     @Override
     public String getTypeDisplayName() {
-        if (mConfigurator == null) return null;
-        
+        if (mConfigurator == null) {
+            return null;
+        }
+
         return mConfigurator.getTypeDisplayName(mWSDLConstruct, mQName);
     }
-    
+
     @Override
     public String getHtmlDisplayName() {
         String htmlDisplayName = super.getHtmlDisplayName();
-        
-        if (mConfigurator == null) 
+
+        if (mConfigurator == null) {
             return htmlDisplayName;
-        
+        }
+
         String decoration = mConfigurator.getHtmlDisplayNameDecoration(mWSDLConstruct, mQName);
-        
-        if (decoration == null)
+
+        if (decoration == null) {
             return htmlDisplayName;
-        
-        return htmlDisplayName + " <font color='#999999'>"+decoration+"</font>";
-        
+        }
+
+        return htmlDisplayName + " <font color='#999999'>" + decoration + "</font>";
+
     }
 }
 

@@ -131,7 +131,7 @@ public class ActivatedDocumentListener implements PropertyChangeListener {
         
         lastValidFile = activeFile;
         
-        JavaSourceAccessor.INSTANCE.revalidate(activeJS);
+        JavaSourceAccessor.getINSTANCE().revalidate(activeJS);
     }
 
     /**Set to switch off compilation, usefull in tests.

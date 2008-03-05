@@ -49,7 +49,7 @@ import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.web.project.classpath.WebProjectClassPathModifier;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
@@ -154,9 +154,6 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         assert targetNames.length > 0;
         
         ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
-        
-        WebProjectClassPathModifier cpMod = (WebProjectClassPathModifier) project.getLookup().lookup(WebProjectClassPathModifier.class);
-        cpMod.notifyDeleting();
     }
     
     public void notifyDeleted() throws IOException {

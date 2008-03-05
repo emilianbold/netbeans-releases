@@ -64,8 +64,11 @@ import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpointPanel;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpointPanel;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpointPanel;
+import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 
 
 /**
@@ -98,6 +101,19 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
         
+    private static final Action GO_TO_DIS_ACTION = Models.createAction(
+        loc("CTL_Breakpoint_GoToDis_Label"), // NOI18N
+        new Models.ActionPerformer() {
+            public boolean isEnabled(Object node) {
+                return Disassembly.getCurrent() != null;
+            }
+            public void perform(Object[] nodes) {
+                goToSource((AddressBreakpoint) nodes[0]);
+            }
+        },
+        Models.MULTISELECTION_TYPE_EXACTLY_ONE
+    );
+        
     private static String loc(String key) {
         return NbBundle.getBundle(BreakpointsActionsProvider.class).getString(key);
     }
@@ -110,8 +126,15 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         Action[] oas = original.getActions(node);
         if (node instanceof LineBreakpoint) {
             Action[] as = new Action[oas.length + 3];
-            as [0] = GO_TO_SOURCE_ACTION;
-            as [1] = null;
+            as[0] = GO_TO_SOURCE_ACTION;
+            as[1] = null;
+            System.arraycopy(oas, 0, as, 2, oas.length);
+            as[as.length - 1] = CUSTOMIZE_ACTION;
+            return as;
+        } else if (node instanceof AddressBreakpoint) {
+            Action[] as = new Action[oas.length + 3];
+            as[0] = GO_TO_DIS_ACTION;
+            as[1] = null;
             System.arraycopy(oas, 0, as, 2, oas.length);
             as[as.length - 1] = CUSTOMIZE_ACTION;
             return as;
@@ -123,12 +146,15 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
     }
     
     public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
-        if (node instanceof LineBreakpoint) 
+        if (node instanceof LineBreakpoint) {
             goToSource((LineBreakpoint) node);
-        else if (node instanceof GdbBreakpoint) 
+        } else if (node instanceof AddressBreakpoint) {
+            goToSource((AddressBreakpoint) node);
+        } else if (node instanceof GdbBreakpoint) {
             customize((Breakpoint) node);
-        else
+        } else {
             original.performDefaultAction(node);
+        }
     }
 
     public void addModelListener(ModelListener l) {
@@ -143,6 +169,8 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
             c = new LineBreakpointPanel((LineBreakpoint) b);
         } else if (b instanceof FunctionBreakpoint) {
             c = new FunctionBreakpointPanel((FunctionBreakpoint) b);
+        } else if (b instanceof AddressBreakpoint) {
+            c = new AddressBreakpointPanel((AddressBreakpoint) b);
         } else {
 	    return; // should never happen (ie, its a developer error)
 	}
@@ -186,7 +214,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         d.setVisible(true);
     }
     
-    private static void goToSource(LineBreakpoint b) {
+    private static void goToSource(GdbBreakpoint b) {
         EditorContextBridge.showSource(b, null);
     }
 }

@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
@@ -54,7 +56,6 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -77,10 +78,7 @@ import org.netbeans.modules.uml.project.AssociatedSourceProvider;
 
 public class NBFileUtils
 {
-    
-
-
-
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.uml.integration");
     /**
      * Retrieves the FileSystem that contains the specified file or null if no
      * available FileSystem contains the file.  <p> The FileSystem is located by
@@ -180,12 +178,11 @@ public class NBFileUtils
         FileObject fileobj = FileUtil.toFileObject(new File(root));
         try
         {
-            return fileobj.getFileSystem();
+            return fileobj != null ? fileobj.getFileSystem() : null;
         }
         catch (FileStateInvalidException e)
         {
-            // TODO Auto-generated catch block
-            Log.stackTrace(e);
+            logger.log(Level.WARNING, null, e);
         }
         return null;
     }
@@ -235,15 +232,12 @@ public class NBFileUtils
         }
         catch (DataObjectNotFoundException doE)
         {
-            // TODO: Handle Data Object not found structure;
-            Log.stackTrace(doE);
+            logger.log(Level.WARNING, null, doE);
         }
         catch (Exception ioE)
         {
-            // TODO: Handle not able to create the directory
-            Log.stackTrace(ioE);
+            logger.log(Level.WARNING, null, ioE);
         }
-        
         return retVal;
     }
     
@@ -361,6 +355,7 @@ public class NBFileUtils
         }
         catch (DataObjectNotFoundException e)
         {
+            logger.log(Level.WARNING, null, e);
             retVal = null;
         }
         
@@ -406,22 +401,13 @@ public class NBFileUtils
      */
     public static boolean isWritable(File dir)
     {
-        if (dir == null || !dir.isDirectory())
+        if ( dir == null) 
+        {
             return false;
+        }
         
-        try
-        {
-            File tmp = File.createTempFile("descr", null, dir);
-            if (tmp != null && tmp.exists())
-            {
-                tmp.delete();
-                return true;
-            }
-        }
-        catch (IOException e)
-        {
-        }
-        return false;
+        FileObject folderObj = FileUtil.toFileObject(dir);
+        return (folderObj != null && folderObj.isFolder() && folderObj.canWrite());
     }
     
     /**
@@ -542,9 +528,9 @@ public class NBFileUtils
 		    retVal = getTypeElement(source, fullName);
 		}		
             }
-            catch (Exception E)
+            catch (Exception ex)
             {
-                Log.stackTrace(E);
+                logger.log(Level.WARNING, null, ex);
             }
         }
         return retVal;
@@ -572,7 +558,7 @@ public class NBFileUtils
 		}
 	    }, true);
 	} catch (IOException ioex) {
-            Log.stackTrace(ioex);		    
+            logger.log(Level.WARNING, null, ioex);		    
 	}
 	return retVal[0];
     }
@@ -636,9 +622,9 @@ public class NBFileUtils
                 retVal = findResource(fileName);
         }
 
-        catch (Exception E)
+        catch (Exception ex)
         {
-            Log.stackTrace(E);
+            logger.log(Level.WARNING, null, ex);
         }
         
         return retVal;
@@ -712,7 +698,7 @@ public class NBFileUtils
         }
         catch (Exception aeE)
         {
-            Log.stackTrace(aeE);
+            logger.log(Level.WARNING, null, aeE);
         }
         return packFileObject;
         
@@ -768,7 +754,7 @@ public class NBFileUtils
         }
         catch (Exception aeE)
         {
-            Log.stackTrace(aeE);
+            logger.log(Level.WARNING, null, aeE);
         }
         return packFileObject;
         
@@ -803,9 +789,8 @@ public class NBFileUtils
         }
         catch (Exception ioE)
         {
-            Log.stackTrace(ioE);
+            logger.log(Level.WARNING, null, ioE);
         }
-        
         return retVal;
     }
     
@@ -827,7 +812,7 @@ public class NBFileUtils
         
         catch (DataObjectNotFoundException e)
         {
-            Log.stackTrace(e);
+            logger.log(Level.WARNING, null, e);
         }
         
         Project currentProj = FileOwnerQuery.getOwner(dObj.getPrimaryFile());

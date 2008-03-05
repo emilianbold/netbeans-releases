@@ -45,8 +45,7 @@ public class ThreadsTableModel implements TableModel, Constants {
     public ThreadsTableModel(
             final ContextProvider contextProvider) {
         
-        myDebugger = (BpelDebugger) contextProvider.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
     }
     
     /**{@inheritDoc}*/
@@ -55,6 +54,10 @@ public class ThreadsTableModel implements TableModel, Constants {
             final String column) throws UnknownTypeException {
         
         if (object == TreeModel.ROOT) {
+            return "";
+        }
+        
+        if (object instanceof ThreadsTreeModel.Dummy) {
             return "";
         }
         

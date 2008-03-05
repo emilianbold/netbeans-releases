@@ -20,7 +20,7 @@
 package org.netbeans.modules.bpel.debugger.ui.source;
 
 import java.awt.Dialog;
-import java.awt.event.WindowListener;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.JDialog;
+import javax.swing.JRootPane;
+import javax.swing.KeyStroke;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
 import org.netbeans.modules.bpel.debugger.api.BpelSourcesRegistry;
@@ -96,10 +98,8 @@ public class SourcePathImpl implements SourcePath {
      */
     public SourcePathImpl(ContextProvider lookupProvider) {
         myLookupProvider = lookupProvider;
-        myDebugger = (BpelDebugger) lookupProvider.lookupFirst
-                (null, BpelDebugger.class);
-        mySourcesRegistry = (BpelSourcesRegistry)Lookup.
-                getDefault().lookup(BpelSourcesRegistry.class);
+        myDebugger = lookupProvider.lookupFirst(null, BpelDebugger.class);
+        mySourcesRegistry = Lookup.getDefault().lookup(BpelSourcesRegistry.class);
         updateAvailableSources();
     }
     
@@ -212,26 +212,30 @@ public class SourcePathImpl implements SourcePath {
     }
     
     private String selectSource(QName processQName, Set<String> sources) {
-        SeveralSourceFilesWarning panel = new SeveralSourceFilesWarning(
+        final SeveralSourceFilesWarning panel = new SeveralSourceFilesWarning(
                 processQName,
                 sources.toArray(new String[sources.size()]));
-        Object[] options = new Object[] {DialogDescriptor.OK_OPTION};
-        DialogDescriptor desc = new DialogDescriptor(
+        final Object[] options = new Object[] {DialogDescriptor.OK_OPTION};
+        final DialogDescriptor desc = new DialogDescriptor(
                 panel,
                 NbBundle.getMessage(
                 SeveralSourceFilesWarning.class, "CTL_MORE_THAN_ONE_SOURCE_WARNING_TITLE" // NOI18N
                 ),
                 true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null
                 );
-        Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
+        final Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
         
         // ugly hack -- we need to disable the option to just close the dialog,
         // see #95898
-        ((JDialog) dlg).setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-        
+        final JDialog jDlg = (JDialog) dlg;
+        jDlg.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        jDlg.getRootPane().getInputMap(
+                JRootPane.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).remove(
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0));
+        jDlg.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourcePathImpl.class, "ACS_Select_Source_File_Dialog"));
         dlg.setVisible(true);
         
-        String path = panel.getSelectedInstance();
+        final String path = panel.getSelectedInstance();
         
         sources.remove(path);
         mySelectedSources.removeAll(sources);
@@ -246,16 +250,14 @@ public class SourcePathImpl implements SourcePath {
     
     private synchronized SessionCookie getSessionCookie() {
         if (mySessionCookie == null) {
-            mySessionCookie = (SessionCookie) myLookupProvider.lookupFirst(
-                    null, SessionCookie.class);
+            mySessionCookie = myLookupProvider.lookupFirst(null, SessionCookie.class);
         }
         return mySessionCookie;
     }
     
     private synchronized SourcePathSelectionProvider getSelectionProvider() {
         if (mySelectionProvider == null) {
-            mySelectionProvider = (SourcePathSelectionProvider) myLookupProvider.lookupFirst(
-                    null, SourcePathSelectionProvider.class);
+            mySelectionProvider = myLookupProvider.lookupFirst(null, SourcePathSelectionProvider.class);
         }
         return mySelectionProvider;
     }

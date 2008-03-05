@@ -53,7 +53,6 @@ var ONE_LEFT_SRC = "img/one_left.gif";
 var IMG_ONE      = '<img src="' + ONE_SRC + '"/>';
 var IMG_ONE_LEFT = '<img src="' + ONE_LEFT_SRC + '"/>';
 
-
 var CHECKED_WHITE_SRC = "img/checked_badge_white.gif";
 var CHECKED_BEIGE_SRC = "img/checked_badge_beige.gif";
 var WARNING_WHITE_SRC = "img/warning_badge_white.gif";
@@ -70,6 +69,8 @@ var IMAGE_CHECKED_WHITE = '<img src="' + CHECKED_WHITE_SRC + '"/>';
 var IMAGE_WARNING_WHITE = '<img src="' + WARNING_WHITE_SRC + '"/>';
 var IMAGE_CHECKED_BEIGE = '<img src="' + CHECKED_BEIGE_SRC + '"/>';
 var IMAGE_WARNING_BEIGE = '<img src="' + WARNING_BEIGE_SRC + '"/>';
+
+var download_tabs_number = 0;
 
 function handle_keyup(event) {
     //if (event.keyCode == 13) {
@@ -584,21 +585,20 @@ function update() {
     if ((platform.indexOf("solaris")!=-1) || (platform.indexOf("macosx")!=-1)) {
     	document.getElementById("javame_link").innerHTML = DOWNLOAD_IMG_DISABLED;
     	document.getElementById("javame_bundle_name").innerHTML = '<a class="bundle_display_name_no">' + getBundleLongName("mobility") + '</a>';
-	document.getElementById("mobility_end2end_message").innerHTML = '<br>';
+	document.getElementById("mobility_end2end_message").innerHTML = "";
+	document.getElementById("mobility_end2end_number").innerHTML  = "";
     } else {
     	document.getElementById("javame_link").innerHTML = '<a href="javascript: download(\'mobility\')">' + DOWNLOAD_IMG + '</a>';
         document.getElementById("javame_bundle_name").innerHTML = '<a class="bundle_display_name">' + getBundleLongName("mobility") + '</a>';
-	var end2end_warning = "";
-	end2end_warning += "<a class=\"special_message_number\">1</a>"; 
-	end2end_warning += "<a class=\"special_message_text\">" + MOBILITY_E2E_MESSAGE + "</a>";
-	document.getElementById("mobility_end2end_message").innerHTML = end2end_warning;
+	document.getElementById("mobility_end2end_number").innerHTML  = "<a class=\"special_message_number\">1</a>";
+	document.getElementById("mobility_end2end_message").innerHTML = "<a class=\"special_message_text\">" + MOBILITY_E2E_MESSAGE + "</a>";
     }
 
     if (platform.indexOf("macosx")!=-1) {
         document.getElementById("jdk_note").innerHTML = JDK_NOTE_MACOSX;
     }
     else {
-        document.getElementById("jdk_note").innerHTML = JDK_NOTE_ALL.replace('{0}',JDK_DOWNLOAD_LINK);
+        document.getElementById("jdk_note").innerHTML = JDK_NOTE_ALL.replace('{0}',JDK_DOWNLOAD_LINK).replace('{1}',NBJDK_DOWNLOAD_LINK).replace('{2}',JDK_LATEST_UPDATE);
     }
 }
 
@@ -621,6 +621,18 @@ function is_compatible(index, platform) {
     }    
     
     return false;
+}
+
+function add_download_tab(name, url) {
+   if(download_tabs_number!=0) {
+       document.write(" | ");
+   }
+   if(url) {
+	writeUrl(url,name);
+   } else { 
+	message(name);
+   }
+   download_tabs_number++;
 }
 
 function download(option) {

@@ -712,7 +712,14 @@ public class CodeFoldingSideBar extends JComponent implements SettingsChangeList
                 performAction(mark);
             }
         }
-        
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            // #102288 - missing event consuming caused quick doubleclicks to break
+            // fold expanding/collapsing and move caret to the particular line
+            e.consume();
+        }
+
     }
 
     class SideBarFoldHierarchyListener implements FoldHierarchyListener{

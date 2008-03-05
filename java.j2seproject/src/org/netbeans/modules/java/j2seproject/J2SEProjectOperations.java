@@ -94,7 +94,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         List<FileObject> files = new ArrayList<FileObject>();
         
         addFile(projectDirectory, "nbproject", files); // NOI18N
-        addFile(projectDirectory, "build.xml", files); // NOI18N
+        addFile(projectDirectory, J2SEProjectUtil.getBuildXmlName(project), files); // NOI18N
         addFile(projectDirectory, "xml-resources", files); //NOI18N
         addFile(projectDirectory, "catalog.xml", files); //NOI18N
         
@@ -117,7 +117,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         
         Properties p = new Properties();
         String[] targetNames = ap.getTargetNames(ActionProvider.COMMAND_CLEAN, Lookup.EMPTY, p);
-        FileObject buildXML = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+        FileObject buildXML = J2SEProjectUtil.getBuildXml(project);
         
         assert targetNames != null;
         assert targetNames.length > 0;
@@ -146,7 +146,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
     }
     
     public void notifyMoving() throws IOException {
-        if (!this.project.getUpdateHelper().requestSave()) {
+        if (!this.project.getUpdateHelper().requestUpdate()) {
             throw new IOException (NbBundle.getMessage(J2SEProjectOperations.class,
                 "MSG_OldProjectMetadata"));
         }

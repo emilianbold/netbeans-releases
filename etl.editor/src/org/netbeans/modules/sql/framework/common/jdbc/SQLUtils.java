@@ -367,7 +367,7 @@ public class SQLUtils {
                 rawSql = processedSql;
             } while (flag);
         } while (iter.hasNext());
-        mLogger.infoNoloc(mLoc.t("PRSR091: >>> Generated PreparedStatement: \n {0}", processedSql));
+        mLogger.infoNoloc(mLoc.t("PRSR091: >>> Generated PreparedStatement: {0}", processedSql));
         return processedSql;
     }
 

@@ -241,7 +241,7 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
 
     }
 
-    class ConfigMenu extends JMenu implements DynamicMenuContent {
+    class ConfigMenu extends JMenu implements DynamicMenuContent, ActionListener {
 
         private final Lookup context;
 
@@ -254,20 +254,23 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
             }
         }
 
-        public JComponent[] getMenuPresenters() {
-            removeAll();
-            final ProjectConfigurationProvider<?> pcp;
+        private ProjectConfigurationProvider<?> findPCP() {
             if (context != null) {
                 Collection<? extends Project> projects = context.lookupAll(Project.class);
                 if (projects.size() == 1) {
-                    pcp = projects.iterator().next().getLookup().lookup(ProjectConfigurationProvider.class);
+                    return projects.iterator().next().getLookup().lookup(ProjectConfigurationProvider.class);
                 } else {
                     // No selection, or multiselection.
-                    pcp = null;
+                    return null;
                 }
             } else {
-                pcp = ActiveConfigAction.this.pcp; // global menu item; take from main project
+                return ActiveConfigAction.this.pcp; // global menu item; take from main project
             }
+        }
+        
+        public JComponent[] getMenuPresenters() {
+            removeAll();
+            final ProjectConfigurationProvider<?> pcp = findPCP();
             if (pcp != null) {
                 boolean something = false;
                 ProjectConfiguration activeConfig = getActiveConfiguration(pcp);
@@ -288,11 +291,7 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
                     something = true;
                     JMenuItem customize = new JMenuItem();
                     Mnemonics.setLocalizedText(customize, NbBundle.getMessage(ActiveConfigAction.class, "ActiveConfigAction.customize"));
-                    customize.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            pcp.customize();
-                        }
-                    });
+                    customize.addActionListener(this);
                     add(customize);
                 }
                 setEnabled(something);
@@ -308,6 +307,13 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
             // Always rebuild submenu.
             // For performance, could try to reuse it if context == null and nothing has changed.
             return getMenuPresenters();
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            ProjectConfigurationProvider<?> pcp = findPCP();
+            if (pcp != null) {
+                pcp.customize();
+            }
         }
 
     }

@@ -84,6 +84,7 @@ import org.openide.util.Exceptions;
 /**
  *
  * @author Pavel Buzek
+ * @author Po-Ting Wu
  */
 public final class JsfForm implements ActiveEditorDrop {
         
@@ -114,11 +115,43 @@ public final class JsfForm implements ActiveEditorDrop {
         "<h:outputText value=\"{0}:\"/>\n <h:inputText id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" />\n",
         "<h:outputText value=\"{0}:\"/>\n <h:inputText id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" />\n",
         //relationship *ToOne - use combo box
-        "<h:outputText value=\"{0}:\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\">\n <f:selectItems value=\"#'{'{3}.{2}s'}'\"/>\n </h:selectOneMenu>\n",
+//        "<h:outputText value=\"{0}:\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\">\n <f:selectItems value=\"#'{'{3}.{2}s'}'\"/>\n </h:selectOneMenu>\n",
+        "<h:outputText value=\"{0}:\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\">\n <f:selectItems value=\"#'{'{4}.{4}sAvailableSelectOne'}'\"/>\n </h:selectOneMenu>\n",
         //use date time converter
         "<h:outputText value=\"{0} ({4}):\"/>\n <h:inputText id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" >\n <f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:inputText>\n",
         //relationship *ToOne - use combo box, in FORM_TYPE_NEW display only if not pre set
-        "<h:outputText value=\"{0}:\" rendered=\"#'{'{1}.{2} == null}\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" rendered=\"#'{'{1}.{2} == null}\">\n <f:selectItems value=\"#'{'{3}.{2}s'}'\"/>\n </h:selectOneMenu>\n",
+        "<h:outputText value=\"{0}:\" rendered=\"#'{'{1}.{2} == null}\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" rendered=\"#'{'{1}.{2} == null}\">\n <f:selectItems value=\"#'{'{4}.{4}sAvailableSelectOne'}'\"/>\n </h:selectOneMenu>\n",
+//        "<h:outputText value=\"{0}:\"/>\n <h:commandLink action=\"#'{'{2}.detailSetupFrom{3}Detail}\" value=\"#'{'{1}.{2}}\" />\n",
+        "<h:outputText value=\"{0}:\"/>\n" +
+                "<h:panelGroup>\n" + 
+                "<h:outputText value=\"#'{'{1}.{2}'}'\"/>\n" +
+                "<h:panelGroup rendered=\"#'{'{1}.{2} != null'}'\">\n" +
+                "<h:outputText value=\" (\"/>\n" +
+                "<h:commandLink value=\"Show\" action=\"#'{'{4}.detailSetup'}'\">\n" +
+                "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
+                "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
+                "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
+                "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}Controller\"/>\n" +
+                "</h:commandLink>\n" +
+                "<h:outputText value=\" \"/>\n" +
+                "<h:commandLink value=\"Edit\" action=\"#'{'{4}.editSetup'}'\">\n" +
+                "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
+                "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
+                "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
+                "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}Controller\"/>\n" +
+                "</h:commandLink>\n" +
+                "<h:outputText value=\" \"/>\n" +
+                "<h:commandLink value=\"Destroy\" action=\"#'{'{4}.destroy'}'\">\n" +
+                "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
+                "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
+                "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
+                "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}Controller\"/>\n" +
+                "</h:commandLink>\n" +
+                "<h:outputText value=\" )\"/>\n" +
+                "</h:panelGroup>\n" +
+                "</h:panelGroup>\n",
+        //relationship *ToMany - use listbox
+        "<h:outputText value=\"{0}:\"/>\n <h:selectManyListbox id=\"{2}\" value=\"#'{'{3}.{2}Of{1}'}'\" title=\"{0}\" size=\"6\">\n <f:selectItems value=\"#'{'{4}.{4}sAvailableSelectMany'}'\"/>\n </h:selectManyListbox>\n"
     };
     
     private String variable = "";
@@ -195,28 +228,30 @@ public final class JsfForm implements ActiveEditorDrop {
         return REL_NONE;
     }
     
-    public static ExecutableElement getOtherSideOfRelation(Types types, ExecutableElement executableElement, boolean isFieldAccess) {
+    public static ExecutableElement getOtherSideOfRelation(CompilationController controller, ExecutableElement executableElement, boolean isFieldAccess) {
         TypeMirror passedReturnType = executableElement.getReturnType();
         if (TypeKind.DECLARED != passedReturnType.getKind() || !(passedReturnType instanceof DeclaredType)) {
             return null;
         }
-        passedReturnType = stripCollection((DeclaredType)passedReturnType, types);
-        if (passedReturnType == null) {
+        Types types = controller.getTypes();
+        TypeMirror passedReturnTypeStripped = stripCollection((DeclaredType)passedReturnType, types);
+        if (passedReturnTypeStripped == null) {
             return null;
         }
-        TypeElement passedReturnTypeElement = (TypeElement) types.asElement(passedReturnType);
-        //try to find a mappedBy annotation element on the passedReturnType
-        //mbohm: attempt to get mappedBy not currently working!
+        TypeElement passedReturnTypeStrippedElement = (TypeElement) types.asElement(passedReturnTypeStripped);
+        
+        //try to find a mappedBy annotation element on the possiblyAnnotatedElement
+        Element possiblyAnnotatedElement = isFieldAccess ? guessField(controller, executableElement) : executableElement;
         String mappedBy = null;
-        AnnotationMirror persistenceAnnotation = findAnnotation(passedReturnTypeElement, "javax.persistence.OneToOne");  //NOI18N"
+        AnnotationMirror persistenceAnnotation = findAnnotation(possiblyAnnotatedElement, "javax.persistence.OneToOne");  //NOI18N"
         if (persistenceAnnotation == null) {
-            persistenceAnnotation = findAnnotation(passedReturnTypeElement, "javax.persistence.OneToMany");  //NOI18N"
+            persistenceAnnotation = findAnnotation(possiblyAnnotatedElement, "javax.persistence.OneToMany");  //NOI18N"
         }
         if (persistenceAnnotation == null) {
-            persistenceAnnotation = findAnnotation(passedReturnTypeElement, "javax.persistence.ManyToOne");  //NOI18N"
+            persistenceAnnotation = findAnnotation(possiblyAnnotatedElement, "javax.persistence.ManyToOne");  //NOI18N"
         }
         if (persistenceAnnotation == null) {
-            persistenceAnnotation = findAnnotation(passedReturnTypeElement, "javax.persistence.ManyToMany");  //NOI18N"
+            persistenceAnnotation = findAnnotation(possiblyAnnotatedElement, "javax.persistence.ManyToMany");  //NOI18N"
         }
         if (persistenceAnnotation != null) {
             Map<? extends ExecutableElement,? extends AnnotationValue> persistenceAnnotationMap = persistenceAnnotation.getElementValues();
@@ -224,13 +259,17 @@ public final class JsfForm implements ActiveEditorDrop {
                 if ("mappedBy".equals(key.getSimpleName().toString())) {
                     AnnotationValue mappedByValue = persistenceAnnotationMap.get(key);
                     mappedBy = mappedByValue.toString();
+                    if (mappedBy.startsWith("\"") && mappedBy.endsWith("\"")) {
+                        mappedBy = mappedBy.substring(1, mappedBy.length() - 1);
+                    }
+                    break;
                 }
             }
         }
-        for (ExecutableElement method : getEntityMethods(passedReturnTypeElement)) {
+        for (ExecutableElement method : getEntityMethods(passedReturnTypeStrippedElement)) {
             if (mappedBy != null && mappedBy.length() > 0) {
                 String tail = mappedBy.length() > 1 ? mappedBy.substring(1) : "";
-                String getterName = "get" + mappedBy.substring(0).toUpperCase() + tail;
+                String getterName = "get" + mappedBy.substring(0,1).toUpperCase() + tail;
                 if (getterName.equals(method.getSimpleName().toString())) {
                     return method;
                 }
@@ -318,8 +357,7 @@ public final class JsfForm implements ActiveEditorDrop {
                 if (attributes.iterator().hasNext()) {
                     AnnotationValue annotationValue = attributes.iterator().next();
                     if (annotationValue != null) {
-                        //TODO: RETOUCHE annotation attribute value
-                        return null;//annotationValue.getValue();
+                        return annotationValue.getValue().toString();
                     }
                 }
             }
@@ -347,7 +385,7 @@ public final class JsfForm implements ActiveEditorDrop {
         FileObject fileObject = getFO(target);
         if (fileObject != null) {
             WebModule webModule = WebModule.getWebModule(fileObject);
-            String[] configFiles = JSFConfigUtilities.getConfigFiles(webModule.getDeploymentDescriptor());
+            String[] configFiles = JSFConfigUtilities.getConfigFiles(webModule);
             return configFiles != null && configFiles.length > 0;
         }
         return false;
@@ -432,6 +470,11 @@ public final class JsfForm implements ActiveEditorDrop {
     }
     
     public static void createForm(CompilationController controller, TypeElement bean, int formType, String variable, StringBuffer stringBuffer, boolean createSelectForRel) {
+        createForm(controller, bean, formType, variable, stringBuffer, createSelectForRel, "");
+    }
+    
+    public static void createForm(CompilationController controller, TypeElement bean, int formType, String variable, StringBuffer stringBuffer, boolean createSelectForRel, String entityClass) {
+        String simpleEntityName = JSFClientGenerator.simpleClassName(entityClass);
         ExecutableElement methods [] = getEntityMethods(bean);
         boolean fieldAccess = isFieldAccess(bean);
         TypeMirror dateTypeMirror = controller.getElements().getTypeElement("java.util.Date").asType();
@@ -441,6 +484,14 @@ public final class JsfForm implements ActiveEditorDrop {
                 int isRelationship = isRelationship(controller, method, fieldAccess);
                 String name = methodName.substring(3);
                 String propName = JSFClientGenerator.getPropNameFromMethod(methodName);
+                TypeMirror t = method.getReturnType();
+                TypeMirror tstripped = stripCollection(t, controller.getTypes());
+                String relType = tstripped.toString();
+                if (relType.endsWith("[]")) {
+                    relType = relType.substring(0, relType.length() - 2);
+                }
+                String simpleRelType = JSFClientGenerator.simpleClassName(relType); //just "Pavilion"
+                String relatedController = JSFClientGenerator.fieldFromClassName(simpleRelType);
                 if (formType == FORM_TYPE_NEW && 
                         ((isId(controller, method, fieldAccess) && isGenerated(controller, method, fieldAccess)) || 
                         isReadOnly(controller.getTypes(), method))) {
@@ -456,12 +507,18 @@ public final class JsfForm implements ActiveEditorDrop {
                         //param 3 - temporal, param 4 - date/time format
                         stringBuffer.append(MessageFormat.format(ITEM [5], new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal)}));
                     }
-                } else if ((formType == FORM_TYPE_DETAIL && isRelationship == REL_TO_ONE) || isRelationship == REL_NONE) {
+                } else if (formType == FORM_TYPE_DETAIL && isRelationship == REL_TO_ONE) {
+                    stringBuffer.append(MessageFormat.format(ITEM [7], new Object [] {name, variable, propName, simpleEntityName, relatedController, simpleRelType, variable.substring(0, variable.lastIndexOf('.')), entityClass}));
+                } else if (isRelationship == REL_NONE) {
                     //normal field (input or output text)
                     stringBuffer.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName}));
                 } else if (isRelationship == REL_TO_ONE) {
                     //combo box for editing toOne relationships
-                    stringBuffer.append(MessageFormat.format(formType == FORM_TYPE_EDIT ? ITEM [4] : ITEM[6]/* FORM_TYPE_NEW */, new Object [] {name, variable, propName, variable.substring(0, variable.lastIndexOf('.'))}));
+//                    stringBuffer.append(MessageFormat.format(formType == FORM_TYPE_EDIT ? ITEM [4] : ITEM[6]/* FORM_TYPE_NEW */, new Object [] {name, variable, propName, variable.substring(0, variable.lastIndexOf('.')), relatedController}));
+                    stringBuffer.append(MessageFormat.format(ITEM [4], new Object [] {name, variable, propName, variable.substring(0, variable.lastIndexOf('.')), relatedController}));
+                } else if (formType != FORM_TYPE_DETAIL && isRelationship == REL_TO_MANY) {
+                    //listbox for editing toMany relationships
+                    stringBuffer.append(MessageFormat.format(ITEM [8], new Object [] {name, simpleEntityName, propName, variable.substring(0, variable.lastIndexOf('.')), relatedController}));
                 }
             }
         }
@@ -470,6 +527,7 @@ public final class JsfForm implements ActiveEditorDrop {
     public static void createTablesForRelated(CompilationController controller, TypeElement bean, int formType, String variable, 
             String idProperty, boolean isInjection, StringBuffer stringBuffer) {
         ExecutableElement methods [] = getEntityMethods(bean);
+        String entityClass = bean.getQualifiedName().toString();
         String simpleClass = bean.getSimpleName().toString();
         String managedBean = JSFClientGenerator.getManagedBeanName(simpleClass);
         boolean fieldAccess = isFieldAccess(bean);
@@ -482,7 +540,7 @@ public final class JsfForm implements ActiveEditorDrop {
                     String name = methodName.substring(3);
                     String propName = JSFClientGenerator.getPropNameFromMethod(methodName);
                     if (isRelationship == REL_TO_MANY) {
-                        ExecutableElement otherSide = getOtherSideOfRelation(controller.getTypes(), method, fieldAccess);
+                        ExecutableElement otherSide = getOtherSideOfRelation(controller, method, fieldAccess);
                         int otherSideMultiplicity = REL_TO_ONE;
                         if (otherSide != null) {
                             TypeElement relClass = (TypeElement) otherSide.getEnclosingElement();
@@ -490,8 +548,9 @@ public final class JsfForm implements ActiveEditorDrop {
                             otherSideMultiplicity = isRelationship(controller, otherSide, isRelFieldAccess);
                         }
 
-                        List<TypeElement> typeParameters = getTypeParameters(method.getReturnType());
-                        TypeElement typeElement = typeParameters.size() > 0 ? typeParameters.get(0) : null;
+                        Types types = controller.getTypes();                        
+                        TypeMirror typeArgMirror = stripCollection(method.getReturnType(), types);
+                        TypeElement typeElement = (TypeElement)types.asElement(typeArgMirror);
                         
                         if (typeElement != null) {
                             boolean relatedIsFieldAccess = isFieldAccess(typeElement);
@@ -500,37 +559,57 @@ public final class JsfForm implements ActiveEditorDrop {
                             String relatedClass = typeElement.getSimpleName().toString();
                             String relatedManagedBean = JSFClientGenerator.getManagedBeanName(relatedClass);
                             String detailManagedBean = bean.getSimpleName().toString();
-                            stringBuffer.append("<h2>List of " + name + "</h2>\n");
-                            stringBuffer.append("<h:outputText rendered=\"#{not " + relatedManagedBean + ".detail" + relatedClass + "s.rowAvailable}\" value=\"No " + name + "\"/><br>\n");
-                            stringBuffer.append("<h:dataTable value=\"#{" + relatedManagedBean + ".detail" + relatedClass + "s}\" var=\"item\" \n");
-                            stringBuffer.append("border=\"1\" cellpadding=\"2\" cellspacing=\"0\" \n rendered=\"#{not empty " + relatedManagedBean + ".detail" + relatedClass + "s}\">\n"); //NOI18N
+                            stringBuffer.append("<h:outputText value=\"" + name + ":\" />\n");
+                            stringBuffer.append("<h:panelGroup>\n");
+                            stringBuffer.append("<h:outputText rendered=\"#{empty " + variable + "." + propName + "}\" value=\"(No " + name + " Found)\"/>\n");
+                            stringBuffer.append("<h:dataTable value=\"#{" + variable + "." + propName + "}\" var=\"item\" \n");
+                            stringBuffer.append("border=\"1\" cellpadding=\"2\" cellspacing=\"0\" \n rendered=\"#{not empty " + variable + "." + propName + "}\">\n"); //NOI18N
                             String removeItems = "remove" + methodName.substring(3);
-                            String commands = " <h:column>\n <h:commandLink value=\"Destroy\" action=\"#'{'" + relatedManagedBean + ".destroyFrom" + detailManagedBean + "'}'\">\n" 
-                                    + "<f:param name=\"" + relatedIdProperty +"\" value=\"#'{'{0}." + relatedIdProperty + "'}'\"/>\n"
-                                    + "<f:param name=\"relatedId\" value=\"#'{'" + variable + "." + idProperty + "'}'\"/>\n"
-                                    + "</h:commandLink>\n  <h:outputText value=\" \"/>\n"
-                                    + " <h:commandLink value=\"Edit\" action=\"#'{'" + relatedManagedBean + ".editSetup'}'\">\n"
-                                    + "<f:param name=\"" + relatedIdProperty +"\" value=\"#'{'{0}." + relatedIdProperty + "'}'\"/>\n"
-                                    + "<h:outputText value=\" \"/>\n </h:commandLink>\n"
-                                    + (otherSideMultiplicity == REL_TO_MANY ? "<h:commandLink value=\"Remove\" action=\"#'{'" + managedBean + "." + removeItems + "'}'\"/>" : "")
+                            String commands = "<h:column>\n"
+                                    + "<f:facet name=\"header\">\n"
+                                    + "<h:outputText escape=\"false\" value=\"&nbsp;\"/>\n"
+                                    + "</f:facet>\n"
+                                    + "<h:commandLink value=\"Show\" action=\"#'{'" + relatedManagedBean + ".detailSetup'}'\">\n" 
+                                    + "<f:param name=\"jsfcrud.current" + simpleClass + "\" value=\"#'{'" + managedBean + ".asString[" + variable + "]'}'\"/>\n"
+                                    + "<f:param name=\"jsfcrud.current" + relatedClass + "\" value=\"#'{'" + relatedManagedBean + ".asString[{0}]'}'\"/>\n"
+                                    + "<f:param name=\"jsfcrud.relatedController\" value=\"" + managedBean + "\" />\n"
+                                    + "<f:param name=\"jsfcrud.relatedControllerType\" value=\"" + entityClass + "Controller\" />\n"
+                                    + "</h:commandLink>\n"
+                                    + "<h:outputText value=\" \"/>\n"
+                                    + "<h:commandLink value=\"Edit\" action=\"#'{'" + relatedManagedBean + ".editSetup'}'\">\n"
+                                    + "<f:param name=\"jsfcrud.current" + simpleClass + "\" value=\"#'{'" + managedBean + ".asString[" + variable + "]'}'\"/>\n"
+                                    + "<f:param name=\"jsfcrud.current" + relatedClass + "\" value=\"#'{'" + relatedManagedBean + ".asString[{0}]'}'\"/>\n"
+                                    + "<f:param name=\"jsfcrud.relatedController\" value=\"" + managedBean + "\" />\n"
+                                    + "<f:param name=\"jsfcrud.relatedControllerType\" value=\"" + entityClass + "Controller\" />\n"
+                                    + "</h:commandLink>\n"
+                                    + "<h:outputText value=\" \"/>\n"
+                                    + "<h:commandLink value=\"Destroy\" action=\"#'{'" + relatedManagedBean + ".destroy'}'\">\n" 
+                                    + "<f:param name=\"jsfcrud.current" + simpleClass + "\" value=\"#'{'" + managedBean + ".asString[" + variable + "]'}'\"/>\n"
+                                    + "<f:param name=\"jsfcrud.current" + relatedClass + "\" value=\"#'{'" + relatedManagedBean + ".asString[{0}]'}'\"/>\n"
+                                    + "<f:param name=\"jsfcrud.relatedController\" value=\"" + managedBean + "\" />\n"
+                                    + "<f:param name=\"jsfcrud.relatedControllerType\" value=\"" + entityClass + "Controller\" />\n"
+                                    + "</h:commandLink>\n"
                                     + "</h:column>\n";
                             
                             JsfTable.createTable(controller, typeElement, variable + "." + propName, stringBuffer, commands, "detailSetup");
                             stringBuffer.append("</h:dataTable>\n");
-                            if (otherSideMultiplicity == REL_TO_MANY) {
-                                stringBuffer.append("<br>\n Add " + relatedClass + "s:\n <br>\n");
-                                String itemsToAdd = JSFClientGenerator.getPropNameFromMethod(methodName + "ToAdd");
-                                stringBuffer.append("<h:selectManyListbox id=\"add" + relatedClass + "s\" value=\"#{" 
-                                        + managedBean + "." + itemsToAdd + "}\" title=\"Add " + name + ":\">\n");
-                                String availableItems = JSFClientGenerator.getPropNameFromMethod(methodName + "Available");
-                                stringBuffer.append("<f:selectItems value=\"#{" + managedBean + "." + availableItems + "}\"/>\n");
-                                stringBuffer.append("</h:selectManyListbox>\n");
-                                String addItems = "add" + methodName.substring(3);
-                                stringBuffer.append("<h:commandButton value=\"Add\" action=\"#{" + managedBean + "." + addItems + "}\"/>\n <br>\n");
-                            }
-                            stringBuffer.append("<h:commandLink value=\"New " + name + "\" action=\"#{" + relatedManagedBean + ".createFrom" + detailManagedBean + "Setup}\">\n");
-                            stringBuffer.append("<f:param name=\"relatedId\" value=\"#{" + variable + "." + idProperty + "}\"/>\n");
-                            stringBuffer.append("</h:commandLink>\n <br>\n <br>\n");
+                            stringBuffer.append("</h:panelGroup>\n");
+
+//                            String availableItems = JSFClientGenerator.getPropNameFromMethod(methodName + "Available");
+//                            stringBuffer.append("<h:panelGroup rendered=\"#{not empty " + managedBean + "." + availableItems + "}\">");
+//                            stringBuffer.append("<br />\n<b>Add " + relatedClass + "s:</b>\n<br />\n");
+//                            String itemsToAdd = JSFClientGenerator.getPropNameFromMethod(methodName + "ToAdd");
+//                            stringBuffer.append("<h:selectManyListbox id=\"add" + relatedClass + "s\" value=\"#{" 
+//                                    + managedBean + "." + itemsToAdd + "}\" title=\"Add " + name + ":\">\n");
+//                            stringBuffer.append("<f:selectItems value=\"#{" + managedBean + "." + availableItems + "}\"/>\n");
+//                            stringBuffer.append("</h:selectManyListbox>\n");
+//                            String addItems = "add" + methodName.substring(3);
+//                            stringBuffer.append("<h:commandButton value=\"Add\" action=\"#{" + managedBean + "." + addItems + "}\"/>\n <br>\n");
+//                            stringBuffer.append("</h:panelGroup>\n");
+
+//                            stringBuffer.append("<br />\n<h:commandLink value=\"Add New " + typeElement.getSimpleName() + "\" action=\"#{" + relatedManagedBean + ".createFrom" + detailManagedBean + "Setup}\">\n");
+//                            stringBuffer.append("<f:param name=\"relatedId\" value=\"#{" + variable + "." + idProperty + "}\"/>\n");
+//                            stringBuffer.append("</h:commandLink>\n<br />\n");
                         } else {
                             Logger.getLogger("global").log(Level.INFO, "cannot find referenced class: " + method.getReturnType()); // NOI18N
                         }
@@ -595,12 +674,5 @@ public final class JsfForm implements ActiveEditorDrop {
             }
         }
         return null;
-    }
-
-    private static List<TypeElement> getTypeParameters(TypeMirror typeMirrror) {
-        List<TypeElement> result = new ArrayList<TypeElement>();
-        //TODO: RETOUCHE type parameters
-        return result;
-    }
-    
+    }    
 }

@@ -40,31 +40,37 @@
              xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
              xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:res="http://localhost/BluePrint5/Reservation">
     <import location="Reservation.wsdl" namespace="http://localhost/BluePrint5/Reservation"/>
+    
     <types>
         <xsd:schema targetNamespace="http://localhost/BluePrint5/HotelReservation">
             <xsd:import schemaLocation="reservation.xsd" namespace="http://ReservationSystem.org/xsd/reserve"/>
         </xsd:schema>
-    </types>    
+    </types>
+    
     <message name="HotelReservation">
         <part name="reserveHotelPart"
               element="ns:reserve"></part>
     </message>
+    
     <message name="HotelReservationStatus">
         <part name="status"
               element="ns:reserveStatus"></part>
     </message>
+    
     <portType name="HotelReservationPortType">
         <operation name="reserveHotel">
             <input name="reserveMesg"
                    message="tns:HotelReservation"></input>
         </operation>
     </portType>
+    
     <portType name="HotelStatusPortType">
         <operation name="sendHotelStatus">
             <input name="statusMesg"
                    message="tns:HotelReservationStatus"></input>
         </operation>
     </portType>
+    
     <binding name="HotelReservationBinding"
              type="tns:HotelReservationPortType">
         <soap:binding style="document"
@@ -77,6 +83,7 @@
             </input>
         </operation>
     </binding>
+    
     <binding name="HotelReservationStatusBinding"
              type="tns:HotelStatusPortType">
         <soap:binding style="document"
@@ -89,31 +96,38 @@
             </input>
         </operation>
     </binding>
+    
     <service name="HotelService">
         <port name="HotelServicePort"
               binding="tns:HotelReservationBinding">
-            <soap:address location="http://localhost:12100/wsdl/HotelService/ServiceLocation"/>
+            <soap:address location="http://localhost:18181/wsdl/HotelService/ServiceLocation"/>
         </port>
     </service>
+    
     <service name="HotelStatusService">
         <port name="HotelStatusServicePort"
               binding="tns:HotelReservationStatusBinding">
-            <soap:address location="http://localhost:12100/wsdl/HotelStatusService/ServiceLocation"/>
+            <soap:address location="http://localhost:18181/wsdl/HotelStatusService/ServiceLocation"/>
         </port>
     </service>
+    
     <plink:partnerLinkType name="HotelReservationPLinkType">
         <plink:role name="reservingRole"
                     portType="tns:HotelReservationPortType"></plink:role>
     </plink:partnerLinkType>
+    
     <plink:partnerLinkType name="HotelReservStatusPLinkType">
         <plink:role name="statusReceivingRole"
                     portType="tns:HotelStatusPortType"></plink:role>
     </plink:partnerLinkType>
+    
     <bpws:propertyAlias part="status"
                         propertyName="res:reservationID"
                         messageType="tns:HotelReservationStatus">
         <bpws:query>/ns:reserveStatus/ns:reservationID</bpws:query>
     </bpws:propertyAlias>
-    <bpws:property name="hotel" type="xsd:hexBinary"/>
+    
+    <bpws:property name="hotel" type="ns:reserveType"/>
+    
     <bpws:propertyAlias propertyName="tns:hotel" messageType="tns:HotelReservation" part="reserveHotelPart"/>
 </definitions>

@@ -249,7 +249,12 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
 
                     case '*':
                         switch (read(true)) {
-                            case '/': // invalid comment end - */
+                            case '/': // invalid comment end - */ or int*/* */
+                                if (read(true) == '*') {
+                                    backup(2);
+                                    return token(CppTokenId.STAR);
+                                }
+                                backup(1);
                                 return token(CppTokenId.INVALID_COMMENT_END);
                             case '=':
                                 return token(CppTokenId.STAREQ);

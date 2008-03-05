@@ -45,16 +45,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.WebModule;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 
 /**
  * @author pj97932
@@ -106,7 +103,7 @@ public class ParseTest extends NbTestCase {
     public void testAnalysisXMLTextRotate_1_6() throws Exception {
         String javaVersion = System.getProperty("java.version");
 
-        if (javaVersion.startsWith("1.6")){
+        if (javaVersion.startsWith("1.6")) {
             parserTestInProject("project3", "/web/jsp2/jspx/textRotate.jspx");
         }
     }
@@ -114,7 +111,7 @@ public class ParseTest extends NbTestCase {
     public void testAnalysisXMLTextRotate_1_5() throws Exception {
         String javaVersion = System.getProperty("java.version");
 
-        if (javaVersion.startsWith("1.5")){
+        if (javaVersion.startsWith("1.5")) {
             parserTestInProject("project3", "/web/jsp2/jspx/textRotate.jspx");
         }
 
@@ -123,21 +120,21 @@ public class ParseTest extends NbTestCase {
     public void testAnalysisXMLTextRotate_1_4() throws Exception {
         String javaVersion = System.getProperty("java.version");
 
-        if (javaVersion.startsWith("1.4")){
+        if (javaVersion.startsWith("1.4")) {
             parserTestInProject("project3", "/web/jsp2/jspx/textRotate.jspx");
         }
     }
 
     public void testAnalysisTagLibFromTagFiles() throws Exception {
         String javaVersion = System.getProperty("java.version");
-        if (!javaVersion.startsWith("1.6")){
+        if (!javaVersion.startsWith("1.6")) {
             parserTestInProject("project2", "/web/testTagLibs.jsp");
         }
     }
 
     public void testAnalysisTagLibFromTagFiles_1_6() throws Exception {
         String javaVersion = System.getProperty("java.version");
-        if (javaVersion.startsWith("1.6")){
+        if (javaVersion.startsWith("1.6")) {
             parserTestInProject("project2", "/web/testTagLibs.jsp");
         }
     }
@@ -162,15 +159,8 @@ public class ParseTest extends NbTestCase {
         parserTestInProject("project3", "/web/WEB-INF/tags/displayProducts.tag");
     }
 
-    public JspParserAPI.ParseResult parserTestInProject(String projectFolderName, String pagePath) throws Exception{
-        log("Parsing test of page  " + pagePath + " in project " + projectFolderName + " started.");
-        FileObject projectPath = FileUtil.toFileObject(new File(getDataDir(), projectFolderName));
-        Project project = ProjectManager.getDefault().findProject(projectPath);
-        assertNotNull("Project should exist", project);
-        FileObject jspFo = projectPath.getFileObject(pagePath);
-        assertNotNull("JSP file should exist", jspFo);
-        log("Parsing page " + pagePath);
-
+    public JspParserAPI.ParseResult parserTestInProject(String projectFolderName, String pagePath) throws Exception {
+        FileObject jspFo = TestUtil.getProjectFile(this, projectFolderName, pagePath);
         WebModule webModule = TestUtil.getWebModule(jspFo);
         JspParserAPI jspParser = JspParserFactory.getJspParser();
         JspParserAPI.ParseResult result = jspParser.analyzePage(jspFo, webModule, JspParserAPI.ERROR_IGNORE);
@@ -180,8 +170,7 @@ public class ParseTest extends NbTestCase {
         File outFile = null;
         try {
             goldenF = getGoldenFile();
-        }
-        finally {
+        } finally {
             String fName = (goldenF == null) ? ("temp" + fileNr++ + ".result") : getBrotherFile(goldenF, "result");
             outFile = new File(getWorkDir(), fName);
             writeOutResult(result, outFile);
@@ -214,5 +203,4 @@ public class ParseTest extends NbTestCase {
         }
         return goldenFile.substring(0, i) + "." + ext;
     }
-
 }

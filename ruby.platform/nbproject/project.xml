@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.gsf</code-name-base>
+                    <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -65,7 +65,7 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.gsfpath</code-name-base>
+                    <code-name-base>org.netbeans.modules.gsfpath.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -87,7 +87,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
+                        <release-version>2</release-version>
                         <implementation-version/>
                     </run-dependency>
                 </dependency>
@@ -237,6 +237,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.ruby.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.ruby.rspec</friend>
+                <friend>org.netbeans.modules.glassfish.jruby</friend>
                 <package>org.netbeans.api.ruby.platform</package>
                 <package>org.netbeans.modules.ruby.platform</package>
                 <package>org.netbeans.modules.ruby.platform.execution</package>

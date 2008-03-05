@@ -8,6 +8,9 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.mashup.db.common.FlatfileDBConnectionFactory;
 import org.netbeans.modules.mashup.db.common.PropertyKeys;
 import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
@@ -22,14 +25,17 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 
 public final class NewFlatfileTableAction extends CallableSystemAction {
-    
+    private static transient final Logger mLogger = LogUtil.getLogger(NewFlatfileTableAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    public String nbBundle1 = mLoc.t("PRSR001: Add External Table(s)");
     public void performAction() {
         WizardDescriptor.Iterator iterator = new MashupTableWizardIterator();
         WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
         wizardDescriptor.setTitleFormat(new MessageFormat("{0} ({1})"));
-        wizardDescriptor.setTitle("Add External Table(s)");
+        wizardDescriptor.setTitle(Localizer.parse(nbBundle1));
         ((MashupTableWizardIterator)iterator).setDescriptor(wizardDescriptor);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        dialog.getAccessibleContext().setAccessibleDescription("This dialog helps to create a flatfile table from xls,csv and txt sources");
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
@@ -80,11 +86,13 @@ public final class NewFlatfileTableAction extends CallableSystemAction {
                 }
             }
             if(status) {
+                String nbBundle2 = mLoc.t("PRSR001: Table successfully created.");
                 NotifyDescriptor d =
-                        new NotifyDescriptor.Message("Table successfully created.", NotifyDescriptor.INFORMATION_MESSAGE);
+                        new NotifyDescriptor.Message(Localizer.parse(nbBundle2), NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
             } else {
-                String msg = "Table creation failed.";
+                String nbBundle3 = mLoc.t("PRSR001: Table creation failed.");
+                String msg = Localizer.parse(nbBundle3);
                 if(error != null) {
                     msg = msg + "CAUSE:" + error;
                 }
@@ -96,7 +104,7 @@ public final class NewFlatfileTableAction extends CallableSystemAction {
     }
     
     public String getName() {
-        return "Add External Table(s)";
+        return Localizer.parse(nbBundle1);
     }
     
     @Override

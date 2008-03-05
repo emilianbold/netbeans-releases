@@ -42,7 +42,11 @@
 package org.netbeans.modules.cnd.modelimpl.test;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.junit.Manager;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.test.BaseTestCase;
 
 /**
@@ -64,6 +68,8 @@ public abstract class ModelImplBaseTestCase extends BaseTestCase {
     public static final String PROPERTY_DATA_PATH = "cnd.modelimpl.unit.data";
     public static final String PROPERTY_GOLDEN_PATH = "cnd.modelimpl.unit.golden";
     public static final String PROPERTY_WORK_PATH = "cnd.modelimpl.unit.workdir";
+    
+    private final Collection<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
     
     /**
      * Creates a new instance of ModelImplBaseTestCase
@@ -101,4 +107,50 @@ public abstract class ModelImplBaseTestCase extends BaseTestCase {
             return Manager.normalizeFile(new File(dataDirPath, filename));
         }
     }   
+    
+    @Override
+    protected void setUp() throws Exception {
+	super.setUp();
+	DiagnosticExceptoins.Hook hook = new DiagnosticExceptoins.Hook() {
+	    public void exception(Throwable thr) {
+		thr.printStackTrace();
+		exceptions.add(thr);
+	    }
+	};
+	DiagnosticExceptoins.setHook(hook);	
+    }
+
+    /** 
+     * Registers an exception.
+     * The idea is to process an exception that occurs in main thread
+     * in the same way as exceptions that occur in code model threads
+     */
+    protected void registerException(Throwable thr) {
+	exceptions.add(thr);
+    }
+    
+    /** Asserts that no exceptions occur in code model threads */
+    protected void assertNoExceptions() throws Exception {
+	assertEmpty(exceptions);
+    }
+    
+    private void assertEmpty(Collection<Throwable> errors) throws Exception {
+	// the idea here was to somehow make JUnit infrastructure
+	// display all caught exceptions;
+	// but I don't yet know how to;
+	// so for the time being we just throw 1-st one
+	if (!errors.isEmpty()) {
+	    for (Throwable thr : errors) {
+		if (thr instanceof Exception) {
+		    throw (Exception) thr;
+		} 
+		else if( thr instanceof Error ) {
+		    throw (Error) thr;
+		} else {
+		    throw new Exception(thr);
+		}
+	    }
+	}
+    }
+   
 }

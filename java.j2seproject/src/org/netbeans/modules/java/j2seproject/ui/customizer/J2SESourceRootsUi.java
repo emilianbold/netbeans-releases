@@ -47,7 +47,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.HashSet;
 import java.util.Set;
@@ -66,18 +65,15 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
-import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.java.j2seproject.SourceRoots;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.HelpCtx;
 
 /** Handles adding, removing, reordering of source roots.
  *

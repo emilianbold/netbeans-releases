@@ -200,12 +200,6 @@ public class ClientBeanGenerator {
             out.println( " */" );
             out.println();
             
-            // Import
-            out.println( "import javax.rmi.PortableRemoteObject;" );
-            out.println( "import javax.naming.*;" );
-            out.println( "import java.util.*;" );
-            out.println( "import java.beans.Beans;" );
-            out.println( "import java.lang.reflect.Method;" );
             
             // Do not import if the remote interface has no package
             if( ejbInfo.getCompInterfaceName().indexOf( '.' ) != -1 )
@@ -258,7 +252,7 @@ public class ClientBeanGenerator {
                 out.println( "    " + methodSignature( methodInfo ) + " {" );
                 
                 // If design time, return fake data if the method reutrn something (!void)
-                out.println( "        if( Beans.isDesignTime() ) { " );
+                out.println( "        if( java.beans.Beans.isDesignTime() ) { " );
                 if( methodInfo.getReturnType().getClassName().equals( "void" ) ) // NOI18N
                     out.println( "            return;" );
                 else
@@ -352,10 +346,10 @@ public class ClientBeanGenerator {
             out.println( "     * @see " + javaDocMethod( ejbInfo.getHomeInterfaceName(), methodInfo ) );
             out.println( "     */");
             out.println( "    public void create(" + paramStr + ") throws javax.naming.NamingException, java.rmi.RemoteException, javax.ejb.CreateException {" );
-            out.println( "        if( !Beans.isDesignTime() && !initialized ) { " );
-            out.println( "            InitialContext ctx = new InitialContext();" );
+            out.println( "        if( !java.beans.Beans.isDesignTime() && !initialized ) { " );
+            out.println( "            javax.naming.InitialContext ctx = new javax.naming.InitialContext();" );
             out.println( "            Object objRef = ctx.lookup( \"" + "java:comp/env/" + ejbInfo.getWebEjbRef() + "\" );" );
-            out.println( "            " + homeVariable + " = (" + homeName + ")PortableRemoteObject.narrow( objRef, " + homeName + ".class );" );
+            out.println( "            " + homeVariable + " = (" + homeName + ")javax.rmi.PortableRemoteObject.narrow( objRef, " + homeName + ".class );" );
             out.println( "            " + classVariable + " = " + invokeMethod( homeVariable, methodInfo ) + ";" );
             out.println( "            initialized = true;" );
             out.println( "        }" );
@@ -493,6 +487,7 @@ public class ClientBeanGenerator {
         if( !methodInfo.getReturnType().getClassName().equals( "void" ) )
             buf.append( "return " );
         
+        buf.append( "this.");
         buf.append( variableName );
         buf.append( "." );
         buf.append( methodInfo.getName() );
@@ -515,6 +510,7 @@ public class ClientBeanGenerator {
     private String invokeMethod( String variableName, MethodInfo methodInfo ) {
         StringBuffer buf = new StringBuffer();
         
+        buf.append( "this." );
         buf.append( variableName );
         buf.append( "." );
         buf.append( methodInfo.getName() );

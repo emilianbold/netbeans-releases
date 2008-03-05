@@ -81,7 +81,7 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         super(testName);
         expectedTime = 10000; // 20 seconds ?
         WAIT_AFTER_OPEN=5000;
-        categoryName = "Basic";  // NOI18N
+        categoryName = "Woodstock Basic";  // NOI18N
         componentName = "Table"; // NOI18N
         addPoint = new java.awt.Point(50,50);
     }
@@ -94,11 +94,12 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         super(testName,performanceDataName);
         expectedTime = 10000; // 20 seconds ?
         WAIT_AFTER_OPEN=5000;
-        categoryName = "Basic";  // NOI18N
+        categoryName = "Woodstock Basic";  // NOI18N
         componentName = "Table"; // NOI18N
         addPoint = new java.awt.Point(50,50);
     }
     
+    @Override
     protected void initialize() {
         log(":: initialize");
         new ActionNoBlock("Window|Navigating|Navigator",null).perform(); //NOI18N
@@ -106,7 +107,7 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         rto = RuntimeTabOperator.invoke();
         Node travelBaseNode = new Node(rto.getRootNode(),"Databases"+"|"+DBRootName); // NOI18N
         travelBaseNode.performPopupActionNoBlock("Connect"); // NOI18N
-        processDBConnectDialog();
+        processDBConnectDialogNoPass();
         ProjectsTabOperator.invoke();
         
         PaletteOperator.invoke();
@@ -149,13 +150,17 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         return null;
     }
     
+    @Override
     public void close() {
         log(":: close");
         clearBindingArtefacts();
     }
-    
+    private void processDBConnectDialogNoPass() {
+        NbDialogOperator connectDlg = new NbDialogOperator("Connecting to Database"); // NOI18N
+        connectDlg.waitClosed();
+    }
     private void processDBConnectDialog() {
-        NbDialogOperator connectDlg = new NbDialogOperator("Connect"); // NOI18N
+        NbDialogOperator connectDlg = new NbDialogOperator("Connecting to Database"); // NOI18N
         JTextComponentOperator password = new JTextComponentOperator(connectDlg,0);
         password.setText("travel");
         
@@ -173,7 +178,7 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
     }
     
     private void selectDBTableNode() {
-        rto.invoke();
+        RuntimeTabOperator.invoke();
         Node TableNode = new Node(rto.getRootNode(),"Databases"+"|"+DBRootName+"|"+DBTableName); // NOI18N
         TableNode.select();
         

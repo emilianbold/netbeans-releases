@@ -189,6 +189,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 if (!projectFiles)
                     ((MakeConfigurationDescriptor)projectDescriptor).setExternalFileItems(currentFolder);
             }
+        } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
+            currentList = ((MakeConfigurationDescriptor)projectDescriptor).getSourceRootsRaw();
         } else if (element.equals(ItemXMLCodec.ITEM_ELEMENT)) {
             String path = atts.getValue(0);
             path = getString(adjustOffset(path));
@@ -308,11 +310,20 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
             ((MakeConfiguration) currentConf).getCompilerSet().setValue(currentText);
         } else if (element.equals(C_REQUIRED_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getCRequired().setValue(currentText.equals(TRUE_VALUE));
+            if (descriptorVersion <= 41) {
+                return; // ignore
+            }
+            ((MakeConfiguration) currentConf).getCRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
         } else if (element.equals(CPP_REQUIRED_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getCppRequired().setValue(currentText.equals(TRUE_VALUE));
+            if (descriptorVersion <= 41) {
+                return; // ignore
+            }
+            ((MakeConfiguration) currentConf).getCppRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
         } else if (element.equals(FORTRAN_REQUIRED_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getFortranRequired().setValue(currentText.equals(TRUE_VALUE));
+            if (descriptorVersion <= 41) {
+                return; // ignore
+            }
+            ((MakeConfiguration) currentConf).getFortranRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
         } else if (element.equals(PLATFORM_ELEMENT)) {
             int set = new Integer(currentText).intValue();
             if (descriptorVersion <= 37 && set == 4) {
@@ -372,6 +383,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             } else {
                 currentFolder = null;
             }
+        } else if (element.equals(PREPROCESSOR_LIST_ELEMENT)) {
+            currentList = null;
         } else if (element.equals(ITEM_PATH_ELEMENT)) {
             String path = currentText;
             path = getString(adjustOffset(path));

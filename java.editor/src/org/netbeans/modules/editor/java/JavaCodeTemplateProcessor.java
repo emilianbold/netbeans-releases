@@ -83,6 +83,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     
     private CodeTemplateInsertRequest request;
 
+    private int caretOffset;
     private CompilationInfo cInfo = null;
     private Future<Void> initTask = null;
     private TreePath treePath = null;
@@ -233,7 +234,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             for (Map.Entry<CodeTemplateParameter, TypeMirror> entry : param2types.entrySet()) {
                 CodeTemplateParameter param = entry.getKey();
                 TypeMirror tm = param2types.get(param);
-                TreePath tp = cInfo.getTreeUtilities().pathFor(request.getInsertTextOffset() + param.getInsertTextOffset());
+                TreePath tp = cInfo.getTreeUtilities().pathFor(caretOffset + param.getInsertTextOffset());
                 CharSequence typeName = imp.resolveImport(tp, tm);
                 if (CAST.equals(param2hints.get(param))) {
                     param.setValue("(" + typeName + ")"); //NOI18N
@@ -673,7 +674,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private synchronized boolean initParsing() {
         if (cInfo == null && initTask == null) {
             JTextComponent c = request.getComponent();
-            final int caretOffset = c.getSelectionStart();
+            caretOffset = c.getSelectionStart();
             JavaSource js = JavaSource.forDocument(c.getDocument());
             if (js != null) {
                 try {

@@ -49,6 +49,7 @@ import org.netbeans.modules.bpel.search.api.SearchEvent;
 import org.netbeans.modules.bpel.search.api.SearchException;
 import org.netbeans.modules.bpel.search.api.SearchOption;
 import org.netbeans.modules.bpel.search.api.SearchPattern;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -77,10 +78,9 @@ public interface SearchEngine {
   void addSearchListener(SearchListener listener);
 
   /**
-   * Removes search listener.
-   * @param listener to be removed
+   * Removes all search listeners.
    */
-  void removeSearchListener(SearchListener listener);
+  void removeSearchListeners();
 
   /**
    * Returns display name of engine.
@@ -97,8 +97,8 @@ public interface SearchEngine {
   // ----------------------------------------------------
   public abstract class Adapter implements SearchEngine {
 
-    protected Adapter() {
-      mySearchListeners = new ArrayList<SearchListener>();
+    public Adapter() {
+      removeSearchListeners();
     }
 
     public Object [] getTargets() {
@@ -109,8 +109,8 @@ public interface SearchEngine {
       mySearchListeners.add(listener);
     }
 
-    public synchronized void removeSearchListener(SearchListener listener) {
-      mySearchListeners.remove(listener);
+    public synchronized void removeSearchListeners() {
+      mySearchListeners = new ArrayList<SearchListener>();
     }
 
     protected synchronized void fireSearchStarted(SearchOption option)

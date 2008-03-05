@@ -90,6 +90,8 @@ public abstract class TreeRuleTestBase extends NbTestCase {
     private void prepareTest(String fileName, String code) throws Exception {
         clearWorkDir();
         
+        FileUtil.refreshFor(File.listRoots());
+        
         FileObject workFO = FileUtil.toFileObject(getWorkDir());
         
         assertNotNull(workFO);

@@ -45,16 +45,20 @@ package org.netbeans.core.windows.view.dnd;
 
 
 import java.awt.AWTEvent;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dialog;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.*;
 import java.awt.dnd.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.lang.ref.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -86,7 +90,7 @@ import org.openide.windows.TopComponent;
  * @see java awt.dnd.DragSourceListener
  */
 final class TopComponentDragSupport 
-implements AWTEventListener, DragSourceListener {
+implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
     
     /** Mime type for <code>TopComponent</code> <code>DataFlavor</code>. */
     public static final String MIME_TOP_COMPONENT = 
@@ -166,7 +170,10 @@ implements AWTEventListener, DragSourceListener {
     private Point startingPoint;
     private Component startingComponent;
     private long startingTime;
+
+    private DragAndDropFeedbackVisualizer visualizer;
     
+    private boolean dropFailed = false;
     
     /** Creates a new instance of TopComponentDragSupport. */
     TopComponentDragSupport(WindowDnDManager windowDnDManager) {
@@ -215,7 +222,7 @@ implements AWTEventListener, DragSourceListener {
             //do not initiate topcomponent drag when the mouse is dragged out of a tabcontrol button
             return;
         }
-        if(!windowDnDManager.isDnDEnabled()) {
+        if(!WindowDnDManager.isDnDEnabled()) {
             return;
         }
 
@@ -334,13 +341,12 @@ implements AWTEventListener, DragSourceListener {
     
     /** Actually starts the drag operation. */
     private void doStartDrag(Component startingComp, Object transfer, DragGestureEvent evt,
-    TopComponentDroppable startingDroppable, Point startingPoint) {
+    TopComponentDroppable startingDroppable, final Point startingPoint) {
         if(DEBUG) {
             debugLog(""); // NOI18N
             debugLog("doStartDrag"); // NOI18N
         }
-        
-        TopComponent firstTC = transfer instanceof TopComponent
+        final TopComponent firstTC = transfer instanceof TopComponent
                 ? (TopComponent)transfer
                 : (((TopComponent[])transfer)[0]);
         
@@ -379,12 +385,15 @@ implements AWTEventListener, DragSourceListener {
             tabbed = acc != null ? acc.getTabbed() : null;
         }
         
-        Image img = null;
-        if (tabbed != null && Constants.SWITCH_USE_DRAG_IMAGES) {
-            int idx = tabbed.indexOf(firstTC);
-            img = tabbed.createImageOfTab(idx);
+        int tabIndex = -1;
+        Image img = createDragImage();
+        if (tabbed != null ) {//&& Constants.SWITCH_USE_DRAG_IMAGES) {
+            tabIndex = tabbed.indexOf(firstTC);
+
+            visualizer = new DragAndDropFeedbackVisualizer( tabbed, tabIndex );
         }
         try {
+            
             evt.startDrag(
                 cursor,
                 img,
@@ -396,11 +405,21 @@ implements AWTEventListener, DragSourceListener {
                                 (TopComponent[])transfer)),
                 this
             );
+            evt.getDragSource().addDragSourceMotionListener( this );
+            
+            if( null != visualizer ) {
+                visualizer.start( evt );
+            }
+            
         } catch(InvalidDnDOperationException idoe) {
             Logger.getLogger(TopComponentDragSupport.class.getName()).log(Level.WARNING, null, idoe);
             
             removeListening();
             windowDnDManager.resetDragSource();
+            if( null != visualizer ) {
+                visualizer.dispose( false );
+                visualizer = null;
+            }
         }
     }
 
@@ -540,22 +559,22 @@ implements AWTEventListener, DragSourceListener {
             debugLog("dragDropEnd"); // NOI18N
         }
         
-        windowDnDManager.dragFinished();
-        
         try {
             if(checkDropSuccess(evt)) {
+                windowDnDManager.dragFinished();
+        
                 removeListening();
                 return;
             }
             
             // Now simulate drop into "free" desktop area.
-            
+            final Set<Component> floatingFrames = windowDnDManager.getFloatingFrames();
             // Finally schedule the "drop" task later to be able to
             // detect if ESC was pressed.
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     SwingUtilities.invokeLater(createDropIntoFreeAreaTask(
-                            evt, evt.getLocation()));
+                            evt, evt.getLocation(), floatingFrames));
                 }},
                 250 // XXX #21918, Neccessary to skip after possible ESC key event.
             );
@@ -592,12 +611,13 @@ implements AWTEventListener, DragSourceListener {
     /** Creates task which performs actual drop into "free area", i.e. it
      * creates new separated (floating) window. */
     private Runnable createDropIntoFreeAreaTask(final DragSourceDropEvent evt,
-    final Point location) {
+    final Point location, final Set<Component> floatingFrames) {
         return new Runnable() {
             public void run() {
                 // XXX #21918. Don't move the check sooner
                 // (before the enclosing blocks), it would be invalid.
                 if(hackESC) {
+                    windowDnDManager.dragFinished();
                     removeListening();
                     return;
                 }
@@ -614,40 +634,17 @@ implements AWTEventListener, DragSourceListener {
                     // even it is there.
                     // Performs hacked drop action, simulates ACTION_MOVE when
                     // system set ACTION_NONE (which we do not use).
-                    windowDnDManager.tryPerformDrop(
+                    boolean res = windowDnDManager.tryPerformDrop(
                         windowDnDManager.getController(),
-                        windowDnDManager.getFloatingFrames(),
+                        floatingFrames,
                         location,
                         DnDConstants.ACTION_MOVE, // MOVE only
                         evt.getDragSourceContext().getTransferable());
+                
                 }
+                windowDnDManager.dragFinished();
             }
         };
-    }
-
-    /** Gets bounds for the new mode created in the "free area". */
-    private static Rectangle getBoundsForNewMode(TopComponent tc, Point location) {
-        int width = tc.getWidth();
-        int height = tc.getHeight();
-        
-        // Take also the native title and borders into account.
-        java.awt.Window window = SwingUtilities.getWindowAncestor(tc);
-        if(window != null) {
-            java.awt.Insets ins = window.getInsets();
-            width += ins.left + ins.right;
-            height += ins.top + ins.bottom;
-        }
-        // PENDING else { how to get the insets of newly created window? }
-
-        Rectangle tcBounds = tc.getBounds();
-        Rectangle initBounds = new Rectangle(
-            location.x,
-            location.y,
-            width,
-            height
-        );
-
-        return initBounds;
     }
     
     /** Hacks problems with <code>dragEnter</code> wrong method calls.
@@ -662,30 +659,35 @@ implements AWTEventListener, DragSourceListener {
         if(ctx == null) {
             return;
         }
+        
+        if( null != visualizer )
+            visualizer.setDropFeedback( true );
 
-        int type;
-        if(dropAction == DnDConstants.ACTION_MOVE) {
-            type = freeArea ? CURSOR_MOVE_FREE : CURSOR_MOVE;
-        } else if(dropAction == DnDConstants.ACTION_COPY) {
-            if(canCopy) {
-                type = CURSOR_COPY;
-            } else {
-                type = CURSOR_COPY_NO_MOVE;
-            }
-        } else {
-            // PENDING throw exception?
-            Logger.getLogger(TopComponentDragSupport.class.getName()).log(Level.WARNING, null,
-                              new java.lang.IllegalStateException("Invalid action type->" +
-                                                                  dropAction)); // NOI18N
-            return;
-        }
+        dropFailed = false;
 
-        // Check if there is already our cursor.
-        if(getDragCursorName(type).equals(ctx.getCursor().getName())) {
-            return;
-        }
-
-        ctx.setCursor(getDragCursor(ctx.getComponent(),type));
+//        int type;
+//        if(dropAction == DnDConstants.ACTION_MOVE) {
+//            type = freeArea ? CURSOR_MOVE_FREE : CURSOR_MOVE;
+//        } else if(dropAction == DnDConstants.ACTION_COPY) {
+//            if(canCopy) {
+//                type = CURSOR_COPY;
+//            } else {
+//                type = CURSOR_COPY_NO_MOVE;
+//            }
+//        } else {
+//            // PENDING throw exception?
+//            Logger.getLogger(TopComponentDragSupport.class.getName()).log(Level.WARNING, null,
+//                              new java.lang.IllegalStateException("Invalid action type->" +
+//                                                                  dropAction)); // NOI18N
+//            return;
+//        }
+//
+//        // Check if there is already our cursor.
+//        if(getDragCursorName(type).equals(ctx.getCursor().getName())) {
+//            return;
+//        }
+//
+//        ctx.setCursor(getDragCursor(ctx.getComponent(),type));
     }
     
     /** Hacks problems with <code>dragExit</code> wrong method calls.
@@ -699,19 +701,24 @@ implements AWTEventListener, DragSourceListener {
             return;
         }
         
+        if( null != visualizer )
+            visualizer.setDropFeedback( false );
+        
         String name = ctx.getCursor().getName();
         
-        int type;
-        if(NAME_CURSOR_COPY.equals(name)
-        || NAME_CURSOR_COPY_NO_MOVE.equals(name)) {
-            type = CURSOR_COPY_NO;
-        } else if(NAME_CURSOR_MOVE.equals(name) || NAME_CURSOR_MOVE_NO.equals(name)) {
-            type = CURSOR_MOVE_NO;
-        } else {
-            return;
-        }
+        dropFailed = true;
 
-        ctx.setCursor(getDragCursor(ctx.getComponent(),type));
+//        int type;
+//        if(NAME_CURSOR_COPY.equals(name)
+//        || NAME_CURSOR_COPY_NO_MOVE.equals(name)) {
+//            type = CURSOR_COPY_NO;
+//        } else if(NAME_CURSOR_MOVE.equals(name) || NAME_CURSOR_MOVE_NO.equals(name)) {
+//            type = CURSOR_MOVE_NO;
+//        } else {
+//            return;
+//        }
+//
+//        ctx.setCursor(getDragCursor(ctx.getComponent(),type));
     }
 
     /** Provides cleanup when finished drag operation. Ideally the code
@@ -719,6 +726,11 @@ implements AWTEventListener, DragSourceListener {
      * is not called in case of error in DnD framework. */
     void dragFinished() {
         dragContextWRef = new WeakReference<DragSourceContext>(null);
+        if( null != visualizer ) {
+            visualizer.dispose( !(dropFailed || hackESC)  );
+            dropFailed = false;
+            visualizer = null;
+        }
     }
    
     private static void debugLog(String message) {
@@ -975,5 +987,24 @@ implements AWTEventListener, DragSourceListener {
      * for array class type. */
     static class TopComponentArray {
     } // End of TopComponentArray.
+
+    public void dragMouseMoved(DragSourceDragEvent dsde) {
+        if( null != visualizer )
+            visualizer.update( dsde );
+    }
     
+    /**
+     * @return An invisible (size 1x1) image to be used for dragging to replace 
+     * the default one supplied by the operating system (if any).
+     */
+    private Image createDragImage() {
+        GraphicsConfiguration config = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                    .getDefaultScreenDevice().getDefaultConfiguration();
+
+        BufferedImage res = config.createCompatibleImage(1, 1);
+        Graphics2D g = res.createGraphics();
+        g.setColor( Color.white );
+        g.fillRect(0,0,1,1);
+        return res;
+    }
 }

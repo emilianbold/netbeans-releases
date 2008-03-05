@@ -69,6 +69,7 @@ public class IntegerEditor extends PropertyEditorSupport {
     @Override
     public void setAsText(String s) {
         if (s.trim().equals(EMPTY)) {
+            setValue(EMPTY);
             return;
         }
         

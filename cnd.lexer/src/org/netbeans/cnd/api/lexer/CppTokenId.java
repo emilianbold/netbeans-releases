@@ -134,7 +134,7 @@ public enum CppTokenId implements TokenId {
     USING("using", "keyword"), //C++
     VIRTUAL("virtual", "keyword"), //C++
     VOID("void", "keyword"),
-    VOLATILE("volatile", "keywrod"),
+    VOLATILE("volatile", "keyword"),
     WCHAR_T("wchar_t", "keyword"), // C++
     WHILE("while", "keyword-directive"),
     _BOOL("_Bool", "keyword"), // C 
@@ -233,6 +233,7 @@ public enum CppTokenId implements TokenId {
     PREPROCESSOR_INCLUDE("include", "preprocessor-keyword-directive"),
     PREPROCESSOR_INCLUDE_NEXT("include_next", "preprocessor-keyword-directive"),
     PREPROCESSOR_LINE("line", "preprocessor-keyword-directive"),
+    PREPROCESSOR_IDENT("ident", "preprocessor-keyword-directive"),
     PREPROCESSOR_PRAGMA("pragma", "preprocessor-keyword-directive"),
     PREPROCESSOR_WARNING("warning", "preprocessor-keyword-directive"),
     PREPROCESSOR_ERROR("error", "preprocessor-keyword-directive"),
@@ -328,9 +329,9 @@ public enum CppTokenId implements TokenId {
         @Override
         protected String mimeType() {
             if (this.preproc) {
-                return "text/x-preprocessor";
+                return CndLexerUtilities.PREPROC_MIME_TYPE;
             } else {
-                return this.cpp ? "text/x-c++" : "text/x-c";
+                return this.cpp ? CndLexerUtilities.CPLUSPLUS_MIME_TYPE : CndLexerUtilities.C_MIME_TYPE;
             }
         }
 

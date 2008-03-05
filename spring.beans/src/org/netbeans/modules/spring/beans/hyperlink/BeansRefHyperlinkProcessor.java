@@ -50,23 +50,23 @@ import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.util.SpringBeansUIs;
 import org.netbeans.modules.spring.util.SpringBeansUIs.GoToBeanAction;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class BeansRefHyperlinkProcessor implements HyperlinkProcessor {
+public class BeansRefHyperlinkProcessor extends HyperlinkProcessor {
 
-    // XXX what is this for?
-    private boolean showExternal;
+    private boolean globalSearch;
 
-    public BeansRefHyperlinkProcessor(boolean showExternal) {
-        this.showExternal = showExternal;
+    public BeansRefHyperlinkProcessor(boolean globalSearch) {
+        this.globalSearch = globalSearch;
     }
 
     public void process(HyperlinkEnv env) {
-        FileObject fileObject = NbEditorUtilities.getFileObject(env.getDocument());
+        final FileObject fileObject = NbEditorUtilities.getFileObject(env.getDocument());
         if (fileObject == null) {
             return;
         }
@@ -76,7 +76,13 @@ public class BeansRefHyperlinkProcessor implements HyperlinkProcessor {
         try {
             model.runReadAction(new Action<SpringBeans>() {
                 public void run(SpringBeans beans) {
-                    SpringBean bean = beans.findBean(beanName);
+                    SpringBean bean;
+                    if(globalSearch) {
+                        bean = beans.findBean(beanName);
+                    } else {
+                        bean = beans.findBean(FileUtil.toFile(fileObject), beanName);
+                    }
+                    
                     if (bean == null) {
                         return;
                     }

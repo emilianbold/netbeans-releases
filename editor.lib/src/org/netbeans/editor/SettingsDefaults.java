@@ -47,7 +47,6 @@ import java.awt.Insets;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
-import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import java.util.Map;
 import java.util.HashMap;
@@ -149,7 +148,7 @@ public class SettingsDefaults {
     public static final Coloring defaultStatusBarBoldColoring
     = new Coloring(defaultFont, defaultStatusBarBoldForeColor, defaultStatusBarBoldBackColor);
 
-    public static final Integer defaultCaretBlinkRate = new Integer(300);
+    public static final Integer defaultCaretBlinkRate = new Integer(-1);
     public static final Integer defaultTabSize = new Integer(8);
     public static final Integer defaultSpacesPerTab = new Integer(4);
     public static final Integer defaultShiftWidth = new Integer(4); // usually
@@ -165,7 +164,7 @@ public class SettingsDefaults {
 
     public static final Float defaultLineHeightCorrection = new Float(1.0f);
 
-    public static final Integer defaultTextLeftMarginWidth = new Integer(2);
+    public static final Integer defaultTextLeftMarginWidth = new Integer(0);
     public static final Insets defaultMargin = new Insets(0, 0, 0, 0);
     public static final Insets defaultScrollJumpInsets = new Insets(-5, -10, -5, -30);
     public static final Insets defaultScrollFindInsets = new Insets(-10, -10, -10, -10);

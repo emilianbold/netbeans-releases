@@ -40,20 +40,20 @@
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import javax.swing.Action;
-import org.netbeans.modules.websvc.saas.model.WadlSaas;
-import org.netbeans.modules.websvc.saas.model.wadl.Method;
-import org.netbeans.modules.websvc.saas.model.wadl.Param;
-import org.netbeans.modules.websvc.saas.model.wadl.ParamStyle;
-import org.netbeans.modules.websvc.saas.model.wadl.Resource;
+import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
-import org.netbeans.modules.websvc.saas.ui.actions.TestMethodAction;
+import org.netbeans.modules.websvc.saas.util.SaasTransferable;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -62,74 +62,68 @@ import org.openide.util.lookup.InstanceContent;
  * @author nam
  */
 public class WadlMethodNode extends AbstractNode {
-    private Method method;
-    private Resource[] path;
-    private WadlSaas wadlSaas;
+    public static final String GET = "GET";
+    public static final String POST = "POST";
+    public static final String PUT = "PUT";
+    public static final String DELETE = "DELETE";
     
-    public WadlMethodNode(WadlSaas wadlSaas, Resource[] path, Method method) {
-        this(wadlSaas, path, method, new InstanceContent());
+    private WadlSaasMethod method;
+    private Transferable transferable;
+    
+    public WadlMethodNode(WadlSaasMethod method) {
+        this(method, new InstanceContent());
     }
 
-    public WadlMethodNode(WadlSaas wadlSaas, Resource[] path, Method method, InstanceContent content) {
+    public WadlMethodNode(WadlSaasMethod method, InstanceContent content) {
         super(Children.LEAF, new AbstractLookup(content));
-        this.wadlSaas = wadlSaas;
-        this.path = path;
         this.method = method;
         content.add(method);
-        content.add(wadlSaas);
+        transferable = ExTransferable.create(
+            new SaasTransferable<WadlSaasMethod>(method, SaasTransferable.WADL_METHOD_FLAVORS));
     }
 
     @Override
     public String getDisplayName() {
-        return method.getName();
-    }
+        if (method.getMethod() != null) {
+            return method.getMethod().getName();
+        }
     
-    static String getSignature(Method m) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(m.getName());
-
-        Param[] params = m.getRequest().getParam().toArray(new Param[m.getRequest().getParam().size()]);
-        if (params.length > 0) {
-            sb.append(' ');
+        if (method.getWadlMethod().getId() != null) {
+            return method.getWadlMethod().getId();
         }
-        for (int i=0 ; i < params.length; i++) {
-            Param p = params[i];
-            if (i > 0) {
-                sb.append(",");
+        String name = method.getName();
+        String displayName = name;
+        if (GET.equals(name)) {
+            Set<String> medias = SaasUtil.getMediaTypesFromJAXBElement(
+                    method.getWadlMethod().getResponse().getRepresentationOrFault());
+            if (medias != null && medias.size() > 0) {
+                displayName += medias.toString();
             }
-            if (p.getStyle() == ParamStyle.TEMPLATE) {
-                sb.append('{');
-                sb.append(p.getName());
-                sb.append('}');
-            } else if (p.getStyle() == ParamStyle.QUERY) {
-                sb.append('?');
-                sb.append(p.getName());
-            } else if (p.getStyle() == ParamStyle.MATRIX) {
-                sb.append('[');
-                sb.append(p.getName());
-                sb.append(']');
-            } else if (p.getStyle() == ParamStyle.HEADER) {
-                sb.append('<');
-                sb.append(p.getName());
-                sb.append('>');
-            } else {
-                sb.append(p.getName());
+        } else if (PUT.equals(name) || POST.equals(name)) {
+            Set<String> medias = SaasUtil.getMediaTypes(
+                    method.getWadlMethod().getRequest().getRepresentation());
+            if (medias != null && medias.size() > 0) {
+                displayName += medias;
             }
         }
-        return sb.toString();
+        return displayName;
     }
     
     @Override
     public String getShortDescription() {
-        return getSignature(method);
+        if (method.getMethod() != null) {
+            return method.getMethod().getDocumentation();
+        }
+        
+        return SaasUtil.getSignature(method);
     }
     
-    private static final java.awt.Image SERVICE_BADGE =
+    private static final java.awt.Image ICON =
             org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/method.png" ); //NOI18N
     
     @Override
     public java.awt.Image getIcon(int type) {
-        return SERVICE_BADGE;
+        return ICON;
     }
     
     @Override
@@ -139,15 +133,19 @@ public class WadlMethodNode extends AbstractNode {
     
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>();
-        for (SaasNodeActionsProvider ext : SaasUtil.getSaasNodeActionsProviders()) {
-            for (Action a : ext.getSaasActions(this.getLookup())) {
-                actions.add(a);
-            }
-        }
+        List<Action> actions = SaasNode.getActions(getLookup());
         //TODO maybe ???
-        actions.add(SystemAction.get(TestMethodAction.class));
+        //actions.add(SystemAction.get(TestMethodAction.class));
         return actions.toArray(new Action[actions.size()]);
+    }
+
+    @Override
+    public Transferable clipboardCopy() throws IOException {
+        if (method.getSaas().getState() != Saas.State.READY) {
+            method.getSaas().toStateReady(false);
+            return super.clipboardCopy();
+        }
+        return SaasTransferable.addFlavors(transferable);
     }
     
 }

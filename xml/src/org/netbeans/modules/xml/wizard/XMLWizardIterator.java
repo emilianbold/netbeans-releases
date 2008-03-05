@@ -258,8 +258,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
                             
                             if(nodes != null){
                                 for(int i=0;i < nodes.size(); i++ ){
-                                    Node n = (Node)nodes.get(i);
-                                    ExternalReferenceDataNode erdn = (ExternalReferenceDataNode)n;
+                                    SchemaObject erdn = (SchemaObject)nodes.get(i);
                                     if(erdn.getPrefix() == null || "".equals(erdn.getPrefix()) ){
                                         writer.write("   xmlns='" + erdn.getNamespace() + "'\n");
                                     }else {
@@ -267,8 +266,12 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
                                     }
                                 }
                                 for(int i=0; i<nodes.size();i++){
-                                    ExternalReferenceDataNode erdn = (ExternalReferenceDataNode)nodes.get(i);
-                                    String relativePath = Util.getRelativePath((new File(erdn.getSchemaFileName())), pobj);
+                                    SchemaObject erdn = (SchemaObject)nodes.get(i);
+                                    String relativePath = null;
+                                    if(erdn.toString().startsWith("http"))
+                                        relativePath = erdn.toString();
+                                    else
+                                        relativePath = Util.getRelativePath((new File(erdn.getSchemaFileName())), pobj);
                                     if(i==0) {
                                         if(nodes.size() ==1)
                                             writer.write("   xsi:schemaLocation='" + erdn.getNamespace() + " " + relativePath + "'>\n");

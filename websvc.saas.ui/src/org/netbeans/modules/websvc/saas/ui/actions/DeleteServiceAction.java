@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,42 +38,75 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.saas.ui.actions;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.netbeans.modules.websvc.saas.model.WsdlSaas;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
-import org.openide.nodes.FilterNode;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.ErrorManager;
-import java.io.IOException;
+import org.openide.util.RequestProcessor;
 
+/**
+ * 
+ * @author  nam
+ */
 public class DeleteServiceAction extends NodeAction {
-    
+
     protected boolean enable(Node[] nodes) {
-        //TODO:nam
-        return false;
+        for (Node n : nodes) {
+            Saas saas = n.getLookup().lookup(Saas.class);
+            if (saas == null || !saas.isUserDefined()) {
+                return false;
+            }
+        }
+        return true;
     }
-    
+
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/websvc/saas/ui/resources/ActionIcon.gif";
     }
-    
+
     public String getName() {
         return NbBundle.getMessage(DeleteServiceAction.class, "DELETE");
     }
-    
+
     protected void performAction(Node[] nodes) {
-        //TODO: nam check the original code when implement.
+        final List<WsdlSaas> saases = new ArrayList<WsdlSaas>();
+        for (Node n : nodes) {
+            WsdlSaas saas = n.getLookup().lookup(WsdlSaas.class);
+            if (saas == null || !saas.isUserDefined()) {
+                throw new IllegalArgumentException("Some nodes have no associated Saas");
+            }
+            saases.add(saas);
+        }
+
+        String msg = NbBundle.getMessage(this.getClass(), "WS_DELETE", saases);
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
+        Object response = DialogDisplayer.getDefault().notify(d);
+        if (null != response && response.equals(NotifyDescriptor.YES_OPTION)) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    for (WsdlSaas saas : saases) {
+                        SaasServicesModel.getInstance().removeService(saas);
+                    }
+                }
+            });
+        }
     }
-    
+
+    @Override
     protected boolean asynchronous() {
         return false;
     }

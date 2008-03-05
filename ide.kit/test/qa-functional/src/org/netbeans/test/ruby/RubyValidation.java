@@ -77,11 +77,11 @@ public class RubyValidation extends JellyTestCase {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new RubyValidation("testIrbShell"));
         suite.addTest(new RubyValidation("testCreateRubyProject"));
         suite.addTest(new RubyValidation("testRunRubyFile"));
         suite.addTest(new RubyValidation("testCreateRailsProject"));
         suite.addTest(new RubyValidation("testRailsGenerate"));
+        suite.addTest(new RubyValidation("testIrbShell"));
         return suite;
     }
     
@@ -163,7 +163,7 @@ public class RubyValidation extends JellyTestCase {
         // wait main.rb is opened in editor
         EditorOperator editor = new EditorOperator("main.rb"); // NOI18N
         // "Run File"
-        String runFileItem = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.Bundle", "LBL_RunFile_Action");
+        String runFileItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_RunSingleAction_Name", new Integer[] {0});
         // call "Run File" in editor
         new Action(null, runFileItem).perform(editor);
         // check message in output tab

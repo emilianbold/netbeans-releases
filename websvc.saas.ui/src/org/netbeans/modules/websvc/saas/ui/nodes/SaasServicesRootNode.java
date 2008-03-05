@@ -40,33 +40,111 @@
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.util.List;
+import javax.swing.Action;
+import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.netbeans.modules.websvc.saas.ui.actions.AddGroupAction;
+import org.netbeans.modules.websvc.saas.ui.actions.AddServiceAction;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
  * @author nam
  */
-public class SaasServicesRootNode extends SaasGroupNode {
+public class SaasServicesRootNode extends AbstractNode {
+    
     public SaasServicesRootNode() {
-        super(SaasServicesModel.getInstance().getRootGroup());
-        setName("rootSaasGroup");
-        setDisplayName(NbBundle.getMessage(SaasServicesRootNode.class, "Web_Services"));
-        setShortDescription(NbBundle.getMessage(SaasServicesRootNode.class, "Web_Services_Desc"));
+        this(new RootNodeChildren(SaasServicesModel.getInstance().getInitialRootGroup()), new InstanceContent());
     }
 
-    static final java.awt.Image SERVICE_BADGE =
+    SaasServicesRootNode(RootNodeChildren children, InstanceContent content) {
+        super(children, new AbstractLookup(content));
+        content.add(SaasServicesModel.getInstance().getInitialRootGroup());
+    }
+    
+    @Override
+    public String getName() {
+        return "rootSaasGroup";
+    }
+    
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(SaasServicesRootNode.class, "Web_Services");
+    }
+    
+    @Override
+    public String getShortDescription() {
+        return NbBundle.getMessage(SaasServicesRootNode.class, "Web_Services_Desc");
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        List<Action> actions = SaasNode.getActions(getLookup());
+        actions.add(SystemAction.get(AddServiceAction.class));
+        actions.add(SystemAction.get(AddGroupAction.class));
+        return actions.toArray(new Action[actions.size()]);
+    }
+    
+    static final java.awt.Image ICON =
             org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/webservicegroup.png" ); //NOI18N
     
     @Override
     public Image getIcon(int type){
-        return SERVICE_BADGE;
+        return ICON;
     }
     
     @Override
     public Image getOpenedIcon(int type){
-        return SERVICE_BADGE;
+        return ICON;
     }
     
+    static class RootNodeChildren extends SaasGroupNodeChildren {
+
+        public RootNodeChildren(SaasGroup group) {
+            super(group);
+        }
+        
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getSource() == SaasServicesModel.getInstance().getRootGroup() &&
+                SaasServicesModel.getInstance().getState() == SaasServicesModel.State.READY) {
+                updateKeys();
+            }
+            super.propertyChange(evt);
+        }
+    
+        @Override
+        protected void updateKeys() {
+            if (needsWait()) {
+                setKeys(SaasNodeChildren.WAIT_HOLDER);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        SaasServicesModel.getInstance().initRootGroup();
+                    }
+                });
+            } else {
+                super.updateKeys();
+            }
+        }
+        
+        private boolean needsWait() {
+            return SaasServicesModel.getInstance().getState() != SaasServicesModel.State.READY;
+        }
+        
+        @Override
+        protected Node[] createNodes(Object key) {
+            if (needsWait()) {
+                return SaasNodeChildren.getWaitNode();
+            }
+            return super.createNodes(key);
+        }
+    }
 }

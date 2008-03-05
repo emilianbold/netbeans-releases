@@ -113,6 +113,7 @@ public class BpelDesignContextFactory implements DesignContextFactory {
         }
 
         Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
+        
         if (nodes == null || nodes.length != 1) {
             return null;
         }

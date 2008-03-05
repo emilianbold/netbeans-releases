@@ -41,34 +41,8 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import javax.swing.JEditorPane;
-import javax.swing.text.Caret;
-import javax.swing.text.StyledDocument;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.*;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.DataShadow;
-import org.openide.nodes.Node;
-import org.openide.text.Line;
-import org.openide.text.NbDocument;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.Utilities;
-import org.openide.windows.TopComponent;
 
 /** 
  * Defines bridge to editor and src hierarchy. It allows use of different 
@@ -88,6 +62,10 @@ public abstract class EditorContext {
     public static final String DISABLED_FUNCTION_BREAKPOINT_ANNOTATION_TYPE =  new String("DisabledFunctionBreakpoint"); //NOI18N
     public static final String CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE =  new String("CondFuncBreakpoint"); //NOI18N
     public static final String DISABLED_CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE =  new String("DisabledCondFuncBreakpoint"); //NOI18N
+    public static final String ADDRESS_BREAKPOINT_ANNOTATION_TYPE = new String("AddressBreakpoint"); //NOI18N
+    public static final String DISABLED_ADDRESS_BREAKPOINT_ANNOTATION_TYPE =  new String("DisabledAddressBreakpoint"); //NOI18N
+    public static final String CONDITIONAL_ADDRESS_BREAKPOINT_ANNOTATION_TYPE =  new String("CondAddrBreakpoint"); //NOI18N
+    public static final String DISABLED_CONDITIONAL_ADDRESS_BREAKPOINT_ANNOTATION_TYPE =  new String("DisabledCondAddrBreakpoint"); //NOI18N
 
 
     /**
@@ -98,6 +76,8 @@ public abstract class EditorContext {
      * @param timeStamp a time stamp to be used
      */
     public abstract boolean showSource(String url,  int lineNumber, Object timeStamp);
+    
+    public abstract boolean showSource(DataObject dobj,  int lineNumber, Object timeStamp);
 
     /**
      * Creates a new time stamp.
@@ -133,6 +113,8 @@ public abstract class EditorContext {
      *         created at the given URL or line number.
      */
     public abstract Object annotate(String url, int lineNumber, String annotationType, Object timeStamp);
+    
+    public abstract Object annotate(DataObject dobj, int lineNumber, String annotationType, Object timeStamp);
 
     /**
      * Returns line number given annotation is associated with.
@@ -213,6 +195,8 @@ public abstract class EditorContext {
      * @return The MIME type of the current file
      */
     public abstract String getCurrentMIMEType();
+    
+    public abstract DataObject getCurrentDataObject();
     
     /**
      * Get the MIME type of the most recently selected file.

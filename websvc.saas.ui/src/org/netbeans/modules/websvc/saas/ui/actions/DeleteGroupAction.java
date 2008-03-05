@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,41 +38,71 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.saas.ui.actions;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
-//import org.openide.windows.*;
+import org.openide.util.RequestProcessor;
 
 /**
- * This action will delete a web service group from the server navigator
- * @author  David Botterill
+ * 
+ * @author  nam
  */
-
 public class DeleteGroupAction extends NodeAction {
-    
+
     protected boolean enable(Node[] nodes) {
-        //TODO:nam
-        return false;
+        for (Node n : nodes) {
+            SaasGroup group = n.getLookup().lookup(SaasGroup.class);
+            if (group == null || !group.isUserDefined()) {
+                return false;
+            }
+        }
+        return true;
     }
-    
+
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/websvc/saas/ui/resources/ActionIcon.gif"; // NOI18N
     }
-    
+
     public String getName() {
         return NbBundle.getMessage(DeleteServiceAction.class, "DELETE");
     }
-    
+
     protected void performAction(Node[] nodes) {
-        //TODO:nam review original when implement
+        final List<SaasGroup> groups = new ArrayList<SaasGroup>();
+        for (Node n : nodes) {
+            SaasGroup group = n.getLookup().lookup(SaasGroup.class);
+            if (group == null || !group.isUserDefined()) {
+                throw new IllegalArgumentException("Some node has no associated SaasGroup");
+            }
+            groups.add(group);
+        }
+        
+        String msg = NbBundle.getMessage(getClass(), "WS_DELETE_GROUP") + " " + groups;
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
+        Object response = DialogDisplayer.getDefault().notify(d);
+        if (null != response && response.equals(NotifyDescriptor.YES_OPTION)) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    for (SaasGroup group : groups) {
+                        SaasServicesModel.getInstance().removeGroup(group);
+                    }
+                }
+            });
+        }
     }
     
     protected boolean asynchronous() {

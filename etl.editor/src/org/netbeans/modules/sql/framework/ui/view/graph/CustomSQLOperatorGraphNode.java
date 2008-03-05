@@ -159,6 +159,7 @@ public class CustomSQLOperatorGraphNode extends SQLOperatorGraphNode {
                     NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION,
                     DialogDescriptor.DEFAULT_ALIGN, null, null);
             Dialog customOptDialog = DialogDisplayer.getDefault().createDialog(dlgDesc);
+            customOptDialog.getAccessibleContext().setAccessibleDescription("This dialog provides information about Custom Operators");
             customOptDialog.setVisible(true);
             if (NotifyDescriptor.CANCEL_OPTION == dlgDesc.getValue()) {
                 return;

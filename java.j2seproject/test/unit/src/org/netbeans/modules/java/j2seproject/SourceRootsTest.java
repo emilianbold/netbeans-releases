@@ -55,6 +55,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.w3c.dom.Element;

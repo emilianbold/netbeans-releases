@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.compapp.casaeditor.properties;
 
+import org.netbeans.modules.compapp.casaeditor.properties.spi.BaseCasaProperty;
 import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;

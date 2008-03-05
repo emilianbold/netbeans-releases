@@ -42,6 +42,7 @@
 package gui.action;
 
 import gui.Projects;
+import gui.ScriptingUtilities;
 import java.awt.Font;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -115,7 +116,7 @@ public class TypingInScriptingEditor extends org.netbeans.performance.test.utili
     }
     protected Node getProjectNode(String projectName) {
         if(projectsTab==null)
-            projectsTab = new ProjectsTabOperator();
+            projectsTab = ScriptingUtilities.invokePTO();
         
         return projectsTab.getProjectRootNode(projectName);
     }
@@ -123,19 +124,19 @@ public class TypingInScriptingEditor extends org.netbeans.performance.test.utili
     public void test_RB_EditorTyping() {
         testProject = Projects.RUBY_PROJECT;
         fileName = "ruby20kb.rb";
-        nodePath = "Source Files"+"|";
+        nodePath = "Source Files";
         doMeasurement();
     }
     public void test_RHTML_EditorTyping() {
         testProject = Projects.RAILS_PROJECT;
         fileName = "rhtml20kb.rhtml";
-        nodePath = "Views"+"|";
+        nodePath = "Views";
         doMeasurement();
     }
     public void test_JScript_EditorTyping() {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "javascript20kb.js";
-        nodePath = "Web Pages"+"|";
+        nodePath = "Web Pages";
         doMeasurement();        
     }
     /*

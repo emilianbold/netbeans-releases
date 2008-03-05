@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.bpel.editors.api.BpelEditorConstants.AlarmEventType;
 import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
@@ -31,7 +32,7 @@ import org.netbeans.modules.bpel.model.api.For;
 import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
 import org.netbeans.modules.bpel.model.api.RepeatEvery;
 import org.netbeans.modules.bpel.model.api.TimeEvent;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.properties.PropertyType;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
@@ -286,6 +287,8 @@ public final class OnAlarmEventNode extends BpelNode<OnAlarmEvent>
 //            ActionType.GO_TO_SOURCE,
 //            ActionType.GO_TO_DIAGRAMM,
             ActionType.GO_TO,
+            ActionType.SEPARATOR,
+            ActionType.TOGGLE_BREAKPOINT,
             ActionType.SEPARATOR,
             ActionType.REMOVE,
             ActionType.SEPARATOR,

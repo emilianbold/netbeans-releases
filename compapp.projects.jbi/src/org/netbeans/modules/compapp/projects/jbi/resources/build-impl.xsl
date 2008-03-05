@@ -171,38 +171,38 @@ made subject to such option by the copyright holder.
             </target>
             <target name="-init-taskdefs" if="from.commandline">
                 <path id="ant.task.classpath">
-                    <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-compapp-projects-jbi.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-soa-libs-xmlbeans.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa2/modules/ext/jbi/jbi-admin-common.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa2/ant/nblib/org-netbeans-modules-compapp-projects-jbi.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform8/lib/org-openide-util.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform8/lib/org-openide-modules.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform8/modules/org-openide-options.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform8/modules/org-openide-text.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform8/modules/org-openide-loaders.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform8/modules/org-openide-nodes.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform8/modules/org-openide-dialogs.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform8/core/org-openide-filesystems.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide9/modules/ext/xerces-2.8.0.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide9/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-xml-retriever.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-xml-schema-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-xml-xam.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-xml-text.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-editor.jar"/>    
-                    <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-editor-lib.jar"/>    
-                    <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-editor-util.jar"/>  
-                    <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-projectapi.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-classfile.jar"/>   
-                    <pathelement location="${{netbeans.home}}/../ide9/modules/org-apache-xml-resolver.jar"/>
-                    <pathelement location="${{netbeans.home}}/../xml2/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
-                    <pathelement location="${{netbeans.home}}/../java2/modules/ext/jaxws21/api/jaxb-api.jar"/>
-                    <pathelement location="${{netbeans.home}}/../java2/modules/ext/jaxws21/jaxb-impl.jar"/>
-                    <pathelement location="${{netbeans.home}}/../java2/modules/ext/jaxws21/activation.jar"/>   
-                    <pathelement location="${{netbeans.home}}/../enterprise5/modules/org-netbeans-modules-j2eeserver.jar"/> 
-                    <pathelement location="${{netbeans.home}}/../enterprise5/modules/ext/jsr88javax.jar"/> 
+                    <pathelement location="${{soa.module.install.dir}}/org-netbeans-modules-compapp-projects-jbi.jar"/>
+                    <pathelement location="${{soa.module.install.dir}}/org-netbeans-modules-compapp-manager-jbi.jar"/>
+                    <pathelement location="${{soa.module.install.dir}}/org-netbeans-soa-libs-xmlbeans.jar"/>
+                    <pathelement location="${{soa.module.install.dir}}/ext/jbi/jbi-admin-common.jar"/>
+                    <pathelement location="${{soa.module.install.dir}}/../ant/nblib/org-netbeans-modules-compapp-projects-jbi.jar"/>
+                    <pathelement location="${{netbeans.home}}/lib/org-openide-util.jar"/>
+                    <pathelement location="${{netbeans.home}}/lib/org-openide-modules.jar"/>
+                    <pathelement location="${{netbeans.home}}/modules/org-openide-options.jar"/>
+                    <pathelement location="${{netbeans.home}}/modules/org-openide-text.jar"/>
+                    <pathelement location="${{netbeans.home}}/modules/org-openide-loaders.jar"/>
+                    <pathelement location="${{netbeans.home}}/modules/org-openide-nodes.jar"/>
+                    <pathelement location="${{netbeans.home}}/modules/org-openide-dialogs.jar"/>
+                    <pathelement location="${{netbeans.home}}/core/org-openide-filesystems.jar"/>
+                    <pathelement location="${{ide.module.install.dir}}/modules/ext/xerces-2.8.0.jar"/>
+                    <pathelement location="${{ide.module.install.dir}}/ext/xml-commons-dom-ranges-1.0.b2.jar"/>
+                    <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-xml-retriever.jar"/>
+                    <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-xml-schema-model.jar"/>
+                    <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-xml-wsdl-model.jar"/>
+                    <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-xml-xam.jar"/>
+                    <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-xml-text.jar"/>
+                    <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-editor.jar"/>    
+                    <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-editor-lib.jar"/>    
+                    <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-editor-util.jar"/>  
+                    <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-projectapi.jar"/>
+                    <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-classfile.jar"/>   
+                    <pathelement location="${{ide.module.install.dir}}/org-apache-xml-resolver.jar"/>
+                    <pathelement location="${{xml.module.install.dir}}/org-netbeans-modules-xml-wsdl-extensions.jar"/>
+                    <pathelement location="${{java.module.install.dir}}/ext/jaxws21/api/jaxb-api.jar"/>
+                    <pathelement location="${{java.module.install.dir}}/ext/jaxws21/jaxb-impl.jar"/>
+                    <pathelement location="${{java.module.install.dir}}/ext/jaxws21/activation.jar"/>   
+                    <pathelement location="${{enterprise.module.install.dir}}/org-netbeans-modules-j2eeserver.jar"/> 
+                    <pathelement location="${{enterprise.module.install.dir}}/ext/jsr88javax.jar"/> 
                 </path>
                 
                 <taskdef name="jbi-build-service-assembly" classname="org.netbeans.modules.compapp.projects.jbi.anttasks.BuildServiceAssembly">
@@ -596,32 +596,33 @@ made subject to such option by the copyright holder.
             <target name="-pre-test-run" if="have.tests" depends="init">
                 <mkdir dir="${{test.results.dir}}"/>
                 <path id="unit.test.classpath">
-                    <pathelement path="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
-                    <pathelement path="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-compapp-projects-jbi.jar"/>
-                    <pathelement path="${{netbeans.home}}/../soa2/modules/ext/jbi/jbi-admin-common.jar"/>
-                    <pathelement path="${{netbeans.home}}/../soa2/modules/ext/jbi/catd.jar"/>
-                    <pathelement path="${{netbeans.home}}/../java2/modules/ext/junit-3.8.2.jar"/>                        
-                    <pathelement path="${{netbeans.home}}/../java2/modules/ext/jaxws21/api/saaj-api.jar"/>
-                    <pathelement path="${{netbeans.home}}/../java2/modules/ext/jaxws21/saaj-impl.jar"/>
-                    <pathelement path="${{netbeans.home}}/../java2/modules/ext/jaxws21/FastInfoset.jar"/>
-                    <pathelement path="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-xml-xdm.jar"/>
-                    <pathelement path="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-xml-xam.jar"/>
-                    <pathelement path="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-editor-lib.jar"/>
-                    <pathelement path="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-xml-text.jar"/>
-                    <pathelement path="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-editor.jar"/>
-                    <pathelement path="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-editor-util.jar"/>
-                    <pathelement path="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-xml-core.jar"/>
-                    <pathelement path="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-editor-lib2.jar"/>
-                    <pathelement path="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-lexer.jar"/>
-                    <pathelement path="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-xml-lexer.jar"/>
-                    <pathelement path="${{netbeans.home}}/../platform8/lib/org-openide-modules.jar"/>
-                    <pathelement path="${{netbeans.home}}/../platform8/lib/org-openide-util.jar"/>
-                    <pathelement path="${{netbeans.home}}/../platform8/modules/org-openide-options.jar"/>
-                    <pathelement path="${{netbeans.home}}/../platform8/modules/org-openide-text.jar"/>
-                    <pathelement path="${{netbeans.home}}/../platform8/modules/org-openide-loaders.jar"/>
-                    <pathelement path="${{netbeans.home}}/../platform8/modules/org-openide-nodes.jar"/>
-                    <pathelement path="${{netbeans.home}}/../platform8/modules/org-netbeans-modules-editor-mimelookup.jar"/>
-                    <pathelement path="${{netbeans.home}}/../platform8/core/org-openide-filesystems.jar"/>
+                    <pathelement path="${{soa.module.install.dir}}/org-netbeans-modules-compapp-manager-jbi.jar"/>
+                    <pathelement path="${{soa.module.install.dir}}/org-netbeans-modules-compapp-projects-jbi.jar"/>
+                    <pathelement path="${{soa.module.install.dir}}/ext/jbi/jbi-admin-common.jar"/>
+                    <pathelement path="${{soa.module.install.dir}}/ext/jbi/catd.jar"/>
+                    <pathelement path="${{java.module.install.dir}}/ext/junit-3.8.2.jar"/>                        
+                    <pathelement path="${{java.module.install.dir}}/ext/jaxws21/api/saaj-api.jar"/>
+                    <pathelement path="${{java.module.install.dir}}/ext/jaxws21/saaj-impl.jar"/>
+                    <pathelement path="${{java.module.install.dir}}/ext/jaxws21/FastInfoset.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-editor-lib.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-editor.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-editor-util.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-editor-lib2.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-editor-indent.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-lexer.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-core.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-lexer.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-text.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-xdm.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-xam.jar"/>
+                    <pathelement path="${{netbeans.home}}/lib/org-openide-modules.jar"/>
+                    <pathelement path="${{netbeans.home}}/lib/org-openide-util.jar"/>
+                    <pathelement path="${{netbeans.home}}/modules/org-openide-options.jar"/>
+                    <pathelement path="${{netbeans.home}}/modules/org-openide-text.jar"/>
+                    <pathelement path="${{netbeans.home}}/modules/org-openide-loaders.jar"/>
+                    <pathelement path="${{netbeans.home}}/modules/org-openide-nodes.jar"/>
+                    <pathelement path="${{netbeans.home}}/modules/org-netbeans-modules-editor-mimelookup.jar"/>
+                    <pathelement path="${{netbeans.home}}/core/org-openide-filesystems.jar"/>
                 </path>
             </target>
             <target name="-do-test-run" if="netbeans.home+have.tests" depends="init,-pre-test-run">
@@ -799,7 +800,9 @@ made subject to such option by the copyright holder.
                         <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/</xsl:text>${<xsl:value-of select="$subproj"/>.su.name}</xsl:attribute>
                         <patternset>
                             <include name="**/*.wsdl"/>
+                            <include name="**/*.WSDL"/>
                             <include name="**/*.xsd"/>
+                            <include name="**/*.XSD"/>
                             <include name="META-INF/jbi.xml"/>
                             <include name="META-INF/catalog.xml"/>
                         </patternset>
@@ -811,30 +814,7 @@ made subject to such option by the copyright holder.
                     <move> 
                         <xsl:attribute name="file">${<xsl:value-of select="$subproj"/><xsl:text>.su.dir}/META-INF/jbi.xml</xsl:text></xsl:attribute>
                         <xsl:attribute name="todir">${<xsl:value-of select="$subproj"/><xsl:text>.su.dir}</xsl:text></xsl:attribute>
-                    </move>
-                    <!--<delete> 
-                        <xsl:attribute name="dir">${<xsl:value-of select="$subproj"/><xsl:text>.su.dir}/META-INF</xsl:text></xsl:attribute>
-                    </delete>
-                    <unzip>
-                        <xsl:attribute name="src">${project.<xsl:value-of select="$subproj"/>}<xsl:text>/build/${se.jar.name}</xsl:text></xsl:attribute>
-                        <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/META-INF/catalogData/<xsl:value-of select="$subproj"/></xsl:text></xsl:attribute>
-                        <patternset>
-                            <include name="META-INF/catalog.xml"/>
-                        </patternset>
-                    </unzip>-->
-                    
-          <!--
-        <unzip src="${project.TestForNBRepro}/build/${se.jar.name}" dest="${src.dir}/../jbiServiceUnits/META-INF/catalogData/TestForNBRepro">
-            <patternset>
-                <include name="META-INF/catalog.xml"/>
-            </patternset>
-        </unzip>
-        
-        <move todir="${src.dir}/../jbiServiceUnits/META-INF/TestForNBRepro">
-            <fileset dir="${TestForNBRepro.su.dir}/META-INF/"/>                
-        </move>
-        -->
-        
+                    </move>        
                     <move>
                         <xsl:attribute name="todir">${src.dir}<xsl:text>/../jbiServiceUnits/META-INF/${</xsl:text><xsl:value-of select="$subproj"/><xsl:text>.su.name}</xsl:text></xsl:attribute>                        
                         <fileset>
@@ -903,13 +883,15 @@ made subject to such option by the copyright holder.
                     <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/</xsl:text>${<xsl:value-of select="$subproj"/>.su.name}</xsl:attribute>
                     <patternset>
                         <include name="**/*.wsdl"/>
+                        <include name="**/*.WSDL"/>
                         <include name="**/*.xsd"/>
+                        <include name="**/*.XSD"/>
                         <include name="META-INF/jbi.xml"/>
                     </patternset>
                 </unzip>  
                 <unzip>
                     <xsl:attribute name="src">${reference.<xsl:value-of select="$subproj"/>.<xsl:value-of select="$subtarget"/>}</xsl:attribute>
-                    <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/META-INF/<xsl:value-of select="$subproj"/></xsl:text></xsl:attribute>
+                    <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/META-INF/</xsl:text><xsl:value-of select="$subproj"/></xsl:attribute>
                     <patternset>
                         <include name="META-INF/catalog.xml"/>
                     </patternset>

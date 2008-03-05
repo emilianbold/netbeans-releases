@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -74,8 +74,8 @@ public class DocumentsDialogOperator extends NbDialogOperator {
     private JTextAreaOperator _txtDescription;
     private JListOperator _lstDocuments;
     
-    private static final String title = Bundle.getString("org.netbeans.core.windows.actions.Bundle", 
-                                                         "CTL_Documents");
+    private static final String title = Bundle.getString("org.netbeans.core.windows.view.ui.Bundle",
+                                                         "CTL_DocumentsTitle");
     
     /** Waits until dialog with title Documents is found. */
     public DocumentsDialogOperator() {
@@ -129,6 +129,7 @@ public class DocumentsDialogOperator extends NbDialogOperator {
     /** Returns operator of "Close" button.
      * @return  JButtonOperator instance of "Close" button
      */
+    @Override
     public JButtonOperator btClose() {
         if (_btClose == null) {
             String closeCaption = Bundle.getStringTrimmed("org.netbeans.core.windows.services.Bundle", 

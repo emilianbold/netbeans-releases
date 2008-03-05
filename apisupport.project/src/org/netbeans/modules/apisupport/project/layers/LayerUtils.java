@@ -71,7 +71,6 @@ import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.Util;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
@@ -504,6 +503,9 @@ public class LayerUtils {
          */
         public FileObject getLayerFile() {
             NbModuleProvider module = project.getLookup().lookup(NbModuleProvider.class);
+            if (module == null) { // #126939: other project type
+                return null;
+            }
             Manifest mf = Util.getManifest(module.getManifestFile());
             if (mf == null) {
                 return null;
@@ -542,6 +544,13 @@ public class LayerUtils {
          */
         private String newLayerPath() {
             NbModuleProvider module = project.getLookup().lookup(NbModuleProvider.class);
+            FileObject manifest = module.getManifestFile();
+            if (manifest != null) {
+                String bundlePath = ManifestManager.getInstance(Util.getManifest(manifest), false).getLocalizingBundle();
+                if (bundlePath != null) {
+                    return bundlePath.replaceFirst("/[^/]+$", "/layer.xml"); // NOI18N
+                }
+            }
             return module.getCodeNameBase().replace('.', '/') + "/layer.xml"; // NOI18N
         }
 

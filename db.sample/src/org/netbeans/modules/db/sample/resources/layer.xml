@@ -5,7 +5,7 @@
         <folder name="Sample">
             <folder name="Providers">
                 <file name="SampleDbProvider.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.sample.providers.MySQLSampleDbProvider.getDefault"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.sample.providers.MySqlSampleDbProvider.getDefault"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.db.sample.SampleDbProvider"/>
                 </file>
             </folder>

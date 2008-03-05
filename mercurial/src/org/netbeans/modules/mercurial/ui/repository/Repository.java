@@ -93,9 +93,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     
     private final static String LOCAL_URL_HELP          = "file:///repository_path";              // NOI18N
     private final static String HTTP_URL_HELP           = "http://[username[:password]@]hostname/repository_path";      // NOI18N
-    private final static String HTTPS_URL_HELP          = "https://hostname/repository_path";     // NOI18N
+    private final static String HTTPS_URL_HELP          = "https://[username[:password]@]hostname/repository_path";     // NOI18N
     private final static String STATIC_HTTP_URL_HELP    = "static-http://hostname/repository_path";       // NOI18N
-    private final static String SSH_URL_HELP        = "ssh://hostname/repository_path";   // NOI18N   
+    private final static String SSH_URL_HELP            = "ssh://hostname/repository_path";   // NOI18N   
                
     private RepositoryPanel repositoryPanel;
     private boolean valid = true;
@@ -108,12 +108,14 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     private String message;            
     private int modeMask;
     private Dimension maxNeededSize;
+    private boolean bPushPull;
+    private static int HG_PUSH_PULL_VERT_PADDING = 30;
     
     public Repository(String titleLabel) {
-        this(0, titleLabel);
+        this(0, titleLabel, false);
     }
             
-    public Repository(int modeMask, String titleLabel) {
+    public Repository(int modeMask, String titleLabel, boolean bPushPull) {
         
         this.modeMask = modeMask;
         
@@ -130,7 +132,10 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         //repositoryPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 0));
         
         // retrieve the dialog size for the largest configuration
-        updateVisibility("svn+");                                                                       // NOI18N
+        if(bPushPull)
+            updateVisibility("foo:"); // NOI18N
+        else
+            updateVisibility("https:"); // NOI18N            
         maxNeededSize = repositoryPanel.getPreferredSize();
 
         repositoryPanel.savePasswordCheckBox.setSelected(HgModuleConfig.getDefault().getSavePassword());
@@ -195,7 +200,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             // templates for supported connection methods        
             recentRoots.add(new RepositoryConnection("file:///"));      // NOI18N
             recentRoots.add(new RepositoryConnection("http://"));       // NOI18N
-            //recentRoots.add(new RepositoryConnection("https://"));      // NOI18N
+            recentRoots.add(new RepositoryConnection("https://"));      // NOI18N
             recentRoots.add(new RepositoryConnection("static-http://"));        // NOI18N
             recentRoots.add(new RepositoryConnection("ssh://"));        // NOI18N
         };
@@ -400,10 +405,10 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             repositoryPanel.tipLabel.setText(HTTP_URL_HELP);
             authFields = true;
             proxyFields = true;
-        //} else if(selectedUrlString.startsWith("https:")) {                     // NOI18N
-            //repositoryPanel.tipLabel.setText(HTTPS_URL_HELP);
+        } else if(selectedUrlString.startsWith("https:")) {                     // NOI18N
+            repositoryPanel.tipLabel.setText(HTTPS_URL_HELP);
             //authFields = true;
-            //proxyFields = true;
+            proxyFields = true;
         } else if(selectedUrlString.startsWith("static-http:")) {                       // NOI18N
             repositoryPanel.tipLabel.setText(STATIC_HTTP_URL_HELP);
             authFields = true;
@@ -415,8 +420,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             repositoryPanel.tipLabel.setText(LOCAL_URL_HELP);
         } else {
             repositoryPanel.tipLabel.setText(NbBundle.getMessage(Repository.class, "MSG_Repository_Url_Help", new Object [] { // NOI18N
-                //LOCAL_URL_HELP, HTTP_URL_HELP, HTTPS_URL_HELP, STATIC_HTTP_URL_HELP, SSH_URL_HELP
-                LOCAL_URL_HELP, HTTP_URL_HELP, STATIC_HTTP_URL_HELP, SSH_URL_HELP
+                LOCAL_URL_HELP, HTTP_URL_HELP, HTTPS_URL_HELP, STATIC_HTTP_URL_HELP, SSH_URL_HELP
+                //LOCAL_URL_HELP, HTTP_URL_HELP, STATIC_HTTP_URL_HELP, SSH_URL_HELP
             }));
         }
 
@@ -644,6 +649,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         corectPanel.panel.setLayout(new BorderLayout());
         JPanel p = getPanel();
         if(setMaxNeddedSize) {
+            if(bPushPull){
+                maxNeededSize.setSize(maxNeededSize.width, maxNeededSize.height + HG_PUSH_PULL_VERT_PADDING);
+            }
             p.setPreferredSize(maxNeededSize);
         }        
         corectPanel.panel.add(p, BorderLayout.NORTH);
@@ -659,6 +667,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         DialogDescriptor dialogDescriptor = new DialogDescriptor(corectPanel, title); // NOI18N        
         JPanel p = getPanel();
         if(setMaxNeededSize) {
+            if(bPushPull){
+                maxNeededSize.setSize(maxNeededSize.width, maxNeededSize.height + HG_PUSH_PULL_VERT_PADDING);
+            }
             p.setPreferredSize(maxNeededSize);
         }        
         if(options!= null) {
@@ -676,6 +687,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         if (name != null) {
             dialog.addWindowListener(new DialogBoundsPreserver(HgModuleConfig.getDefault().getPreferences(), name)); // NOI18N
         }
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Repository.class, "ACSD_RepositoryPanel"));
+
         dialog.setVisible(true);
     }
 

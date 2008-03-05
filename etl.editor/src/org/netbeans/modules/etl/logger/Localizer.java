@@ -53,7 +53,7 @@ public class Localizer extends LocalizationSupport {
     }
 
     public static String parse(String str) {
-        String s = "DM-DI-PRSR001:";
+        String s = "DM-DI-PRSR001: ";
         if (str.contains(s)) {
             str = str.replace(s, "");
         }

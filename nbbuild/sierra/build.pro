@@ -45,7 +45,10 @@
     <!-- dev -->
     <property name="netbeans.host" value="http://deadlock.netbeans.org"/>
     <property name="netbeans.path" value="hudson/job/trunk/lastSuccessfulBuild/artifact/nbbuild/dist/zip"/>
-    <property name="netbeans.dir" value=".netbeans/dev"/>
+
+    <!-- daily -->
+    <property name="netbeans.host" value="http://bits.netbeans.org"/>
+    <property name="netbeans.path" value="dev/nightly/latest/zip"/>
 
     <property name="test.cvs.root" value=":pserver:guest@cvs.dev.java.net:/cvs"/>
     <property name="test.cvs.path" value="open-jbi-components/driver-tests/bpelse"/>
@@ -65,27 +68,6 @@
         ${test.cvs.path}/benchmark/purchaseOrderCoordinator
         ${test.cvs.path}/benchmark/PurchaseOrderService
         ${test.cvs.path}/benchmark/TravelReservationService/TravelReservationService
-        ${test.cvs.path}/dynamicpartnerlink/dynamicPartnerLinkBPEL
-        ${test.cvs.path}/dynamicpartnerlink/justhttpAndBPEL
-        ${test.cvs.path}/dynamicpartnerlink/JustHTTPandBPEL2
-        ${test.cvs.path}/dynamicpartnerlink/sendCallBackInfo
-        ${test.cvs.path}/dynamicpartnerlink/SyncSampleEPRAssign
-        ${test.cvs.path}/dynamicpartnerlink/SyncSampleEPRLiteral
-        ${test.cvs.path}/MessageExchange/MessageExchangeBpel
-        ${test.cvs.path}/PartnerLinks/DuplicateProject1
-        ${test.cvs.path}/PartnerLinks/DuplicateProject2
-        ${test.cvs.path}/PartnerLinks/OneBP
-        ${test.cvs.path}/PartnerLinks/PLTLocalNamespace
-        ${test.cvs.path}/PartnerLinks/TwoBPDuplicateImpl
-        ${test.cvs.path}/PartnerLinks/TwoBPs
-        ${test.cvs.path}/SchemaElemDecl/BPwithElemRef
-        ${test.cvs.path}/SchemaElemDecl/BPwithMsgElement
-        ${test.cvs.path}/SchemaElemDecl/BPwithMsgElemQualified
-        ${test.cvs.path}/SchemaElemDecl/BPwithNestedElem
-        ${test.cvs.path}/SchemaElemDecl/BPwithNestedElemQualified
-        ${test.cvs.path}/ScopeTermination/ScopeTerminationBpel
-        ${test.cvs.path}/xslt/DoXslTransformBPEL
-        ${test.cvs.path}/xslt/InOutBPXSLT/InOutBP
         ${test.cvs.path}/blueprints/bp1/BluePrint1
         ${test.cvs.path}/blueprints/bp2/BluePrint2
         ${test.cvs.path}/blueprints/bp3/BluePrint3
@@ -98,7 +80,6 @@
         ${test.cvs.path}/clusterSupport/ClusterBPEL
         ${test.cvs.path}/compensation/IterativeScopes
         ${test.cvs.path}/compensation/NestedScope
-        ${test.cvs.path}/correlation/correlationBPEL
         ${test.cvs.path}/correlation/correlationBPEL2
         ${test.cvs.path}/correlation/outoforder
         ${test.cvs.path}/correlation/CorrelationOnePropBPEL
@@ -106,13 +87,16 @@
         ${test.cvs.path}/correlation/FlowAsStartActivity
         ${test.cvs.path}/correlation/MatchingInstanceTwoCorrBPEL
         ${test.cvs.path}/correlation/ThreeCorrSetsBpel
+        ${test.cvs.path}/dynamicpartnerlink/dynamicPartnerLinkBPEL
+        ${test.cvs.path}/dynamicpartnerlink/justhttpAndBPEL
+        ${test.cvs.path}/dynamicpartnerlink/JustHTTPandBPEL2
+        ${test.cvs.path}/dynamicpartnerlink/sendCallBackInfo
+        ${test.cvs.path}/dynamicpartnerlink/SyncSampleEPRAssign
+        ${test.cvs.path}/dynamicpartnerlink/SyncSampleEPRLiteral
         ${test.cvs.path}/empty/EmptyBpel
         ${test.cvs.path}/eventHandlers/onAlarm
         ${test.cvs.path}/eventHandlers/onEvent
         ${test.cvs.path}/exit/ExitBpel
-        ${test.cvs.path}/faulthandling/FaultHandlingBpel
-        ${test.cvs.path}/faulthandling/StandardFaultsBpel
-        ${test.cvs.path}/faulthandling/SystemFaultsBpel
         ${test.cvs.path}/flow/FlowBpel
         ${test.cvs.path}/foreach-bpel20/ForEachBpel
         ${test.cvs.path}/if/ifBpel
@@ -123,7 +107,13 @@
         ${test.cvs.path}/JavaEEIntegration/InOnlyMultipleBPJava/InOnlyMultiBP
         ${test.cvs.path}/JavaEEIntegration/JavaEEToBP/FaultTest/bplGreetService
         ${test.cvs.path}/JavaEEIntegration/JavaEEToBP/JavaEEToBPProj
-        ${test.cvs.path}/misc/MiscBpel
+        ${test.cvs.path}/MessageExchange/MessageExchangeBpel
+        ${test.cvs.path}/PartnerLinks/DuplicateProject1
+        ${test.cvs.path}/PartnerLinks/DuplicateProject2
+        ${test.cvs.path}/PartnerLinks/OneBP
+        ${test.cvs.path}/PartnerLinks/PLTLocalNamespace
+        ${test.cvs.path}/PartnerLinks/TwoBPDuplicateImpl
+        ${test.cvs.path}/PartnerLinks/TwoBPs
         ${test.cvs.path}/pick/PickBpel
         ${test.cvs.path}/repeatuntil/RepeatUntilBpel
         ${test.cvs.path}/rethrow/Rethrow
@@ -131,13 +121,20 @@
         ${test.cvs.path}/samples/EndToEndScenario
         ${test.cvs.path}/samples/samplesBPEL
         ${test.cvs.path}/samples/SynchronousSample
-        ${test.cvs.path}/scalability/ScalabilityBpel
+        ${test.cvs.path}/SchemaElemDecl/BPwithElemRef
+        ${test.cvs.path}/SchemaElemDecl/BPwithMsgElement
+        ${test.cvs.path}/SchemaElemDecl/BPwithMsgElemQualified
+        ${test.cvs.path}/SchemaElemDecl/BPwithNestedElem
+        ${test.cvs.path}/SchemaElemDecl/BPwithNestedElemQualified
+        ${test.cvs.path}/ScopeTermination/ScopeTerminationBpel
         ${test.cvs.path}/TerminationHandler/TerminationHandlerBpel
         ${test.cvs.path}/wait/WaitBpel
         ${test.cvs.path}/while/WhileBpel
         ${test.cvs.path}/xpathfunctions/XPathFunctionsBpel
         ${test.cvs.path}/xpathfunctions/XSDFunctions
         ${test.cvs.path}/xsddatatypes/XSDDataTypesBpel
+        ${test.cvs.path}/xslt/DoXslTransformBPEL
+        ${test.cvs.path}/xslt/InOutBPXSLT/InOutBP
     "/>
     <property name="home" value="../.."/>
     <property name="cache" value="${home}/../cache"/>
@@ -147,6 +144,7 @@
     <property name="jbi" location="${test}/${test.cvs.path}"/>
     <property name="latest" value="${cache}/latest"/>
     <property name="netbeans" value="${cache}/netbeans"/>
+    <property name="netbeans.dir" value=".netbeans/dev"/>
     <property name="sierra.dir"  value=".netbeans/sierra"/>
     <property name="samples" value="${home}/bpel.samples/resources"/>
     <property name="build.number" value="${home}/nbbuild/netbeans/platform8/build_number"/>

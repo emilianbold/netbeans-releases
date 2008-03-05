@@ -43,8 +43,8 @@ package org.netbeans.modules.bpel.core.util;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
-import org.openide.text.Line;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -60,17 +60,24 @@ final class BPELValidationAnnotation extends Annotation implements PropertyChang
     return myMessage;
   }
   
-  public void show(Line line, String message) {
+  public void show(Annotatable annotatable, String message) {
     myMessage = message;
-    attach(line);
-    line.addPropertyChangeListener(this);
+    attach(annotatable);
+    annotatable.addPropertyChangeListener(this);
   }
   
   public void propertyChange( PropertyChangeEvent propertyChangeEvent ) {
-    Line line = (Line) propertyChangeEvent.getSource();
+    // Ignore the event which notifies about the number of annotations for
+    // the annotatable object -- we're not really interested
+    if (Annotatable.PROP_ANNOTATION_COUNT.equals(
+            propertyChangeEvent.getPropertyName())) {
+        return;
+    }
+    
+    Annotatable annotatable = (Annotatable) propertyChangeEvent.getSource();
 
-    if (line != null) {
-      line.removePropertyChangeListener(this);
+    if (annotatable != null) {
+      annotatable.removePropertyChangeListener(this);
       detach();
     }
   }

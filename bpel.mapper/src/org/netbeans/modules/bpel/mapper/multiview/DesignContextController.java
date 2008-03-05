@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.mapper.multiview;
 
+import java.util.EventObject;
 import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
 
 /**
@@ -35,7 +36,7 @@ public interface DesignContextController {
     
     void setContext(BpelDesignContext newContext);
     
-    void reloadMapper(ChangeEvent event);
+    void reloadMapper(EventObject event);
     
     void showMapper();
     
@@ -43,6 +44,11 @@ public interface DesignContextController {
     
     void cleanup();
 
+    /**
+     * Registers listeners to track dataObject changes
+     */
+    void processDataObject(Object dataObject);
+    
     /**
      * The BpelModel.invoke() method has a parameter source. 
      * It allows to trace the souce of changes through a transaction. 

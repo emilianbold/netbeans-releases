@@ -39,12 +39,11 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
-import org.netbeans.modules.websvc.saas.model.wadl.Resource;
-import org.openide.nodes.Children;
+import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
@@ -52,43 +51,39 @@ import org.openide.util.Exceptions;
  *
  * @author nam
  */
-public class WadlSaasNodeChildren extends Children.Keys<Object> {
-    private WadlSaas wadlSaas;
+public class WadlSaasNodeChildren extends SaasNodeChildren<Object> {
     
     public WadlSaasNodeChildren(WadlSaas wadlSaas) {
-        this.wadlSaas = wadlSaas;
+        super(wadlSaas);
     }
-
     
     @Override
-    protected void addNotify() {
-        super.addNotify();
-        updateKeys();
+    public WadlSaas getSaas() {
+        return (WadlSaas) super.getSaas();
     }
-
+    
     @Override
-    protected void removeNotify() {
-        java.util.List<String> emptyList = Collections.emptyList();
-        setKeys(emptyList);
-        super.removeNotify();
-    }
-
-    private void updateKeys() {
-        ArrayList<Object> keys = new ArrayList<Object>();
-        keys.addAll(wadlSaas.getResourcesOrMethods());
-        setKeys(keys.toArray());
+    protected void updateKeys() {
+        if (getSaas().getState() == Saas.State.READY) {
+            setKeys(getSaas().getResourcesOrMethods());
+        } else if (needsWaiting()) {
+            setKeys(WAIT_HOLDER);
+        } else {
+            setKeys(Collections.EMPTY_LIST);
+        }
     }
     
     @Override
     protected Node[] createNodes(Object key) {
+        if (needsWaiting()) {
+            return getWaitNode();
+        }
         try {
             if (key instanceof WadlSaasMethod) {
                 WadlSaasMethod wsm = (WadlSaasMethod) key;
-                if (wsm.getWadlMethod() != null) {
-                    return new Node[] { new WadlSaasMethodNode(wsm) };
-                }
-            } else if (key instanceof Resource) {
-                return new Node[] { new ResourceNode(wadlSaas, new Resource[] {(Resource) key} ) };
+                return new Node[] { new WadlMethodNode(wsm) };
+            } else if (key instanceof WadlSaasResource) {
+                return new Node[] { new ResourceNode((WadlSaasResource)key) };
             }
         } catch(Exception ex) {
             Exceptions.printStackTrace(ex);
