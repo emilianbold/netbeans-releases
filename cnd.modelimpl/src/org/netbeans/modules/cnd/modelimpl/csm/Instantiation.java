@@ -128,7 +128,7 @@ public abstract class Instantiation {
         }
 
         public CsmUID<CsmClass> getUID() {
-            assert true : "Getting UID of instantiated class is not supported yet";
+            assert true : "Getting UID of instantiated class is not supported yet"; // NOI18N
             return ((CsmClass)template).getUID();
         }
 
@@ -200,7 +200,7 @@ public abstract class Instantiation {
         
         @Override
         public String toString() {
-            return "INSTANTIATION OF CLASS: " + getTemplateDeclaration() + " with type " + getInstantiationType();
+            return "INSTANTIATION OF CLASS: " + getTemplateDeclaration() + " with type " + getInstantiationType(); // NOI18N
         }
     }
     
@@ -317,7 +317,7 @@ public abstract class Instantiation {
         
         @Override
         public String toString() {
-            return "INSTANTIATION OF FUNCTION: " + getTemplateDeclaration() + " with type " + getInstantiationType();
+            return "INSTANTIATION OF FUNCTION: " + getTemplateDeclaration() + " with type " + getInstantiationType(); // NOI18N
         }
     }
 
@@ -357,7 +357,7 @@ public abstract class Instantiation {
         }
 
         public CsmUID<CsmField> getUID() {
-            assert true : "Getting UID of instantiated class is not supported yet";
+            assert true : "Getting UID of instantiated class is not supported yet"; // NOI18N
             return fieldRef.getUID();
         }
 
@@ -427,7 +427,7 @@ public abstract class Instantiation {
         
         @Override
         public String toString() {
-            return "INSTANTIATION OF FIELD: " + getTemplateDeclaration() + " with type " + getInstantiationType();
+            return "INSTANTIATION OF FIELD: " + getTemplateDeclaration() + " with type " + getInstantiationType(); // NOI18N
         }
     }
     
@@ -471,7 +471,7 @@ public abstract class Instantiation {
         }
 
         public CsmUID getUID() {
-            assert true : "Getting UID of instantiated class is not supported yet";
+            assert true : "Getting UID of instantiated class is not supported yet"; // NOI18N
             return methodRef.getUID();
         }
 
@@ -582,7 +582,7 @@ public abstract class Instantiation {
         
         @Override
         public String toString() {
-            return "INSTANTIATION OF METHOD: " + getTemplateDeclaration() + " with type " + getInstantiationType();
+            return "INSTANTIATION OF METHOD: " + getTemplateDeclaration() + " with type " + getInstantiationType(); // NOI18N
         }
     }
     
@@ -622,7 +622,7 @@ public abstract class Instantiation {
         }
 
         public CsmUID<CsmParameter> getUID() {
-            assert true : "Getting UID of instantiated class is not supported yet";
+            assert true : "Getting UID of instantiated class is not supported yet"; // NOI18N
             return parameterRef.getUID();
         }
 
@@ -684,7 +684,7 @@ public abstract class Instantiation {
 
         @Override
         public String toString() {
-            return "INSTANTIATION OF FUN PARAM: " + getTemplateDeclaration() + " with type " + getInstantiationType();
+            return "INSTANTIATION OF FUN PARAM: " + getTemplateDeclaration() + " with type " + getInstantiationType(); // NOI18N
         }
     }
     
