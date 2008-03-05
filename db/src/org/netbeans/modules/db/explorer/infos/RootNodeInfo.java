@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
+import java.sql.Connection;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
@@ -60,7 +60,6 @@ import org.netbeans.modules.db.explorer.DbActionLoaderSupport;
 import org.netbeans.modules.db.explorer.DbNodeLoader;
 import org.netbeans.modules.db.explorer.DbNodeLoaderSupport;
 import org.netbeans.modules.db.explorer.nodes.*;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
@@ -218,6 +217,8 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
                 if ( connNode.getInfo().getDatabaseConnection().equals(dbconn)) {
                     connNode.deleteNode();
                 }
+                
+                dbconn.disconnect();
             }
         }
     }

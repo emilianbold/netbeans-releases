@@ -142,7 +142,8 @@ public final class ConnectionManager {
     /**
      * Remove an existing connection from the Database Explorer.  This method 
      * unregisters the connection from the the explorer so it will
-     * no longer appear as a connection in the UI.
+     * no longer appear as a connection in the UI.  This method also closes
+     * the underlying JDBC connection if it is open.
      * 
      * @param dbconn the connection to be removed
      */
