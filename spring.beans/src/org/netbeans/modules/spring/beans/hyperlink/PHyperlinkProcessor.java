@@ -42,8 +42,6 @@
 package org.netbeans.modules.spring.beans.hyperlink;
 
 import java.io.IOException;
-import java.util.List;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
@@ -52,6 +50,8 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
+import org.netbeans.modules.spring.beans.editor.Property;
+import org.netbeans.modules.spring.beans.editor.PropertyFinder;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.openide.util.Exceptions;
 
@@ -98,9 +98,9 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
                     public void run(CompilationController cc) throws Exception {
                         ElementUtilities eu = cc.getElementUtilities();
                         TypeElement type = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, cc);
-                        List<ExecutableElement> properties = SpringXMLConfigEditorUtils.findPropertiesOnType(eu, type.asType(), propName, false, true);
-                        if(properties.size() > 0) {
-                            ElementOpen.open(cc.getClasspathInfo(), properties.get(0));
+                        Property[] props = new PropertyFinder(type.asType(), propName, eu).findProperties();
+                        if(props.length > 0 && props[0].getSetter() != null) {
+                            ElementOpen.open(cc.getClasspathInfo(), props[0].getSetter());
                         }
                     }
                 }, true);

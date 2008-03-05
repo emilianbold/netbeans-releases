@@ -18,172 +18,235 @@ Open issues:
 	     xmlns="http://research.sun.com/wadl/2006/10">
     <grammars/>
     <resources base="https://api.del.icio.us/v1">
-	<resource path="posts">
-	    <resource path="get">
-		<method name="GET" id="delicious.posts_get">
-		    <doc>
+        <resource path="posts">
+            <resource path="get">
+                <method name="GET" id="delicious.posts_get">
+                    <doc>
 Returns posts matching the arguments. If no date or url is given, the most recent date will be used.
-More at: http://del.icio.us/help/api/posts                    
-		    </doc>
-		    <request>
-			<param name="tag" type="xsd:string" style="query" required="false">
-                            <doc>Optional. Filter by this tag. 
+More at: http://del.icio.us/help/api/posts
+                    </doc>
+                    <request>
+                        <param name="tag" type="xsd:string" style="query" required="false">
+                            <doc>Optional. Filter by this tag.
                             </doc>
                         </param>
-			<param name="dt" type="xsd:string" style="query" required="false">
-                            <doc>Optional. Filter by this date. Format: CCYY-MM-DDThh:mm:ssZ 
+                        <param name="dt" type="xsd:string" style="query" required="false">
+                            <doc>Optional. Filter by this date. Format: CCYY-MM-DDThh:mm:ssZ
                             </doc>
                         </param>
-			<param name="url" type="xsd:string" style="query" required="true">
-                            <doc>Filter by this URL. 
+                        <param name="url" type="xsd:string" style="query" required="true">
+                            <doc>Filter by this URL.
                             </doc>
-                        </param>                          
-		    </request>
-		    <response>
-			<representation mediaType="text/xml"/>
-		    </response>
-		</method>
-	    </resource>
-	    <resource path="recent">
-		<method name="GET" id="delicious.posts_recent">
-		    <doc>
+                        </param>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="recent">
+                <method name="GET" id="delicious.posts_recent">
+                    <doc>
 Returns a list of the most recent posts, filtered by argument. Maximum 100.
-More at: http://del.icio.us/help/api/posts                    
-		    </doc>
-		    <request>
-			<param name="tag" type="xsd:string" style="query" required="false">
-                            <doc>Optional. Filter by this tag. 
+More at: http://del.icio.us/help/api/posts
+                    </doc>
+                    <request>
+                        <param name="tag" type="xsd:string" style="query" required="false">
+                            <doc>Optional. Filter by this tag.
                             </doc>
-                        </param>                         
-			<param name="count" type="xsd:integer" style="query" required="false">
-			    <doc>Optional. Number of items to retrieve (Default:15, Maximum:100).</doc>
-			</param>
-		    </request>
-		    <response>
-			<representation mediaType="text/xml"/>
-		    </response>
-		</method>			
-	    </resource>	    
-	    <resource path="all">
-		<method name="GET" id="delicious.posts_all">
-		    <doc>
+                        </param>
+                        <param name="count" type="xsd:integer" style="query" required="false">
+                            <doc>Optional. Number of items to retrieve (Default:15, Maximum:100).</doc>
+                        </param>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="all">
+                <method name="GET" id="delicious.posts_all">
+                    <doc>
 Returns all posts. Please use sparingly. Call the update method to see 
 if you need to fetch this information at all.
-More at: http://del.icio.us/help/api/posts                    
-		    </doc>
-		    <request>
-			<param name="tag" type="xsd:string" style="query" required="false">
-                            <doc>Optional. Filter by this tag. 
+More at: http://del.icio.us/help/api/posts
+                    </doc>
+                    <request>
+                        <param name="tag" type="xsd:string" style="query" required="false">
+                            <doc>Optional. Filter by this tag.
                             </doc>
-                        </param>                         
-		    </request>
-		    <response>
-			<representation mediaType="text/xml"/>
-		    </response>
-		</method>
-	    </resource>	    
-	    <resource path="dates">
-		<method name="GET" id="delicious.posts_dates">
-		    <doc>
+                        </param>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="dates">
+                <method name="GET" id="delicious.posts_dates">
+                    <doc>
 Returns a list of dates with the number of posts for each date. 
-More at: http://del.icio.us/help/api/posts                        
-		    </doc>
-		    <request>
-			<param name="tag" type="xsd:string" style="query" required="false">
-                            <doc>Optional. Filter by this tag. 
+More at: http://del.icio.us/help/api/posts
+                    </doc>
+                    <request>
+                        <param name="tag" type="xsd:string" style="query" required="false">
+                            <doc>Optional. Filter by this tag.
                             </doc>
-                        </param>                         
-		    </request>
-		    <response>
-			<representation mediaType="text/xml"/>
-		    </response>
-		</method>			
-	    </resource>
-	    <resource path="add">
-		<method name="GET" id="delicious.posts_add">
+                        </param>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="add">
+                <method name="GET" id="delicious.posts_add">
                     <doc>
                     Add a post to your user area at del.icio.us.
                     More at: http://del.icio.us/help/api/posts
                     </doc>
-		    <request>
-			<param name="url" type="xsd:anyURI" style="query" required="true">
-			    <doc>Url of the item</doc>
-			</param>
-			<param name="description" type="xsd:string" style="query" required="true">
-			    <doc>Description of the item</doc>
-			</param>
-			<param name="extended" type="xsd:string" style="query" required="false">
-			    <doc>Optional. Notes for the item</doc>
-			</param>			    
-			<param name="tags" type="xsd:string" style="query" required="false">
-			    <doc>Optional. Space delimited tags for the item.</doc>
-			</param>
-			<param name="dt" type="xsd:dateTime" style="query" required="false">
-			    <doc>Optional. Date stamp of the item. Format: CCYY-MM-DDThh:mm:ssZ. 
+                    <request>
+                        <param name="url" type="xsd:anyURI" style="query" required="true">
+                            <doc>Url of the item</doc>
+                        </param>
+                        <param name="description" type="xsd:string" style="query" required="true">
+                            <doc>Description of the item</doc>
+                        </param>
+                        <param name="extended" type="xsd:string" style="query" required="false">
+                            <doc>Optional. Notes for the item</doc>
+                        </param>
+                        <param name="tags" type="xsd:string" style="query" required="false">
+                            <doc>Optional. Space delimited tags for the item.</doc>
+                        </param>
+                        <param name="dt" type="xsd:dateTime" style="query" required="false">
+                            <doc>Optional. Date stamp of the item. Format: CCYY-MM-DDThh:mm:ssZ. 
                                  Requires a litera "T" and "Z" - for example: "2007-11-15T14:21:31Z"
                             </doc>
-			</param>			    
-			<param name="replace" type="xsd:boolean" style="query" required="false">
-			    <doc>Optional. Default is to not replace post if given url has already been posted.</doc>
-			</param>			    
-			<param name="shared" type="xsd:boolean" style="query" required="false">
-			    <doc>Optional. Deafult is to make the item private.</doc>
-			</param>			    
-		    </request>
-		    <response>
-			<representation mediaType="text/xml"/>
-		    </response>
-                    
-		</method>			
-	    </resource>	    
-	    <resource path="update">
-		<method name="GET" id="delicious.posts_update">
-		    <doc>			
+                        </param>
+                        <param name="replace" type="xsd:boolean" style="query" required="false">
+                            <doc>Optional. Default is to not replace post if given url has already been posted.</doc>
+                        </param>
+                        <param name="shared" type="xsd:boolean" style="query" required="false">
+                            <doc>Optional. Deafult is to make the item private.</doc>
+                        </param>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="update">
+                <method name="GET" id="delicious.posts_update">
+                    <doc>			
 Returns the last update time for the user. Use this method 
 to see if the data has changed since the last fetch
 before calling del.icio.us/posts/all.
-More at: http://del.icio.us/help/api/update
-		    </doc>
-		    <request/>
-		    <response>
-			<representation mediaType="text/xml"/>
-		    </response>
-                    
-		</method>			
-	    </resource>	   	    
-	</resource>	
-	<resource path="tags">
-	    <resource path="get">
-		<method name="GET" id="delicious.tags_get">
-		    <doc>
+More at: http://del.icio.us/help/api/update.
+                    </doc>
+                    <request/>
+                    <response>
+                        <representation mediaType="text/xml"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="delete">
+                <method name="GET" id="delicious.posts_delete">
+                    <doc>			
+Delete a post from del.icio.us.
+More at: http://del.icio.us/help/api/posts.
+                    </doc>
+                    <request>
+                        <param name="url" type="xsd:string" style="query" required="true">
+                            <doc>The url of the item.
+                            </doc>
+                        </param>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml"/>
+                    </response>
+                </method>
+            </resource>
+        </resource>
+        <resource path="tags">
+            <resource path="get">
+                <method name="GET" id="delicious.tags_get">
+                    <doc>
 Returns a list of tags and number of times used by a user. See 
-https://api.del.icio.us/v1/tags/get 	
-		    </doc>
-		    <request/>
-		    <response>
-			<representation mediaType="text/xml"/>
-		    </response>
-                    
-		</method>	
-		<method name="GET" id="delicious.tags_rename">
-		    <doc>
+https://api.del.icio.us/help/api/tags.
+                    </doc>
+                    <request/>
+                    <response>
+                        <representation mediaType="text/xml"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="rename">
+                <method name="GET" id="delicious.tags_rename">
+                    <doc>
 Renames an existing tag with a new tag name. See 
-https://api.del.icio.us/v1/tags/rename? 
- 		    </doc>
-		    <request>
-			<param name="old" type="xsd:string" style="query" required="true">
+https://api.del.icio.us/help/api/tags.
+                    </doc>
+                    <request>
+                        <param name="old" type="xsd:string" style="query" required="true">
                             <doc>Existing tag name.</doc>
                         </param>
-			<param name="new" type="xsd:string" style="query" required="true">
+                        <param name="new" type="xsd:string" style="query" required="true">
                             <doc>New tag name.</doc>
                         </param>
-		    </request>
-		    <response>
-			<representation mediaType="text/xml"/>
-		    </response>
-                    
-		</method>		
-	    </resource>	    
-	</resource>
+                    </request>
+                    <response>
+                        <representation mediaType="text/xml"/>
+                    </response>
+                </method>
+            </resource>
+            <resource path="bundles">
+                <resource path="all">
+                    <method name="GET" id="delicious.bundles_all">
+                        <doc>
+Retrieve all of a user's bundles. See 
+https://api.del.icio.us/help/api/bundles.
+                        </doc>
+                        <request/>
+                        <response>
+                            <representation mediaType="text/xml"/>
+                        </response>
+                    </method>
+                </resource>
+                <resource path="set">
+                    <method name="GET" id="delicious.bundles_set">
+                        <doc>
+Assign a set of tags to a single bundle, wipes away previous settings for bundle. See 
+https://api.del.icio.us/help/api/bundles.
+                        </doc>
+                        <request>
+                            <param name="bundle" type="xsd:string" style="query" required="true">
+                                <doc>The bundle name.</doc>
+                            </param>
+                            <param name="tags" type="xsd:string" style="query" required="true">
+                                <doc>List of tags (space separated).</doc>
+                            </param>
+                        </request>
+                        <response>
+                            <representation mediaType="text/xml"/>
+                        </response>
+                    </method>
+                </resource>
+                <resource path="delete">
+                    <method name="GET" id="delicious.bundles_delete">
+                        <doc>
+Delete a bundle. See https://api.del.icio.us/help/api/bundles.
+                        </doc>
+                        <request>
+                            <param name="bundle" type="xsd:string" style="query" required="true">
+                                <doc>The bundle name.</doc>
+                            </param>
+                        </request>
+                        <response>
+                            <representation mediaType="text/xml"/>
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+        </resource>
     </resources>
 </application>
