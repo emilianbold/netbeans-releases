@@ -156,7 +156,7 @@ public class SparcX86Resolver implements AsmTypesProvider {
                 tok = scanner.nextToken();
             } catch (TokenStreamException ex) {
                 Logger.getLogger(this.getClass().getName()).
-                    log(Level.WARNING, "Ident lexer crashed");
+                    log(Level.WARNING, "Ident lexer crashed"); // NOI18N
 
                 break;
             }
@@ -193,7 +193,7 @@ public class SparcX86Resolver implements AsmTypesProvider {
             int type = tok.getType();
             
             if (type == IdentScannerTokenTypes.Mark) {
-                if ("+".equals(text)) {
+                if ("+".equals(text)) { // NOI18N
                     numPluses++;
                 }                
             }    
