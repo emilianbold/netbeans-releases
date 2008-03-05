@@ -47,6 +47,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -153,7 +154,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
 	} else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-		    EditorContextBridge.showSource(frame);
+		    EditorContextBridge.showSource(frame, Disassembly.isInDisasm());
                 }
             });
 	}
