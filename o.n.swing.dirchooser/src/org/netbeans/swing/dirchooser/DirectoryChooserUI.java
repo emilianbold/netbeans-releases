@@ -1694,9 +1694,17 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             File f = sf;
             Vector<File> path = new Vector<File>(10);
 
-            do {
+            
+            /*
+             * Fix for IZ#122534 :
+             * NullPointerException at 
+             * org.netbeans.swing.dirchooser.DirectoryChooserUI$DirectoryComboBoxModel.addItem
+             * 
+             */
+            while( f!= null) {
                 path.addElement(f);
-            } while ((f = f.getParentFile()) != null);
+                f = f.getParentFile();
+            }
 
             int pathCount = path.size();
             // Insert chain at appropriate place in vector

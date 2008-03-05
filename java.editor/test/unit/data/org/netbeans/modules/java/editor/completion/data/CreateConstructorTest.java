@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class CreateConstructorTest {
+public class Test {
 
     private int time;
     private double something = 0.0;
