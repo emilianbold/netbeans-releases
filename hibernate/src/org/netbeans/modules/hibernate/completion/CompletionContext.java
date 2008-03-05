@@ -93,6 +93,9 @@ public class CompletionContext {
     
     private void initContext() {
         TokenItem token = documentContext.getCurrentToken();
+        if(token == null )
+            return;
+        
         boolean tokenBoundary = (token.getOffset() == caretOffset) 
                 || ((token.getOffset() + token.getImage().length()) == caretOffset);
         
