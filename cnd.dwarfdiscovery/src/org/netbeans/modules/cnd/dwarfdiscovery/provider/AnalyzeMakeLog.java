@@ -164,7 +164,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
     private String detectMakeLog(ProjectProxy project){
         String root = project.getSourceRoot();
         int i = root.indexOf("/usr/src/"); // NOI18N
-        if (i < 0 && root.endsWith("/usr/src")){
+        if (i < 0 && root.endsWith("/usr/src")){ // NOI18N
             i = root.indexOf("/usr/src"); // NOI18N
         }
         if (i > 0) {

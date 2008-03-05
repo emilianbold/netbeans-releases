@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.test.BaseTestSuite;
 public class CndLoadersTest extends BaseTestSuite {
     
     public CndLoadersTest() {
-        super("C/C++ Loaders");
+        super("C/C++ Loaders"); // NOI18N   
         
         this.addTestSuite(CndFileObjectTestCase.class);
         this.addTestSuite(CndDataObjectTestCase.class);

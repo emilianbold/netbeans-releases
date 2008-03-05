@@ -548,7 +548,7 @@ public final class ElementUtilities {
                                     undef.add(ee);
                                 } else if (existingReturnType.getKind() == TypeKind.DECLARED && eeReturnType.getKind() == TypeKind.DECLARED) {
                                     Env<AttrContext> env = Enter.instance(ctx).getClassEnv((TypeSymbol)impl);
-                                    DeclaredType subType = findCommonSubtype((DeclaredType)existingReturnType, (DeclaredType)eeReturnType, env);
+                                    DeclaredType subType = env != null ? findCommonSubtype((DeclaredType)existingReturnType, (DeclaredType)eeReturnType, env) : null;
                                     if (subType != null) {
                                         undef.remove(existing);
                                         MethodSymbol ms = ((MethodSymbol)existing).clone((Symbol)impl);
