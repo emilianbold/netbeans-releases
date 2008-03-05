@@ -52,7 +52,7 @@ public class EtlProjectOperations implements DeleteOperationImplementation, Copy
         
         addFile(projectDirectory, "nbproject", files); // NOI18N
         addFile(projectDirectory, "build.xml", files); // NOI18N
-        addFile(projectDirectory, "catalog.xml", files); //NOI18N
+        addFile(projectDirectory, "data", files); //NOI18N
         addFile(projectDirectory, projectDirectory.getName(), files); //NOI18N
         //addFile(projectDirectory, org.netbeans.modules.xml.retriever.XMLCatalogProvider.TYPE_RETRIEVED , files); //NOI18N
         

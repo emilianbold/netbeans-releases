@@ -73,9 +73,6 @@ public class RADVisualComponent extends RADComponent {
     private Node.Property[] constraintsProperties;
     private ConstraintsListenerConvertor constraintsListener;
 
-    private MetaAccessibleContext accessibilityData;
-    private FormProperty[] accessibilityProperties;
-
     enum MenuType { JMenuItem, JCheckBoxMenuItem, JRadioButtonMenuItem,
                     JMenu, JMenuBar, JPopupMenu, JSeparator }
 
@@ -234,26 +231,6 @@ public class RADVisualComponent extends RADComponent {
                 }
             });
 
-        if (accessibilityProperties == null)
-            createAccessibilityProperties();
-
-        if (accessibilityProperties.length > 0)
-            propSets.add(new Node.PropertySet(
-                "accessibility", // NOI18N
-                FormUtils.getBundleString("CTL_AccessibilityTab"), // NOI18N
-                FormUtils.getBundleString("CTL_AccessibilityTabHint")) // NOI18N
-            {
-                public Node.Property[] getProperties() {
-                    return getAccessibilityProperties();
-                }
-            });
-    }
-
-    @Override
-    public <T> T getPropertyByName(String name, Class<? extends T> propertyType, boolean fromAll) {
-        if (fromAll && accessibilityProperties == null)
-            createAccessibilityProperties();
-        return super.getPropertyByName(name, propertyType, fromAll);
     }
 
     /** Called to modify original properties obtained from BeanInfo.
@@ -303,8 +280,6 @@ public class RADVisualComponent extends RADComponent {
     protected void clearProperties() {
         super.clearProperties();
         constraintsProperties = null;
-        accessibilityData = null;
-        accessibilityProperties = null;
     }
 
     // ---------
@@ -446,192 +421,6 @@ public class RADVisualComponent extends RADComponent {
 
         public Object convert(Object value, FormProperty property) {
             return resourcePropertyConvert(value, property);
-        }
-    }
-
-    // ----------
-    // accessibility properties
-
-    public FormProperty[] getAccessibilityProperties() {
-        if (accessibilityProperties == null)
-            createAccessibilityProperties();
-        return accessibilityProperties;
-    }
-
-    private void createAccessibilityProperties() {
-        Object comp = getBeanInstance();
-        if (comp instanceof Accessible
-            && ((Accessible)comp).getAccessibleContext() != null)
-        {
-            if (accessibilityData == null)
-                accessibilityData = new MetaAccessibleContext();
-            accessibilityProperties = accessibilityData.getProperties();
-
-            for (int i=0; i < accessibilityProperties.length; i++) {
-                FormProperty prop = accessibilityProperties[i];
-                setPropertyListener(prop);
-                prop.setPropertyContext(new FormPropertyContext.Component(this));
-                nameToProperty.put(prop.getName(), prop);
-            }
-        }
-        else {
-            accessibilityData = null;
-            accessibilityProperties = NO_PROPERTIES;
-        }
-    }
-
-    private class MetaAccessibleContext {
-        private Object accName = BeanSupport.NO_VALUE;
-        private Object accDescription = BeanSupport.NO_VALUE;
-        private Object accParent = BeanSupport.NO_VALUE;
-
-        private FormProperty[] properties;
-
-        FormProperty[] getProperties() {
-            if (properties == null) {
-                properties = new FormProperty[] {
-                    new FormProperty(
-                        "AccessibleContext.accessibleName", // NOI18N
-                        String.class,
-                        FormUtils.getBundleString("PROP_AccessibleName"), // NOI18N
-                        FormUtils.getBundleString("PROP_AccessibleName")) // NOI18N
-                    {
-                        public Object getTargetValue() {
-                            return accName != BeanSupport.NO_VALUE ?
-                                       accName : getDefaultValue();
-                        }
-                        public void setTargetValue(Object value) {
-                            accName = (String) value;
-                        }
-                        @Override
-                        public boolean supportsDefaultValue () {
-                            return true;
-                        }
-                        @Override
-                        public Object getDefaultValue() {
-                            return getAccessibleContext().getAccessibleName();
-                        }
-                        @Override
-                        public void restoreDefaultValue()
-                            throws IllegalAccessException,
-                                   java.lang.reflect.InvocationTargetException
-                        {
-                            super.restoreDefaultValue();
-                            accName = BeanSupport.NO_VALUE;
-                        }
-                        @Override
-                        String getPartialSetterCode(String javaInitStr) {
-                            return "getAccessibleContext().setAccessibleName(" // NOI18N
-                                   + javaInitStr + ")"; // NOI18N
-                        }
-                    },
-
-                    new FormProperty(
-                        "AccessibleContext.accessibleDescription", // NOI18N
-                        String.class,
-                        FormUtils.getBundleString("PROP_AccessibleDescription"), // NOI18N
-                        FormUtils.getBundleString("PROP_AccessibleDescription")) // NOI18N
-                    {
-                        public Object getTargetValue() {
-                            return accDescription != BeanSupport.NO_VALUE ?
-                                       accDescription : getDefaultValue();
-                        }
-                        public void setTargetValue(Object value) {
-                            accDescription = (String) value;
-                        }
-                        @Override
-                        public boolean supportsDefaultValue () {
-                            return true;
-                        }
-                        @Override
-                        public Object getDefaultValue() {
-                            AccessibleContext context = getAccessibleContext();
-                            Object bean = getBeanInstance();
-                            if (bean instanceof JComponent) {
-                                Object o = ((JComponent)bean).getClientProperty("labeledBy"); // NOI18N
-                                if (o instanceof Accessible) {
-                                    AccessibleContext ac = ((Accessible) o).getAccessibleContext();
-                                    if (ac == context) {
-                                        return FormUtils.getBundleString("MSG_CyclicAccessibleContext"); // NOI18N
-                                    }
-                                }
-                            }
-                            return context.getAccessibleDescription();
-                        }
-                        @Override
-                        public void restoreDefaultValue()
-                            throws IllegalAccessException,
-                                   java.lang.reflect.InvocationTargetException
-                        {
-                            super.restoreDefaultValue();
-                            accDescription = BeanSupport.NO_VALUE;
-                        }
-                        @Override
-                        String getPartialSetterCode(String javaInitStr) {
-                            return
-                              "getAccessibleContext().setAccessibleDescription(" // NOI18N
-                              + javaInitStr + ")"; // NOI18N
-                        }
-                    },
-
-                    new FormProperty(
-                        "AccessibleContext.accessibleParent", // NOI18N
-                        Accessible.class,
-                        FormUtils.getBundleString("PROP_AccessibleParent"), // NOI18N
-                        FormUtils.getBundleString("PROP_AccessibleParent")) // NOI18N
-                    {
-                        public Object getTargetValue() {
-                            return accParent != BeanSupport.NO_VALUE ?
-                                       accParent : getDefaultValue();
-                        }
-                        public void setTargetValue(Object value) {
-                            accParent = value;
-                        }
-                        @Override
-                        public boolean supportsDefaultValue () {
-                            return true;
-                        }
-                        @Override
-                        public Object getDefaultValue() {
-                            Object acP = getAccessibleContext()
-                                             .getAccessibleParent();
-                            if (acP != null) {
-                                RADVisualContainer metacont = getParentContainer();
-                                if (metacont != null) {
-                                    Object cont = metacont.getContainerDelegate(
-                                                    metacont.getBeanInstance());
-                                    if (cont == acP)
-                                        return metacont;
-                                }
-                            }
-                            return acP;
-                        }
-                        @Override
-                        public void restoreDefaultValue()
-                            throws IllegalAccessException,
-                                   java.lang.reflect.InvocationTargetException
-                        {
-                            super.restoreDefaultValue();
-                            accParent = BeanSupport.NO_VALUE;
-                        }
-                        @Override
-                        public PropertyEditor getExpliciteEditor() {
-                            return new AccessibleParentEditor();
-                        }
-                        @Override
-                        String getPartialSetterCode(String javaInitStr) {
-                            return javaInitStr == null ? null :
-                                "getAccessibleContext().setAccessibleParent(" // NOI18N
-                                + javaInitStr + ")"; // NOI18N
-                        }
-                    }
-                };
-            }
-            return properties;
-        }
-
-        private AccessibleContext getAccessibleContext() {
-            return ((Accessible)getBeanInstance()).getAccessibleContext();
         }
     }
 
