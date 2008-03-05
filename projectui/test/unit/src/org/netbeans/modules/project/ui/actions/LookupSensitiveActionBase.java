@@ -196,6 +196,69 @@ public abstract class LookupSensitiveActionBase extends NbTestCase implements Pr
         }
     }
 
+    public void testStackOverFlow() throws IOException {
+        InstanceContent ic = new InstanceContent();
+        Lookup context = new AbstractLookup(ic);
+        
+        boolean clone = false;
+        Action instance;
+        if (clone) {
+            Action a = create(Lookup.EMPTY);
+            instance = ((ContextAwareAction)a).createContextAwareInstance(context);
+        } else {
+            instance = create(context);
+        }
+        
+        FileObject pfo = TestSupport.createTestProject(FileUtil.createMemoryFileSystem().getRoot(), "yaya");
+        FileObject pf2 = TestSupport.createTestProject(FileUtil.createMemoryFileSystem().getRoot(), "blabla");
+        MockServices.setServices(TestSupport.TestProjectFactory.class);
+        Project p = ProjectManager.getDefault().findProject(pfo);
+        Project p2 = ProjectManager.getDefault().findProject(pf2);
+        if (p instanceof TestSupport.TestProject) {
+            enhanceProject((TestSupport.TestProject)p);
+        }
+        if (p2 instanceof TestSupport.TestProject) {
+            enhanceProject((TestSupport.TestProject)p2);
+        }
+        
+        assertNotNull("Project found", p);
+        assertNotNull("Project2 found", p2);
+        OpenProjects.getDefault().open(new Project[] { p }, false);
+
+        assertFalse("Disabled1", instance.isEnabled());
+        instance.addPropertyChangeListener(this);
+        ic.add(p);
+        assertTrue("Enabled", instance.isEnabled());
+        assertEquals("One change", 1, change);
+        
+        
+        class Q implements PropertyChangeListener {
+            Action i;
+            int cnt;
+            
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("enabled".equals(evt.getPropertyName())) {
+                    cnt++;
+                    assertTrue("enabled in listener", i.isEnabled());
+                }
+            }
+            
+        }
+        Q q = new Q();
+        q.i = instance;
+        
+        ic.remove(p);
+        
+        instance.removePropertyChangeListener(this);
+        
+        ic.add(p);
+        
+        instance.addPropertyChangeListener(q);
+        assertTrue("Enabled", instance.isEnabled());
+        assertEquals("One call", 1, q.cnt);
+        
+    }
+    
     public void propertyChange(PropertyChangeEvent evt) {
         if ("ancestor".equals(evt.getPropertyName())) {
             ancEvent++;

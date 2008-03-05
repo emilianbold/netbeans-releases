@@ -161,6 +161,9 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     }
 
     private void doRefresh() {
+        if (refreshing) {
+            return;
+        }
         refreshing = true;
         try {
             if (LOG.isLoggable(Level.FINER)) {
