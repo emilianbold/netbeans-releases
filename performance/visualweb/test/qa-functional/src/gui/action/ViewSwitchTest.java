@@ -41,6 +41,13 @@
 
 package gui.action;
 
+import gui.window.WebFormDesignerOperator;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 /**
@@ -48,7 +55,14 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  * @author mkhramov@netbeans.org
  */
 public class ViewSwitchTest extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-
+    
+    private String targetProject = "UltraLargeWA";
+    private ProjectsTabOperator pto;
+    private String pageToOpen = "Page1_2";
+    private WebFormDesignerOperator testPage;
+    private EditorOperator editorOperator;
+    private int caretBlinkRate;   
+    
     public ViewSwitchTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
@@ -61,23 +75,52 @@ public class ViewSwitchTest extends org.netbeans.performance.test.utilities.Perf
     }
     
     
+    @Override
     public void initialize() {
-       
+        log("::initialize");  
+        EditorOperator.closeDiscardAll();
+        pto = ProjectsTabOperator.invoke();
+           
     }
     
     public void prepare() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        
+        OpenTestPage();          
+        testPage.switchToJSPView();
+        editorOperator = EditorWindowOperator.getEditor(pageToOpen); 
+        
+        caretBlinkRate =  editorOperator.txtEditorPane().getCaret().getBlinkRate();
+        editorOperator.txtEditorPane().getCaret().setBlinkRate(0);
+        
+        editorOperator.makeComponentVisible();
+        editorOperator.typeKey('z');        
     }
 
     
     public ComponentOperator open() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        testPage.switchToDesignView();
+        return null;
     }
     
     
     
+    @Override
     public void close() {
-        
+        log("::close");
+        editorOperator.txtEditorPane().getCaret().setBlinkRate(caretBlinkRate);
+        //repaintManager().resetRegionFilters();        
+        EditorOperator.closeDiscardAll();          
+    }
+
+    private void OpenTestPage() {
+        long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitStateTimeout");
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 120000);
+
+        Node docNode = new Node(pto.getProjectRootNode(targetProject), gui.VWPUtilities.WEB_PAGES + "|" + pageToOpen + ".jsp");
+        new OpenAction().performAPI(docNode);
+        testPage = WebFormDesignerOperator.findWebFormDesignerOperator(pageToOpen);
+
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", oldTimeout);
     }
 
 }

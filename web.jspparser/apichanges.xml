@@ -103,6 +103,28 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="tld-change-events">
+            <api name="JSPParser"/>
+            <summary>JSP Parser TLD change events</summary>
+            <version major="3" minor="3.1"/>
+            <date day="28" month="2" year="2008"/>
+            <author login="tmysik"/>
+            <compatibility>
+                <p>
+                    This change is compatible.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    JSP Parser fires events when any TLD or TAG file changes. It's possible to listen
+                    to these changes and decide whether to react or not based on provided WebModule.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.web.jsps.parserapi" name="JspParserAPI"/>
+            <class package="org.netbeans.modules.web.jsps.parserapi" name="TldChangeListener"/>
+            <class package="org.netbeans.modules.web.jsps.parserapi" name="TldChangeEvent"/>
+            <issue number="109478"/>
+        </change>
         <change id="friend-jsp-parser-api">
             <api name="JSPParser"/>
             <summary>JSP Parser API declared as friend API</summary>

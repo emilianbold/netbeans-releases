@@ -103,44 +103,7 @@ public abstract class CsmReferenceResolver {
             }
         }
         return null;
-    }
-    
-    /**
-     * returns reference kind
-     * @param ref reference to analyze
-     * @return reference kind
-     */
-    public CsmReferenceKind getReferenceKind(CsmReference ref) {
-        // default implementation
-        CsmObject target = ref.getReferencedObject();
-        assert target != null;
-        CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, true);
-        CsmObject targetDecl = decDef[0];
-        CsmObject targetDef = decDef[1];        
-        return getReferenceKind(ref, targetDecl, targetDef);
-    }
-
-    /**
-     * returns reference kind with known definition and declaration of target
-     * @param ref reference to analyze
-     * @param targetDecl declaration of target object
-     * @param targetDef definition of target object
-     * @return reference kind 
-     */
-    public CsmReferenceKind getReferenceKind(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
-        // default implementation
-        assert targetDecl != null;
-        CsmObject owner = ref.getOwner();
-        CsmReferenceKind kind = CsmReferenceKind.DIRECT_USAGE;
-        if (owner != null) {
-            if (owner.equals(targetDecl)) {
-                kind = CsmReferenceKind.DECLARATION;
-            } else if (owner.equals(targetDef)) {
-                kind = CsmReferenceKind.DEFINITION;
-            }
-        }
-        return kind;
-    }
+    }   
     
     /**
      * fast checks reference scope if possible
@@ -193,28 +156,6 @@ public abstract class CsmReferenceResolver {
                 }
             }
             return Scope.UNKNOWN;
-        }
-
-        @Override
-        public CsmReferenceKind getReferenceKind(CsmReference ref) {
-            for (CsmReferenceResolver resolver : res.allInstances()) {
-                CsmReferenceKind kind = resolver.getReferenceKind(ref);
-                if (kind != CsmReferenceKind.UNKNOWN) {
-                    return kind;
-                }
-            }            
-            return CsmReferenceKind.UNKNOWN;
-        }
-        
-        @Override
-        public CsmReferenceKind getReferenceKind(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
-            for (CsmReferenceResolver resolver : res.allInstances()) {
-                CsmReferenceKind kind = resolver.getReferenceKind(ref, targetDecl, targetDef);
-                if (kind != CsmReferenceKind.UNKNOWN) {
-                    return kind;
-                }
-            }            
-            return CsmReferenceKind.UNKNOWN;
-        }        
+        }       
     }    
 }

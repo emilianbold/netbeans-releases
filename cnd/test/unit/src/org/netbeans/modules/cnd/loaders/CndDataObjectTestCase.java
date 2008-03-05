@@ -68,7 +68,7 @@ public class CndDataObjectTestCase extends BaseTestCase {
     }
 
     public void testCDataObject() throws Exception {
-        File newFile = new File(super.getWorkDir(), "file.c");
+        File newFile = new File(super.getWorkDir(), "file.c"); // NOI18N
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = FileUtil.toFileObject(newFile);
@@ -78,23 +78,23 @@ public class CndDataObjectTestCase extends BaseTestCase {
     }
     
     public void testCCDataObject() throws Exception {
-        File newFile = new File(super.getWorkDir(), "file.cc");
+        File newFile = new File(super.getWorkDir(), "file.cc"); // NOI18N
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = FileUtil.toFileObject(newFile);
         assertNotNull("Not found file object for file" + newFile, fo);
         DataObject dob = DataObject.find(fo);
-        assertTrue("data object is not recognized by default infrastructure", dob instanceof CCDataObject);   
+        assertTrue("data object is not recognized by default infrastructure", dob instanceof CCDataObject);
     }
 
     public void testHDataObject() throws Exception {
-        File newFile = new File(super.getWorkDir(), "file.h");
+        File newFile = new File(super.getWorkDir(), "file.h"); // NOI18N
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = FileUtil.toFileObject(newFile);
         assertNotNull("Not found file object for file" + newFile, fo);
         DataObject dob = DataObject.find(fo);
-        assertTrue("data object is not recognized by default infrastructure", dob instanceof HDataObject);    
+        assertTrue("data object is not recognized by default infrastructure", dob instanceof HDataObject);
     }
     
 }
