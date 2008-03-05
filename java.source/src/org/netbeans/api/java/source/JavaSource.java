@@ -87,6 +87,7 @@ import java.io.Writer;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2440,7 +2441,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     
     private static class JSFlowListener extends FlowListener {
         
-        private boolean flowCompleted;
+        private final Set<URL> flowCompleted = new HashSet<URL>();
         
         public static JSFlowListener instance (final Context context) {
             final FlowListener flowListener = FlowListener.instance(context);
@@ -2451,13 +2452,29 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             context.put(flowListenerKey, new JSFlowListener());
         }
         
-        final boolean hasFlowCompleted () {
-            return this.flowCompleted;
+        final boolean hasFlowCompleted (final FileObject fo) {
+            if (fo == null) {
+                return false;
+            }
+            else {
+                try {
+                    return this.flowCompleted.contains(fo.getURL());
+                } catch (FileStateInvalidException e) {
+                    return false;
+                }
+            }
         }
         
         @Override
-        public void flowFinished (final Env<AttrContext> env) {            
-            this.flowCompleted = true;
+        public void flowFinished (final Env<AttrContext> env) {
+            if (env.toplevel != null && env.toplevel.sourcefile != null) {
+                try {
+                    this.flowCompleted.add (env.toplevel.sourcefile.toUri().toURL());
+                } catch (MalformedURLException e) {
+                    //never thrown
+                    Exceptions.printStackTrace(e);
+                }
+            }
         }
     }
     
@@ -2725,7 +2742,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     }
                     if (!((CompilationInfoImpl.DiagnosticListenerImpl)dl).hasPartialReparseErrors()) {
                         final JSFlowListener fl = JSFlowListener.instance(ctx);
-                        if (fl != null && fl.hasFlowCompleted()) {
+                        if (fl != null && fl.hasFlowCompleted(fo)) {
                             if (LOGGER.isLoggable(Level.FINER)) {
                                 final List<? extends Diagnostic> diag = ci.getDiagnostics();
                                 if (!diag.isEmpty()) {

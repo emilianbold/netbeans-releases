@@ -65,6 +65,7 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
@@ -172,6 +173,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private String lastShare;
     private int shareToken;
     private final Disassembly disassembly;
+    private GdbBreakpoint currentBreakpoint = null;
         
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -207,8 +209,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         
         setStarting();
         try {
-            pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
-            iotab = (InputOutput) lookupProvider.lookupFirst(null, InputOutput.class);
+            pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+            iotab = lookupProvider.lookupFirst(null, InputOutput.class);
             if (iotab != null) {
                 iotab.setErrSeparated(false);
             }
@@ -230,7 +232,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         }
                 }, 30000);
             }
-            String gdbCommand = profile.getGdbPath(profile.getGdbCommand(), pae.getProfile().getRunDirectory());
+//            String gdbCommand = profile.getGdbPath(profile.getGdbCommand(), pae.getProfile().getRunDirectory());
+            String gdbCommand = profile.getGdbPath((MakeConfiguration)pae.getConfiguration());
             if (gdbCommand.toLowerCase().contains("cygwin")) { // NOI18N
                 cygwin = true;
             }
@@ -243,7 +246,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold()));
             gdb.data_list_register_names("");
             if (pae.getID() == DEBUG_ATTACH) {
-                programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
+                programPID = lookupProvider.lookupFirst(null, Long.class);
                 CommandBuffer cb = new CommandBuffer();
                 gdb.target_attach(cb, Long.toString(programPID));
                 cb.waitForCompletion();
@@ -319,7 +322,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     gdb.exec_run(pae.getProfile().getArgsFlat());
                 } catch (Exception ex) {
                     ErrorManager.getDefault().notify(ex);
-                    ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
+                    lookupProvider.lookupFirst(null, Session.class).kill();
                 }
                 if (Utilities.isWindows()) {
                     CommandBuffer cb = new CommandBuffer();
@@ -368,14 +371,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     public void showCurrentSource() {
         final CallStackFrame csf = getCurrentCallStackFrame();
-        if (csf != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    // show current line
-                    EditorContextBridge.showSource(csf);
-                }
-            });
+        if (csf == null) {
+            return;
         }
+        final boolean inDis = (currentBreakpoint == null) ? Disassembly.isInDisasm() : (currentBreakpoint instanceof AddressBreakpoint);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // show current line
+                EditorContextBridge.showSource(csf, inDis);
+            }
+        });
     }
     
     public String[] getThreadsList() {
@@ -611,8 +616,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
             if (gdb != null) {
                 if (state.equals(STATE_RUNNING)) {
-                    ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(
-                            null, ProjectActionEvent.class);
+                    ProjectActionEvent pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
                     gdb.exec_interrupt();
                     if (pae.getID() == DEBUG_ATTACH) {
                         gdb.target_detach();
@@ -764,7 +768,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 DialogDisplayer.getDefault().notify(
                        new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                        "ERR_CantAttach"))); // NOI18N
-                ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
+                (lookupProvider.lookupFirst(null, Session.class)).kill();
             } else if (msg.startsWith("\"No symbol ") && msg.endsWith(" in current context.\"")) { // NOI18N
                 String type = msg.substring(13, msg.length() - 23);
                 log.warning("Failed type lookup for " + type);
@@ -774,7 +778,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 DialogDisplayer.getDefault().notify(
                        new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                        "ERR_CorruptedStack"))); // NOI18N
-                ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
+                (lookupProvider.lookupFirst(null, Session.class)).kill();
             } else if (msg.contains("error reading line numbers")) { // NOI18N
                 DialogDisplayer.getDefault().notify(
                        new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
@@ -783,7 +787,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 DialogDisplayer.getDefault().notify(
                        new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                        "ERR_NoSymbolTable"))); // NOI18N
-                ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
+                (lookupProvider.lookupFirst(null, Session.class)).kill();
             } else if (msg.contains("Cannot access memory at address")) { // NOI18N
                 // ignore - probably dereferencing an uninitialized pointer
             } else if (msg.contains("mi_cmd_break_insert: Garbage following <location>")) { // NOI18N
@@ -1884,5 +1888,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 
     public Disassembly getDisassembly() {
         return disassembly;
+    }
+
+    public void setCurrentBreakpoint(GdbBreakpoint currentBreakpoint) {
+        this.currentBreakpoint = currentBreakpoint;
     }
 }

@@ -43,7 +43,7 @@ var NETBEANS_PACKS_MSG 		  = "NetBeans&nbsp;Packs";
 var JDK_DOWNLOAD_LINK    = "http://java.sun.com/javase/downloads/index.jsp";
 var NBJDK_DOWNLOAD_LINK  = "http://java.sun.com/javase/downloads/netbeans.html";
 
-var JDK_NOTE_ALL      = "JDK 6 or JDK 5.0 is required for installing and running the NetBeans IDE. You can download <a href=\"{0}\">standalone JDK</a> or download the latest <a href=\"{1}\">JDK6 Update 4 with NetBeans IDE Java SE bundle</a>.";
+var JDK_NOTE_ALL      = "JDK 6 or JDK 5.0 is required for installing and running the NetBeans IDE. You can download <a href=\"{0}\">standalone JDK</a> or download the latest <a href=\"{1}\">JDK6 Update {2} with NetBeans IDE Java SE bundle</a>.";
 var JDK_NOTE_MACOSX   = "JDK 5.0 is required for installing and running the NetBeans IDE.";
 
 var FREE_SIZE_MESSAGE  = "Free,&nbsp;{0}&nbsp;MB";
@@ -78,9 +78,6 @@ var PLUGIN_MANAGER_LABEL     = "You can add or remove packs later using the IDE'
 var JAVATOOLSBUNDLE_LABEL    = "You can also download the NetBeans IDE as part of the <a href=\"http://java.sun.com/javaee/downloads/index.jsp\">Java EE 5 Tools Bundle</a>.";
 var SOURCE_BINARY_LABEL      = "NetBeans source code and binary builds without bundled runtimes are also available in <a href=\"zip/\">zip file format</a>.";
 var BUILD_WIKI_LABEL         = "See also <a href=\"http://wiki.netbeans.org/wiki/view/WorkingWithNetBeansSources\">instructions on how to build the IDE from sources</a> or <a href=\"{0}\">installation instructions</a>.";
-var LICENSE_NOTICE_LABEL     = "License Notices";
-var INSTALL_NOTES_LABEL      = "Installation Instructions";
-
 
 var LICENSE_NOTES_LINK      = "http://www.netbeans.org/about/legal/product-licences.html";
 
@@ -94,11 +91,6 @@ var DOWNLOAD_BUTTON_HIGHLIGHT = "img/download_h.gif";
 
 // DO NOT TRANSLATE
 var START_PAGE = "start.html";
-
-// DO NOT TRANSLATE
-var ZIP_FILES_PREFIX    = "{nb.zip.files.prefix}";
-var BUNDLE_FILES_PREFIX = "{nb.bundle.files.prefix}";
-
 
 var LEGAL_INFO_HEADER = "Important Legal Information:";
 

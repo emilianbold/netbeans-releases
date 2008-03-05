@@ -273,9 +273,7 @@ public class Breakpoint extends ActionsProviderSupport
     
     private BpelBreakpointListener getBreakpointAnnotationListener() {
         if (myBreakpointAnnotationListener == null) {
-            myBreakpointAnnotationListener = (BpelBreakpointListener) 
-                    DebuggerManager.getDebuggerManager().lookupFirst 
-                    (null, BpelBreakpointListener.class);
+            myBreakpointAnnotationListener = DebuggerManager.getDebuggerManager().lookupFirst(null, BpelBreakpointListener.class);
         }
         
         return myBreakpointAnnotationListener;

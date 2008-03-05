@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.JTextComponent;
@@ -112,6 +113,13 @@ public class CustomEditorDrop implements ActiveEditorDrop {
                 try {
                     CustomCodeGenerator codegen = codegen = 
                         CustomCodeGeneratorFactory.create(targetComponent, targetFO, method);
+                    if(codegen == null) {//No action for DnD
+                        String message = NbBundle.getMessage(CustomEditorDrop.class, 
+                                "WARN_UnsupportedDropTarget", new Object[] {targetFO.getNameExt(), "REST Resource"}); // NOI18N
+                        NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notify(desc);
+                        return;
+                    }
                 
                     CustomSaasBean bean = codegen.getBean();
                     boolean showParams = codegen.canShowParam();
@@ -138,8 +146,16 @@ public class CustomEditorDrop implements ActiveEditorDrop {
                         return;
                     }
 
-                    codegen.generate(dialog.getProgressHandle());
-                    Util.showMethod(targetFO, codegen.getSubresourceLocatorName());
+                    try {
+                        codegen.generate(dialog.getProgressHandle());
+                    } catch(IOException ex) {
+                        if(!ex.getMessage().equals(Util.SCANNING_IN_PROGRESS))
+                            errors.add(ex);
+                    }
+                    try {
+                        Util.showMethod(targetFO, codegen.getSubresourceLocatorName());
+                    } catch(IOException ex) {//ignore
+                    }
                 } catch (Exception ioe) {
                     errors.add(ioe);
                 } finally {

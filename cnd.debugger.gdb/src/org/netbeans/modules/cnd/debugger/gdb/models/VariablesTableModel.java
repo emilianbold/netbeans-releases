@@ -74,7 +74,7 @@ public class VariablesTableModel implements TableModel, Constants {
     
     public VariablesTableModel(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
     public Object getValueAt(Object row, String columnID) throws UnknownTypeException {

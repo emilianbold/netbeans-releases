@@ -79,8 +79,7 @@ public class FixActionProvider extends ActionsProviderSupport {
     
     
     public FixActionProvider (ContextProvider lookupProvider) {
-        debugger = (JPDADebugger) lookupProvider.lookupFirst 
-            (null, JPDADebugger.class);
+        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
         
         listener = new Listener ();
         MainProjectManager.getDefault ().addPropertyChangeListener (listener);

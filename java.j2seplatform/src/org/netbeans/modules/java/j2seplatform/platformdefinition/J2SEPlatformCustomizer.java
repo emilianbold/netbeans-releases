@@ -61,6 +61,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 
@@ -444,7 +445,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
 
         private J2SEPlatformImpl platform;
         private int type;
-        private java.util.List data;
+        private java.util.List<URL> data;
 
         public PathModel (J2SEPlatformImpl platform, int type) {
             this.platform = platform;
@@ -456,8 +457,8 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         }
 
         public Object getElementAt(int index) {
-            java.util.List list = this.getData();
-            URL url = (URL)list.get(index);
+            java.util.List<URL> list = this.getData();
+            URL url = list.get(index);
             if ("jar".equals(url.getProtocol())) {      //NOI18N
                 URL fileURL = FileUtil.getArchiveFile (url);
                 if (FileUtil.getArchiveRoot(fileURL).equals(url)) {
@@ -487,10 +488,10 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         }
 
         private void moveUpPath (int[] indices) {
-            java.util.List data = getData ();
+            java.util.List<URL> data = getData ();
             for (int i=0; i<indices.length; i++) {
-                Object p2 = data.get (indices[i]);
-                Object p1 = data.set (indices[i]-1,p2);
+                URL p2 = data.get (indices[i]);
+                URL p1 = data.set (indices[i]-1,p2);
                 data.set (indices[i],p1);
             }
             updatePlatform ();
@@ -498,10 +499,10 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         }
 
         private void moveDownPath (int[] indices) {
-            java.util.List data = getData ();
+            java.util.List<URL> data = getData ();
             for (int i=indices.length-1; i>=0; i--) {
-                Object p1 = data.get (indices[i]);
-                Object p2 = data.set (indices[i]+1,p1);
+                URL p1 = data.get (indices[i]);
+                URL p2 = data.set (indices[i]+1,p1);
                 data.set (indices[i],p2);
             }
             updatePlatform();
@@ -528,7 +529,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                     ErrorManager.getDefault().notify(mue);
                 }
             }
-            java.util.List data = getData();
+            java.util.List<URL> data = getData();
             int oldSize = data.size ();
             data.add (url);
             updatePlatform();
@@ -536,36 +537,34 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             return true;
         }
 
-        private synchronized java.util.List getData () {
+        private synchronized java.util.List<URL> getData () {
             if (this.data == null) {
                 switch (this.type) {
                     case CLASSPATH:
-                        this.data = getPathList (this.platform.getBootstrapLibraries());
+                        this.data = getPathList(this.platform.getBootstrapLibraries());
                         break;
                     case SOURCES:
-                        this.data = getPathList (this.platform.getSourceFolders());
+                        this.data = getPathList(this.platform.getSourceFolders());
                         break;
                     case JAVADOC:
-                        this.data = new ArrayList(this.platform.getJavadocFolders());
+                        this.data = new ArrayList<URL>(this.platform.getJavadocFolders());
                         break;
                 }
             }
             return this.data;
         }
 
-        private static java.util.List getPathList (ClassPath cp) {
-            java.util.List result = new ArrayList ();
-            for (Iterator it = cp.entries().iterator(); it.hasNext();) {
-                ClassPath.Entry entry = (ClassPath.Entry) it.next ();
+        private static java.util.List<URL> getPathList (ClassPath cp) {
+            java.util.List<URL> result = new ArrayList<URL> ();
+            for (ClassPath.Entry entry : cp.entries()) {
                 result.add (entry.getURL());
             }
             return result;
         }
 
-        private static ClassPath createClassPath (java.util.List/*<URL>*/ roots) {
-            java.util.List resources = new ArrayList ();
-            for (Iterator it = roots.iterator(); it.hasNext();) {
-                URL url = (URL) it.next ();
+        private static ClassPath createClassPath (java.util.List<URL> roots) {
+            java.util.List<PathResourceImplementation> resources = new ArrayList<PathResourceImplementation> ();
+            for (URL url : roots) {
                 resources.add (ClassPathSupport.createResource(url));
             }
             return ClassPathSupport.createClassPath(resources);

@@ -901,7 +901,7 @@ public class VariablesUtil {
         }
         
         final SourcePath sourcePath = 
-                (SourcePath) engine.lookupFirst(null, SourcePath.class);
+                engine.lookupFirst(null, SourcePath.class);
         final ProcessInstance instance = myDebugger.getCurrentProcessInstance();
         
         if ((sourcePath == null) || (instance == null)) {

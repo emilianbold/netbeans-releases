@@ -45,8 +45,7 @@ public final class ProcessesColumnModel_Value extends AbstractColumn {
     public ProcessesColumnModel_Value(final ContextProvider context) {
         super();
         
-        myDebugger = (BpelDebugger) context.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = context.lookupFirst(null, BpelDebugger.class);
         
         myId = COLUMN_ID;
         myName = "CTL_Process_Column_Value"; // NOI18N

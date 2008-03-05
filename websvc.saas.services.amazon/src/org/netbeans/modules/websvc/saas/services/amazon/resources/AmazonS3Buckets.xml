@@ -50,25 +50,36 @@
                api-doc="http://developer.amazonwebservices.com/connect/kbcategory.jspa?categoryID=46"
                url="org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3BucketsWadl.xml">
 
-    <description>AmazonS3 Service</description>
+    <description>AmazonS3 Buckets Service</description>
     
-    <display-name>AmazonS3</display-name>
+    <display-name>S3 Buckets Service</display-name>
 
     <saas-metadata>
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
 
         <group name="Amazon">
+            <group name="Simple Storage Service"/>
         </group>
 
         <authentication profile="SaaSServices/AmazonS3/profile.properties">
-            <signed-url/>
+            <signed-url sig-id="Authorization">
+                <sign>
+                    <params>
+                        <param name="HTTP-Verb" type="string" required="true" default="GET" />
+                        <param name="Date" type="date" required="true"/>
+                        <param name="HTTP-Request-URI" type="string"/>
+                        <param name="Bucket" type="string" required="true" default=""/>
+                    </params>
+                </sign>
+            </signed-url>
         </authentication>
 
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="getBuckets" href="#amazons3.getBuckets"/>
     </methods>
-
+    -->
 </saas-services>

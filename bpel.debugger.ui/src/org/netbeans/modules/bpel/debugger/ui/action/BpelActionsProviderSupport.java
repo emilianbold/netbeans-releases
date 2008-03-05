@@ -48,7 +48,7 @@ public abstract class BpelActionsProviderSupport extends ActionsProviderSupport 
         mLookupProvider = lookupProvider;
         mAction = action;
         mDebugger = 
-            (BpelDebugger) mLookupProvider.lookupFirst(null, BpelDebugger.class);
+            mLookupProvider.lookupFirst(null, BpelDebugger.class);
         setEnabled(true);
     }
     
