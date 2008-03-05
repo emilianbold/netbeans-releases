@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,49 +31,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bpel.core.util;
+package org.netbeans.modules.html.editor.gsf;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
-import org.openide.text.Annotatable;
-import org.openide.text.Annotation;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2008.02.01
+ *
+ * @author marek
  */
-final class BPELValidationAnnotation extends Annotation implements PropertyChangeListener {
-    
-  public String getAnnotationType() {
-    return "bpel-validation-annotation"; // NOI18N
-  }
-  
-  public String getShortDescription() {
-    return myMessage;
-  }
-  
-  public void show(Annotatable annotatable, String message) {
-    myMessage = message;
+public class HtmlBracketCompleter implements BracketCompletion {
 
-    if (annotatable != null) {
-      attach(annotatable);
-      annotatable.addPropertyChangeListener(this);
+    public OffsetRange findMatching(Document doc, int caretOffset) {
+        //XXX returning null or the default should cause GSF to use the IDE default matcher
+        return OffsetRange.NONE;
     }
-  }
-  
-  public void propertyChange( PropertyChangeEvent propertyChangeEvent ) {
-    if (Annotatable.PROP_ANNOTATION_COUNT.equals(propertyChangeEvent.getPropertyName())) {
-      return;
-    }
-    Annotatable annotatable = (Annotatable) propertyChangeEvent.getSource();
 
-    if (annotatable != null) {
-      annotatable.removePropertyChangeListener(this);
-      detach();
+    public boolean beforeCharInserted(Document doc, int dot, JTextComponent target, char ch) throws BadLocationException {
+        return false;
     }
-  }
 
-  private String myMessage;
+    public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
+        return false;
+    }
+
+    public boolean charBackspaced(Document doc, int dot, JTextComponent target, char ch) throws BadLocationException {
+        return false;
+
+    }
+
+    public int beforeBreak(Document doc, int dot, JTextComponent jtc) throws BadLocationException {
+        return -1;
+
+    }
+
+    public List<OffsetRange> findLogicalRanges(CompilationInfo info, int caretOffset) {
+        return Collections.emptyList();
+    }
+
+    public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {
+        return -1;
+    }
 }
