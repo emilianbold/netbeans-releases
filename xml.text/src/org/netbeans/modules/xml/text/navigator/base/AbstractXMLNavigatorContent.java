@@ -41,9 +41,16 @@
 
 package org.netbeans.modules.xml.text.navigator.base;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -51,6 +58,7 @@ import org.openide.explorer.view.TreeView;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -62,14 +70,11 @@ import org.openide.util.Utilities;
 public abstract class AbstractXMLNavigatorContent extends javax.swing.JPanel
     implements ExplorerManager.Provider, PropertyChangeListener {
     
-    /**
-     * 
-     */
     protected ExplorerManager explorerManager;
-    /**
-     * 
-     */
     protected TreeView treeView;
+    private final JPanel emptyPanel;
+    private JLabel msgLabel;
+    private Icon waitIcon;
     
     /**
      * 
@@ -78,20 +83,15 @@ public abstract class AbstractXMLNavigatorContent extends javax.swing.JPanel
         explorerManager = new ExplorerManager();
         explorerManager.addPropertyChangeListener(this);
         treeView = new BeanTreeView();
+        //init empty panel
+        setBackground(Color.WHITE);
+        emptyPanel = new JPanel();
+        emptyPanel.setBackground(Color.WHITE);
+        emptyPanel.setLayout(new BorderLayout());
+        msgLabel = new JLabel();
+        emptyPanel.add(msgLabel, BorderLayout.CENTER);
     }
-    
-    /**
-     * 
-     */
-    public void showWaitNode() {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-               treeView.setRootVisible(true);
-               explorerManager.setRootContext(new WaitNode());
-            } 
-        });
-    }
-    
+       
     /**
      * 
      * @param dataObject 
@@ -111,6 +111,62 @@ public abstract class AbstractXMLNavigatorContent extends javax.swing.JPanel
     
     public ExplorerManager getExplorerManager() {
 	return explorerManager;
+    }
+    
+    /**
+     * 
+     */
+    public void showWaitNode() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+               treeView.setRootVisible(true);
+               explorerManager.setRootContext(new WaitNode());
+            } 
+        });
+    }
+    
+    public void showDocumentTooLarge() {
+        removeAll();
+        msgLabel.setForeground(Color.GRAY);
+        msgLabel.setText(NbBundle.getMessage(AbstractXMLNavigatorContent.class, "LBL_TooLarge"));
+        msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        add(emptyPanel, BorderLayout.CENTER);
+        repaint();
+    }
+    
+    public void showCannotNavigate() {
+        removeAll();
+        msgLabel.setIcon(null);
+        msgLabel.setForeground(Color.GRAY);
+        msgLabel.setText(NbBundle.getMessage(AbstractXMLNavigatorContent.class, "LBL_CannotNavigate"));
+        msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        add(emptyPanel, BorderLayout.CENTER);
+        repaint();
+    }
+    
+    public void showScanningPanel() {
+        removeAll();
+        if (waitIcon == null) {
+            waitIcon = new ImageIcon( Utilities.loadImage(
+            "org/netbeans/modules/xml/text/navigator/resources/wait.gif" ) ); //NOI18N
+        }
+        msgLabel.setIcon(waitIcon);
+        msgLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        msgLabel.setForeground(Color.BLACK);
+        msgLabel.setText(NbBundle.getMessage(AbstractXMLNavigatorContent.class, "LBL_Scan"));
+        add(emptyPanel, BorderLayout.NORTH);
+        repaint();
+    }
+    
+    
+    public void showWaitPanel() {
+        removeAll();
+        msgLabel.setIcon(null);
+        msgLabel.setForeground(Color.GRAY);
+        msgLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        msgLabel.setText(NbBundle.getMessage(AbstractXMLNavigatorContent.class, "LBL_Wait"));
+        add(emptyPanel, BorderLayout.NORTH);
+        repaint();
     }
     
     private static class WaitNode extends AbstractNode {

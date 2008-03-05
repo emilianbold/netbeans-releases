@@ -6,6 +6,7 @@
 package gui.action;
 
 import gui.Projects;
+import gui.ScriptingUtilities;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -63,7 +64,7 @@ public class PageUpPageDownScriptingEditor extends org.netbeans.performance.test
     
     protected Node getProjectNode(String projectName) {
         if(projectsTab==null)
-            projectsTab = new ProjectsTabOperator();
+            projectsTab = ScriptingUtilities.invokePTO();
         
         return projectsTab.getProjectRootNode(projectName);
     }
