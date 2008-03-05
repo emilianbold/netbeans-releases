@@ -12,48 +12,26 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.SessionFactory;
 
 /**
- * Hibernate Utility class with convenient methods to get Session Factory object.
+ * Hibernate Utility class with a convenient method to get Session Factory object.
  *
  * @author ${user}
  */
 public class ${name} {
-    private static ${name} INSTANCE = null;
+    private static final SessionFactory sessionFactory;
 
-    private ${name}() {
-    }
-
-    /** 
-     * Returns the instance
-     * @return 
-     */
-    public static synchronized ${name} getInstance() {
-        if(INSTANCE == null) {
-            INSTANCE = new ${name}();
-        }
-        return INSTANCE;
-    }
-
-    public SessionFactory getSessionFactory() {
-        SessionFactory sessionFactory = null;
+    static {
         try {
-            // Create the SessionFactory from hibernate.cfg.xml
+            // Create the SessionFactory from standard (hibernate.cfg.xml) 
+            // config file.
             sessionFactory = new Configuration().configure().buildSessionFactory();
         } catch (Throwable ex) {
+            // Log the exception. 
             System.err.println("Initial SessionFactory creation failed." + ex);
             throw new ExceptionInInitializerError(ex);
         }
-        return sessionFactory;
     }
 
-    public SessionFactory getSessionFactoryForConfigFile(java.io.File configFile) {
-        SessionFactory sessionFactory = null;
-        try {
-            // Create the SessionFactory from hibernate.cfg.xml
-            sessionFactory = new Configuration().configure(configFile).buildSessionFactory();
-        } catch (Throwable ex) {
-            System.err.println("Initial SessionFactory creation failed." + ex);
-            throw new ExceptionInInitializerError(ex);
-        }
+    public static SessionFactory getSessionFactory() {
         return sessionFactory;
     }
 }
