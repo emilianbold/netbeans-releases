@@ -48,7 +48,7 @@ class EtlproActionProvider implements ActionProvider {
     private static final String[] supportedActions = {
         COMMAND_BUILD,
         COMMAND_CLEAN,
-        COMMAND_REBUILD,        
+        COMMAND_REBUILD,
         COMMAND_COMPILE_SINGLE,
         EtlproProject.COMMAND_GENWSDL,
         EtlproProject.COMMAND_SCHEMA,
@@ -57,8 +57,7 @@ class EtlproActionProvider implements ActionProvider {
         COMMAND_COPY,
         COMMAND_MOVE,
         COMMAND_RENAME,
-      };
-    
+    };
     // Project
     EtlproProject project;
     // Ant project helper of the project
@@ -111,14 +110,8 @@ class EtlproActionProvider implements ActionProvider {
             return;
         }
         if (COMMAND_DELETE.equals(command)) {
-            try {
-                //project.getAntProjectHelper().resolveFileObject("data").delete();
-                project.getAntProjectHelper().getProjectDirectory().delete();
-                //Commenting it because it gets the project dir and deletes
-                //DefaultProjectOperations.performDefaultDeleteOperation(project);
-                return;
-            } catch (IOException ex) {                
-            }
+            DefaultProjectOperations.performDefaultDeleteOperation(project);
+            return;
         }
         //EXECUTION PART
         if (command.equals(IcanproConstants.COMMAND_DEPLOY) || command.equals(IcanproConstants.COMMAND_REDEPLOY)) {
@@ -126,10 +119,10 @@ class EtlproActionProvider implements ActionProvider {
                 return;
             }
         } /*else {
-            p = null;
-            if (targetNames == null) {
-                throw new IllegalArgumentException(command);
-            }
+        p = null;
+        if (targetNames == null) {
+        throw new IllegalArgumentException(command);
+        }
         }*/
 
         try {

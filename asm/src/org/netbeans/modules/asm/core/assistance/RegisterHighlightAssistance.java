@@ -65,7 +65,7 @@ import org.netbeans.modules.asm.core.ui.top.RegisterUsagesPanel;
 public class RegisterHighlightAssistance extends AbstractHighlightsContainer  
                         implements CaretListener, AsmModelAccessor.ParseListener {
 
-    public static final String LAYER_NAME = "reg-highlight-layer";
+    public static final String LAYER_NAME = "reg-highlight-layer"; // NOI18N
     
     public static final Color READ_COLORING = RegisterUsagesPanel.READ_COLOR;
     public static final Color WRITE_COLORING = RegisterUsagesPanel.WRITE_COLOR;

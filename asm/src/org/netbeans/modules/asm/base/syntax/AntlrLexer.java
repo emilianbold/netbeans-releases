@@ -83,8 +83,8 @@ public class AntlrLexer implements AsmHighlightLexer {
             // FAKE STARTED 
             if ((tokId == AsmBaseTokenId.ASM_UNKWN_ID || 
                  tokId == AsmBaseTokenId.ASM_LABEL) &&
-                 !asmTok.getText().startsWith(".") &&
-                 !asmTok.getText().startsWith("_")) {
+                 !asmTok.getText().startsWith(".") && // NOI18N
+                 !asmTok.getText().startsWith("_")) { // NOI18N
                 
                 tokId = AsmBaseTokenId.ASM_INSTRUCTION;                
             }
@@ -99,7 +99,7 @@ public class AntlrLexer implements AsmHighlightLexer {
                 
             } else {
                 Logger.getLogger(this.getClass().getName()).
-                    log(Level.SEVERE, "Antlr highlight lexer crashed");
+                    log(Level.SEVERE, "Antlr highlight lexer crashed"); // NOI18N
 
                 length = 0;
             }            

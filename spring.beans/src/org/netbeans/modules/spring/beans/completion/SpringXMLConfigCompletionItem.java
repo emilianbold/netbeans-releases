@@ -50,6 +50,7 @@ import java.beans.BeanInfo;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -817,8 +818,8 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private static final String PROP_WO = "org/netbeans/modules/beans/resources/propertyWO.gif"; // NOI18N
         
         private String displayName;
-        private static ImageIcon[] propIcons = new ImageIcon[3];
         private PropertyType propertyType;
+        private static EnumMap<PropertyType, ImageIcon> type2Icon = new EnumMap<PropertyType, ImageIcon>(PropertyType.class);
         
         public PropertyItem(int substitutionOffset, Property property) {
             super(substitutionOffset);
@@ -845,37 +846,24 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         
         @Override
         protected ImageIcon getIcon() {
-            int index = 0;
-            switch(propertyType) {
-                case READ_ONLY:
-                    index = 0;
-                    break;
-                case READ_WRITE:
-                    index = 1;
-                    break;
-                case WRITE_ONLY:
-                    index = 2;
-                    break;
+            ImageIcon cachedIcon = type2Icon.get(propertyType);
+            if(cachedIcon == null) {
+                switch(propertyType) {
+                    case READ_ONLY:
+                        cachedIcon = new ImageIcon(Utilities.loadImage(PROP_RO));
+                        break;
+                    case READ_WRITE:
+                        cachedIcon = new ImageIcon(Utilities.loadImage(PROP_RW));
+                        break;
+                    case WRITE_ONLY:
+                        cachedIcon = new ImageIcon(Utilities.loadImage(PROP_WO));
+                        break;
+                }
+                
+                type2Icon.put(propertyType, cachedIcon);
             }
             
-            ImageIcon cachedIcon = propIcons[index];
-            if(cachedIcon != null) {
-                return cachedIcon;
-            }
-            
-            switch(index) {
-                case 0:
-                    propIcons[0] = new ImageIcon(Utilities.loadImage(PROP_RO));
-                    break;
-                case 1:
-                    propIcons[1] = new ImageIcon(Utilities.loadImage(PROP_RW));
-                    break;
-                case 2:
-                    propIcons[2] = new ImageIcon(Utilities.loadImage(PROP_WO));
-                    break;
-            }
-            
-            return propIcons[index];
+            return cachedIcon;
         }
     }
     
