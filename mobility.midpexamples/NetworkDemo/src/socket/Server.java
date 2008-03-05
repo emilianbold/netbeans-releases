@@ -37,8 +37,8 @@ import javax.microedition.io.*;
 import javax.microedition.lcdui.*;
 import javax.microedition.midlet.*;
 
-
 public class Server implements Runnable, CommandListener {
+
     private SocketMIDlet parent;
     private Display display;
     private Form f;
@@ -73,37 +73,40 @@ public class Server implements Runnable, CommandListener {
 
     public void run() {
         try {
-            si.setText("Waiting for connection");
-            scn = (ServerSocketConnection)Connector.open("socket://:5000");
+            while (true) { //infinite loop to let the server be always ready for connection (code by robin_alden, issue #126227)
+                si.setText("Waiting for connection");
+                scn = (ServerSocketConnection) Connector.open("socket://:5000");
 
-            // Wait for a connection.
-            sc = (SocketConnection)scn.acceptAndOpen();
-            si.setText("Connection accepted");
-            is = sc.openInputStream();
-            os = sc.openOutputStream();
-            sender = new Sender(os);
+                // Wait for a connection.
+                sc = (SocketConnection) scn.acceptAndOpen();
+                si.setText("Connection accepted");
+                is = sc.openInputStream();
+                os = sc.openOutputStream();
+                sender = new Sender(os);
 
-            // Allow sending of messages only after Sender is created
-            f.addCommand(sendCommand);
+                // Allow sending of messages only after Sender is created
+                f.addCommand(sendCommand);
 
-            while (true) {
-                StringBuffer sb = new StringBuffer();
-                int c = 0;
+                while (true) {
+                    StringBuffer sb = new StringBuffer();
+                    int c = 0;
 
-                while (((c = is.read()) != '\n') && (c != -1)) {
-                    sb.append((char)c);
+                    while (((c = is.read()) != '\n') && (c != -1)) {
+                        sb.append((char) c);
+                    }
+
+                    if (c == -1) {
+                        break;
+                    }
+
+                    si.setText("Message received - " + sb.toString());
                 }
 
-                if (c == -1) {
-                    break;
-                }
-
-                si.setText("Message received - " + sb.toString());
+                stop();
+                si.setText("Connection is closed");
+                f.removeCommand(sendCommand);
+                Thread.sleep(3000);
             }
-
-            stop();
-            si.setText("Connection is closed");
-            f.removeCommand(sendCommand);
         } catch (IOException ioe) {
             if (ioe.getMessage().equals("ServerSocket Open")) {
                 Alert a = new Alert("Server", "Port 5000 is already taken.", null, AlertType.ERROR);

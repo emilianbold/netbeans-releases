@@ -99,6 +99,7 @@ public final class UiUtils {
                         intMessageType);
                 break;
             case SILENT:
+                LogManager.log(message);
                 System.err.println(message);
                 break;
         }
@@ -136,12 +137,16 @@ public final class UiUtils {
                 return result == YES_OPTION;
                 
             case SILENT:
-                System.err.println(message);
-                System.err.println(StringUtils.format(
+                LogManager.log(message);                
+                final String option = StringUtils.format(
                         ResourceUtils.getString(UiUtils.class,
                         silentDefault ? 
                             RESOURCE_SILENT_DEFAULT_TRUE : 
-                            RESOURCE_SILENT_DEFAULT_FALSE)));
+                            RESOURCE_SILENT_DEFAULT_FALSE));
+                System.err.println(message);
+                System.err.println(option);
+                LogManager.log(message);
+                LogManager.log(option);
                 return silentDefault;
         }
         //never get this line...

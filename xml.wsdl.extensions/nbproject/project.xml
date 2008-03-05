@@ -108,6 +108,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.wlm.model</friend>
                 <package>org.netbeans.modules.xml.wsdl.model.extensions.bpel</package>
                 <package>org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.schema.resources</package>
+                <package>org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.xpath</package>
             </friend-packages>
         </data>
     </configuration>
