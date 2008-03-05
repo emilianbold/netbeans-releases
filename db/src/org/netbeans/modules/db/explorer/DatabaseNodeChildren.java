@@ -318,13 +318,13 @@ public class DatabaseNodeChildren extends Children.Array {
 
     }
 
-    public void removeSubNode(Node subnode) {
+    public void removeSubNode(final Node subnode) {
         if (isInitialized()) {
             synchronized (additionalNodes) {
                 if (initialized) {
                     MUTEX.postWriteRequest(new Runnable() {
                         public void run() {
-                            this.remove(new Node[] {subnode});
+                            remove(new Node[] {subnode});
                         }
                     });
                 } else {

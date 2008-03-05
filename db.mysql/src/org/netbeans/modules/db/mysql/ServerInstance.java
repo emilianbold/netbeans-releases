@@ -326,21 +326,6 @@ public class ServerInstance implements Node.Cookie {
     public boolean isConnected() {
         return adminConn.conn != null;
     }
-    
-    public boolean isRunning() {
-        if ( isConnected() ) {
-            return true;
-        }
-        
-        // Test to see if the server is up but we can't authenticate,
-        // or if it's just not there. 
-        ConnectStatus status = DatabaseUtils.testConnection(
-                getURL(), getHost(), getPort());
-        
-        return ( status == ConnectStatus.CONNECT_SUCCEEDED || 
-                 status == ConnectStatus.SERVER_RUNNING);
-
-    }
 
     public String getDisplayName() {
         return displayName;

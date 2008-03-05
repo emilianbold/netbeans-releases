@@ -223,7 +223,7 @@ public class ModuleInstaller extends ModuleInstall {
         }
 
         private void registerProvider(boolean value) {
-            ServerNodeProvider.getDefault().setRegistered(true);
+            ServerNodeProvider.getDefault().setRegistered(value);
         }
 
     }   

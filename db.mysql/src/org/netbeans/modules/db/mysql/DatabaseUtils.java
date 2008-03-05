@@ -121,7 +121,9 @@ public class DatabaseUtils {
          if ( isEmpty(instance.getHost()) || isEmpty(instance.getUser()) ||
                  (isEmpty(instance.getPassword()) && !instance.isSavePassword()) ) {
              if ( ! quiet ) {
-                 Utils.displayErrorMessage("MSG_UnableToConnect");
+                 Utils.displayErrorMessage(NbBundle.getMessage(
+                         DatabaseUtils.class,
+                         "MSG_UnableToConnect"));
              }
              return;
          }

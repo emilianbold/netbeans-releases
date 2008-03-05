@@ -109,8 +109,6 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     }
 
     private synchronized List<Node> getRegisteredNodes() {
-        LOGGER.log(Level.FINE, null, new Exception());
-        
         boolean registerListener = false;
         if ( nodeLoaders == null ) {
             nodeLoaders = DbNodeLoaderSupport.getLoaders();
@@ -186,20 +184,6 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         }
         
         children.replaceNodes(newNodes.toArray(new Node[0]));
-    }
-    
-    private void postUpdateChildren(final DatabaseNodeChildren children, 
-            final Node[] newNodes) {                
-        // Replace the node list with the new one
-        Children.MUTEX.postWriteRequest(new Runnable() {
-            public void run() {
-                // remove current sub-tree
-                children.remove(children.getNodes());
-
-                // add built sub-tree
-                children.add(newNodes);
-            }
-        });
     }
     
     public void addConnectionNoConnect(DatabaseConnection dbconn) throws DatabaseException {
