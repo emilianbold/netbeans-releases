@@ -49,6 +49,7 @@ import java.util.List;
 
 import javax.swing.Action;
 
+import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -108,7 +109,7 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
         	Runnable task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] fileObjects) {
-                    String newName = getNewName(lookup.lookup(Dictionary.class));
+                    String newName = getNewName(lookup);
                     return new FacesRenameRefactoringUI(fileObjects[0], newName);
                 }                
         	};
@@ -155,16 +156,15 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
      * <p>This implements the invocation of Move refactoring for VW JSP files.</p>
      */
     @Override
-    public void doMove(Lookup lookup) {
+    public void doMove(final Lookup lookup) {
         // First check can move
-        if (canMove(lookup)) {
-            final Dictionary dictionary = lookup.lookup(Dictionary.class);
+        if (canMove(lookup)) {            
             Runnable task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] fileObjects) {
                     // are other parameters specified e.g. due to drag and drop or copy paste
-                    PasteType pasteType = getPaste(dictionary);
-                    FileObject targetFolder=getTarget(dictionary);
+                    PasteType pasteType = getPaste(lookup);
+                    FileObject targetFolder=getTarget(lookup);
                     if (fileObjects.length == 1) {
                         return new FacesMoveRefactoringUI(fileObjects[0], targetFolder, pasteType);
                     } else {
@@ -179,10 +179,11 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
         }
     }
     
-    private FileObject getTarget(Dictionary dict) {
-        if (dict==null)
+    private FileObject getTarget(Lookup look) {
+        ExplorerContext drop = look.lookup(ExplorerContext.class);
+        if (drop==null)
             return null;
-        Node n = (Node) dict.get("target"); //NOI18N
+        Node n = (Node) drop.getTargetNode();
         if (n==null)
             return null;
         DataObject dob = n.getCookie(DataObject.class);
@@ -191,26 +192,28 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
         return null;
     }
     
-    private PasteType getPaste(Dictionary dict) {
-        if (dict==null) 
+    private PasteType getPaste(Lookup look) {
+        ExplorerContext drop = look.lookup(ExplorerContext.class);
+        if (drop==null)
             return null;
-        Transferable orig = (Transferable) dict.get("transferable"); // NOI18N
+        Transferable orig = drop.getTransferable();
         if (orig==null)
             return null;
-        Node n = (Node) dict.get("target"); // NOI18N
+        Node n = drop.getTargetNode();
         if (n==null)
             return null;
-        PasteType[] pt = n.getPasteTypes(orig); // NOI18N
+        PasteType[] pt = n.getPasteTypes(orig);
         if (pt.length==1) {
             return null;
         }
         return pt[1];
     }
     
-    private static String getNewName(Dictionary dict) {
-        if (dict==null) 
+    private static String getNewName(Lookup look) {
+        ExplorerContext ren = look.lookup(ExplorerContext.class); 
+        if (ren==null) 
             return null;
-        return (String) dict.get("name"); //NOI18N
+        return ren.getNewName(); //NOI18N
     }
     
     public static abstract class NodeToFileObjectTask implements Runnable {

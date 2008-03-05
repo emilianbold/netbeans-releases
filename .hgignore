@@ -9,8 +9,9 @@ derby\.log
 \.orig$
 \.rej$
 \.swp$
-hs_err_pid[0-9]+\.log$
 /gensrc$
+\.ant-targets-build\.xml$
+^hs_err_pid[0-9]*\.log
 ^nbbuild/antsrc/org/netbeans/nbbuild/extlibs/external\.pyc$
 ^o.apache.tools.ant.module/external/lib$
 ^apisupport.project/src/org/netbeans/modules/apisupport/project/resources/sample-build-impl\.xml$
@@ -231,6 +232,7 @@ hs_err_pid[0-9]+\.log$
 ^visualweb.webui.designtime/gen$
 ^visualweb.webui.designtime/\.generated$
 ^visualweb.webui/library/gen$
+^visualweb\.woodstock\.webui\.jsf/test/functional-compile\.mark$
 ^visualweb.xhtml/generated$
 ^web.core/src/org/netbeans/modules/web/taglib/model$
 ^web.jsf.navigation/\.externalToolBuilders$

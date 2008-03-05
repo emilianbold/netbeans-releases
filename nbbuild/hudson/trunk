@@ -12,8 +12,7 @@ then
     dir=`dirname $0`/../..
     cd $dir
 else
-#    echo "Previous build failed, running clean build this time..."
-    ant hg-clean || exit
+    hg --config extensions.purge= clean --all || exit
 fi
 
 DIST=$PWD/nbbuild/dist

@@ -46,6 +46,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.InterruptedException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -70,7 +71,7 @@ import org.openide.util.Utilities;
  */
 public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable {
     
-    private static Set propertiesToFix = new HashSet ();
+    private static Set<String> propertiesToFix = new HashSet<String> ();
     
     //Properties used by IDE which should be fixed not to use resolved symlink
     static {
@@ -85,11 +86,11 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
 
     public static NewJ2SEPlatform create (FileObject installFolder) throws IOException {
         assert installFolder != null;
-        Map platformProperties = new HashMap ();
-        return new NewJ2SEPlatform (null,Collections.singletonList(installFolder.getURL()),platformProperties,Collections.EMPTY_MAP);
+        Map<String,String> platformProperties = new HashMap<String,String> ();
+        return new NewJ2SEPlatform (null,Collections.singletonList(installFolder.getURL()),platformProperties,Collections.<String,String>emptyMap());
     }
 
-    private NewJ2SEPlatform (String name, List installFolders, Map platformProperties, Map systemProperties) {
+    private NewJ2SEPlatform (String name, List<URL> installFolders, Map<String,String> platformProperties, Map<String,String> systemProperties) {
         super(name, name, installFolders, platformProperties, systemProperties,null,null);
     }
 
@@ -111,15 +112,21 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
                 return;
             String javapath = javaFile.getAbsolutePath();
             String filePath = File.createTempFile("nb-platformdetect", "properties").getAbsolutePath();
-            getSDKProperties(javapath, filePath);
+            final String probePath = getSDKProperties(javapath, filePath);
             File f = new File(filePath);
             Properties p = new Properties();
             InputStream is = new FileInputStream(f);
             p.load(is);
-            Map m = new HashMap(p.size());
+            Map<String,String> m = new HashMap<String,String>(p.size());
             for (Enumeration en = p.keys(); en.hasMoreElements(); ) {
                 String k = (String)en.nextElement();
-                String v = (String) p.getProperty(k);
+                String v = p.getProperty(k);                
+                if (J2SEPlatformImpl.SYSPROP_JAVA_CLASS_PATH.equals(k)) {
+                    v = filterProbe (v, probePath);
+                }
+                else if (J2SEPlatformImpl.SYSPROP_USER_DIR.equals(k)) {
+                    v = ""; //NOI18N
+                }
                 v = fixSymLinks (k,v);
                 m.put(k, v);
             }   
@@ -177,7 +184,7 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
     }
 
 
-    private void getSDKProperties(String javaPath, String path) throws IOException {
+    private String getSDKProperties(String javaPath, String path) throws IOException {
         Runtime runtime = Runtime.getRuntime();
         try {
             String[] command = new String[5];
@@ -193,6 +200,7 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
             int exitValue = process.exitValue();
             if (exitValue != 0)
                 throw new IOException();
+            return command[2];
         } catch (InterruptedException ex) {
             IOException e = new IOException();
             ErrorManager.getDefault().annotate(e,ex);

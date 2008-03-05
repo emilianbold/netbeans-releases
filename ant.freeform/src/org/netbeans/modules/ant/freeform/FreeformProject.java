@@ -129,7 +129,7 @@ public final class FreeformProject implements Project {
 	    new FreeformSharabilityQuery(helper()), //SharabilityQueryImplementation
             Accessor.DEFAULT.createProjectAccessor(this), //Access to AntProjectHelper and PropertyEvaluator
             FEQImpl, // FileEncodingQueryImplementation
-            new FreeformTemplateAttributesProvider(helper())
+            new FreeformTemplateAttributesProvider(helper(), eval)
         );
         return LookupProviderSupport.createCompositeLookup(baseLookup, "Projects/org-netbeans-modules-ant-freeform/Lookup"); //NOI18N
     }
