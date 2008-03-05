@@ -16,7 +16,6 @@ import javax.swing.text.Document;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 
 
 /**
@@ -115,9 +114,6 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         projectLabel = new javax.swing.JLabel();
         classNameTextField = new javax.swing.JTextField();
         projectTextField = new javax.swing.JTextField();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        grailsServerOutputTextArea = new javax.swing.JTextArea();
-        jLabel1 = new javax.swing.JLabel();
         createdFileLabel = new javax.swing.JLabel();
         createdFileTextField = new javax.swing.JTextField();
 
@@ -130,13 +126,6 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         projectTextField.setEditable(false);
         projectTextField.setText(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.projectTextField.text")); // NOI18N
 
-        grailsServerOutputTextArea.setColumns(20);
-        grailsServerOutputTextArea.setEditable(false);
-        grailsServerOutputTextArea.setRows(5);
-        jScrollPane1.setViewportView(grailsServerOutputTextArea);
-
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetProjectLocationPanel.jLabel1.text")); // NOI18N
-
         createdFileLabel.setText(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.createdFileLabel.text")); // NOI18N
 
         createdFileTextField.setEditable(false);
@@ -147,19 +136,15 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jLabel1)
-                .addContainerGap())
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(classNameLabel)
                     .add(createdFileLabel)
                     .add(projectLabel))
                 .add(23, 23, 23)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(createdFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
-                    .add(classNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
-                    .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)))
+                    .add(createdFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
+                    .add(classNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
+                    .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -175,10 +160,7 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(createdFileLabel)
                     .add(createdFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE))
+                .addContainerGap(27, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -188,9 +170,6 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
     private javax.swing.JTextField classNameTextField;
     private javax.swing.JLabel createdFileLabel;
     private javax.swing.JTextField createdFileTextField;
-    private javax.swing.JTextArea grailsServerOutputTextArea;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel projectLabel;
     private javax.swing.JTextField projectTextField;
     // End of variables declaration//GEN-END:variables
@@ -229,10 +208,6 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
     public String getDomainClassName(){
         return classNameTextField.getText();
         }
-
-    public javax.swing.JTextArea getGrailsServerOutputTextArea() {
-        return grailsServerOutputTextArea;
-    }
 
     public void setArtifactName(String text){
         classNameTextField.setText(text);

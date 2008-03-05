@@ -124,30 +124,18 @@ public class ExternalGrailsServer implements GrailsServer{
         if(cmd.startsWith("create-app")) {
             // in this case we don't have a Project yet, therefore i should be null
             assert prj == null;
-            assert io ==  null;
+            assert dirName != null;
                 
-            // split dirName in directory to create and parent:
+            // split dirName in directory to create and parent (used for wd)
             int lastSlash = dirName.lastIndexOf(File.separator);
             String workDir = dirName.substring(0, lastSlash);
             String newDir  = dirName.substring(lastSlash + 1);
             
-            gsr = new GrailsServerRunnable(outputReady, false, workDir, prependOption() + "create-app " + newDir);
-            new Thread(gsr).start();
+            gsr = new GrailsServerRunnable(outputReady, true, workDir, prependOption() + "create-app " + newDir);
+            ExecutorTask exTask = engine.execute("", gsr, io);
 
             waitForOutput();
             }
-        else if(cmd.startsWith("create-domain-class") || 
-                cmd.startsWith("create-controller")   || 
-                cmd.startsWith("generate-views")      || 
-                cmd.startsWith("create-service")) {
-
-            assert io ==  null;
-            
-            gsr = new GrailsServerRunnable(outputReady, false, cwdName, prependOption() + cmd);
-            new Thread(gsr).start();
-
-            waitForOutput();
-            }       
         else if(cmd.startsWith("run-app")) {
 
             String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
@@ -184,11 +172,8 @@ public class ExternalGrailsServer implements GrailsServer{
             waitForOutput();
         }
         else {
-
-            String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
-
             gsr = new GrailsServerRunnable(outputReady, true, cwdName, prependOption() + cmd);
-            ExecutorTask exTask = engine.execute(tabName, gsr, io);
+            ExecutorTask exTask = engine.execute("", gsr, io);
 
             waitForOutput();
 

@@ -47,8 +47,7 @@ import org.netbeans.modules.groovy.grailsproject.SourceCategory;
  */
 public class GetArtifactNameStep implements  WizardDescriptor.Panel<WizardDescriptor>, 
                                                 WizardDescriptor.ValidatingPanel<WizardDescriptor>,
-                                                WizardDescriptor.FinishablePanel<WizardDescriptor>,
-                                                GrailsServerOutputReceiver
+                                                WizardDescriptor.FinishablePanel<WizardDescriptor>
                                                 {
 
     private GetArtifactNamePanel component;
@@ -123,7 +122,6 @@ public class GetArtifactNameStep implements  WizardDescriptor.Panel<WizardDescri
         }
     }
     
-    
     public void validate() throws WizardValidationException {
         getComponent ();
         component.validate (wizardDescriptor);
@@ -131,10 +129,6 @@ public class GetArtifactNameStep implements  WizardDescriptor.Panel<WizardDescri
 
     public boolean isFinishPanel() {
         return true;
-    }
-
-    public javax.swing.JTextArea getGrailsServerOutputTextArea() {
-        return component.getGrailsServerOutputTextArea();
     }
     
     public String getDomainClassName(){
