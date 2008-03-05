@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,54 +31,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.editor.gsf;
 
-package org.netbeans.performance.test.utilities;
-
-import java.io.PrintStream;
-import java.io.PrintWriter;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
 
 /**
  *
- * @author mrkam@netbeans.org
+ * @author marek
  */
-public class BlackListViolationException extends java.lang.Exception {
-    
-    private String instantiator;
+public class HtmlBracketCompleter implements BracketCompletion {
 
-    public BlackListViolationException(String instantiator) {
-        super("Instantiator: " + instantiator);
-        this.instantiator = instantiator;
+    public OffsetRange findMatching(Document doc, int caretOffset) {
+        //XXX returning null or the default should cause GSF to use the IDE default matcher
+        return OffsetRange.NONE;
     }
 
-    public String getInstantiator() {
-        return instantiator;
+    public boolean beforeCharInserted(Document doc, int dot, JTextComponent target, char ch) throws BadLocationException {
+        return false;
     }
 
-    @Override
-    public void printStackTrace() {
-        System.out.println("   Instantiator: " + instantiator);
-        System.out.println("     Stack trace:");
-        for(StackTraceElement ste : getStackTrace()) {
-            System.out.println("           " + ste);
-        }
+    public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
+        return false;
     }
 
-    @Override
-    public void printStackTrace(PrintStream s) {
-        s.println("   Instantiator: " + instantiator);
-        s.println("     Stack trace:");
-        for(StackTraceElement ste : getStackTrace()) {
-            s.println("           " + ste);
-        }
+    public boolean charBackspaced(Document doc, int dot, JTextComponent target, char ch) throws BadLocationException {
+        return false;
+
     }
 
-    @Override
-    public void printStackTrace(PrintWriter s) {
-        s.println("   Instantiator: " + instantiator);
-        s.println("     Stack trace:");
-        for(StackTraceElement ste : getStackTrace()) {
-            s.println("           " + ste);
-        }        
+    public int beforeBreak(Document doc, int dot, JTextComponent jtc) throws BadLocationException {
+        return -1;
+
+    }
+
+    public List<OffsetRange> findLogicalRanges(CompilationInfo info, int caretOffset) {
+        return Collections.emptyList();
+    }
+
+    public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {
+        return -1;
     }
 }

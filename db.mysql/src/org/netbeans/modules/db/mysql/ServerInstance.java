@@ -121,7 +121,7 @@ public class ServerInstance implements Node.Cookie {
     // or an explicit refresh is requested
     ArrayList<DatabaseModel> databases;
     
-    static synchronized ServerInstance getDefault() {
+    public static synchronized ServerInstance getDefault() {
         if ( DEFAULT == null ) {
             DEFAULT = new ServerInstance();
         }
