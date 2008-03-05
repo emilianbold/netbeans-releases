@@ -967,7 +967,7 @@ public class AppserverMgmtController extends AppserverMgmtControllerBase {
         }else{
             removeResourceRef(res, resName);
             getDomainConfig().removeJDBCResourceConfig(resName);       
-        }    
+        }  
     }
     
     
@@ -1236,9 +1236,9 @@ public class AppserverMgmtController extends AppserverMgmtControllerBase {
     }
     
     /*
-     * Get Server Type : PR or EE
+     * Get Server Type : PE or EE
      *
-     * @return true if 8.x EE
+     * @return false if 8.x EE
      */
     public boolean isEightPlatform(){
         boolean isPlatform = true;

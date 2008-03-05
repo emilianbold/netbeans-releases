@@ -64,6 +64,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WsdlSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -114,6 +115,7 @@ public class JaxWsJavaClientCodeGenerator extends JaxWsCodeGenerator {
      *  Insert the Saas client call
      */
     public void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
+        Util.checkScanning();
         try {
             String code = "";
             if(isInBlock) {
