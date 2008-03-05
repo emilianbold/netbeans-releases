@@ -83,8 +83,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
             getCurrentEngine ();
         if (currentEngine == null) return null;
-        JPDADebugger d = (JPDADebugger) currentEngine.lookupFirst 
-            (null, JPDADebugger.class);
+        JPDADebugger d = currentEngine.lookupFirst(null, JPDADebugger.class);
         if (d == null) return null;
 
         Part lp = (Part) getAttachedAnnotatable();
@@ -92,7 +91,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         Line line = lp.getLine ();
         DataObject dob = DataEditorSupport.findDataObject (line);
         if (dob == null) return null;
-        EditorCookie ec = (EditorCookie) dob.getCookie (EditorCookie.class);
+        EditorCookie ec = dob.getCookie(EditorCookie.class);
         if (ec == null) 
             return null;
             // Only for editable dataobjects
@@ -126,8 +125,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
             getCurrentEngine ();
         if (currentEngine == null) return;
-        JPDADebugger d = (JPDADebugger) currentEngine.lookupFirst 
-            (null, JPDADebugger.class);
+        JPDADebugger d = currentEngine.lookupFirst(null, JPDADebugger.class);
         if (d == null) return;
         JPDAThread t = d.getCurrentThread();
         if (t == null || !t.isSuspended()) return ;

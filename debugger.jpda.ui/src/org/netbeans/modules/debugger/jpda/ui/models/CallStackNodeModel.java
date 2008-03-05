@@ -77,10 +77,8 @@ public class CallStackNodeModel implements NodeModel {
     
     
     public CallStackNodeModel (ContextProvider lookupProvider) {
-        debugger = (JPDADebugger) lookupProvider.
-            lookupFirst (null, JPDADebugger.class);
-        session = (Session) lookupProvider.
-            lookupFirst (null, Session.class);
+        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        session = lookupProvider.lookupFirst(null, Session.class);
         new Listener (this, debugger);
     }
     

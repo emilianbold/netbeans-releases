@@ -39,49 +39,47 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.api.debugger.test.actions;
+package org.openide.awt;
 
-import java.util.Collections;
-import java.util.Set;
+import java.util.logging.Level;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 
-import org.netbeans.api.debugger.ActionsManager;
-import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.api.debugger.test.TestDebugger;
-import org.netbeans.api.debugger.test.TestDICookie;
-import org.netbeans.spi.debugger.ActionsProvider;
-import org.netbeans.spi.debugger.ActionsProviderListener;
-
-
-/**
- * Provider for the Start action in the test debugger.
+/** Mostly to test the correct behaviour of AWTTask.waitFinished.
  *
- * @author Maros Sandor
-*/
-public class StartActionProvider extends ActionsProvider {
-
-    private TestDebugger    debuggerImpl;
-    private ContextProvider  lookupProvider;
+ * @author Jaroslav Tulach
+ */
+public class EmptyToolbarPoolTest extends NbTestCase {
+    FileObject toolbars;
+    DataFolder toolbarsFolder;
     
-    
-    public StartActionProvider (ContextProvider lookupProvider) {
-        debuggerImpl = lookupProvider.lookupFirst(null, TestDebugger.class);
-        this.lookupProvider = lookupProvider;
-    }
-    
-    public Set getActions () {
-        return Collections.singleton (ActionsManager.ACTION_START);
-    }
-    
-    public void doAction (Object action) {
-        if (debuggerImpl == null) return;
-        final TestDICookie cookie = lookupProvider.lookupFirst(null, TestDICookie.class);
-        cookie.addInfo(ActionsManager.ACTION_START);
+    public EmptyToolbarPoolTest (String testName) {
+        super (testName);
     }
 
-    public boolean isEnabled (Object action) {
-        return true;
+    @Override
+    protected int timeOut() {
+        return 30000;
+    }
+    
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        toolbars = root.getFileObject("Toolbars");
+        assertNull("Not created yet", toolbars);
     }
 
-    public void addActionsProviderListener (ActionsProviderListener l) {}
-    public void removeActionsProviderListener (ActionsProviderListener l) {}
+    public void testGetConf () throws Exception {
+        ToolbarPool tp = ToolbarPool.getDefault ();
+        String conf = tp.getConfiguration ();
+        assertEquals ("By default there is no config", "", conf);
+        
+    }
 }

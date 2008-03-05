@@ -77,7 +77,7 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
     private static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
         
     public LocalsTreeModel(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
     }    
     
     public Object getRoot() {
