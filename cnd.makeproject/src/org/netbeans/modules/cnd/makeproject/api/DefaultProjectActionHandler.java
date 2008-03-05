@@ -343,7 +343,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                     String[] env1 = new String[env.length + 1];
                     String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption();
                     String csdname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getName();
-                    String csdirs = CompilerSetManager.getDefault().getCompilerSet(csname, csdname).getDirectory();
+                    String csdirs = CompilerSetManager.getDefault().getCompilerSet(csname).getDirectory();
                     boolean gotpath = false;
                     String pathname = Path.getPathName() + '=';
                     int i;

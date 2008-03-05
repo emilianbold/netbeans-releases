@@ -1,3 +1,16 @@
+void String() - parameters
+void String(String arg0) - parameters
+void String(StringBuffer arg0) - parameters
+void String(StringBuilder arg0) - parameters
+void String(byte[] arg0) - parameters
+void String(char[] arg0) - parameters
+void String(byte[] arg0, String arg1) - parameters
+void String(byte[] arg0, int arg1) - parameters
+void String(byte[] arg0, int arg1, int arg2) - parameters
+void String(char[] arg0, int arg1, int arg2) - parameters
+void String(int[] arg0, int arg1, int arg2) - parameters
+void String(byte[] arg0, int arg1, int arg2, String arg3) - parameters
+void String(byte[] arg0, int arg1, int arg2, int arg3) - parameters
 public String field
 public String toString()
 public static String String.copyValueOf(char[] arg0)

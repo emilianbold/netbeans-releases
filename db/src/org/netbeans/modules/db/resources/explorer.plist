@@ -52,8 +52,10 @@
 		infoclass = org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 		children_ordering = {
 			org.openide.loaders.DataFolder$FolderNode = 0;
-			org.netbeans.modules.db.explorer.nodes.DriverListNode = 1;
-			org.netbeans.modules.db.explorer.nodes.ConnectionNode = 2;
+                        org.netbeans.modules.db.mysql.ServerNode = 1;
+                        org.netbeans.modules.derby.DerbyServerNode = 2;
+			org.netbeans.modules.db.explorer.nodes.DriverListNode = 3;
+			org.netbeans.modules.db.explorer.nodes.ConnectionNode = 4;
 		};
 		iconbase = "org/netbeans/modules/db/resources/database";
 		children = (driverlist);

@@ -128,15 +128,17 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testReformatMultiLineClassDeclaration() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
-                "public class C\n"
+                "class C\n"
                 + ": public Runnable {\n"
                 + "int printf(int);\n"
                 + "};\n"
                 );
         reformat();
         assertDocumentText("Incorrect new-line indent",
-                "public class C\n"
+                "class C\n"
                 + ": public Runnable\n"
                 + "{\n"
                 + "    int printf(int);\n"
@@ -345,6 +347,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "class Test {\n" +
                 "Test(int one,\n" +
@@ -372,6 +376,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      */
     public void testReformatMultilineConstructor2() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "class Test {\n" +
                 "Test(int one,\n" +
@@ -486,6 +492,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceClass, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "class C {\n" +
             "protected:\n" +
@@ -515,6 +523,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      */
     public void testReformatSimpleClass2() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "class C {\n" +
             "protected:\n" +
@@ -768,6 +778,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceClass, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeClass, 1);
         setLoadDocumentText(
             "class NdbTransaction {\n" +
             "#ifndef D\n" +
@@ -807,6 +819,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testIdentInnerEnum2() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeClass, 0);
         setLoadDocumentText(
             "class NdbTransaction {\n" +
             "#ifndef D\n" +
@@ -833,7 +847,6 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "#endif\n" +
             "\n" +
             "public:\n" +
-            "\n" +
             "    enum AbortOption\n" +
             "    {\n" +
             "#ifndef D\n" +
@@ -854,6 +867,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "template <class T, class U>\n" +
             "class KeyTable2 : public DLHashTable2<T, U> {\n" +
@@ -875,7 +890,6 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "    KeyTable2(ArrayPool<U>& pool) :\n" +
             "    DLHashTable2<T, U>(pool) {\n" +
             "    }\n" +
-            "\n" +
             "    bool find(Ptr<T>& ptr, const T& rec) const {\n" +
             "        return DLHashTable2<T, U>::find(ptr, rec);\n" +
             "    }\n" +
@@ -885,6 +899,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testTemplate2() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 1);
         setLoadDocumentText(
             "template <class T, class U>\n" +
             "class KeyTable2 : public DLHashTable2<T, U> {\n" +
@@ -904,6 +920,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "class KeyTable2 : public DLHashTable2<T, U>\n" +
             "{\n" +
             "public:\n" +
+            "\n" +
             "    KeyTable2(ArrayPool<U>& pool) :\n" +
             "    DLHashTable2<T, U>(pool)\n" +
             "    {\n" +
@@ -942,6 +959,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     
     public void testIdentDefine() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "int\n" +
             "main() {\n" +
@@ -973,6 +992,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "long z;\n" +
             "int\n" +
@@ -992,6 +1013,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testIdentMultyLineMain2() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "long z;\n" +
             "int\n" +
@@ -1081,6 +1104,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testIdentDefineBrace() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "#define BRACE {\n" +
             "int main() {\n" +
@@ -1101,6 +1126,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     
     public void testIdentDefineBrace2() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "#define BRACE }\n" +
             "int main() {\n" +
@@ -1226,6 +1253,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "#include <stdio.h>\n" +
                 "#define M(x) puts(#x)\n" +
@@ -1245,6 +1274,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testMacroDefineWithParen11() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "#include <stdio.h>\n" +
                 "#define M(x) puts(#x)\n" +
@@ -1272,6 +1303,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "#include <stdio.h>\n" +
                 "#define M(x) puts(#x)\n" +
@@ -1293,6 +1326,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
                 "#include <stdio.h>\n" +
                 "#define M(x) puts(#x)\n" +
@@ -1636,6 +1671,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testIdentInlineMethod() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "class IndexReader : LUCENE_BASE\n" +
             "{\n" +
@@ -1859,7 +1896,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         assertDocumentText("Incorrect identing coode block after directive",
             "int yyparse()\n" +
             "{\n" +
-            "    yychar = - 1;\n" +
+            "    yychar = -1;\n" +
             "#if YYMAXDEPTH <= 0\n" +
             "    if (yymaxdepth <= 0) {\n" +
             "        if ((yymaxdepth = YYEXPAND(0)) <= 0) {\n" +
@@ -1981,6 +2018,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testIdentK_and_R_style2() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "extern \"C\" {\n" +
             "static void\n" +
@@ -2009,6 +2048,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testIdentInBlockComment() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "extern \"C\" {\n" +
             "static void\n" +
@@ -2061,6 +2102,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testIdentInBlockComment2() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "extern \"C\" {\n" +
             "static void\n" +
@@ -2168,6 +2211,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testIdentFunctionDefinition2() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesBeforeMethods, 0);
         setLoadDocumentText(
             "namespace A\n" +
             "{\n" +

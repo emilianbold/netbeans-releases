@@ -55,7 +55,7 @@ public class DataBindingDialog extends JSFComponentOptionsDialog {
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=5000;
-        categoryName = "Basic";  // NOI18N
+        categoryName = "Woodstock Basic";  // NOI18N
         componentName = "Table"; // NOI18N
         addPoint = new java.awt.Point(50,50);
     }
@@ -64,11 +64,12 @@ public class DataBindingDialog extends JSFComponentOptionsDialog {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=5000;
-        categoryName = "Basic";  // NOI18N
+        categoryName = "Woodstock Basic";  // NOI18N
         componentName = "Table"; // NOI18N
         addPoint = new java.awt.Point(50,50);
     }
     
+    @Override
     public ComponentOperator open(){
         log("::open");
         

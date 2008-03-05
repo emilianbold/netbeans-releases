@@ -299,7 +299,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/spring/beans/resources/spring.png")); // NOI18N
+            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/spring/beans/resources/spring-bean.png")); // NOI18N
         }
 
         @Override
