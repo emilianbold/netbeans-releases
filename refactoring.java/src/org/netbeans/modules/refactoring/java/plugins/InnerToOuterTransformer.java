@@ -285,10 +285,12 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
     }
     
     private TypeElement getCurrentClass() {
-        TreePath tp = getCurrentPath().getParentPath();
-        while (tp!=null) {
+        TreePath tp = getCurrentPath();
+        while (tp != null) {
             if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
                 return (TypeElement) workingCopy.getTrees().getElement(tp);
+            } else if (tp.getLeaf().getKind() == Tree.Kind.IMPORT) {
+                return (TypeElement) workingCopy.getTrees().getElement(getCurrentPath());
             }
             tp = tp.getParentPath();
         }
