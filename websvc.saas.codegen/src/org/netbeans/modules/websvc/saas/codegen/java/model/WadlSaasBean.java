@@ -55,6 +55,8 @@ import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SignedUrl;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
 
 /**
@@ -70,7 +72,7 @@ public class WadlSaasBean extends SaasBean {
     private WadlSaasMethod m;
     
     public WadlSaasBean(WadlSaasMethod m)  throws IOException {
-        super(Util.deriveResourceName(m.getName()), null, 
+        super(Util.deriveMethodName(m.getName()), null, 
                 Util.deriveUriTemplate(m.getName()), new MimeType[]{MimeType.XML}, 
                 new String[]{"java.lang.String"},       //NOI18N
                 new HttpMethodType[]{HttpMethodType.GET});
@@ -228,5 +230,23 @@ public class WadlSaasBean extends SaasBean {
 
     public String getSaasServiceTemplate() {
         return SAAS_SERVICE_TEMPLATE;
+    }
+    
+    @Override
+    protected Object getAuthUsingId(Authentication auth) {
+        if(auth.getSignedUrl() != null && auth.getSignedUrl().size() > 0) {
+            Resource[] rArray = m.getResourcePath();
+            if (rArray == null || rArray.length == 0) {
+                return null;
+            }
+            String id = rArray[rArray.length-1].getId();
+            if(id != null && !id.trim().equals("")) {
+                for(SignedUrl s: auth.getSignedUrl()) {
+                    if(id.equals(s.getId()))
+                        return s;
+                }
+            }
+        }
+        return null;
     }
 }
