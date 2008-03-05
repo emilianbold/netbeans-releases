@@ -44,6 +44,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
@@ -53,12 +54,22 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private ConfigureProjectPanelVisual configureProjectPanelVisual;
     private WizardDescriptor descriptor;
+    private final String[] steps;
 
     public ConfigureProjectPanel() {
+        steps = new String[] {
+            NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_ProjectTitleName"),
+            //NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_ServerConfiguration"),
+        };
     }
 
     public Component getComponent() {
         configureProjectPanelVisual = new ConfigureProjectPanelVisual(this);
+        return configureProjectPanelVisual;
+    }
+
+    private ConfigureProjectPanelVisual getConfigureProjectPanelVisual() {
+        getComponent();
         return configureProjectPanelVisual;
     }
 
@@ -68,17 +79,17 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
 
     public void readSettings(Object settings) {
         descriptor = (WizardDescriptor) settings;
-        configureProjectPanelVisual.read(descriptor);
+        getConfigureProjectPanelVisual().read(descriptor);
     }
 
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
-        configureProjectPanelVisual.store(d);
+        getConfigureProjectPanelVisual().store(d);
     }
 
     public boolean isValid() {
         getComponent();
-        return configureProjectPanelVisual.valid(descriptor);
+        return getConfigureProjectPanelVisual().valid(descriptor);
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -95,5 +106,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
 
     final void fireChangeEvent() {
         changeSupport.fireChange();
+    }
+
+    String[] getSteps() {
+        return steps;
     }
 }

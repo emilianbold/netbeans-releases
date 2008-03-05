@@ -39,13 +39,11 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
-import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
@@ -74,24 +72,6 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         descriptor = wizard;
         index = 0;
         panels = createPanels();
-        // Make sure list of steps is accurate.
-        String[] steps = createSteps();
-        for (int i = 0; i < panels.length; i++) {
-            Component c = panels[i].getComponent();
-            if (steps[i] == null) {
-                // Default step name to component name of panel.
-                // Mainly useful for getting the name of the target
-                // chooser to appear in the list of steps.
-                steps[i] = c.getName();
-            }
-            if (c instanceof JComponent) { // assume Swing components
-                JComponent jc = (JComponent) c;
-                // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", i); // NOI18N
-                // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
-            }
-        }
     }
 
     public void uninitialize(WizardDescriptor wizard) {
@@ -173,16 +153,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     private WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[]{
+        return new WizardDescriptor.Panel[] {
             new ConfigureProjectPanel(),
         };
-    }
-
-    private String[] createSteps() {
-        String[] steps = new String[]{
-            NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_ProjectTitleName"),
-            //NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString(STEP_WEB_SERVER)
-        };
-        return steps;
     }
 }

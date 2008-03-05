@@ -56,8 +56,14 @@ class ConfigureProjectPanelVisual extends JPanel {
     private OptionsPanelVisual optionsPanelVisual;
 
 
-    ConfigureProjectPanelVisual(final ConfigureProjectPanel panel) {
-        wizardPanel = panel;
+    ConfigureProjectPanelVisual(final ConfigureProjectPanel wizardPanel) {
+        this.wizardPanel = wizardPanel;
+
+        // Provide a name in the title bar.
+        setName(NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_ProjectTitleName"));
+        putClientProperty("WizardPanel_contentSelectedIndex", 0); // NOI18N
+        // Step name (actually the whole list for reference).
+        putClientProperty("WizardPanel_contentData", wizardPanel.getSteps()); // NOI18N
 
         initComponents();
 
@@ -72,9 +78,6 @@ class ConfigureProjectPanelVisual extends JPanel {
         // options
         optionsPanelVisual = new OptionsPanelVisual();
         optionsContainer.add(BorderLayout.NORTH, optionsPanelVisual);
-
-        // Provide a name in the title bar.
-        setName(NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_ProjectTitleName"));
     }
 
     LocationPanelVisual getLocationPanelVisual() {
