@@ -214,7 +214,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
              // Try to find the node
              for ( int i = 0; i < nodes.length; i++ ) {            
                 try { 
-                    sel = NodeOp.findPath(nodes[i], NbCollections.checkedEnumerationByFilter(new StringTokenizer(preselectedFileName, "/"), String.class, true));
+                    sel = NodeOp.findPath(nodes[i], NbCollections.checkedEnumerationByFilter(new StringTokenizer(preselectedFileName, "/"), String.class, true)); // NOI18N
                     break;
                 }
                 catch ( NodeNotFoundException e ) {            
@@ -353,8 +353,8 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     
     private static final class OptionsListener implements ActionListener {
     
-        public static final String COMMAND_SELECT = "SELECT";
-        public static final String COMMAND_CANCEL = "CANCEL";
+        public static final String COMMAND_SELECT = "SELECT"; // NOI18N
+        public static final String COMMAND_CANCEL = "CANCEL"; // NOI18N
             
         private BrowseFolders browsePanel;
         
