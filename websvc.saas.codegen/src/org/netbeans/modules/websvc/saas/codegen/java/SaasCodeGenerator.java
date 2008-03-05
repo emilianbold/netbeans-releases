@@ -284,6 +284,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     }
 
     protected void addSubresourceLocator() throws IOException {
+        Util.checkScanning();
         ModificationResult result = targetResourceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
 
             public void run(WorkingCopy copy) throws IOException {
