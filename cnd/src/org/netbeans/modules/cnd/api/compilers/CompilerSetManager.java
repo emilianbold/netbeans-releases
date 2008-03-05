@@ -68,7 +68,7 @@ public class CompilerSetManager {
     private static final String gpp_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*g\\+\\+(([-.]\\d){2,4})?(\\.exe)?$"; // NOI18N
     private static final String cc_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*cc(([-.]\\d){2,4})?(\\.exe)?$"; // NOI18N
     private static final String CC_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*CC(([-.]\\d){2,4})?$"; // NOI18N
-    private static final String fortran_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*([fg](77|90|95|fortran)|mpif(77|90))(([-.]\\d){2,4})?(\\.exe)?"; // NOI18N
+    private static final String fortran_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*[fg](77|90|95|fortran)(([-.]\\d){2,4})?(\\.exe)?"; // NOI18N
     private static final String make_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*([dg]make|make)(([-.]\\d){2,4})?(\\.exe)?$"; // NOI18N
     private static final String debugger_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*(gdb|dbx)(([-.]\\d){2,4})?(\\.exe)?$"; // NOI18N
     
@@ -201,8 +201,6 @@ public class CompilerSetManager {
             "f95", // NOI18N
             "f90", // NOI18N
             "f77", // NOI18N
-            "mpif90", // NOI18N
-            "mpif77", // NOI18N
         };
 
         if (list != null && list.length > 0) {
