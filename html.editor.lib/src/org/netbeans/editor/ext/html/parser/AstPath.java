@@ -36,104 +36,87 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.editor.ext.html.parser;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author marek
  */
-public class AstNode {
+public class AstPath {
 
-    public enum NodeType {COMMENT, DECLARATION, ERROR,
-        TEXT, TAG, UNMATCHED_TAG, OPEN_TAG, ENDTAG, ENTITY_REFERENCE};
-    
-    private String name;
-    private NodeType nodeType;    
-    private int startOffset;
-    private int endOffset;
-    private boolean closed;
-    private Collection<AstNode> children = new ArrayList<AstNode>();
-    private AstNode parent = null;
+    private AstNode first,  last;
 
-    public AstNode(String name, NodeType nodeType, int startOffset, int endOffset) {
-        this.name = name;
-        this.nodeType = nodeType;
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
-        this.closed = false;
+    /** @param first may be null; in such case a path from the root is created */
+    AstPath(AstNode first, AstNode last) {
+        if(first != null && !isDescendant(first, last)) {
+            throw new IllegalArgumentException("AstNode " + last + " is not an ancestor of AstNode " + first);
+        }
+        this.first = first;
+        this.last = last;
+    }
+
+    public AstNode first() {
+        return first;
     }
     
-    public String name() {
-        return name;
-    }
-
-    public NodeType type() {
-        return nodeType;
-    }
-
-    public int startOffset() {
-        return startOffset;
-    }
-
-    public int endOffset() {
-        return endOffset;
-    }
-
-    public Collection<AstNode> children() {
-        return children;
+    public AstNode last() {
+        return last;
     }
     
-    void addChild(AstNode child) {
-        children.add(child);
-        child.setParent(this);
-    }
-    
-    void markUnmatched(){
-        nodeType = NodeType.UNMATCHED_TAG;
+    /** returns a list of nodes from the first node to the last node including the boundaries. */
+    public List<AstNode> path() {
+        List<AstNode> path = new  ArrayList<AstNode>();
+        AstNode node = last;
+        while (node != null) {
+            path.add(node);
+            if(node == first) {
+                break;
+            }
+            node = node.parent();
+        }
+        return path;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder childrenText = new StringBuilder();
+    public boolean equals(AstPath path, AstElementComparator comparator) {
+        List<AstNode> p1 = path();
+        List<AstNode> p2 = path.path();
         
-        for (AstNode child : children()){
-            String childTxt = child.toString();
+        if(p1.size() != p2.size()) {
+            return false;
+        }
+        
+        for(int i = 0; i < p1.size(); i++) {
+            AstNode n1 = p1.get(i);
+            AstNode n2 = p2.get(i);
             
-            for (String line : childTxt.split("\n")){
-                childrenText.append("-");
-                childrenText.append(line);
-                childrenText.append('\n');
+            if(!comparator.equals(n1, n2)) {
+                return false;
             }
         }
         
-        return name() + ":" + type() + "<" + startOffset() + ","
-                + endOffset() + ">\n" + childrenText.toString(); 
+        return true;
     }
     
-    public AstNode parent() {
-        return parent;
+    public static boolean isDescendant(AstNode amcestor, AstNode descendant) {
+        if(amcestor == descendant) {
+            return false;
+        }
+        AstNode node = descendant;
+        while((node = node.parent()) != null) {
+            if(amcestor == node) {
+                return true;
+            }
+        }
+        return false;
     }
-    
-    /** returns the AST path from the root element */
-    public AstPath path() {
-        return new AstPath(null, this);
+ 
+    public interface AstElementComparator {
+        
+        public boolean equals(AstNode node1, AstNode node2);
+        
     }
-    
-    void removeAllChildren(){
-        children.clear();
-    }
-    
-    private void setParent(AstNode parent) {
-        this.parent = parent;
-    }
-    
-    void setEndOffset(int endOffset){
-        this.endOffset = endOffset;
-    }
-    
     
 }
