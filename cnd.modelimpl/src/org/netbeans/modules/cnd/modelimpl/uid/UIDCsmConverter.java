@@ -89,7 +89,7 @@ public class UIDCsmConverter {
             return result;
         } catch (StackOverflowError ex) {
             // needed to analyze IZ99230; it's fixed!
-	    Exception ex2 = new Exception("StackOverflowError for UID " + uid);
+	    Exception ex2 = new Exception("StackOverflowError for UID " + uid); // NOI18N
 	    ex2.setStackTrace(ex.getStackTrace());
 	    DiagnosticExceptoins.register(ex2);
             return null;

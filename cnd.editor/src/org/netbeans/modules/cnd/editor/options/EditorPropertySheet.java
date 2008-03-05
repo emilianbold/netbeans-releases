@@ -84,7 +84,7 @@ import org.openide.util.NbBundle;
  */
 public class EditorPropertySheet extends javax.swing.JPanel implements ActionListener, PropertyChangeListener, PreferenceChangeListener {
     
-    private static final boolean USE_NEW_FORMATTER = false;
+    private static final boolean USE_NEW_FORMATTER = true;
     
     private EditorOptionsPanelController topControler;
     private boolean loaded = false;
@@ -357,19 +357,30 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
                 buf.append(style);
                 PreviewPreferences preferences = prefEntry.getValue();
                 Preferences toSave = EditorOptions.getPreferences(language, style);
-                try {
-                    for (String key : preferences.keys()) {
-                        Object def = EditorOptions.getDefault(language, key, defaultStyles.get(language));
-                        if (def instanceof Boolean) {
-                            toSave.putBoolean(key, preferences.getBoolean(key, (Boolean) def));
-                        } else if (def instanceof Integer) {
-                            toSave.putInt(key, preferences.getInt(key, (Integer) def));
+                for(String key : EditorOptions.keys()){
+                    Object o = EditorOptions.getDefault(language, style, key);
+                    if (o instanceof Boolean) {
+                        Boolean v = preferences.getBoolean(key, (Boolean) o);
+                        if (!o.equals(v)) {
+                            toSave.putBoolean(key, v);
                         } else {
-                            toSave.put(key, preferences.get(key, (String) def));
+                            toSave.remove(key);
+                        }
+                    } else if (o instanceof Integer) {
+                        Integer v = preferences.getInt(key, (Integer) o);
+                        if (!o.equals(v)) {
+                            toSave.putInt(key, v);
+                        } else {
+                            toSave.remove(key);
+                        }
+                    } else {
+                        String v = preferences.get(key, o.toString());
+                        if (!o.equals(v)) {
+                            toSave.put(key, v);
+                        } else {
+                            toSave.remove(key);
                         }
                     }
-                } catch (BackingStoreException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
             }
             EditorOptions.setAllStyles(language, buf.toString());
@@ -452,9 +463,9 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     private String getPreviwText(){
         String suffix;
         if (CodeStyle.Language.C.equals(currentLanguage)){
-            suffix = ".c";
+            suffix = ".c"; // NOI18N
         } else {
-            suffix = ".cpp";
+            suffix = ".cpp"; // NOI18N
         }
         if (lastChangedproperty != null) {
             if (lastChangedproperty.startsWith("space")) { // NOI18N
@@ -473,7 +484,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         //return getString(example);
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         FileObject exampleFile = fs.findResource("OptionsDialog/CPlusPlus/FormatterPreviewExamples/" + example); //NOI18N
-        if (exampleFile != null) {
+        if (exampleFile != null && exampleFile.getSize() > 0) {
             StringBuilder sb = new StringBuilder((int) exampleFile.getSize());
             try {
                 InputStreamReader is = new InputStreamReader(exampleFile.getInputStream());

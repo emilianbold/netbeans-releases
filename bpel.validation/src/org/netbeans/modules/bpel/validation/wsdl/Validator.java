@@ -79,11 +79,13 @@ public final class Validator extends WsdlValidator {
 //out("Query: " + alias.getQuery());
 
         if (alias.getQuery() != null) {
+//out("1");
           return;
         }
         DocumentComponent query = getQuery(alias);
 
         if (query != null) {
+//out("2");
           addError("FIX_QUERY_PREFIX", alias); // NOI18N
           return;
         }
@@ -91,6 +93,7 @@ public final class Validator extends WsdlValidator {
         NamedComponentReference<CorrelationProperty> ref1 = alias.getPropertyName();
 
         if (ref1 == null) {
+//out("3");
           return;
         }
         CorrelationProperty property = ref1.get();

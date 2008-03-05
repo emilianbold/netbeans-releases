@@ -1429,9 +1429,9 @@ public final class Validator extends BpelValidator {
         }
     }
     
-    void collectIsolatedScopes( BpelContainer container,
-            Collection<Component> collection ) {
+    void collectIsolatedScopes( BpelContainer container, Collection<Component> collection ) {
         List<BpelEntity> children = container.getChildren();
+
         for (BpelEntity entity : children) {
             if ( entity instanceof Scope && TBoolean.YES.equals(
                     ((Scope) entity).getIsolated() )) {
@@ -1505,6 +1505,7 @@ public final class Validator extends BpelValidator {
     
     void collectActivitiesInScope( BpelContainer container, Map<String,Collection<Component>> map ) {
         List<BpelEntity> children = container.getChildren();
+
         for (BpelEntity entity : children) {
             addNamedActivity( entity, map );
             if ( entity instanceof BaseScope ) {
@@ -1568,19 +1569,13 @@ public final class Validator extends BpelValidator {
         Set<Link> list = new HashSet<Link>( Arrays.asList( links) );
         List<BpelEntity> children = flow.getChildren();
         
-        Map<Link,Collection<Component>> sources =
-                new HashMap<Link,Collection<Component>>();
-        
-        Map<Link,Collection<Component>> targets =
-                new HashMap<Link,Collection<Component>>();
+        Map<Link,Collection<Component>> sources = new HashMap<Link,Collection<Component>>();
+        Map<Link,Collection<Component>> targets = new HashMap<Link,Collection<Component>>();
         
         for (BpelEntity child : children) {
             collectLinks( child , list , sources , targets );
         }
-        
-        Map<Pair<Component>,Collection<Link>> foundSourcesAndTargets =
-                new HashMap<Pair<Component>,Collection<Link>>();
-        
+        Map<Pair<Component>,Collection<Link>> foundSourcesAndTargets = new HashMap<Pair<Component>,Collection<Link>>();
         for( Link link : list ){
             boolean isUsed = false;
             Collection<Component> collection = sources.get( link );

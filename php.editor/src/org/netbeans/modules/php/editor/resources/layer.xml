@@ -39,6 +39,10 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.PHPIndexer"/>
                 </file>
 -->
+                <file name="semantic.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.SemanticAnalyzer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.parser.SemanticAnalysis"/>
+                </file>
             </folder>
         </folder>
     </folder>
