@@ -133,7 +133,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     }
     
     public String getSaasServiceMethodName() {
-        return "get" + getBean().getName();
+        return getBean().getName();
     }
     
     public HttpMethodType getHttpMethodName() {
