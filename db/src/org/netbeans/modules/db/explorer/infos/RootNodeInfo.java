@@ -176,14 +176,17 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         
         final List<Node> newNodes = getRegisteredNodes();
         
-        // Now add the non-registered nodes that currently exist
         for (Node node : nodes ) {
-            if ( node instanceof DatabaseNode ) {
-                newNodes.add(node);
+            if ( ! (node instanceof DatabaseNode) ) {
+                // Remove the old registered nodes
+                children.removeSubNode(node);
             }
         }
         
-        children.replaceNodes(newNodes.toArray(new Node[0]));
+        for ( Node node : newNodes ) {
+            // Add the new registered nodes
+            children.addSubNode(node);
+        }        
     }
     
     public void addConnectionNoConnect(DatabaseConnection dbconn) throws DatabaseException {
