@@ -24,7 +24,7 @@
 		<indexitem text="deploying, performing test runs" target="orch_test_run_about" />
 	</indexitem>
 	<indexitem text="correlation sets, BPEL Designer">
-		<indexitem text="about" target="orch_design_about_correlation" />
+		<indexitem text="about" target="orch_design_about_correlation_and_wizard" />
 		<indexitem text="adding" target="org.netbeans.modules.bpel.properties.editors.CorrelationSetCustomEditor" />
 	</indexitem>
 	<indexitem text="debugging, BPEL Debugger" target="orch_debug_about" />

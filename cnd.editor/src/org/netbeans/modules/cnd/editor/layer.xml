@@ -212,7 +212,7 @@
         </folder> <!-- IndentEngine -->
     </folder>	<!-- Services -->
 
-    <!--folder name="Editors">
+    <folder name="Editors">
         <folder name="text">
             <folder name="x-c">
                 <file name="Reformatter.instance">
@@ -225,6 +225,6 @@
                 </file>
             </folder>
         </folder>
-    </folder-->
+    </folder>
 
 </filesystem>

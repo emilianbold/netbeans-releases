@@ -41,6 +41,7 @@
 
 package gui.action;
 
+import gui.ScriptingUtilities;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -92,7 +93,7 @@ public class ScriptingCodeCompletionInEditor extends org.netbeans.performance.te
     
     protected Node getProjectNode(String projectName) {
         if(projectsTab==null)
-            projectsTab = new ProjectsTabOperator();
+            projectsTab = ScriptingUtilities.invokePTO();
         
         return projectsTab.getProjectRootNode(projectName);
     }

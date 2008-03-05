@@ -989,6 +989,23 @@ public class ControllerUtil {
        return serverConfigs;
     }
     
+    public static List<String> getDeployedTargets(AMX amx, boolean isApp, MBeanServerConnection conn) throws Exception {
+        List<String> targetList = new ArrayList();
+        Map clusterConfigs = amx.getDomainRoot().getDomainConfig().getClusterConfigMap();
+        if (clusterConfigs.size() > 0) {
+            String appName = amx.getName();
+            String objectName = (isApp) ? "com.sun.appserv:type=applications,category=config" : "com.sun.appserv:type=resources,category=config"; //NOI18N
+            String[] params = new String[]{appName};
+            String[] types = new String[]{"java.lang.String"}; //NOI18N
+            ObjectName[] refs = (ObjectName[]) conn.invoke(new ObjectName(objectName), "listReferencees", params, types); //NOI18N
+            for (int i = 0; i < refs.length; i++) {
+                targetList.add(refs[i].getKeyProperty("name")); //NOI18N
+            }
+        }
+
+        return targetList;
+    }
+    
     /**
      * Filters all system modules. Deals with a map containing 
      * com.sun.appserv.management.config.ModuleConfig or Subinterfaces,

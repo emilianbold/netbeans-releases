@@ -91,7 +91,7 @@ public class HtmlStructureScanner implements StructureScanner {
 
         //return the root children
         List<StructureItem> elements = new  ArrayList<StructureItem>(1);
-        elements.addAll(new CSSStructureItem(new HtmlElementHandle(root, info), source).getNestedItems());
+        elements.addAll(new HtmlStructureItem(new HtmlElementHandle(root, info), source).getNestedItems());
         
         return elements;
         
@@ -144,12 +144,12 @@ public class HtmlStructureScanner implements StructureScanner {
         return source == null ? astOffset : source.getLexicalOffset(astOffset);
     }
     
-    private static final class CSSStructureItem implements StructureItem {
+    private static final class HtmlStructureItem implements StructureItem {
 
         private TranslatedSource source;
         private HtmlElementHandle handle;
 
-        private CSSStructureItem(HtmlElementHandle handle, TranslatedSource source) {
+        private HtmlStructureItem(HtmlElementHandle handle, TranslatedSource source) {
             this.handle = handle;
             this.source= source;
 
@@ -167,6 +167,28 @@ public class HtmlStructureScanner implements StructureScanner {
             return handle;
         }
 
+        //>>> such equals and hashCode implementation
+        //is necessary since the ElementNode class from
+        // gsf navigator requires it
+        @Override
+        public boolean equals(Object o) {
+            if(!(o instanceof HtmlStructureItem)) {
+                return false;
+            }
+            
+            HtmlStructureItem compared = (HtmlStructureItem)o;
+            
+            return getName().equals(compared.getName())
+                    && getKind() == compared.getKind();
+        }
+        
+        @Override
+        public int hashCode() {
+            return getName().hashCode() + getKind().hashCode();
+            
+        }
+        //<<<
+        
         public ElementKind getKind() {
             return ElementKind.TAG;
         }
@@ -185,7 +207,7 @@ public class HtmlStructureScanner implements StructureScanner {
                 if(child.type() == AstNode.NodeType.TAG 
                         || child.type() == AstNode.NodeType.UNMATCHED_TAG) {
                     HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.compilationInfo());
-                    list.add(new CSSStructureItem(childHandle, source));
+                    list.add(new HtmlStructureItem(childHandle, source));
                 }
             }
             return list;

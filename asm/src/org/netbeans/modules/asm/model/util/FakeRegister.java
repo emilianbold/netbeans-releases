@@ -75,7 +75,7 @@ public final class FakeRegister implements Register,
     }
 
     public String getName() {
-        return "Fake Register";
+        return "Fake Register"; // NOI18N
     }    
 
     public String getProperty(String prop) {
