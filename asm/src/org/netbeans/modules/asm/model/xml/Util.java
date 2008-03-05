@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
 class Util {
         
     private final static Pattern pat = 
-            Pattern.compile("(%[\\p{Alpha}\\p{Digit}]+%)");
+            Pattern.compile("(%[\\p{Alpha}\\p{Digit}]+%)"); // NOI18N
     
     public static List<String> descriptionTokenizer(String descr) {
         Matcher met = pat.matcher(descr);        

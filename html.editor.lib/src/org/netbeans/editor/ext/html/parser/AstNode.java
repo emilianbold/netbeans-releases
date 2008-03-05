@@ -118,6 +118,11 @@ public class AstNode {
         return parent;
     }
     
+    /** returns the AST path from the root element */
+    public AstPath path() {
+        return new AstPath(null, this);
+    }
+    
     void removeAllChildren(){
         children.clear();
     }
@@ -129,4 +134,6 @@ public class AstNode {
     void setEndOffset(int endOffset){
         this.endOffset = endOffset;
     }
+    
+    
 }

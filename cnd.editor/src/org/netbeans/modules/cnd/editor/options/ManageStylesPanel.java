@@ -121,11 +121,6 @@ public class ManageStylesPanel extends javax.swing.JPanel
         setPreferredSize(new java.awt.Dimension(250, 150));
         setLayout(new java.awt.GridBagLayout());
 
-        stylesList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         jScrollPane1.setViewportView(stylesList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -189,7 +184,7 @@ public class ManageStylesPanel extends javax.swing.JPanel
     }// </editor-fold>//GEN-END:initComponents
 
 private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
-    PreviewPreferences pp = allPreferences.get(currentLanguage).get("Default");
+    PreviewPreferences pp = allPreferences.get(currentLanguage).get("Default"); // NOI18N
     String id = nextId();
     String resourceId = id+"_Style_Name"; // NOI18N
     String displayName = getDisplayName(id);
