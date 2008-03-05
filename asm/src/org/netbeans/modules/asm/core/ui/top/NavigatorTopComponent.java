@@ -63,9 +63,9 @@ final class NavigatorTopComponent extends TopComponent implements LookupListener
     
     private static NavigatorTopComponent instance;
 
-    static final String ICON_PATH = "org/netbeans/modules/asm/core/resources/asm_icon.png";
+    static final String ICON_PATH = "org/netbeans/modules/asm/core/resources/asm_icon.png"; // NOI18N
     
-    private static final String PREFERRED_ID = "NavigatorTopComponent";
+    private static final String PREFERRED_ID = "NavigatorTopComponent"; // NOI18N
     
     //private NavigatorTab []tabs;
     
@@ -74,7 +74,7 @@ final class NavigatorTopComponent extends TopComponent implements LookupListener
     private NavigatorTopComponent() {
         initComponents();
         setIcon(Utilities.loadImage(ICON_PATH, true));        
-        setName(NbBundle.getMessage(NavigatorTopComponent.class, "CTL_NavigatorTopComponent"));
+        setName(NbBundle.getMessage(NavigatorTopComponent.class, "CTL_NavigatorTopComponent")); // NOI18N
         //setToolTipText(NbBundle.getMessage(NavigatorTopComponent.class, "HINT_NavigatorTopComponent"));
         //mainTabbedPanel.setVisible(false);
         
@@ -124,13 +124,13 @@ final class NavigatorTopComponent extends TopComponent implements LookupListener
     public static synchronized NavigatorTopComponent findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot find Navigator component. It will not be located properly in the window system.");
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot find Navigator component. It will not be located properly in the window system."); // NOI18N
             return getDefault();
         }
         if (win instanceof NavigatorTopComponent) {
             return (NavigatorTopComponent)win;
         }
-        ErrorManager.getDefault().log(ErrorManager.WARNING, "There seem to be multiple components with the '" + PREFERRED_ID + "' ID. That is a potential source of errors and unexpected behavior.");
+        ErrorManager.getDefault().log(ErrorManager.WARNING, "There seem to be multiple components with the '" + PREFERRED_ID + "' ID. That is a potential source of errors and unexpected behavior."); // NOI18N
         return getDefault();
     }
     

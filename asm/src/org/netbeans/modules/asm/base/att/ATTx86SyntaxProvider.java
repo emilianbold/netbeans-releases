@@ -77,12 +77,12 @@ public class ATTx86SyntaxProvider implements AsmSyntaxProvider {
                      
         @Override
         protected void patchAttParser(ATTParser parser) {
-            parser.setMemOpMarks("(", ")");
+            parser.setMemOpMarks("(", ")"); // NOI18N
         }         
     }
 
     @Override
     public String toString() {
-        return "AT&T-x86";  // NOI18N
+        return "AT&T-x86"; // NOI18N
     }
 }
