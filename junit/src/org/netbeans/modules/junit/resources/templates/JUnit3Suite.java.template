@@ -33,12 +33,18 @@ public class ${name} extends TestCase {
     }
 
 <#if methodSetUp!false>
+    <#if useAnnotations!false>
+    @Override
+    </#if>
     protected void setUp() throws Exception {
         super.setUp();
     }
 
 </#if>
 <#if methodTearDown!false>
+    <#if useAnnotations!false>
+    @Override
+    </#if>
     protected void tearDown() throws Exception {
         super.tearDown();
     }
