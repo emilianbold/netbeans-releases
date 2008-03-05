@@ -257,6 +257,15 @@ public class CsmKindUtilities {
             return false;
         }
     }
+
+    public static boolean isUnion(CsmObject obj) {
+        if (isDeclaration(obj)) {
+            CsmDeclaration.Kind kind = ((CsmDeclaration)obj).getKind();
+            return kind == CsmDeclaration.Kind.UNION;
+        } else {
+            return false;
+        }
+    }
     
     public static boolean isClassForwardDeclaration(CsmObject obj) {
         if (isDeclaration(obj)) {

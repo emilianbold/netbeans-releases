@@ -48,7 +48,6 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 
-import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.modules.visualweb.test.components.util.ComponentUtils;
 import org.netbeans.modules.visualweb.gravy.ProjectNavigatorOperator;
 import org.netbeans.modules.visualweb.gravy.toolbox.PaletteContainerOperator;
@@ -68,6 +67,7 @@ import org.netbeans.modules.visualweb.gravy.RaveWindowOperator;
 import org.netbeans.modules.visualweb.gravy.TestUtils;
 import org.netbeans.modules.visualweb.gravy.Util;
 import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
+import static org.netbeans.modules.visualweb.test.components.util.ComponentUtils.typeLines;
 
 /**
  * @author Sherry Zhou (sherry.zhou@sun.com)
@@ -210,7 +210,7 @@ public class AcceptanceTest extends RaveTestCase {
         assertTrue("There is no \"" + expectedStr + "\" string in jsp editor",
                 editor.getText().contains(expectedStr));
         editor.requestFocus();
-        editor.setText("log(\"Action Performed\");\n");
+        typeLines("log(\"Action Performed\");\n", editor);
         log("Reformat code");
         TestUtils.wait(200);
         editor.clickForPopup();

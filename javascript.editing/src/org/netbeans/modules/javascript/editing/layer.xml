@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="Actions">
-        <folder name="JavaScript">
-            <file name="org-netbeans-modules-javascript-editing-BrowserSelectionAction.instance"/>
-        </folder>
-    </folder>
     <folder name="Editors">
         <folder name="text">
             <folder name="javascript">
@@ -58,21 +53,18 @@
             </folder>
         </folder>
     </folder>
-    
-    <folder name="Menu">
-        <folder name="Tools">
-            <file name="org-netbeans-modules-javascript-editing-BrowserSelectionAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/JavaScript/org-netbeans-modules-javascript-editing-BrowserSelectionAction.instance"/>
-                <attr name="position" intvalue="475"/>
-            </file>
-        </folder>
-    </folder>
+  
     <folder name="OptionsDialog">
         <folder name="PreviewExamples">
             <folder name="text">
                 <file name="javascript" url="JsExample"/>
             </folder>
         </folder>
+        <folder name="Advanced">
+            <file name="JsOptions.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.options.JsOptions"/>
+            </file>
+        </folder>        
         <!--
         <file name="JsOptions.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.JsOptionsCategory"/>

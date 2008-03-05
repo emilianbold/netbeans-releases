@@ -124,7 +124,7 @@ public class ServerInstance implements Node.Cookie {
     // Synchronized on the instance (this)
     ArrayList<DatabaseModel> databases = new ArrayList<DatabaseModel>();
     
-    static synchronized ServerInstance getDefault() {
+    public static synchronized ServerInstance getDefault() {
         if ( DEFAULT == null ) {
             DEFAULT = new ServerInstance();
         }

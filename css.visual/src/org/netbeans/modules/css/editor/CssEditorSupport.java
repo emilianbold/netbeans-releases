@@ -343,7 +343,7 @@ public class CssEditorSupport {
     }
 
     private synchronized void updateSelectedRule(int dotPos) {
-        if (document == null) {
+        if (document == null || model == null) {
             //document unloaded, just return
             return;
         }
