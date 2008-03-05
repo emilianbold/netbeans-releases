@@ -46,18 +46,17 @@ made subject to such option by the copyright holder.
     <folder name="Templates">
         <folder name="Project">
             <folder name="PHP">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.wizards.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpDescription.html"/>
                 <attr name="position" intvalue="520"/>
                 
                 <file name="PHPProject.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/index.php">
                     <attr name="position" intvalue="100"/>
                     <attr name="template" boolvalue="true"/>
-                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.php.project.wizards.NewPhpProjectWizardIterator"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.wizards.Bundle"/>
+                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewPhpProjectWizardIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpProject.png"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPhpProject.html"/>
-                    <!--attr name="templateCategory" stringvalue="PHP"/-->
                 </file>
 
             </folder>
