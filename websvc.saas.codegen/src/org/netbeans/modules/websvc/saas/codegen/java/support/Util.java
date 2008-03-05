@@ -615,6 +615,10 @@ public class Util {
         return Inflector.getInstance().camelize(normailizeName(name) + GenericResourceBean.RESOURCE_SUFFIX);
     }
 
+    public static String deriveMethodName(final String name) {
+        return Inflector.getInstance().camelize(normailizeName(name), true);
+    }
+    
     public static String deriveUriTemplate(final String name) {
         return Inflector.getInstance().camelize(normailizeName(name), true) + "/"; //NOI18N
     }
