@@ -71,10 +71,6 @@ made subject to such option by the copyright holder.
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlSemanticAnalyzer"/>
                 </file>
                 
-                <file name="bracket.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.BracketCompletion"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlBracketCompleter"/>
-                </file>
                 
                 <!--<file name="completion.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Completable"/>
@@ -84,6 +80,11 @@ made subject to such option by the copyright holder.
                 <!--<file name="renamer.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.InstantRenamer"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RenameHandler"/>
+                </file>
+
+                <file name="bracket.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.BracketCompletion"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlBracketCompleter"/>
                 </file>
                 
                 <file name="declarationfinder.instance">
