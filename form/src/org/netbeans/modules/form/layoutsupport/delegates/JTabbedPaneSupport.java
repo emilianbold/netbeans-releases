@@ -321,6 +321,13 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
         getConstraintsList().add(constr);
 
         componentCode.addStatement(statement);
+        
+        // Issue 129229
+        constr.createComponentCode(
+            componentCode,
+            getLayoutContext().getContainerCodeExpression(),
+            compExp,
+            false);
 
         return compExp;
     }
@@ -345,7 +352,8 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
         ((TabConstraints)constr).createComponentCode(
                            componentCode,
                            getLayoutContext().getContainerCodeExpression(),
-                           componentExpression);
+                           componentExpression,
+                           true);
     }
 
     /** This method is called to get a default component layout constraints
@@ -574,13 +582,16 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
 
         private void createComponentCode(CodeGroup compCode,
                                          CodeExpression contExp,
-                                         CodeExpression compExp)
+                                         CodeExpression compExp,
+                                         boolean update)
         {
             this.componentCode = compCode;
             this.containerExpression = contExp;
             this.componentExpression = compExp;
             this.propertyExpressions = null;
-            updateCode();
+            if (update) {
+                updateCode();
+            }
         }
 
         private void updateCode() {

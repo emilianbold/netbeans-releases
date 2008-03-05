@@ -99,21 +99,58 @@ public final class UiUtils {
                         intMessageType);
                 break;
             case SILENT:
+                LogManager.log(message);
                 System.err.println(message);
                 break;
         }
     }
-    
+    /**
+     * 
+     * @param title The title of the dialog
+     * @param message The message of the dialog
+     * @return true if user click YES option. 
+     * If installer is running silently then false is returned.
+     */
     public static boolean showYesNoDialog(
             final String title,
             final String message) {
-        final int result = JOptionPane.showConfirmDialog(
-                null,
-                message,
-                title,
-                YES_NO_OPTION);
+        return showYesNoDialog(title, message, false);
+    }
+    /**
+     * @param title The title of the dialog
+     * @param message The message of the dialog
+     * @param silentDefault The dafault return value if installer is running silently
+     * @return true if user click YES option. In silent mode return <code>silentDefault</code>
+     */
+    public static boolean showYesNoDialog(
+            final String title,
+            final String message,
+            final boolean silentDefault) {
         
-        return result == YES_OPTION;
+        switch (UiMode.getCurrentUiMode()) {
+            case SWING:
+                final int result = JOptionPane.showConfirmDialog(
+                        null,
+                        message,
+                        title,
+                        YES_NO_OPTION);
+                return result == YES_OPTION;
+                
+            case SILENT:
+                LogManager.log(message);                
+                final String option = StringUtils.format(
+                        ResourceUtils.getString(UiUtils.class,
+                        silentDefault ? 
+                            RESOURCE_SILENT_DEFAULT_TRUE : 
+                            RESOURCE_SILENT_DEFAULT_FALSE));
+                System.err.println(message);
+                System.err.println(option);
+                LogManager.log(message);
+                LogManager.log(option);
+                return silentDefault;
+        }
+        //never get this line...
+        return true;
     }
     
     public static CertificateAcceptanceStatus showCertificateAcceptanceDialog(
@@ -572,4 +609,8 @@ public final class UiUtils {
             "UI.error.failed.to.init.ui";//NOI18N
     private static final String RESOURCE_FAILED_TO_FORCE_GTK =
             "UI.error.failed.to.force.gtk";//NOI18N
+    private static final String RESOURCE_SILENT_DEFAULT_TRUE = 
+            "UI.silent.default.true";//NOI18N
+    private static final String RESOURCE_SILENT_DEFAULT_FALSE = 
+            "UI.silent.default.false";//NOI18N
 }
