@@ -275,7 +275,7 @@ public class DataSourceResolver implements DataSourceInfoListener, Runnable {
         ModelSet.addModelSetsListener(modelingListener);
         topComponent = TopComponent.getRegistry().getActivated();
         topComponent.setCursor(Utilities.createProgressCursor(topComponent));
-        String progressBarLabel = org.openide.util.NbBundle.getMessage(DataSourceResolver.class, "ProgressBarLabel"); //NOI18N
+        String progressBarLabel = org.openide.util.NbBundle.getMessage(DataSourceResolver.class, "LBL_ProgressBar"); //NOI18N
         
         try {
             // model project 

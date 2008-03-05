@@ -215,10 +215,10 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(librariesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)
+                .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseLibraries))
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(messageLabel)
                 .addContainerGap())
@@ -232,7 +232,7 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
                 .add(libraryNameComboBox, 0, 269, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(libraryRadioButton)
-                .addContainerGap(177, Short.MAX_VALUE))
+                .addContainerGap(182, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -256,6 +256,19 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
                     .add(libraryNameLabel)
                     .add(libraryNameComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
+
+        serverRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.serverRadioButton.text")); // NOI18N
+        serverRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.serverRadioButton.text")); // NOI18N
+        libraryRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.libraryRadioButton.text")); // NOI18N
+        libraryRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.libraryRadioButton.text")); // NOI18N
+        sharableProject.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.sharableProject.text")); // NOI18N
+        sharableProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.sharableCheckBox.text")); // NOI18N
+        librariesLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.librariesLabel.text")); // NOI18N
+        librariesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.librariesLabel.text")); // NOI18N
+        browseLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "LBL_Browse_Libraries_Title")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.label")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.label")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void libraryRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_libraryRadioButtonActionPerformed

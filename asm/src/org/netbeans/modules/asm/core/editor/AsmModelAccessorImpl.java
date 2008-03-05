@@ -77,7 +77,7 @@ public class AsmModelAccessorImpl implements AsmModelAccessor {
             Logger.getLogger(AsmModelAccessorImpl.class.getName());
     
     private static final RequestProcessor reqProc = 
-            new RequestProcessor ("asm parser",1);
+            new RequestProcessor ("asm parser",1); // NOI18N
     
     private static final int INPUT_REACTION_DELAY = 500;
             
@@ -164,7 +164,7 @@ public class AsmModelAccessorImpl implements AsmModelAccessor {
             
             {
                 LOGGER.log(Level.INFO, 
-                           String.format("%s parse time: %d ms", docName, (end - start))
+                           String.format("%s parse time: %d ms", docName, (end - start)) // NOI18N
                           );
             }
                         

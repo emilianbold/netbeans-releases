@@ -361,7 +361,9 @@ public class Utils {
         JDialogOperator customizeInstallation = new JDialogOperator("Customize Installation");
         JListOperator featureList = new JListOperator(customizeInstallation);
         featureList.selectItem(name);
-        featureList.pressKey(KeyEvent.VK_SPACE);
+
+        //cuz behaviour of feature list is changed
+        //featureList.pressKey(KeyEvent.VK_SPACE);
         new JButtonOperator(customizeInstallation, "OK").push();
     }
 
