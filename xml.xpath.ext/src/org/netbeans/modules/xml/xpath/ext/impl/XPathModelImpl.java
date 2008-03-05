@@ -612,10 +612,13 @@ public class XPathModelImpl implements XPathModel {
             // Error. It should be without a prefix
             if (sComp instanceof LocalElement){
                 String elementName = ((LocalElement)sComp).getName();
-                mValidationContext.addResultItem(getRootExpression(), 
-                        ResultType.WARNING,
+
+                // vlv
+                mValidationContext.addResultItem(getRootExpression(),
+                        ResultType.ERROR,
                         XPathProblem.ELEMENT_UNNECESSARY_PREFIX, elementName);
-            } else if (sComp instanceof LocalAttribute){
+            }
+            else if (sComp instanceof LocalAttribute){
                 String attrName = ((LocalAttribute)sComp).getName();
                 mValidationContext.addResultItem(getRootExpression(),
                         ResultType.WARNING,
