@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -818,27 +818,23 @@ public final class DefaultPlugin extends JUnitPlugin {
                     = (filesToTest != null)
                       && (filesToTest.length != 0)
                       && ((filesToTest.length > 1) || !filesToTest[0].isData());
-            final boolean useAnnotations;
             switch (junitVer) {
                 case JUNIT3:
                     templateId = "PROP_junit3_testClassTemplate";       //NOI18N
                     suiteTemplateId = forTestSuite
                                       ? "PROP_junit3_testSuiteTemplate" //NOI18N
                                       : null;
-                    useAnnotations = TestUtil.areAnnotationsSupported(targetRoot);
                     break;
                 case JUNIT4:
                     templateId = "PROP_junit4_testClassTemplate";       //NOI18N
                     suiteTemplateId = forTestSuite
                                       ? "PROP_junit4_testSuiteTemplate" //NOI18N
                                       : null;
-                    useAnnotations = true;
                     break;
                 default:
                     assert false;
                     templateId = null;
                     suiteTemplateId = null;
-                    useAnnotations = false;
                     break;
             }
             DataObject doTestTempl = (templateId != null)
@@ -855,9 +851,7 @@ public final class DefaultPlugin extends JUnitPlugin {
             }
             
             Map<String, Boolean> templateParams = createTemplateParams(params);
-            if (useAnnotations) {
-                templateParams.put(templatePropUseAnnotations, useAnnotations);
-            }
+            setAnnotationsSupport(targetRoot, junitVer, templateParams);
 
             if ((filesToTest == null) || (filesToTest.length == 0)) {
                 //XXX: Not documented that filesToTest may be <null>
@@ -1967,11 +1961,13 @@ public final class DefaultPlugin extends JUnitPlugin {
                                 final FileObject targetFolder,
                                 final String suiteName,
                                 final Map<CreateTestParam, Object> params) {
+        final Map<String, Boolean> templateParams = createTemplateParams(params);
+        setAnnotationsSupport(targetFolder, junitVer, templateParams);
         return createSuiteTest(targetRootFolder,
                                targetFolder,
                                suiteName,
                                params,
-                               createTemplateParams(params));
+                               templateParams);
     }
 
     /**
@@ -2051,6 +2047,45 @@ public final class DefaultPlugin extends JUnitPlugin {
                     DataFolder.findFolder(root),
                     clazz,
                     templateParams);
+    }
+
+    /**
+     * Determines whether annotations should be used in test classes in the
+     * given folder when generating the given type of JUnit tests.
+     * If annotations are supported, adds this information to the map of
+     * template parameters.
+     * 
+     * @param  testFolder  target folder for generated test classes
+     * @param  junitVer  type of generated JUnit tests
+     * @param  templateParams  map of template params to store
+     *                         the information to
+     * @return  {@code true} if it was detected that annotations are supported;
+     *          {@code false} otherwise
+     */
+    private static boolean setAnnotationsSupport(
+                                        FileObject testFolder,
+                                        JUnitVersion junitVer,
+                                        Map<String, Boolean> templateParams) {
+        if (!testFolder.isFolder()) {
+            throw new IllegalArgumentException("not a folder");         //NOI18N
+        }
+
+        final boolean supported;
+        switch (junitVer) {
+            case JUNIT3:
+                supported = TestUtil.areAnnotationsSupported(testFolder);
+                break;
+            case JUNIT4:
+                supported = true;
+                break;
+            default:
+                supported = false;
+                break;
+        }
+        if (supported) {
+            templateParams.put(templatePropUseAnnotations, supported);
+        }
+        return supported;
     }
 
     /**
