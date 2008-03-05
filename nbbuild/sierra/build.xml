@@ -385,6 +385,7 @@
     <target name="do-print">
         <subant target="${action}" inheritAll="false">
             <buildpath location="${home}/print"/>
+            <buildpath location="${home}/xml.wsdl.extensions"/> <!-- todo r -->
         </subant>
     </target>
 
