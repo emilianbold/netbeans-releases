@@ -71,10 +71,44 @@ public class CompletionContextTest extends TestCase {
         BaseDocument doc = TestUtils.createSpringXMLConfigDocument(config);
         CompletionContext ctx = new CompletionContext(doc, config.indexOf("id='petStore"));
         assertContext(ctx, CompletionType.ATTRIBUTE, "", "bean");
-        ctx = new CompletionContext(doc, config.indexOf(" id='petStore"));
+        ctx = new CompletionContext(doc, config.indexOf("id='petStore"));
         assertContext(ctx, CompletionType.ATTRIBUTE, "", "bean");
         ctx = new CompletionContext(doc, config.indexOf("lass='org."));
         assertContext(ctx, CompletionType.ATTRIBUTE, "c", "bean");
+    }
+    
+    // test for IZ#129020
+    public void testAttributeCompletionAtTagEnd() throws Exception {
+        // empty tag
+        String config = TestUtils.createXMLConfigText("<bean id='petStore' " +
+                "class='org.springframework.PetStoreImpl' p:name ='Sample Petstore' />");
+        BaseDocument doc = TestUtils.createSpringXMLConfigDocument(config);
+        CompletionContext ctx = new CompletionContext(doc, config.indexOf("/>"));
+        assertContext(ctx, CompletionType.ATTRIBUTE, "", "bean");
+        ctx = new CompletionContext(doc, config.indexOf("/>") + 1);
+        assertContext(ctx, CompletionType.NONE, "", "bean");
+        ctx = new CompletionContext(doc, config.indexOf(" />"));
+        assertContext(ctx, CompletionType.NONE, "", "bean");
+        
+        config = TestUtils.createXMLConfigText("<bean id='petStore' " +
+                "class='org.springframework.PetStoreImpl' p:name ='Sample Petstore'/>");
+        doc = TestUtils.createSpringXMLConfigDocument(config);
+        ctx = new CompletionContext(doc, config.indexOf("/>"));
+        assertContext(ctx, CompletionType.NONE, "", "bean");
+        
+        // start tag
+        config = TestUtils.createXMLConfigText("<bean id='petStore' " +
+                "class='org.springframework.PetStoreImpl' p:name ='Sample Petstore' ></bean>");
+        doc = TestUtils.createSpringXMLConfigDocument(config);
+        ctx = new CompletionContext(doc, config.indexOf("></bean>"));
+        assertContext(ctx, CompletionType.ATTRIBUTE, "", "bean");
+        ctx = new CompletionContext(doc, config.indexOf(" ></bean>"));
+        assertContext(ctx, CompletionType.NONE, "", "bean");
+        
+        config = TestUtils.createXMLConfigText("<bean id='petStore' " +
+                "class='org.springframework.PetStoreImpl' p:name ='Sample Petstore'></bean>");
+        ctx = new CompletionContext(doc, config.indexOf("></bean>"));
+        assertContext(ctx, CompletionType.NONE, "", "bean");
     }
 
     private void assertContext(CompletionContext context, CompletionType expectedType,
