@@ -1035,11 +1035,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         
         if (!updating) {
             if (o instanceof JComboBox && ev.getStateChange() == ItemEvent.SELECTED) {
-//                Object item = ev.getItem();
-//                changed = true;
-//
-//                if (o == cbCompilerSet) {
-//                    changeCompilerSet((CompilerSet) item);
+                Object item = ev.getItem();
+                changed = true;
+
+                if (o == cbCompilerSet) {
+                    changeCompilerSet((CompilerSet) item);
 //                } else if (o == cbCCommand) {
 //                    if (item instanceof Tool) {
 //                        cbCCommand.setToolTipText(((Tool) item).toString());
@@ -1067,7 +1067,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 //                    } else if (!changingCompilerSet) {
 //                        addRemoveUserTool(cbFortranCommand, fortranCommandSelection, Tool.FortranCompiler);
 //                    }
-//                }
+                }
             } else if (o instanceof JCheckBox && !changingCompilerSet) {
                 dataValid();
             }
