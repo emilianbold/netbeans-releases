@@ -44,17 +44,15 @@ package org.netbeans.modules.project.ui.actions;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
-import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
-import org.openide.util.actions.Presenter;
 
 /** Action for removing project from the open projects tab
  */
-public class CloseProject extends ProjectAction implements PropertyChangeListener, Presenter.Popup {
+public class CloseProject extends ProjectAction implements PropertyChangeListener {
     
     private static final String namePattern = NbBundle.getMessage( CloseProject.class, "LBL_CloseProjectAction_Name" ); // NOI18N
     private static final String namePatternPopup = NbBundle.getMessage( CloseProject.class, "LBL_CloseProjectAction_Popup_Name" ); // NOI18N
@@ -69,7 +67,7 @@ public class CloseProject extends ProjectAction implements PropertyChangeListene
     }
     
     public CloseProject( Lookup context ) {
-        super( (String)null, namePattern, null, context );        
+        super( (String)null, namePattern, namePatternPopup, null, context );        
         wpcl = WeakListeners.propertyChange( this, OpenProjectList.getDefault() );
         OpenProjectList.getDefault().addPropertyChangeListener( wpcl );
         refresh( getLookup() );
@@ -108,14 +106,6 @@ public class CloseProject extends ProjectAction implements PropertyChangeListene
     
     public void propertyChange( PropertyChangeEvent evt ) {
         refresh( getLookup() );
-    }
-    
-    // Implementation of Presenter.Popup ---------------------------------------
-    
-    public JMenuItem getPopupPresenter() {
-        JMenuItem popupPresenter = new JMenuItem();
-        org.openide.awt.Actions.connect(popupPresenter, this, true);
-        return popupPresenter;
     }
     
 }

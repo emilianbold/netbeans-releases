@@ -43,29 +43,24 @@ package org.netbeans.modules.project.ui.actions;
 
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.JMenuItem;
-import javax.swing.KeyStroke;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.awt.Actions;
-import org.openide.awt.Mnemonics;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
-import org.openide.util.actions.Presenter;
 
 /** Action sensitive to current project
  * 
  * @author Pet Hrebejk 
  */
-public class ProjectAction extends LookupSensitiveAction implements Presenter.Menu, ContextAwareAction {
+public class ProjectAction extends LookupSensitiveAction implements ContextAwareAction {
     
     private String command;
     private ProjectActionPerformer performer;
-    private String namePattern;
-    private String presenterName;
-    private JMenuItem menuPresenter;
+    private final String namePattern;
+    private final String popupPattern;
     
     /** 
      * Constructor for global actions. E.g. actions in main menu which 
@@ -73,14 +68,22 @@ public class ProjectAction extends LookupSensitiveAction implements Presenter.Me
      *
      */
     public ProjectAction(String command, String namePattern, Icon icon, Lookup lookup) {
-        this( command, null, namePattern, icon, lookup );
+        this( command, null, namePattern, null, icon, lookup );
+    }
+
+    public ProjectAction(String command, String namePattern, String popupPattern, Icon icon, Lookup lookup) {
+        this( command, null, namePattern, popupPattern, icon, lookup );
     }
     
     public ProjectAction( ProjectActionPerformer performer, String namePattern, Icon icon, Lookup lookup) {
-        this( null, performer, namePattern, icon, lookup );
+        this( null, performer, namePattern, null, icon, lookup );
+    }
+
+    private ProjectAction( ProjectActionPerformer performer, String namePattern, String popupPattern, Icon icon, Lookup lookup) {
+        this( null, performer, namePattern, popupPattern, icon, lookup );
     }
     
-    private ProjectAction( String command, ProjectActionPerformer performer, String namePattern, Icon icon, Lookup lookup ) {
+    private ProjectAction( String command, ProjectActionPerformer performer, String namePattern, String popupPattern, Icon icon, Lookup lookup ) {
         super( icon, lookup, new Class[] { Project.class, DataObject.class } );
         this.command = command;
         if ( command != null ) {
@@ -88,21 +91,18 @@ public class ProjectAction extends LookupSensitiveAction implements Presenter.Me
         }
         this.performer = performer;
         this.namePattern = namePattern;
-        presenterName = ActionsUtil.formatName( getNamePattern(), 0, "" );
+        this.popupPattern = popupPattern;
+        String presenterName = ActionsUtil.formatName( getNamePattern(), 0, "" );
         setDisplayName( presenterName );
         putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
     }
     
+    @Override
     public void putValue( String key, Object value ) {
         super.putValue( key, value );
         
-        if ( key == Action.ACCELERATOR_KEY ) {
+        if (Action.ACCELERATOR_KEY.equals(key)) {
             ActionsUtil.SHORCUTS_MANAGER.registerShortcut( command, value );
-            
-            //#68616: make sure the accelarator is propagated into the menu:
-            if (menuPresenter != null) {
-                menuPresenter.setAccelerator((KeyStroke) value);
-            }
         }
         
     }
@@ -127,18 +127,18 @@ public class ProjectAction extends LookupSensitiveAction implements Presenter.Me
         
         if ( command != null ) {
             setEnabled( projects.length == 1 );
-            presenterName = ActionsUtil.formatProjectSensitiveName( namePattern, projects );
-        }
-        else if ( performer != null && projects.length == 1 ) {
+        } else if ( performer != null && projects.length == 1 ) {
             setEnabled( performer.enable( projects[0] ) );
-            presenterName = ActionsUtil.formatProjectSensitiveName( namePattern, projects );
-        }
-        else {
+        } else {
             setEnabled( false );
-            presenterName = ActionsUtil.formatProjectSensitiveName( namePattern, projects );
         }
         
-        setLocalizedTextToMenuPresented(presenterName);
+        String presenterName = ActionsUtil.formatProjectSensitiveName( namePattern, projects );
+        putValue("menuText", presenterName); // NOI18N
+        if (popupPattern != null) {
+            String popupName = ActionsUtil.formatProjectSensitiveName(popupPattern, projects);
+            putValue("popupText", popupName); // NOI18N
+        }
                         
         putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
     }
@@ -151,39 +151,9 @@ public class ProjectAction extends LookupSensitiveAction implements Presenter.Me
         return namePattern;
     }
     
-    protected final void setLocalizedTextToMenuPresented(String presenterName) {
-        if ( menuPresenter != null ) {
-            Mnemonics.setLocalizedText( menuPresenter, presenterName );
-        }
-    }
-    
-    
-    // Implementation of Presenter.Menu ----------------------------------------
-    
-    public JMenuItem getMenuPresenter () {
-        if ( menuPresenter == null ) {
-            menuPresenter = new JMenuItem();
-            Actions.connect(menuPresenter, this, false);
-/*
-            Icon icon = null;
-            // ignore icon if noIconInMenu flag is set
-            if (!Boolean.TRUE.equals( getValue( "noIconInMenu" ) ) ) { 
-                icon = (Icon)getValue( Action.SMALL_ICON );
-            }
-            menuPresenter.setIcon( icon );
-            Mnemonics.setLocalizedText( menuPresenter, presenterName );
- */
-        }
-        
-        return menuPresenter;        
-    }
-    
-    
     // Implementation of ContextAwareAction ------------------------------------
     
     public Action createContextAwareInstance( Lookup actionContext ) {
-        return new ProjectAction( command, performer, namePattern, (Icon)getValue( SMALL_ICON ), actionContext );
+        return new ProjectAction( command, performer, namePattern, popupPattern, (Icon)getValue( SMALL_ICON ), actionContext );
     }
-
-    
 }

@@ -61,4 +61,12 @@ public class SetMainPrjTest extends LookupSensitiveActionBase {
     protected void enhanceProject(TestProject prj) {
     }
 
+
+    // disable these tests as the menu item is completely different
+    @Override
+    public void testNoNeedToRefreshWhenNotVisibleMenu() {
+    }
+    @Override
+    public void testCloneNoNeedToRefreshWhenNotVisibleMenu() {
+    }
 }
