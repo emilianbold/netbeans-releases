@@ -25,8 +25,10 @@
 				<tocitem text="About Web Application Frameworks" target="about_framework" />
 				<tocitem text="JavaServer Faces">
 					<tocitem text="About the Visual Web JSF Framework" target="projraveweb_create_tag_framework_jsf_about_visweb_framework" />
+                                        <tocitem text="About CRUD Applications" target="framework_jsf_crud" />
 					<tocitem text="Creating a New Application with JSF Support" target="framework_jsf_create" />
 					<tocitem text="Adding JSF Support to an Existing Application" target="framework_jsf_add" />
+                                        <tocitem text="Generating JSF Pages from an Entity Class" target="framework_jsf_fromentity" />
 					<tocitem text="Adding a JSF Form to a JSP Page" target="framework_jsf_form" />
 					<tocitem text="Adding a JSF Data Table to a JSP Page" target="framework_jsf_datatable" />
 				</tocitem>

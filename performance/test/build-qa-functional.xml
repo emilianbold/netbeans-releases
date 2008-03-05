@@ -63,7 +63,7 @@ made subject to such option by the copyright holder.
     
     <target name="ide_command_line_suffix">
         <!--  Repeat performance test more than once -->
-        <property name="xtest.ide.commandline.suffix" value="-J-Dcom.sun.aas.installRoot=${j2ee.appserver.path} -J-Dorg.netbeans.performance.repeat=4 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
+        <property name="xtest.ide.commandline.suffix" value="-J-Dcom.sun.aas.installRoot=${tomcat.home} -J-Dorg.netbeans.performance.repeat=4 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
     </target>
     
     <!-- ========= -->
@@ -96,12 +96,12 @@ made subject to such option by the copyright holder.
     <!-- ================ -->
     <!-- Global Executors -->
     <!-- ================ -->
-    <target name="set-appserver-path" unless="j2ee.appserver.path">
+    <target name="set-appserver-path">
         <!--condition property="j2ee.appserver.path" value="e:\\space\\AppServer"-->
-        <condition property="j2ee.appserver.path" value="e:\\space\\appserver">
+        <condition property="tomcat.home" value="e:\\space\\Tomcat">
             <os family="windows"/>
         </condition>
-        <condition property="j2ee.appserver.path" value="/space/appserver">
+        <condition property="tomcat.home" value="/space/tomcat">
             <os family="unix"/>
         </condition>
     </target>
@@ -146,8 +146,8 @@ made subject to such option by the copyright holder.
     <target name="clean-appserver-domain" depends="init-clean-appserver-domain, run-clean-appserver-domain, inform-user"/>
     
     <target name="check-appserver" depends="set-appserver-path">
-        <available file="${j2ee.appserver.path}/domains/domain1" property="j2ee.appserver.present"/>
-        <fail unless="j2ee.appserver.present" message="AppServer was not found in ${j2ee.appserver.path}. Set property j2ee.appserver.path to point to AppServer installation directory."/>
+<!--        <available file="${j2ee.appserver.path}/domains/domain1" property="j2ee.appserver.present"/>
+        <fail unless="j2ee.appserver.present" message="AppServer was not found in ${j2ee.appserver.path}. Set property j2ee.appserver.path to point to AppServer installation directory."/>-->
     </target>
     
     <!-- This target is executed from test-executor in newly created Project -->

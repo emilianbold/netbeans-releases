@@ -68,8 +68,8 @@ public class StringNodeProp extends PropertySupport {
     @Override
     public String getHtmlDisplayName() {
         if (stringConfiguration.getModified()) {
-            return "<b>" + getDisplayName();
-        } // NOI18N
+            return "<b>" + getDisplayName(); // NOI18N
+        }
         else {
             return null;
         }
