@@ -251,10 +251,38 @@ public class LexUtilities {
         return 0;
     }
 
+    public static Token<?extends JsTokenId> findNext(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> ignores) {
+        if (ignores.contains(ts.token().id())) {
+            while (ts.moveNext() && ignores.contains(ts.token().id())) {}
+        }
+        return ts.token();
+    }
+    
+    public static Token<?extends JsTokenId> findNextIncluding(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> includes) {
+        while (ts.moveNext() && !includes.contains(ts.token().id())) {}
+        return ts.token();
+    }
+    
+    public static Token<?extends JsTokenId> findPreviousIncluding(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> includes) {
+            while (ts.movePrevious() && !includes.contains(ts.token().id())) {}
+        return ts.token();
+    }
+    
+    public static Token<?extends JsTokenId> findPrevious(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> ignores) {
+        if (ignores.contains(ts.token().id())) {
+            while (ts.movePrevious() && ignores.contains(ts.token().id())) {}
+        }
+        return ts.token();
+    }
+    
+    static boolean skipParenthesis(TokenSequence<?extends JsTokenId> ts) {
+        return skipParenthesis(ts, false);
+    }
+    
     /**
      * Tries to skip parenthesis 
      */
-    static boolean skipParenthesis(TokenSequence<?extends JsTokenId> ts) {
+    public static boolean skipParenthesis(TokenSequence<?extends JsTokenId> ts, boolean back) {
         int balance = 0;
 
         Token<?extends JsTokenId> token = ts.token();
@@ -269,11 +297,11 @@ public class LexUtilities {
 //            while (ts.moveNext() && ts.token().id() == JsTokenId.WHITESPACE) {}
 //        }
         if (id == JsTokenId.WHITESPACE || id == JsTokenId.EOL) {
-            while (ts.moveNext() && (ts.token().id() == JsTokenId.WHITESPACE || ts.token().id() == JsTokenId.EOL)) {}
+            while ((back ? ts.movePrevious() : ts.moveNext()) && (ts.token().id() == JsTokenId.WHITESPACE || ts.token().id() == JsTokenId.EOL)) {}
         }
 
         // if current token is not left parenthesis
-        if (ts.token().id() != JsTokenId.LPAREN) {
+        if (ts.token().id() != (back ? JsTokenId.RPAREN : JsTokenId.LPAREN)) {
             return false;
         }
 
@@ -281,20 +309,24 @@ public class LexUtilities {
             token = ts.token();
             id = token.id();
 
-            if (id == JsTokenId.LPAREN) {
+            if (id == (back ? JsTokenId.RPAREN : JsTokenId.LPAREN)) {
                 balance++;
-            } else if (id == JsTokenId.RPAREN) {
+            } else if (id == (back ? JsTokenId.LPAREN : JsTokenId.RPAREN)) {
                 if (balance == 0) {
                     return false;
                 } else if (balance == 1) {
                     int length = ts.offset() + token.length();
-                    ts.moveNext();
+                    if (back) {
+                        ts.movePrevious();
+                    } else {
+                        ts.moveNext();
+                    }
                     return true;
                 }
 
                 balance--;
             }
-        } while (ts.moveNext());
+        } while (back ? ts.movePrevious() : ts.moveNext());
 
         return false;
     }
@@ -463,7 +495,7 @@ public class LexUtilities {
             case FOR:
             case WHILE:
                 ts.moveNext();
-                if (!skipParenthesis(ts)) {
+                if (!skipParenthesis(ts, false)) {
                     return OffsetRange.NONE;
                 }
                 id = ts.token().id();
