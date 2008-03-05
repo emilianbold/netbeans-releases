@@ -28,6 +28,17 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Parser"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.parser.GSFPHPParser"/>
                 </file>
+                
+                <file name="completion.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Completable"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.PHPCodeCompletion"/>
+                </file>
+<!--
+                <file name="indexer.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Indexer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.PHPIndexer"/>
+                </file>
+-->
             </folder>
         </folder>
     </folder>

@@ -810,7 +810,12 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             
             if (retriever.getState() != WsdlRetriever.STATUS_COMPLETE) {
                 retrieverFailed = true;
-                throw new WizardValidationException(this, "", ""); //NOI18N
+                String errorMessage = NbBundle.getMessage(ClientInfo.class, "ERR_DownloadFailedUnknown");
+                if(downloadMsg != null) {
+                    errorMessage = NbBundle.getMessage(ClientInfo.class, "ERR_DownloadFailed", downloadMsg); // NOI18N
+                }
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, errorMessage); // NOI18N
+                throw new WizardValidationException(this, errorMessage, errorMessage); //NOI18N
             } else
                 wizardDescriptor.putProperty(ClientWizardProperties.WSDL_FILE_PATH, retriever == null ? "" : retriever.getWsdlFileName()); //NOI18N
         }
@@ -834,9 +839,9 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             if (tmpWsdl != null)
                 tmpWsdl.delete();
             if (rpcEncoded) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(ClientInfo.class, "ERR_RPCEncodedJaxrpcClientRequired")); // NOI18N
-                throw new WizardValidationException(this, "", ""); //NOI18N
+                String errorMessage = NbBundle.getMessage(ClientInfo.class, "ERR_RPCEncodedJaxrpcClientRequired");
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,errorMessage); // NOI18N
+                throw new WizardValidationException(this, errorMessage, errorMessage); //NOI18N
             }
         }
     }
