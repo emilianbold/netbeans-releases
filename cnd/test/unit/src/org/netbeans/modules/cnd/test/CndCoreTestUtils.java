@@ -97,7 +97,7 @@ public class CndCoreTestUtils {
         EditorCookie  cookie = dob.getCookie(EditorCookie.class);
         
         if (cookie == null) {
-            throw new IllegalStateException("Given file (\"" + dob.getName() + "\") does not have EditorCookie.");
+            throw new IllegalStateException("Given file (\"" + dob.getName() + "\") does not have EditorCookie."); // NOI18N
         }
         
         StyledDocument doc = null;
@@ -118,7 +118,7 @@ public class CndCoreTestUtils {
         EditorCookie  cookie = dob.getCookie(EditorCookie.class);
         
         if (cookie == null) {
-            throw new IllegalStateException("Given file (\"" + dob.getName() + "\") does not have EditorCookie.");
+            throw new IllegalStateException("Given file (\"" + dob.getName() + "\") does not have EditorCookie."); // NOI18N
         }
         
         JEditorPane[] panes = cookie.getOpenedPanes();
@@ -148,7 +148,7 @@ public class CndCoreTestUtils {
         }
         
         if (panes == null)
-            throw new IllegalStateException("The editor was not opened. The timeout was: " + OPENING_TIMEOUT + "ms.");
+            throw new IllegalStateException("The editor was not opened. The timeout was: " + OPENING_TIMEOUT + "ms."); // NOI18N
         
         return panes[0];
     }      

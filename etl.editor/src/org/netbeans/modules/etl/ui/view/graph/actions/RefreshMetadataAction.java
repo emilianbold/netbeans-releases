@@ -102,8 +102,8 @@ public class RefreshMetadataAction extends GraphAction {
                    if (!visitView.infoList.isEmpty()) {
                     ttArea.layoutChildren();
                     // Mark collab as needing to be persisted.
-                    DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
-                    model.setDirty(true);
+                    //DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
+                    //model.setDirty(true);
                     infoList.addAll(visitView.infoList);
                 }
             } catch (DBSQLException ex) {
@@ -131,8 +131,8 @@ public class RefreshMetadataAction extends GraphAction {
                         jViewGraph.setHeight(jViewGraph.getMaximumHeight());
                     }
                     // Mark collab as needing to be persisted.
-                    DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
-                    model.setDirty(true);
+                    //DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
+                    //model.setDirty(true);
                     infoList.addAll(visitView.infoList);
                 }
             } catch (DBSQLException ex) {
