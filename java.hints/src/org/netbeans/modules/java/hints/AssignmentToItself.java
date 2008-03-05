@@ -39,7 +39,6 @@ import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
