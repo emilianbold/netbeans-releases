@@ -691,7 +691,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
      * Return real list
      */
     public List<String> getSourceRootsRaw() {
-        return sourceRoots;
+        synchronized (sourceRoots) {
+            return sourceRoots;
+        }
     }
 
     public void setSourceRoots(List list) {

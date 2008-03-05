@@ -123,7 +123,7 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
         JPanel panel = new JPanel();
         tp.addPropertyChangeListener(this);
         jOK = new JButton(NbBundle.getMessage(BuildToolsAction.class, "BTN_OK")); // NOI18N
-        tp.setPreferredSize(new Dimension(700, 550));
+        tp.setPreferredSize(new Dimension(700, 400));
         tp.update();
         DialogDescriptor dd = new DialogDescriptor((Object) constructOuterPanel(tp), getTitle(), true, 
                 new Object[] { jOK, DialogDescriptor.CANCEL_OPTION},

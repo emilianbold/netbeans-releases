@@ -1102,6 +1102,37 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         );
     }
 
+    public void testIdentMultyConstructor4() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "class IndexReader : LUCENE_BASE\n" +
+            "{\n" +
+            "public:\n" +
+            "class IndexReaderCommitLockWith : \n" +
+            "public CL_NS(store)::LuceneLockWith\n" +
+            "{\n" +
+            "private:\n" +
+            "IndexReader* reader;\n" +
+            "};\n" +
+            "};\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing multyline constructor",
+            "class IndexReader : LUCENE_BASE\n" +
+            "{\n" +
+            "public:\n" +
+            "\n" +
+            "    class IndexReaderCommitLockWith :\n" +
+            "    public CL_NS(store)::LuceneLockWith\n" +
+            "    {\n" +
+            "    private:\n" +
+            "        IndexReader* reader;\n" +
+            "    };\n" +
+            "};\n"
+        );
+    }
+    
+
     public void testIdentDefineBrace() {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
@@ -1146,58 +1177,6 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         );
     }
 
-//    public void testIdentMultyConstructor3() {
-//        setDefaultsOptions();
-//        setLoadDocumentText(
-//            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" +
-//            "        ulong query_length, bool using_trans,\n" +
-//            "        bool suppress_use)\n" +
-//            ":Log_event(thd_arg,\n" +
-//            "        ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
-//            "        & (suppress_use          ? LOG_EVENT_SUPPRESS_USE_F    : 0)),\n" +
-//            "                using_trans),\n" +
-//            "                data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
-//            "                db(thd_arg->db), q_len((uint32) query_length),\n" +
-//            "                error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
-//            "                    ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
-//            "                        0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
-//            "                                thread_id(thd_arg->thread_id),\n" +
-//            "                                /* save the original thread id; we already know the server id */\n" +
-//            "                                slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
-//            "                                flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
-//            "                                sql_mode(thd_arg->variables.sql_mode),\n" +
-//            "                                auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
-//            "                                auto_increment_offset(thd_arg->variables.auto_increment_offset)\n" +
-//            "                        {\n" +
-//            "                            time_t end_time;\n" +
-//            "                        }\n"
-//            );
-//        reformat();
-//        assertDocumentText("Incorrect identing multyline constructor",
-//            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" +
-//            "        ulong query_length, bool using_trans,\n" +
-//            "        bool suppress_use)\n" +
-//            ": Log_event(thd_arg,\n" +
-//            "        ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
-//            "        & (suppress_use ? LOG_EVENT_SUPPRESS_USE_F : 0)),\n" +
-//            "        using_trans),\n" +
-//            "        data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
-//            "        db(thd_arg->db), q_len((uint32) query_length),\n" +
-//            "        error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
-//            "            ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
-//            "                 0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
-//            "        thread_id(thd_arg->thread_id),\n" +
-//            "        /* save the original thread id; we already know the server id */\n" +
-//            "        slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
-//            "        flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
-//            "        sql_mode(thd_arg->variables.sql_mode),\n" +
-//            "        auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
-//            "        auto_increment_offset(thd_arg->variables.auto_increment_offset) {\n" +
-//            "    time_t end_time;\n" +
-//            "}\n"
-//        );
-//    }
-    
     public void testMacroDefineWithBrace() {
         setDefaultsOptions();
         setLoadDocumentText(
@@ -2268,6 +2247,231 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "    else if (p_imcmdline)\n" +
             "        im_set_active(TRUE);\n" +
             "#endif\n" +
+            "}\n"
+        );
+    }
+
+    public void testBlankLineBeforeMethod() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int foo()\n" +
+                "{\n" +
+                "}\n" +
+                "/*\n" +
+                "* Call this when vim starts up, whether or not the GUI is started\n" +
+                " */\n" +
+                "void\n" +
+                "gui_prepare(argc)\n" +
+                "    int *argc;\n" +
+                "{\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect blank line before method",
+                "int foo()\n" +
+                "{\n" +
+                "}\n" +
+                "\n" +
+                "/*\n" +
+                " * Call this when vim starts up, whether or not the GUI is started\n" +
+                " */\n" +
+                "void\n" +
+                "gui_prepare(argc)\n" +
+                "int *argc;\n" +
+                "{\n" +
+                "}\n"
+                );
+    }
+
+    public void testBlockCodeNewLine() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int foo()\n" +
+                "{\n" +
+                "  bt.setFragmentType(t->getFragmentType());\n" +
+                "  { NdbDictionary::Column bc(\"PK\");\n" +
+                "    bt.addColumn(bc);\n" +
+                "  }\n" +
+                "  { NdbDictionary::Column bc(\"DIST\");\n" +
+                "    bt.addColumn(bc);\n" +
+                "  }\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect block code new line",
+                "int foo()\n" +
+                "{\n" +
+                "    bt.setFragmentType(t->getFragmentType());\n" +
+                "    {\n" +
+                "        NdbDictionary::Column bc(\"PK\");\n" +
+                "        bt.addColumn(bc);\n" +
+                "    }\n" +
+                "    {\n" +
+                "        NdbDictionary::Column bc(\"DIST\");\n" +
+                "        bt.addColumn(bc);\n" +
+                "    }\n" +
+                "}\n"
+                );
+    }
+
+    public void testBlankLineAfterEndLineComment() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int Ndb::NDB_connect(Uint32 tNode)\n" +
+                "{\n" +
+                "    if (0){\n" +
+                "        DBUG_RETURN(3);\n" +
+                "    }//if\n" +
+                "}//Ndb::NDB_connect()\n" +
+                "NdbTransaction *\n" +
+                "Ndb::getConnectedNdbTransaction(Uint32 nodeId)\n" +
+                "{\n" +
+                "    return next;\n" +
+                "}//Ndb::getConnectedNdbTransaction()\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect blak line after end line comment",
+                "int Ndb::NDB_connect(Uint32 tNode)\n" +
+                "{\n" +
+                "    if (0) {\n" +
+                "        DBUG_RETURN(3);\n" +
+                "    }//if\n" +
+                "}//Ndb::NDB_connect()\n" +
+                "\n" +
+                "NdbTransaction *\n" +
+                "Ndb::getConnectedNdbTransaction(Uint32 nodeId)\n" +
+                "{\n" +
+                "    return next;\n" +
+                "}//Ndb::getConnectedNdbTransaction()\n"
+                );
+    }
+    
+    
+    public void testReformatCodeBlocks() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int Ndb::NDB_connect(Uint32 tNode)\n" +
+                "{\n" +
+                "    DBUG_ENTER(\"Ndb::startTransaction\");\n" +
+                "    if (theInitState == Initialised) {\n" +
+                "        NdbTableImpl* impl;\n" +
+                "        if (table != 0 && keyData != 0 && (impl = &NdbTableImpl::getImpl(*table))) {\n" +
+                "            Uint32 hashValue; {\n" +
+                "                Uint32 buf[4];\n" +
+                "            }\n" +
+                "            const Uint16 *nodes;\n" +
+                "            Uint32 cnt = impl->get_nodes(hashValue, &nodes);\n" +
+                "        } else {\n" +
+                "            nodeId = 0;\n" +
+                "        }//if\n" +
+                "{\n" +
+                "            NdbTransaction *trans = startTransactionLocal(0, nodeId);\n" +
+                "        }\n" +
+                "    } else {\n" +
+                "        DBUG_RETURN(NULL);\n" +
+                "    }//if\n" +
+                "}//Ndb::getConnectedNdbTransaction()\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect code block formatting",
+                "int Ndb::NDB_connect(Uint32 tNode)\n" +
+                "{\n" +
+                "    DBUG_ENTER(\"Ndb::startTransaction\");\n" +
+                "    if (theInitState == Initialised) {\n" +
+                "        NdbTableImpl* impl;\n" +
+                "        if (table != 0 && keyData != 0 && (impl = &NdbTableImpl::getImpl(*table))) {\n" +
+                "            Uint32 hashValue;\n" +
+                "            {\n" +
+                "                Uint32 buf[4];\n" +
+                "            }\n" +
+                "            const Uint16 *nodes;\n" +
+                "            Uint32 cnt = impl->get_nodes(hashValue, &nodes);\n" +
+                "        } else {\n" +
+                "            nodeId = 0;\n" +
+                "        }//if\n" +
+                "        {\n" +
+                "            NdbTransaction *trans = startTransactionLocal(0, nodeId);\n" +
+                "        }\n" +
+                "    } else {\n" +
+                "        DBUG_RETURN(NULL);\n" +
+                "    }//if\n" +
+                "}//Ndb::getConnectedNdbTransaction()\n"
+                );
+    }
+
+    public void testSpaceBinaryOperator() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int foo()\n" +
+            "{\n" +
+            "    bmove_upp(dst + rest+new_length, dst+tot_length, rest);\n" +
+            "    if (len <= 0 ||| len >= (int)sizeof(buf) || buf[sizeof(buf)-1] != 0) return 0;\n" +
+            "    lmask = (1U << state->lenbits)-1;\n" +
+            "    len = BITS(4)+8;\n" +
+            "    s->depth[node] = (uch)((s->depth[n] >= s->depth[m] ? s->depth[n] : s->depth[m])+1);\n" +
+            "    for (i = 0; i<n; i++) return;\n" +
+            "    match[1].end = match[0].end+s_length;\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect spaces in binary operators",
+            "int foo()\n" +
+            "{\n" +
+            "    bmove_upp(dst + rest + new_length, dst + tot_length, rest);\n" +
+            "    if (len <= 0 || len >= (int) sizeof(buf) || buf[sizeof(buf) - 1] != 0) return 0;\n" +
+            "    lmask = (1U << state->lenbits) - 1;\n" +
+            "    len = BITS(4) + 8;\n" +
+            "    s->depth[node] = (uch) ((s->depth[n] >= s->depth[m] ? s->depth[n] : s->depth[m]) + 1);\n" +
+            "    for (i = 0; i < n; i++) return;\n" +
+            "    match[1].end = match[0].end + s_length;\n" +
+            "}\n"
+        );
+    }
+
+    public void testSpaceCastOperator() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceWithinTypeCastParens, true);
+        setLoadDocumentText(
+            "int foo()\n" +
+            "{\n" +
+            "    if (m == NULL ||| *m == \'\\0\') m = (char*)ERR_MSG(s->z_err);\n" +
+            "    hold += (unsigned long)(PUP(in)) << bits;\n" +
+            "    state = (struct inflate_state FAR *)strm->state;\n" +
+            "    if (strm->zalloc == (alloc_func)0) return;\n" +
+            "    stream.zalloc = (alloc_func)0;\n" +
+            "    put_short(s, (ush)len);\n" +
+            "    put_short(s, (ush)~len);\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect spaces in cast operators",
+            "int foo()\n" +
+            "{\n" +
+            "    if (m == NULL || *m == \'\\0\') m = ( char* ) ERR_MSG(s->z_err);\n" +
+            "    hold += ( unsigned long ) (PUP(in)) << bits;\n" +
+            "    state = ( struct inflate_state FAR * ) strm->state;\n" +
+            "    if (strm->zalloc == ( alloc_func ) 0) return;\n" +
+            "    stream.zalloc = ( alloc_func ) 0;\n" +
+            "    put_short(s, ( ush ) len);\n" +
+            "    put_short(s, ( ush )~len);\n" +
+            "}\n"
+        );
+    }
+
+    public void testNoSpaceBeforeUnaryOperator() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int foo()\n" +
+            "{\n" +
+            "    if (s == NULL ||| s->mode != 'r') return - 1;\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect no space before unary operator",
+            "int foo()\n" +
+            "{\n" +
+            "    if (s == NULL || s->mode != 'r') return -1;\n" +
             "}\n"
         );
     }

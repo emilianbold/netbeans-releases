@@ -31,11 +31,6 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 
 public final class ValidationUtil {
-    public static final String SCHEMA_COMPONENT_ATTRIBUTE_BASE = "base"; // NOI18N
-
-    public static Collection<GlobalSimpleType> BUILT_IN_SIMPLE_TYPES = 
-        SchemaModelFactory.getDefault().getPrimitiveTypesModel().getSchema().getSimpleTypes();
-    
     
     private ValidationUtil() {}
     
@@ -85,49 +80,5 @@ public final class ValidationUtil {
             }
         }
         return false;
-    }
-    
-    public static GlobalSimpleType getBuiltInSimpleType(SchemaComponent schemaComponent) {
-        if (schemaComponent == null) return null;
-        Collection<GlobalSimpleType> 
-            schemaSimpleTypes = schemaComponent.getModel().getSchema().getSimpleTypes();
-        
-        String baseTypeName = schemaComponent.getAnyAttribute(new QName(
-            SCHEMA_COMPONENT_ATTRIBUTE_BASE));
-        if (baseTypeName != null) {
-            baseTypeName = ignoreNamespace(baseTypeName);
-            GlobalSimpleType globalSimpleType = findGlobalSimpleType(baseTypeName, 
-                BUILT_IN_SIMPLE_TYPES);
-            if (globalSimpleType != null) return globalSimpleType;
-            globalSimpleType = findGlobalSimpleType(baseTypeName, schemaSimpleTypes);
-            if (globalSimpleType != null) {
-                for (SchemaComponent childComponent : schemaComponent.getChildren()) {
-                    globalSimpleType = getBuiltInSimpleType(childComponent);
-                    if (globalSimpleType != null) return globalSimpleType;
-                }
-                return null;
-            } else {
-                return null;
-            }
-        }
-        return null;
-    }
-    
-    public static GlobalSimpleType findGlobalSimpleType(String typeName,
-        Collection<GlobalSimpleType> globalSimpleTypes) {
-        for (GlobalSimpleType globalSimpleType : globalSimpleTypes) {
-            if (globalSimpleType.toString().equals(typeName)) {
-                return globalSimpleType;
-            }
-        }
-        return null;
-    }
-
-    public static String ignoreNamespace(String dataWithNamespace) {
-        int index = dataWithNamespace.indexOf(":");
-        if ((index > -1) && (index < dataWithNamespace.length() - 1)) {
-            return dataWithNamespace.substring(index + 1);
-        }
-        return dataWithNamespace;
     }
 }
