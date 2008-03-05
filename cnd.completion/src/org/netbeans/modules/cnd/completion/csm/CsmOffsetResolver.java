@@ -152,6 +152,7 @@ public class CsmOffsetResolver {
             Collection<CsmInheritance> inherits = clazz.getBaseClasses();
             CsmInheritance inh = CsmOffsetUtilities.findObject(inherits, context, offset);
             if (inh != null) {
+                context.setLastObject(inh);
                 last = inh;
             }             
         } else if (CsmKindUtilities.isVariable(lastObj)) {
