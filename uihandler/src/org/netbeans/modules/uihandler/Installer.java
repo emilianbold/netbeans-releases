@@ -843,7 +843,7 @@ public class Installer extends ModuleInstall implements Runnable {
             }
             
             LOG.log(Level.FINE, "doShow, dialog has been created"); // NOI18N
-
+            boolean firstRound = true;
             for (;;) {
                 try {
                     if (url == null) {
@@ -884,7 +884,13 @@ public class Installer extends ModuleInstall implements Runnable {
                     catchConnectionProblem(ex);
                     continue;
                 } catch (IOException ex) {
-                    LOG.log(Level.WARNING, url.toExternalForm(), ex);
+                    if (firstRound){
+                        catchConnectionProblem(ex);
+                        firstRound = false;
+                        continue;
+                    }else{// preventing from deadlock while reading error page
+                        LOG.log(Level.WARNING, url.toExternalForm(), ex);
+                    }
                 }
                 LOG.log(Level.FINE, "doShow, assignInternalURL = {0}", url);
                 assignInternalURL(url);
