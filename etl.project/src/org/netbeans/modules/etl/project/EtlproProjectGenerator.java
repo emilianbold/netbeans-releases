@@ -66,11 +66,11 @@ public class EtlproProjectGenerator {
     private static final String nbBundle11 = mLoc.t("PRSR001: Default");
     //Trimming the initial spaces
     private static final String DEFAULT_DOC_BASE_FOLDER = Localizer.parse(nbBundle2).trim(); //NOI18N
-    private static final String DEFAULT_SRC_FOLDER = Localizer.parse(nbBundle1).trim(); //NOI18N
+    public static final String DEFAULT_SRC_FOLDER = Localizer.parse(nbBundle1).trim(); //NOI18N
     private static final String DEFAULT_RESOURCE_FOLDER = Localizer.parse(nbBundle3).trim(); //NOI18N
     private static final String DEFAULT_BPELASA_FOLDER = Localizer.parse(nbBundle4).trim(); //NOI18N
     private static final String DEFAULT_BUILD_DIR = Localizer.parse(nbBundle5).trim(); //NOI18N
-    private static final String DEFAULT_DATA_DIR = Localizer.parse(nbBundle6).trim(); //NOI18N
+    public static final String DEFAULT_DATA_DIR = Localizer.parse(nbBundle6).trim(); //NOI18N
     private static final String DEFAULT_DB_DIR = Localizer.parse(nbBundle11).trim(); //NOI18N
     private static final String DEFAULT_DATABASES_DIR = Localizer.parse(nbBundle7).trim(); //NOI18N
     private static final String DEFAULT_NBPROJECT_DIR = Localizer.parse(nbBundle8).trim(); //NOI18N
@@ -80,8 +80,7 @@ public class EtlproProjectGenerator {
     private static FileObject data = null;
     public static String PRJ_LOCATION_DIR = "";
     private static String prjName = null;
-    //private static String fs = File.separator;
-    private static String fs = System.getProperty("file.separator");
+    private static String fs = File.separator;
 
     private EtlproProjectGenerator() {
     }

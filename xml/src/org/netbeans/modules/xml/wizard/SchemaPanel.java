@@ -381,7 +381,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                     
                     row.add(false);
                     row.add(obj);
-                    
+                   
                     SchemaParser.SchemaInfo info = Util.getRootElements(fobj);
                     if (info != null && info.roots.size() > 0) {
                         Iterator it = info.roots.iterator();
@@ -481,6 +481,11 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             }
             if(row == tableModel.getRowCount() - 1) {
                 addRow(startString);
+            }
+            //if its the first row, then select it as primary
+            if(row == 0) {
+                System.out.println("added first row");
+                model.setValueAt(new Boolean(true), 0, 0);
             }
         } 
     }
@@ -653,6 +658,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                         info.roots.toArray(rootElements);
                         obj.setRootElements(rootElements);                
                     }
+                    obj.setSchemaFileName((String)value);
                     rowVector.set(col, obj);
                
                
