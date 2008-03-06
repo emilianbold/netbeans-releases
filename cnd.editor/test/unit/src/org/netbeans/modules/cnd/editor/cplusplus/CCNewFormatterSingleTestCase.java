@@ -162,4 +162,92 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //    }
 //
 
+
+//static const char* _dbname = "TEST_DB";
+//static struct my_option my_long_options[] =
+//{
+//  NDB_STD_OPTS("ndb_desc"),
+//  { "database", 'd', "Name of database table is in",
+//    (gptr*) &_dbname, (gptr*) &_dbname, 0,
+//    GET_STR, REQUIRED_ARG, 0, 0, 0, 0, 0, 0 },
+//  { 0, 0, 0, 0, 0, 0, GET_NO_ARG, NO_ARG, 0, 0, 0, 0, 0, 0}
+//};
+//static void usage()
+//{
+//  char desc[] = 
+//    "[<table> <index>]+\n"\
+//    "This program will drop index(es) in Ndb\n";
+//    ndb_std_print_version();
+//    my_print_help(my_long_options);
+//    my_print_variables(my_long_options);
+//}
+//----------------------------
+//unsigned long ZEXPORT crc32(crc, buf, len)
+//unsigned long crc;
+//const unsigned char FAR *buf;
+//unsigned len;
+//{
+//    crc = crc ^ 0xffffffffUL;
+//    while (len >= 8) {
+//        DO8;
+//        len -= 8;
+//    }
+//    if (len) do {
+//            DO1;
+//        } while (--len);
+//    return crc ^ 0xffffffffUL;
+//}
+//-------------------------------
+//#define FINISH_STATE 666
+///* Stream status */
+//
+//
+///* Data structure describing a single value and its code string. */
+//typedef struct ct_data_s {
+//    union {
+//        ush  freq;       /* frequency count */
+//        ush  code;       /* bit string */
+//    } fc;
+//    union {
+//        ush  dad;        /* father node in Huffman tree */
+//        ush  len;        /* length of bit string */
+//    } dl;
+//} FAR ct_data;
+
+//What about []:
+//        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
+//
+
+    public void testBlankLineAfterEndLineComment() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int Ndb::NDB_connect(Uint32 tNode)\n" +
+                "{\n" +
+                "    if (0){\n" +
+                "        DBUG_RETURN(3);\n" +
+                "    }//if\n" +
+                "}//Ndb::NDB_connect()\n" +
+                "NdbTransaction *\n" +
+                "Ndb::getConnectedNdbTransaction(Uint32 nodeId)\n" +
+                "{\n" +
+                "    return next;\n" +
+                "}//Ndb::getConnectedNdbTransaction()\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect blak line after end line comment",
+                "int Ndb::NDB_connect(Uint32 tNode)\n" +
+                "{\n" +
+                "    if (0) {\n" +
+                "        DBUG_RETURN(3);\n" +
+                "    }//if\n" +
+                "}//Ndb::NDB_connect()\n" +
+                "\n" +
+                "NdbTransaction *\n" +
+                "Ndb::getConnectedNdbTransaction(Uint32 nodeId)\n" +
+                "{\n" +
+                "    return next;\n" +
+                "}//Ndb::getConnectedNdbTransaction()\n"
+                );
+    }
+
 }

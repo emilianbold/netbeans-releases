@@ -76,7 +76,7 @@ import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.NewlineNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.ReturnNode;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.SymbolNode;
@@ -545,7 +545,7 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
     @SuppressWarnings("unchecked")
     private void highlightExitPoints(Node node, Map<OffsetRange, ColoringAttributes> highlights,
         CompilationInfo info) {
-        if (node.nodeId == NodeTypes.RETURNNODE) {
+        if (node.nodeId == NodeType.RETURNNODE) {
             OffsetRange astRange = AstUtilities.getRange(node);
             try {
                 BaseDocument doc = (BaseDocument)info.getDocument();
@@ -564,7 +564,7 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
                 Exceptions.printStackTrace(ioe);
             }
             highlights.put(astRange, ColoringAttributes.MARK_OCCURRENCES);
-        } else if (node.nodeId == NodeTypes.YIELDNODE) {
+        } else if (node.nodeId == NodeType.YIELDNODE) {
             // Workaround JRuby AST position error
             /* Yield in the following code has the wrong offsets in JRuby
               if component.size == 1
@@ -611,7 +611,7 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
         } else if (node instanceof ArgsNode) {
             ArgsNode an = (ArgsNode)node;
 
-            if (an.getArgsCount() > 0) {
+            if (an.getRequiredArgsCount() > 0) {
                 List<Node> args = (List<Node>)an.childNodes();
 
                 for (Node arg : args) {
@@ -682,20 +682,20 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
     private void highlightDynamnic(Node node, String name,
         Map<OffsetRange, ColoringAttributes> highlights) {
         switch (node.nodeId) {
-        case NodeTypes.DVARNODE:
+        case DVARNODE:
             if (((DVarNode)node).getName().equals(name)) { // Does not implement INameNode
 
                 OffsetRange range = AstUtilities.getRange(node);
                 highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
             }
             break;
-        case  NodeTypes.DASGNNODE:
+        case DASGNNODE:
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.getLValueRange((DAsgnNode)node);
                 highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
             }
             break;
-        case NodeTypes.ALIASNODE:
+        case ALIASNODE:
             if (!ignoreAlias) {
                 AliasNode an = (AliasNode)node;
 
@@ -714,13 +714,13 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
 
         for (Node child : list) {
             switch (child.nodeId) {
-            case NodeTypes.ITERNODE:
-            //case NodeTypes.BLOCKNODE:
-            case NodeTypes.DEFNNODE:
-            case NodeTypes.DEFSNODE:
-            case NodeTypes.CLASSNODE:
-            case NodeTypes.SCLASSNODE:
-            case NodeTypes.MODULENODE:
+            case ITERNODE:
+            //case BLOCKNODE:
+            case DEFNNODE:
+            case DEFSNODE:
+            case CLASSNODE:
+            case SCLASSNODE:
+            case MODULENODE:
                 continue;
             }
 

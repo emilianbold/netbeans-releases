@@ -40,10 +40,15 @@
  */
 package org.netbeans.modules.ruby;
 
+import org.jruby.common.IRubyWarnings.ID;
 import org.netbeans.modules.gsf.api.ParserResult.AstTreeNode;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
+import java.io.StringBufferInputStream;
 import java.io.StringReader;
+import org.jruby.util.ByteList;
+import org.jruby.lexer.yacc.ByteListLexerSource;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.BadLocationException;
@@ -54,10 +59,9 @@ import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.lexer.yacc.LexerSource;
 import org.jruby.lexer.yacc.SyntaxException;
 import org.jruby.parser.DefaultRubyParser;
-import org.jruby.parser.RubyParserConfiguration;
+import org.jruby.parser.ParserConfiguration;
 import org.jruby.parser.RubyParserResult;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -73,6 +77,7 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.RubyElement;
 import org.netbeans.modules.gsf.spi.DefaultError;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -407,9 +412,9 @@ public final class RubyParser implements Parser {
             return createParseResult(context.file, null, null, null, null);
         }
     }
-
-    protected void notifyError(Context context, String key,
-        Severity severity, String description, String details, int offset, Sanitize sanitizing) {
+    
+    protected void notifyError(Context context, ID id,
+        Severity severity, String description, int offset, Sanitize sanitizing, Object[] data) {
         // Replace a common but unwieldy JRuby error message with a shorter one
         if (description.startsWith("syntax error, expecting	")) { // NOI18N
             int start = description.indexOf(" but found "); // NOI18N
@@ -418,17 +423,10 @@ public final class RubyParser implements Parser {
             int end = description.indexOf("instead", start); // NOI18N
             assert end != -1;
             String found = description.substring(start, end);
-            description = details = NbBundle.getMessage(RubyParser.class, "UnexpectedError", found);
+            description = NbBundle.getMessage(RubyParser.class, "UnexpectedError", found);
         }
         
-        // Initialize keys for errors needing it
-        if (key == null) {
-            key = description;
-        }
-        
-        Error error =
-            new DefaultError(key, description, details, context.file.getFileObject(),
-                offset, offset, severity);
+        Error error = new RubyError(description, id, context.file.getFileObject(), offset, offset, severity, data);
         context.listener.error(error);
 
         if (sanitizing == Sanitize.NONE) {
@@ -452,7 +450,7 @@ public final class RubyParser implements Parser {
             }
         }
 
-        Reader content = new StringReader(source);
+        //Reader content = new StringReader(source);
 
         RubyParserResult result = null;
 
@@ -461,35 +459,51 @@ public final class RubyParser implements Parser {
         try {
             IRubyWarnings warnings =
                 new IRubyWarnings() {
-                    public void warn(ISourcePosition position, String message) {
-                        if (!ignoreErrors) {
-                            notifyError(context, null, Severity.WARNING, message, null,
-                                position.getStartOffset(), sanitizing);
-                        }
-                    }
-
                     public boolean isVerbose() {
                         return false;
                     }
 
-                    public void warn(String message) {
+                    public void warn(ID id, ISourcePosition position, String message, Object... data) {
                         if (!ignoreErrors) {
-                            notifyError(context, null, Severity.WARNING, message, null, -1,
-                                sanitizing);
+                            notifyError(context, id, Severity.WARNING, message, position.getStartOffset(),
+                                sanitizing, data);
                         }
                     }
 
-                    public void warning(String message) {
+                    public void warn(ID id, String fileName, int lineNumber, String message, Object... data) {
+                        // XXX What about a the position? Compute from fileName+lineNumber?
                         if (!ignoreErrors) {
-                            notifyError(context, null, Severity.WARNING, message, null, -1,
-                                sanitizing);
+                            notifyError(context, id, Severity.WARNING, message, -1,
+                                sanitizing, data);
                         }
                     }
 
-                    public void warning(ISourcePosition position, String message) {
+                    public void warn(ID id, String message, Object... data) {
                         if (!ignoreErrors) {
-                            notifyError(context, null, Severity.WARNING, message, null,
-                                position.getStartOffset(), sanitizing);
+                            notifyError(context, id, Severity.WARNING, message, -1,
+                                sanitizing, data);
+                        }
+                    }
+
+                    public void warning(ID id, String message, Object... data) {
+                        if (!ignoreErrors) {
+                            notifyError(context, id, Severity.WARNING, message, -1,
+                                sanitizing, data);
+                        }
+                    }
+
+                    public void warning(ID id, ISourcePosition position, String message, Object... data) {
+                        if (!ignoreErrors) {
+                            notifyError(context, id, Severity.WARNING, message, position.getStartOffset(),
+                                sanitizing, data);
+                        }
+                    }
+
+                    public void warning(ID id, String fileName, int lineNumber, String message, Object... data) {
+                        // XXX What about a the position? Compute from fileName+lineNumber?
+                        if (!ignoreErrors) {
+                            notifyError(context, id, Severity.WARNING, message, -1,
+                                sanitizing, data);
                         }
                     }
                 };
@@ -508,8 +522,13 @@ public final class RubyParser implements Parser {
                 fileName = context.file.getFileObject().getNameExt();
             }
 
-            LexerSource lexerSource = new LexerSource(fileName, content, 0, true);
-            RubyParserConfiguration configuration = new RubyParserConfiguration();
+            ParserConfiguration configuration = new ParserConfiguration(0, true, false, true);
+            //LexerSource lexerSource = new LexerSource(fileName, content, 0, true);
+            // This doesn't work -- so use lame StringBufferInputStream approach instead for now
+            //ByteList byteList = ByteList.create(source);
+            //LexerSource lexerSource = ByteListLexerSource.getSource(fileName, byteList, null, configuration);
+            StringBufferInputStream input = new StringBufferInputStream(source);
+            LexerSource lexerSource = LexerSource.getSource(fileName, input, null, configuration);
             result = parser.parse(configuration, lexerSource);
         } catch (SyntaxException e) {
             int offset = e.getPosition().getStartOffset();
@@ -524,8 +543,8 @@ public final class RubyParser implements Parser {
             }
 
             if (!ignoreErrors) {
-                notifyError(context, null, Severity.ERROR, e.getMessage(),
-                    e.getLocalizedMessage(), offset, sanitizing);
+                notifyError(context, ID.SYNTAX_ERROR, Severity.ERROR, e.getMessage(),
+                   offset, sanitizing, new Object[] { e.getPid(), e });
             }
         }
 
@@ -695,4 +714,65 @@ public final class RubyParser implements Parser {
             return errorOffset;
         }
     }
+    
+public static class RubyError implements Error {
+        private final String displayName;
+        private final ID id;
+        private final FileObject file;
+        private final int startPosition;
+        private final int endPosition;
+        private final Severity severity;
+        private final Object[] parameters;
+
+        public RubyError(String displayName, ID id, FileObject file, int startPosition, int endPosition, Severity severity, Object[] parameters) {
+            this.displayName = displayName;
+            this.id = id;
+            this.file = file;
+            this.startPosition = startPosition;
+            this.endPosition = endPosition;
+            this.severity = severity;
+            this.parameters = parameters;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public int getStartPosition() {
+            return startPosition;
+        }
+
+        public int getEndPosition() {
+            return endPosition;
+        }
+
+        public FileObject getFile() {
+            return file;
+        }
+
+        public String getKey() {
+            return id != null ? id.name() : "";
+        }
+        
+        public ID getId() {
+            return id;
+        }
+
+        public Object[] getParameters() {
+            return parameters;
+        }
+
+        public Severity getSeverity() {
+            return severity;
+        }
+
+        @Override
+        public String toString() {
+            return "RubyError:" + displayName;
+        }
+
+        public String getDescription() {
+            return null;
+        }
+    }    
 }

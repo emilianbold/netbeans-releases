@@ -90,7 +90,8 @@ public class DatabaseNodeChildren extends Children.Array {
 
     // synchronized by this
     private TreeSet<Node> children;
-    private transient PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
+    private transient final PropertyChangeSupport propertySupport 
+            = new PropertyChangeSupport(this);
     // synchronized by additionalNodes
     private boolean initialized = false; // true if the node is displaying its children (not the "Please wait..." node)
     // synchronized by additionalNodes
@@ -175,13 +176,13 @@ public class DatabaseNodeChildren extends Children.Array {
 //                                    // add connection (if needed) and make the connection to SAMPLE database connected
 //                                    PointbasePlus.addOrConnectAccordingToOption();
 //                                    } catch(Exception ex) {
-//                                        org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.FINERMATIONAL, ex);
+//                                        org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
 //                                    }
 //                                }
 //                            });
 //                    }
                 } catch (Exception e) {
-                    Logger.getLogger("global").log(Level.FINE, null, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                     showException(e);
                     tempChildren.clear();
                 }
@@ -316,7 +317,23 @@ public class DatabaseNodeChildren extends Children.Array {
         }                
 
     }
-    
+
+    public void removeSubNode(final Node subnode) {
+        if (isInitialized()) {
+            synchronized (additionalNodes) {
+                if (initialized) {
+                    MUTEX.postWriteRequest(new Runnable() {
+                        public void run() {
+                            remove(new Node[] {subnode});
+                        }
+                    });
+                } else {
+                    additionalNodes.remove(subnode);
+                }
+            }
+        }
+    }
+
     public void replaceNodes(final Node[] nodes) {
         if (isInitialized()) {
             synchronized (additionalNodes) {

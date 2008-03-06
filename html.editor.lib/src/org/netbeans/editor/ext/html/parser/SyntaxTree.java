@@ -102,8 +102,14 @@ public class SyntaxTree {
                     for (int i = 0; i < nodesToDelete; i ++){
                         nodeStack.getLast().markUnmatched();
                         
-                        orphans.addAll(nodeStack.getLast().children());
-                        nodeStack.getLast().removeAllChildren();
+                        for (AstNode child : nodeStack.getLast().children()){
+                            if (child.type() == AstNode.NodeType.TAG 
+                                    || child.type() == AstNode.NodeType.UNMATCHED_TAG){
+                                orphans.add(child);
+                            }
+                        }
+                        
+                        nodeStack.getLast().removeTagChildren();
                         
                         nodeStack.removeLast();
                     }

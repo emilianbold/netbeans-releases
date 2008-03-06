@@ -5,6 +5,7 @@ License: CDDL-GPL-2-CP
 Origin: https://glassfish.dev.java.net V2 build 58c
 Source: https://glassfish.dev.java.net/
 Comment: allows users to run GlassFish/SJSAS ant tasks with the ant bundled with NetBeans
+OSR: 5563
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 

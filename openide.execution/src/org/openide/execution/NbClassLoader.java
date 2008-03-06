@@ -41,8 +41,8 @@
 
 package org.openide.execution;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AllPermission;
@@ -51,10 +51,14 @@ import java.security.Permission;
 import java.security.PermissionCollection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -74,6 +78,9 @@ public class NbClassLoader extends URLClassLoader {
     /** Default permissions */
     private PermissionCollection defaultPermissions;
     
+    /** Works onthe top of file (jar:file) - directly delegates to URLClassLoader*/
+    private final boolean fast;
+    
     private static ClassLoader systemClassLoader() {
         return (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
     }
@@ -85,6 +92,7 @@ public class NbClassLoader extends URLClassLoader {
     */
     public NbClassLoader () {
         super(new URL[0], systemClassLoader());
+        fast = false;
     }
 
     /** Create a new class loader retrieving classes from the core IDE as well as the Repository,
@@ -95,6 +103,7 @@ public class NbClassLoader extends URLClassLoader {
      */
     public NbClassLoader(InputOutput io) {
         super(new URL[0], systemClassLoader());
+        fast = false;
         inout = io;
     }
     
@@ -106,8 +115,14 @@ public class NbClassLoader extends URLClassLoader {
      * @throws FileStateInvalidException if some of the roots are not valid
      * @since XXX
      */
+    static ThreadLocal<Boolean> f = new ThreadLocal<Boolean>();
     public NbClassLoader(FileObject[] roots, ClassLoader parent, InputOutput io) throws FileStateInvalidException {
-        super(createRootURLs(roots), parent);
+        this(roots, parent, io, new AtomicBoolean());
+    }
+    
+    private NbClassLoader(FileObject[] roots, ClassLoader parent, InputOutput io, AtomicBoolean isFast) throws FileStateInvalidException {
+        super(translate(createRootURLs(roots), isFast), parent);
+        fast = isFast.get();
         inout = io;
     }
 
@@ -117,6 +132,7 @@ public class NbClassLoader extends URLClassLoader {
     */
     public NbClassLoader (FileSystem[] fileSystems) {
         super(new URL[0], systemClassLoader(), null);
+        fast = false;
         Thread.dumpStack();
     }
 
@@ -127,9 +143,10 @@ public class NbClassLoader extends URLClassLoader {
     */
     public NbClassLoader (FileSystem[] fileSystems, ClassLoader parent) {
         super(new URL[0], parent);
+        fast = false;
         Thread.dumpStack();
     }
-
+    
     /** Create a URL to a resource specified by name.
     * Same behavior as in the super method, but handles names beginning with a slash.
     * @param name resource name
@@ -146,7 +163,8 @@ public class NbClassLoader extends URLClassLoader {
        particular info. We want it to have specification version and
        all that good stuff. */
     protected Class findClass (final String name) throws ClassNotFoundException {
-        if (name.indexOf ('.') != -1) {
+        if (!fast && name.indexOf ('.') != -1) {
+            Logger.getLogger(NbClassLoader.class.getName()).log(Level.FINE, "NBFS used!");
             String pkg = name.substring (0, name.lastIndexOf ('.'));
             if (getPackage (pkg) == null) {
                 String resource = name.replace ('.', '/') + ".class"; // NOI18N
@@ -273,7 +291,31 @@ public class NbClassLoader extends URLClassLoader {
         URL[] urls = new URL[roots.length];
         for (int i = 0; i < roots.length; i++) {
             urls[i] = roots[i].getURL();
-        }
+            }
         return urls;
+    }
+    
+    private static URL[] translate (URL[] urls, AtomicBoolean isFast) {
+        assert urls != null;
+        isFast.set(false);
+        final URL[] res = new URL[urls.length];
+        for (int i=0; i<res.length; i++) {
+            URL url = urls[i];
+            URL au = FileUtil.getArchiveFile(url);
+            if (au != null) {
+                if (!url.toExternalForm().endsWith("!/")) { //NOI8N
+                    //Nested path - not supported fast mode 
+                    return urls;
+                }
+                url = au;
+            }
+            if (!"file".equals(url.getProtocol())) {        //NOI18N
+                //Not file - not supported fast mode
+                return urls;
+            }
+            res[i] = url;
+        }
+        isFast.set(true);
+        return res;
     }
 }

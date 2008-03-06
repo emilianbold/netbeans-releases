@@ -3453,7 +3453,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             else
                                 return null;
                         }
-                        return Collections.singleton(type);
+                        return type != null ? Collections.singleton(type) : null;
                     case ASSIGNMENT:
                         type = controller.getTrees().getTypeMirror(new TreePath(path, ((AssignmentTree)tree).getVariable()));
                         if (type == null)
@@ -3470,7 +3470,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (type.getKind() == TypeKind.ARRAY)
                                 type = ((ArrayType)type).getComponentType();
                         }
-                        return Collections.singleton(type);
+                        return type != null ? Collections.singleton(type) : null;
                     case RETURN:
                         TreePath methodPath = Utilities.getPathElementOfKind(Tree.Kind.METHOD, path);
                         if (methodPath == null)
@@ -3684,7 +3684,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 else
                                     return null;
                             }
-                            return Collections.singleton(type);
+                            return type != null ? Collections.singleton(type) : null;
                         }
                         if (text.trim().endsWith("[")) //NOI18N
                             return Collections.singleton(controller.getTypes().getPrimitiveType(TypeKind.INT));
@@ -3696,7 +3696,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                             parentPath = path.getParentPath();
                             if (parentPath.getLeaf().getKind() == Tree.Kind.SWITCH) {
                                 exp = ((SwitchTree)parentPath.getLeaf()).getExpression();
-                                return Collections.singleton(controller.getTrees().getTypeMirror(new TreePath(parentPath, exp)));
+                                type = controller.getTrees().getTypeMirror(new TreePath(parentPath, exp));
+                                return type != null ? Collections.singleton(type) : null;
                             }
                         }
                         return null;
@@ -3722,7 +3723,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     }
                                     if (type.getKind() == TypeKind.ARRAY)
                                         type = ((ArrayType)type).getComponentType();
-                                    return Collections.singleton(type);
+                                    return type != null ? Collections.singleton(type) : null;
                                 }
                             }
                         }
@@ -3759,6 +3760,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case PLUS:
                         BinaryTree bt = (BinaryTree)tree;
                         TypeMirror tm = controller.getTrees().getTypeMirror(new TreePath(path, bt.getLeftOperand()));
+                        if (tm == null)
+                            return null;
                         if (tm.getKind().isPrimitive()) {
                             ret = new HashSet<TypeMirror>();
                             types = controller.getTypes();
@@ -3775,6 +3778,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case PLUS_ASSIGNMENT:
                         CompoundAssignmentTree cat = (CompoundAssignmentTree)tree;
                         tm = controller.getTrees().getTypeMirror(new TreePath(path, cat.getVariable()));
+                        if (tm == null)
+                            return null;
                         if (tm.getKind().isPrimitive()) {
                             ret = new HashSet<TypeMirror>();
                             types = controller.getTypes();

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="Base IDE" basedir="." default="build-pkg">  
+    
+    <!--property name="nbClusterDir" value="nb6.1"/-->
+    <property name="appdir" value="build/app/${appname}.app"/>
+    
+    
+    <target name="build-app" description="Builds Mac OS X application bundle">
+        <echo>Creating ${appname}.app bundle using buid/netbeans as master</echo>
+        
+        <mkdir dir="${appdir}/Contents"/>
+        <mkdir dir="${appdir}/Contents/MacOS"/>
+        <mkdir dir="${appdir}/Contents/Resources"/>
+        
+        <echo message="Copying netbeans home dir to ${appdir}/Contents/Resources/NetBeans"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="cp -p -r build/netbeans '${appdir}/Contents/Resources/NetBeans'"/>
+        </exec>
+        
+        <echo message="Delete launchers for another platforms"/>
+        <delete file="${appdir}/Contents/Resources/NetBeans/bin/nb.exe"/>
+        <delete file="${appdir}/Contents/Resources/NetBeans/bin/netbeans.exe"/>
+        
+        <echo message="Copying the icon into the correct place" />
+        <copy file="${appdir}/Contents/Resources/NetBeans/${nbClusterDir}/netbeans.icns" todir="${appdir}/Contents/Resources"/>
+        
+        <echo message="Generating Info.plist" />
+        <copy file="Info.plist" filtering="true" tofile="${appdir}/Contents/Info.plist">
+            <filterset>
+                <filter token="APPNAME" value="${appname}"/>
+                <filter token="APPVERSION" value="${appversion}"/>
+                <filter token="VERSION" value="${baseide.version}"/>
+                <filter token="EXENAME" value="netbeans"/>
+                <filter token="ICONFILENAME" value="netbeans.icns"/>
+            </filterset>
+        </copy>
+        
+        <echo message="Creating launch script symlink ${appdir}/Contents/MacOS/netbeans"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="ln -s '../Resources/NetBeans/bin/netbeans' '${appdir}/Contents/MacOS/netbeans'"/>
+        </exec>
+    </target>
+    
+    
+    
+    <target name="build-pkg" depends="build-app">
+        <echo message="NETBEANS_INSTALL_DIR=&quot;${app.name}&quot;${line.separator}GLASSFISH_INSTALL_DIR=&quot;${glassfish.install.dir}&quot;${line.separator}TOMCAT_INSTALL_DIR=&quot;${tomcat.install.dir}&quot;${line.separator}NB_CLUSTER_DIR=&quot;${nbClusterDir}&quot;${line.separator}" file="pkg/scripts/env.sh"/>
+        
+        <copy file="pkg/Info.plist" filtering="true" tofile="${basedir}/build/Info.plist">
+            <filterset>
+                <filter token="APPVERSION" value="${baseide.version}"/> 
+                <filter token="INSTALLDIR" value="${install.dir}"/>
+                <filter token="BASEVERSION" value="${baseide.version}"/>                
+            </filterset>
+        </copy>
+        
+        <copy file="${basedir}/../../commonfiles/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>
+        
+        
+        <copy file="../../commonfiles/Description.plist" filtering="true" overwrite="true" tofile="pkg/scripts/Description.plist">
+            <filterset>
+                <filter token="TITLE" value="${baseide.install.name}"/>
+            </filterset>
+        </copy>
+        
+                
+        <echo message="Building ${baseide.pkg.name} into ${basedir}/../build/${baseide.pkg.name}"/>
+        
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="/Developer/Tools/packagemaker -build -v -p ../../build/${baseide.pkg.name} -f build/app -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
+        </exec>
+    </target>
+    
+    
+</project>

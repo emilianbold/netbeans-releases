@@ -157,6 +157,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private String newFolderToolTipText = null;
     
+    private String homeFolderTooltipText = null;
+    
     private Action newFolderAction = new NewDirectoryAction();
     
     private BasicFileView fileView = new DirectoryChooserFileView();
@@ -591,6 +593,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
         topPanel.add(upFolderButton);
         topPanel.add(Box.createRigidArea(new Dimension(2, 0)));
+        System.out.println( "Go home action " +getGoHomeAction().getValue( Action.SHORT_DESCRIPTION) );
         
         // no home on Win platform
         if (!Utilities.isWindows()) {
@@ -604,6 +607,16 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
             homeButton.setIcon(homeIcon);
             homeButton.setText(null);
+            
+            String tooltip = homeButton.getToolTipText();
+            if (tooltip == null) {
+                tooltip = homeFolderTooltipText;
+                if (tooltip == null) {
+                    tooltip = NbBundle.getMessage(DirectoryChooserUI.class,
+                            "TLTP_HomeFolder");
+                }
+                homeButton.setToolTipText( tooltip );
+            }
 
             topPanel.add(homeButton);
         }
@@ -1075,6 +1088,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         upFolderAccessibleName = UIManager.getString("FileChooser.upFolderAccessibleName",l);
         
         newFolderToolTipText = UIManager.getString("FileChooser.newFolderToolTipText",l);
+        homeFolderTooltipText = UIManager.getString("FileChooser.homeFolderToolTipText",l);
         
     }
     
@@ -2355,4 +2369,3 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
 }
-

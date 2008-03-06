@@ -83,7 +83,7 @@ import javax.swing.tree.TreePath;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.xpath.ValidationUtil;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
 import org.netbeans.modules.bpel.model.api.BaseCorrelation;

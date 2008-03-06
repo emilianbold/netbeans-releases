@@ -127,9 +127,9 @@ import org.openide.util.actions.CallbackSystemAction;
  * </ul>
  * <p>
  * All of these views use {@link ExplorerManager#find} to walk up the AWT hierarchy and locate the
- * {@link ExplorerManager} to use as a controler. They attach as listeners to
+ * {@link ExplorerManager} to use as a controller. They attach as listeners to
  * it and also call its setter methods to update the shared state based on the
- * user action. Not all views make sence together, but for example
+ * user action. Not all views make sense together, but for example
  * {@link org.openide.explorer.view.ContextTreeView} and {@link org.openide.explorer.view.ListView} were designed to complement
  * themselves and behaves like windows explorer. The {@link org.openide.explorer.propertysheet.PropertySheetView}
  * for example should be able to work with any other view.
