@@ -44,6 +44,8 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -400,17 +402,24 @@ public class ClientStubModel {
         MethodTree method = RestUtils.findGetAsXmlMethod(rSrc); // getXml() method tree
         if(method != null) {
             String converter = method.getReturnType().toString();
-            RepresentationNode rootNode = createRootNode(converter, rDoc);
+            
+            RepresentationNode rootNode = null;
+            JavaSource js  = getJavaSource(converter);
+            if (js != null) {
+                rootNode = createRootNode(js, rDoc);
+            } else { // check classpath
+                Class converterClass = TypeUtil.getClass(converter, rSrc, p);
+                if (converterClass != null) {
+                    rootNode = createRootNode(converterClass, rDoc);
+                }
+            }
             rDoc.setRoot(rootNode);
             documentMap.put(converter, rDoc);
             processConverter(converter, rDoc, rootNode, r);
         }
     }    
-
-    private RepresentationNode createRootNode(String cName, RepresentationDocument rr) {
-        JavaSource cSrc = getJavaSource(cName);
-        if(cSrc == null)
-            return null;
+    
+    private RepresentationNode createRootNode(JavaSource cSrc, RepresentationDocument rr) {
         List<? extends AnnotationMirror> annotations = JavaSourceHelper.getClassAnnotations(cSrc);
         if(annotations == null)
             return null;
@@ -431,18 +440,45 @@ public class ClientStubModel {
         return null;
     }
     
+    private RepresentationNode createRootNode(Class converterClass, RepresentationDocument rr) {
+        List<Annotation> annotations = TypeUtil.getAnnotations(converterClass, true);
+    for (Annotation annotation : annotations) {
+            String cAnonType = annotation.annotationType().getName();
+            if (Constants.XML_ROOT_ELEMENT_ANNOTATION.equals(cAnonType) || 
+                Constants.XML_ROOT_ELEMENT.equals(cAnonType)) {
+                String rootName = TypeUtil.getAnnotationValueName(annotation);
+                RepresentationNode rootNode = new RepresentationNode(rootName);
+                rootNode.setIsRoot(true);
+                return rootNode;
+            }
+        }
+        return null;
+    }
+    
     private void processConverter(String converter, RepresentationDocument rr, 
-            RepresentationNode rElem, Resource r) {
+            RepresentationNode rElem, Resource r) throws IOException {
         assert converter != null;
         String cName = converter;
-        if(cName.startsWith("Collection") || cName.startsWith("List") || 
-                cName.startsWith("Set")) {
+        if(cName.indexOf("Collection<") > -1 || cName.indexOf("List<") > -1 || 
+           cName.indexOf("Set<") > -1) 
+        {
             if(cName.indexOf("<") != -1)
                 cName = cName.substring(cName.indexOf("<")+1, cName.indexOf(">"));
         }
+        
         JavaSource cSrc = getJavaSource(cName);
-        if(cSrc == null)
-            return;
+        if(cSrc == null) {
+            Class cClass = TypeUtil.getClass(cName, r.getSource(), p);
+            if (cClass != null) {
+                processConverter(cClass, rr, rElem, r);
+            }
+        } else {
+            processConverter(cSrc, rr, rElem, r);
+        }
+    }
+    
+    private void processConverter(JavaSource cSrc, RepresentationDocument rr, 
+            RepresentationNode rElem, Resource r) throws IOException {
         List<? extends AnnotationMirror> annotations = JavaSourceHelper.getClassAnnotations(cSrc);
         if(annotations == null)
             return;
@@ -458,7 +494,6 @@ public class ClientStubModel {
                 List<String> rTypes = new ArrayList<String>();
                 for (int j=0;j<cTrees.size();j++) {
                     MethodTree tree = cTrees.get(j);
-                    String mName = tree.getName().toString();
                     List<? extends AnnotationTree> mAnons = tree.getModifiers().getAnnotations();
                     if (mAnons == null)
                         continue;
@@ -475,7 +510,7 @@ public class ClientStubModel {
                             RepresentationDocument cDoc = documentMap.get(c);
                             RepresentationNode cElem = null;
                             if(cDoc == null || cDoc.getRoot() == null) {
-                                String eName = RestUtils.findElementName(tree, r); // "playlistRef"
+                                String eName = RestUtils.findElementName(tree); // "playlistRef"
                                 cElem = new RepresentationNode(eName);
                                 cElem.setLink(tree); //getReferences() method tree for tracking the link                                
                                 elems.add(cElem);//process later
@@ -489,7 +524,7 @@ public class ClientStubModel {
                              *  @XmlAttribute
                              *  public URI getUri() {}
                              */
-                            String attrName = RestUtils.findElementName(tree, r); // "uri"
+                            String attrName = RestUtils.findElementName(tree); // "uri"
                             RepresentationNode attr = new RepresentationNode(attrName);
                             attr.setLink(tree);
                             rElem.addAttribute(attr);
@@ -505,6 +540,84 @@ public class ClientStubModel {
         }
     }    
     
+    private void processConverter(Class converterClass, RepresentationDocument rr, 
+            RepresentationNode rElem, Resource r) throws IOException {
+        
+        rElem.setSource(null);
+        if (! TypeUtil.isXmlRoot(converterClass)) {
+            return;
+        }
+        
+        List<RepresentationNode> elems = new ArrayList<RepresentationNode>();
+        for (java.lang.reflect.Method method : converterClass.getMethods()) {
+            String c = method.getGenericReturnType().toString();
+            String defaultName = method.getName();
+            if (defaultName.startsWith("get")) { //NOI18N
+                defaultName = defaultName.substring(3);
+            }
+            RepresentationDocument cDoc = documentMap.get(c);
+            Annotation xmlelementAnn = TypeUtil.getXmlElementAnnotation(method);
+            if (xmlelementAnn != null) {
+                collectElement(xmlelementAnn, rElem, cDoc, elems, c, defaultName);
+            }
+        }
+        
+        for (Field field : converterClass.getDeclaredFields()) {
+            String c = field.getGenericType().toString();
+            RepresentationDocument cDoc = documentMap.get(c);
+            Annotation xmlelementAnn = TypeUtil.getXmlElementAnnotation(field);
+            if (xmlelementAnn != null) {
+                collectElement(xmlelementAnn, rElem, cDoc, elems, c, field.getName());
+            }
+            Annotation xmlAttributeAnn = TypeUtil.getXmlAttributeAnnotation(field);
+            if (xmlAttributeAnn != null) {
+                collectAttribute(xmlAttributeAnn, rElem, field.getName());
+            }
+        }
+
+        //now process element methods
+        for (int j = 0; j < elems.size(); j++) {
+            processConverter(elems.get(j).getType(), rr, elems.get(j), r);
+        }
+    }    
+    
+    private void collectElement(Annotation xmlAnn, RepresentationNode rElem, RepresentationDocument cDoc, 
+            List<RepresentationNode> elems, String type, String defaultName) {
+
+        /*
+         *  @XmlElement(name = "playlistRef")
+         *  public Collection<PlaylistRefConverter> getReferences() {}
+         */
+        RepresentationNode cElem = null;
+        if (cDoc == null || cDoc.getRoot() == null) {
+            String eName = TypeUtil.getAnnotationValueName(xmlAnn); // "playlistRef"
+            if (eName == null) {
+                eName = defaultName;
+            }
+            cElem = new RepresentationNode(eName);
+            cElem.setType(type);
+            cElem.setLink(null); //getReferences() method tree for tracking the link                                
+            elems.add(cElem);//process later
+        } else {
+            cElem = cDoc.getRoot();
+        }
+        rElem.addChild(cElem);
+    }
+    
+    private void collectAttribute(Annotation xmlAnn, RepresentationNode rElem, String defaultName) {
+        /*
+         *  @XmlAttribute
+         *  public URI getUri() {}
+         */
+        String attrName = TypeUtil.getAnnotationValueName(xmlAnn); // "uri"
+        if (attrName == null || attrName.equals("##default")) { //NOI18N
+            attrName = defaultName;
+        }
+        RepresentationNode attr = new RepresentationNode(attrName);
+        attr.setLink(null);
+        rElem.addAttribute(attr);
+    }
+
     public class Resource {
 
         private String name;
@@ -615,6 +728,7 @@ public class ClientStubModel {
     public class RepresentationNode {
 
         private String name;
+        private String type;
 
         private MethodTree link;
         private JavaSource src;
@@ -678,6 +792,13 @@ public class ClientStubModel {
         protected void setSource(JavaSource src) {
             this.src = src;
         }  
+        
+        public String getType() {
+            return type;
+        }
+        public void setType(String type) {
+            this.type = type;
+        }
         
         @Override
         public String toString() {

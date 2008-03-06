@@ -1,4 +1,3 @@
 Results for class MyTest with queryType=COMPLETION and nameKind=PREFIX
-MODULE     MySQL                                      JdbcSpec
 CLASS      Mysql                                      active_record/vendor/mysql
 CLASS      MysqlAdapter                               ActiveRecord::ConnectionAdapters

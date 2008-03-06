@@ -29,7 +29,7 @@ import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
-import org.netbeans.modules.bpel.model.api.support.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.bpel.model.impl.Utils;
 import org.netbeans.modules.bpel.model.xam.spi.ExternalModelRetriever;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;

@@ -50,13 +50,11 @@ import org.openide.util.Utilities;
 public class CompilerSet2Configuration {
     private MakeConfiguration makeConfiguration;
     private StringConfiguration compilerSetName;
-    private String cachedDisplayName = null;
     private boolean dirty = false;
     
     // Constructors
-    public CompilerSet2Configuration(MakeConfiguration makeConfiguration, String cachedDisplayName) {
+    public CompilerSet2Configuration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
-        this.cachedDisplayName = cachedDisplayName;
         String csName = CppSettings.getDefault().getCompilerSetName();
         if (csName == null || csName.length() == 0) {
             // This can happen on Unix!!!!
@@ -89,36 +87,17 @@ public class CompilerSet2Configuration {
         this.compilerSetName = compilerSetName;
     }
     
-    public String getCachedDisplayName() {
-        return cachedDisplayName;
-    }
-    
-    public void setCachedDisplayName(String cachedDisplayName) {
-        this.cachedDisplayName = cachedDisplayName;
-    }
-    
     // ----------------------------------------------------------------------------------------------------
     
     public void setValue(String name) {
         getCompilerSetName().setValue(name);
-        setCachedDisplayName(null);
     }
     
     /*
      * Keep backward compatibility with CompilerSetConfiguration (for now)
      */
     public int getValue() {
-        String s = cachedDisplayName;
-	if (s != null) {
-            int i = 0;
-            for (String csname : CompilerSetManager.getDefault().getCompilerSetDisplayNames()) {
-                if (s.equals(csname)) {
-                    return i;
-                }
-                i++;
-            }
-        }
-        s = getCompilerSetName().getValue();
+        String s = getCompilerSetName().getValue();
 	if (s != null) {
             int i = 0;
             for (String csname : CompilerSetManager.getDefault().getCompilerSetNames()) {
@@ -142,14 +121,11 @@ public class CompilerSet2Configuration {
     public String getDisplayName(boolean displayIfNotFound) {
         CompilerSet compilerSet = null;
         String dn = null;
-        if (getCachedDisplayName() != null) {
-            compilerSet = CompilerSetManager.getDefault().getCompilerSetByDisplayName(getCachedDisplayName());
-        }
         if (compilerSet == null) {
             compilerSet = CompilerSetManager.getDefault().getCompilerSet(getCompilerSetName().getValue());
         }
         if (compilerSet != null) {
-            dn = compilerSet.getDisplayName();
+            dn = compilerSet.getName();
         }
         if (dn != null)
             return dn;
@@ -162,20 +138,19 @@ public class CompilerSet2Configuration {
     }
     
     public String createNotFoundName(String name) {
-        return name + getString("NOT_FOUND");
+        return name + " - " + getString("NOT_FOUND"); // NOI18N
     }
     
     // Clone and assign
     public void assign(CompilerSet2Configuration conf) {
         setDirty(getValue() != conf.getValue());
         setMakeConfiguration(conf.getMakeConfiguration());
-        setCachedDisplayName(conf.getCachedDisplayName());
         getCompilerSetName().assign(conf.getCompilerSetName());
     }
     
     @Override
     public Object clone() {
-        CompilerSet2Configuration clone = new CompilerSet2Configuration(getMakeConfiguration(), getCachedDisplayName());
+        CompilerSet2Configuration clone = new CompilerSet2Configuration(getMakeConfiguration());
         clone.setCompilerSetName((StringConfiguration)getCompilerSetName().clone());
         return clone;
     }

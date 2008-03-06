@@ -147,12 +147,7 @@ public final class Search extends Dialog {
     c.fill = GridBagConstraints.HORIZONTAL;
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     c.weightx = 1.0;
-    myTarget = new JComboBox(myTargets) {
-      public boolean selectWithKeyChar(char keyChar) {
-//out("select: " + keyChar); // todo
-return super.selectWithKeyChar(keyChar);
-      }
-    };
+    myTarget = createComboBox(myTargets);
     a11y(myTarget, i18n("ACS_Type")); // NOI18N
     label.setLabelFor(myTarget);
     panel.add(myTarget, c);

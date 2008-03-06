@@ -484,9 +484,9 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
                 radioButton.setSelected(true);
                 checkNumberStatus();
             }
-            if (e.getSource() == radioButton ) {
-                checkNumberStatus();
-            }
+            //if (e.getSource() == radioButton ) {
+            //    checkNumberStatus();
+            //}
         }
 
         public void focusLost(FocusEvent e) {

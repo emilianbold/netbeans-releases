@@ -114,6 +114,7 @@ public abstract class CsmReferenceResolver {
     
     public static enum Scope {
         LOCAL,
+        FILE_LOCAL,
         GLOBAL,
         UNKNOWN
     }
