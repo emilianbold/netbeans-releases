@@ -463,7 +463,7 @@ public abstract class Completor {
                     org.netbeans.modules.editor.NbEditorUtilities.getFileObject(context.getDocument())
                     );
             org.netbeans.modules.hibernate.service.HibernateEnvironment env = enclosingProject.getLookup().lookup(org.netbeans.modules.hibernate.service.HibernateEnvironment.class);
-            return env.getAllHibernateMappings(enclosingProject).toArray(new String[]{});
+            return env.getAllHibernateMappings().toArray(new String[]{});
         }
     }
 }

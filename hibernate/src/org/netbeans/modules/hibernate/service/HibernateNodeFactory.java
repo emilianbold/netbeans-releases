@@ -66,9 +66,9 @@ public class HibernateNodeFactory implements NodeFactory {
 
         HibernateEnvironment hibernateEnvironment = project.getLookup().lookup(HibernateEnvironment.class);
         if(hibernateEnvironment != null) {
-            ArrayList<FileObject> files = hibernateEnvironment.getAllHibernateConfigFileObjects(project);
+            ArrayList<FileObject> files = hibernateEnvironment.getAllHibernateConfigFileObjects();
             files.addAll(
-                    hibernateEnvironment.getAllHibernateMappingFileObjects(project)
+                    hibernateEnvironment.getAllHibernateMappingFileObjects()
                     );
             if(files.size() != 0) {
                 // There are Hibernater configuration files in this project.

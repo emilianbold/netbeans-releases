@@ -79,7 +79,7 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
         ArrayList<String> configFiles = new ArrayList<String>();
         org.netbeans.api.project.Project enclosingProject = project;
         org.netbeans.modules.hibernate.service.HibernateEnvironment env = enclosingProject.getLookup().lookup(org.netbeans.modules.hibernate.service.HibernateEnvironment.class);
-        configFileObjects = env.getAllHibernateConfigFileObjects(enclosingProject);
+        configFileObjects = env.getAllHibernateConfigFileObjects();
         for (FileObject fo : configFileObjects) {
             configFiles.add(fo.getNameExt());
         }
