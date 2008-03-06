@@ -247,7 +247,7 @@ private void userNameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
             RailsDatabaseConfiguration dbConf = (RailsDatabaseConfiguration) value;
 
-            setText(dbConf.railsGenerationParam());
+            setText(dbConf.getDisplayName());
             setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
             setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
 

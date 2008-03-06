@@ -73,4 +73,10 @@ class StandardRailsAdapter implements RailsDatabaseConfiguration {
         return null;
     }
 
+    public String getDisplayName() {
+        return railsGenerationParam();
+    }
+    
+    
+
 }

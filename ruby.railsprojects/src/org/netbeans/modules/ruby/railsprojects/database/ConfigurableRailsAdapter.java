@@ -99,6 +99,10 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
         }
     }
 
+    public String getDisplayName() {
+        return delegate.getDisplayName();
+    }
+    
     private void changeAttribute(Document doc, String attributeName, String attributeValue) throws BadLocationException {
         Parameters.notWhitespace("attributeName", attributeName); //NOI18N
         if (attributeValue == null || "".equals(attributeValue.trim())) {

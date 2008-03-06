@@ -89,6 +89,11 @@ public class RailsJdbcAsAdapterConnection implements RailsDatabaseConfiguration 
         return null;
     }
 
+    public String getDisplayName() {
+        return null;
+    }
+
+    
     private void editDatabaseYml(FileObject projectDir) {
 
         FileObject fo = projectDir.getFileObject("config/database.yml"); // NOI18N

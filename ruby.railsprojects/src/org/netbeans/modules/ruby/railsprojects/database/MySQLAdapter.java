@@ -74,4 +74,8 @@ class MySQLAdapter implements RailsDatabaseConfiguration {
         };
     }
 
+    public String getDisplayName() {
+        return railsGenerationParam();
+    }
+
 }

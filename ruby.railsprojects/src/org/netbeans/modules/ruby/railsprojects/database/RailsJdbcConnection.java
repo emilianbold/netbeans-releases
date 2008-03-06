@@ -105,6 +105,10 @@ public class RailsJdbcConnection implements RailsDatabaseConfiguration {
                 getDriverClass(development), getDriverClass(test), getDriverClass(production));
     }
 
+    public String getDisplayName() {
+        return null;
+    }
+    
     private String getDriverClass(DatabaseConnection connection) {
         return connection != null ? connection.getDriverClass() : null;
     }

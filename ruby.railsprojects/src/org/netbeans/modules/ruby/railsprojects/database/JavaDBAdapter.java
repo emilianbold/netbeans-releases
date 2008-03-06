@@ -61,6 +61,10 @@ class JavaDBAdapter implements RailsDatabaseConfiguration {
     }
 
     public String railsGenerationParam() {
+        return null;
+    }
+    
+    public String getDisplayName() {
         return "javadb";
     }
 

@@ -73,6 +73,10 @@ class PostgreSQLAdapter implements RailsDatabaseConfiguration {
             uncommentTcpIpConfig(project.getProjectDirectory());
         }
     }
+
+    public String getDisplayName() {
+        return railsGenerationParam();
+    }
     
     /**
      * Uncomments host and port entries that rails generates

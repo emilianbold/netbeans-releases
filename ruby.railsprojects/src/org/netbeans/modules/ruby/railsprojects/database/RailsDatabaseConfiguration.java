@@ -76,4 +76,12 @@ public interface RailsDatabaseConfiguration {
      * @return the info or <code>null</code>.
      */
     JdbcInfo getJdbcInfo();
+    
+    /**
+     * Gets the display name for this configuration, typically 
+     * the name of the adapter. May return null.
+     * 
+     * @return the display name or null.
+     */
+    String getDisplayName();
 }
