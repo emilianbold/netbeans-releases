@@ -122,7 +122,6 @@ public class HibernateEnvironment {
     
     /**
      * Returns configuration fileobjects if any contained in this project.
-     * @param project the project.
      * @return list of FileObjects for configuration files if found in this project, otherwise empty list.
      */
     public ArrayList<FileObject> getAllHibernateConfigFileObjects() {
@@ -132,7 +131,6 @@ public class HibernateEnvironment {
     /**
      * Returns all mapping files defined under this project.
      * 
-     * @param project the project for all the mapping files need to be found.
      * @return List of FileObjects for mapping files.
      */
     public ArrayList<FileObject> getAllHibernateMappingFileObjects() {
@@ -142,7 +140,6 @@ public class HibernateEnvironment {
      /**
      * Returns relaive source paths of all mapping files present in this project.
      * 
-     * @param project the project for all the mapping files need to be found.
      * @return List of FileObjects for mapping files.
      */
     public ArrayList<String> getAllHibernateMappings() {
