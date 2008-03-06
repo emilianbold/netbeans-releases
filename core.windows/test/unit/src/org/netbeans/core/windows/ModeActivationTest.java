@@ -86,18 +86,11 @@ public class ModeActivationTest extends NbTestCase {
         //This must be unit test as we need minimum winsys config
         //if default minimum winsys config is changed this test must be changed too.
         WindowManagerImpl wmi = WindowManagerImpl.getInstance();
-        Set <? extends Mode> s = wmi.getModes();
-        assertEquals("There must be only one mode",s.size(),1);
-        
-        Mode editor = null;
-        for (Mode m : s) {
-            assertEquals("There must be only editor mode",m.getName(),"editor");
-            editor = m;
-        }
         Mode activeMode = wmi.getActiveMode();
         assertNull("No mode is activated ie. active mode must be null",activeMode);
         
         //Mode cannot be activated when it is empty
+        Mode editor = wmi.getDefaultEditorMode();
         wmi.setActiveMode((ModeImpl) editor);
         activeMode = wmi.getActiveMode();
         assertNull("Ignore mode activation when mode is empty",activeMode);
@@ -116,7 +109,7 @@ public class ModeActivationTest extends NbTestCase {
         editor.dockInto(tc);
         //Editor mode must contain one TC
         tcs = editor.getTopComponents();
-        assertEquals("Mode editor must contain one TC",tcs.length,1);
+        assertEquals("Mode editor must contain one TC", 1, tcs.length);
         
         //Mode cannot be activated when it does not contain opened TC
         wmi.setActiveMode((ModeImpl) editor);
@@ -124,7 +117,7 @@ public class ModeActivationTest extends NbTestCase {
         assertNull("Mode cannot be activated when it does not contain opened TC",activeMode);
         
         m = wmi.findMode(tc);
-        assertEquals("Mode editor must be found for TC",m,editor);
+        assertEquals("Mode editor must be found for TC", editor, m);
         
         //TC is closed
         assertFalse("TC is closed",tc.isOpened());
