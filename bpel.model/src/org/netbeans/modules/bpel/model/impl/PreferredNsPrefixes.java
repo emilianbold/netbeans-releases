@@ -43,11 +43,11 @@ public final class PreferredNsPrefixes {
             //
             // Initialize the map
             uriToPrefixMap.put(BpelXPathExtFunctionMetadata.SUN_EXT_FUNC_NS, 
-                    "sexf"); // NOI18N
+                    "sxxf"); // NOI18N
             
             uriToPrefixMap.put(Extensions.TRACE_EXT_URI, "sxt"); // NOI18N
             uriToPrefixMap.put(Extensions.ERROR_EXT_URI, "sxeh"); // NOI18N
-            uriToPrefixMap.put(Extensions.TRANSACTION_EXT_URI, "trans"); // NOI18N
+            uriToPrefixMap.put(Extensions.TRANSACTION_EXT_URI, "sxtx"); // NOI18N
         }
         //
         String prefix = uriToPrefixMap.get(nsUri);
