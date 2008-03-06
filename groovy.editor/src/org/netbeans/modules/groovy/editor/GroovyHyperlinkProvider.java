@@ -138,7 +138,6 @@ public class GroovyHyperlinkProvider implements HyperlinkProvider {
     }
 
     public void performClickAction(Document doc, int offset) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }
