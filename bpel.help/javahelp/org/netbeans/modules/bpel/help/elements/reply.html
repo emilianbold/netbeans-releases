@@ -31,30 +31,13 @@ interaction, and specifies the Partner Link and operation. All these attributes 
       </ul>
       <p>The Reply element is now configured to send a response message to a partner web service.</p>
 </ol>
-<h3>Adding Correlation Sets</h3>
-<p>You can add the correlation sets defined for the Process element to a Reply element. Before adding a correlation set to the Reply activity, make sure that an least one <a href="../design/create_correlation_set.html" title="Adding Correlation Sets">correlation set</a> has been defined for the Process element. </p>
-<p><b>To add a correlation set to Reply:</b></p>
-<ol>
-  <li>In the Design view, right-click a Reply element and choose Edit.</li>
-  <li>In the Property Editor, select the Correlations tab and
-    click Add. </li>
-  <li>In the Choose a Correlation Set dialog box, expand the
-    Correlation Sets node, select the correlation set and click OK.</li>
-  <li>Choose the initiate attribute for this correlation set from the Initiate drop-down list. You can select one of the following options: <br>
-    <ul>
-      <li><tt><b>Yes</b>.</tt> The activity must attempt to initiate the correlation set.</li>
-      <li><tt><b>Join</b></tt>. The activity must attempt to initiate the correlation set if the correlation set is not yet initiated.</li>
-      <li><tt><b>No.</b></tt> The activity must not attempt to initiate the correlation set. This is the default option. </li>
-    </ul>
-  </li>
-  <li>(Optional) Add more correlation sets as needed and click
-    OK. </li>
-</ol>
+<h3>Adding Correlation</h3>
+<p>To define correlation <a href="../design/about_correlation_and_wizard.html">use the Correlation Wizard</a>. You can also <a href="../design/create_correlation_manually.html">set the correlation manually</a>. </p>
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd><a href="partner_link.html" title="Partner Link">Partner Link</a></dd>
 <dd><a href="receive.html" title="Receive">Receive</a></dd>
-<dd><a href="../design/about_correlation.html" title="Understanding Correlation">Understanding Correlation</a></dd>
+<dd><a href="../design/about_correlation_and_wizard.html" title="Understanding Correlation">Understanding Correlation</a></dd>
 <dd><a href="create_variable.html" title="Creating Variables">Creating Variables</a></dd>
 <dd><a href="../properties/new_input_variable.html" title="New Variable Dialog Box">New Variable Dialog Box</a></dd>
 <dd><a href="palette_web_svc.html" title="BPEL Designer Palette: Web Service">BPEL Designer Palette: Web Service</a></dd>

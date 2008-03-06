@@ -40,37 +40,26 @@
  */
 
 package org.openide.text;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.Date;
-import org.openide.text.*;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-
 import org.openide.DialogDescriptor;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.UserQuestionException;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.openide.windows.CloneableOpenSupport;
 
 /** Modified editor shall not be closed when its file is externally removed.
  *
@@ -91,9 +80,7 @@ implements CloneableEditorSupport.Env  {
     private String content = "";
     private boolean valid = true;
     private boolean modified = false;
-    /** if not null contains message why this document cannot be modified */
-    private String cannotBeModified;
-    private Date date = new java.util.Date ();
+    private Date date = new Date();
     private List<PropertyChangeListener> propL = new ArrayList<PropertyChangeListener>();
     private java.beans.VetoableChangeListener vetoL;
     private IOException toThrow;
@@ -104,13 +91,6 @@ implements CloneableEditorSupport.Env  {
         super(testName);
     }
     
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(ExternalDeleteOfModifiedContentTest.class);
-        //Test suite = new ExternalDeleteOfModifiedContentTest("testReloadOfABigFile");
-        return suite;
-    }
-    
-
     @Override
     protected void setUp () throws Exception {
         System.setProperty ("org.openide.util.Lookup", "org.openide.text.ExternalDeleteOfModifiedContentTest$Lkp");
@@ -164,6 +144,7 @@ implements CloneableEditorSupport.Env  {
                 os.close();
                 content = os.toString();
             }
+            @Override
             public String getLocalizedMessage() {
                 return "Ahoj";
             }
@@ -299,6 +280,7 @@ implements CloneableEditorSupport.Env  {
     }
     public java.io.OutputStream outputStream() throws java.io.IOException {
         class ContentStream extends java.io.ByteArrayOutputStream {
+            @Override
             public void close () throws java.io.IOException {
                 super.close ();
                 content = new String (toByteArray ());

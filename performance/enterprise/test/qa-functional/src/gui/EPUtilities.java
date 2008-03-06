@@ -53,7 +53,7 @@ public class EPUtilities extends gui.Utilities{
 
     public static Node getProcessFilesNode(String project){
         String processNode = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.bpel.project.ui.Bundle", "LBL_Node_Sources");
-        return new Node(ProjectsTabOperator.invoke().getProjectRootNode(project),processNode);
+        return new Node(new ProjectsTabOperator().getProjectRootNode(project),processNode);
     }
     
 }

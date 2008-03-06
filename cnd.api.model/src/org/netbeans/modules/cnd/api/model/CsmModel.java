@@ -56,18 +56,6 @@ public interface CsmModel {
 
     Collection<CsmProject> projects();
 
-    void addModelListener(CsmModelListener listener);
-
-    void removeModelListener(CsmModelListener listener);
-    
-    void addProgressListener(CsmProgressListener listener);
-    
-    void removeProgressListener(CsmProgressListener listener);
-    
-    void addModelStateListener(CsmModelStateListener listener);
-    
-    void removeModelStateListener(CsmModelStateListener listener);
-    
     /**
      * Code model calls can be very expensive.
      * Therefore one can never call code model from event dispatching thread.

@@ -45,13 +45,9 @@ import java.util.Collection;
 import javax.swing.JComponent;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeAdapter;
-import org.openide.nodes.NodeEvent;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
 
 /**
  * A base implementation of NavigatorPanel for all XML navigators.

@@ -320,6 +320,9 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
      * the specified property alias and obtains the schema type of that property. 
      */ 
     private GlobalType getPropertyType(PropertyAlias pa) {
+        if (pa == null) {
+          return null;
+        }
         NamedComponentReference<CorrelationProperty> cPropRef =
                 pa.getPropertyName();
         if (cPropRef == null) {

@@ -61,10 +61,12 @@ import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -125,7 +127,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
                 //if (doc != null) {
                     //doc.remove(0, doc.getLength());
                     //doc.insertString(doc.getLength(), debugger.getCurrentCallStackFrame().getFunctionName() + "()\n", null);
-                    writer.write(functionName + "()\n");
+                    writer.write(functionName + "()\n"); // NOI18N
                     int idx = 2;
 
                     /*int combinedPos = msg.indexOf(COMBINED_HEADER, pos);
@@ -149,7 +151,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
                             Line line = new Line(msg, start, idx++);
                             if (functionName.equals(line.function)) {
                                 lines.add(line);
-                                writer.write(line + "\n");
+                                writer.write(line + "\n"); // NOI18N
                             }
                             //doc.insertString(doc.getLength(), line.toString() + "\n", null);
                             start = msg.indexOf(ADDRESS_HEADER, start+1);
@@ -333,11 +335,11 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
      * in this case readValue("param") will return "value"
      */
     private static String readValue(String name, String msg, int pos) {
-        String paramHeader = name + "=\"";
+        String paramHeader = name + "=\""; // NOI18N
         int start = msg.indexOf(paramHeader, pos);
         if (start != -1) {
             start += paramHeader.length();
-            int end = msg.indexOf("\"", start + 1);
+            int end = msg.indexOf("\"", start + 1); // NOI18N
             if (end != -1) {
                 return msg.substring(start, end);
             }
@@ -387,6 +389,16 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         return false;
     }
     
+    public static boolean isDisasm(String url) {
+        //TODO: optimize
+        try {
+            return getFileObject().getURL().toString().equals(url);
+        } catch (FileStateInvalidException fsi) {
+            fsi.printStackTrace();
+        }
+        return false;
+    }
+    
     public static void open() {
         try {
             DataObject dobj = DataObject.find(getFileObject());
@@ -402,9 +414,9 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     }
     
     private static String getHeader() {
-        String res = "Disassembly";
+        String res = NbBundle.getMessage(Disassembly.class, "LBL_Disassembly_Window"); // NOI18N
         if (functionName.length() > 0) {
-            res += "(" + functionName + ")";
+            res += "(" + functionName + ")"; // NOI18N
         }
         return res;
     }
