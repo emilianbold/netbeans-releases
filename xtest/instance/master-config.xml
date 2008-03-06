@@ -127,7 +127,8 @@ made subject to such option by the copyright holder.
       <module name="javahelp" testtypes="unit" attributes="commit" />
       <module name="editor" testtypes="qa-functional" attributes="commit" />
       <!--module name="enterprise/bpel" testtypes="qa-functional" attributes="commit"/-->
-      <module name="ide.kit" testtypes="qa-functional" attributes="cnd,commit,j2ee,profiler,ruby"/>
+      <!--<module name="ide.kit" testtypes="qa-functional" attributes="cnd,commit,j2ee,profiler,ruby"/>-->
+      <module name="ide.kit" testtypes="qa-functional" attributes="cnd,commit,profiler,ruby"/>
       <module name="mobility.project" testtypes="qa-functional" attributes="commit">
           <!-- Propagate wtk.dir property to build-qa-functional.xml. -->
           <property name="wtk.dir" value="${wtk.dir}"/>

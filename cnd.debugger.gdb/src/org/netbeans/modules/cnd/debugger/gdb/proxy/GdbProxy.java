@@ -185,15 +185,6 @@ public class GdbProxy implements GdbMiDefinitions {
     }
 
     /**
-     *  Do a "set environment" gdb command.
-     *
-     *  @param var Variable of the form "foo=value"
-     */
-    public int gdb_set_environment(String var) {
-        return engine.sendCommand("-gdb-set environment " + var); // NOI18N
-    }
-
-    /**
      *  Ask gdb about threads. We don't really care about the threads, but it also returns
      *  the process ID, which we do care about.
      *
