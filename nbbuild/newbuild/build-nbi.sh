@@ -6,7 +6,7 @@ cd ${DIRNAME}
 SCRIPTS_DIR=`pwd`
 source init.sh
 
-if [ ! -z $NATIVE_MAC_MACHINE ]; then
+if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/installer
    ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then
@@ -78,7 +78,7 @@ mv $DIST/installers/* $DIST
 rmdir $DIST/installers
 
 #Check if Mac installer was OK, 10 "BUILD SUCCESSFUL" messages should be in Mac log
-if [ ! -z $NATIVE_MAC_MACHINE ]; then
+if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
     IS_MAC_FAILED=`cat $MAC_LOG | grep "BUILD FAILED" | wc -l | tr " " "\n" | grep -v '^$'`
     IS_MAC_CONNECT=`cat $MAC_LOG | grep "Connection timed out" | wc -l | tr " " "\n" | grep -v '^$'`
     if [ $IS_MAC_FAILED -eq 0 -a $IS_MAC_CONNECT -eq 0 ]; then
