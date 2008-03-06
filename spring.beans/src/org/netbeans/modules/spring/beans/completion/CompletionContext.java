@@ -130,8 +130,14 @@ public class CompletionContext {
                 }
                 if (element instanceof EmptyTag) {
                     if (token != null &&
-                            token.getImage().trim().equals("/>")) {
-                        completionType = CompletionType.NONE;
+                            token.getImage().trim().equals("/>")) { // NOI18N
+                        TokenItem prevToken = token.getPrevious();
+                        if(prevToken != null && prevToken.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID
+                                && caretOffset == token.getOffset()) {
+                            completionType = CompletionType.ATTRIBUTE;
+                        } else {
+                            completionType = CompletionType.NONE;
+                        }
                         break;
                     }
                     EmptyTag tag = (EmptyTag) element;
@@ -151,8 +157,14 @@ public class CompletionContext {
 
                 if (element instanceof StartTag) {
                     if (token != null &&
-                            token.getImage().trim().equals(">")) {
-                        completionType = CompletionType.NONE;
+                            token.getImage().trim().equals(">")) { // NOI18N
+                        TokenItem prevToken = token.getPrevious();
+                        if(prevToken != null && prevToken.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID
+                                && caretOffset == token.getOffset()) {
+                            completionType = CompletionType.ATTRIBUTE;
+                        } else {
+                            completionType = CompletionType.NONE;
+                        }
                         break;
                     }
                     if (element.getElementOffset() + 1 != this.caretOffset) {
@@ -192,6 +204,11 @@ public class CompletionContext {
             //user enters white-space character
             case XMLDefaultTokenContext.WS_ID:
                 completionType = CompletionType.NONE;
+                
+                if(token.getOffset() == caretOffset) {
+                    break;
+                }
+                
                 TokenItem prev = token.getPrevious();
                 while (prev != null &&
                         (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID)) {

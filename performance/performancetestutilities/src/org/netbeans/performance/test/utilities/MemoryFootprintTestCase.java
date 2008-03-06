@@ -162,6 +162,8 @@ public abstract class MemoryFootprintTestCase extends org.netbeans.performance.t
         
         for(int i = 1; i <= repeat_memory && exceptionDuringMeasurement == null; i++){
             try {
+                testedComponentOperator = null;
+                
                 prepare();
                 
                 testedComponentOperator = open();

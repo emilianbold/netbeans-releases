@@ -43,7 +43,6 @@
 package org.netbeans.modules.asm.core.ui.top;
 
 import java.util.Formatter;
-import javax.swing.text.html.HTMLDocument;
 
 import org.netbeans.modules.asm.model.lang.instruction.Instruction;
 import org.netbeans.modules.asm.model.lang.instruction.InstructionArgs;
@@ -54,7 +53,7 @@ public class InstructionInfoPanel extends javax.swing.JPanel {
         initComponents();                
     }
     
-    private String infoTemplate = "%s  -  %s\n";
+    private String infoTemplate = "%s  -  %s\n"; // NOI18N
                                   
     
     public void setInstruction(Instruction instr) {
@@ -66,11 +65,11 @@ public class InstructionInfoPanel extends javax.swing.JPanel {
         );
                        
         for (InstructionArgs arg : instr.getArguments()) {
-            res.append("\n").append(instr.getName());
+            res.append("\n").append(instr.getName()); // NOI18N
             for (String mnemonic : arg.getParamMnemonic()) {
-                res.append(" ").append(mnemonic);
+                res.append(" ").append(mnemonic); // NOI18N
             }
-            res.append(" - ").append(arg.getDescription());
+            res.append(" - ").append(arg.getDescription()); // NOI18N
         } 
         
         //jInfoTextArea.setDocument(new HTMLDocument());

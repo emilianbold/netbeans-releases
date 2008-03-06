@@ -277,7 +277,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         
         if (docExt.length() == 0) {
             cbExtension.setEnabled(true);
-            createdFileName += "." + expectedExtension;
+            createdFileName += "." + expectedExtension; // NOI18N
         } else {
             cbExtension.setEnabled(false);
             cbExtension.setSelectedItem(docExt);
@@ -466,7 +466,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         gridBagConstraints.weighty = 1.0;
         add(bottomPanelContainer, gridBagConstraints);
 
-        getAccessibleContext().setAccessibleDescription("null");
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewCndFileChooserPanelGUI.class).getString("AD_SimpleTargetChooserPanelGUI_1")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void initMnemonics() {

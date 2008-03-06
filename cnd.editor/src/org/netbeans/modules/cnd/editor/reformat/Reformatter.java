@@ -150,7 +150,7 @@ public class Reformatter implements ReformatTask {
             if (end - start > 0) {
                 if (!checkRemoved(doc.getText(start, end - start))){
                     // Reformat
-                    System.out.println("Reformat failed. Reformat try to remove: "+doc.getText(start, end - start));
+                    System.out.println("Reformatting failed. Reformatter try to remove: "+doc.getText(start, end - start));
                     System.out.println("    Changeset:"+diff);
                     break;
                 }

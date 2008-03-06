@@ -153,7 +153,7 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
                 
             }catch(UserQuestionException uqe) {
                 //do not open a question dialog when the document is just loaded into the navigator
-                showDocumentTooLarge();
+                showError(AbstractXMLNavigatorContent.ERROR_TOO_LARGE_DOCUMENT);
             }catch(IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
@@ -163,7 +163,7 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
     public void navigate(final DataObject documentDO, final BaseDocument bdoc) {
         if(DEBUG) System.out.println("[xml navigator] navigating to DOCUMENT " + bdoc.hashCode());
         //called from AWT thread
-        showScanningPanel();
+        showWaitPanel();
         
         //try to find the UI in the UIcache
         final JPanel cachedPanel;
@@ -243,7 +243,7 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
                             });
                     } else {
                         //model is null => show message
-                        showCannotNavigate();
+                        showError(AbstractXMLNavigatorContent.ERROR_CANNOT_NAVIGATE);
                     }
                 }catch(DocumentModelException dme) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dme);
