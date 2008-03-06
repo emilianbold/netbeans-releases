@@ -173,6 +173,8 @@ public class DateTimePatternPanel extends AbstractPropertyJPanel {
         label = new javax.swing.JLabel();
         label.setHorizontalAlignment(SwingConstants.LEFT);
         label.setText(bundle.getString("dateTime_pattern")); //NOI18N
+        label.setLabelFor(patternInputField);
+        label.setDisplayedMnemonic(bundle.getString("Pattern_mnemonic").charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -242,6 +244,8 @@ public class DateTimePatternPanel extends AbstractPropertyJPanel {
         label = new javax.swing.JLabel();
         label.setHorizontalAlignment(SwingConstants.RIGHT);
         label.setText(bundle.getString("test")); //NOI18N
+        label.setLabelFor(sampleInputField);
+        label.setDisplayedMnemonic(bundle.getString("Test_mnemonic").charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;

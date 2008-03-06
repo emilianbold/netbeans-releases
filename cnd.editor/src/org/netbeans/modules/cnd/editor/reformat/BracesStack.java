@@ -50,13 +50,14 @@ import static org.netbeans.cnd.api.lexer.CppTokenId.*;
  */
 class BracesStack {
     
-    private static final boolean TRACE_STACK = true;
-    private static final boolean TRACE_STATEMENT = true;
+    private static final boolean TRACE_STACK = false;
+    private static final boolean TRACE_STATEMENT = false;
     
     private Stack<StackEntry> stack = new Stack<StackEntry>();
     private StatementContinuation statementContinuation = StatementContinuation.STOP;
     int lastStatementStart = -1;
     int parenDepth = 0;
+    int lastKRstart = -1;
     boolean isDoWhile = false;
     boolean isLabel = false;
 
@@ -69,6 +70,7 @@ class BracesStack {
         BracesStack clone = new BracesStack();
         clone.statementContinuation = statementContinuation;
         clone.lastStatementStart = lastStatementStart;
+        clone.lastKRstart = lastKRstart;
         clone.parenDepth = parenDepth;
         clone.isDoWhile = isDoWhile;
         clone.isLabel = isLabel;
@@ -81,6 +83,7 @@ class BracesStack {
     public void reset(BracesStack clone){
         statementContinuation = clone.statementContinuation;
         lastStatementStart = clone.lastStatementStart;
+        lastKRstart = clone.lastKRstart;
         parenDepth = clone.parenDepth;
         isDoWhile = clone.isDoWhile;
         isLabel = clone.isLabel;
@@ -111,7 +114,7 @@ class BracesStack {
             }
         } else if (lastStatementStart != entry.getIndex()) {
             lastStatementStart = entry.getIndex();
-            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+entry.getText());
+            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+entry.getText()); // NOI18N
         }
         stack.push(entry);
         if (TRACE_STACK) System.out.println("push: "+toString()); // NOI18N
@@ -478,7 +481,7 @@ class BracesStack {
     public void setLastStatementStart(ExtendedTokenSequence ts) {
         if (lastStatementStart == -1) {
             lastStatementStart = ts.index();
-            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+ts.token().text());
+            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+ts.token().text()); // NOI18N
         }
     }
     

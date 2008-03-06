@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.JTextComponent;
@@ -116,11 +117,8 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
                 
                     WadlSaasBean bean = codegen.getBean();
                     boolean showParams = codegen.canShowParam();
-                    List<ParameterInfo> allParams = new ArrayList<ParameterInfo>();
-                    if (showParams && bean.getInputParameters() != null) {
-                        allParams.addAll(bean.getInputParameters());
-                    }
-                    if(allParams.isEmpty())
+                    List<ParameterInfo> allParams = bean.filterParametersByAuth(bean.getInputParameters());
+                    if(showParams && allParams.isEmpty())
                         showParams = false;
                     if(codegen.canShowResourceInfo() || showParams) {
                         JaxRsCodeSetupPanel panel = new JaxRsCodeSetupPanel(
@@ -143,8 +141,16 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
                         }
                     }
 
-                    codegen.generate(dialog.getProgressHandle());
-                    Util.showMethod(targetFO, codegen.getSubresourceLocatorName());
+                    try {
+                        codegen.generate(dialog.getProgressHandle());
+                    } catch(IOException ex) {
+                        if(!ex.getMessage().equals(Util.SCANNING_IN_PROGRESS))
+                            errors.add(ex);
+                    }
+                    try {
+                        Util.showMethod(targetFO, codegen.getSubresourceLocatorName());
+                    } catch(IOException ex) {//ignore
+                    }
                 } catch (Exception ioe) {
                     errors.add(ioe);
                 } finally {

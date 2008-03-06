@@ -104,8 +104,7 @@ import org.openide.windows.TopComponent;
 public class NavigatorContent extends AbstractXMLNavigatorContent   {
     
     private static final boolean DEBUG = false;
-    private static NavigatorContent navigatorContentInstance = null;
-    
+    private static NavigatorContent navigatorContentInstance = null;    
     
     public static synchronized NavigatorContent getDefault() {
         if(navigatorContentInstance == null)
@@ -120,27 +119,12 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
     static boolean showContent = true;
     
     private JPanel active = null;
-    private final JPanel emptyPanel;
-    
-    private JLabel msgLabel;
-    
-    private DataObject peerDO = null;
-    
-    private WeakHashMap uiCache = new WeakHashMap();
-    
+    private DataObject peerDO = null;    
+    private WeakHashMap uiCache = new WeakHashMap();    
     private boolean editorOpened = false;
     
-    private Icon waitIcon;
-
     private NavigatorContent() {
         setLayout(new BorderLayout());
-        //init empty panel
-        setBackground(Color.WHITE);
-        emptyPanel = new JPanel();
-        emptyPanel.setBackground(Color.WHITE);
-        emptyPanel.setLayout(new BorderLayout());
-        msgLabel = new JLabel();
-        emptyPanel.add(msgLabel, BorderLayout.CENTER);
     }
     
     public void navigate(DataObject d) {
@@ -169,7 +153,7 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
                 
             }catch(UserQuestionException uqe) {
                 //do not open a question dialog when the document is just loaded into the navigator
-                showDocumentTooLarge();
+                showError(AbstractXMLNavigatorContent.ERROR_TOO_LARGE_DOCUMENT);
             }catch(IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
@@ -179,7 +163,7 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
     public void navigate(final DataObject documentDO, final BaseDocument bdoc) {
         if(DEBUG) System.out.println("[xml navigator] navigating to DOCUMENT " + bdoc.hashCode());
         //called from AWT thread
-        showScanningPanel();
+        showWaitPanel();
         
         //try to find the UI in the UIcache
         final JPanel cachedPanel;
@@ -259,7 +243,7 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
                             });
                     } else {
                         //model is null => show message
-                        showCannotNavigate();
+                        showError(AbstractXMLNavigatorContent.ERROR_CANNOT_NAVIGATE);
                     }
                 }catch(DocumentModelException dme) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dme);
@@ -296,51 +280,7 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
             }
         }
     }
-    
-    public void showDocumentTooLarge() {
-        removeAll();
-        msgLabel.setForeground(Color.GRAY);
-        msgLabel.setText(NbBundle.getMessage(NavigatorContent.class, "LBL_TooLarge"));
-        msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        add(emptyPanel, BorderLayout.CENTER);
-        repaint();
-    }
-    
-    public void showCannotNavigate() {
-        removeAll();
-        msgLabel.setIcon(null);
-        msgLabel.setForeground(Color.GRAY);
-        msgLabel.setText(NbBundle.getMessage(NavigatorContent.class, "LBL_CannotNavigate"));
-        msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        add(emptyPanel, BorderLayout.CENTER);
-        repaint();
-    }
-    
-    private void showScanningPanel() {
-        removeAll();
-        if (waitIcon == null) {
-            waitIcon = new ImageIcon( Utilities.loadImage(
-            "org/netbeans/modules/xml/text/navigator/resources/wait.gif" ) ); //NOI18N
-        }
-        msgLabel.setIcon(waitIcon);
-        msgLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        msgLabel.setForeground(Color.BLACK);
-        msgLabel.setText(NbBundle.getMessage(NavigatorContent.class, "LBL_Scan"));
-        add(emptyPanel, BorderLayout.NORTH);
-        repaint();
-    }
-    
-    
-    private void showWaitPanel() {
-        removeAll();
-        msgLabel.setIcon(null);
-        msgLabel.setForeground(Color.GRAY);
-        msgLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        msgLabel.setText(NbBundle.getMessage(NavigatorContent.class, "LBL_Wait"));
-        add(emptyPanel, BorderLayout.NORTH);
-        repaint();
-    }
-    
+        
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName() == EditorCookie.Observable.PROP_DOCUMENT) {
             if(evt.getNewValue() == null) {

@@ -324,10 +324,10 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
             } else if (TabbedContainer.COMMAND_MAXIMIZE == cmd) {
                 handleMaximization(tae);
             } else if (TabbedContainer.COMMAND_CLOSE_ALL == cmd) {
-                ActionUtils.closeAllDocuments();
+                ActionUtils.closeAllDocuments(true);
             } else if (TabbedContainer.COMMAND_CLOSE_ALL_BUT_THIS == cmd) {
                 TopComponent tc = (TopComponent) tabbed.getTopComponentAt(tae.getTabIndex());
-                ActionUtils.closeAllExcept(tc);
+                ActionUtils.closeAllExcept(tc, true);
             //Pin button handling here
             } else if (TabbedContainer.COMMAND_ENABLE_AUTO_HIDE.equals(cmd)) {
                 TopComponent tc = (TopComponent) tabbed.getTopComponentAt(tae.getTabIndex());

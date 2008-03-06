@@ -306,10 +306,15 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie, Comparabl
     throws DatabaseException
     {
         try {
-            DatabaseNode parent = (DatabaseNode)getParentNode().getCookie(null);
-            if (parent != null) parent.deleteNode(this);
+//            DatabaseNode parent = (DatabaseNode)getParentNode().getCookie(null);
+            Node parent = getParentNode();
+            if ( parent instanceof DatabaseNode ) {
+                ((DatabaseNode)parent).deleteNode(this);
+            } else {
+                this.destroy();
+            }
         } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
+            throw new DatabaseException(e);
         }
     }
     

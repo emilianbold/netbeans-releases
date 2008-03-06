@@ -40,8 +40,6 @@
  */
 
 package org.netbeans.modules.java.hints.infrastructure;
-import org.netbeans.modules.java.hints.infrastructure.CreatorBasedLazyFixList;
-import org.netbeans.modules.java.hints.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
