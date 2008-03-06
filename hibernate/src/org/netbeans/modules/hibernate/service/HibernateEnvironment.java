@@ -226,6 +226,7 @@ public class HibernateEnvironment {
         SessionFactory fact = hibernateConfiguration.getSessionFactory();
         int count = 0;
         for(boolean val : fact.getMapping()) {
+            @SuppressWarnings("static-access") //NOI18N
             String propName = fact.getAttributeValue(fact.MAPPING,
                     count++, "resource"); //NOI18N
             mappingsFromConfiguration.add(propName);
