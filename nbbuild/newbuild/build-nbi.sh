@@ -16,19 +16,19 @@ if [ ! -z $NATIVE_MAC_MACHINE ]; then
    ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/installer
    cd $NB_ALL
    gtar c installer/mac | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x )"
-   ssh $NATIVE_MAC_MACHINE rm -f $MAC_PATH/zip/*
+   ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/zip/*
    ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then
        echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't remove old bits"
        exit $ERROR_CODE;
    fi
-   ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/zip
+   ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/zip/moduleclusters
    scp -q -v $DIST/zip/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip
-   ls $DIST/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -q -v $DIST/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip
+   ls $DIST/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -q -v $DIST/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip/moduleclusters/
    if [ 1 -eq $ML_BUILD ] ; then
         ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/zip-ml
 	scp -q -v $DIST/ml/zip/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip-ml
-        ls $DIST/ml/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -q -v $DIST/ml/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip-ml
+        ls $DIST/ml/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -q -v $DIST/ml/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip-ml/moduleclusters/
    fi
    ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then

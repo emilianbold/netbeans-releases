@@ -39,59 +39,60 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db.sql.execute;
+package org.netbeans.modules.mercurial;
+
+import org.openide.util.actions.SystemAction;
+import org.openide.util.NbBundle;
+import org.openide.awt.Actions;
+import org.openide.awt.DynamicMenuContent;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import org.netbeans.modules.mercurial.ui.merge.MergeAction;
+import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
+import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
+import org.netbeans.modules.versioning.spi.VCSContext;
 
 /**
- * Describes a column in the TableModel.
- * A ResultSetTableModel is composed of a list of ColumnDefs and the data.
+ * Container menu for branch actions.
  *
- * @author Andrei Badea
+ * @author Maros Sandor
  */
-public class ColumnDef {
+public class MergeMenu extends AbstractAction implements DynamicMenuContent {
+    private VCSContext ctx;
+    private boolean bShowMarkAsResolved;
 
-    /**
-     * The physical column name.
-     */
-    private String name;
-    
-    /** 
-     * The label for the column, which may be different from the name
-     * if aliases are used
-     */
-    private String label;
-
-    /**
-     * Whether we can write to this column.
-     * A column is writable if its ColumnTypeDef says so and the
-     * ResultSet is updateable.
-     */
-    private boolean writable;
-
-    /**
-     * The class used to display this column in the table.
-     */
-    private Class clazz;
-
-    public ColumnDef(String name, String label, boolean writable, Class clazz) {
-        this.label = label;
-        this.name = name;
-        this.writable = writable;
-        this.clazz = clazz;
+    public MergeMenu(VCSContext ctx, boolean bShowMarkAsResolved) {
+        super(NbBundle.getMessage(MergeMenu.class, "CTL_MenuItem_MergeMenu"));
+        this.ctx = ctx;
+        this.bShowMarkAsResolved = bShowMarkAsResolved;
     }
 
-    public String getLabel() {
-        return label;
-    }
-    
-    public String getName() {
-        return name;
+    public JComponent[] getMenuPresenters() {
+        return new JComponent [] { createMenu() };
     }
 
-    public boolean isWritable() {
-        return writable;
+    public JComponent[] synchMenuPresenters(JComponent[] items) {
+        return new JComponent [] { createMenu() };
     }
 
-    public Class getDisplayClass() {
-        return clazz;
+    public boolean isEnabled() {
+        return true;
+    }
+
+    public void actionPerformed(ActionEvent ev) {
+        // no operation
+    }
+
+    private JMenu createMenu() {
+        JMenu menu = new JMenu(this);
+        menu.add(new MergeAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Merge"), ctx)); // NOI18N
+        menu.add(new ResolveConflictsAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Resolve"), ctx)); // NOI18N
+        if(bShowMarkAsResolved){
+            menu.add(new ConflictResolvedAction(NbBundle.getMessage(MercurialAnnotator.class,
+                        "CTL_PopupMenuItem_MarkResolved"), ctx)); // NOI18N  
+        }
+        org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(MergeMenu.class, "CTL_MenuItem_MergeMenu"));
+        return menu;
     }
 }

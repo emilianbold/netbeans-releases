@@ -39,7 +39,9 @@ if [ 1 -eq $ml_build ] ; then
 ml_postfix="-ml"
 fi
 
-. build-private.sh
+basename=`dirname "$0"`
+. "$basename"/build-private.sh
+
 
 progdir=`dirname $0`
 
