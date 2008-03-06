@@ -71,9 +71,14 @@ public enum CppTokenId implements TokenId {
     
     ERROR(null, "error"),
     IDENTIFIER(null, "identifier"),
-
+    
     // C/C++ keywords
+    ALIGNOF("alignof", "keyword"), // g++
+    __ALIGNOF__("__alignof__", "keyword"), // gcc
     ASM("asm", "keyword-directive"), // gcc and C++
+    _ASM("_asm", "keyword"), // g++
+    __ASM("__asm", "keyword"), // gcc
+    __ASM__("__asm__", "keyword"), // gcc
     AUTO("auto", "keyword"), 
     BOOL("bool", "keyword"), // C++
     BREAK("break", "keyword-directive"),
@@ -82,6 +87,8 @@ public enum CppTokenId implements TokenId {
     CHAR("char", "keyword"),
     CLASS("class", "keyword"), //C++
     CONST("const", "keyword"),
+    __CONST("__const", "keyword"), // gcc
+    __CONST__("__const__", "keyword"), // gcc C only
     CONST_CAST("const_cast", "keyword"), // C++
     CONTINUE("continue", "keyword-directive"),
     DEFAULT("default", "keyword-directive"),
@@ -101,12 +108,18 @@ public enum CppTokenId implements TokenId {
     GOTO("goto", "keyword-directive"),
     IF("if", "keyword-directive"),
     INLINE("inline", "keyword"), // now in C also
+    _INLINE("_inline", "keyword"), // g++
+    __INLINE("__inline", "keyword"), // gcc
+    __INLINE__("__inline__", "keyword"), // gcc
     INT("int", "keyword"),
     LONG("long", "keyword"),
     MUTABLE("mutable", "keyword"), // C++
     NAMESPACE("namespace", "keyword"), //C++
     NEW("new", "keyword"), //C++
     OPERATOR("operator", "keyword"), // C++
+    PASCAL("pascal", "keyword"), // g++
+    _PASCAL("_pascal", "keyword"), // g++
+    __PASCAL("__pascal", "keyword"), // g++
     PRIVATE("private", "keyword"), //C++
     PROTECTED("protected", "keyword"), //C++
     PUBLIC("public", "keyword"), // C++
@@ -115,7 +128,9 @@ public enum CppTokenId implements TokenId {
     RESTRICT("restrict", "keyword"), // C
     RETURN("return", "keyword-directive"),
     SHORT("short", "keyword"),
-    SIZNED("signed", "keyword"),
+    SIGNED("signed", "keyword"),
+    __SIGNED("__signed", "keyword"), // gcc
+    __SIGNED__("__signed__", "keyword"), // gcc
     SIZEOF("sizeof", "keyword"),
     STATIC("static", "keyword"),
     STATIC_CAST("static_cast", "keyword"), // C++
@@ -129,18 +144,43 @@ public enum CppTokenId implements TokenId {
     TYPEID("typeid", "keyword"), //C++
     TYPENAME("typename", "keyword"), //C++
     TYPEOF("typeof", "keyword"), // gcc, C++
+    __TYPEOF("__typeof", "keyword"), // gcc
+    __TYPEOF__("__typeof__", "keyword"), // gcc
     UNION("union", "keyword"),
     UNSIGNED("unsigned", "keyword"),
+    __UNSIGNED__("__unsigned__", "keyword"), // g++
     USING("using", "keyword"), //C++
     VIRTUAL("virtual", "keyword"), //C++
     VOID("void", "keyword"),
     VOLATILE("volatile", "keyword"),
+    __VOLATILE("__volatile", "keyword"), // gcc
+    __VOLATILE__("__volatile__", "keyword"), // gcc
     WCHAR_T("wchar_t", "keyword"), // C++
     WHILE("while", "keyword-directive"),
+    __ATTRIBUTE__("__attribute__", "keyword"), // gcc
     _BOOL("_Bool", "keyword"), // C 
+    _CDECL("_cdecl", "keyword"), // g++
+    __CDECL("__cdecl", "keyword"), // g++
     _COMPLEX("_Complex", "keyword"), // C
+    __COMPLEX__("__complex__", "keyword"), // gcc
+    _DECLSPEC("_declspec", "keyword"), // g++
+    __DECLSPEC("__declspec", "keyword"), // g++
+    __EXTENSION__("__extension__", "keyword"), // g++
+    _FAR("_far", "keyword"), // g++
+    __FAR("__far", "keyword"), // g++
     _IMAGINARY("_Imaginary", "keyword"), // C
-    
+    __IMAG__("__imag__", "keyword"), // gcc
+    _INT64("_int64", "keyword"), // g++
+    __INT64("__int64", "keyword"), // g++
+    __INTERRUPT("__interrupt", "keyword"), // g++
+    _NEAR("_near", "keyword"), // g++
+    __NEAR("__near", "keyword"), // g++
+    __REAL__("__real__", "keyword"), // gcc
+    __RESTRICT("__restrict", "keyword"), // g++
+    _STDCALL("_stdcall", "keyword"), // g++
+    __STDCALL("__stdcall", "keyword"), // g++
+    __W64("__w64", "keyword"), // g++
+
     INT_LITERAL(null, "number"),
     LONG_LITERAL(null, "number"),
     FLOAT_LITERAL(null, "number"),

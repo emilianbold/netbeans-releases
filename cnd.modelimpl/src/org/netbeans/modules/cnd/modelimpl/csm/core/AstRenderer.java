@@ -701,6 +701,9 @@ public class AstRenderer {
             switch(child.getType()){
                 case CPPTokenTypes.LITERAL_template:
                 case CPPTokenTypes.LITERAL_inline:
+                case CPPTokenTypes.LITERAL__inline:
+                case CPPTokenTypes.LITERAL___inline:
+                case CPPTokenTypes.LITERAL___inline__:
                     child = child.getNextSibling();
                     continue;
             }
@@ -884,6 +887,7 @@ public class AstRenderer {
         switch( tokenType ) {
             case CPPTokenTypes.LITERAL_const:       return true;
             case CPPTokenTypes.LITERAL___const:     return true;
+            case CPPTokenTypes.LITERAL___const__:   return true;
             default:                                return false;
         }
     }   
@@ -892,6 +896,7 @@ public class AstRenderer {
         switch( tokenType ) {
             case CPPTokenTypes.LITERAL_volatile:    return true;
             case CPPTokenTypes.LITERAL___volatile__:return true;
+            case CPPTokenTypes.LITERAL___volatile:  return true;
             default:                                return false;
         }
     }
