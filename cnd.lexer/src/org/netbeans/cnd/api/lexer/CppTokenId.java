@@ -212,6 +212,7 @@ public enum CppTokenId implements TokenId {
             
     WHITESPACE(null, "whitespace"), // NOI18N // all spaces except new line
     ESCAPED_LINE(null, "whitespace"), // NOI18N // line escape with \
+    ESCAPED_WHITESPACE(null, "whitespace"), // NOI18N // whitespace escape with \ inside it
     NEW_LINE(null, "whitespace"), // NOI18N // new line \n or \r
     LINE_COMMENT(null, "comment"), // NOI18N
     BLOCK_COMMENT(null, "comment"), // NOI18N
