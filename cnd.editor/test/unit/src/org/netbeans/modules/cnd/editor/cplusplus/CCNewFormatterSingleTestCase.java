@@ -163,24 +163,6 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
 
-//static const char* _dbname = "TEST_DB";
-//static struct my_option my_long_options[] =
-//{
-//  NDB_STD_OPTS("ndb_desc"),
-//  { "database", 'd', "Name of database table is in",
-//    (gptr*) &_dbname, (gptr*) &_dbname, 0,
-//    GET_STR, REQUIRED_ARG, 0, 0, 0, 0, 0, 0 },
-//  { 0, 0, 0, 0, 0, 0, GET_NO_ARG, NO_ARG, 0, 0, 0, 0, 0, 0}
-//};
-//static void usage()
-//{
-//  char desc[] = 
-//    "[<table> <index>]+\n"\
-//    "This program will drop index(es) in Ndb\n";
-//    ndb_std_print_version();
-//    my_print_help(my_long_options);
-//    my_print_variables(my_long_options);
-//}
 //----------------------------
 //unsigned long ZEXPORT crc32(crc, buf, len)
 //unsigned long crc;
@@ -221,32 +203,25 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
     public void testBlankLineAfterEndLineComment() {
         setDefaultsOptions();
         setLoadDocumentText(
-                "int Ndb::NDB_connect(Uint32 tNode)\n" +
+                "void foo()\n" +
                 "{\n" +
-                "    if (0){\n" +
-                "        DBUG_RETURN(3);\n" +
-                "    }//if\n" +
-                "}//Ndb::NDB_connect()\n" +
-                "NdbTransaction *\n" +
-                "Ndb::getConnectedNdbTransaction(Uint32 nodeId)\n" +
-                "{\n" +
-                "    return next;\n" +
-                "}//Ndb::getConnectedNdbTransaction()\n"
+                "    if (len) if (true) do {\n" +
+                "        DO1;\n" +
+                "        } while (--len);\n" +
+                "    else return;\n" +
+                "    else return;\n" +
+                "}\n"
                 );
         reformat();
         assertDocumentText("Incorrect blak line after end line comment",
-                "int Ndb::NDB_connect(Uint32 tNode)\n" +
+                "void foo()\n" +
                 "{\n" +
-                "    if (0) {\n" +
-                "        DBUG_RETURN(3);\n" +
-                "    }//if\n" +
-                "}//Ndb::NDB_connect()\n" +
-                "\n" +
-                "NdbTransaction *\n" +
-                "Ndb::getConnectedNdbTransaction(Uint32 nodeId)\n" +
-                "{\n" +
-                "    return next;\n" +
-                "}//Ndb::getConnectedNdbTransaction()\n"
+                "    if (len) if (true) do {\n" +
+                "                DO1;\n" +
+                "            } while (--len);\n" +
+                "        else return;\n" +
+                "    else return;\n" +
+                "}\n"
                 );
     }
 

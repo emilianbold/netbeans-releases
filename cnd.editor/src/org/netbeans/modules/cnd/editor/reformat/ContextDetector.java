@@ -79,6 +79,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                 }
                 switch (token().id()) {
                     case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
@@ -189,6 +190,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                             findModifier = true;
                             break;
                         case WHITESPACE:
+                        case ESCAPED_WHITESPACE:
                         case NEW_LINE:
                         case LINE_COMMENT:
                         case BLOCK_COMMENT:
@@ -233,6 +235,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                             findModifier = true;
                             break;
                         case WHITESPACE:
+                        case ESCAPED_WHITESPACE:
                         case NEW_LINE:
                         case LINE_COMMENT:
                         case BLOCK_COMMENT:
@@ -423,6 +426,7 @@ public class ContextDetector extends ExtendedTokenSequence {
             while(moveNext()){
                 switch (token().id()) {
                     case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
