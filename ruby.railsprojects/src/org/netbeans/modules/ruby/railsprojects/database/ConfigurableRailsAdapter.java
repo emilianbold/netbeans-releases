@@ -63,6 +63,7 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
     private final String userName;
     private final String password;
     private final String database;
+    private final boolean jdbc;
 
     /**
      * Creates a new instance of ConfigurableRailsAdapter.
@@ -75,11 +76,13 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
      * @param database the name of the database to be put into the generated configuration, 
      * i.e. value for the <code>database:</code> attribute.
      */
-    public ConfigurableRailsAdapter(RailsDatabaseConfiguration delegate, String userName, String password, String database) {
+    public ConfigurableRailsAdapter(RailsDatabaseConfiguration delegate, 
+            String userName, String password, String database, boolean jdbc) {
         this.delegate = delegate;
         this.userName = userName;
         this.password = password;
         this.database = database;
+        this.jdbc = jdbc;
     }
 
     public String railsGenerationParam() {
@@ -125,7 +128,7 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
                 EditorCookie ec = dobj.getCookie(EditorCookie.class);
                 if (ec != null) {
                     Document doc = ec.openDocument();
-                    changeAttribute(doc, "database:", database); //NOI18N
+                    setDatabase(doc);
                     changeAttribute(doc, "username:", userName); //NOI18N
                     changeAttribute(doc, "password:", password); //NOI18N
                     SaveCookie sc = dobj.getCookie(SaveCookie.class);
@@ -143,5 +146,33 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
                 Exceptions.printStackTrace(ioe);
             }
         }
+    }
+    
+    private void setDatabase(Document databaseYml) throws BadLocationException {
+        
+        JdbcInfo jdbcInfo = getJdbcInfo();
+        if (!jdbc || jdbcInfo == null) {
+            changeAttribute(databaseYml, "database:", database); //NOI18N
+            return;
+        }
+        
+        // use the default database name if none was specified
+       String dbName = !isEmpty(database) ? database : RailsAdapters.getPropertyValue(databaseYml, "database:");
+        
+        String url = jdbcInfo.getURL("localhost", dbName); //NOI18N
+        changeAttribute(databaseYml, "adapter:", "jdbc"); //NOI18N
+        RailsAdapters.addProperty(databaseYml,  "url:", url, "adapter:");
+        RailsAdapters.addProperty(databaseYml,  "driver:", jdbcInfo.getDriverClass(), "adapter:");
+
+        RailsAdapters.removeProperty(databaseYml, "database:");
+        
+    }
+
+    private boolean isEmpty(String str) {
+        return str == null || "".equals(str.trim());
+    }
+    
+    public JdbcInfo getJdbcInfo() {
+        return delegate.getJdbcInfo();
     }
 }

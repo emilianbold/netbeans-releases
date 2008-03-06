@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,48 +39,38 @@
 
 package org.netbeans.modules.ruby.railsprojects.database;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.railsprojects.RailsProject;
 
 /**
- * A factory for Rails database adapters.
  *
  * @author Erno Mononen
  */
-public class RailsAdapterFactory {
-    
-    private static final List<RailsDatabaseConfiguration> adapters = initAdapters();
+class MySQLAdapter implements RailsDatabaseConfiguration {
 
-    /**
-     * Gets all know adapters.
-     * 
-     * @return all know adapters.
-     */
-    public static List<RailsDatabaseConfiguration> getAdapters() {
-        return adapters;
+    public String railsGenerationParam() {
+        return "mysql"; //NOI18N
     }
-    
-    /**
-     * Gets the default adapter, i.e. the adapter to be used when no configuration
-     * is specified. The default adapter is MySQL.
-     * 
-     * @return the default adapter.
-     */
-    public static RailsDatabaseConfiguration getDefaultAdapter() {
-        return getAdapters().get(0);
+
+    public void editConfig(RailsProject project) {
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (platform.isJRuby()) {
+            // JRuby doesn't support socket
+            RailsAdapters.commentOutSocket(project.getProjectDirectory());
+        }
     }
-    
-    private static List<RailsDatabaseConfiguration> initAdapters() {
-        List<RailsDatabaseConfiguration> result = new  ArrayList<RailsDatabaseConfiguration>();
-        result.add(new MySQLAdapter());
-//        result.add(new StandardRailsAdapter("mysql"));
-        result.add(new StandardRailsAdapter("oracle"));
-        result.add(new PostgreSQLAdapter());
-        result.add(new StandardRailsAdapter("sqlite2"));
-        result.add(new StandardRailsAdapter("sqlite3"));
-        result.add(new JavaDBAdapter());
-        return result;
+
+    public JdbcInfo getJdbcInfo() {
+        return new JdbcInfo() {
+
+            public String getDriverClass() {
+                return "com.mysql.jdbc.Driver"; //NOI18N
+            }
+
+            public String getURL(String host, String database) {
+                return "jdbc:mysql://" + host + ":3306/" + database;
+            }
+        };
     }
-    
 
 }

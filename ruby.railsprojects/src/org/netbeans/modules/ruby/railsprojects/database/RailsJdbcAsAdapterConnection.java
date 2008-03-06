@@ -85,6 +85,10 @@ public class RailsJdbcAsAdapterConnection implements RailsDatabaseConfiguration 
         editDatabaseYml(project.getProjectDirectory());
     }
 
+    public JdbcInfo getJdbcInfo() {
+        return null;
+    }
+
     private void editDatabaseYml(FileObject projectDir) {
 
         FileObject fo = projectDir.getFileObject("config/database.yml"); // NOI18N
@@ -208,4 +212,5 @@ public class RailsJdbcAsAdapterConnection implements RailsDatabaseConfiguration 
         }
         
     }
+
 }

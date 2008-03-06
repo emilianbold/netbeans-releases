@@ -123,4 +123,17 @@ class JavaDBAdapter implements RailsDatabaseConfiguration {
         }
     }
 
+    public JdbcInfo getJdbcInfo() {
+        return new JdbcInfo() {
+
+            public String getDriverClass() {
+                return "org.apache.derby.jdbc.ClientDriver"; //NOI18N
+            }
+
+            public String getURL(String host, String database) {
+                return "jdbc:derby://" + host + ":1527/" + database;
+            }
+        };
+    }
+
 }

@@ -74,66 +74,12 @@ class StandardRailsAdapter implements RailsDatabaseConfiguration {
         RubyPlatform platform = RubyPlatform.platformFor(project);
         if (platform.isJRuby()) {
             // JRuby doesn't support socket
-            commentOutSocket(project.getProjectDirectory());
+            RailsAdapters.commentOutSocket(project.getProjectDirectory());
         }
     }
 
-     /**
-      * Tries to comment out the socket syntax from database.yml. 
-      */ 
-    private static void commentOutSocket(FileObject dir) {
-        FileObject fo = dir.getFileObject("config/database.yml"); // NOI18N
-        if (fo != null) {
-            try {
-                DataObject dobj = DataObject.find(fo);
-                EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    javax.swing.text.Document doc = ec.openDocument();
-                    String text = doc.getText(0, doc.getLength());
-                    int offset = text.indexOf("socket:"); // NOI18N
-                    if (offset == -1) {
-                        // Rails didn't do anything to this file
-                        return;
-                    }
-                    // Determine indent
-                    int indent = 0;
-                    for (int i = offset-1; i >= 0; i--) {
-                        if (text.charAt(i) == '\n') {
-                            break;
-                        } else {
-                            indent++;
-                        }
-                    }
-
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("# JRuby doesn't support socket:\n"); //NOI18N
-                    boolean addLocalHost = text.indexOf("host:") == -1; //NOI18N
-                    if (addLocalHost) {
-                        for (int i = 0; i < indent; i++) {
-                            sb.append(" ");
-                        }
-                        sb.append("host: localhost\n"); //NOI18N
-                    }
-                    for (int i = 0; i < indent; i++) {
-                        sb.append(" ");
-                    }
-                    sb.append("#");
-                    doc.insertString(offset, sb.toString(), null);
-                    SaveCookie sc = dobj.getCookie(SaveCookie.class);
-                    if (sc != null) {
-                        sc.save();
-                    } else {
-                        LifecycleManager.getDefault().saveAll();
-                    }
-                }
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
-            } catch (DataObjectNotFoundException dnfe) {
-                Exceptions.printStackTrace(dnfe);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-        }
+    public JdbcInfo getJdbcInfo() {
+        return null;
     }
     
 

@@ -259,4 +259,8 @@ public class RailsJdbcConnection implements RailsDatabaseConfiguration {
         }
         return result;
     }
+
+    public JdbcInfo getJdbcInfo() {
+        return null;
+    }
 }

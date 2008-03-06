@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,8 +41,6 @@ package org.netbeans.modules.ruby.railsprojects.database;
 import java.io.IOException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -52,57 +50,38 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 
 /**
- * Takes care of editing database.yml so that it is correctly
- * generated for PostrgreSQL Rails adapter.
+ * Utility methods for modifying database.yml.
  *
  * @author Erno Mononen
  */
-class PostgreSQLAdapter implements RailsDatabaseConfiguration {
+final class RailsAdapters {
 
-    PostgreSQLAdapter() {
+    private RailsAdapters() {
     }
 
-    public String railsGenerationParam() {
-        return "postgresql";
-    }
-
-    public void editConfig(RailsProject project) {
-        RubyPlatform platform = RubyPlatform.platformFor(project);
-        if (platform.isJRuby()) {
-            // only need extra config when using JRuby
-            uncommentTcpIpConfig(project.getProjectDirectory());
-        }
-    }
-    
     /**
-     * Uncomments host and port entries that rails generates
-     * to database.yml but leaves commented out by default.
+     * Tries to comment out the socket syntax from database.yml. Saves the file
+     * after modifications.
+     * 
+     * @param dir the project dir under which database.yml should be.
      */
-    private static void uncommentTcpIpConfig(FileObject dir) {
+    static void commentOutSocket(FileObject dir) {
         FileObject fo = dir.getFileObject("config/database.yml"); // NOI18N
         if (fo != null) {
             try {
                 DataObject dobj = DataObject.find(fo);
                 EditorCookie ec = dobj.getCookie(EditorCookie.class);
                 if (ec != null) {
-                    Document doc = ec.openDocument();
+                    javax.swing.text.Document doc = ec.openDocument();
                     String text = doc.getText(0, doc.getLength());
-                    int hostOffset = text.indexOf("#host:"); // NOI18N
-                    if (hostOffset == -1) {
-                        // nothing to uncomment
+                    int offset = text.indexOf("socket:"); // NOI18N
+                    if (offset == -1) {
+                        // Rails didn't do anything to this file
                         return;
                     }
-                    doc.remove(hostOffset, 1);
-                    text = doc.getText(0, doc.getLength());
-                    int portOffset = text.indexOf("#port:"); // NOI18N
-                    if (portOffset != -1) {
-                        doc.remove(portOffset, 1);
-                        text = doc.getText(0, doc.getLength());
-                    }
-                    
                     // Determine indent
                     int indent = 0;
-                    for (int i = hostOffset-1; i >= 0; i--) {
+                    for (int i = offset - 1; i >= 0; i--) {
                         if (text.charAt(i) == '\n') {
                             break;
                         } else {
@@ -111,11 +90,19 @@ class PostgreSQLAdapter implements RailsDatabaseConfiguration {
                     }
 
                     StringBuilder sb = new StringBuilder();
-                    sb.append("# (Automatically uncommented by the IDE - JRuby doesn't support socket)\n");//NOI18N
+                    sb.append("# JRuby doesn't support socket:\n"); //NOI18N
+                    boolean addLocalHost = text.indexOf("host:") == -1; //NOI18N
+                    if (addLocalHost) {
+                        for (int i = 0; i < indent; i++) {
+                            sb.append(" ");
+                        }
+                        sb.append("host: localhost\n"); //NOI18N
+                    }
                     for (int i = 0; i < indent; i++) {
                         sb.append(" ");
                     }
-                    doc.insertString(hostOffset, sb.toString(), null);
+                    sb.append("#");
+                    doc.insertString(offset, sb.toString(), null);
                     SaveCookie sc = dobj.getCookie(SaveCookie.class);
                     if (sc != null) {
                         sc.save();
@@ -133,18 +120,77 @@ class PostgreSQLAdapter implements RailsDatabaseConfiguration {
         }
     }
 
-    public JdbcInfo getJdbcInfo() {
-        return new JdbcInfo() {
-
-            public String getDriverClass() {
-                return "org.postgresql.Driver"; //NOI18N
-            }
-
-            public String getURL(String host, String database) {
-                return "jdbc:postgresql://" + host + "/" + database;
-            }
-        };
+    static void addProperty(Document databaseYml, String propertyName, 
+            String propertyValue, String addAfter) throws BadLocationException {
+        
+        String text = databaseYml.getText(0, databaseYml.getLength());
+        int offset = text.indexOf(addAfter); // NOI18N
+        if (offset == -1) {
+            // don't know where to add
+            return;
+        }
+        int indent = determineIndent(text, offset);
+        int indexForAdding = offset + addAfter.length();
+        while (text.charAt(indexForAdding) != '\n' && indexForAdding <= text.length()) {
+            indexForAdding++;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < indent; i++) {
+            sb.append(" ");
+        }
+        sb.append(propertyName + " " + propertyValue + '\n');
+        databaseYml.insertString(indexForAdding + 1, sb.toString(), null);
     }
+    
+    static void removeProperty(Document databaseYml, String propertyName) throws BadLocationException {
+        
+        String text = databaseYml.getText(0, databaseYml.getLength());
+        int offset = text.indexOf(propertyName); // NOI18N
+        if (offset == -1) {
+            // nothing to remove
+            return;
+        }
+        
+        int indent = determineIndent(text, offset);
+        int valueLength = propertyName.length();
+        for (int i = offset + propertyName.length(); i <= text.length(); i++) {
+            valueLength++;
+            if (text.charAt(i) == '\n') {
+                break;
+            }
+        }
+        databaseYml.remove(offset - indent, valueLength + indent);
+    }
+    
+    static String getPropertyValue(Document databaseYml, String propertyName) throws BadLocationException {
+        String text = databaseYml.getText(0, databaseYml.getLength());
+        int propertyNameIndex = text.indexOf(propertyName);
+        if (propertyNameIndex == -1) {
+            return null;
+        }
+        
+        int propertyNameEndIndex = propertyNameIndex + propertyName.length();
+        int propertyValueLength = 0;
+        for (int i = propertyNameEndIndex; i < text.length(); i++) {
+            if ((text.charAt(i)) == '\n') {
+                break;
+            } 
+            propertyValueLength++;
+        }
+        return databaseYml.getText(propertyNameEndIndex, propertyValueLength).trim();
 
-
+    }
+    
+    private static int determineIndent(String text, int offset) {
+        // Determine indent
+        int indent = 0;
+        for (int i = offset - 1; i >= 0; i--) {
+            if (text.charAt(i) == '\n') {
+                break;
+            } else {
+                indent++;
+            }
+        }
+        return indent;
+    }
 }

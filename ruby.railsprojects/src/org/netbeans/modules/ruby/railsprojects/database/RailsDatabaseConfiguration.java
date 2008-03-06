@@ -69,4 +69,5 @@ public interface RailsDatabaseConfiguration {
      */
     void editConfig(RailsProject project);
     
+    JdbcInfo getJdbcInfo();
 }
