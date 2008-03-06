@@ -39,14 +39,43 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Arrays;
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JPanel;
+import javax.swing.MutableComboBoxModel;
+
 /**
  * @author  Tomas Mysik
  */
-public class SourcesPanelVisual extends javax.swing.JPanel {
+public class SourcesPanelVisual extends JPanel implements ActionListener {
+
+    private static final long serialVersionUID = -358263102348820543L;
+
+    private final DefaultComboBoxModel localServerComboBoxModel = new DefaultComboBoxModel();
 
     /** Creates new form SourcesPanelVisual */
     public SourcesPanelVisual() {
         initComponents();
+        init();
+    }
+
+    private void init() {
+        projectFolderRadioButton.addActionListener(this);
+        localServerRadioButton.addActionListener(this);
+        localServerComboBox.setModel(localServerComboBoxModel);
+    }
+
+    public void actionPerformed(ActionEvent evt) {
+        changeLocalServerFieldsStates(localServerRadioButton.isSelected());
+    }
+
+    private void changeLocalServerFieldsStates(boolean enabled) {
+        localServerComboBox.setEnabled(enabled);
+        findButton.setEnabled(enabled);
+        browseButton.setEnabled(enabled);
     }
 
     /** This method is called from within the constructor to
@@ -73,9 +102,18 @@ public class SourcesPanelVisual extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(projectFolderLabel, "Project Folder"); // NOI18N
         projectFolderLabel.setEnabled(false);
 
+        localServerComboBox.setEnabled(false);
+
         org.openide.awt.Mnemonics.setLocalizedText(findButton, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "LBL_FindLocalServer")); // NOI18N
+        findButton.setEnabled(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "LBL_BrowseLocalServer")); // NOI18N
+        browseButton.setEnabled(false);
+        browseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseButtonActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(localServerLabel, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "TXT_LocalServer")); // NOI18N
         localServerLabel.setEnabled(false);
@@ -140,6 +178,25 @@ public class SourcesPanelVisual extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+        String location = (String) localServerComboBox.getSelectedItem();
+        String newLocation = Utils.browseLocationAction(this, location);
+        if (newLocation == null) {
+            return;
+        }
+
+        for (int i = 0; i < localServerComboBoxModel.getSize(); i++) {
+            String element = (String) localServerComboBoxModel.getElementAt(i);
+            if (newLocation.equals(element)) {
+                localServerComboBox.setSelectedIndex(i);
+                return;
+            }
+        }
+        localServerComboBoxModel.addElement(newLocation);
+        localServerComboBox.setSelectedItem(newLocation);
+        Utils.sortComboBoxModel(localServerComboBoxModel);
+    }//GEN-LAST:event_browseButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
@@ -153,4 +210,34 @@ public class SourcesPanelVisual extends javax.swing.JPanel {
     private javax.swing.JLabel sourcesLabel;
     // End of variables declaration//GEN-END:variables
 
+    boolean isProjectFolderUsed() {
+        return projectFolderRadioButton.isSelected();
+    }
+
+    boolean isLocalServerUsed() {
+        return localServerRadioButton.isSelected();
+    }
+
+    String getLocalServerLocation() {
+        if (isProjectFolderUsed()) {
+            return null;
+        }
+        return (String) localServerComboBox.getSelectedItem();
+    }
+
+    MutableComboBoxModel getLocalServerModel() {
+        return localServerComboBoxModel;
+    }
+
+    void setProjectFolderLabel(String path) {
+        projectFolderLabel.setText(path);
+    }
+
+    void replaceLocalServerLocation(String path) {
+        int idx = localServerComboBox.getSelectedIndex();
+        if (idx != -1) {
+            localServerComboBoxModel.removeElementAt(idx);
+            localServerComboBoxModel.insertElementAt(path, idx);
+        }
+    }
 }

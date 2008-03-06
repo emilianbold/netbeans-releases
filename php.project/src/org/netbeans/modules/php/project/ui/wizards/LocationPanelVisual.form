@@ -27,7 +27,7 @@
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="projectLocationTextField" pref="254" max="32767" attributes="2"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="myBrowseButton" min="-2" max="-2" attributes="1"/>
+                      <Component id="browseButton" min="-2" max="-2" attributes="1"/>
                   </Group>
                   <Component id="projectNameTextField" alignment="0" pref="349" max="32767" attributes="2"/>
               </Group>
@@ -46,7 +46,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="projectLocationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="myBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="browseButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="projectLocationTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -114,13 +114,10 @@
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JButton" name="myBrowseButton">
+    <Component class="javax.swing.JButton" name="browseButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="LBL_BrowseProject" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="actionCommand" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="BROWSE" type="code"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
@@ -130,7 +127,7 @@
         </Property>
       </AccessibilityProperties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseLocationAction"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="createdFolderLabel">

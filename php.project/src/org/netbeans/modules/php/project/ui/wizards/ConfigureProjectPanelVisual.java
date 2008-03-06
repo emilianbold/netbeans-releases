@@ -76,7 +76,7 @@ class ConfigureProjectPanelVisual extends JPanel {
         sourcesContainer.add(BorderLayout.NORTH, sourcesPanelVisual);
 
         // options
-        optionsPanelVisual = new OptionsPanelVisual();
+        optionsPanelVisual = new OptionsPanelVisual(null);
         optionsContainer.add(BorderLayout.NORTH, optionsPanelVisual);
     }
 
@@ -90,26 +90,6 @@ class ConfigureProjectPanelVisual extends JPanel {
 
     SourcesPanelVisual getSourcesPanelVisual() {
         return sourcesPanelVisual;
-    }
-
-    void read(WizardDescriptor descriptor) {
-//        locationPanelVisual.read(descriptor);
-//        sourcesPanelVisual.read(descriptor);
-//        optionsPanelVisual.read(descriptor);
-    }
-
-    void store(WizardDescriptor descriptor) {
-//        locationPanelVisual.store(descriptor);
-//        sourcesPanelVisual.store(descriptor);
-//        optionsPanelVisual.store(descriptor);
-    }
-
-    boolean valid(WizardDescriptor wizardDescriptor) {
-        return true;
-//        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); // NOI18N
-//        return locationPanelVisual.valid(wizardDescriptor)
-//                && sourcesPanelVisual.valid(wizardDescriptor)
-//                && optionsPanelVisual.valid(wizardDescriptor);
     }
 
     /** This method is called from within the constructor to

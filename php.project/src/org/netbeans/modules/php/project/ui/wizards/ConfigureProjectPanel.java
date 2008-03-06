@@ -40,7 +40,13 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.text.MessageFormat;
+import javax.swing.JFileChooser;
 import javax.swing.event.ChangeListener;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -50,6 +56,16 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+
+    static final String PROJECT_NAME = "projectName"; // NOI18N
+    static final String PROJECT_DIR = "projectDir"; // NOI18N
+    static final String SET_AS_MAIN = "setAsMain"; // NOI18N
+    static final String USE_PROJECT_FOLDER = "useProjectFolder"; // NOI18N
+    static final String USE_WWW_FOLDER = "useWwwFolder"; // NOI18N
+    static final String WWW_FOLDER = "wwwFolder"; // NOI18N
+    static final String CREATE_INDEX_FILE = "createIndexFile"; // NOI18N
+    static final String INDEX_FILE = "indexFile"; // NOI18N
+    static final String ENCODING = "encoding"; // NOI18N
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private ConfigureProjectPanelVisual configureProjectPanelVisual;
@@ -64,7 +80,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     }
 
     public Component getComponent() {
-        configureProjectPanelVisual = new ConfigureProjectPanelVisual(this);
+        if (configureProjectPanelVisual == null) {
+            configureProjectPanelVisual = new ConfigureProjectPanelVisual(this);
+
+            // location
+            final LocationPanelVisual locationPanelVisual = configureProjectPanelVisual.getLocationPanelVisual();
+        }
         return configureProjectPanelVisual;
     }
 
@@ -79,17 +100,28 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
 
     public void readSettings(Object settings) {
         descriptor = (WizardDescriptor) settings;
-        getConfigureProjectPanelVisual().read(descriptor);
+
+        // location
+        LocationPanelVisual locationPanelVisual = getConfigureProjectPanelVisual().getLocationPanelVisual();
+        String projectLocation = getProjectLocation().getAbsolutePath();
+        String projectName = getProjectName();
+        File projectFolder = new File(projectLocation, projectName);
+        locationPanelVisual.setProjectLocation(projectLocation);
+        locationPanelVisual.setProjectName(projectName);
+        locationPanelVisual.setCreatedProjectFolder(projectFolder.getAbsolutePath());
+
+        // sources
+        SourcesPanelVisual sourcesPanelVisual = getConfigureProjectPanelVisual().getSourcesPanelVisual();
+        sourcesPanelVisual.setProjectFolderLabel(getProjectSourcesLocation(projectFolder));
     }
 
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
-        getConfigureProjectPanelVisual().store(d);
     }
 
     public boolean isValid() {
         getComponent();
-        return getConfigureProjectPanelVisual().valid(descriptor);
+        return false;
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -110,5 +142,49 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
 
     String[] getSteps() {
         return steps;
+    }
+
+    File getProjectLocation() {
+        File projectLocation = (File) descriptor.getProperty(PROJECT_DIR);
+        if (projectLocation == null
+                || projectLocation.getParentFile() == null
+                || !projectLocation.getParentFile().isDirectory()) {
+            projectLocation = ProjectChooser.getProjectsFolder();
+        } else {
+            projectLocation = projectLocation.getParentFile();
+        }
+        return projectLocation;
+    }
+
+    String getProjectName() {
+        String projectName = (String) descriptor.getProperty(PROJECT_NAME);
+        if (projectName == null) {
+            projectName = getDefaultFreeName(getProjectLocation());
+        }
+        return projectName;
+    }
+
+    private String getDefaultFreeName(File projectLocation) {
+        int i = 1;
+        String projectName;
+        do {
+            projectName = validFreeProjectName(projectLocation, i++);
+        } while (projectName == null);
+        return projectName;
+    }
+
+    private String validFreeProjectName(File parentFolder, int index) {
+        String name = MessageFormat.format(NbBundle.getMessage(ConfigureProjectPanel.class, "TXT_DefaultProjectName"),
+                new Object[] {index});
+        File file = new File(parentFolder, name);
+        if (file.exists()) {
+            return null;
+        }
+        return name;
+    }
+
+    private String getProjectSourcesLocation(File projectFolder) {
+        File src = new File(projectFolder, "src"); // NOI18N
+        return src.getAbsolutePath();
     }
 }

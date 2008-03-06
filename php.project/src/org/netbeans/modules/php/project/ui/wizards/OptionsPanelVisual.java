@@ -39,11 +39,19 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
-import java.beans.PropertyChangeListener;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.nio.charset.Charset;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.UIResource;
 
-class OptionsPanelVisual extends JPanel {
+class OptionsPanelVisual extends JPanel implements ActionListener {
 
     private static final long serialVersionUID = -38388194985L;
 
@@ -51,24 +59,27 @@ class OptionsPanelVisual extends JPanel {
     //private static final String MSG_ILLEGAL_INDEX_FILE_NAME
     //                                     = "MSG_IllegalIndexFileName";     // NOI18N
 
-    OptionsPanelVisual() {
+    OptionsPanelVisual(String originalEncoding) {
         initComponents();
+        init(originalEncoding);
     }
 
-    void addCreateIndexListener(PropertyChangeListener listener) {
-        createIndexCheckBox.addPropertyChangeListener(listener);
+    private void init(String originalEncoding) {
+        createIndexCheckBox.addActionListener(this);
+        encodingComboBox.setModel(new EncodingModel(originalEncoding));
+        encodingComboBox.setRenderer(new EncodingRenderer());
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        indexNameTextField.setEnabled(createIndexCheckBox.isSelected());
+    }
+
+    void addCreateIndexListener(ActionListener listener) {
+        createIndexCheckBox.addActionListener(listener);
     }
 
     void addIndexNameListener(DocumentListener listener) {
         indexNameTextField.getDocument().addDocumentListener(listener);
-    }
-
-    void addEncodingListener(PropertyChangeListener listener) {
-        encodingComboBox.addPropertyChangeListener(listener);
-    }
-
-    void addSetAsMainListener(PropertyChangeListener listener) {
-        setAsMainCheckBox.addPropertyChangeListener(listener);
     }
 
     /** This method is called from within the constructor to
@@ -82,7 +93,6 @@ class OptionsPanelVisual extends JPanel {
         setAsMainCheckBox = new javax.swing.JCheckBox();
         indexNameTextField = new javax.swing.JTextField();
         createIndexCheckBox = new javax.swing.JCheckBox();
-        indexPathPreview = new javax.swing.JLabel();
         encodingLabel = new javax.swing.JLabel();
         encodingComboBox = new javax.swing.JComboBox();
 
@@ -97,9 +107,6 @@ class OptionsPanelVisual extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(createIndexCheckBox, org.openide.util.NbBundle.getBundle(OptionsPanelVisual.class).getString("LBL_CreateIndexFile")); // NOI18N
         createIndexCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        org.openide.awt.Mnemonics.setLocalizedText(indexPathPreview, "index.php"); // NOI18N
-        indexPathPreview.setEnabled(false);
-
         encodingLabel.setLabelFor(encodingComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(OptionsPanelVisual.class, "LBL_Encoding")); // NOI18N
 
@@ -110,20 +117,15 @@ class OptionsPanelVisual extends JPanel {
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(2, 2, 2)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(19, 19, 19)
-                                .add(indexPathPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE))
-                            .add(layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(createIndexCheckBox)
-                                .add(18, 18, 18)
-                                .add(indexNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE))
-                            .add(layout.createSequentialGroup()
-                                .add(encodingLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(encodingComboBox, 0, 289, Short.MAX_VALUE))))
+                                .add(2, 2, 2)
+                                .add(createIndexCheckBox))
+                            .add(encodingLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(encodingComboBox, 0, 288, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, indexNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)))
                     .add(setAsMainCheckBox))
                 .addContainerGap())
         );
@@ -131,17 +133,15 @@ class OptionsPanelVisual extends JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(indexNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(createIndexCheckBox))
-                .add(5, 5, 5)
-                .add(indexPathPreview)
+                    .add(createIndexCheckBox)
+                    .add(indexNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(encodingLabel)
                     .add(encodingComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(18, 18, 18)
                 .add(setAsMainCheckBox)
-                .addContainerGap(17, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         setAsMainCheckBox.getAccessibleContext().setAccessibleName("Set as Main Project");
@@ -150,8 +150,6 @@ class OptionsPanelVisual extends JPanel {
         indexNameTextField.getAccessibleContext().setAccessibleDescription("Specify the name of index file"); // NOI18N
         createIndexCheckBox.getAccessibleContext().setAccessibleName("Create Index File"); // NOI18N
         createIndexCheckBox.getAccessibleContext().setAccessibleDescription("Select Checkbox to create index file"); // NOI18N
-        indexPathPreview.getAccessibleContext().setAccessibleName("Index Full Path"); // NOI18N
-        indexPathPreview.getAccessibleContext().setAccessibleDescription("Index Full Path"); // NOI18N
         encodingComboBox.getAccessibleContext().setAccessibleName("Default Encoding");
         encodingComboBox.getAccessibleContext().setAccessibleDescription("Default Encoding");
     }// </editor-fold>//GEN-END:initComponents
@@ -161,7 +159,6 @@ class OptionsPanelVisual extends JPanel {
     private javax.swing.JComboBox encodingComboBox;
     private javax.swing.JLabel encodingLabel;
     private javax.swing.JTextField indexNameTextField;
-    private javax.swing.JLabel indexPathPreview;
     private javax.swing.JCheckBox setAsMainCheckBox;
     // End of variables declaration//GEN-END:variables
 
@@ -181,11 +178,63 @@ class OptionsPanelVisual extends JPanel {
         indexNameTextField.setText(indexName);
     }
 
+    Charset getEncoding() {
+        return (Charset) encodingComboBox.getSelectedItem();
+    }
+
     boolean isSetAsMain() {
         return setAsMainCheckBox.isSelected();
     }
 
     void setSetAsMain(boolean isSetAsMain) {
         setAsMainCheckBox.setSelected(isSetAsMain);
+    }
+
+    private static class EncodingModel extends DefaultComboBoxModel {
+        private static final long serialVersionUID = -3139920099217726436L;
+
+        public EncodingModel(String originalEncoding) {
+            Charset defEnc = null;
+            for (Charset c : Charset.availableCharsets().values()) {
+                if (c.name().equals(originalEncoding)) {
+                    defEnc = c;
+                }
+                addElement(c);
+            }
+            if (defEnc == null) {
+                defEnc = Charset.defaultCharset();
+            }
+            setSelectedItem(defEnc);
+        }
+    }
+
+    private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
+        private static final long serialVersionUID = 3196531352192214602L;
+
+        public EncodingRenderer() {
+            setOpaque(true);
+        }
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+                boolean cellHasFocus) {
+            assert value instanceof Charset;
+            setName("ComboBox.listRenderer"); // NOI18N
+            setText(((Charset) value).displayName());
+            setIcon(null);
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            return this;
+        }
+
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name; // NOI18N
+        }
     }
 }

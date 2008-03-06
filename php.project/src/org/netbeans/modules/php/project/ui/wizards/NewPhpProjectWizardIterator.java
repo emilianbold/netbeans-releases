@@ -55,15 +55,6 @@ import org.openide.util.NbBundle;
  */
 public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
-    static final String PROJECT_DIR = "projdir"; // NOI18N
-    static final String SET_AS_MAIN = "setAsMain"; // NOI18N
-    static final String USE_PROJECT_FOLDER = "useProjectFolder"; // NOI18N
-    static final String USE_WWW_FOLDER = "useWwwFolder"; // NOI18N
-    static final String WWW_FOLDER = "wwwFolder"; // NOI18N
-    static final String CREATE_INDEX_FILE = "createIndexFile"; // NOI18N
-    static final String INDEX_FILE = "indexFile"; // NOI18N
-    static final String ENCODING = "encoding"; // NOI18N
-
     private WizardDescriptor descriptor;
     private WizardDescriptor.Panel[] panels;
     private int index;
@@ -75,11 +66,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     public void uninitialize(WizardDescriptor wizard) {
-        wizard.putProperty(USE_PROJECT_FOLDER, null);
-        wizard.putProperty(USE_WWW_FOLDER, null);
-        wizard.putProperty(WWW_FOLDER, null);
-        wizard.putProperty(INDEX_FILE, null);
-        wizard.putProperty(ENCODING, null);
+        wizard.putProperty(ConfigureProjectPanel.USE_PROJECT_FOLDER, null);
+        wizard.putProperty(ConfigureProjectPanel.USE_WWW_FOLDER, null);
+        wizard.putProperty(ConfigureProjectPanel.WWW_FOLDER, null);
+        wizard.putProperty(ConfigureProjectPanel.INDEX_FILE, null);
+        wizard.putProperty(ConfigureProjectPanel.ENCODING, null);
 
         panels = null;
         descriptor = null;
@@ -93,7 +84,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     public Set instantiate(ProgressHandle handle) throws IOException {
         final Set<Object> resultSet = new HashSet<Object>(2);
 
-        File indexFile = (File) descriptor.getProperty(INDEX_FILE);
+        File indexFile = (File) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
         handle.start(indexFile == null ? 2 : 3);
         int progres = 1;
 

@@ -39,23 +39,27 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
-import java.io.File;
 
-import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 
 import javax.swing.event.DocumentListener;
-import org.openide.util.NbBundle;
 
+/**
+ * @author Tomas Mysik
+ */
 class LocationPanelVisual extends JPanel {
 
     private static final long serialVersionUID = 9464147466826L;
 
-    private static final String BROWSE  = "BROWSE"; // NOI18N
-    private static final String SELECT_PROJECT_LOCATION = "LBL_SelectProjectLocation"; // NOI18N
-
     public LocationPanelVisual() {
         initComponents();
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        // same problem as in 31086, initial focus on Cancel button
+        projectNameTextField.requestFocus();
     }
 
     void addProjectNameListener(DocumentListener listener) {
@@ -78,7 +82,7 @@ class LocationPanelVisual extends JPanel {
         projectNameTextField = new javax.swing.JTextField();
         projectLocationLabel = new javax.swing.JLabel();
         projectLocationTextField = new javax.swing.JTextField();
-        myBrowseButton = new javax.swing.JButton();
+        browseButton = new javax.swing.JButton();
         createdFolderLabel = new javax.swing.JLabel();
         createdFolderTextField = new javax.swing.JTextField();
 
@@ -90,11 +94,10 @@ class LocationPanelVisual extends JPanel {
         projectLocationLabel.setLabelFor(projectLocationTextField);
         org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "LBL_ProjectLocation")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(myBrowseButton, org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "LBL_BrowseProject")); // NOI18N
-        myBrowseButton.setActionCommand(BROWSE);
-        myBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "LBL_BrowseProject")); // NOI18N
+        browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseLocationAction(evt);
+                browseButtonActionPerformed(evt);
             }
         });
 
@@ -118,7 +121,7 @@ class LocationPanelVisual extends JPanel {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(myBrowseButton))
+                        .add(browseButton))
                     .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -132,7 +135,7 @@ class LocationPanelVisual extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(projectLocationLabel)
-                    .add(myBrowseButton)
+                    .add(browseButton)
                     .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -148,41 +151,21 @@ class LocationPanelVisual extends JPanel {
         projectLocationLabel.getAccessibleContext().setAccessibleName(bundle.getString("A11_Project_Location")); // NOI18N
         projectLocationTextField.getAccessibleContext().setAccessibleName("Project Location");
         projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "ACS_LBL_ProjectLocation_A11YDesc")); // NOI18N
-        myBrowseButton.getAccessibleContext().setAccessibleName("Browse Project Location");
-        myBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "ACS_LBL_BrowseLocation_A11YDesc")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleName("Browse Project Location");
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "ACS_LBL_BrowseLocation_A11YDesc")); // NOI18N
         createdFolderTextField.getAccessibleContext().setAccessibleName("Project Folder");
         createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "ACS_LBL_CreatedProjectFolder_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-
-    private void browseLocationAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocationAction
-        String command = evt.getActionCommand();
-
-        if ( command.equals(BROWSE))
-        {
-            JFileChooser chooser = new JFileChooser();
-            chooser.setDialogTitle( NbBundle.getMessage(
-                    NewPhpProjectWizardIterator.class,SELECT_PROJECT_LOCATION));
-            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            String path = projectLocationTextField.getText();
-            if (path.length() > 0) {
-                File f = new File(path);
-                if (f.exists()) {
-                    chooser.setSelectedFile(f);
-                }
-            }
-            if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-                File projectDir = chooser.getSelectedFile();
-                projectLocationTextField.setText(projectDir.getAbsolutePath());
-            }
-            //getPanel().fireChangeEvent();
-        }
-    }//GEN-LAST:event_browseLocationAction
+    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+        String newLocation = Utils.browseLocationAction(this, getProjectLocation());
+        setProjectLocation(newLocation);
+    }//GEN-LAST:event_browseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton browseButton;
     private javax.swing.JLabel createdFolderLabel;
     private javax.swing.JTextField createdFolderTextField;
-    private javax.swing.JButton myBrowseButton;
     private javax.swing.JLabel projectLocationLabel;
     private javax.swing.JTextField projectLocationTextField;
     private javax.swing.JLabel projectNameLabel;
@@ -199,9 +182,14 @@ class LocationPanelVisual extends JPanel {
 
     public void setProjectName(String projectName) {
         projectNameTextField.setText(projectName);
+        projectNameTextField.selectAll();
     }
 
     public void setProjectLocation(String projectLocation) {
         projectLocationTextField.setText(projectLocation);
+    }
+
+    public void setCreatedProjectFolder(String projectFolder) {
+        createdFolderTextField.setText(projectFolder);
     }
 }
