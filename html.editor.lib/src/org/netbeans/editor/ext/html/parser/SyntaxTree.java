@@ -49,8 +49,10 @@ import java.util.List;
 public class SyntaxTree {
     
     public static AstNode makeTree(List<SyntaxElement> elements) {
-        
-        AstNode root = new AstNode("root", null, 0, 0);
+        SyntaxElement last = elements.size() > 0 ? elements.get(elements.size() - 1) : null;
+        int lastEndOffset = last == null ? 0 : last.offset() + last.length();
+
+        AstNode root = new AstNode("root", null, 0, lastEndOffset);
         LinkedList<AstNode> nodeStack = new  LinkedList<AstNode>();
         nodeStack.add(root);
         

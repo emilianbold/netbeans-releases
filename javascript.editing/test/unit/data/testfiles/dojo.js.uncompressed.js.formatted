@@ -3039,8 +3039,8 @@ dojo.delegate = function(obj, props){
           // be called directly from dojo.fixEvent.
           switch(evt.type){
             case "keypress":
-            del._setKeyChar(evt);
-            break;
+              del._setKeyChar(evt);
+              break;
           }
           return evt;
         },
@@ -3279,21 +3279,21 @@ dojo.delegate = function(obj, props){
           _fixKeys: function(evt){
             switch(evt.type){
               case "keypress":
-              var c = ("charCode" in evt ? evt.charCode : evt.keyCode);
-              if (c==10){
-                // CTRL-ENTER is CTRL-ASCII(10) on IE, but CTRL-ENTER on Mozilla
-                c=0;
-                evt.keyCode = 13;
-              }else if(c==13||c==27){
-                c=0; // Mozilla considers ENTER and ESC non-printable
-              }else if(c==3){
-                c=99; // Mozilla maps CTRL-BREAK to CTRL-c
-              }
-              // Mozilla sets keyCode to 0 when there is a charCode
-              // but that stops the event on IE.
-              evt.charCode = c;
-              del._setKeyChar(evt);
-              break;
+                var c = ("charCode" in evt ? evt.charCode : evt.keyCode);
+                if (c==10){
+                  // CTRL-ENTER is CTRL-ASCII(10) on IE, but CTRL-ENTER on Mozilla
+                  c=0;
+                  evt.keyCode = 13;
+                }else if(c==13||c==27){
+                  c=0; // Mozilla considers ENTER and ESC non-printable
+                }else if(c==3){
+                  c=99; // Mozilla maps CTRL-BREAK to CTRL-c
+                }
+                // Mozilla sets keyCode to 0 when there is a charCode
+                // but that stops the event on IE.
+                evt.charCode = c;
+                del._setKeyChar(evt);
+                break;
             }
             return evt;
           },
@@ -3390,18 +3390,18 @@ dojo.delegate = function(obj, props){
           _fixEvent: function(evt, sender){
             switch(evt.type){
               case "keypress":
-              var c = evt.which;
-              if(c==3){
-                c=99; // Mozilla maps CTRL-BREAK to CTRL-c
-              }
-              // can't trap some keys at all, like INSERT and DELETE
-              // there is no differentiating info between DELETE and ".", or INSERT and "-"
-              c = ((c<41)&&(!evt.shiftKey) ? 0 : c);
-              if((evt.ctrlKey)&&(!evt.shiftKey)&&(c>=65)&&(c<=90)){
-                // lowercase CTRL-[A-Z] keys
-                c += 32;
-              }
-              return del._synthesizeEvent(evt, { charCode: c });
+                var c = evt.which;
+                if(c==3){
+                  c=99; // Mozilla maps CTRL-BREAK to CTRL-c
+                }
+                // can't trap some keys at all, like INSERT and DELETE
+                // there is no differentiating info between DELETE and ".", or INSERT and "-"
+                c = ((c<41)&&(!evt.shiftKey) ? 0 : c);
+                if((evt.ctrlKey)&&(!evt.shiftKey)&&(c>=65)&&(c<=90)){
+                  // lowercase CTRL-[A-Z] keys
+                  c += 32;
+                }
+                return del._synthesizeEvent(evt, { charCode: c });
             }
             return evt;
           }
@@ -3414,21 +3414,21 @@ dojo.delegate = function(obj, props){
           _fixEvent: function(evt, sender){
             switch(evt.type){
               case "keypress":
-              var c = evt.charCode, s = evt.shiftKey, k = evt.keyCode;
-              // FIXME: This is a hack, suggest we rethink keyboard strategy.
-              // Arrow and page keys have 0 "keyCode" in keypress events.on Safari for Windows
-              k = k || identifierMap[evt.keyIdentifier] || 0;
-              if(evt.keyIdentifier=="Enter"){
-                c = 0; // differentiate Enter from CTRL-m (both code 13)
-              }else if((evt.ctrlKey)&&(c>0)&&(c<27)){
-                c += 96; // map CTRL-[A-Z] codes to ASCII
-              } else if (c==dojo.keys.SHIFT_TAB) {
-                c = dojo.keys.TAB; // morph SHIFT_TAB into TAB + shiftKey: true
-                s = true;
-              } else {
-                c = (c>=32 && c<63232 ? c : 0); // avoid generating keyChar for non-printables
-              }
-              return del._synthesizeEvent(evt, {charCode: c, shiftKey: s, keyCode: k});
+                var c = evt.charCode, s = evt.shiftKey, k = evt.keyCode;
+                // FIXME: This is a hack, suggest we rethink keyboard strategy.
+                // Arrow and page keys have 0 "keyCode" in keypress events.on Safari for Windows
+                k = k || identifierMap[evt.keyIdentifier] || 0;
+                if(evt.keyIdentifier=="Enter"){
+                  c = 0; // differentiate Enter from CTRL-m (both code 13)
+                }else if((evt.ctrlKey)&&(c>0)&&(c<27)){
+                  c += 96; // map CTRL-[A-Z] codes to ASCII
+                } else if (c==dojo.keys.SHIFT_TAB) {
+                  c = dojo.keys.TAB; // morph SHIFT_TAB into TAB + shiftKey: true
+                  s = true;
+                } else {
+                  c = (c>=32 && c<63232 ? c : 0); // avoid generating keyChar for non-printables
+                }
+                return del._synthesizeEvent(evt, {charCode: c, shiftKey: s, keyCode: k});
             }
             return evt;
           }
@@ -3681,20 +3681,20 @@ dojo.byId = function(id, doc){
         }
         switch(position.toLowerCase()){
           case "before":
-          return _insertBefore(node, refNode);	//	boolean
+            return _insertBefore(node, refNode);	//	boolean
           case "after":
-          return _insertAfter(node, refNode);		//	boolean
+            return _insertAfter(node, refNode);		//	boolean
           case "first":
-          if(refNode.firstChild){
-            return _insertBefore(node, refNode.firstChild);	//	boolean
-          }else{
+            if(refNode.firstChild){
+              return _insertBefore(node, refNode.firstChild);	//	boolean
+            }else{
+              refNode.appendChild(node);
+              return true;	//	boolean
+            }
+            break;
+          default: // aka: last
             refNode.appendChild(node);
             return true;	//	boolean
-          }
-          break;
-          default: // aka: last
-          refNode.appendChild(node);
-          return true;	//	boolean
         }
       }
 
@@ -4304,7 +4304,7 @@ dojo.byId = function(id, doc){
         //FIXME: could check html and body tags directly instead of computed style?  need to ignore case, accept empty values
         return !("_bodyLtr" in dojo) ? 
           dojo._bodyLtr = dojo.getComputedStyle(dojo.body()).direction == "ltr" :
-        dojo._bodyLtr; // Boolean 
+          dojo._bodyLtr; // Boolean 
       }
 	
       dojo._getIeDocumentElementOffset = function(){
@@ -5783,7 +5783,7 @@ dojo.byId = function(id, doc){
           function(root){ 
           return root.all;
         } : 
-        function(root){
+          function(root){
           return root.getElementsByTagName("*");
         },
         ">": function(root){

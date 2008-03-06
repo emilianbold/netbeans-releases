@@ -32,6 +32,8 @@ package org.jruby.libraries;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,12 +45,20 @@ import org.jruby.runtime.load.Library;
 import org.jruby.util.NormalizedFile;
 
 public class RbConfigLibrary implements Library {
+    /** This is a map from Java's "friendly" OS names to those used by Ruby */
+    public static final Map<String, String> OS_NAMES = new HashMap();
+    
+    static {
+        OS_NAMES.put("Mac OS X", "darwin");
+        OS_NAMES.put("Darwin", "darwin");
+        OS_NAMES.put("Linux", "linux");
+    }
     /**
      * Just enough configuration settings (most don't make sense in Java) to run the rubytests
      * unit tests. The tests use <code>bindir</code>, <code>RUBY_INSTALL_NAME</code> and
      * <code>EXEEXT</code>.
      */
-    public void load(Ruby runtime) {
+    public void load(Ruby runtime, boolean wrap) {
         RubyModule configModule = runtime.defineModule("Config");
         RubyHash configHash = RubyHash.newHash(runtime);
         configModule.defineConstant("CONFIG", configHash);
@@ -59,9 +69,16 @@ public class RbConfigLibrary implements Library {
         setConfig(configHash, "MINOR", versionParts[1]);
         setConfig(configHash, "TEENY", versionParts[2]);
         setConfig(configHash, "ruby_version", versionParts[0] + '.' + versionParts[1]);
-        setConfig(configHash, "arch", System.getProperty("os.arch") + "-java" + System.getProperty("java.specification.version"));
+        // Rubygems is too specific on host cpu so until we have real need lets default to universal
+        //setConfig(configHash, "arch", System.getProperty("os.arch") + "-java" + System.getProperty("java.specification.version"));
+        setConfig(configHash, "arch", "universal-java" + System.getProperty("java.specification.version"));
 
-        String normalizedHome = new NormalizedFile(runtime.getJRubyHome()).getAbsolutePath();
+        String normalizedHome;
+        if (Ruby.isSecurityRestricted()) {
+            normalizedHome = "SECURITY RESTRICTED";
+        } else {
+            normalizedHome = new NormalizedFile(runtime.getJRubyHome()).getAbsolutePath();
+        }
         setConfig(configHash, "bindir", new NormalizedFile(normalizedHome, "bin").getAbsolutePath());
         setConfig(configHash, "RUBY_INSTALL_NAME", jruby_script());
         setConfig(configHash, "ruby_install_name", jruby_script());
@@ -69,17 +86,28 @@ public class RbConfigLibrary implements Library {
         setConfig(configHash, "prefix", normalizedHome);
         setConfig(configHash, "exec_prefix", normalizedHome);
 
-        setConfig(configHash, "host_os", System.getProperty("os.name"));
+        String osName = OS_NAMES.get(System.getProperty("os.name"));
+        if (osName == null) {
+            osName = System.getProperty("os.name");
+        }
+        setConfig(configHash, "host_os", osName);
         setConfig(configHash, "host_vendor", System.getProperty("java.vendor"));
         setConfig(configHash, "host_cpu", System.getProperty("os.arch"));
         
-        setConfig(configHash, "target_os", System.getProperty("os.name"));
+        setConfig(configHash, "target_os", osName);
+        
         setConfig(configHash, "target_cpu", System.getProperty("os.arch"));
         
         String jrubyJarFile = "jruby.jar";
+        // BEGIN NETBEANS MODIFICATIONS
+        //URL jrubyPropertiesUrl = Ruby.class.getClassLoader().getResource("jruby.properties");
         URL jrubyPropertiesUrl = Ruby.class.getClassLoader().getResource("/org/jruby/jruby.properties");
+        // END NETBEANS MODIFICATIONS
         if (jrubyPropertiesUrl != null) {
+            // BEGIN NETBEANS MODIFICATIONS
+            //Pattern jarFile = Pattern.compile("jar:file:.*?([a-zA-Z0-9.\\-]+\\.jar)!/jruby.properties");
             Pattern jarFile = Pattern.compile("jar:file:.*?([a-zA-Z0-9.\\-]+\\.jar)!/org/jruby/jruby.properties");
+            // END NETBEANS MODIFICATIONS
             Matcher jarMatcher = jarFile.matcher(jrubyPropertiesUrl.toString());
             jarMatcher.find();
             if (jarMatcher.matches()) {
@@ -116,6 +144,7 @@ public class RbConfigLibrary implements Library {
         setConfig(configHash, "datadir", new NormalizedFile(normalizedHome, "share").getAbsolutePath());
         setConfig(configHash, "mandir", new NormalizedFile(normalizedHome, "man").getAbsolutePath());
         setConfig(configHash, "sysconfdir", new NormalizedFile(normalizedHome, "etc").getAbsolutePath());
+        setConfig(configHash, "localstatedir", new NormalizedFile(normalizedHome, "var").getAbsolutePath());
         setConfig(configHash, "DLEXT", "jar");
 
         if (isWindows()) {
@@ -127,7 +156,7 @@ public class RbConfigLibrary implements Library {
 
     private static void setConfig(RubyHash configHash, String key, String value) {
         Ruby runtime = configHash.getRuntime();
-        configHash.aset(runtime.newString(key), runtime.newString(value));
+        configHash.op_aset(runtime.newString(key), runtime.newString(value));
     }
 
     private static boolean isWindows() {

@@ -31,38 +31,38 @@
 <jsp:root version="2.1" xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:webuijsf="http://www.sun.com/webui/webuijsf">
     <jsp:directive.page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8"/>
     <f:view>
-        <webuijsf:page binding="#{Preview.page1}" id="page1">
-            <webuijsf:html binding="#{Preview.html1}" id="html1">
-                <webuijsf:head binding="#{Preview.head1}" id="head1">
-                    <webuijsf:link binding="#{Preview.link1}" id="link1" url="/resources/stylesheet.css"/>
+        <webuijsf:page id="page1">
+            <webuijsf:html id="html1">
+                <webuijsf:head id="head1">
+                    <webuijsf:link id="link1" url="/resources/stylesheet.css"/>
                 </webuijsf:head>
-                <webuijsf:body binding="#{Preview.body1}" id="body1" style="-rave-layout: grid">
-                    <webuijsf:form binding="#{Preview.form1}" id="form1">
+                <webuijsf:body id="body1" style="-rave-layout: grid">
+                    <webuijsf:form id="form1">
                         <div style="position: absolute; left: 0px; top: 0px">
                             <jsp:directive.include file="Masthead.jspf"/>
                         </div>
-                        <h:panelGrid binding="#{Preview.mainPanel}" id="mainPanel" style="margin: 5px; padding: 5px; height: 100%; left: 0px; top: 160px; position: absolute; width: 760px">
-                            <h:panelGrid binding="#{Preview.navigationPanel}" id="navigationPanel" style="width: 50%">
-                                <webuijsf:hyperlink actionExpression="#{Preview.returnLink_action}" binding="#{Preview.returnLink}" id="returnLink" text="Return to main page"/>
+                        <h:panelGrid id="mainPanel" style="margin: 5px; padding: 5px; height: 100%; left: 0px; top: 160px; position: absolute; width: 760px">
+                            <h:panelGrid id="navigationPanel" style="width: 50%">
+                                <webuijsf:hyperlink actionExpression="#{Preview.returnLink_action}" id="returnLink" text="Return to main page"/>
                             </h:panelGrid>
-                            <h:panelGrid binding="#{Preview.genrePanel}" columns="3" id="genrePanel" style="width: 50%">
-                                <webuijsf:label binding="#{Preview.genre1}" id="genre1" text="Revise Genre"/>
+                            <h:panelGrid columns="3" id="genrePanel" style="width: 50%">
+                                <webuijsf:label id="genre1" text="Revise Genre"/>
                                 <webuijsf:dropDown binding="#{Preview.genre}" id="genre" items="#{ApplicationBean1.genreOptions}" valueChangeListenerExpression="#{Preview.genre_processValueChange}"/>
-                                <webuijsf:message binding="#{Preview.message1}" for="genre" id="message1" showDetail="false" showSummary="true"/>
+                                <webuijsf:message for="genre" id="message1" showDetail="false" showSummary="true"/>
                             </h:panelGrid>
-                            <h:panelGrid binding="#{Preview.moviePanel}" id="moviePanel" style="width: 100%; height: 100%;">
-                                <webuijsf:staticText binding="#{Preview.title}" id="title" style="font-size: 18px; font-weight: bold" text="#{SessionBean1.movieListDataProvider.value['title']}"/>
-                                <webuijsf:staticText binding="#{Preview.year}" id="year" text="#{SessionBean1.movieListDataProvider.value['year']}"/>
-                                <webuijsf:image binding="#{Preview.image}" id="image" url="#{SessionBean1.movieListDataProvider.value['image']}"/>
-                                <h:panelGrid binding="#{Preview.detailsPanel}" columns="2" id="detailsPanel" style="width: 50%; height: 100%;">
-                                    <webuijsf:label binding="#{Preview.label1}" id="label1" text="Genre:"/>
-                                    <webuijsf:staticText binding="#{Preview.detailsGenre}" id="detailsGenre" text="#{SessionBean1.movieListDataProvider.value['genre']}"/>
-                                    <webuijsf:label binding="#{Preview.label2}" id="label2" text="Rating:"/>
-                                    <webuijsf:staticText binding="#{Preview.detailsRating}" id="detailsRating" text="#{SessionBean1.movieListDataProvider.value['rating']}"/>
-                                    <webuijsf:label binding="#{Preview.label3}" id="label3" text="Length:"/>
-                                    <webuijsf:staticText binding="#{Preview.detailsLength}" id="detailsLength" text="#{SessionBean1.movieListDataProvider.value['length']}"/>
-                                    <webuijsf:label binding="#{Preview.label4}" id="label4" text="Description:"/>
-                                    <webuijsf:staticText binding="#{Preview.detailsDescription}" id="detailsDescription" text="#{SessionBean1.movieListDataProvider.value['description']}"/>
+                            <h:panelGrid id="moviePanel" style="width: 100%; height: 100%;">
+                                <webuijsf:staticText id="title" style="font-size: 18px; font-weight: bold" text="#{SessionBean1.movieListDataProvider.value['title']}"/>
+                                <webuijsf:staticText id="year" text="#{SessionBean1.movieListDataProvider.value['year']}"/>
+                                <webuijsf:image id="image" url="#{SessionBean1.movieListDataProvider.value['image']}"/>
+                                <h:panelGrid columns="2" id="detailsPanel" style="width: 50%; height: 100%;">
+                                    <webuijsf:label id="label1" text="Genre:"/>
+                                    <webuijsf:staticText id="detailsGenre" text="#{SessionBean1.movieListDataProvider.value['genre']}"/>
+                                    <webuijsf:label id="label2" text="Rating:"/>
+                                    <webuijsf:staticText id="detailsRating" text="#{SessionBean1.movieListDataProvider.value['rating']}"/>
+                                    <webuijsf:label id="label3" text="Length:"/>
+                                    <webuijsf:staticText id="detailsLength" text="#{SessionBean1.movieListDataProvider.value['length']}"/>
+                                    <webuijsf:label id="label4" text="Description:"/>
+                                    <webuijsf:staticText id="detailsDescription" text="#{SessionBean1.movieListDataProvider.value['description']}"/>
                                 </h:panelGrid>
                             </h:panelGrid>
                         </h:panelGrid>

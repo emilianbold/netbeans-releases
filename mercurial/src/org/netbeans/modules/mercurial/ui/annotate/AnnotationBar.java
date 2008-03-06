@@ -51,7 +51,7 @@ import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.HgProgressSupport;
-import org.netbeans.modules.mercurial.util.HgLogMessage;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
@@ -439,9 +439,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
     private String getPreviousRevision(String revision) {
         for(int i = 0; i < logs.length; i++) {
-            if (logs[i].getRevision() == Long.parseLong(revision)) {
+            if (logs[i].getRevision().equals(revision)) {
                 if (i < logs.length - 1)
-                    return Long.toString(logs[i+1].getRevision());
+                    return logs[i+1].getRevision();
             }
         }
         return null;
