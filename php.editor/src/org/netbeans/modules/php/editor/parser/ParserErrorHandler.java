@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,55 +39,17 @@
 
 package org.netbeans.modules.php.editor.parser;
 
-import java.io.StringReader;
-import java_cup.runtime.Symbol;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.editor.parser.ASTPHP5Symbols;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
-
 /**
  *
  * @author Petr Pisl
  */
-public class ASTPHP5ParserTest extends NbTestCase {
-    
-    public ASTPHP5ParserTest(String testName) {
-        super(testName);
-    }            
+public interface ParserErrorHandler {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    public enum Type {
+        FATAL_PARSER_ERROR,
+        SYNTAX_ERROR
     }
     
-//    public void testPHPDoc1() throws Exception {
-//        String source = "<?php\n/**\n * PHP Template.\n */\necho \"ahoj\"\n?>";
-//        System.out.println("-----------------start: ------------------");
-//        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source));
-//        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
-//        Program result = (Program)parser.parse().value;
-//        
-//        System.out.println((new PrintASTVisitor()).printTree(result));
-//        System.out.println("-----------------end: ------------------\n\n\n");
-//    }
-    
-    public void testPHPError1() throws Exception {
-        String source = "<?php\npublic class User {\n  \n}\n?>";
-        System.out.println("-----------------start: ------------------");
-        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source));
-        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
-        Symbol root = parser.parse();
-        if (root != null){
-            Program result = (Program)root.value;
-        
-            System.out.println((new PrintASTVisitor()).printTree(result));
-        }
-        System.out.println("-----------------end: ------------------\n\n\n");
-    }
+    public void handleError(ParserErrorHandler.Type type, String message, int startOffset, int endOffset, Object info);
     
 }
