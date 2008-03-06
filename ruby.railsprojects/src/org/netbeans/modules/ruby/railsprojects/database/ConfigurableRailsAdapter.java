@@ -75,6 +75,8 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
      * i.e. value for the <code>password:</code> attribute.
      * @param database the name of the database to be put into the generated configuration, 
      * i.e. value for the <code>database:</code> attribute.
+     * @param jdbc specifies whether the generated configuration should use JDBC
+     * to access the database. 
      */
     public ConfigurableRailsAdapter(RailsDatabaseConfiguration delegate, 
             String userName, String password, String database, boolean jdbc) {
