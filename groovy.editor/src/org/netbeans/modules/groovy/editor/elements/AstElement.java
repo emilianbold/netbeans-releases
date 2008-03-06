@@ -50,12 +50,14 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.netbeans.modules.gsf.api.Element;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Martin Adamek
  */
-public abstract class AstElement implements Element {
+public abstract class AstElement implements Element, ElementHandle {
 
     protected final ASTNode node;
     protected List<AstElement> children;
@@ -105,6 +107,25 @@ public abstract class AstElement implements Element {
         this.in = in;
     }
     
+    public boolean signatureEquals (final ElementHandle handle) {
+        if (handle instanceof AstElement) {
+                return this.equals(handle);
+            }
+        return false;
+    }
+    
+    // FIXME: This is an empty implementations to make a 
+    // AstElement a ElementHandle. Seems not to affect others. Sure?
+    
+    public FileObject getFileObject() {
+        return null;
+    }
+    
+    public String getMimeType() {
+        return "text/x-groovy"; // NOI18N
+    }
+    
+
     public static AstElement create(ASTNode node) {
         if (node instanceof MethodNode) {
             return new AstMethodElement(node);

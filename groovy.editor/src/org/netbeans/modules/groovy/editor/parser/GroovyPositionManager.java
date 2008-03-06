@@ -41,11 +41,16 @@
 
 package org.netbeans.modules.groovy.editor.parser;
 
+import java.io.IOException;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.groovy.editor.AstUtilities;
+import org.netbeans.modules.groovy.editor.elements.AstElement;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.PositionManager;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -54,7 +59,18 @@ import org.netbeans.modules.gsf.api.PositionManager;
 public class GroovyPositionManager implements PositionManager {
 
     public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle object) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if(object instanceof AstElement){
+            AstElement astElement = (AstElement)object;
+            OffsetRange range = OffsetRange.NONE;
+            try {
+                range = AstUtilities.getRange(astElement.getNode(), (BaseDocument) info.getDocument());
+                return range;
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+        return OffsetRange.NONE;
     }
 
     public boolean isTranslatingSource() {

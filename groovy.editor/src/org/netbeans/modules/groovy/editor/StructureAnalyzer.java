@@ -423,9 +423,7 @@ public class StructureAnalyzer implements StructureScanner {
         }
 
         public ElementHandle getElementHandle() {
-            // FIXME: our AstElement is not an ElementHandle (yet)
-            // return node;
-            return null;
+            return node;
         }
 
         public ElementKind getKind() {
