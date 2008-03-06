@@ -41,6 +41,7 @@ package org.netbeans.editor.ext.html.parser;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  *
@@ -118,8 +119,16 @@ public class AstNode {
         return parent;
     }
     
-    void removeAllChildren(){
-        children.clear();
+    void removeTagChildren(){
+        for (Iterator<AstNode> it = children().iterator(); it.hasNext();){
+            if (it.next().isTagNode()){
+                it.remove();
+            }
+        }
+    }
+    
+    boolean isTagNode(){
+        return type() == NodeType.TAG || type() == NodeType.UNMATCHED_TAG;
     }
     
     private void setParent(AstNode parent) {
