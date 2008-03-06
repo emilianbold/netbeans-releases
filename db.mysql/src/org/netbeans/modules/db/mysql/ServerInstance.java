@@ -73,6 +73,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 
 /**
@@ -92,6 +93,9 @@ public class ServerInstance implements Node.Cookie {
     
         // Synchronized on this
     private String displayName;
+    
+    // Synchronized on this
+    private Task refreshTask;
     
     /**
      *  Enumeration of valid sample database names
@@ -147,6 +151,38 @@ public class ServerInstance implements Node.Cookie {
     private ServerInstance() {  
         updateDisplayName();
     }
+    
+    private synchronized void startRefreshTask() {        
+        // Start a background task that keeps the list of databases
+        // up-to-date
+        final long sleepInterval = OPTIONS.getRefreshThreadSleepInterval();
+        
+        refreshTask = RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                Thread.currentThread().setName("MySQL Server Refresh Thread");
+                
+                for ( ; ; ) {
+                    try {
+                        Thread.sleep(sleepInterval);
+                        
+                        if ( OPTIONS.isProviderRegistered() && isConnected() ) {
+                            refreshDatabaseList();
+                        }
+                    } catch ( InterruptedException ie ) {
+                        return;
+                    } catch ( DatabaseException dbe ) {
+                        LOGGER.log(Level.INFO, null, dbe);
+                    }
+                }
+            }
+        });
+    }
+    
+    private synchronized void stopRefreshTask() {
+        if ( refreshTask != null ) {
+            refreshTask.cancel();
+        }
+    } 
     
     public static boolean isSampleName(String name) {
         SampleName[] samples = SampleName.values();
@@ -376,6 +412,13 @@ public class ServerInstance implements Node.Cookie {
     private synchronized void setState(State state) {
         this.state = state;
         updateDisplayName();
+        
+        if ( state == State.CONNECTED ) {
+            startRefreshTask();
+        } else if ( state == State.DISCONNECTED ) {
+            stopRefreshTask();
+        }
+        
         notifyChange();
     }
     
