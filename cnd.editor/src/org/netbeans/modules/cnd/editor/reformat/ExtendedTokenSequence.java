@@ -157,6 +157,7 @@ public class ExtendedTokenSequence {
             while(ts.moveNext()){
                 switch (ts.token().id()) {
                     case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
@@ -182,6 +183,7 @@ public class ExtendedTokenSequence {
                     case LINE_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                     case NEW_LINE:
+                    case ESCAPED_WHITESPACE:
                         return null;
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
@@ -221,6 +223,7 @@ public class ExtendedTokenSequence {
                         balance++;
                         break;
                     case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
@@ -311,6 +314,7 @@ public class ExtendedTokenSequence {
                     case LINE_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                     case NEW_LINE:
+                    case ESCAPED_WHITESPACE:
                         return null;
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
@@ -337,6 +341,7 @@ public class ExtendedTokenSequence {
             while(ts.movePrevious()){
                 switch (ts.token().id()) {
                     case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
@@ -360,6 +365,7 @@ public class ExtendedTokenSequence {
             while(ts.movePrevious()){
                 switch (ts.token().id()) {
                     case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
@@ -426,7 +432,8 @@ public class ExtendedTokenSequence {
                     }
                 }
                 if (ts.token().id() == NEW_LINE ||
-                    ts.token().id() == PREPROCESSOR_DIRECTIVE){
+                    ts.token().id() == PREPROCESSOR_DIRECTIVE ||
+                    ts.token().id() == ESCAPED_WHITESPACE){
                     return true;
                 } else if (ts.token().id() != WHITESPACE){
                     return false;

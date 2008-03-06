@@ -92,6 +92,7 @@ public class ReformatterImpl {
             switch(id){
                 case PREPROCESSOR_DIRECTIVE: //(null, "preprocessor"),
                 case NEW_LINE:
+                case ESCAPED_WHITESPACE:
                 case WHITESPACE:
                 case BLOCK_COMMENT:
                 case DOXYGEN_COMMENT:
