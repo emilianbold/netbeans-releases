@@ -215,9 +215,9 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
                     retVal = false;
                 }
                 wiz.putProperty(AddDomainWizardIterator.TYPE, selectedType);
-                String dirCandidate = getAIVPP().getDomainDir();
+                String dirCandidate = getAIVPP().getDomainDir().toString();
                 if (null != dirCandidate) {
-                    File domainDir = new File(dirCandidate);
+                    File domainDir = getAIVPP().getDomainDir(); // new File(dirCandidate);
                     // this should not happen. The previous page of the wizard should
                     // prevent this panel from appearing.
                     String mess = Util.rootOfUsableDomain(domainDir);
@@ -324,9 +324,7 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
         for(int i=0; location != null && i<dirs.length; i++){
             String hostPort = Util.getHostPort(dirs[i],location);
             if(hostPort != null) {
-                xmlList.add(
-                        NbBundle.getMessage(AddDomainPlatformPanel.class,
-                        "LBL_domainListEntry", new Object[] {hostPort,dirs[i].toString()}));
+                xmlList.add(new DomainListEntry(hostPort,dirs[i],location));                    
             }
         }//for
         retVal = xmlList.toArray();

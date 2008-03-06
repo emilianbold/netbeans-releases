@@ -572,7 +572,7 @@ public class MakeConfiguration extends Configuration {
                 if (IpeUtils.isPathAbsolute(outputLocation)) {
                     subProjectOutputLocations.add(outputLocation);
                 } else {
-                    subProjectOutputLocations.add(projectItem.getMakeArtifact().getProjectLocation() + "/" + outputLocation);
+                    subProjectOutputLocations.add(projectItem.getMakeArtifact().getProjectLocation() + "/" + outputLocation); // NOI18N
                 } // NOI18N
             }
         }

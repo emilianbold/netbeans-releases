@@ -79,9 +79,9 @@ public abstract class PropertyQName extends BaseCasaProperty<QName> {
     @Override
     public PropertyEditor getPropertyEditor() {
         return new NamespaceEditor(
-                this, 
                 getModel(),
                 getCurrentQName(),
-                getDisplayName());
+                getDisplayName(),
+                canWrite());
     }
 }

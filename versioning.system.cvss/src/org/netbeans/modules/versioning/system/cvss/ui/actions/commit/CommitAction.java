@@ -173,6 +173,7 @@ public class CommitAction extends AbstractSystemAction {
         CommitSettings.CommitFile [] files = settings.getCommitFiles();
         Set<String> stickyTags = new HashSet<String>();
         boolean conflicts = false;
+        int filesToCommit = 0;
         for (int i = 0; i < files.length; i++) {
             CommitSettings.CommitFile file = files[i];
             if (file.getOptions() == CommitOptions.EXCLUDE) continue;
@@ -185,6 +186,8 @@ public class CommitAction extends AbstractSystemAction {
                         loc.getString("MSG_CommitForm_ErrorRemoteChanges");
                 settings.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N
                 conflicts = true;
+            } else {
+                filesToCommit++;                
             }
             stickyTags.add(Utils.getSticky(file.getNode().getFile()));
         }
@@ -217,7 +220,7 @@ public class CommitAction extends AbstractSystemAction {
         }
         if (!conflicts) {
             settings.setErrorLabel(errorLabel);
-            commit.setEnabled(true);
+            commit.setEnabled(filesToCommit > 0);
         }
     }
 

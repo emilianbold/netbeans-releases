@@ -42,6 +42,7 @@ package org.netbeans.modules.html.editor.gsf;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.editor.ext.html.parser.AstNode;
+import org.netbeans.editor.ext.html.parser.AstPath;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
@@ -89,8 +90,25 @@ public class HtmlElementHandle implements ElementHandle {
     }
 
     public boolean signatureEquals(ElementHandle handle) {
-        //TODO implement
-        return false;
+        if(!(handle instanceof HtmlElementHandle)) {
+            return false;
+        }
+        
+        AstNode foreignNode = ((HtmlElementHandle)handle).node();
+        if(node == foreignNode) {
+            return true;
+        }
+        
+        AstPath fnPath = foreignNode.path();
+        AstPath path = node.path();
+        
+        return path.equals(fnPath, new AstPath.AstElementComparator() {
+            public boolean equals(AstNode node1, AstNode node2) {
+                return node1.name().equals(node2.name())
+                        && node1.type() == node2.type();
+            }
+        });
+        
     }
 
     public AstNode node() {

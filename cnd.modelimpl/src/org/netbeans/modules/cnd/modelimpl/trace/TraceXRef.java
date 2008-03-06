@@ -276,7 +276,7 @@ public class TraceXRef extends TraceModel {
     
     public static String toString(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
         String out = CsmTracer.getOffsetString(ref, true);
-        CsmReferenceKind kind = CsmReferenceResolver.getDefault().getReferenceKind(ref, targetDecl, targetDef);
+        CsmReferenceKind kind = ref.getKind();
         String postfix;
         if (kind == CsmReferenceKind.DECLARATION) {
             postfix = " (DECLARATION)"; // NOI18N
@@ -374,7 +374,7 @@ public class TraceXRef extends TraceModel {
         if (target == null) {
             entry = XRefResultSet.ContextEntry.UNRESOLVED;
         } else {
-            CsmReferenceKind kind = CsmReferenceResolver.getDefault().getReferenceKind(ref);
+            CsmReferenceKind kind = ref.getKind();
             if (kind == CsmReferenceKind.DIRECT_USAGE) { 
                 XRefResultSet.DeclarationKind declaration = classifyDeclaration(target, printOut);
                 XRefResultSet.DeclarationScope declarationScope = classifyDeclarationScopeForFunction(declaration, target, fun, printOut);

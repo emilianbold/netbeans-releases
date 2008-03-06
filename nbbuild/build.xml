@@ -600,7 +600,7 @@ Link to <A HREF="overview-summary.html">Non-frame version.</A>
       <include name="${nb.cluster.platform.dir}/lib/nbexec" />      
     </fixcrlf>
 
-    <echo file="${netbeans.dest.dir}/build_info">NetBeans dev build
+    <echo file="${netbeans.dest.dir}/${nb.cluster.nb.dir}/build_info">NetBeans dev build
 ------------------
 Number:   ${buildnumber}
 Date:     ${buildday}
@@ -608,7 +608,6 @@ Branding:
 Branch:   trunk
 Tag:
 </echo>
-    <copy file="${netbeans.dest.dir}/build_info" todir="${netbeans.dest.dir}/${nb.cluster.nb.dir}"/>
     <exec executable="hg" dir=".." outputproperty="hg.id" errorproperty="hg.id.err" failonerror="false" failifexecutionfails="false" resultproperty="hg.id.exit">
       <arg value="id"/>
     </exec>
@@ -616,7 +615,7 @@ Tag:
       <equals arg1="${hg.id.exit}" arg2="0"/>
     </condition>
     <property name="hg.id.line" value=""/>
-    <echo file="${netbeans.dest.dir}/build_info" append="true">${hg.id.line}</echo>
+    <echo file="${netbeans.dest.dir}/${nb.cluster.nb.dir}/build_info" append="true">${hg.id.line}</echo>
   </target>
   
   <target name="build" depends="build-nozip"
@@ -1372,6 +1371,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             <clusters dir="${netbeans.dest.dir}">
                 <include name="*"/>
             </clusters>
+            <selection excludes="build_info"/>
         </ducf>
     </target>
 
