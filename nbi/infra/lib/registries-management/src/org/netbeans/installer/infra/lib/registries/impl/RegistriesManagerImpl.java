@@ -693,6 +693,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 //"nb-base",
                 "openesb",
                 "sjsam",
+                "nb-php",
                 "jdk");
         final Map<String, String> notes = new HashMap<String, String>();
         //notes.put("nb-javase", "for Java SE, includes GUI Builder, Profiler");

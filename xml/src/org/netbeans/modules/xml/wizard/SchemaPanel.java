@@ -484,7 +484,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             }
             //if its the first row, then select it as primary
             if(row == 0) {
-                System.out.println("added first row");
+               // System.out.println("added first row");
                 model.setValueAt(new Boolean(true), 0, 0);
             }
         } 

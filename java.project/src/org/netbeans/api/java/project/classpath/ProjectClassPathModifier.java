@@ -300,7 +300,7 @@ public class ProjectClassPathModifier {
                 }
             }
         }
-        else if (classPathType.equals(ClassPath.COMPILE)) {
+        if (classPathType.equals(ClassPath.COMPILE)) {
             final org.netbeans.spi.java.project.classpath.ProjectClassPathExtender pe = 
                     project.getLookup().lookup(org.netbeans.spi.java.project.classpath.ProjectClassPathExtender.class);
             if (pe != null) {
