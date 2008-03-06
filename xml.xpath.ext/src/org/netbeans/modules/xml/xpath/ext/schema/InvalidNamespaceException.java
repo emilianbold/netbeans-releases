@@ -20,7 +20,7 @@
 /**
  *
  */
-package org.netbeans.modules.bpel.model.api.support;
+package org.netbeans.modules.xml.xpath.ext.schema;
 
 /**
  * This exception signals about trying to set bad namespace for element. This
