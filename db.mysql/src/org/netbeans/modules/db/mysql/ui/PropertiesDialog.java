@@ -44,14 +44,14 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.modules.db.mysql.DatabaseUtils;
 import org.netbeans.modules.db.mysql.ServerInstance;
 import org.netbeans.modules.db.mysql.ServerNodeProvider;
-import org.netbeans.modules.db.mysql.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -102,6 +102,8 @@ public class PropertiesDialog  {
         
         if ( ok ) {
             updateServer();
+            server.disconnect();
+            DatabaseUtils.connectToServerAsync(server);
         }     
         
         return ok;
@@ -174,18 +176,9 @@ public class PropertiesDialog  {
         server.setStopArgs(adminPanel.getStopArgs());
 
         // Register the node provider in case it isn't currently registered
-        ServerNodeProvider.getDefault().setRegistered(true);
-        
-
-        try {
-            server.reconnect();
-        } catch ( DatabaseException e ) {
-            Utils.displayError(NbBundle.getMessage(PropertiesDialog.class,
-                    "PropertiesDialog.MSG_UnableToConnect"), e);
-        }
-
+        ServerNodeProvider.getDefault().setRegistered(true);        
     }
-
+        
     private static String getMessage(String id) {
         return NbBundle.getMessage(PropertiesDialog.class, id);
     }

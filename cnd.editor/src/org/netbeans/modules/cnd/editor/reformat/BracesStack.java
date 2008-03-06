@@ -114,7 +114,7 @@ class BracesStack {
             }
         } else if (lastStatementStart != entry.getIndex()) {
             lastStatementStart = entry.getIndex();
-            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+entry.getText());
+            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+entry.getText()); // NOI18N
         }
         stack.push(entry);
         if (TRACE_STACK) System.out.println("push: "+toString()); // NOI18N
@@ -184,13 +184,25 @@ class BracesStack {
                     }
                     break;
                 }
+                case DO: //("do", "keyword-directive"),
+                {
+                    if (next != null && next.id() == WHILE) {
+                        if (i > 0 && stack.get(i-1).getKind() == WHILE) {
+                            stack.setSize(i);
+                            return getLength();
+                        } else {
+                            stack.setSize(i + 1);
+                            return getLength();
+                        }
+                    }
+                    break;
+                }
                 case ELSE: //("else", "keyword-directive"),
                 case TRY: //("try", "keyword-directive"), // C++
                 case CATCH: //("catch", "keyword-directive"), //C++
                 case SWITCH: //("switch", "keyword-directive"),
                 case FOR: //("for", "keyword-directive"),
                 case ASM: //("asm", "keyword-directive"), // gcc and C++
-                case DO: //("do", "keyword-directive"),
                 case WHILE: //("while", "keyword-directive"),
                     break;
             }
@@ -303,6 +315,7 @@ class BracesStack {
                 Token<CppTokenId> current = ts.token();
                 switch (current.id()) {
                     case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
@@ -481,7 +494,7 @@ class BracesStack {
     public void setLastStatementStart(ExtendedTokenSequence ts) {
         if (lastStatementStart == -1) {
             lastStatementStart = ts.index();
-            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+ts.token().text());
+            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+ts.token().text()); // NOI18N
         }
     }
     

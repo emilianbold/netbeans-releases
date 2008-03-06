@@ -111,6 +111,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="removeInstance">
+	    <api name="j2eeserver"/>
+	    <summary>
+                Provides a way to remove server without need to invoke UI action.
+	    </summary>
+	    <version major="1" minor="41"/>
+	    <date day="5" month="3" year="2008"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                    Method provides a way to remove server instance for plugins
+                    which don't use the j2eeserver UI.
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="InstanceProperties"/>
+	</change>        
         <change id="createLibrary">
 	    <api name="plugins"/>
 	    <summary>

@@ -61,45 +61,45 @@ public class ExtendedTokenSequence {
         this.diffs = diffs;
     }
 
-    /*package local*/ Diff replacePrevious(Token<CppTokenId> previous, String space){
+    /*package local*/ Diff replacePrevious(Token<CppTokenId> previous, int newLines, int spaces){
         String old = previous.text().toString();
-        if (!old.equals(space) || old.indexOf('\t') >=0){ // NOI18N
+        if (!Diff.equals(old, newLines, spaces)){
             return diffs.addFirst(ts.offset() - previous.length(),
-                                  ts.offset(), space);
+                                  ts.offset(), newLines, spaces);
         }
         return null;
     }
 
-    /*package local*/ Diff addBeforeCurrent(String space){
-        if (space.length()>0) {
+    /*package local*/ Diff addBeforeCurrent(int newLines, int spaces){
+        if (newLines+spaces>0) {
             return diffs.addFirst(ts.offset(),
-                                  ts.offset(), space);
+                                  ts.offset(), newLines, spaces);
         }
         return null;
     }
 
-    /*package local*/ Diff replaceCurrent(Token<CppTokenId> current, String space){
+    /*package local*/ Diff replaceCurrent(Token<CppTokenId> current, int newLines, int spaces){
         String old = current.text().toString();
-        if (!old.equals(space) || old.indexOf('\t') >=0){ // NOI18N
+        if (!Diff.equals(old, newLines, spaces)){
             return diffs.addFirst(ts.offset(),
-                                  ts.offset() + current.length(), space);
+                                  ts.offset() + current.length(), newLines, spaces);
         }
         return null;
     }
 
-    /*package local*/ Diff addAfterCurrent(Token<CppTokenId> current, String space){
-        if (space.length()>0) {
+    /*package local*/ Diff addAfterCurrent(Token<CppTokenId> current, int newLines, int spaces){
+        if (newLines+spaces>0) {
             return diffs.addFirst(ts.offset() + current.length(),
-                                  ts.offset() + current.length(), space);
+                                  ts.offset() + current.length(), newLines, spaces);
         }
         return null;
     }
 
-    /*package local*/ Diff replaceNext(Token<CppTokenId> current, Token<CppTokenId> next, String space){
+    /*package local*/ Diff replaceNext(Token<CppTokenId> current, Token<CppTokenId> next, int newLines, int spaces){
         String old = next.text().toString();
-        if (!old.equals(space) || old.indexOf('\t') >=0){ // NOI18N
+        if (!Diff.equals(old, newLines, spaces)){
             return diffs.addFirst(ts.offset()+current.length(),
-                                  ts.offset()+current.length()+next.length(), space); 
+                                  ts.offset()+current.length()+next.length(), newLines, spaces);
         }
         return null;
     }
@@ -157,6 +157,7 @@ public class ExtendedTokenSequence {
             while(ts.moveNext()){
                 switch (ts.token().id()) {
                     case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
@@ -182,6 +183,7 @@ public class ExtendedTokenSequence {
                     case LINE_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                     case NEW_LINE:
+                    case ESCAPED_WHITESPACE:
                         return null;
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
@@ -221,6 +223,7 @@ public class ExtendedTokenSequence {
                         balance++;
                         break;
                     case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
@@ -311,6 +314,7 @@ public class ExtendedTokenSequence {
                     case LINE_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                     case NEW_LINE:
+                    case ESCAPED_WHITESPACE:
                         return null;
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
@@ -337,6 +341,7 @@ public class ExtendedTokenSequence {
             while(ts.movePrevious()){
                 switch (ts.token().id()) {
                     case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
@@ -360,6 +365,7 @@ public class ExtendedTokenSequence {
             while(ts.movePrevious()){
                 switch (ts.token().id()) {
                     case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
@@ -426,7 +432,8 @@ public class ExtendedTokenSequence {
                     }
                 }
                 if (ts.token().id() == NEW_LINE ||
-                    ts.token().id() == PREPROCESSOR_DIRECTIVE){
+                    ts.token().id() == PREPROCESSOR_DIRECTIVE ||
+                    ts.token().id() == ESCAPED_WHITESPACE){
                     return true;
                 } else if (ts.token().id() != WHITESPACE){
                     return false;
@@ -508,8 +515,6 @@ public class ExtendedTokenSequence {
                         res[1] = -1;
                     //}
                     hasDoc = true;
-                } else if (ts.token().id() == LINE_COMMENT){
-                    return res;
                 } else if (ts.token().id() == PREPROCESSOR_DIRECTIVE){
                     if (res[0] == -1) {
                         res[0] = ts.index()+1;

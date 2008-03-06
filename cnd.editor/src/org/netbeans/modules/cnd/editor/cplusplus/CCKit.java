@@ -146,7 +146,7 @@ public class CCKit extends NbEditorKit {
     }
     
     protected Filter<CppTokenId> getFilter() {
-        return CndLexerUtilities.getStdCppFilter();
+        return CndLexerUtilities.getGccCppFilter();
     }   
     
     /** Create new instance of syntax coloring scanner
