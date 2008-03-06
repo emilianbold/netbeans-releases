@@ -102,8 +102,12 @@ public class DisToolTipAnnotation extends Annotation {
             if (register == null) {
                 return null;
             }
-            return dis.getRegisterValues().get(register);
+            RegisterValuesProvider.RegisterValue value = dis.getRegisterValues().get(register);
+            if (value != null) {
+                return value.getValue();
+            }
         } catch (IOException e) {
+            // do nothing
         }
         return null;
     }

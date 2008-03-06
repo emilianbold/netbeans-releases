@@ -47,7 +47,7 @@ import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.jruby.ast.IfNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -76,8 +76,8 @@ import org.openide.util.NbBundle;
  */
 public class ConvertConditionals implements AstRule {
 
-    public Set<Integer> getKinds() {
-        return Collections.singleton(NodeTypes.IFNODE);
+    public Set<NodeType> getKinds() {
+        return Collections.singleton(NodeType.IFNODE);
     }
 
     public void run(RuleContext context, List<Description> result) {
@@ -106,19 +106,19 @@ public class ConvertConditionals implements AstRule {
         }
 
         // Can't convert if !x/elseif blocks
-        if (ifNode.getElseBody() != null && ifNode.getElseBody().nodeId == NodeTypes.IFNODE) {
+        if (ifNode.getElseBody() != null && ifNode.getElseBody().nodeId == NodeType.IFNODE) {
             return;
         }
         
         int start = ifNode.getPosition().getStartOffset();
         if (body != null && (
                 // Can't convert blocks with multiple statements
-                body.nodeId == NodeTypes.BLOCKNODE ||
+                body.nodeId == NodeType.BLOCKNODE ||
                 // Already a statement modifier?
                 body.getPosition().getStartOffset() <= start)) {
             return;
         } else if (elseNode != null && (
-                elseNode.nodeId == NodeTypes.BLOCKNODE ||
+                elseNode.nodeId == NodeType.BLOCKNODE ||
                 elseNode.getPosition().getStartOffset() <= start)) {
             return;
         }
