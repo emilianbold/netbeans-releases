@@ -73,8 +73,8 @@ made subject to such option by the copyright holder.
    <api group="java" name="DatabaseExplorerAPI" type="export" category="official" url="@TOP@index.html"/>
    which allows access to the database connections and drivers
    defined in the Database Explorer. It allows a client to retrieve the
-   connection list and their properties and to create new connections.
-   The Database Explorer also manages a list of JDBC drivers used to
+   connection list and their properties, to create new connections and remove
+   existing ones. The Database Explorer also manages a list of JDBC drivers used to
    connect to databases. The API provides access to these drivers and allows
    to create new and remove existing drivers.
   </p>
@@ -309,7 +309,14 @@ made subject to such option by the copyright holder.
     <a href="@TOP@org/netbeans/api/db/explorer/ConnectionManager.html#showAddConnectionDialog(org.netbeans.api.db.explorer.JDBCDriver)">ConnectionManager.showAddConnectionDialog()</a> methods.
    </p>
   </usecase>
-  <usecase id="connect-database" name="Connecting to a database">
+  <usecase id="remove-connection" name="Remove a database connection">
+   <p>
+       A user of this API may want to remove a connection from the list of connections
+       registered by the Database Explorer.  This is done using 
+       <a href="@TOP@org/netbeans/api/db/explorer/ConnectionManager.html#removeConnection(org.netbeans.api.db.explorer.DatabaseConnection)">ConnectionManager.removeConnection()</a>
+   </p>
+  </usecase>
+ <usecase id="connect-database" name="Connecting to a database">
    <p>
     A component which provides database functionality (such as the SQL Editor)
     will need to connect to a database. This can be achieved using the

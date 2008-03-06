@@ -2399,4 +2399,80 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 );
     }
 
+    public void testSpaceBinaryOperator() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int foo()\n" +
+            "{\n" +
+            "    bmove_upp(dst + rest+new_length, dst+tot_length, rest);\n" +
+            "    if (len <= 0 ||| len >= (int)sizeof(buf) || buf[sizeof(buf)-1] != 0) return 0;\n" +
+            "    lmask = (1U << state->lenbits)-1;\n" +
+            "    len = BITS(4)+8;\n" +
+            "    s->depth[node] = (uch)((s->depth[n] >= s->depth[m] ? s->depth[n] : s->depth[m])+1);\n" +
+            "    for (i = 0; i<n; i++) return;\n" +
+            "    match[1].end = match[0].end+s_length;\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect spaces in binary operators",
+            "int foo()\n" +
+            "{\n" +
+            "    bmove_upp(dst + rest + new_length, dst + tot_length, rest);\n" +
+            "    if (len <= 0 || len >= (int) sizeof(buf) || buf[sizeof(buf) - 1] != 0) return 0;\n" +
+            "    lmask = (1U << state->lenbits) - 1;\n" +
+            "    len = BITS(4) + 8;\n" +
+            "    s->depth[node] = (uch) ((s->depth[n] >= s->depth[m] ? s->depth[n] : s->depth[m]) + 1);\n" +
+            "    for (i = 0; i < n; i++) return;\n" +
+            "    match[1].end = match[0].end + s_length;\n" +
+            "}\n"
+        );
+    }
+
+    public void testSpaceCastOperator() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceWithinTypeCastParens, true);
+        setLoadDocumentText(
+            "int foo()\n" +
+            "{\n" +
+            "    if (m == NULL ||| *m == \'\\0\') m = (char*)ERR_MSG(s->z_err);\n" +
+            "    hold += (unsigned long)(PUP(in)) << bits;\n" +
+            "    state = (struct inflate_state FAR *)strm->state;\n" +
+            "    if (strm->zalloc == (alloc_func)0) return;\n" +
+            "    stream.zalloc = (alloc_func)0;\n" +
+            "    put_short(s, (ush)len);\n" +
+            "    put_short(s, (ush)~len);\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect spaces in cast operators",
+            "int foo()\n" +
+            "{\n" +
+            "    if (m == NULL || *m == \'\\0\') m = ( char* ) ERR_MSG(s->z_err);\n" +
+            "    hold += ( unsigned long ) (PUP(in)) << bits;\n" +
+            "    state = ( struct inflate_state FAR * ) strm->state;\n" +
+            "    if (strm->zalloc == ( alloc_func ) 0) return;\n" +
+            "    stream.zalloc = ( alloc_func ) 0;\n" +
+            "    put_short(s, ( ush ) len);\n" +
+            "    put_short(s, ( ush )~len);\n" +
+            "}\n"
+        );
+    }
+
+    public void testNoSpaceBeforeUnaryOperator() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int foo()\n" +
+            "{\n" +
+            "    if (s == NULL ||| s->mode != 'r') return - 1;\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect no space before unary operator",
+            "int foo()\n" +
+            "{\n" +
+            "    if (s == NULL || s->mode != 'r') return -1;\n" +
+            "}\n"
+        );
+    }
 }
