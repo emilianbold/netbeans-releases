@@ -602,7 +602,7 @@ public class CompilerSet {
                 return tool;
             }
         }
-        return compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], ""); // NOI18N
+        return compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
     }
     
     /**
@@ -617,13 +617,13 @@ public class CompilerSet {
                 return tool;
         }
         Tool t;
-        if (kind == Tool.MakeTool || kind == Tool.DebuggerTool) {
+//        if (kind == Tool.MakeTool || kind == Tool.DebuggerTool) {
             // Fixup: all tools should go here ....
             t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
-        }
-        else {
-            t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], ""); // NOI18N
-        }
+//        }
+//        else {
+//            t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], ""); // NOI18N
+//        }
         tools.add(t);
         return t;
     }
@@ -724,6 +724,6 @@ public class CompilerSet {
     
     @Override
     public String toString() {
-        return name + (isDefault() ? " (Default)" : ""); // displayName; // FIXUP: I18N
+        return name;
     }
 }
