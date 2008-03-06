@@ -39,6 +39,7 @@ if [ ! -z $NATIVE_MAC_MACHINE ]; then
 
 # Run new builds
    scp -q -v $NB_ALL/../build-private.sh $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild
+   ssh $NATIVE_MAC_MACHINE chmod a+x $MAC_PATH/installer/mac/newbuild/build.sh
    if [ 1 -eq $ML_BUILD ] ; then
        ssh $NATIVE_MAC_MACHINE $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH/zip-ml $BASENAME_PREFIX $BUILDNUMBER $ML_BUILD > $MAC_LOG_NEW 2>&1 &  
        mv $MAC_PATH/installer/mac/dist/* $MAC_PATH/dist_ml 
