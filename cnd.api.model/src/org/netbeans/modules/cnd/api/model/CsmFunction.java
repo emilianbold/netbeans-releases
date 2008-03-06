@@ -52,52 +52,52 @@ import java.util.Map;
 public interface CsmFunction<T> extends CsmOffsetableDeclaration<T>, CsmScope {
     
     public enum OperatorKind {
-        COMMA(",", true),
-        NOT("!", false), 
-        NOT_EQ("!=", true), 
-        MOD("%", true), 
-        MOD_EQ("%=", true), 
-        AND("&", true), 
-        ADDRESS("&", false),
-        AND_AND("&&", true),
-        AND_EQ("&=", true),
-        FUN_CALL("()", null),
-        CAST("()", false),
-        MUL("*", true),
-        POINTER("*", false),
-        MUL_EQ("*=", true),
-        PLUS("+", true),
-        PLUS_EQ("+=", true),
-        PLUS_UNARY("+", false),
-        PLUS_PLUS("++", false),
-        MINUS("-", true),
-        MINUS_EQ("-=", true),
-        MINUS_UNARY("-", false),
-        MINUS_MINUS("--", false),
-        ARROW("->", true),
-        ARROW_MBR("->*", true),
-        DIV("/", true),
-        DIV_EQ("/=", true),
-        LESS("<", true),
-        LEFT_SHIFT("<<", true), // often as serialize
-        LEFT_SHIFT_EQ("<<=", true),
-        LESS_EQ("<=", true),
-        EQ("=", true),
-        EQ_EQ("==", true),
-        GREATER(">", true),
-        GREATER_EQ(">=", true),
-        RIGHT_SHIFT(">>", true),
-        RIGHT_EQ(">>=", true),
-        ARRAY("[]", null),
-        XOR("^", true),
-        XOR_EQ("^=", true),
-        OR("|", true),
-        OR_EQ("|=", true),
-        OR_OR("||", true),
-        TILDE("~", false),
-        DELETE("delete", null),
-        NEW("new", null),
-        CONVERSION("", false),
+        COMMA(",", true), //NOI18N
+        NOT("!", false), // NOI18N 
+        NOT_EQ("!=", true), // NOI18N 
+        MOD("%", true), // NOI18N 
+        MOD_EQ("%=", true), // NOI18N 
+        AND("&", true), // NOI18N 
+        ADDRESS("&", false), // NOI18N
+        AND_AND("&&", true), // NOI18N
+        AND_EQ("&=", true), // NOI18N
+        FUN_CALL("()", null), // NOI18N
+        CAST("()", false), // NOI18N
+        MUL("*", true), // NOI18N
+        POINTER("*", false), // NOI18N
+        MUL_EQ("*=", true), // NOI18N
+        PLUS("+", true), // NOI18N
+        PLUS_EQ("+=", true), // NOI18N
+        PLUS_UNARY("+", false), // NOI18N
+        PLUS_PLUS("++", false), // NOI18N
+        MINUS("-", true), // NOI18N
+        MINUS_EQ("-=", true), // NOI18N
+        MINUS_UNARY("-", false), // NOI18N
+        MINUS_MINUS("--", false), // NOI18N
+        ARROW("->", true), // NOI18N
+        ARROW_MBR("->*", true), // NOI18N
+        DIV("/", true), // NOI18N
+        DIV_EQ("/=", true), // NOI18N
+        LESS("<", true), // NOI18N
+        LEFT_SHIFT("<<", true), // NOI18N // often as serialize
+        LEFT_SHIFT_EQ("<<=", true), // NOI18N
+        LESS_EQ("<=", true), // NOI18N
+        EQ("=", true), // NOI18N
+        EQ_EQ("==", true), // NOI18N
+        GREATER(">", true), // NOI18N
+        GREATER_EQ(">=", true), // NOI18N
+        RIGHT_SHIFT(">>", true), // NOI18N
+        RIGHT_EQ(">>=", true), // NOI18N
+        ARRAY("[]", null), // NOI18N
+        XOR("^", true), // NOI18N
+        XOR_EQ("^=", true), // NOI18N
+        OR("|", true), // NOI18N
+        OR_EQ("|=", true), // NOI18N
+        OR_OR("||", true), // NOI18N
+        TILDE("~", false), // NOI18N
+        DELETE("delete", null), // NOI18N
+        NEW("new", null), // NOI18N
+        CONVERSION("", false), // NOI18N
         NONE("", null);
         
         private final String img;

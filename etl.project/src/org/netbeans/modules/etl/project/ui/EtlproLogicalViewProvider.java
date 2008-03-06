@@ -206,7 +206,7 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
             try {
                 prj_locn = pro.getProjectDirectory().getFileSystem().getRoot().toString() + prj_locn;
             } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
+               // Exceptions.printStackTrace(ex);
             }
             MashupTableWizardIterator.setProjectInfo(pro.getName(), prj_locn, true);
             if (context) {

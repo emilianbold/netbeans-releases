@@ -41,17 +41,18 @@
 package org.netbeans.modules.ruby.lexer;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 
 import org.jruby.common.NullWarnings;
-import org.jruby.lexer.yacc.LexState;
+import org.jruby.lexer.yacc.InputStreamLexerSource;
 import org.jruby.lexer.yacc.LexerSource;
 import org.jruby.lexer.yacc.RubyYaccLexer;
+import org.jruby.lexer.yacc.RubyYaccLexer.LexState;
 import org.jruby.lexer.yacc.StrTerm;
 import org.jruby.lexer.yacc.StringTerm;
 import org.jruby.lexer.yacc.SyntaxException;
 import org.jruby.parser.Tokens;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -120,11 +121,15 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
         tokenFactory = info.tokenFactory();
 
         String fileName = "unknown";
-        Reader lexerReader = new LexerInputReader(input);
+        //Reader lexerReader = new LexerInputReader(input);
+        InputStream lexerInput = new LexerInputStream(input);
 
         // We don't need IDE positions during pure syntax lexing; that's only needed during
         // parsing for AST nodes
-        lexerSource = new LexerSource(fileName, lexerReader, 0, false);
+        //lexerSource = new LexerSource(fileName, lexerReader, 0, false);
+        //lexerSource = LexerSource.getSource(fileName, lexerInput, null, null);
+        lexerSource = new InputStreamLexerSource(fileName, lexerInput, null, 0, false);
+
         lexer.setSource(lexerSource);
 
         Object state = info.state();
@@ -251,7 +256,8 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
                 break;
             }
 
-            if (token == 0) { // EOF
+            assert token != 0;
+            if (token == -1) { // EOF
 
                 if (input.readLength() > 0) {
                     return token(RubyTokenId.IDENTIFIER, input.readLength()); // XXX?
@@ -789,12 +795,37 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
                 }
 
                 buf[i + off] = (char)c;
-    }
+            }
 
             return len;
         }
 
         public void close() throws IOException {
+        }
+    }
+    
+    private static class LexerInputStream extends InputStream {
+        private LexerInput input;
+
+        LexerInputStream(LexerInput input) {
+            this.input = input;
+        }
+
+        @Override
+        public void close() throws IOException {
+        }
+
+        @Override
+        public int read() throws IOException {
+            int c = input.read();
+
+            if (c == LexerInput.EOF) {
+                // Private
+                //return RubyYaccLexer.EOF;
+                return -1;
+            }
+            
+            return c;
         }
     }
 }

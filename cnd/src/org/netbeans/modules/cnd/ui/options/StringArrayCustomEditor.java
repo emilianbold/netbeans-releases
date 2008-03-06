@@ -177,7 +177,6 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
         editPanel.add(itemListScroll, gridBagConstraints);
 
         itemLabel.setLabelFor(itemField);
-        itemLabel.setText("item");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 12);
@@ -194,7 +193,6 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
         editPanel.add(itemField, gridBagConstraints);
 
         itemListLabel.setLabelFor(itemList);
-        itemListLabel.setText("jLabel1");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
