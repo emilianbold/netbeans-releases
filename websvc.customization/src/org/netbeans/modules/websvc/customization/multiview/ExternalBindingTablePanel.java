@@ -99,9 +99,9 @@ public class ExternalBindingTablePanel extends DefaultTablePanel{
     public ExternalBindingTablePanel(EBTableModel model,
             Node node, JaxWsModel jmodel) {
         super(model);
-        getTable().setName(NbBundle.getMessage(ExternalBindingTablePanel.class,
+        getTable().getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExternalBindingTablePanel.class,
             "TITLE_CUSTOMIZATION_FILES"));
-        getTable().setToolTipText(NbBundle.getMessage(ExternalBindingTablePanel.class,
+        getTable().getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExternalBindingTablePanel.class,
             "TITLE_CUSTOMIZATION_FILES"));
         this.model = model;
         this.node = node;
