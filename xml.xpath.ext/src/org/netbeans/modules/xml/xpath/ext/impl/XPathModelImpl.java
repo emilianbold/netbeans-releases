@@ -100,9 +100,6 @@ import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
  */
 public class XPathModelImpl implements XPathModel {
     
-    /** The XPath tree compiler. */
-    private Compiler mCompiler;
-
     /** The factory class for model elements */
     private XPathModelFactory mFactory;
     
@@ -129,7 +126,6 @@ public class XPathModelImpl implements XPathModel {
     
     /** Instantiates a new object. */
     public XPathModelImpl() {
-        mCompiler = new XPathTreeCompiler(this);
         mFactory = new XPathModelFactoryImpl(this);
     }
 
@@ -151,7 +147,8 @@ public class XPathModelImpl implements XPathModel {
         myWasFunctionOrOperation = false; // vlv
 
         try {
-            Object expr = Parser.parseExpression(expression, mCompiler);
+            Compiler compiler = new XPathTreeCompiler(this);
+            Object expr = Parser.parseExpression(expression, compiler);
             if (expr instanceof XPathExpression) {
                 mRootXPathExpression = (XPathExpression)expr;
                 return mRootXPathExpression;

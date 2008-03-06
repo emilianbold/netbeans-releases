@@ -67,7 +67,7 @@ public class ClassContentTestCase extends CompletionBaseTestCase {
     }  
 
     public void testUnnamedDefinitions() throws Exception {
-        super.performTest("file.cc", 6, 5, "F f; f.");
+        super.performTest("file.cc", 6, 5, "f.");
     }
     
     public void testUnnamedEnums() throws Exception {

@@ -41,7 +41,6 @@
 
 package org.netbeans.core.windows.view.dnd;
 
-import org.netbeans.swing.tabcontrol.*;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
@@ -61,7 +60,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.core.windows.options.WinSysPrefs;
 import org.netbeans.core.windows.view.ui.Tabbed;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -89,20 +87,14 @@ class DragWindow extends JWindow {
         
         tabImage = createTabImage();
         
-        Runnable imageCreator = new Runnable() {
-            public void run() {
-                contentImage = createContentImage( content, contentSize );
-                if( useFadeEffects ) {
-                    imageBuffer = createImageBuffer( contentImage );
-                    currentEffect = createInitialEffect();
-                    currentEffect.start();
-                } else {
-                    contentAlpha = 1.0f;
-                }
-                repaint();
-            }
-        };
-        RequestProcessor.getDefault().post(imageCreator);
+        contentImage = createContentImage( content, contentSize );
+        if( useFadeEffects ) {
+            imageBuffer = createImageBuffer( contentImage );
+            currentEffect = createInitialEffect();
+            currentEffect.start();
+        } else {
+            contentAlpha = 1.0f;
+        }
     }
     
     private BufferedImage createTabImage() {

@@ -60,6 +60,16 @@ public class RailsAdapterFactory {
         return adapters;
     }
     
+    /**
+     * Gets the default adapter, i.e. the adapter to be used when no configuration
+     * is specified. The default adapter is MySQL.
+     * 
+     * @return the default adapter.
+     */
+    public static RailsDatabaseConfiguration getDefaultAdapter() {
+        return getAdapters().get(0);
+    }
+    
     private static List<RailsDatabaseConfiguration> initAdapters() {
         List<RailsDatabaseConfiguration> result = new  ArrayList<RailsDatabaseConfiguration>();
         result.add(new StandardRailsAdapter("mysql"));

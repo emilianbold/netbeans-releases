@@ -464,7 +464,12 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                 return true;
             } else if (!loadingFailed) {
                 if (formEditor.loadForm()) {
-                    return true;
+                    if (formEditor.anyPersistenceError()) { // Issue 128504
+                        formEditor.closeForm();
+                        loadingFailed = true;
+                    } else {
+                        return true;
+                    }
                 } else {
                     loadingFailed = true;
                 }
