@@ -60,7 +60,7 @@ public final class ContextUtilities {
     }
     
     public static boolean isValueToken(TokenItem currentToken) {
-        if(currentToken != null) {
+        if(currentToken != null && currentToken.getTokenID() != null ) {
             if (currentToken.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) {
                 return true;
             }
@@ -70,7 +70,7 @@ public final class ContextUtilities {
     }
     
     public static boolean isTagToken(TokenItem currentToken) {
-        if(currentToken != null) {
+        if(currentToken != null && currentToken.getTokenID() != null) {
             if (currentToken.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID) {
                 return true;
             }
@@ -80,7 +80,7 @@ public final class ContextUtilities {
     }
     
     public static boolean isAttributeToken(TokenItem currentToken) {
-        if(currentToken != null) {
+        if(currentToken != null && currentToken.getTokenID() != null) {
             if (currentToken.getTokenID().getNumericID() == XMLDefaultTokenContext.ARGUMENT_ID) {
                 return true;
             }
@@ -90,9 +90,11 @@ public final class ContextUtilities {
     }
     
     public static TokenItem getAttributeToken(TokenItem currentToken) {
+        if(currentToken == null )
+            return null;
+        
         if(isValueToken(currentToken)) {
             TokenItem equalsToken = currentToken.getPrevious();
-            
             if(equalsToken == null || equalsToken.getTokenID() == null )
                 return null;
             
@@ -101,6 +103,9 @@ public final class ContextUtilities {
             }
         
             TokenItem argumentToken = equalsToken.getPrevious();
+            if(argumentToken == null || argumentToken.getTokenID() == null )
+                return null;
+            
             while(argumentToken.getTokenID().getNumericID() != XMLDefaultTokenContext.ARGUMENT_ID) {
                 argumentToken = argumentToken.getPrevious();
             }
@@ -123,9 +128,11 @@ public final class ContextUtilities {
     }
     
     public static TokenItem getAttributeToken(DocumentContext context) {
+        if(context.getCurrentToken() == null )
+            return null;
+        
         if(isValueToken(context.getCurrentToken())) {
             TokenItem equalsToken = context.getCurrentToken().getPrevious();
-            
             if(equalsToken == null || equalsToken.getTokenID() == null )
                 return null;
             
@@ -134,6 +141,9 @@ public final class ContextUtilities {
             }
         
             TokenItem argumentToken = equalsToken.getPrevious();
+            if(argumentToken == null || argumentToken.getTokenID() == null )
+                return null;
+            
             while(argumentToken.getTokenID().getNumericID() != XMLDefaultTokenContext.ARGUMENT_ID) {
                 argumentToken = argumentToken.getPrevious();
             }
