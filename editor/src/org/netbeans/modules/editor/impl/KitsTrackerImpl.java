@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.editor.impl;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.modules.editor.lib.KitsTracker;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -69,42 +68,15 @@ import org.openide.loaders.DataObject;
  *
  * @author vita
  */
-public final class KitsTracker {
+public final class KitsTrackerImpl extends KitsTracker {
         
-    private static final Logger LOG = Logger.getLogger(KitsTracker.class.getName());
+    private static final Logger LOG = Logger.getLogger(KitsTrackerImpl.class.getName());
     private static final Set<String> ALREADY_LOGGED = Collections.synchronizedSet(new HashSet<String>(10));
     
-    private static KitsTracker instance = null;
-    
-    /**
-     * Gets the <code>KitsTracker</code> singleton instance.
-     * @return The <code>KitsTracker</code> instance.
-     */
-    public static synchronized KitsTracker getInstance() {
-        if (instance == null) {
-            instance = new KitsTracker();
-        }
-        return instance;
+    public KitsTrackerImpl() {
+        super();
     }
-    
-    public static String getGenericPartOfCompoundMimeType(String mimeType) {
-        int plusIdx = mimeType.lastIndexOf('+'); //NOI18N
-        if (plusIdx != -1 && plusIdx < mimeType.length() - 1) {
-            int slashIdx = mimeType.indexOf('/'); //NOI18N
-            String prefix = mimeType.substring(0, slashIdx + 1);
-            String suffix = mimeType.substring(plusIdx + 1);
 
-            // fix for #61245
-            if (suffix.equals("xml")) { //NOI18N
-                prefix = "text/"; //NOI18N
-            }
-
-            return prefix + suffix;
-        } else {
-            return null;
-        }
-    }
-    
     /**
      * Gets the list of mime types (<code>String</code>s) that use the given
      * class as an editor kit implementation.
@@ -200,14 +172,6 @@ public final class KitsTracker {
         return previousMimeType;
     }
     
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        PCS.addPropertyChangeListener(l);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        PCS.removePropertyChangeListener(l);
-    }
-    
     // ------------------------------------------------------------------
     // private implementation
     // ------------------------------------------------------------------
@@ -217,7 +181,6 @@ public final class KitsTracker {
     private final Set<String> knownMimeTypes = new HashSet<String>();
     private List<FileObject> eventSources = null;
     private boolean needsReloading = true;
-    private final PropertyChangeSupport PCS = new PropertyChangeSupport(this);
 
     private static final Set<String> WELL_KNOWN_PARENTS = new HashSet<String>(Arrays.asList(new String [] {
         "java.lang.Object", //NOI18N
@@ -251,10 +214,6 @@ public final class KitsTracker {
         }
     };
     
-    private KitsTracker() {
-
-    }
-
     private static final ThreadLocal<Boolean> inReload = new  ThreadLocal<Boolean>() {
         protected @Override Boolean initialValue() {
             return false;
@@ -365,7 +324,7 @@ public final class KitsTracker {
         synchronized (mimeType2kitClass) {
             needsReloading = true;
         }
-        PCS.firePropertyChange(null, null, null);
+        firePropertyChange(null, null, null);
     }
 
     private static boolean isValidType(FileObject typeFile) {

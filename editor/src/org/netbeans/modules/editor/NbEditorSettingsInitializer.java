@@ -58,7 +58,7 @@ import org.netbeans.modules.editor.options.OptionUtilities;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.SettingsNames;
-import org.netbeans.modules.editor.impl.KitsTracker;
+import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.openide.util.Utilities;
 

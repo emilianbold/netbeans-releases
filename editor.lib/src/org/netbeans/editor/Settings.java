@@ -71,6 +71,7 @@ import org.netbeans.api.editor.settings.CodeTemplateDescription;
 import org.netbeans.api.editor.settings.CodeTemplateSettings;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
+import org.netbeans.modules.editor.lib.KitsTracker;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -366,7 +367,7 @@ public class Settings {
      * @return the value of the setting
      */
     public static Object getValue(Class kitClass, String settingName, boolean evaluateEvaluators) {
-        String mimeType = BaseKit.kitsTracker_FindMimeType(kitClass);
+        String mimeType = KitsTracker.getInstance().findMimeType(kitClass);
         MimePath mimePath = mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType);
         
         // Get the value
@@ -548,7 +549,7 @@ public class Settings {
         
         try {
             for (Class kc = kitClass; kc != null; kc = kc.getSuperclass()) {
-                String mimeType = BaseKit.kitsTracker_FindMimeType(kc);
+                String mimeType = KitsTracker.getInstance().findMimeType(kc);
                 MimePath mimePath = mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType);
 
                 Object value = getValueEx(mimePath, kc, settingName, evaluateEvaluators);
@@ -562,12 +563,12 @@ public class Settings {
 
                 if (!superclass) {
                     superclass = true;
-                    BaseKit.kitsTracker_setContextMimeType(""); //NOI18N
+                    KitsTracker.getInstance().setContextMimeType(""); //NOI18N
                 }
             }
         } finally {
             if (superclass) {
-                BaseKit.kitsTracker_setContextMimeType(null);
+                KitsTracker.getInstance().setContextMimeType(null);
             }
         }
         
@@ -618,7 +619,7 @@ public class Settings {
                 LOG.log(Level.WARNING, "Can't save coloring '" + settingName + "' through org.netbeans.editor.Settings!", new Throwable("Stacktrace")); //NOI18N
             } else {
                 boolean useKitMaps = false;
-                String mimeType = BaseKit.kitsTracker_FindMimeType(kitClass);
+                String mimeType = KitsTracker.getInstance().findMimeType(kitClass);
                 MimePath mimePath = mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType);
                 Preferences prefs = findPreferences(mimePath);
                 
