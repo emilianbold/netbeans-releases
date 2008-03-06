@@ -39,17 +39,8 @@
 
 package org.netbeans.modules.ruby.railsprojects.database;
 
-import java.io.IOException;
-import javax.swing.text.BadLocationException;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
-import org.openide.LifecycleManager;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 
 /**
  * Represent a Rails database adapter that doesn't require any 
@@ -81,6 +72,5 @@ class StandardRailsAdapter implements RailsDatabaseConfiguration {
     public JdbcInfo getJdbcInfo() {
         return null;
     }
-    
 
 }

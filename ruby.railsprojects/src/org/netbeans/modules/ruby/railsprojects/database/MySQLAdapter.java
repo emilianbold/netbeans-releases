@@ -43,6 +43,7 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 
 /**
+ * Represents the MySQL database adapter.
  *
  * @author Erno Mononen
  */

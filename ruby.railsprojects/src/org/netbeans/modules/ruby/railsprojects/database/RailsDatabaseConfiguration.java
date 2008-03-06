@@ -69,5 +69,11 @@ public interface RailsDatabaseConfiguration {
      */
     void editConfig(RailsProject project);
     
+    /**
+     * Gets the JDBC adapter configuration info for presenting 
+     * this configuration as a JDBC adapter in database.yml.
+     * 
+     * @return the info or <code>null</code>.
+     */
     JdbcInfo getJdbcInfo();
 }

@@ -149,23 +149,25 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
     }
     
     private void setDatabase(Document databaseYml) throws BadLocationException {
-        
+
         JdbcInfo jdbcInfo = getJdbcInfo();
         if (!jdbc || jdbcInfo == null) {
+            // not using jdbc, so just set the database
             changeAttribute(databaseYml, "database:", database); //NOI18N
             return;
         }
-        
         // use the default database name if none was specified
-       String dbName = !isEmpty(database) ? database : RailsAdapters.getPropertyValue(databaseYml, "database:");
-        
-        String url = jdbcInfo.getURL("localhost", dbName); //NOI18N
-        changeAttribute(databaseYml, "adapter:", "jdbc"); //NOI18N
-        RailsAdapters.addProperty(databaseYml,  "url:", url, "adapter:");
-        RailsAdapters.addProperty(databaseYml,  "driver:", jdbcInfo.getDriverClass(), "adapter:");
+        String dbName = !isEmpty(database) ? database : RailsAdapters.getPropertyValue(databaseYml, "database:");
 
+        // change the adapter
+        changeAttribute(databaseYml, "adapter:", "jdbc"); //NOI18N
+        // add url and driver
+        RailsAdapters.addProperty(databaseYml, "url:", jdbcInfo.getURL("localhost", dbName), "adapter:");
+        RailsAdapters.addProperty(databaseYml, "driver:", jdbcInfo.getDriverClass(), "adapter:");
+
+        // remove database, since we now have url and driver
         RailsAdapters.removeProperty(databaseYml, "database:");
-        
+
     }
 
     private boolean isEmpty(String str) {

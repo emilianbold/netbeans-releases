@@ -40,13 +40,24 @@
 package org.netbeans.modules.ruby.railsprojects.database;
 
 /**
+ * Encapsulates info of JDBC parameters that a JDBC adapter
+ * configuration needs in database.yml.
  *
  * @author Erno Mononen
  */
 public interface JdbcInfo {
     
+    /**
+     * @return the FQN of the JDBC driver class.
+     */
     String getDriverClass();
     
+    /**
+     * Gets the URL for the given host and database.
+     * @param host
+     * @param database
+     * @return
+     */
     String getURL(String host, String database);
 
 }
