@@ -10,13 +10,10 @@
     java.util.List list = new java.util.LinkedList();
         %>
         
-        <%= response.SC_ACCEPTED 
+        <%= response.SC_ACCEPTED%>
         
         
-        %>
-        
-        
-        <% str = "AHOJKY"; %>
+        <% str = "AHOJKY";%>
         
     </body>
 </html>

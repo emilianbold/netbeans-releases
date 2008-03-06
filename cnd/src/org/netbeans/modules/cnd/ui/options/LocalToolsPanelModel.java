@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 public class LocalToolsPanelModel extends ToolsPanelModel {
     
     private String compilerSetName;
+    private String selectedCompilerSetName;
 //    private String cCompilerName;
 //    private String cppCompilerName;
 //    private String fortranCompilerName;
@@ -63,6 +64,7 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     
     public LocalToolsPanelModel() {
         compilerSetName = null;
+        selectedCompilerSetName = null;
 //        cCompilerName = null;
 //        cppCompilerName = null;
 //        fortranCompilerName = null;
@@ -95,6 +97,16 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
             compilerSetName = CppSettings.getDefault().getCompilerSetName();
         }
         return compilerSetName;
+    }
+    
+    @Override
+    public void setSelectedCompilerSetName(String name) {
+        selectedCompilerSetName = name;
+    }
+    
+    @Override
+    public String getSelectedCompilerSetName() {
+        return selectedCompilerSetName;
     }
     
 //    protected void setCompilerSetDirectories(String directories) {

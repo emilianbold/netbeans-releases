@@ -70,8 +70,10 @@ public class ServerNodeProvider implements NodeProvider {
         nodes.add(ServerNode.create(ServerInstance.getDefault()));
     }
 
-    public synchronized List<Node> getNodes() {
+    public List<Node> getNodes() {
          if ( options.isProviderRegistered() ) {
+            DatabaseUtils.connectToServerAsync(ServerInstance.getDefault(), 
+                    true /* quiet */);
             return nodes;
         } else {
             return emptyNodeList;
@@ -79,9 +81,16 @@ public class ServerNodeProvider implements NodeProvider {
     } 
     
     public synchronized void setRegistered(boolean registered) {
-        boolean old = options.isProviderRegistered();
+        boolean old = isRegistered();
         if ( registered != old ) {
+            ServerInstance instance = ServerInstance.getDefault();
             options.setProviderRegistered(registered);
+            
+            if ( ! registered ) {
+                instance.disconnect();
+            } else {
+                DatabaseUtils.connectToServerAsync(instance, true);
+            }
             notifyChange();
         }
     }

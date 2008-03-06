@@ -208,7 +208,7 @@ public class AcceptanceTest extends RaveTestCase {
         assertFalse("There is no \"" + expectedStr + "\" string in jsp editor",
                 new org.netbeans.jellytools.EditorOperator("Page1").getText().indexOf(expectedStr) == -1);
 
-        editor.setText("log(\"StdButton action performed\");\n");
+        editor.typeText("log(\"StdButton action performed\");\n");
         log("Reformat code");
         TestUtils.wait(200);
         editor.clickForPopup();

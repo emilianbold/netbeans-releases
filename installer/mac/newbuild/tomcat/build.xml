@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="tomcat" basedir="." default="build-pkg">
+    
+    <property name="appdir" value="${basedir}/build/app"/>
+    
+    <target name="clean">
+        <delete dir="build"/>
+        <mkdir dir="${basedir}/build"/>
+    </target>
+    
+    <target name="get-bits">
+        <echo message="Downloading Tomcat from ${tomcat_location}" />
+        <get src="${binary_cache_host}/${tomcat_location}" dest="./build/tomcat_image.zip" usetimestamp="true"/>
+    </target>
+    
+    <target name="unzip" depends="get-bits">
+        <echo message="Unzipping Tomcat" />
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="cd ${basedir}/build ; unzip tomcat_image.zip -d ${appdir}; rm ${basedir}/build/tomcat_image.zip"/>
+        </exec>
+        <!-- move stuff one level up -->
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="cd ${appdir} ; mv apache-tomcat-*/* . ; rmdir apache-tomcat-*"/>
+        </exec>
+        <!-- make sure all bin/*.sh files has executable permissions-->
+        <exec executable="sh" failonerror="yes">
+          <arg value="-c"/>
+          <arg value="cd ${appdir} ; chmod a+x bin/*.sh"/>
+        </exec>        
+    </target>
+
+    <target name="build-pkg" depends="clean, unzip">
+        <echo message="Executing pack200 in ${appdir}"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value='sh ${basedir}/../pack200.sh ${appdir}'/>
+        </exec>
+             
+        
+        <copy file="pkg/Info.plist" filtering="true" tofile="${basedir}/build/Info.plist">
+            <filterset>
+                <filter token="INSTALLDIR" value="${tomcat.install.dir}"/>
+                <filter token="APPVERSION" value="${tomcat.version}"/>
+            </filterset>
+        </copy>
+        
+        <copy file="../commonfiles/Description.plist" overwrite="true" filtering="true" tofile="pkg/scripts/Description.plist">
+            <filterset>
+                <filter token="TITLE" value="${tomcat.appname}"/>
+            </filterset>
+        </copy>
+        
+        <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/env.sh" tofile="${basedir}/pkg/scripts/env.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/add_tc.sh" tofile="${basedir}/pkg/scripts/add_tc.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/perm.sh" tofile="${basedir}/pkg/scripts/perm.sh"/>
+        
+        <echo message="Building ${tomcat.pkg.name} into ${basedir}/../build/${tomcat.pkg.name}"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/${tomcat.pkg.name} -f ${appdir} -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
+        </exec>
+    </target>
+</project>

@@ -41,8 +41,6 @@
 
 package org.netbeans.editor;
 
-import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -56,8 +54,6 @@ import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.Utilities;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import javax.swing.SwingUtilities;
@@ -167,43 +163,43 @@ public class PopupManager {
 
         if (this.popup != null) {
             installToRootPane(this.popup);
-        }
         
-        // Update the bounds of the popup
-        Rectangle bounds = computeBounds(this.popup, textComponent,
-            cursorBounds, placement, horizontalBounds);
+            // Update the bounds of the popup
+            Rectangle bounds = computeBounds(this.popup, textComponent,
+                cursorBounds, placement, horizontalBounds);
 
-        if (bounds != null){
-            // Convert to layered pane's coordinates
-            
-            if (horizontalBounds == ScrollBarBounds){
-                bounds.x = 0;
-            }
-            
-            JRootPane rp = textComponent.getRootPane();
-            if (rp!=null){
-                bounds = SwingUtilities.convertRectangle(textComponent, bounds,
-                    rp.getLayeredPane());
-            }
-            
-            if (horizontalBounds == ScrollBarBounds){
-                if (textComponent.getParent() instanceof JViewport){
-                    int shift = textComponent.getParent().getX();
-                    Rectangle viewBounds = ((JViewport)textComponent.getParent()).getViewRect();
-                    bounds.x += viewBounds.x;
-                    bounds.x -= shift;
-                    bounds.width += shift;
+            if (bounds != null){
+                // Convert to layered pane's coordinates
+
+                if (horizontalBounds == ScrollBarBounds){
+                    bounds.x = 0;
                 }
-            }
-            
-            bounds.x = bounds.x + horizontalAdjustment;
-            bounds.y = bounds.y + verticalAdjustment;
-            bounds.width = bounds.width - horizontalAdjustment;
-            bounds.height = bounds.height - verticalAdjustment;
-            this.popup.setBounds(bounds);
 
-        } else { // can't fit -> hide
-            this.popup.setVisible(false);
+                JRootPane rp = textComponent.getRootPane();
+                if (rp!=null){
+                    bounds = SwingUtilities.convertRectangle(textComponent, bounds,
+                        rp.getLayeredPane());
+                }
+
+                if (horizontalBounds == ScrollBarBounds){
+                    if (textComponent.getParent() instanceof JViewport){
+                        int shift = textComponent.getParent().getX();
+                        Rectangle viewBounds = ((JViewport)textComponent.getParent()).getViewRect();
+                        bounds.x += viewBounds.x;
+                        bounds.x -= shift;
+                        bounds.width += shift;
+                    }
+                }
+
+                bounds.x = bounds.x + horizontalAdjustment;
+                bounds.y = bounds.y + verticalAdjustment;
+                bounds.width = bounds.width - horizontalAdjustment;
+                bounds.height = bounds.height - verticalAdjustment;
+                this.popup.setBounds(bounds);
+
+            } else { // can't fit -> hide
+                this.popup.setVisible(false);
+            }
         }
     }
     
