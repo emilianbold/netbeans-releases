@@ -49,7 +49,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.jruby.ast.ClassNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -278,7 +278,7 @@ public class IntroduceHint implements SelectionRule {
         List<Node> list = node.childNodes();
         
         for ( Node child : list) {
-            if (child.nodeId == NodeTypes.NEWLINENODE || child.nodeId == NodeTypes.HASHNODE) {
+            if (child.nodeId == NodeType.NEWLINENODE || child.nodeId == NodeType.HASHNODE) {
                 // Newlines and hasnodes have incorrect offsets, so always search their children
                 // instead of applying below search pruning logic
                 findApplicableNodes(child, start, end, result, depth+1);

@@ -154,6 +154,7 @@ public class AutoupdateCheckScheduler {
         public void run () {
             if (SwingUtilities.isEventDispatchThread ()) {
                 RequestProcessor.getDefault ().post (doCheckAvailableUpdates);
+                return ;
             }
             boolean hasUpdates = false;
             if (Utilities.shouldCheckAvailableUpdates ()) {
@@ -308,6 +309,7 @@ public class AutoupdateCheckScheduler {
         public void run() {
             if (SwingUtilities.isEventDispatchThread ()) {
                 RequestProcessor.getDefault ().post (doCheck);
+                return ;
             }
             if (timeToCheck ()) {
                 scheduleRefreshProviders ();

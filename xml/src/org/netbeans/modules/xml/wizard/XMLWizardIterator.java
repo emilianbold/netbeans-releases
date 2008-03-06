@@ -632,7 +632,7 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
             String returnstr = saveFile.getPath() + sourceURL.substring(6, sourceURL.length());
             return returnstr;
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             return null;
         }
     }

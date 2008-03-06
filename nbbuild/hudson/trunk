@@ -41,17 +41,18 @@ BASENAME=netbeans-$BUILDNUM
 
 mkdir -p $DIST/zip/moduleclusters
 
-find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST/zip/$BASENAME.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|php)" | zip -q $DIST/zip/$BASENAME.zip -@ || exit
 
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity|php)" | zip -q $DIST/zip/$BASENAME-java.zip -@ || exit
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|enterprise|visualweb|uml|ruby|soa|cnd|identity|php)" | egrep -v "(org-netbeans-modules-mobility-end2end|org-netbeans-modules-mobility-jsr172)" | zip -q $DIST/zip/$BASENAME-mobility.zip -@ || exit
 find netbeans | egrep -v "netbeans/(extra|testtools|mobility|uml|ruby|soa|cnd|identity|php)" | zip -q $DIST/zip/$BASENAME-javaee.zip -@ || exit
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|php)" | zip -q $DIST/zip/$BASENAME-ruby.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|ruby)" | zip -q $DIST/zip/$BASENAME-php.zip -@ || exit
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|ruby|soa|identity|php)" | zip -q $DIST/zip/$BASENAME-cnd.zip -@ || exit
 
 cd netbeans
 expat='extra|testtools'
-for c in platform ide java apisupport harness enterprise profiler uml visualweb ruby mobility soa xml cnd identity gsf; do
+for c in platform ide java apisupport harness enterprise profiler uml visualweb ruby mobility soa xml cnd identity gsf php; do
     find * | egrep "^$c[0-9]*/" | zip -q $DIST/zip/moduleclusters/$BASENAME-$c.zip -@ || exit
     expat="$expat|$c[0-9]*"
 done
