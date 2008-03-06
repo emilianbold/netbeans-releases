@@ -52,6 +52,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.wizard.Util;
 
@@ -66,6 +67,52 @@ public class TypeUtil {
     public static List<Annotation> getClassAnnotations(Class type) {
         List<Annotation> result = new ArrayList<Annotation>(Arrays.asList(type.getAnnotations()));
         return result;
+    }
+    
+    public static boolean isXmlRoot(Class type) {
+        for (Annotation ann : type.getAnnotations()) {
+            String annType = ann.annotationType().getName();
+            if (annType.equals(Constants.XML_ROOT_ELEMENT)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static Annotation getXmlElementAnnotation(Method m) {
+        for (Annotation ann : m.getAnnotations()) {
+            if (ann.annotationType().getName().equals(Constants.XML_ELEMENT)) {
+                return ann;
+            }
+        }
+        return null;
+    }
+
+    public static Annotation getXmlAttributeAnnotation(Field f) {
+        for (Annotation ann : f.getAnnotations()) {
+            if (ann.annotationType().getName().equals(Constants.XML_ATTRIBUTE)) {
+                return ann;
+            }
+        }
+        return null;
+    }
+    
+    public static Annotation getXmlAttributeAnnotation(Method m) {
+        for (Annotation ann : m.getAnnotations()) {
+            if (ann.annotationType().getName().equals(Constants.XML_ATTRIBUTE)) {
+                return ann;
+            }
+        }
+        return null;
+    }
+
+    public static Annotation getXmlElementAnnotation(Field f) {
+        for (Annotation ann : f.getAnnotations()) {
+            if (ann.annotationType().getName().equals(Constants.XML_ELEMENT)) {
+                return ann;
+            }
+        }
+        return null;
     }
 
     public static List<Annotation> getFieldAnnotations(Class type) {
