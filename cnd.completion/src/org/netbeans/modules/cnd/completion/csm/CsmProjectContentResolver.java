@@ -65,6 +65,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.editor.StringMap;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -428,11 +429,39 @@ public final class CsmProjectContentResolver {
     }
     
     public List getFileLocalVariables(CsmContext context, String strPrefix, boolean match) {
-        List res = CsmContextUtilities.findFileLocalVariables(context, strPrefix, match, isCaseSensitive());
-        if (isSortNeeded() && res != null) {
-            CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
+        List out = new ArrayList();
+        if (!context.isEmpty()) {
+            for (Iterator it = context.iterator(); it.hasNext();) {
+                CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
+                if (CsmKindUtilities.isFile(elem.getScope())) {
+                    CsmFile currentFile = (CsmFile) elem.getScope();
+                    for (CsmDeclaration decl : currentFile.getDeclarations()) {
+                        if (CsmKindUtilities.isFileLocalVariable(decl)) {
+                            CharSequence varName = decl.getName();
+                            if (varName.length() != 0) {
+                                if(matchName(varName.toString(), strPrefix, match)) {
+                                    out.add(decl);
+                                }
+                            } else {
+                                CsmVariable var = (CsmVariable) decl;
+                                CsmType type = var.getType();
+                                if (type != null && CsmKindUtilities.isFileLocalVariable(var)) {
+                                    CsmClassifier clsfr = type.getClassifier();
+                                    if (clsfr != null) {
+                                        if (CsmKindUtilities.isUnion(clsfr)) {
+                                            CsmClass cls = (CsmClass) clsfr;
+                                            out.addAll(CsmSortUtilities.filterList(cls.getMembers(), strPrefix, match, caseSensitive));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
         }
-        return res;
+        return out;
     }
     
         public List getFileLocalFunctions(CsmContext context, String strPrefix, boolean match) {
@@ -686,13 +715,35 @@ public final class CsmProjectContentResolver {
             CsmMember member = (CsmMember) it.next();
             if (isKindOf(member.getKind(), kinds) &&
                     (!staticOnly || member.isStatic()) &&
-                    matchVisibility(member, minVisibility) &&
-                    ((matchName(member.getName().toString(), strPrefix, match)) ||
-                    (member.getName().toString().equals("") && strPrefix.equals("") && returnUnnamedMembers))) {
-                if (CsmKindUtilities.isFunction(member)) {
-                    res.put(((CsmFunction)member).getSignature().toString(), member);
-                } else {
-                    res.put(member.getQualifiedName().toString(), member);
+                    matchVisibility(member, minVisibility)) {
+                CharSequence memberName = member.getName();
+                if ((matchName(memberName.toString(), strPrefix, match)) ||
+                        (memberName.length() == 0 && returnUnnamedMembers)) {
+                    if (CsmKindUtilities.isFunction(member)) {
+                        res.put(((CsmFunction) member).getSignature().toString(), member);
+                    } else {
+                        res.put(member.getQualifiedName().toString(), member);
+                    }
+                }
+            }
+        }
+        
+        // inspect unnamed unions, structs and classes
+        CsmDeclaration.Kind memberKinds[] = {
+            CsmDeclaration.Kind.UNION,
+            CsmDeclaration.Kind.STRUCT,
+            CsmDeclaration.Kind.CLASS,
+        };
+        it = clazz.getMembers().iterator();
+        while (it.hasNext()) {
+            CsmMember member = (CsmMember) it.next();
+            if (isKindOf(member.getKind(), memberKinds) &&
+                    matchVisibility(member, minVisibility)) {
+                CharSequence memberName = member.getName();
+                if (memberName.length() == 0) {
+                    Map set = getClassMembers((CsmClass) member, contextDeclaration, kinds, strPrefix, staticOnly, match,
+                        new HashSet(), CsmVisibility.PUBLIC, INIT_INHERITANCE_LEVEL, inspectParentClasses, returnUnnamedMembers);
+                    res.putAll(set);
                 }
             }
         }

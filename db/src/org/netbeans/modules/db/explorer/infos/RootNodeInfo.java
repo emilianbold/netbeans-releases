@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
+import java.sql.Connection;
 import java.util.*;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -58,7 +60,6 @@ import org.netbeans.modules.db.explorer.DbActionLoaderSupport;
 import org.netbeans.modules.db.explorer.DbNodeLoader;
 import org.netbeans.modules.db.explorer.DbNodeLoaderSupport;
 import org.netbeans.modules.db.explorer.nodes.*;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
@@ -69,6 +70,9 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     static RootNodeInfo rootInfo = null;
     
     private Collection<DbNodeLoader> nodeLoaders;
+    
+    private static Logger LOGGER = 
+            Logger.getLogger(RootNodeInfo.class.getName());
     
     public static RootNodeInfo getInstance() throws DatabaseException {
         if (rootInfo == null) {
@@ -103,7 +107,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         }
     }
 
-    private List<Node> getRegisteredNodes() {
+    private synchronized List<Node> getRegisteredNodes() {
         boolean registerListener = false;
         if ( nodeLoaders == null ) {
             nodeLoaders = DbNodeLoaderSupport.getLoaders();
@@ -156,6 +160,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         return ninfo;
     }
     
+    @Override
     public void refreshChildren() throws DatabaseException {
         // refresh action is empty
     }
@@ -170,28 +175,17 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         
         final List<Node> newNodes = getRegisteredNodes();
         
-        // Now add the non-registered nodes that currently exist
         for (Node node : nodes ) {
-            if ( node instanceof DatabaseNode ) {
-                newNodes.add(node);
+            if ( ! (node instanceof DatabaseNode) ) {
+                // Remove the old registered nodes
+                children.removeSubNode(node);
             }
         }
         
-        children.replaceNodes(newNodes.toArray(new Node[0]));
-    }
-    
-    private void postUpdateChildren(final DatabaseNodeChildren children, 
-            final Node[] newNodes) {                
-        // Replace the node list with the new one
-        Children.MUTEX.postWriteRequest(new Runnable() {
-            public void run() {
-                // remove current sub-tree
-                children.remove(children.getNodes());
-
-                // add built sub-tree
-                children.add(newNodes);
-            }
-        });
+        for ( Node node : newNodes ) {
+            // Add the new registered nodes
+            children.addSubNode(node);
+        }        
     }
     
     public void addConnectionNoConnect(DatabaseConnection dbconn) throws DatabaseException {
@@ -206,6 +200,29 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
         ConnectionList.getDefault().add(dbconn);
         children.createSubnode(ninfo, true);
+    }
+    
+    public void removeConnection(DatabaseConnection dbconn) throws DatabaseException {
+        if ( dbconn == null ) {
+            throw new NullPointerException();
+        }
+        
+        DatabaseNode node = getNode();
+        DatabaseNodeChildren children = (DatabaseNodeChildren)node.getChildren();
+        Node[] nodes = children.getNodes();
+        
+        for ( Node childNode : nodes ) {
+            if ( childNode instanceof ConnectionNode ) {
+                ConnectionNode connNode = (ConnectionNode)childNode;
+                if ( connNode.getInfo().getDatabaseConnection().equals(dbconn)) {
+                    connNode.deleteNode();
+                }
+                
+                dbconn.disconnect();
+            }
+        }
+        
+        ConnectionList.getDefault().remove(dbconn);
     }
     
     public void addConnection(DBConnection cinfo) throws DatabaseException {

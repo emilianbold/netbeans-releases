@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,7 +59,7 @@ import org.jruby.ast.FCallNode;
 import org.jruby.ast.ListNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.SelfNode;
 import org.jruby.ast.StrNode;
@@ -68,7 +67,6 @@ import org.jruby.ast.types.INameNode;
 import org.jruby.util.ByteList;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.ParserFile;
@@ -635,7 +633,7 @@ public class RubyIndexer implements Indexer {
         }
         
         private void scanMigration(Node node, Map<String,List<String>> items, String currentTable) {
-            if (node.nodeId == NodeTypes.FCALLNODE) {
+            if (node.nodeId == NodeType.FCALLNODE) {
                 // create_table etc.
                 String name = AstUtilities.getCallName(node);
                 if ("create_table".equals(name)) { // NOI18N
@@ -643,17 +641,17 @@ public class RubyIndexer implements Indexer {
                     List childNodes = node.childNodes();
                     if (childNodes.size() > 0) {
                         Node child = (Node)childNodes.get(0);
-                        if (child.nodeId == NodeTypes.ARRAYNODE) {
+                        if (child.nodeId == NodeType.ARRAYNODE) {
                             List grandChildren = child.childNodes();
                             if (grandChildren.size() > 0) {
                                 Node grandChild = (Node)grandChildren.get(0);
-                                if (grandChild.nodeId == NodeTypes.SYMBOLNODE || 
-                                        grandChild.nodeId == NodeTypes.STRNODE) {
+                                if (grandChild.nodeId == NodeType.SYMBOLNODE || 
+                                        grandChild.nodeId == NodeType.STRNODE) {
                                     String tableName = getString(grandChild);
                                     items.put(tableName, new ArrayList<String>());
                                     if (childNodes.size() > 1) {
                                         Node n = (Node) childNodes.get(1);
-                                        if (n.nodeId == NodeTypes.ITERNODE) {
+                                        if (n.nodeId == NodeType.ITERNODE) {
                                             scanMigration(n, items, tableName);
                                         }
                                     }
@@ -668,7 +666,7 @@ public class RubyIndexer implements Indexer {
                     // Ugh - this won't work right for complicated migrations which
                     // are for example iterating over table like Mephisto's store_single_filter
                     // migration
-                    AstUtilities.addNodesByType(node, new int[] { NodeTypes.SYMBOLNODE, NodeTypes.STRNODE }, symbols);
+                    AstUtilities.addNodesByType(node, new NodeType[] { NodeType.SYMBOLNODE, NodeType.STRNODE }, symbols);
                     if (symbols.size() >= 2) {
                         String tableName = getString(symbols.get(0));
                         String columnName = getString(symbols.get(1));
@@ -703,7 +701,7 @@ public class RubyIndexer implements Indexer {
                     // Ugh - this won't work right for complicated migrations which
                     // are for example iterating over table like Mephisto's store_single_filter
                     // migration
-                    AstUtilities.addNodesByType(node, new int[] { NodeTypes.SYMBOLNODE, NodeTypes.STRNODE }, symbols);
+                    AstUtilities.addNodesByType(node, new NodeType[] { NodeType.SYMBOLNODE, NodeType.STRNODE }, symbols);
                     if (symbols.size() >= 3) {
                         String tableName = getString(symbols.get(0));
                         String oldCol = getString(symbols.get(1));
@@ -720,14 +718,14 @@ public class RubyIndexer implements Indexer {
                     
                     return;
                 }
-            } else if (node.nodeId == NodeTypes.CALLNODE && currentTable != null) {
+            } else if (node.nodeId == NodeType.CALLNODE && currentTable != null) {
                 // t.column, applying to an outer table
                 String name = AstUtilities.getCallName(node);
                 if ("column".equals(name)) {  // NOI18N
                     List childNodes = node.childNodes();
                     if (childNodes.size() >= 2) {
                         Node child = (Node)childNodes.get(0);
-                        if (child.nodeId != NodeTypes.DVARNODE) {
+                        if (child.nodeId != NodeType.DVARNODE) {
                             // Not a call on the block var corresponding to the table 
                             // Later, validate more closely that we're making a call
                             // on the actual block variable passed in from the create_table call!
@@ -736,7 +734,7 @@ public class RubyIndexer implements Indexer {
 
                         child = (Node)childNodes.get(1);
                         List<Node> symbols = new ArrayList<Node>();
-                        AstUtilities.addNodesByType(child, new int[] { NodeTypes.SYMBOLNODE, NodeTypes.STRNODE }, symbols);
+                        AstUtilities.addNodesByType(child, new NodeType[] { NodeType.SYMBOLNODE, NodeType.STRNODE }, symbols);
                         if (symbols.size() >= 2) {
                             String columnName = getString(symbols.get(0));
                             String columnType = getString(symbols.get(1));
@@ -760,7 +758,7 @@ public class RubyIndexer implements Indexer {
                     List childNodes = node.childNodes();
                     if (childNodes.size() >= 1) {
                         Node child = (Node)childNodes.get(0);
-                        if (child.nodeId != NodeTypes.DVARNODE) {
+                        if (child.nodeId != NodeType.DVARNODE) {
                             // Not a call on the block var corresponding to the table 
                             // Later, validate more closely that we're making a call
                             // on the actual block variable passed in from the create_table call!
@@ -786,7 +784,7 @@ public class RubyIndexer implements Indexer {
                         List childNodes = node.childNodes();
                         if (childNodes.size() >= 2) {
                             Node child = (Node)childNodes.get(0);
-                            if (child.nodeId != NodeTypes.DVARNODE) {
+                            if (child.nodeId != NodeType.DVARNODE) {
                                 // Not a call on the block var corresponding to the table 
                                 // Later, validate more closely that we're making a call
                                 // on the actual block variable passed in from the create_table call!
@@ -797,7 +795,7 @@ public class RubyIndexer implements Indexer {
                             @SuppressWarnings("unchecked")
                             List<Node> args = child.childNodes();
                             for (Node n : args) {
-                                if (n.nodeId == NodeTypes.SYMBOLNODE || n.nodeId == NodeTypes.STRNODE) {
+                                if (n.nodeId == NodeType.SYMBOLNODE || n.nodeId == NodeType.STRNODE) {
                                     String columnName = getString(n);
                                     
                                     List<String> list = items.get(currentTable);
@@ -829,7 +827,7 @@ public class RubyIndexer implements Indexer {
         }
 
         private String getString(Node node) {
-            if (node.nodeId == NodeTypes.STRNODE) {
+            if (node.nodeId == NodeType.STRNODE) {
                 return ((StrNode)node).getValue().toString();
             } else {
                 return ((INameNode)node).getName();

@@ -108,11 +108,13 @@
                                 <xsd:attribute name="id" type="xsd:string"/>
                             </xsd:complexType>
                         </xsd:element>
-                        <xsd:element name="signed-url">
+                        <xsd:element name="signed-url" minOccurs="0" maxOccurs="unbounded">
                             <xsd:complexType>
                                 <xsd:sequence>
                                     <xsd:element name="sign" type="saas:Sign" minOccurs="0" maxOccurs="1"/>
                                 </xsd:sequence>
+                                <xsd:attribute name="sig-id" type="xsd:string" use="required"/>
+                                <xsd:attribute name="id" type="xsd:string" use="optional"/>
                             </xsd:complexType>
                         </xsd:element>
                         <xsd:element name="session-key">

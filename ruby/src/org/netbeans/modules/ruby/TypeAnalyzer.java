@@ -54,7 +54,7 @@ import org.jruby.ast.InstVarNode;
 import org.jruby.ast.LocalVarNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.SymbolNode;
 import org.jruby.ast.types.INameNode;
 import org.netbeans.editor.BaseDocument;
@@ -133,12 +133,12 @@ public class TypeAnalyzer {
         // Algorithm: walk AST and look for assignments and such.
         // Attempt to compute the type of each expression and
         switch (node.nodeId) {
-        case NodeTypes.LOCALASGNNODE:
-        case NodeTypes.INSTASGNNODE:
-        case NodeTypes.GLOBALASGNNODE:
-        case NodeTypes.CLASSVARASGNNODE:
-        case NodeTypes.CLASSVARDECLNODE:
-        case NodeTypes.DASGNNODE: {
+        case LOCALASGNNODE:
+        case INSTASGNNODE:
+        case GLOBALASGNNODE:
+        case CLASSVARASGNNODE:
+        case CLASSVARDECLNODE:
+        case DASGNNODE: {
             String symbol = ((INameNode)node).getName();
             String type = expressionType(node);
 
@@ -150,11 +150,11 @@ public class TypeAnalyzer {
                 types.remove(symbol);
             }
         }
-//        case NodeTypes.ITERNODE: {
+//        case ITERNODE: {
 //            // A block. See if I know the LHS expression types, and if so
 //            // I can propagate the type into the block variables.
 //        }
-//        case NodeTypes.CALLNODE: {
+//        case CALLNODE: {
 //            // Look for known calls whose return types we can guess
 //            String name = ((INameNode)node).getName();
 //            if (name.startsWith("find")) {
@@ -191,7 +191,7 @@ public class TypeAnalyzer {
         Node child = list.get(0);
 
         switch (child.nodeId) {
-        case NodeTypes.CALLNODE: {
+        case CALLNODE: {
             // Look for known calls whose return types we can guess
             CallNode call = (CallNode)child;
             String name = call.getName();
@@ -240,43 +240,43 @@ public class TypeAnalyzer {
             
             break;
         }
-        case NodeTypes.LOCALVARNODE:
+        case LOCALVARNODE:
             return types.get(((LocalVarNode)child).getName());
-        case NodeTypes.DVARNODE:
+        case DVARNODE:
             return types.get(((DVarNode)child).getName());
-        case NodeTypes.INSTVARNODE:
+        case INSTVARNODE:
             return types.get(((InstVarNode)child).getName());
-        case NodeTypes.GLOBALVARNODE:
+        case GLOBALVARNODE:
             return types.get(((GlobalVarNode)child).getName());
-        case NodeTypes.CLASSVARNODE:
+        case CLASSVARNODE:
             return types.get(((ClassVarNode)child).getName());
-        case NodeTypes.ARRAYNODE:
-        case NodeTypes.ZARRAYNODE:
+        case ARRAYNODE:
+        case ZARRAYNODE:
             return "Array"; // NOI18N
-        case NodeTypes.STRNODE:
-        case NodeTypes.DSTRNODE:
-        case NodeTypes.XSTRNODE:
-        case NodeTypes.DXSTRNODE:
+        case STRNODE:
+        case DSTRNODE:
+        case XSTRNODE:
+        case DXSTRNODE:
             return "String"; // NOI18N
-        case NodeTypes.FIXNUMNODE:
+        case FIXNUMNODE:
             return "Fixnum"; // NOI18N
-        case NodeTypes.BIGNUMNODE:
+        case BIGNUMNODE:
             return "Bignum"; // NOI18N
-        case NodeTypes.HASHNODE:
+        case HASHNODE:
             return "Hash"; // NOI18N
-        case NodeTypes.REGEXPNODE:
-        case NodeTypes.DREGEXPNODE:
+        case REGEXPNODE:
+        case DREGEXPNODE:
             return "Regexp"; // NOI18N
-        case NodeTypes.SYMBOLNODE:
-        case NodeTypes.DSYMBOLNODE:
+        case SYMBOLNODE:
+        case DSYMBOLNODE:
             return "Symbol"; // NOI18N
-        case NodeTypes.FLOATNODE:
+        case FLOATNODE:
             return "Float"; // NOI18N
-        case NodeTypes.NILNODE:
+        case NILNODE:
             return "NilClass"; // NOI18N
-        case NodeTypes.TRUENODE:
+        case TRUENODE:
             return "TrueClass"; // NOI18N
-        case NodeTypes.FALSENODE:
+        case FALSENODE:
             return "FalseClass"; // NOI18N
             //} else if (child instanceof RangeNode) {
             //    return "Range"; // NOI18N
@@ -307,7 +307,7 @@ public class TypeAnalyzer {
             // Handle migrations. This needs better flow analysis of block
             // variables but do quickfix for 6.0 which will work in most 
             // migrations files.
-            if ("t".equals(symbol) && root.nodeId == NodeTypes.DEFSNODE) {
+            if ("t".equals(symbol) && root.nodeId == NodeType.DEFSNODE) {
                 String n = ((INameNode)root).getName();
                 if ("up".equals(n) || ("down".equals(n))) {
                     return "ActiveRecord::ConnectionAdapters::TableDefinition";
@@ -478,7 +478,7 @@ public class TypeAnalyzer {
         } else if (method.equals("find")) { // NOI18N
             // Finder method that does both - gotta inspect it
             List<Node> nodes = new ArrayList<Node>();
-            AstUtilities.addNodesByType(call, new int[] {NodeTypes.SYMBOLNODE}, nodes);
+            AstUtilities.addNodesByType(call, new NodeType[] {NodeType.SYMBOLNODE}, nodes);
             boolean foundAll = false;
             for (Node n : nodes) {
                 SymbolNode symbol = (SymbolNode)n;

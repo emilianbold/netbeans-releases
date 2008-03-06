@@ -80,7 +80,7 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
     public LocationStepImpl(XPathModel model, int axis, 
             StepNodeTest nodeTest, XPathPredicateExpression[] predicates) {
         super(model);
-        assert axis < int2Axis.length : "The index of axis " + axis + 
+        assert axis <= int2Axis.length : "The index of axis " + axis + 
                 " is out of possible values"; // NOI18N
         //
         setAxis(int2Axis[axis - 1]);

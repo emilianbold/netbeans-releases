@@ -27,10 +27,14 @@
  */
 package org.netbeans.modules.websvc.editor.hints.rules;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -63,6 +67,26 @@ public class NoOperations extends AbstractWebServiceRule {
         for (ExecutableElement method:ElementFilter.methodsIn(classElement.getEnclosedElements())) {
             if (method.getModifiers().contains(Modifier.PUBLIC)) {
                 return true;
+            }
+        }
+        // check if the interfaces implemented/extended have any method
+        for(TypeMirror superIFMirror:classElement.getInterfaces()) {
+            if(superIFMirror.getKind() == TypeKind.DECLARED) {
+                Element superIFElement = ((DeclaredType)superIFMirror).asElement();
+                if(superIFElement.getKind()==ElementKind.INTERFACE) {
+                    TypeElement superTypeElement = (TypeElement)superIFElement;
+                    if(hasWebMethods(superTypeElement)) return true;
+                }
+            }
+        }
+        // check if the class extended has any method
+        TypeMirror superClass = classElement.getSuperclass();
+        if(superClass.getKind() == TypeKind.DECLARED) {
+            Element superElement = ((DeclaredType)superClass).asElement();
+            if(superElement.getKind()==ElementKind.CLASS) {
+                TypeElement superTypeElement = (TypeElement)superElement;
+                if(superTypeElement.getSuperclass().getKind()!=TypeKind.NONE)
+                    return hasWebMethods(superTypeElement);
             }
         }
         return false;

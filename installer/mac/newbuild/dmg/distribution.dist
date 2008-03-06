@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<installer-gui-script minSpecVersion="1.0">
+    <title>@TITLE@</title>
+    <welcome file="Welcome.txt"></welcome>
+    <license file="License.txt"></license>
+    <background file="background.tif" scaling="none" alignment="topleft"></background>
+    <options allow-external-scripts="no" customize="allow" rootVolumeOnly="false"></options>
+    <script>
+/* js:pkmk:start */
+function installationCheckRAM() {
+	return  checkMemsize() ;
+}
+/* js:pkmk:end */
+
+
+/* js:pkmk:start */
+function checkMemsize() {
+	var result = false;
+	try {
+		result = system.sysctl('hw.memsize') >= '134217728';
+	} catch (e) {}
+	
+	if(!result) {
+		my.result.type = 'Warn';
+		my.result.title = 'Memory Warning';
+		my.result.message = 'You have less than 128 MB of RAM.';
+	}
+	return result;
+}
+/* js:pkmk:end */
+
+
+/* ******* DO NOT EDIT ANYTHING BELOW THIS LINE ******* */
+/* THE TEXT BELOW IS THE DEFINITION FOR THE REQUIREMENTS EDITOR */
+
+/*
+ %%%Requirements Editor%%%
+ {
+	 clauses = (
+				{
+					anyOrAll = 2; 
+					connector = ""; 
+					msg = "You have less than 128 MB of RAM."; 
+					msgTitle = "Memory Warning"; 
+					rules = (
+							 {
+								 argumentField = "hw.memsize"; 
+								 argumentStringField = ""; 
+								 booleanType = true; 
+								 choiceProperty = enabled; 
+								 comboType = ""; 
+								 comparator = ">="; 
+								 mainChoice = "Result of Sysctl"; 
+								 numberType = ""; 
+								 pathField = ""; 
+								 pathKeyKeyField = ""; 
+								 pathKeyPathField = ""; 
+								 specificChoice = choice0; 
+								 stringType = 134217728; 
+							 }
+							 ); 
+					title = "Check memsize"; 
+					type = 2; 
+				}
+				); 
+	 functionName = installationCheckRAM; 
+ }
+ %%%Requirements Editor%%%
+ */
+</script>
+    <script>
+/* js:pkmk:start */
+function volumeCheckTiger() {
+	return  checkSystemversion() ;
+}
+/* js:pkmk:end */
+
+
+/* js:pkmk:start */
+function checkSystemversion() {
+	var result = false;
+	try {
+		result = my.target.systemVersion.ProductVersion >= '10.4';
+	} catch (e) {}
+	
+	if(!result) {
+		my.result.type = 'Fatal';
+		my.result.title = '';
+		my.result.message = '';
+	}
+	return result;
+}
+/* js:pkmk:end */
+
+
+/* ******* DO NOT EDIT ANYTHING BELOW THIS LINE ******* */
+/* THE TEXT BELOW IS THE DEFINITION FOR THE REQUIREMENTS EDITOR */
+
+/*
+ %%%Requirements Editor%%%
+ {
+	 clauses = (
+				{
+					anyOrAll = 2; 
+					connector = ""; 
+					msg = ""; 
+					msgTitle = ""; 
+					rules = (
+							 {
+								 argumentField = ""; 
+								 argumentStringField = ""; 
+								 booleanType = true; 
+								 choiceProperty = enabled; 
+								 comboType = ""; 
+								 comparator = ">="; 
+								 mainChoice = "Target OS Version (e.g. 10.x.x)"; 
+								 numberType = ""; 
+								 pathField = ""; 
+								 pathKeyKeyField = ""; 
+								 pathKeyPathField = ""; 
+								 specificChoice = choice0; 
+								 stringType = "10.4"; 
+							 }
+							 ); 
+					title = "Check systemVersion"; 
+					type = 3; 
+				}
+				); 
+	 functionName = volumeCheckTiger; 
+ }
+ %%%Requirements Editor%%%
+ */
+</script>
+    <script>
+/* js:pkmk:start */
+function choiceIsADowngrade() {
+	return  checkChoiceUpgradeAction() ;
+}
+/* js:pkmk:end */
+
+
+/* js:pkmk:start */
+function checkChoiceUpgradeAction() {
+	var result = false;
+	try {
+		result = my.choice.packageUpgradeAction == 'downgrade' || my.choice.packageUpgradeAction == 'mixed';
+	} catch (e) {}
+	
+	return result;
+}
+/* js:pkmk:end */
+
+
+/* ******* DO NOT EDIT ANYTHING BELOW THIS LINE ******* */
+/* THE TEXT BELOW IS THE DEFINITION FOR THE REQUIREMENTS EDITOR */
+
+/*
+ %%%Requirements Editor%%%
+ {
+	 clauses = (
+				{
+					anyOrAll = 1; 
+					connector = ""; 
+					msg = ""; 
+					msgTitle = ""; 
+					rules = (
+							 {
+								 argumentField = ""; 
+								 argumentStringField = ""; 
+								 booleanType = true; 
+								 choiceProperty = packageUpgradeAction; 
+								 comboType = downgrade; 
+								 comparator = "=="; 
+								 mainChoice = "Current Choice"; 
+								 numberType = ""; 
+								 pathField = ""; 
+								 pathKeyKeyField = ""; 
+								 pathKeyPathField = ""; 
+								 specificChoice = choice0; 
+								 stringType = ""; 
+							 }, 
+							 {
+								 argumentField = ""; 
+								 argumentStringField = ""; 
+								 booleanType = true; 
+								 choiceProperty = packageUpgradeAction; 
+								 comboType = mixed; 
+								 comparator = "=="; 
+								 mainChoice = "Current Choice"; 
+								 numberType = ""; 
+								 pathField = ""; 
+								 pathKeyKeyField = ""; 
+								 pathKeyPathField = ""; 
+								 specificChoice = choice0; 
+								 stringType = ""; 
+							 }
+							 ); 
+					title = "Check Choice Upgrade Action"; 
+					type = 0; 
+				}
+				); 
+	 functionName = choiceIsADowngrade; 
+ }
+ %%%Requirements Editor%%%
+ */
+</script>
+    <choices-outline>
+        <line choice="netbeans">
+            <line choice="baseide"></line>
+            <line choice="javase"></line>
+            <line choice="webjavaee"></line>
+            <line choice="cpp"></line>
+            <line choice="ruby"></line>
+            <line choice="soa"></line>
+        </line>
+        <line choice="glassfish"></line>
+        <line choice="tomcat"></line>
+        <line choice="openesb"></line>
+    </choices-outline>
+    <choice id="glassfish" title="@GF_TITLE@" description="Free, open source, production-quality application server that is also the reference implementation for Java EE 5 specification." start_selected="true" start_enabled="true" start_visible="true">
+        <pkg-ref id="ident.pkg.glassfish"></pkg-ref>
+    </choice>
+    <choice id="tomcat" title="@TC_TITLE@" description="Free, open source web server that is the reference implementation for Java servlet and JSP specifications." start_selected="false" start_enabled="true" start_visible="true">
+        <pkg-ref id="ident.pkg.tomcat"></pkg-ref>
+    </choice>
+    <choice id="openesb" title="@OESB_TITLE@" description="Open ESB implements an Enterprise Service Bus (ESB) runtime using Java Business Integration (JBI) as the foundation. Open ESB is an open standard, open-source product that offers a platform to build integration solutions based on service-oriented architecture (SOA)." start_selected="true" start_enabled="true" start_visible="true" selected="choices.openesb.selected &amp;&amp; choices.glassfish.selected" enabled="choices.glassfish.selected">
+        <pkg-ref id="ident.pkg.openesb"></pkg-ref>
+    </choice>
+    <choice id="netbeans" title="@NB_TITLE@" description="NetBeans IDE" start_selected="true" start_enabled="true" start_visible="true"></choice>
+    <choice id="baseide" title="Base IDE" description="Core components of an integrated development environment." start_selected="true" start_enabled="true" start_visible="true">
+        <pkg-ref id="org.netbeans.ide"></pkg-ref>
+    </choice>
+    <choice id="javase" title="Java SE" description="Essential tools for programming in Java, including an editor, debugger, profiler, refactoring support, and award winning drag-and-drop GUI design tool (formerly known as Project Matisse)." start_selected="true" start_enabled="true" start_visible="true" selected="choices.javase.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
+        <pkg-ref id="ident.pkg.javase"></pkg-ref>
+    </choice>
+    <choice id="webjavaee" title="Web &amp; Java EE" description="Tools for creating Java web and enterprise applications compatible with the J2EE 1.3, J2EE 1.4, and Java EE 5 specifications. Includes support for servlets, JSPs, tag libraries, Struts, Java Persistence API, Enterprise Java Beans, JAX-WS, and Java Server Faces. Provides visual drag-and-drop application development environment." start_selected="true" start_enabled="true" start_visible="true" selected="choices.webjavaee.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
+        <pkg-ref id="ident.pkg.javaee"></pkg-ref>
+    </choice>
+    <choice id="cpp" title="C/C++" description="Tools for developing C and C++ applications. Includes project templates, support for existing projects, advanced editor, debug support, and makefile wizard for configuration management." start_selected="true" start_enabled="true" start_visible="true" selected="choices.cpp.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
+        <pkg-ref id="ident.pkg.cpp"></pkg-ref>
+    </choice>
+    <choice id="ruby" title="Ruby" description="Complete tool set for creating Ruby and Ruby on Rails applications. Includes JRuby interpreter, Ruby on Rails framework, powerful editor, debugger, gem manager, and interactive Ruby shell. Supports easily creating, modifying, and running Ruby on Rails applications." start_selected="true" start_enabled="true" start_visible="true" selected="choices.ruby.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
+        <pkg-ref id="ident.pkg.ruby"></pkg-ref>
+    </choice>
+    <choice id="soa" title="SOA" description="Tools for creating composite applications as part of a Service Oriented Architecture. Provides comprehensive BPEL support. Includes graphical editor, debugger, and refactoring support." start_selected="true" start_enabled="true" start_visible="true" selected="choices.soa.selected &amp;&amp; choices.webjavaee.selected &amp;&amp; choices.openesb.selected" enabled="choices.webjavaee.selected &amp;&amp; choices.openesb.selected">
+        <pkg-ref id="ident.pkg.soa"></pkg-ref>
+    </choice>
+    <pkg-ref id="ident.pkg.glassfish" version="0.0.0.0.0" installKBytes="98273" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.tomcat" version="0.0.0.6.0" installKBytes="9991" auth="Root" onConclusion="None">file:./Contents/Packages/tomcat.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.openesb" version="0.0.0.0.0" installKBytes="18776" auth="Root" onConclusion="None">file:./Contents/Packages/openesb.pkg</pkg-ref>
+    <pkg-ref id="org.netbeans.ide" version="6.1.0.6.1" installKBytes="22920" auth="Admin" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="26778" auth="Root" onConclusion="None">file:./Contents/Packages/javase.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="69458" auth="Root" onConclusion="None">file:./Contents/Packages/javaee.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.cpp" version="0.0.0.0.1" installKBytes="4599" auth="Root" onConclusion="None">file:./Contents/Packages/cpp.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.ruby" version="0.0.0.0.1" installKBytes="24641" auth="Root" onConclusion="None">file:./Contents/Packages/ruby.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.soa" version="0.0.0.0.1" installKBytes="10341" auth="Root" onConclusion="None">file:./Contents/Packages/soa.pkg</pkg-ref>
+</installer-gui-script>

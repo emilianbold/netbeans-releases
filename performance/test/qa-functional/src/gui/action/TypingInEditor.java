@@ -74,13 +74,19 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
     /** Creates a new instance of TypingInEditor */
     public TypingInEditor(String testName) {
         super(testName);
-        HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations
+        WAIT_AFTER_PREPARE = 3000;
+        WAIT_AFTER_OPEN = 100;
+
+//        HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations
     }
     
     /** Creates a new instance of TypingInEditor */
     public TypingInEditor(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations
+        WAIT_AFTER_PREPARE = 3000;
+        WAIT_AFTER_OPEN = 100;
+
+//        HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations
     }
     
     public static NbTestSuite suite() {

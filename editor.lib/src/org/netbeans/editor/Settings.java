@@ -544,18 +544,30 @@ public class Settings {
      */
     public static KitAndValue[] getValueHierarchy(Class kitClass, String settingName, boolean evaluateEvaluators) {
         ArrayList<KitAndValue> kavList = new ArrayList<KitAndValue>();
+        boolean superclass = false;
+        
+        try {
+            for (Class kc = kitClass; kc != null; kc = kc.getSuperclass()) {
+                String mimeType = BaseKit.kitsTracker_FindMimeType(kc);
+                MimePath mimePath = mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType);
 
-        for (Class kc = kitClass; kc != null; kc = kc.getSuperclass()) {
-            String mimeType = BaseKit.kitsTracker_FindMimeType(kc);
-            MimePath mimePath = mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType);
+                Object value = getValueEx(mimePath, kc, settingName, evaluateEvaluators);
+                if (value != null) {
+                    kavList.add(new KitAndValue(kc, value));
+                }
 
-            Object value = getValueEx(mimePath, kc, settingName, evaluateEvaluators);
-            if (value != null) {
-                kavList.add(new KitAndValue(kc, value));
+                if (mimePath == MimePath.EMPTY) {
+                    break;
+                }
+
+                if (!superclass) {
+                    superclass = true;
+                    BaseKit.kitsTracker_setContextMimeType(""); //NOI18N
+                }
             }
-            
-            if (mimePath == MimePath.EMPTY) {
-                break;
+        } finally {
+            if (superclass) {
+                BaseKit.kitsTracker_setContextMimeType(null);
             }
         }
         

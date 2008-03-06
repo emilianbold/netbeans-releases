@@ -129,7 +129,7 @@ public class CreateProjectTest extends JellyTestCase {
         test2.mkdirs();
         testFolders[0] = test1;
         testFolders[1] = test2;
-        J2SEProjectGenerator.createProject(projectDir,prjName, sourceFolders, testFolders, null, null);
+        J2SEProjectGenerator.createProject(projectDir,prjName, sourceFolders, testFolders, null, null, null);
         return projectDir;
     }
     public void testCloseProject_API_2() throws Exception {
@@ -162,7 +162,7 @@ public class CreateProjectTest extends JellyTestCase {
         testFolders[0] = test1;
         testFolders[1] = test2;
         
-        J2SEProjectGenerator.createProject(projectDir, prjName, sourceFolders, testFolders, null, null);
+        J2SEProjectGenerator.createProject(projectDir, prjName, sourceFolders, testFolders, null, null, null);
         Utilities.openProject(projectDir);
         assertTrue(Utilities.closeProject(prjName));
 
