@@ -215,46 +215,83 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         try {
             rc = addDirectoryChooser.showDialog(this, null);
             if (rc == JFileChooser.APPROVE_OPTION) {
-                changed = true;
+                // Validate first
+                // FIXUP: need dialog with proper validation....
                 file = addDirectoryChooser.getSelectedFile();
+                if (csm.getCompilerSetByPath(file.getAbsolutePath()) != null) {
+                    // FIXUP: error message
+                    return;
+                }
+                ArrayList<String> list = new ArrayList<String>();
+                if (new File(file, "cc").exists()) // NOI18N
+                    list.add("cc"); // NOI18N
+                if (new File(file, "gcc").exists()) // NOI18N
+                    list.add("gcc"); // NOI18N
+                CompilerSet cs = CompilerSet.getCompilerSet(file.getAbsolutePath(), (String[])list.toArray(new String[list.size()]));
+                
+                changed = true;
                 dirlist.add(0, file.getAbsolutePath());
-                csm = new CompilerSetManager(dirlist);
-                update(false);
+//                csm = new CompilerSetManager(dirlist);
+                CompilerSetManager.getDefault().initCompilerSet(cs);
+                csm.add(cs);
+                update(false, cs);
             }
         } catch (HeadlessException ex) {
         }
     }
     
     private void removeDirectory() {
-        int idx = lstDirlist.getSelectedIndex();
-        assert idx != -1; // the button shouldn't be enabled
-        if (checkForCSRemoval(idx)) {
-            String dir = dirlist.remove(idx);
-            changed = true;
-            if (dirlist.size() > 0) {
-                if (idx == dirlist.size()) {
-                    idx--;
-                }
+        CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
+        if (cs != null) {
+            int index = csm.getCompilerSets().indexOf(cs);
+            csm.remove(cs);
+            if (cs.isDefault()) {
+                if (csm.getCompilerSets().size() > 0)
+                    csm.getCompilerSet(0).setAsDefault(true);
             }
-
-            try {
-                for (CompilerSet cs : csm.getCompilerSets()) {
-                    StringTokenizer tok = new StringTokenizer(cs.getDirectory(), File.pathSeparator);
-                    while (tok.hasMoreTokens()) {
-                        String d = tok.nextToken();
-                        if (d.equals(dir)) {
-                            csm = new CompilerSetManager(dirlist);
-                            CompilerSet.removeCompilerSet(cs); // CompilerSet has it's own cache!!!!!!!!
-                            return;
-                        }
-                    }
-                }
-            } finally {
-                if (changed) {
-                    update(false);
-                }
-            }
+            if (index >= 0 && index < csm.getCompilerSets().size())
+                update(false, csm.getCompilerSets().get(index));
+            else if (index > 0)
+                update(false, csm.getCompilerSets().get(index-1));
+            else
+                update(false);
         }
+//        int idx = lstDirlist.getSelectedIndex();
+//        assert idx != -1; // the button shouldn't be enabled
+//        if (checkForCSRemoval(idx)) {
+//            String dir = dirlist.remove(idx);
+//            changed = true;
+//            if (dirlist.size() > 0) {
+//                if (idx == dirlist.size()) {
+//                    idx--;
+//                }
+//            }
+//
+//            try {
+//                for (CompilerSet cs : csm.getCompilerSets()) {
+//                    StringTokenizer tok = new StringTokenizer(cs.getDirectory(), File.pathSeparator);
+//                    while (tok.hasMoreTokens()) {
+//                        String d = tok.nextToken();
+//                        if (d.equals(dir)) {
+//                            csm = new CompilerSetManager(dirlist);
+//                            CompilerSet.removeCompilerSet(cs); // CompilerSet has it's own cache!!!!!!!!
+//                            return;
+//                        }
+//                    }
+//                }
+//            } finally {
+//                if (changed) {
+//                    update(false);
+//                }
+//            }
+//        }
+    }
+    
+    private void setSelectedAsDefault() {
+        CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
+        csm.setDefault(cs);
+        update(false);
+        
     }
     
     private void moveDirectory(String direction) {
@@ -275,78 +312,78 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         csm = new CompilerSetManager(dirlist);
         update(false);
     }
-    
-    /**
-     * The user has pressed the Remove button id the directories list and the removal
-     * of the selected directory will result in the elimination of a compiler set. Ask
-     * the user if thats what they want and warn them some projects may be converted to
-     * another compiler collection. If the compiler set is the only one, tell the user
-     * its not allowed and stop the action.
-     *
-     * @param idx The index of the selected directory
-     * @returns True if the user OK's removal or removal doesn't cause elimination of a compiler collection
-     */
-    private boolean checkForCSRemoval(int idx) {
-        String dir = dirlist.get(idx);
-        int count = 0;
-        
-        for (String d : dirlist) {
-            if (d.equals(dir)) {
-                count++;
-            }
-        }
-        if (count > 1) {
-            return true; // its OK to remove a duplicate directory...
-        }
-        
-        for (CompilerSet cs : csm.getCompilerSets()) {
-            String csdirs = cs.getDirectory();
-            StringTokenizer tok = new StringTokenizer(csdirs, File.pathSeparator);
-            while (tok.hasMoreTokens()) {
-                String d = tok.nextToken();
-                if (d.equals(dir)) {
-                    if (csm.getCompilerSets().size() == 1) {
-                        return suppressCSRemoval(dir, cs.getDisplayName());
-                    } else {
-                        return warnAboutCSRemoval(dir, cs.getDisplayName());
-                    }
-                }
-            }
-        }
-        return true;
-    }
-    
-    /**
-     * Post a confirmation dialog about removing a compiler collection.
-     *
-     * @param dir The directory about to be removed
-     * @param csname The Compiler Collection about to be eliminated
-     * @returns True if the user pressed OK, false otherwise
-     */
-    private boolean warnAboutCSRemoval(String dir, String csname) {
-        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                NbBundle.getMessage(ToolsPanel.class, "WARN_CSRemovalPending", dir, csname), // NOI18N
-                NbBundle.getMessage(ToolsPanel.class, "LBL_PendingCSRemoval_Title"), // NOI18N
-                NotifyDescriptor.OK_CANCEL_OPTION);
-        Object ret = DialogDisplayer.getDefault().notify(nd);
-        return ret == NotifyDescriptor.OK_OPTION;
-    }
-    
-    /**
-     * Post a warning dialog telling the user they can't remove the last compiler collection.
-     *
-     * @param dir The directory about to be removed
-     * @param csname The Compiler Collection about to be eliminated
-     * @returns false
-     */
-    private boolean suppressCSRemoval(String dir, String csname) {
-        NotifyDescriptor nb = new NotifyDescriptor.Message(
-                NbBundle.getMessage(ToolsPanel.class, "WARN_CSRemovalDisallowed", dir, csname),
-                NotifyDescriptor.ERROR_MESSAGE); // NOI18N
-        nb.setTitle(NbBundle.getMessage(ToolsPanel.class, "LBL_CSRemovalDisallowed_Title")); // NOI18N
-        DialogDisplayer.getDefault().notify(nb);
-        return false;
-    }
+//    
+//    /**
+//     * The user has pressed the Remove button id the directories list and the removal
+//     * of the selected directory will result in the elimination of a compiler set. Ask
+//     * the user if thats what they want and warn them some projects may be converted to
+//     * another compiler collection. If the compiler set is the only one, tell the user
+//     * its not allowed and stop the action.
+//     *
+//     * @param idx The index of the selected directory
+//     * @returns True if the user OK's removal or removal doesn't cause elimination of a compiler collection
+//     */
+//    private boolean checkForCSRemoval(int idx) {
+//        String dir = dirlist.get(idx);
+//        int count = 0;
+//        
+//        for (String d : dirlist) {
+//            if (d.equals(dir)) {
+//                count++;
+//            }
+//        }
+//        if (count > 1) {
+//            return true; // its OK to remove a duplicate directory...
+//        }
+//        
+//        for (CompilerSet cs : csm.getCompilerSets()) {
+//            String csdirs = cs.getDirectory();
+//            StringTokenizer tok = new StringTokenizer(csdirs, File.pathSeparator);
+//            while (tok.hasMoreTokens()) {
+//                String d = tok.nextToken();
+//                if (d.equals(dir)) {
+//                    if (csm.getCompilerSets().size() == 1) {
+//                        return suppressCSRemoval(dir, cs.getDisplayName());
+//                    } else {
+//                        return warnAboutCSRemoval(dir, cs.getDisplayName());
+//                    }
+//                }
+//            }
+//        }
+//        return true;
+//    }
+//    
+//    /**
+//     * Post a confirmation dialog about removing a compiler collection.
+//     *
+//     * @param dir The directory about to be removed
+//     * @param csname The Compiler Collection about to be eliminated
+//     * @returns True if the user pressed OK, false otherwise
+//     */
+//    private boolean warnAboutCSRemoval(String dir, String csname) {
+//        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+//                NbBundle.getMessage(ToolsPanel.class, "WARN_CSRemovalPending", dir, csname), // NOI18N
+//                NbBundle.getMessage(ToolsPanel.class, "LBL_PendingCSRemoval_Title"), // NOI18N
+//                NotifyDescriptor.OK_CANCEL_OPTION);
+//        Object ret = DialogDisplayer.getDefault().notify(nd);
+//        return ret == NotifyDescriptor.OK_OPTION;
+//    }
+//    
+//    /**
+//     * Post a warning dialog telling the user they can't remove the last compiler collection.
+//     *
+//     * @param dir The directory about to be removed
+//     * @param csname The Compiler Collection about to be eliminated
+//     * @returns false
+//     */
+//    private boolean suppressCSRemoval(String dir, String csname) {
+//        NotifyDescriptor nb = new NotifyDescriptor.Message(
+//                NbBundle.getMessage(ToolsPanel.class, "WARN_CSRemovalDisallowed", dir, csname),
+//                NotifyDescriptor.ERROR_MESSAGE); // NOI18N
+//        nb.setTitle(NbBundle.getMessage(ToolsPanel.class, "LBL_CSRemovalDisallowed_Title")); // NOI18N
+//        DialogDisplayer.getDefault().notify(nb);
+//        return false;
+//    }
     
     private void setMakePathField(String path) {
         tfMakePath.setText(path); // Validation happens automatically
@@ -469,11 +506,19 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     
     /** Update the display */
     public void update() {
-        update(true);
+        update(true, null);
     }
     
+    private void update(CompilerSet cs) {
+        update(true, cs);
+    }
+    
+    private void update(boolean doInitialize) {
+        update(doInitialize, null);
+    }
+     
     /** Update the display */
-    public void update(boolean doInitialize) {
+    public void update(boolean doInitialize, CompilerSet selectedCS) {
         
         updating = true;
         if (!initialized || doInitialize) {
@@ -492,15 +537,40 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         cbCRequired.setVisible(model.showRequiredBuildTools());
         cbFortranRequired.setVisible(model.showRequiredBuildTools() && CppSettings.getDefault().isFortranEnabled());
         
-        int idx = lstDirlist.getSelectedIndex();
-        lstDirlist.setListData(dirlist.toArray());
-        if (idx >= 0) {
-            lstDirlist.setSelectedIndex(idx);
-            lstDirlist.ensureIndexIsVisible(idx);
+        if (doInitialize) {
+            // Set Default
+            if (!csm.getCompilerSets().isEmpty()) {
+                String name = model.getCompilerSetName(); // the default set
+                if (name == null) {
+                    //Nothing
+                }
+                if (name.length() == 0 || csm.getCompilerSet(name) == null) {
+                    csm.getCompilerSet(0).setAsDefault(true);
+                } else {
+                    csm.setDefault(csm.getCompilerSet(name));
+                }
+                String selectedName = model.getSelectedCompilerSetName(); // The selected set
+                if (selectedName != null) {
+                    selectedCS = csm.getCompilerSet(selectedName);
+                    
+                }
+                if (selectedCS == null)
+                    selectedCS = csm.getDefaultCompilerSet();
+            }
+        }
+        
+        if (selectedCS == null)
+            selectedCS = (CompilerSet)lstDirlist.getSelectedValue();
+        lstDirlist.setListData(csm.getCompilerSets().toArray());
+        if (selectedCS != null) {
+            lstDirlist.setSelectedValue(selectedCS, true); // FIXUP: should use name
+        }
+        if (lstDirlist.getSelectedIndex() < 0) {
+            lstDirlist.setSelectedIndex(0);
         }
 //        setMakePathField(tfMakeCommand.getText());
 //        setGdbPathField(tfGdbCommand.getText());
-        updateCompilers();
+//        updateCompilers();
         updating = false;
         dataValid();
         initialized = true;
@@ -517,9 +587,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             } else {
                 name = model.getCompilerSetName();
                 if (name.length() == 0 || csm.getCompilerSet(name) == null) {
+                    csm.getCompilerSet(0).setAsDefault(true);
                     name = CompilerSetManager.getDefault().getCompilerSet(0).getName();
                     dname = CompilerSetManager.getDefault().getCompilerSet(0).getDisplayName();
                 } else {
+                    csm.getCompilerSet(name).setAsDefault(true);
                     name = csm.getCompilerSet(name).getName(); // Sun12 will fallback match any Sun release
                     dname = csm.getCompilerSet(name).getDisplayName();
                 }
@@ -746,7 +818,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     /** Apply changes */
     public void applyChanges() {
         if (changed) {
-            CompilerSet cs = (CompilerSet) cbCompilerSet.getSelectedItem();
+//            CompilerSet cs = (CompilerSet) cbCompilerSet.getSelectedItem();
+            CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
             changed = false;
             
             CompilerSetManager.setDefault(csm);
@@ -760,7 +833,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             cs.getTool(Tool.FortranCompiler).setPath(tfFortranPath.getText());
 //            model.setGdbName(tfGdbCommand.getText());
 //            model.setGdbPath(tfGdbPath.getText());
-            model.setCompilerSetName(cs.getName());
+            model.setCompilerSetName(csm.getDefaultCompilerSet().getName());
+            model.setSelectedCompilerSetName(cs.getName());
 //            if (cSelections.get(cs.getName()) != null) {
 //                model.setCCompilerName(cSelections.get(cs.getName()));
 //            }
@@ -1012,7 +1086,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             } else if (o == btUp) {
                 moveDirectory(DIRECTORY_MOVE_UP);
             } else if (o == btDown) {
-                moveDirectory(DIRECTORY_MOVE_DOWN);
+                setSelectedAsDefault();
             } else {
                 if (o == btMakeVersion) {
                     postVersionInfo(tfMakePath.getText(), tfMakePath.getText());
@@ -1110,9 +1184,10 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         
         if (!ev.getValueIsAdjusting()) { // we don't want the event until its finished
             if (ev.getSource() == lstDirlist) {
-                btRemove.setEnabled(lstDirlist.getSelectedIndex() >= 0);
-                btUp.setEnabled(lstDirlist.getSelectedIndex() > 0);
-                btDown.setEnabled(lstDirlist.getSelectedIndex() < (dirlist.size() - 1) && lstDirlist.getSelectedIndex() >= 0);
+                changeCompilerSet((CompilerSet)lstDirlist.getSelectedValue());
+                btRemove.setEnabled(csm.getCompilerSets().size() > 1 && lstDirlist.getSelectedIndex() >= 0);
+                btUp.setEnabled(false /*lstDirlist.getSelectedIndex() >= 0*/);
+                btDown.setEnabled(lstDirlist.getSelectedIndex() >= 0 && !((CompilerSet)lstDirlist.getSelectedValue()).isDefault());
             }
         }
     }
