@@ -48,7 +48,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.WhenNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -81,8 +81,8 @@ import org.openide.util.NbBundle;
  */
 public class ColonToThen implements AstRule {
 
-    public Set<Integer> getKinds() {
-        return Collections.singleton(NodeTypes.WHENNODE);
+    public Set<NodeType> getKinds() {
+        return Collections.singleton(NodeType.WHENNODE);
     }
 
     public void run(RuleContext context, List<Description> result) {
@@ -138,6 +138,9 @@ public class ColonToThen implements AstRule {
                 doc.readUnlock();
             }
             
+            if (offset == -1) {
+                return;
+            }
             OffsetRange range = new OffsetRange(offset, offset+1);
             String displayName = NbBundle.getMessage(ColonToThen.class, "ColonToThenGutter");
             List<Fix> fixes = new ArrayList<Fix>(2);

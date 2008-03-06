@@ -264,6 +264,10 @@ public abstract class SaasBean extends GenericResourceBean {
         this.authProfile = profile;
     }
     
+    protected Object getAuthUsingId(Authentication auth) {
+        return null;
+    }
+    
     public void findAuthentication(SaasMethod m) {
         Authentication auth2 = m.getSaas().getSaasMetadata().getAuthentication();
         if(auth2.getHttpBasic() != null) {
@@ -275,9 +279,12 @@ public abstract class SaasBean extends GenericResourceBean {
         } else if(auth2.getApiKey() != null) {
             setAuthenticationType(SaasAuthenticationType.API_KEY);
             setAuthentication(new ApiKeyAuthentication(auth2.getApiKey().getId()));
-        } else if(auth2.getSignedUrl() != null) {
-            SignedUrl signedUrl = auth2.getSignedUrl();
+        } else if(auth2.getSignedUrl() != null && auth2.getSignedUrl().size() > 0) {
             setAuthenticationType(SaasAuthenticationType.SIGNED_URL);
+            List<SignedUrl> signedUrlList = auth2.getSignedUrl();
+            SignedUrl signedUrl = (SignedUrl) getAuthUsingId(auth2);
+            if(signedUrl == null)
+                signedUrl = signedUrlList.get(0);
             SignedUrlAuthentication signedUrlAuth = new SignedUrlAuthentication();
             if(signedUrl.getSigId() != null) {
                 signedUrlAuth.setSigKeyName(signedUrl.getSigId());

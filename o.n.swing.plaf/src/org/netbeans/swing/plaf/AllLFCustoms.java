@@ -47,6 +47,9 @@ import javax.swing.*;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.FontUIResource;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 
 /** Customization for all LFs. */
 final class AllLFCustoms extends LFCustoms {
@@ -124,44 +127,57 @@ final class AllLFCustoms extends LFCustoms {
         Font nbSerifPlain = new FontUIResource("Serif", Font.PLAIN, uiFontSize); // NOI18N
         Font nbSansSerifPlain = new FontUIResource("SansSerif", Font.PLAIN, uiFontSize); // NOI18N
         Font nbMonospacedPlain = new FontUIResource("Monospaced", Font.PLAIN, uiFontSize); // NOI18N
-        UIManager.put("controlFont", nbDialogPlain); // NOI18N
-        UIManager.put("Button.font", nbDialogPlain); // NOI18N
-        UIManager.put("ToggleButton.font", nbDialogPlain); // NOI18N
-        UIManager.put("RadioButton.font", nbDialogPlain); // NOI18N
-        UIManager.put("CheckBox.font", nbDialogPlain); // NOI18N
-        UIManager.put("ColorChooser.font", nbDialogPlain); // NOI18N
-        UIManager.put("ComboBox.font", nbDialogPlain); // NOI18N
-        UIManager.put("Label.font", nbDialogPlain); // NOI18N
-        UIManager.put("List.font", nbDialogPlain); // NOI18N
-        UIManager.put("FileChooser.listFont", nbDialogPlain); // NOI18N
-        UIManager.put("MenuBar.font", nbDialogPlain); // NOI18N
-        UIManager.put("MenuItem.font", nbDialogPlain); // NOI18N
-        UIManager.put("MenuItem.acceleratorFont", nbDialogPlain); // NOI18N
-        UIManager.put("RadioButtonMenuItem.font", nbDialogPlain); // NOI18N
-        UIManager.put("CheckBoxMenuItem.font", nbDialogPlain); // NOI18N
-        UIManager.put("Menu.font", nbDialogPlain); // NOI18N
-        UIManager.put("PopupMenu.font", nbDialogPlain); // NOI18N
-        UIManager.put("OptionPane.font", nbDialogPlain); // NOI18N
-        UIManager.put("OptionPane.messageFont", nbDialogPlain); // NOI18N
-        UIManager.put("Panel.font", nbDialogPlain); // NOI18N
-        UIManager.put("ProgressBar.font", nbDialogPlain); // NOI18N
-        UIManager.put("ScrollPane.font", nbDialogPlain); // NOI18N
-        UIManager.put("Viewport.font", nbDialogPlain); // NOI18N
-        UIManager.put("TabbedPane.font", nbDialogPlain); // NOI18N
-        UIManager.put("Table.font", nbDialogPlain); // NOI18N
-        UIManager.put("TableHeader.font", nbDialogPlain); // NOI18N
-        UIManager.put("TextField.font", nbSansSerifPlain); // NOI18N
-        UIManager.put("PasswordField.font", nbMonospacedPlain); // NOI18N
-        UIManager.put("TextArea.font", nbDialogPlain); // NOI18N
-        UIManager.put("TextPane.font", nbDialogPlain); // NOI18N
-        UIManager.put("EditorPane.font", nbSerifPlain); // NOI18N
-        UIManager.put("TitledBorder.font", nbDialogPlain); // NOI18N
-        UIManager.put("ToolBar.font", nbDialogPlain); // NOI18N
-        UIManager.put("ToolTip.font", nbSansSerifPlain); // NOI18N
-        UIManager.put("Tree.font", nbDialogPlain); // NOI18N
-        UIManager.put("InternalFrame.titleFont", nbDialogBold); // NOI18N
-        UIManager.put("windowTitleFont", nbDialogBold); // NOI18N
+        
+        Map<Font, Font> fontTranslation = new HashMap<Font, Font>(5);
+        
+        switchFont("controlFont", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("Button.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("ToggleButton.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("RadioButton.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("CheckBox.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("ColorChooser.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("ComboBox.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("Label.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("List.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("FileChooser.listFont", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("MenuBar.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("MenuItem.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("MenuItem.acceleratorFont", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("RadioButtonMenuItem.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("CheckBoxMenuItem.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("Menu.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("PopupMenu.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("OptionPane.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("OptionPane.messageFont", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("Panel.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("ProgressBar.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("ScrollPane.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("Viewport.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("TabbedPane.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("Table.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("TableHeader.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("TextField.font", fontTranslation, uiFontSize, nbSansSerifPlain); // NOI18N
+        switchFont("PasswordField.font", fontTranslation, uiFontSize, nbMonospacedPlain); // NOI18N
+        switchFont("TextArea.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("TextPane.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("EditorPane.font", fontTranslation, uiFontSize, nbSerifPlain); // NOI18N
+        switchFont("TitledBorder.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("ToolBar.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("ToolTip.font", fontTranslation, uiFontSize, nbSansSerifPlain); // NOI18N
+        switchFont("Tree.font", fontTranslation, uiFontSize, nbDialogPlain); // NOI18N
+        switchFont("InternalFrame.titleFont", fontTranslation, uiFontSize, nbDialogBold); // NOI18N
+        switchFont("windowTitleFont", fontTranslation, uiFontSize, nbDialogBold); // NOI18N
     }
 
-
+    private static final boolean isMetal = UIManager.getLookAndFeel().getClass() == MetalLookAndFeel.class;
+    
+    private static void switchFont( String uiKey, Map<Font, Font> fontTranslation, int uiFontSize, Font defaultFont ) {
+        Font oldFont = UIManager.getFont(uiKey);
+        Font newFont = (null == oldFont || isMetal) ? defaultFont : fontTranslation.get(oldFont);
+        if( null == newFont ) {
+            newFont = new FontUIResource( oldFont.getFontName(), oldFont.getStyle(), uiFontSize );
+            fontTranslation.put( oldFont, newFont );
+        }
+        UIManager.put( uiKey, newFont );
+    }
 }
