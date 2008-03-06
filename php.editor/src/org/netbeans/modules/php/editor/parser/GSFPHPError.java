@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,58 +36,63 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.parser;
 
-import java.io.StringReader;
-import java_cup.runtime.Symbol;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.editor.parser.ASTPHP5Symbols;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.gsf.api.Severity;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public class ASTPHP5ParserTest extends NbTestCase {
-    
-    public ASTPHP5ParserTest(String testName) {
-        super(testName);
-    }            
+public class GSFPHPError implements org.netbeans.modules.gsf.api.Error {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    private final String displayName;
+    private final FileObject file;
+    private final int startPosition;
+    private final int endPosition;
+    private final Severity severity;
+    private final Object[] parameters;
+
+    public GSFPHPError(String displayName, FileObject file, int startPosition, int endPosition, Severity severity, Object[] parameters) {
+        this.displayName = displayName;
+        this.file = file;
+        this.startPosition = startPosition;
+        this.endPosition = endPosition;
+        this.severity = severity;
+        this.parameters = parameters;
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    
+    public String getDisplayName() {
+        return this.displayName;
     }
-    
-//    public void testPHPDoc1() throws Exception {
-//        String source = "<?php\n/**\n * PHP Template.\n */\necho \"ahoj\"\n?>";
-//        System.out.println("-----------------start: ------------------");
-//        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source));
-//        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
-//        Program result = (Program)parser.parse().value;
-//        
-//        System.out.println((new PrintASTVisitor()).printTree(result));
-//        System.out.println("-----------------end: ------------------\n\n\n");
-//    }
-    
-    public void testPHPError1() throws Exception {
-        String source = "<?php\npublic class User {\n  \n}\n?>";
-        System.out.println("-----------------start: ------------------");
-        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source));
-        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
-        Symbol root = parser.parse();
-        if (root != null){
-            Program result = (Program)root.value;
-        
-            System.out.println((new PrintASTVisitor()).printTree(result));
-        }
-        System.out.println("-----------------end: ------------------\n\n\n");
+
+    public String getDescription() {
+        return null;
     }
-    
+
+    public String getKey() {
+        return "[" + startPosition + "," + endPosition + "]-" + displayName ;
+    }
+
+    public FileObject getFile() {
+        return this.file;
+    }
+
+    public int getStartPosition() {
+        return this.startPosition;
+    }
+
+    public int getEndPosition() {
+        return this.endPosition;
+    }
+
+    public Severity getSeverity() {
+        return this.severity;
+    }
+
+    public Object[] getParameters() {
+        return this.parameters;
+    }
 }
