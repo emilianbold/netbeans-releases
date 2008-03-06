@@ -851,12 +851,14 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         JAVAME("javame"),
         RUBY("ruby"),
         CND("cnd"),
+        PHP("php"),
         CUSTOMIZE("customize"),
         JAVASE_JDK("javase.jdk"),
         JAVAEE_JDK("javaee.jdk"),
         JAVAME_JDK("javame.jdk"),
         RUBY_JDK("ruby.jdk"),
         CND_JDK("cnd.jdk"),
+        PHP_JDK("php.jdk"),
         CUSTOMIZE_JDK("customize.jdk"),
         JAVA_TOOLS("java.tools");
         

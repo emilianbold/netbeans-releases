@@ -50,4 +50,20 @@ made subject to such option by the copyright holder.
             </xml-rule>
         </resolver>
     </file>
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-springconfig+xml">
+            <xml-rule>
+                <doctype public-id="-//SPRING//DTD BEAN 2.0//EN"/>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-springconfig+xml">
+            <xml-rule>
+                <doctype public-id="-//SPRING//DTD BEAN//EN"/>
+            </xml-rule>
+        </resolver>
+    </file>
 </MIME-resolver>

@@ -98,7 +98,7 @@ public class JsFormatterTest extends JsTestBase {
         }
         
         //ParserResult result = parse(fo);
-        JsFormatter.reindent(doc, startPos, endPos);
+        JsFormatter.reformat(doc, startPos, endPos, null);
 
         String formatted = doc.getText(0, doc.getLength());
         assertEquals(reformatted, formatted);
@@ -113,7 +113,7 @@ public class JsFormatterTest extends JsTestBase {
         
         JsFormatter formatter = getFormatter(preferences);
 
-        formatter.reindent(doc, 0, doc.getLength());
+        formatter.reformat(doc, 0, doc.getLength(), null);
         String after = doc.getText(0, doc.getLength());
         
         assertDescriptionMatches(file, after, false, ".formatted");

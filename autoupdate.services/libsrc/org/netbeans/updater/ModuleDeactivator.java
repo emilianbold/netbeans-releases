@@ -177,7 +177,8 @@ public final class ModuleDeactivator extends Object {
     private static void doDelete (File f) {
         assert f != null : "Invalid file " + f + " for delete.";
         if (f.exists () && ! f.delete ()) {
-            assert false : f + " cannot be deleted";
+            // updater_nb.jar is locked on windows, don't throw AE here
+            //assert false : f + " cannot be deleted";
             f.deleteOnExit ();
         }
         f = f.getParentFile ();

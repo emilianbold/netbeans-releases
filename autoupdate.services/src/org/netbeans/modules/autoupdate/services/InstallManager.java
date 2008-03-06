@@ -53,6 +53,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.Module;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.layers.LocalFileSystemEx;
@@ -230,9 +231,10 @@ public class InstallManager extends InstalledFileLocator{
         UpdateElementImpl i = Trampoline.API.impl (installed);
         assert i instanceof ModuleUpdateElementImpl : "Impl of " + installed + " instanceof ModuleUpdateElementImpl";
         
-        String configFileName = ModuleDeactivator.CONFIG + '/' + ModuleDeactivator.MODULES + '/' + installed.getCodeName ().replace ('.', '-') + ".xml"; // NOI18N
-        File configFile = InstalledFileLocator.getDefault ().locate (configFileName, installed.getCodeName (), false);
-        if (configFile == null) {
+        Module m = Utilities.toModule (((ModuleUpdateElementImpl) i).getModuleInfo ());
+        File jarFile = m == null ? null : m.getJarFile ();
+        
+        if (jarFile == null) {
             // only fixed module cannot be located
             ERR.log (Level.FINE, "No install dir for " + installed + " (It's ok for fixed). Is fixed? " + Trampoline.API.impl (installed).isFixed ());
             String targetCluster = update.getInstallInfo ().getTargetCluster ();
@@ -261,7 +263,7 @@ public class InstallManager extends InstalledFileLocator{
             
             for (File cluster : UpdateTracking.clusters (true)) {       
                 cluster = FileUtil.normalizeFile (cluster);
-                if (isParentOf (cluster, configFile)) {
+                if (isParentOf (cluster, jarFile)) {
                     res = cluster;
                     break;
                 }
