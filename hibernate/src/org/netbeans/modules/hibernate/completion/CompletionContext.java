@@ -93,7 +93,7 @@ public class CompletionContext {
     
     private void initContext() {
         TokenItem token = documentContext.getCurrentToken();
-        if(token == null )
+        if(token == null || token.getTokenID() == null )
             return;
         
         boolean tokenBoundary = (token.getOffset() == caretOffset) 
