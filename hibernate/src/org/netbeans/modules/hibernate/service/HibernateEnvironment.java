@@ -241,7 +241,7 @@ public class HibernateEnvironment {
         ArrayList<HibernateConfiguration> hibernateConfigurations = new ArrayList<HibernateConfiguration>();
         for(HibernateConfiguration config : getAllHibernateConfigurationsFromProject()) {
             for(String mappingFile : getAllHibernateMappingsFromConfiguration(config)) {
-                if(mappingFileObject.getPath().contains(mappingFile)) {
+                if(!mappingFile.trim().equals("") && mappingFileObject.getPath().contains(mappingFile)) {
                     hibernateConfigurations.add(config);
                 }
             }
