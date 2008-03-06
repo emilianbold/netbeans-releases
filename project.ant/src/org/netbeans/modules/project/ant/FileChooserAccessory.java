@@ -253,7 +253,6 @@ public class FileChooserAccessory extends javax.swing.JPanel
     private void update(List<File> files) {
         StringBuffer absolute = new StringBuffer();
         StringBuffer relative = new StringBuffer();
-        StringBuffer copy = new StringBuffer();
         boolean isRelative = true;
         for (File file : files) {
             if (absolute.length() != 0) {
@@ -261,16 +260,6 @@ public class FileChooserAccessory extends javax.swing.JPanel
                 relative.append(", ");
                 if (file.getParentFile() != null && file.getParentFile().getParentFile() != null &&
                         file.getParentFile().getName().length() > 0) {
-                    copy.setLength(0);
-                    copy.append("/"+file.getParentFile().getName());
-                }
-            } else {
-                // first file:
-                if (file.getParentFile() != null && file.getParentFile().getParentFile() != null &&
-                        file.getParentFile().getName().length() > 0) {
-                    copy.append("/"+file.getParentFile().getName()+"/"+file.getName());
-                } else {
-                    copy.append("/");
                 }
             }
             absolute.append(file.getAbsolutePath());

@@ -171,6 +171,10 @@ public class PackageView {
             assert path != null : fo + " in " + children.getRoot();
             progress.progress(path.replace('/', '.'), start);
         }
+        
+        if (!fo.isValid()) {
+            return;
+        }
                
         if ( !VisibilityQuery.getDefault().isVisible( fo ) ) {
             return; // Don't show hidden packages

@@ -157,6 +157,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private String newFolderToolTipText = null;
     
+    private String homeFolderTooltipText = null;
+    
     private Action newFolderAction = new NewDirectoryAction();
     
     private BasicFileView fileView = new DirectoryChooserFileView();
@@ -591,6 +593,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
         topPanel.add(upFolderButton);
         topPanel.add(Box.createRigidArea(new Dimension(2, 0)));
+        System.out.println( "Go home action " +getGoHomeAction().getValue( Action.SHORT_DESCRIPTION) );
         
         // no home on Win platform
         if (!Utilities.isWindows()) {
@@ -604,6 +607,16 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
             homeButton.setIcon(homeIcon);
             homeButton.setText(null);
+            
+            String tooltip = homeButton.getToolTipText();
+            if (tooltip == null) {
+                tooltip = homeFolderTooltipText;
+                if (tooltip == null) {
+                    tooltip = NbBundle.getMessage(DirectoryChooserUI.class,
+                            "TLTP_HomeFolder");
+                }
+                homeButton.setToolTipText( tooltip );
+            }
 
             topPanel.add(homeButton);
         }
@@ -1075,6 +1088,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         upFolderAccessibleName = UIManager.getString("FileChooser.upFolderAccessibleName",l);
         
         newFolderToolTipText = UIManager.getString("FileChooser.newFolderToolTipText",l);
+        homeFolderTooltipText = UIManager.getString("FileChooser.homeFolderToolTipText",l);
         
     }
     
@@ -2175,14 +2189,29 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 }
             }
             // Fix for IZ#123815 : Cannot refresh the tree content
-            refreshNode( node );
+            refreshNode( path , node );
         }
         public void treeCollapsed(TreeExpansionEvent event) {
         }
         
         // Fix for IZ#123815 : Cannot refresh the tree content
-        private void refreshNode( DirectoryNode node ){
+        private void refreshNode( TreePath path, DirectoryNode node ){
             File folder = node.getFile();
+            
+            // Additional fixes for IZ#116859 [60cat] Node update bug in the "open project" panel while deleting directories
+            if ( !folder.exists() ){
+                TreePath parentPath = path.getParentPath();
+                boolean refreshTree = false;
+                
+                if(tree.isExpanded(path)) {
+                    tree.collapsePath(path);
+                    refreshTree = true;
+                }
+                model.removeNodeFromParent( node );
+                if ( refreshTree ){
+                    tree.expandPath( parentPath );
+                }
+            }
             
             int count = node.getChildCount();
             Map<String,DirectoryNode> currentFiles = 
@@ -2198,6 +2227,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             HashSet<String> realDirs = new HashSet<String>();
             
             File[] files =  folder.listFiles(); 
+            files = files == null ? new File[0] : files;
             for (File file : files) {
                 if ( !file.isDirectory() ){
                     continue;
@@ -2339,4 +2369,3 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
 }
-

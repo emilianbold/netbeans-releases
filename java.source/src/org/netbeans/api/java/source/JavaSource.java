@@ -54,6 +54,7 @@ import com.sun.tools.javac.api.ClassNamesForFileOraculum;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Source;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.CompletionFailure;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
@@ -70,6 +71,7 @@ import com.sun.tools.javac.util.CancelService;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.FlowListener;
+import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javadoc.JavadocEnter;
 import com.sun.tools.javadoc.JavadocMemberEnter;
@@ -1216,6 +1218,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             //Todo: Check everytime after the java update that JavaDocEnter.main or Enter.main
             //are not changed.
             this.complete(trees, null);
+        }
+
+        @Override
+        protected void duplicateClass(DiagnosticPosition pos, ClassSymbol c) {
+            messager.error(pos, "duplicate.class", c.fullname);
         }
     }
 
