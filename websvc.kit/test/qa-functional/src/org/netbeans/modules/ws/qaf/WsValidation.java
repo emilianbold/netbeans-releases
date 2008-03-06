@@ -386,6 +386,7 @@ public class WsValidation extends WebServicesTestBase {
         suite.addTest(new WsValidation("testCallWsOperationInServlet")); //NOI18N
         suite.addTest(new WsValidation("testCallWsOperationInJSP")); //NOI18N
         suite.addTest(new WsValidation("testCallWsOperationInJavaClass")); //NOI18N
+        suite.addTest(new WsValidation("testRefreshClient")); //NOI18N
         suite.addTest(new WsValidation("testWsClientHandlers")); //NOI18N
         suite.addTest(new WsValidation("testDeployWsClientProject")); //NOI18N
         suite.addTest(new WsValidation("testUndeployProjects")); //NOI18N
@@ -678,8 +679,10 @@ public class WsValidation extends WebServicesTestBase {
             ProjectsTabOperator prj = new ProjectsTabOperator();
             JTreeOperator prjtree = new JTreeOperator(prj);
             ProjectRootNode prjnd = new ProjectRootNode(prjtree, getWsProjectName());
-            Node actual = new Node(prjnd, "Web Services|" + getWsName()); //NOI18N    
-
+            Node actual = new Node(prjnd, "Web Services|" + getWsName()); //NOI18N  
+            actual.performPopupActionNoBlock(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_RefreshServiceAction")); //NOI18N
+            NbDialogOperator ccr = new NbDialogOperator("Confirm Client Refresh"); //NOI18N
+            ccr.yes();
         } else {
             ProjectsTabOperator prj = new ProjectsTabOperator();
             JTreeOperator prjtree = new JTreeOperator(prj);
@@ -688,10 +691,9 @@ public class WsValidation extends WebServicesTestBase {
 //            new EventTool().waitNoEvent(10000);
             actual.performPopupActionNoBlock(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_RefreshClientAction")); //NOI18N
             NbDialogOperator ccr = new NbDialogOperator("Confirm Client Refresh"); //NOI18N
-
             ccr.yes();
         }
-        throw new UnsupportedOperationException("Not yet implemented");
+        throw new UnsupportedOperationException("Not supported in this scenario");
     }
 
     private void checkHandlers(String[] handlerClasses, FileObject handlerConfigFO, boolean isService) throws IOException {
