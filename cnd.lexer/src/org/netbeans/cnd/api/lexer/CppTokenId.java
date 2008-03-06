@@ -69,223 +69,223 @@ public enum CppTokenId implements TokenId {
     // make sure token category names are the same used in the string
     // constants below
     
-    ERROR(null, "error"),
-    IDENTIFIER(null, "identifier"),
+    ERROR(null, "error"), // NOI18N
+    IDENTIFIER(null, "identifier"), // NOI18N
     
     // C/C++ keywords
-    ALIGNOF("alignof", "keyword"), // g++
-    __ALIGNOF__("__alignof__", "keyword"), // gcc
-    ASM("asm", "keyword-directive"), // gcc and C++
-    _ASM("_asm", "keyword"), // g++
-    __ASM("__asm", "keyword"), // gcc
-    __ASM__("__asm__", "keyword"), // gcc
-    AUTO("auto", "keyword"), 
-    BOOL("bool", "keyword"), // C++
-    BREAK("break", "keyword-directive"),
-    CASE("case", "keyword-directive"),
-    CATCH("catch", "keyword-directive"), //C++
-    CHAR("char", "keyword"),
-    CLASS("class", "keyword"), //C++
-    CONST("const", "keyword"),
-    __CONST("__const", "keyword"), // gcc
-    __CONST__("__const__", "keyword"), // gcc C only
-    CONST_CAST("const_cast", "keyword"), // C++
-    CONTINUE("continue", "keyword-directive"),
-    DEFAULT("default", "keyword-directive"),
-    DELETE("delete", "keyword"), // C++
-    DO("do", "keyword-directive"),
-    DOUBLE("double", "keyword"),
-    DYNAMIC_CAST("dynamic_cast", "keyword"), // C++
-    ELSE("else", "keyword-directive"),
-    ENUM("enum", "keyword"),
-    EXPLICIT("explicit", "keyword"), // C++
-    EXPORT("export", "keyword"), // C++
-    EXTERN("extern", "keyword"),
-    FINALLY("finally", "keyword-directive"), //C++
-    FLOAT("float", "keyword"),
-    FOR("for", "keyword-directive"),
-    FRIEND("friend", "keyword"), // C++
-    GOTO("goto", "keyword-directive"),
-    IF("if", "keyword-directive"),
-    INLINE("inline", "keyword"), // now in C also
-    _INLINE("_inline", "keyword"), // g++
-    __INLINE("__inline", "keyword"), // gcc
-    __INLINE__("__inline__", "keyword"), // gcc
-    INT("int", "keyword"),
-    LONG("long", "keyword"),
-    MUTABLE("mutable", "keyword"), // C++
-    NAMESPACE("namespace", "keyword"), //C++
-    NEW("new", "keyword"), //C++
-    OPERATOR("operator", "keyword"), // C++
-    PASCAL("pascal", "keyword"), // g++
-    _PASCAL("_pascal", "keyword"), // g++
-    __PASCAL("__pascal", "keyword"), // g++
-    PRIVATE("private", "keyword"), //C++
-    PROTECTED("protected", "keyword"), //C++
-    PUBLIC("public", "keyword"), // C++
-    REGISTER("register", "keyword"),
-    REINTERPRET_CAST("reinterpret_cast", "keyword"), //C++
-    RESTRICT("restrict", "keyword"), // C
-    RETURN("return", "keyword-directive"),
-    SHORT("short", "keyword"),
-    SIGNED("signed", "keyword"),
-    __SIGNED("__signed", "keyword"), // gcc
-    __SIGNED__("__signed__", "keyword"), // gcc
-    SIZEOF("sizeof", "keyword"),
-    STATIC("static", "keyword"),
-    STATIC_CAST("static_cast", "keyword"), // C++
-    STRUCT("struct", "keyword"),
-    SWITCH("switch", "keyword-directive"),
-    TEMPLATE("template", "keyword"), //C++
-    THIS("this", "keyword"), // C++
-    THROW("throw", "keyword-directive"), //C++
-    TRY("try", "keyword-directive"), // C++
-    TYPEDEF("typedef", "keyword"),
-    TYPEID("typeid", "keyword"), //C++
-    TYPENAME("typename", "keyword"), //C++
-    TYPEOF("typeof", "keyword"), // gcc, C++
-    __TYPEOF("__typeof", "keyword"), // gcc
-    __TYPEOF__("__typeof__", "keyword"), // gcc
-    UNION("union", "keyword"),
-    UNSIGNED("unsigned", "keyword"),
-    __UNSIGNED__("__unsigned__", "keyword"), // g++
-    USING("using", "keyword"), //C++
-    VIRTUAL("virtual", "keyword"), //C++
-    VOID("void", "keyword"),
-    VOLATILE("volatile", "keyword"),
-    __VOLATILE("__volatile", "keyword"), // gcc
-    __VOLATILE__("__volatile__", "keyword"), // gcc
-    WCHAR_T("wchar_t", "keyword"), // C++
-    WHILE("while", "keyword-directive"),
-    __ATTRIBUTE__("__attribute__", "keyword"), // gcc
-    _BOOL("_Bool", "keyword"), // C 
-    _CDECL("_cdecl", "keyword"), // g++
-    __CDECL("__cdecl", "keyword"), // g++
-    _COMPLEX("_Complex", "keyword"), // C
-    __COMPLEX__("__complex__", "keyword"), // gcc
-    _DECLSPEC("_declspec", "keyword"), // g++
-    __DECLSPEC("__declspec", "keyword"), // g++
-    __EXTENSION__("__extension__", "keyword"), // g++
-    _FAR("_far", "keyword"), // g++
-    __FAR("__far", "keyword"), // g++
-    _IMAGINARY("_Imaginary", "keyword"), // C
-    __IMAG__("__imag__", "keyword"), // gcc
-    _INT64("_int64", "keyword"), // g++
-    __INT64("__int64", "keyword"), // g++
-    __INTERRUPT("__interrupt", "keyword"), // g++
-    _NEAR("_near", "keyword"), // g++
-    __NEAR("__near", "keyword"), // g++
-    __REAL__("__real__", "keyword"), // gcc
-    __RESTRICT("__restrict", "keyword"), // g++
-    _STDCALL("_stdcall", "keyword"), // g++
-    __STDCALL("__stdcall", "keyword"), // g++
-    __W64("__w64", "keyword"), // g++
+    ALIGNOF("alignof", "keyword"), // g++ // NOI18N
+    __ALIGNOF__("__alignof__", "keyword"), // gcc // NOI18N
+    ASM("asm", "keyword-directive"), // gcc and C++ // NOI18N
+    _ASM("_asm", "keyword"), // g++ // NOI18N
+    __ASM("__asm", "keyword"), // gcc // NOI18N
+    __ASM__("__asm__", "keyword"), // gcc // NOI18N
+    AUTO("auto", "keyword"), // NOI18N
+    BOOL("bool", "keyword"), // C++ // NOI18N
+    BREAK("break", "keyword-directive"), // NOI18N
+    CASE("case", "keyword-directive"), // NOI18N
+    CATCH("catch", "keyword-directive"), // C++ // NOI18N
+    CHAR("char", "keyword"), // NOI18N
+    CLASS("class", "keyword"), // C++ // NOI18N
+    CONST("const", "keyword"), // NOI18N
+    __CONST("__const", "keyword"), // gcc // NOI18N
+    __CONST__("__const__", "keyword"), // gcc C only // NOI18N
+    CONST_CAST("const_cast", "keyword"), // C++ // NOI18N
+    CONTINUE("continue", "keyword-directive"), // NOI18N
+    DEFAULT("default", "keyword-directive"), // NOI18N
+    DELETE("delete", "keyword"), // C++ // NOI18N
+    DO("do", "keyword-directive"), // NOI18N
+    DOUBLE("double", "keyword"), // NOI18N
+    DYNAMIC_CAST("dynamic_cast", "keyword"), // C++ // NOI18N
+    ELSE("else", "keyword-directive"), // NOI18N
+    ENUM("enum", "keyword"), // NOI18N
+    EXPLICIT("explicit", "keyword"), // C++ // NOI18N
+    EXPORT("export", "keyword"), // C++ // NOI18N
+    EXTERN("extern", "keyword"), // NOI18N
+    FINALLY("finally", "keyword-directive"), // C++ // NOI18N
+    FLOAT("float", "keyword"), // NOI18N
+    FOR("for", "keyword-directive"), // NOI18N
+    FRIEND("friend", "keyword"), // C++ // NOI18N
+    GOTO("goto", "keyword-directive"), // NOI18N
+    IF("if", "keyword-directive"), // NOI18N
+    INLINE("inline", "keyword"), // now in C also // NOI18N
+    _INLINE("_inline", "keyword"), // g++ // NOI18N
+    __INLINE("__inline", "keyword"), // gcc // NOI18N
+    __INLINE__("__inline__", "keyword"), // gcc // NOI18N
+    INT("int", "keyword"), // NOI18N
+    LONG("long", "keyword"), // NOI18N
+    MUTABLE("mutable", "keyword"), // C++ // NOI18N
+    NAMESPACE("namespace", "keyword"), // C++ // NOI18N
+    NEW("new", "keyword"), // C++ // NOI18N
+    OPERATOR("operator", "keyword"), // C++ // NOI18N
+    PASCAL("pascal", "keyword"), // g++ // NOI18N
+    _PASCAL("_pascal", "keyword"), // g++ // NOI18N
+    __PASCAL("__pascal", "keyword"), // g++ // NOI18N
+    PRIVATE("private", "keyword"), //C++ // NOI18N
+    PROTECTED("protected", "keyword"), //C++ // NOI18N
+    PUBLIC("public", "keyword"), // C++ // NOI18N
+    REGISTER("register", "keyword"), // NOI18N
+    REINTERPRET_CAST("reinterpret_cast", "keyword"), //C++ // NOI18N
+    RESTRICT("restrict", "keyword"), // C // NOI18N
+    RETURN("return", "keyword-directive"), // NOI18N
+    SHORT("short", "keyword"), // NOI18N
+    SIGNED("signed", "keyword"), // NOI18N
+    __SIGNED("__signed", "keyword"), // gcc // NOI18N
+    __SIGNED__("__signed__", "keyword"), // gcc // NOI18N
+    SIZEOF("sizeof", "keyword"), // NOI18N
+    STATIC("static", "keyword"), // NOI18N
+    STATIC_CAST("static_cast", "keyword"), // C++ // NOI18N
+    STRUCT("struct", "keyword"), // NOI18N
+    SWITCH("switch", "keyword-directive"), // NOI18N
+    TEMPLATE("template", "keyword"), // C++ // NOI18N
+    THIS("this", "keyword"), // C++ // NOI18N
+    THROW("throw", "keyword-directive"), //C++ // NOI18N
+    TRY("try", "keyword-directive"), // C++ // NOI18N
+    TYPEDEF("typedef", "keyword"), // NOI18N
+    TYPEID("typeid", "keyword"), // C++ // NOI18N
+    TYPENAME("typename", "keyword"), // C++ // NOI18N
+    TYPEOF("typeof", "keyword"), // gcc, C++ // NOI18N
+    __TYPEOF("__typeof", "keyword"), // gcc // NOI18N
+    __TYPEOF__("__typeof__", "keyword"), // gcc // NOI18N
+    UNION("union", "keyword"), // NOI18N
+    UNSIGNED("unsigned", "keyword"), // NOI18N
+    __UNSIGNED__("__unsigned__", "keyword"), // g++ // NOI18N
+    USING("using", "keyword"), //C++ // NOI18N
+    VIRTUAL("virtual", "keyword"), //C++ // NOI18N
+    VOID("void", "keyword"), // NOI18N
+    VOLATILE("volatile", "keyword"), // NOI18N
+    __VOLATILE("__volatile", "keyword"), // gcc // NOI18N
+    __VOLATILE__("__volatile__", "keyword"), // gcc // NOI18N
+    WCHAR_T("wchar_t", "keyword"), // C++ // NOI18N
+    WHILE("while", "keyword-directive"), // NOI18N
+    __ATTRIBUTE__("__attribute__", "keyword"), // gcc // NOI18N
+    _BOOL("_Bool", "keyword"), // C // NOI18N
+    _CDECL("_cdecl", "keyword"), // g++ // NOI18N
+    __CDECL("__cdecl", "keyword"), // g++ // NOI18N
+    _COMPLEX("_Complex", "keyword"), // C // NOI18N
+    __COMPLEX__("__complex__", "keyword"), // gcc // NOI18N
+    _DECLSPEC("_declspec", "keyword"), // g++ // NOI18N
+    __DECLSPEC("__declspec", "keyword"), // g++ // NOI18N
+    __EXTENSION__("__extension__", "keyword"), // g++ // NOI18N
+    _FAR("_far", "keyword"), // g++ // NOI18N
+    __FAR("__far", "keyword"), // g++ // NOI18N
+    _IMAGINARY("_Imaginary", "keyword"), // C // NOI18N
+    __IMAG__("__imag__", "keyword"), // gcc // NOI18N
+    _INT64("_int64", "keyword"), // g++ // NOI18N
+    __INT64("__int64", "keyword"), // g++ // NOI18N
+    __INTERRUPT("__interrupt", "keyword"), // g++ // NOI18N
+    _NEAR("_near", "keyword"), // g++ // NOI18N
+    __NEAR("__near", "keyword"), // g++ // NOI18N
+    __REAL__("__real__", "keyword"), // gcc // NOI18N
+    __RESTRICT("__restrict", "keyword"), // g++ // NOI18N
+    _STDCALL("_stdcall", "keyword"), // g++ // NOI18N
+    __STDCALL("__stdcall", "keyword"), // g++ // NOI18N
+    __W64("__w64", "keyword"), // g++ // NOI18N
 
-    INT_LITERAL(null, "number"),
-    LONG_LITERAL(null, "number"),
-    FLOAT_LITERAL(null, "number"),
-    DOUBLE_LITERAL(null, "number"),
-    UNSIGNED_LITERAL(null, "number"),
-    CHAR_LITERAL(null, "character"),
-    STRING_LITERAL(null, "string"),
+    INT_LITERAL(null, "number"), // NOI18N
+    LONG_LITERAL(null, "number"), // NOI18N
+    FLOAT_LITERAL(null, "number"), // NOI18N
+    DOUBLE_LITERAL(null, "number"), // NOI18N
+    UNSIGNED_LITERAL(null, "number"), // NOI18N
+    CHAR_LITERAL(null, "character"), // NOI18N
+    STRING_LITERAL(null, "string"), // NOI18N
     
-    TRUE("true", "literal"), // C++
-    FALSE("false", "literal"), // C++
-    NULL("null", "literal"),
+    TRUE("true", "literal"), // C++ // NOI18N
+    FALSE("false", "literal"), // C++ // NOI18N
+    NULL("null", "literal"), // NOI18N
     
-    LPAREN("(", "separator"),
-    RPAREN(")", "separator"),
-    LBRACE("{", "separator"),
-    RBRACE("}", "separator"),
-    LBRACKET("[", "separator"),
-    RBRACKET("]", "separator"),
-    SEMICOLON(";", "separator"),
-    COMMA(",", "separator"),
-    DOT(".", "separator"),
-    DOTMBR(".*", "separator"),
-    SCOPE("::", "separator"),
-    ARROW("->", "separator"),
-    ARROWMBR("->*", "separator"),
+    LPAREN("(", "separator"), // NOI18N
+    RPAREN(")", "separator"), // NOI18N
+    LBRACE("{", "separator"), // NOI18N
+    RBRACE("}", "separator"), // NOI18N
+    LBRACKET("[", "separator"), // NOI18N
+    RBRACKET("]", "separator"), // NOI18N
+    SEMICOLON(";", "separator"), // NOI18N
+    COMMA(",", "separator"), // NOI18N
+    DOT(".", "separator"), // NOI18N
+    DOTMBR(".*", "separator"), // NOI18N
+    SCOPE("::", "separator"), // NOI18N
+    ARROW("->", "separator"), // NOI18N
+    ARROWMBR("->*", "separator"), // NOI18N
     
-    EQ("=", "operator"),
-    GT(">", "operator"),
-    LT("<", "operator"),
-    NOT("!", "operator"),
-    TILDE("~", "operator"),
-    QUESTION("?", "operator"),
-    COLON(":", "operator"),
-    EQEQ("==", "operator"),
-    LTEQ("<=", "operator"),
-    GTEQ(">=", "operator"),
-    NOTEQ("!=","operator"),
-    AMPAMP("&&", "operator"),
-    BARBAR("||", "operator"),
-    PLUSPLUS("++", "operator"),
-    MINUSMINUS("--","operator"),
-    PLUS("+", "operator"),
-    MINUS("-", "operator"),
-    STAR("*", "operator"),
-    SLASH("/", "operator"),
-    AMP("&", "operator"),
-    BAR("|", "operator"),
-    CARET("^", "operator"),
-    PERCENT("%", "operator"),
-    LTLT("<<", "operator"),
-    GTGT(">>", "operator"),
-    PLUSEQ("+=", "operator"),
-    MINUSEQ("-=", "operator"),
-    STAREQ("*=", "operator"),
-    SLASHEQ("/=", "operator"),
-    AMPEQ("&=", "operator"),
-    BAREQ("|=", "operator"),
-    CARETEQ("^=", "operator"),
-    PERCENTEQ("%=", "operator"),
-    LTLTEQ("<<=", "operator"),
-    GTGTEQ(">>=", "operator"),
+    EQ("=", "operator"), // NOI18N
+    GT(">", "operator"), // NOI18N
+    LT("<", "operator"), // NOI18N
+    NOT("!", "operator"), // NOI18N
+    TILDE("~", "operator"), // NOI18N
+    QUESTION("?", "operator"), // NOI18N
+    COLON(":", "operator"), // NOI18N
+    EQEQ("==", "operator"), // NOI18N
+    LTEQ("<=", "operator"), // NOI18N
+    GTEQ(">=", "operator"), // NOI18N
+    NOTEQ("!=","operator"), // NOI18N
+    AMPAMP("&&", "operator"), // NOI18N
+    BARBAR("||", "operator"), // NOI18N 
+    PLUSPLUS("++", "operator"), // NOI18N 
+    MINUSMINUS("--","operator"), // NOI18N
+    PLUS("+", "operator"), // NOI18N
+    MINUS("-", "operator"), // NOI18N
+    STAR("*", "operator"), // NOI18N
+    SLASH("/", "operator"), // NOI18N
+    AMP("&", "operator"), // NOI18N
+    BAR("|", "operator"), // NOI18N
+    CARET("^", "operator"), // NOI18N
+    PERCENT("%", "operator"), // NOI18N
+    LTLT("<<", "operator"), // NOI18N
+    GTGT(">>", "operator"), // NOI18N
+    PLUSEQ("+=", "operator"), // NOI18N
+    MINUSEQ("-=", "operator"), // NOI18N
+    STAREQ("*=", "operator"), // NOI18N
+    SLASHEQ("/=", "operator"), // NOI18N
+    AMPEQ("&=", "operator"), // NOI18N
+    BAREQ("|=", "operator"), // NOI18N
+    CARETEQ("^=", "operator"), // NOI18N
+    PERCENTEQ("%=", "operator"), // NOI18N
+    LTLTEQ("<<=", "operator"), // NOI18N
+    GTGTEQ(">>=", "operator"), // NOI18N
     
-    ELLIPSIS("...", "special"),
-    AT("@", "special"),
-    DOLLAR("$", "special"),
-    SHARP("#", "special"),
-    DBL_SHARP("##", "special"),
-    BACK_SLASH("\\", "special"),
+    ELLIPSIS("...", "special"), // NOI18N
+    AT("@", "special"), // NOI18N
+    DOLLAR("$", "special"), // NOI18N
+    SHARP("#", "special"), // NOI18N
+    DBL_SHARP("##", "special"), // NOI18N
+    BACK_SLASH("\\", "special"), // NOI18N
             
-    WHITESPACE(null, "whitespace"), // all spaces except new line
-    ESCAPED_LINE(null, "whitespace"), // line escape with \
-    NEW_LINE(null, "whitespace"), // new line \n or \r
-    LINE_COMMENT(null, "comment"),
-    BLOCK_COMMENT(null, "comment"),
-    DOXYGEN_COMMENT(null, "comment"),
+    WHITESPACE(null, "whitespace"), // all spaces except new line // NOI18N
+    ESCAPED_LINE(null, "whitespace"), // line escape with \ // NOI18N
+    NEW_LINE(null, "whitespace"), // new line \n or \r // NOI18N
+    LINE_COMMENT(null, "comment"), // NOI18N
+    BLOCK_COMMENT(null, "comment"), // NOI18N
+    DOXYGEN_COMMENT(null, "comment"), // NOI18N
     
     // Prerpocessor 
     //   - on top level
-    PREPROCESSOR_DIRECTIVE(null, "preprocessor"),
+    PREPROCESSOR_DIRECTIVE(null, "preprocessor"), // NOI18N
     //   - tokens
-    PREPROCESSOR_START("#", "preprocessor"),
-    PREPROCESSOR_IF("if", "preprocessor-keyword-directive"),
-    PREPROCESSOR_IFDEF("ifdef", "preprocessor-keyword-directive"),
-    PREPROCESSOR_IFNDEF("ifndef", "preprocessor-keyword-directive"),
-    PREPROCESSOR_ELSE("else", "preprocessor-keyword-directive"),
-    PREPROCESSOR_ELIF("elif", "preprocessor-keyword-directive"),
-    PREPROCESSOR_ENDIF("endif", "preprocessor-keyword-directive"),
-    PREPROCESSOR_DEFINE("define", "preprocessor-keyword-directive"),
-    PREPROCESSOR_UNDEF("undef", "preprocessor-keyword-directive"),
-    PREPROCESSOR_INCLUDE("include", "preprocessor-keyword-directive"),
-    PREPROCESSOR_INCLUDE_NEXT("include_next", "preprocessor-keyword-directive"),
-    PREPROCESSOR_LINE("line", "preprocessor-keyword-directive"),
-    PREPROCESSOR_IDENT("ident", "preprocessor-keyword-directive"),
-    PREPROCESSOR_PRAGMA("pragma", "preprocessor-keyword-directive"),
-    PREPROCESSOR_WARNING("warning", "preprocessor-keyword-directive"),
-    PREPROCESSOR_ERROR("error", "preprocessor-keyword-directive"),
-    PREPROCESSOR_DEFINED("defined", "preprocessor-keyword"),
+    PREPROCESSOR_START("#", "preprocessor"), // NOI18N
+    PREPROCESSOR_IF("if", "preprocessor-keyword-directive"), // NOI18N
+    PREPROCESSOR_IFDEF("ifdef", "preprocessor-keyword-directive"), // NOI18N
+    PREPROCESSOR_IFNDEF("ifndef", "preprocessor-keyword-directive"), // NOI18N
+    PREPROCESSOR_ELSE("else", "preprocessor-keyword-directive"), // NOI18N
+    PREPROCESSOR_ELIF("elif", "preprocessor-keyword-directive"), // NOI18N
+    PREPROCESSOR_ENDIF("endif", "preprocessor-keyword-directive"), // NOI18N
+    PREPROCESSOR_DEFINE("define", "preprocessor-keyword-directive"), // NOI18N
+    PREPROCESSOR_UNDEF("undef", "preprocessor-keyword-directive"), // NOI18N
+    PREPROCESSOR_INCLUDE("include", "preprocessor-keyword-directive"), // NOI18N
+    PREPROCESSOR_INCLUDE_NEXT("include_next", "preprocessor-keyword-directive"), // NOI18N
+    PREPROCESSOR_LINE("line", "preprocessor-keyword-directive"), // NOI18N
+    PREPROCESSOR_IDENT("ident", "preprocessor-keyword-directive"), // NOI18N
+    PREPROCESSOR_PRAGMA("pragma", "preprocessor-keyword-directive"), // NOI18N
+    PREPROCESSOR_WARNING("warning", "preprocessor-keyword-directive"), // NOI18N
+    PREPROCESSOR_ERROR("error", "preprocessor-keyword-directive"), // NOI18N
+    PREPROCESSOR_DEFINED("defined", "preprocessor-keyword"), // NOI18N
     
-    PREPROCESSOR_USER_INCLUDE(null, "preprocessor-user-include-literal"),
-    PREPROCESSOR_SYS_INCLUDE(null, "preprocessor-system-include-literal"),
-    PREPROCESSOR_IDENTIFIER(null, "preprocessor-identifier"),
+    PREPROCESSOR_USER_INCLUDE(null, "preprocessor-user-include-literal"), // NOI18N
+    PREPROCESSOR_SYS_INCLUDE(null, "preprocessor-system-include-literal"), // NOI18N
+    PREPROCESSOR_IDENTIFIER(null, "preprocessor-identifier"), // NOI18N
     
     // Errors
-    INVALID_COMMENT_END("*/", "error"),
-    FLOAT_LITERAL_INVALID(null, "number");    
+    INVALID_COMMENT_END("*/", "error"), // NOI18N
+    FLOAT_LITERAL_INVALID(null, "number"); // NOI18N
     
     // make sure string names are the same used in the tokenIds above
     public static final String WHITESPACE_CATEGORY = "whitespace"; // NOI18N
