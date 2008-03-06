@@ -113,8 +113,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private static Dimension MIN_SIZE = new Dimension(425, 245);
     private static Dimension TREE_PREF_SIZE = new Dimension(380, 230);
     private static final int ACCESSORY_WIDTH = 250;
-    
-    private static final Logger LOG = Logger.getLogger(DirectoryChooserUI.class.getName());
 
     /** icon representing netbeans project folder */
     private static Icon projectIcon;
@@ -158,6 +156,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private String upFolderAccessibleName = null;
     
     private String newFolderToolTipText = null;
+    
+    private String homeFolderTooltipText = null;
     
     private Action newFolderAction = new NewDirectoryAction();
     
@@ -474,7 +474,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         treePanel.add(topComboWrapper, BorderLayout.NORTH);
         treePanel.add(treeViewPanel, BorderLayout.CENTER);
         centerPanel.add(treePanel, BorderLayout.CENTER);
-        // control width of accessory panel, don't allow to jump (change width)
+        // #97049: control width of accessory panel, don't allow to jump (change width)
         JPanel wrapAccessory = new JPanel() {
             private Dimension prefSize = new Dimension(ACCESSORY_WIDTH, 0);
             private Dimension minSize = new Dimension(ACCESSORY_WIDTH, 0);
@@ -488,18 +488,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
             public Dimension getPreferredSize () {
                 if (fc.getAccessory() != null) {
-                    Dimension origPref = getAccessoryPanel().getPreferredSize();
-                    LOG.fine("AccessoryWrapper.getPreferredSize: orig pref size: " + origPref);
-                    
-                    prefSize.height = origPref.height;
-                    
-                    prefSize.width = Math.max(prefSize.width, origPref.width);
-                    int centerW = centerPanel.getWidth();
-                    if (centerW != 0 && prefSize.width > centerW / 2) {
-                        prefSize.width = centerW / 2;
-                    }
-                    LOG.fine("AccessoryWrapper.getPreferredSize: resulting pref size: " + prefSize);
-                    
+                    prefSize.height = getAccessoryPanel().getPreferredSize().height;
                     return prefSize;
                 }
                 return super.getPreferredSize();
@@ -604,6 +593,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
         topPanel.add(upFolderButton);
         topPanel.add(Box.createRigidArea(new Dimension(2, 0)));
+        System.out.println( "Go home action " +getGoHomeAction().getValue( Action.SHORT_DESCRIPTION) );
         
         // no home on Win platform
         if (!Utilities.isWindows()) {
@@ -617,6 +607,16 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
             homeButton.setIcon(homeIcon);
             homeButton.setText(null);
+            
+            String tooltip = homeButton.getToolTipText();
+            if (tooltip == null) {
+                tooltip = homeFolderTooltipText;
+                if (tooltip == null) {
+                    tooltip = NbBundle.getMessage(DirectoryChooserUI.class,
+                            "TLTP_HomeFolder");
+                }
+                homeButton.setToolTipText( tooltip );
+            }
 
             topPanel.add(homeButton);
         }
@@ -1088,6 +1088,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         upFolderAccessibleName = UIManager.getString("FileChooser.upFolderAccessibleName",l);
         
         newFolderToolTipText = UIManager.getString("FileChooser.newFolderToolTipText",l);
+        homeFolderTooltipText = UIManager.getString("FileChooser.homeFolderToolTipText",l);
         
     }
     
@@ -2368,4 +2369,3 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
 }
-
