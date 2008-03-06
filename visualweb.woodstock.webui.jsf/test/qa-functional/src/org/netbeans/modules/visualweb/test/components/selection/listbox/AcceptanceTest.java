@@ -373,7 +373,7 @@ public class AcceptanceTest extends RaveTestCase {
         editor.requestFocus();
         TestUtils.wait(2000);
         editor.pushKey(KeyEvent.VK_ENTER);
-        editor.setText("getTextArea1().setText(getSessionBean1().getChoices2()); \n");
+        editor.typeText("getTextArea1().setText(getSessionBean1().getChoices2()); \n");
         // Switch to design panel
         designer.makeComponentVisible();
         TestUtils.wait(10000);
