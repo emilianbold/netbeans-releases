@@ -1909,26 +1909,28 @@ public final class Validator extends BpelValidator {
 
     private void checkPropertyList( BaseCorrelation correlation , Message message) {
         BpelReference<CorrelationSet> setRef = correlation.getSet();
-        if ( setRef == null ) {
+
+        if (setRef == null) {
             return;
         }
         CorrelationSet set = setRef.get();
 
-        if ( set == null ) {
+        if (set == null) {
             return;
         }
         List<WSDLReference<CorrelationProperty>> list = set.getProperties();
-        if ( list == null ) {
+
+        if (list == null) {
             return; // # 80696
         }
         for (WSDLReference<CorrelationProperty> reference : list) {
-            if ( reference == null ) {
+            if (reference == null) {
                 continue;
             }
             Collection<PropertyAlias> collection = getPropertyAliases(reference.getQName(), message, correlation.getBpelModel());
 
-            if (collection.size() == 0) {
-                addError("FIX_AbsentPropertyAliasForMessage", correlation, reference.get().getName(), set.getName());
+            if (collection.size() == 0 && reference != null && reference.get() != null) {
+              addError("FIX_AbsentPropertyAliasForMessage", correlation, reference.get().getName()); // NOI18N
             }
         }
     }

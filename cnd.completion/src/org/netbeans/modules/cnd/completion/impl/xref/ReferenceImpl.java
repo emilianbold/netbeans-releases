@@ -110,8 +110,8 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     public CsmReferenceKind getKind() {
         if (this.kind == null) {
             CsmReferenceKind curKind = ReferencesSupport.getReferenceKind(this);
-            if (curKind == CsmReferenceKind.UNKNOWN) {
-                //curKind = super.getReferenceKind(ref);
+            if (curKind != CsmReferenceKind.UNKNOWN) {
+                this.kind = curKind;
             }
         }
         return this.kind;

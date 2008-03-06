@@ -42,6 +42,7 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import java.awt.Dialog;
+import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
@@ -243,7 +244,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         
         String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
 
-        ExecutionDescriptor desc = new ExecutionDescriptor(RubyPlatform.platformFor(project), displayName, pwd, target);
+        ExecutionDescriptor desc = new ExecutionDescriptor(getPlatform(), displayName, pwd, target);
         desc.debug(debug);
         desc.showSuspended(true);
         desc.allowInput();
@@ -328,21 +329,33 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
     }
     
-    private void openIrbConsole(Lookup context) {
-        // FIXME: project or platfrom sensitive
-        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
-        platform.findExecutable("irb"); // NOI18N
+    private RubyPlatform getPlatform() {
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (platform == null) {
+            platform = RubyPlatformManager.getDefaultPlatform();
+        }
         
-        String displayName = "IRB"; //NbBundle.getMessage(RailsActionProvider.class, "RailsConsole");
+        return platform;
+    }
+
+    private void openIrbConsole(Lookup context) {
+        RubyPlatform platform = getPlatform();
+        String irbPath = platform.findExecutable("irb"); // NOI18N
+        if (irbPath == null) {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+
+        String displayName = NbBundle.getMessage(RubyActionProvider.class, "CTL_IrbTopComponent");
         File pwd = FileUtil.toFile(project.getProjectDirectory());
         String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
 
-        new RubyExecution(new ExecutionDescriptor(platform, displayName, pwd).
+        new RubyExecution(new ExecutionDescriptor(platform, displayName, pwd, irbPath).
                 showSuspended(false).
                 showProgress(false).
                 classPath(classPath).
                 allowInput().
-                initialArgs("-e \"require 'irb';" /* + " require 'irb/completion';"*/ + " IRB.start\""). // NOI18N
+                additionalArgs("--simple-prompt", "--noreadline"). // NOI18N
                 //additionalArgs(getApplicationArguments()).
                 fileLocator(new RubyFileLocator(context, project)).
                 addStandardRecognizers(),

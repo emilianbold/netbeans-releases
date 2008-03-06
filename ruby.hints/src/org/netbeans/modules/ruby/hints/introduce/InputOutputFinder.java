@@ -51,7 +51,7 @@ import org.jruby.ast.ArgsNode;
 import org.jruby.ast.ListNode;
 import org.jruby.ast.MultipleAsgnNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.types.INameNode;
 
 /** 
@@ -133,7 +133,7 @@ class InputOutputVarFinder implements ParseTreeVisitor {
             when = WHEN_DURING;
         } 
         switch (node.nodeId) {
-        case NodeTypes.ARGSNODE: {
+        case ARGSNODE: {
             assert when == WHEN_BEFORE; // Is this true when I extract a whole method? I can't do that, right?
 
             // TODO - use AstUtilities.getDefArgs here - but avoid hitting them twice!
@@ -141,7 +141,7 @@ class InputOutputVarFinder implements ParseTreeVisitor {
             // However, I've gotta find the parameter nodes themselves too!
             ArgsNode an = (ArgsNode)node;
 
-            if (an.getArgsCount() > 0) {
+            if (an.getRequiredArgsCount() > 0) {
                 @SuppressWarnings("unchecked")
                 List<Node> args = (List<Node>)an.childNodes();
 
@@ -151,9 +151,9 @@ class InputOutputVarFinder implements ParseTreeVisitor {
                         List<Node> args2 = (List<Node>)arg.childNodes();
 
                         for (Node arg2 : args2) {
-                            if (arg2.nodeId == NodeTypes.ARGUMENTNODE) {
+                            if (arg2.nodeId == NodeType.ARGUMENTNODE) {
                                 methodScope.write(((INameNode)arg2).getName());
-                            } else if (arg2.nodeId == NodeTypes.LOCALASGNNODE) {
+                            } else if (arg2.nodeId == NodeType.LOCALASGNNODE) {
                                 methodScope.write(((INameNode)arg2).getName());
                             }
                         }
@@ -177,7 +177,7 @@ class InputOutputVarFinder implements ParseTreeVisitor {
             return true;
         }
 
-        case NodeTypes.ITERNODE: {
+        case ITERNODE: {
             blockStack.add(node);
             currentBlock = node;
             blockScope = new UsageScope(currentBlock);
@@ -188,26 +188,26 @@ class InputOutputVarFinder implements ParseTreeVisitor {
             }
             break;
         }
-        case NodeTypes.DEFNNODE:
-        case NodeTypes.DEFSNODE:
-        case NodeTypes.CLASSNODE:
-        case NodeTypes.SCLASSNODE:
-        case NodeTypes.MODULENODE:
+        case DEFNNODE:
+        case DEFSNODE:
+        case CLASSNODE:
+        case SCLASSNODE:
+        case MODULENODE:
             // We're probably extracting from within the top level of a file or class;
             // don't look into methods
             return when != WHEN_BEFORE;
                 
-        case NodeTypes.DVARNODE: {
+        case DVARNODE: {
             String name = ((INameNode)node).getName();
             blockScope.read(name);
             break;
         }
-        case NodeTypes.LOCALVARNODE: {
+        case LOCALVARNODE: {
             String name = ((INameNode)node).getName();
             methodScope.read(name);
             break;
         }
-        case NodeTypes.MULTIPLEASGNNODE: {
+        case MULTIPLEASGNNODE: {
             // I need to visit the right-hand-side children nodes of this assignment first to ensure that
             // in this:
             //    x,y=x+1,y+1
@@ -218,8 +218,8 @@ class InputOutputVarFinder implements ParseTreeVisitor {
             }
             break;
         }
-        case NodeTypes.WHENNODE:
-        case NodeTypes.IFNODE: {
+        case WHENNODE:
+        case IFNODE: {
             ifs++;
         }
         }
@@ -229,7 +229,7 @@ class InputOutputVarFinder implements ParseTreeVisitor {
 
     public boolean unvisit(Node node) {
         switch (node.nodeId) {
-        case NodeTypes.ITERNODE: {
+        case ITERNODE: {
             blockStack.remove(blockStack.size()-1);
             currentBlock = blockStack.size() > 0 ? blockStack.get(blockStack.size()-1) : null;
             if (currentBlock != null) {
@@ -242,18 +242,18 @@ class InputOutputVarFinder implements ParseTreeVisitor {
         //  x = x + 1 
         // should be processed as a read before a write even though I encounter the
         // LocalAsgnNode before its child LocalVarNode
-        case NodeTypes.LOCALASGNNODE: {
+        case LOCALASGNNODE: {
             String name = ((INameNode)node).getName();
             methodScope.write(name);
             break;
         }
-        case NodeTypes.DASGNNODE: {
+        case DASGNNODE: {
             String name = ((INameNode)node).getName();
             blockScope.write(name);
             break;
         }
-        case NodeTypes.WHENNODE:
-        case NodeTypes.IFNODE: {
+        case WHENNODE:
+        case IFNODE: {
             ifs--;
         }
         }
