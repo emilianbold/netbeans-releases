@@ -163,24 +163,6 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
 
-    public void testSpaceBinaryOperator() {
-        setDefaultsOptions();
-        setLoadDocumentText(
-            "int foo()\n" +
-            "{\n" +
-            "    if (s == NULL ||| s->mode != 'r') return - 1;\n" +
-            "}\n"
-            );
-        reformat();
-        assertDocumentText("Incorrect spaces in binary operators",
-            "int foo()\n" +
-            "{\n" +
-            "    if (s == NULL || s->mode != 'r') return -1;\n" +
-            "}\n"
-        );
-    }
-
-
 //static const char* _dbname = "TEST_DB";
 //static struct my_option my_long_options[] =
 //{
@@ -236,5 +218,36 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
+    public void testBlankLineAfterEndLineComment() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int Ndb::NDB_connect(Uint32 tNode)\n" +
+                "{\n" +
+                "    if (0){\n" +
+                "        DBUG_RETURN(3);\n" +
+                "    }//if\n" +
+                "}//Ndb::NDB_connect()\n" +
+                "NdbTransaction *\n" +
+                "Ndb::getConnectedNdbTransaction(Uint32 nodeId)\n" +
+                "{\n" +
+                "    return next;\n" +
+                "}//Ndb::getConnectedNdbTransaction()\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect blak line after end line comment",
+                "int Ndb::NDB_connect(Uint32 tNode)\n" +
+                "{\n" +
+                "    if (0) {\n" +
+                "        DBUG_RETURN(3);\n" +
+                "    }//if\n" +
+                "}//Ndb::NDB_connect()\n" +
+                "\n" +
+                "NdbTransaction *\n" +
+                "Ndb::getConnectedNdbTransaction(Uint32 nodeId)\n" +
+                "{\n" +
+                "    return next;\n" +
+                "}//Ndb::getConnectedNdbTransaction()\n"
+                );
+    }
 
 }
