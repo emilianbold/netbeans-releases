@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,49 +39,25 @@
 
 package org.netbeans.modules.ruby.railsprojects.database;
 
-import org.netbeans.modules.ruby.railsprojects.RailsProject;
-
 /**
- * Handles the database configuration for a Rails project.
+ * Encapsulates info of JDBC parameters that a JDBC adapter
+ * configuration needs in database.yml.
  *
  * @author Erno Mononen
  */
-public interface RailsDatabaseConfiguration {
+public interface JdbcInfo {
+    
+    /**
+     * @return the FQN of the JDBC driver class.
+     */
+    String getDriverClass();
+    
+    /**
+     * Gets the URL for the given host and database.
+     * @param host
+     * @param database
+     * @return
+     */
+    String getURL(String host, String database);
 
-    /**
-     * Gets the database parameter passed to the rails command, i.e. the name 
-     * of the Rails database adapter to be used.
-     * 
-     * @return the parameter for the Rails generator or <code>null</code> if
-     * the Rails generator should not be used for generating database configuration
-     * for this.
-     */
-    String railsGenerationParam();
-    
-    /**
-     * Edits the database config file (database.yml) of the given <code>project</code>
-     * as required by this configuration, and in case of JDBC connections, 
-     * possibly adds a reference to the required 
-     * driver jar files to the properties of the <code>project</code>.
-     * 
-     * @param projectDir the project whose <code>database.yml</code> is 
-     * to be edited.
-     */
-    void editConfig(RailsProject project);
-    
-    /**
-     * Gets the JDBC adapter configuration info for presenting 
-     * this configuration as a JDBC adapter in database.yml.
-     * 
-     * @return the info or <code>null</code>.
-     */
-    JdbcInfo getJdbcInfo();
-    
-    /**
-     * Gets the display name for this configuration, typically 
-     * the name of the adapter. May return null.
-     * 
-     * @return the display name or null.
-     */
-    String getDisplayName();
 }
