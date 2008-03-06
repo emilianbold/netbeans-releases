@@ -50,11 +50,8 @@ fi
 #fix for 114656
 cd "$NETBEANS_INSTALL_DIR"
 cd Contents/Resources/NetBeans*/${NB_CLUSTER_DIR}
-if [ ! -e "var" ] 
- then
-    mkdir var
-    touch var/license_accepted
-fi
+mkdir -p var
+touch var/license_accepted
 
 if [ -d "/Library/Receipts/baseide.pkg" ] ; then
     rm -rf "/Library/Receipts/baseide.pkg"
