@@ -730,7 +730,7 @@ public final class EarProjectProperties {
         Map<String, J2eeModuleProvider> mods = new HashMap<String, J2eeModuleProvider>();
         for (ClassPathSupport.Item item : getJarContentAdditional(project)) {
             Project p;
-            if (item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
+            if (item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT && !item.isBroken()) {
                 AntArtifact aa = item.getArtifact();
                 p = aa.getProject();
             } else {
