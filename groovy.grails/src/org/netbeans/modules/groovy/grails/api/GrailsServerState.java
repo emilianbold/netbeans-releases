@@ -72,5 +72,15 @@ public class GrailsServerState implements TaskListener{
         this.process = process;
     }
     
+    public void destroy() {
+        if(process != null){
+            process.destroy();
+            
+            // FIXME: if we are dealing with windows, we got to find 
+            // our tagged process using tasklist and kill it with taskkill
+        } else {
+            LOG.log(Level.WARNING, "Project: " + name + " , destroy() called, but no process running");
+        }
+    }
     
 }

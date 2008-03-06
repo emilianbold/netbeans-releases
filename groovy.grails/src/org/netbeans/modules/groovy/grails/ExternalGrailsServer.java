@@ -56,6 +56,8 @@ public class ExternalGrailsServer implements GrailsServer{
     ExecutionEngine engine = ExecutionEngine.getDefault();
     Project prj;
     Exception lastException = null; // last problem in the runnable.
+    GrailsServerState serverState = null;
+    ExecutorTask exTask;
     
     private  final Logger LOG = Logger.getLogger(ExternalGrailsServer.class.getName());
     
@@ -132,65 +134,67 @@ public class ExternalGrailsServer implements GrailsServer{
             String newDir  = dirName.substring(lastSlash + 1);
             
             gsr = new GrailsServerRunnable(outputReady, true, workDir, prependOption() + "create-app " + newDir);
-            ExecutorTask exTask = engine.execute("", gsr, io);
+            exTask = engine.execute("", gsr, io);
 
             waitForOutput();
             }
         else if(cmd.startsWith("run-app")) {
 
-            String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
-
-            gsr = new GrailsServerRunnable(outputReady, true, cwdName, prependOption() + cmd);
-            ExecutorTask exTask = engine.execute(tabName, gsr, io);
+            String pslistTag = Utilities.isWindows() ? " REM NB:" +  // NOI18N
+                    prj.getProjectDirectory().getName() : "";
+            
+            gsr = new GrailsServerRunnable(outputReady, true, cwdName, prependOption() + cmd + pslistTag);
+            exTask = engine.execute("", gsr, io);
 
             waitForOutput();
 
-            GrailsServerState serverState = prj.getLookup().lookup(GrailsServerState.class);
-
-            if (serverState != null) {
-                if (gsr.getProcess() != null) {
-                    serverState.setRunning(true);
-                    serverState.setProcess(gsr.getProcess());
-                    exTask.addTaskListener(serverState);
-                } else
-                    {
-                    LOG.log(Level.WARNING, "Could not startup process : " + gsr.getLastError().getLocalizedMessage());
-                    lastException = gsr.getLastError();
-                    return null;
-                    }
-
-                }
-            else {
-                LOG.log(Level.WARNING, "Could not get serverState through lookup");
-                }
         }
         else if(cmd.startsWith("shell")) {
 
             gsr = new GrailsServerRunnable(outputReady, false, cwdName, prependOption() + cmd);
-            new Thread(gsr).start();
+            //new Thread(gsr).start();
+            exTask = engine.execute("", gsr, io);
 
             waitForOutput();
         }
         else {
             gsr = new GrailsServerRunnable(outputReady, true, cwdName, prependOption() + cmd);
-            ExecutorTask exTask = engine.execute("", gsr, io);
+            exTask = engine.execute("", gsr, io);
 
             waitForOutput();
-
         }
         
         lastException = gsr.getLastError();
         return gsr.getProcess();
     }
     
-    void waitForOutput(){
+    void waitForOutput() {
         try {
             outputReady.await();
-            } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                    }
-        
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
         }
+
+        if (prj != null) {
+            serverState = prj.getLookup().lookup(GrailsServerState.class);
+            
+            if (serverState != null) {
+                Process proc = gsr.getProcess();
+                if (proc != null) {
+                    serverState.setRunning(true);
+                    serverState.setProcess(proc);
+                    exTask.addTaskListener(serverState);
+                } else {
+                    LOG.log(Level.WARNING, "Could not startup process : " + gsr.getLastError().getLocalizedMessage());
+                    lastException = gsr.getLastError();
+                }
+            } else {
+                LOG.log(Level.WARNING, "Could not get serverState through lookup");
+            }
+
+        }
+
+    }
 
     public Exception getLastError() {
         return lastException;

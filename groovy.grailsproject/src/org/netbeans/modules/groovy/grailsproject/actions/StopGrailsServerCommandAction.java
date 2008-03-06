@@ -52,7 +52,7 @@ public class StopGrailsServerCommandAction extends AbstractAction{
         }
             
     public void actionPerformed(ActionEvent e) {
-        serverState.getProcess().destroy();
+        serverState.destroy();
     }
     
 

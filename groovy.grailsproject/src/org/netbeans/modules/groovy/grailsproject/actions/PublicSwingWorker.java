@@ -57,8 +57,7 @@ import org.openide.windows.OutputWriter;
 import org.netbeans.api.project.Project;
 import org.openide.util.Cancellable;
 import java.util.concurrent.CountDownLatch;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import org.netbeans.modules.groovy.grails.api.GrailsServerState;
 
 
 /**
@@ -231,9 +230,18 @@ import java.io.OutputStreamWriter;
         }
 
     public boolean cancel() {
-        process.destroy();
-        progress.finish();
-        return true;
-    }
+            if (prj != null) {
+                GrailsServerState serverState = prj.getLookup().lookup(GrailsServerState.class);
+
+                if (serverState != null) {
+                    serverState.destroy();
+                } else {
+                    LOG.log(Level.WARNING, "Could not get serverState through lookup");
+                }
+            }
+
+            progress.finish();
+            return true;
+        }
         
     }
