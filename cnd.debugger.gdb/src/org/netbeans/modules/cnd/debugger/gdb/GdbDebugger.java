@@ -370,15 +370,26 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     private String getGdbHelper() {
-        String name = "bin/GdbHelper-" + System.getProperty("os.name").replace(" ", "_") + // NOI18N
-                "-" + System.getProperty("os.arch") + // NOI18N
-                (Utilities.isWindows() ? ".dll" : ".so"); // NOI18N
+        String name = "bin/GdbHelper" + getOsName() + getOsArch() + getExtension(); // NOI18N
         File file = InstalledFileLocator.getDefault().locate(name, null, false);
         if (file != null && file.exists()) {
             return fixPath(file.getAbsolutePath());
         } else {
             return null;
         }
+    }
+    
+    private String getOsArch() {
+        String orig = System.getProperty("os.arch"); // NOI18N
+        return (orig.equals("i386") || orig.equals("i686")) ? "-x86" : orig; // NOI18N
+    }
+    
+    private String getOsName() {
+        return "-" + System.getProperty("os.name").replace(" ", "_"); // NOI18N
+    }
+    
+    private String getExtension() {
+        return Utilities.isWindows() ? ".dll" : ".so"; // NOI18N
     }
     
     private String fixPath(String path) {
@@ -788,6 +799,14 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 cb.done();
                 if (token == shareToken) {
                     lastShare = cb.toString();
+                    if (lastShare.contains("GdbHelper")) { // NOI18N
+                        ProjectActionEvent pae;
+                        pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+                        int conType = pae.getProfile().getConsoleType().getValue();
+                        if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+                            gdb.data_evaluate_expression("_gdbHelperSetLineBuffered()"); // NOI18N
+                        }
+                    }
                 }
             } else if (pendingBreakpointMap.get(itok) != null) {
                 breakpointValidation(token, null);
