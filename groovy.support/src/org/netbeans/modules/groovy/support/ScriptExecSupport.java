@@ -229,7 +229,7 @@ class ScriptExecSupport {
                 }
                 
                 Runtime rt = Runtime.getRuntime();
-                Process proc = rt.exec( command, env );
+                Process proc = rt.exec( command, null );
                 
                 if ( io != null ) {
                     StreamRedirect errorGobbler = new StreamRedirect( fileObject, proc.getErrorStream(), io.getErr() );

@@ -103,6 +103,7 @@ class StreamRedirect extends Thread {
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
+        ow.close();
     }
 
     public OutputListener checkErrorLine(String line) {
