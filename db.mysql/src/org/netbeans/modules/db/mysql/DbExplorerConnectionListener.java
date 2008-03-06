@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,61 +31,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.execute;
+package org.netbeans.modules.db.mysql;
+
+import org.netbeans.api.db.explorer.ConnectionListener;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.mysql.DatabaseUtils.URLParser;
 
 /**
- * Describes a column in the TableModel.
- * A ResultSetTableModel is composed of a list of ColumnDefs and the data.
- *
- * @author Andrei Badea
+ * Listen to changes on the connection list, and if we're not registered
+ * and a MySQL connection is added, register the MySQL 
+ * 
+ * @author David Van Couvering
  */
-public class ColumnDef {
+public class DbExplorerConnectionListener implements ConnectionListener {
 
-    /**
-     * The physical column name.
-     */
-    private String name;
-    
-    /** 
-     * The label for the column, which may be different from the name
-     * if aliases are used
-     */
-    private String label;
+    public void connectionsChanged() {
+        MySQLOptions options = MySQLOptions.getDefault();
+        
+        if ( options.isProviderRegistered() || options.isProviderRemoved() ) {
+            return;
+        }
 
-    /**
-     * Whether we can write to this column.
-     * A column is writable if its ColumnTypeDef says so and the
-     * ResultSet is updateable.
-     */
-    private boolean writable;
+        DatabaseConnection[] connections = 
+            ConnectionManager.getDefault().getConnections();
 
-    /**
-     * The class used to display this column in the table.
-     */
-    private Class clazz;
-
-    public ColumnDef(String name, String label, boolean writable, Class clazz) {
-        this.label = label;
-        this.name = name;
-        this.writable = writable;
-        this.clazz = clazz;
+        for ( DatabaseConnection conn : connections ) {
+            if ( conn.getDriverClass().equals(MySQLOptions.getDriverClass()) ) {
+                ServerInstance instance = ServerInstance.getDefault();
+                URLParser parser = new URLParser(conn.getDatabaseURL());
+                instance.setHost(parser.getHost());
+                instance.setPort(parser.getPort());
+                instance.setUser(conn.getUser());
+                instance.setPassword(conn.getPassword());
+                
+                ServerNodeProvider.getDefault().setRegistered(true);
+            }
+        }
     }
 
-    public String getLabel() {
-        return label;
-    }
-    
-    public String getName() {
-        return name;
-    }
-
-    public boolean isWritable() {
-        return writable;
-    }
-
-    public Class getDisplayClass() {
-        return clazz;
-    }
 }

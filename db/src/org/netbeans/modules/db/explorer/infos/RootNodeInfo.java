@@ -109,8 +109,6 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
     }
 
     private synchronized List<Node> getRegisteredNodes() {
-        LOGGER.log(Level.FINE, null, new Exception());
-        
         boolean registerListener = false;
         if ( nodeLoaders == null ) {
             nodeLoaders = DbNodeLoaderSupport.getLoaders();
@@ -163,6 +161,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         return ninfo;
     }
     
+    @Override
     public void refreshChildren() throws DatabaseException {
         // refresh action is empty
     }
@@ -177,28 +176,17 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         
         final List<Node> newNodes = getRegisteredNodes();
         
-        // Now add the non-registered nodes that currently exist
         for (Node node : nodes ) {
-            if ( node instanceof DatabaseNode ) {
-                newNodes.add(node);
+            if ( ! (node instanceof DatabaseNode) ) {
+                // Remove the old registered nodes
+                children.removeSubNode(node);
             }
         }
         
-        children.replaceNodes(newNodes.toArray(new Node[0]));
-    }
-    
-    private void postUpdateChildren(final DatabaseNodeChildren children, 
-            final Node[] newNodes) {                
-        // Replace the node list with the new one
-        Children.MUTEX.postWriteRequest(new Runnable() {
-            public void run() {
-                // remove current sub-tree
-                children.remove(children.getNodes());
-
-                // add built sub-tree
-                children.add(newNodes);
-            }
-        });
+        for ( Node node : newNodes ) {
+            // Add the new registered nodes
+            children.addSubNode(node);
+        }        
     }
     
     public void addConnectionNoConnect(DatabaseConnection dbconn) throws DatabaseException {
@@ -213,6 +201,25 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
         ConnectionList.getDefault().add(dbconn);
         children.createSubnode(ninfo, true);
+    }
+    
+    public void removeConnection(DatabaseConnection dbconn) throws DatabaseException {
+        if ( dbconn == null ) {
+            throw new NullPointerException();
+        }
+        
+        DatabaseNode node = getNode();
+        DatabaseNodeChildren children = (DatabaseNodeChildren)node.getChildren();
+        Node[] nodes = children.getNodes();
+        
+        for ( Node childNode : nodes ) {
+            if ( childNode instanceof ConnectionNode ) {
+                ConnectionNode connNode = (ConnectionNode)childNode;
+                if ( connNode.getInfo().getDatabaseConnection().equals(dbconn)) {
+                    connNode.deleteNode();
+                }
+            }
+        }
     }
     
     public void addConnection(DBConnection cinfo) throws DatabaseException {
