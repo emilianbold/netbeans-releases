@@ -92,6 +92,11 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
     public void editConfig(RailsProject project) {
         delegate.editConfig(project);
         edit(project.getProjectDirectory());
+        JdbcInfo jdbcInfo = getJdbcInfo();
+        if (jdbc && jdbcInfo != null) {
+            // try to bundle a driver
+            RailsJdbcConnection.bundleDrivers(project, jdbcInfo.getDriverClass());
+        }
     }
 
     private void changeAttribute(Document doc, String attributeName, String attributeValue) throws BadLocationException {

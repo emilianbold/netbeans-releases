@@ -101,9 +101,14 @@ public class RailsJdbcConnection implements RailsDatabaseConfiguration {
     public void editConfig(RailsProject project) {
         insertActiveJdbcHook(project.getProjectDirectory());
         editDatabaseYml(project.getProjectDirectory());
-        bundleDrivers(project);
+        bundleDrivers(project, 
+                getDriverClass(development), getDriverClass(test), getDriverClass(production));
     }
 
+    private String getDriverClass(DatabaseConnection connection) {
+        return connection != null ? connection.getDriverClass() : null;
+    }
+    
     private static void insertActiveJdbcHook(FileObject dir) {
         FileObject fo = dir.getFileObject("config/environment.rb"); // NOI18N
         if (fo != null) {
@@ -219,16 +224,24 @@ public class RailsJdbcConnection implements RailsDatabaseConfiguration {
     }
 
     
-    private void bundleDrivers(RailsProject project) {
+    /**
+     * Tries to bundle the JDBC drivers identified by the given <code>driverClasses</code>
+     * to the given <code>project</code>.
+     * @param project the project to which to bundle the drivers.
+     * @param driverClasses the driver classes of JDBC drivers to bundle,
+     * may contain <code>null</code>s.
+     */
+    static void bundleDrivers(RailsProject project, String... driverClasses) {
 
         ProjectPropertyExtender ppe = new ProjectPropertyExtender(project.evaluator(), project.getReferenceHelper(), project.getRakeProjectHelper(),
                 RailsProjectProperties.WELL_KNOWN_PATHS, RailsProjectProperties.LIBRARY_PREFIX, RailsProjectProperties.LIBRARY_SUFFIX, RailsProjectProperties.ANT_ARTIFACT_PREFIX);
 
-        
         Set<Item> items = new  HashSet<Item>();
-        items.addAll(getDriverItems(development));
-        items.addAll(getDriverItems(production));
-        items.addAll(getDriverItems(test));
+        for (String driverClass : driverClasses) {
+            if (driverClass != null) {
+                items.addAll(getDriverItems(driverClass));
+            }
+        }
 
         String[] fileRefs = ppe.encodeToStrings(items.iterator());
         EditableProperties projectProperties = project.getRakeProjectHelper().getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -236,12 +249,9 @@ public class RailsJdbcConnection implements RailsDatabaseConfiguration {
         project.getRakeProjectHelper().putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
     }
     
-    private static Set<Item> getDriverItems(DatabaseConnection connection) {
-        if (connection == null) {
-            return Collections.<Item>emptySet();
-        }
+    private static Set<Item> getDriverItems(String driverClass) {
         Set<Item> result = new HashSet<Item>();
-        for (URL url : getDriverURLs(connection)) {
+        for (URL url : getDriverURLs(driverClass)) {
             FileObject fo = URLMapper.findFileObject(url);
             result.add(Item.create(FileUtil.toFile(fo), null));
         }
@@ -249,8 +259,8 @@ public class RailsJdbcConnection implements RailsDatabaseConfiguration {
         
     }
 
-    private static List<URL> getDriverURLs(DatabaseConnection connection) {
-        JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers(connection.getDriverClass());
+    private static List<URL> getDriverURLs(String driverClass) {
+        JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
         List<URL> result = new ArrayList<URL>();
         for (JDBCDriver driver : drivers) {
             for (URL url : driver.getURLs()) {
