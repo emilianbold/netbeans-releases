@@ -115,9 +115,10 @@ public class XMLCompletionProvider implements CompletionProvider {
         
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             boolean noResults = doQuery(resultSet, doc, caretOffset);
-            if(doc != null && noResults) {
-                checkHideCompletion((BaseDocument)doc, caretOffset);
-            }
+//            //issue 128275: I'm not sure about this condition here
+//            if(doc != null && noResults) {
+//                checkHideCompletion((BaseDocument)doc, caretOffset);
+//            }
             resultSet.finish();
         }
         

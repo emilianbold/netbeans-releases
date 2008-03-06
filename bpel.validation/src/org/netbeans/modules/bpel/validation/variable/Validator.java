@@ -40,66 +40,109 @@
  */
 package org.netbeans.modules.bpel.validation.variable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Iterator;
-import java.util.HashMap;
 import java.util.Collection;
-import java.util.Set;
 
-import org.netbeans.modules.bpel.model.api.Import;
-import org.netbeans.modules.bpel.model.api.support.ImportHelper;
-import org.netbeans.modules.bpel.model.api.BaseScope;
-import org.netbeans.modules.bpel.model.api.BpelContainer;
-import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.Branches;
-import org.netbeans.modules.bpel.model.api.CompletionCondition;
-import org.netbeans.modules.bpel.model.api.Correlation;
-import org.netbeans.modules.bpel.model.api.CorrelationContainer;
-import org.netbeans.modules.bpel.model.api.CorrelationsHolder;
-import org.netbeans.modules.bpel.model.api.CorrelationSet;
-import org.netbeans.modules.bpel.model.api.CreateInstanceActivity;
-import org.netbeans.modules.bpel.model.api.Else;
-import org.netbeans.modules.bpel.model.api.ElseIf;
-import org.netbeans.modules.bpel.model.api.EventHandlers;
-import org.netbeans.modules.bpel.model.api.FaultHandlers;
-import org.netbeans.modules.bpel.model.api.Flow;
-import org.netbeans.modules.bpel.model.api.ForEach;
-import org.netbeans.modules.bpel.model.api.If;
-import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
 import org.netbeans.modules.bpel.model.api.OnEvent;
 import org.netbeans.modules.bpel.model.api.OnMessage;
 import org.netbeans.modules.bpel.model.api.OperationReference;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
-import org.netbeans.modules.bpel.model.api.PartnerLinkContainer;
-import org.netbeans.modules.bpel.model.api.Pick;
-import org.netbeans.modules.bpel.model.api.Process;
+import org.netbeans.modules.bpel.model.api.PartnerLinkReference;
 import org.netbeans.modules.bpel.model.api.Receive;
 import org.netbeans.modules.bpel.model.api.Reply;
-import org.netbeans.modules.bpel.model.api.Sequence;
+import org.netbeans.modules.bpel.model.api.VariableDeclaration;
+import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
-import org.netbeans.modules.bpel.model.api.support.Initiate;
-import org.netbeans.modules.bpel.model.impl.services.ExpressionUpdater;
+
+import org.netbeans.modules.xml.wsdl.model.Input;
+import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.OperationParameter;
+import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
+
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.xam.Model;
+
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2008.03.04
+ * @version 2008.03.03
  */
 public final class Validator extends BpelValidator {
 
   @Override
   public void visit(OnMessage onMessage) {
-//out("ON MESSAGE");
+    checkVariable(onMessage, onMessage, true);
+  }
+
+  @Override
+  public void visit(Receive receive) {
+    checkVariable(receive, receive, true);
+  }
+
+  @Override
+  public void visit(Reply reply) {
+    checkVariable(reply, reply, false);
+  }
+
+  // # 116242
+  private void checkVariable(
+    VariableReference variableReference,
+    OperationReference operationReference,
+    boolean isInput)
+  {
+    BpelReference<VariableDeclaration> ref2 = variableReference.getVariable();
+    
+    if (ref2 != null && ref2.get() != null) {
+      return;
+    }
+//out("NO VARIABLE");
+    WSDLReference<Operation> ref = operationReference.getOperation();
+
+    if (ref == null) {
+      return;
+    }
+    Operation operation = ref.get();
+
+    if (operation == null) {
+      return;
+    }
+    OperationParameter parameter;
+
+    if (isInput) {
+      parameter = operation.getInput();
+    }
+    else {
+      parameter = operation.getOutput();
+    }
+    if (parameter == null) {
+      return;
+    }
+    NamedComponentReference<Message> ref1 = parameter.getMessage();
+
+    if (ref1 == null) {
+      return;
+    }
+    Message message = ref1.get();
+
+    if (message == null) {
+      return;
+    }
+    Collection<Part> parts = message.getParts();
+
+    if (parts == null) {
+      return;
+    }
+//out();
+//out("SIZE: " + parts.size());
+//out();
+    if (parts.size() != 0) {
+      addError("FIX_WSDL_message_variable", (Component) variableReference);
+    }
   }
 }

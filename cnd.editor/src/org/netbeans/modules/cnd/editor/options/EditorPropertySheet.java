@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.editor.options;
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -47,9 +48,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -63,6 +66,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -79,7 +84,7 @@ import org.openide.util.NbBundle;
  */
 public class EditorPropertySheet extends javax.swing.JPanel implements ActionListener, PropertyChangeListener, PreferenceChangeListener {
     
-    private static final boolean USE_NEW_FORMATTER = false;
+    private static final boolean USE_NEW_FORMATTER = true;
     
     private EditorOptionsPanelController topControler;
     private boolean loaded = false;
@@ -93,6 +98,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     EditorPropertySheet(EditorOptionsPanelController topControler) {
         this.topControler = topControler;
         initComponents();
+        manageStyles.setMinimumSize(new Dimension(126,26));
         setName("Tab_Name"); // NOI18N (used as a bundle key)
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             setOpaque( false );
@@ -112,7 +118,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     private void initLanguageStylePreferences(CodeStyle.Language language, String styleId){
         Map<String, PreviewPreferences> map = allPreferences.get(language);
         if (map == null){
-            map = new TreeMap<String, PreviewPreferences>();
+            map = new HashMap<String, PreviewPreferences>();
             allPreferences.put(language, map);
         }
         PreviewPreferences clone = new PreviewPreferences(
@@ -123,12 +129,12 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     
 
     private void initLanguageMap(){
-        for(String style:EditorOptions.PREDEFINED_STYLES){
+        for(String style:EditorOptions.getAllStyles(CodeStyle.Language.C)){
             initLanguageStylePreferences(CodeStyle.Language.C, style);
         }
         defaultStyles.put(CodeStyle.Language.C, EditorOptions.getCurrentProfileId(CodeStyle.Language.C));
 
-        for(String style:EditorOptions.PREDEFINED_STYLES){
+        for(String style:EditorOptions.getAllStyles(CodeStyle.Language.CPP)){
             initLanguageStylePreferences(CodeStyle.Language.CPP, style);
         }
         defaultStyles.put(CodeStyle.Language.CPP, EditorOptions.getCurrentProfileId(CodeStyle.Language.CPP));
@@ -150,13 +156,18 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         Map<String, PreviewPreferences> map = allPreferences.get(currentLanguage);
         String currentProfile = defaultStyles.get(currentLanguage);
+        List<EntryWrapper> list = new ArrayList<EntryWrapper>();
+        for(Map.Entry<String, PreviewPreferences> entry : map.entrySet()) {
+            list.add(new EntryWrapper(entry));
+        }
+        Collections.sort(list);
         int index = 0;
         int i = 0;
-        for(Map.Entry<String, PreviewPreferences> entry : map.entrySet()) {
-            if (entry.getKey().equals(currentProfile)) {
+        for(EntryWrapper entry : list) {
+            if (entry.name.equals(currentProfile)) {
                 index = i;
             }
-            model.addElement(new EntryWrapper(entry));
+            model.addElement(entry);
             i++;
         }
         styleComboBox.setModel(model);
@@ -337,25 +348,42 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
             CodeStyle.Language language = entry.getKey();
             Map<String,PreviewPreferences> map = entry.getValue();
             EditorOptions.setCurrentProfileId(language, defaultStyles.get(language));
+            StringBuilder buf = new StringBuilder();
             for(Map.Entry<String,PreviewPreferences> prefEntry : map.entrySet()){
                 String style = prefEntry.getKey();
+                if (buf.length()>0){
+                    buf.append(',');
+                }
+                buf.append(style);
                 PreviewPreferences preferences = prefEntry.getValue();
                 Preferences toSave = EditorOptions.getPreferences(language, style);
-                try {
-                    for (String key : preferences.keys()) {
-                        Object def = EditorOptions.getDefault(language, key, defaultStyles.get(language));
-                        if (def instanceof Boolean) {
-                            toSave.putBoolean(key, preferences.getBoolean(key, (Boolean) def));
-                        } else if (def instanceof Integer) {
-                            toSave.putInt(key, preferences.getInt(key, (Integer) def));
+                for(String key : EditorOptions.keys()){
+                    Object o = EditorOptions.getDefault(language, style, key);
+                    if (o instanceof Boolean) {
+                        Boolean v = preferences.getBoolean(key, (Boolean) o);
+                        if (!o.equals(v)) {
+                            toSave.putBoolean(key, v);
                         } else {
-                            toSave.put(key, preferences.get(key, (String) def));
+                            toSave.remove(key);
+                        }
+                    } else if (o instanceof Integer) {
+                        Integer v = preferences.getInt(key, (Integer) o);
+                        if (!o.equals(v)) {
+                            toSave.putInt(key, v);
+                        } else {
+                            toSave.remove(key);
+                        }
+                    } else {
+                        String v = preferences.get(key, o.toString());
+                        if (!o.equals(v)) {
+                            toSave.put(key, v);
+                        } else {
+                            toSave.remove(key);
                         }
                     }
-                } catch (BackingStoreException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
             }
+            EditorOptions.setAllStyles(language, buf.toString());
         }
         defaultStyles.clear();
         allPreferences.clear();
@@ -435,9 +463,9 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     private String getPreviwText(){
         String suffix;
         if (CodeStyle.Language.C.equals(currentLanguage)){
-            suffix = ".c";
+            suffix = ".c"; // NOI18N
         } else {
-            suffix = ".cpp";
+            suffix = ".cpp"; // NOI18N
         }
         if (lastChangedproperty != null) {
             if (lastChangedproperty.startsWith("space")) { // NOI18N
@@ -456,7 +484,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         //return getString(example);
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         FileObject exampleFile = fs.findResource("OptionsDialog/CPlusPlus/FormatterPreviewExamples/" + example); //NOI18N
-        if (exampleFile != null) {
+        if (exampleFile != null && exampleFile.getSize() > 0) {
             StringBuilder sb = new StringBuilder((int) exampleFile.getSize());
             try {
                 InputStreamReader is = new InputStreamReader(exampleFile.getInputStream());
@@ -567,10 +595,14 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
         oprionsPanel.add(jLabel1, gridBagConstraints);
 
+        styleComboBox.setMaximumSize(new java.awt.Dimension(100, 25));
+        styleComboBox.setPreferredSize(new java.awt.Dimension(100, 25));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         oprionsPanel.add(styleComboBox, gridBagConstraints);
 
@@ -587,6 +619,11 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         oprionsPanel.add(categoryPanel, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(manageStyles, org.openide.util.NbBundle.getMessage(EditorPropertySheet.class, "EditorPropertySheet.manageStyles.text")); // NOI18N
+        manageStyles.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageStylesActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -629,6 +666,32 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         add(jSeparator1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
+private void manageStylesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageStylesActionPerformed
+    Map<CodeStyle.Language, Map<String,PreviewPreferences>> clone =  clonePreferences();
+    ManageStylesPanel stylesPanel = new ManageStylesPanel(currentLanguage, clone);
+    DialogDescriptor dd = new DialogDescriptor(stylesPanel, getString("MANAGE_STYLES_DIALOG_TITLE")); // NOI18N
+    DialogDisplayer.getDefault().notify(dd);
+    if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+        allPreferences = clone;
+        initLanguageCategory();
+    }
+}//GEN-LAST:event_manageStylesActionPerformed
+
+private Map<CodeStyle.Language, Map<String,PreviewPreferences>> clonePreferences(){
+        Map<CodeStyle.Language, Map<String,PreviewPreferences>> newAllPreferences = new HashMap<CodeStyle.Language, Map<String, PreviewPreferences>>();
+        for(Map.Entry<CodeStyle.Language, Map<String,PreviewPreferences>> entry : allPreferences.entrySet()){
+            CodeStyle.Language lang = entry.getKey();
+            Map<String, PreviewPreferences> map = entry.getValue();
+            Map<String, PreviewPreferences> newMap = new HashMap<String, PreviewPreferences>();
+            newAllPreferences.put(lang, newMap);
+            for(Map.Entry<String, PreviewPreferences> entry2: map.entrySet()){
+                PreviewPreferences pref = entry2.getValue();
+                PreviewPreferences newPref = new PreviewPreferences(pref, lang, entry2.getKey());
+                newMap.put(entry2.getKey(), newPref);
+            }
+        }
+        return newAllPreferences;
+}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel categoryPanel;
@@ -645,17 +708,23 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     private javax.swing.JComboBox styleComboBox;
     // End of variables declaration//GEN-END:variables
 
-    private static class EntryWrapper {
+    private static class EntryWrapper implements Comparable<EntryWrapper> {
         private final String name;
+        private String displayName;
         private final PreviewPreferences preferences;
         private EntryWrapper(Map.Entry<String, PreviewPreferences> enrty){
             this.name = enrty.getKey();
             this.preferences = enrty.getValue();
+            displayName = EditorOptions.getStyleDisplayName(preferences.getLanguage(),name);
         }
 
         @Override
         public String toString() {
-            return name;
+            return displayName;
+        }
+
+        public int compareTo(EntryWrapper o) {
+            return this.displayName.compareTo(o.displayName);
         }
     }
 

@@ -284,6 +284,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     }
 
     protected void addSubresourceLocator() throws IOException {
+        Util.checkScanning();
         ModificationResult result = targetResourceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
 
             public void run(WorkingCopy copy) throws IOException {
@@ -769,6 +770,10 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     protected String getParameterName(ParameterInfo param, 
             boolean camelize, boolean normalize, boolean trimBraces) {
         String name = param.getName();
+        if (Util.isKeyword(name)) {
+            return name + "Param";
+        }
+        
         if(trimBraces && param.getStyle() == ParamStyle.TEMPLATE 
                 && name.startsWith("{") && name.endsWith("}")) {
             name = name.substring(0, name.length()-1);

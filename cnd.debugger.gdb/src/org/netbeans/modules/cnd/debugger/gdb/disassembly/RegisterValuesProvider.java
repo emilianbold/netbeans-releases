@@ -61,7 +61,7 @@ public class RegisterValuesProvider {
         return instance;
     }
     
-    public Map<String,String> getRegisterValues() {
+    public Map<String,RegisterValue> getRegisterValues() {
         Disassembly dis = Disassembly.getCurrent();
         if (dis != null) {
             return dis.getRegisterValues();
@@ -78,11 +78,34 @@ public class RegisterValuesProvider {
         pcs.removePropertyChangeListener(listener);
     }
     
-    public void fireRegisterValuesChanged() {
+    void fireRegisterValuesChanged() {
         pcs.firePropertyChange(VALUES_UPDATED, 0, 1);
     }
     
-    public void fireRegisterValuesClear() {
+    void fireRegisterValuesClear() {
         pcs.firePropertyChange(VALUES_CLEAR, 0, 1);
+    }
+    
+    public static class RegisterValue {
+        private final String value;
+        private final boolean modified;
+
+        public RegisterValue(String value, boolean modified) {
+            this.value = value;
+            this.modified = modified;
+        }
+
+        public boolean isModified() {
+            return modified;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return getValue();
+        }
     }
 }

@@ -310,9 +310,6 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.openide.modules</code-name-base>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.openide.options</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.openide.filesystems</code-name-base>
                     </test-dependency>
                     <test-dependency>

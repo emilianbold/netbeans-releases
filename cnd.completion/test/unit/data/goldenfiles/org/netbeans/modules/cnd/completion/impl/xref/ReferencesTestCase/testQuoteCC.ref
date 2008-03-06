@@ -90,19 +90,19 @@
 ==============================================================
 'list', tokenID=identifier, offset=2504 [59:13/2504-59:17/2508]
 --OWNER:
-    VARIABLE it [59:13/2504-59:61/2552] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [59:13/2504-59:37/2528]  INIT: text='customers'  SCOPE: Stmt  [59:9/2500-61:10/2628]
+    TYPE $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [59:13/2504-59:37/2528] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     null
 ==============================================================
 'Customer', tokenID=identifier, offset=2509 [59:18/2509-59:26/2517]
 --OWNER:
-    VARIABLE it [59:13/2504-59:61/2552] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [59:13/2504-59:37/2528]  INIT: text='customers'  SCOPE: Stmt  [59:9/2500-61:10/2628]
+    TYPE $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [59:13/2504-59:37/2528] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
 ==============================================================
 'iterator', tokenID=identifier, offset=2520 [59:29/2520-59:37/2528]
 --OWNER:
-    VARIABLE it [59:13/2504-59:61/2552] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [59:13/2504-59:37/2528]  INIT: text='customers'  SCOPE: Stmt  [59:9/2500-61:10/2628]
+    TYPE $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [59:13/2504-59:37/2528] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     null
 ==============================================================
@@ -294,19 +294,19 @@
 ==============================================================
 'list', tokenID=identifier, offset=3133 [78:13/3133-78:17/3137]
 --OWNER:
-    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [78:13/3133-78:37/3157]  INIT: text='customers'  SCOPE: Stmt  [78:9/3129-82:10/3323]
+    TYPE $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [78:13/3133-78:37/3157] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     null
 ==============================================================
 'Customer', tokenID=identifier, offset=3138 [78:18/3138-78:26/3146]
 --OWNER:
-    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [78:13/3133-78:37/3157]  INIT: text='customers'  SCOPE: Stmt  [78:9/3129-82:10/3323]
+    TYPE $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [78:13/3133-78:37/3157] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
 ==============================================================
 'iterator', tokenID=identifier, offset=3149 [78:29/3149-78:37/3157]
 --OWNER:
-    VARIABLE it [78:13/3133-78:61/3181] ReferencesTestCase/quote.cc  TYPE: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [78:13/3133-78:37/3157]  INIT: text='customers'  SCOPE: Stmt  [78:9/3129-82:10/3323]
+    TYPE $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [78:13/3133-78:37/3157] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     null
 ==============================================================
@@ -432,7 +432,7 @@
 ==============================================================
 'string', tokenID=identifier, offset=3517 [90:9/3517-90:15/3523]
 --OWNER:
-    VARIABLE s [90:9/3517-90:18/3526] ReferencesTestCase/quote.cc  TYPE: $unresolved$::string TEXT=string  [90:9/3517-90:15/3523]  INIT: null  SCOPE: Stmt  [87:58/3412-109:6/4112]
+    TYPE $unresolved$::string TEXT=string  [90:9/3517-90:15/3523] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     null
 ==============================================================
@@ -690,7 +690,7 @@
 ==============================================================
 'string', tokenID=identifier, offset=4260 [114:9/4260-114:15/4266]
 --OWNER:
-    VARIABLE s [114:9/4260-114:18/4269] ReferencesTestCase/quote.cc  TYPE: $unresolved$::string TEXT=string  [114:9/4260-114:15/4266]  INIT: null  SCOPE: Stmt  [111:59/4172-120:6/4362]
+    TYPE $unresolved$::string TEXT=string  [114:9/4260-114:15/4266] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     null
 ==============================================================
@@ -792,7 +792,7 @@
 ==============================================================
 'string', tokenID=identifier, offset=4553 [129:5/4553-129:11/4559]
 --OWNER:
-    VARIABLE customerName [129:5/4553-129:25/4573] ReferencesTestCase/quote.cc  TYPE: $unresolved$::string TEXT=string  [129:5/4553-129:11/4559]  INIT: null  SCOPE: Stmt  [123:33/4428-232:2/7723]
+    TYPE $unresolved$::string TEXT=string  [129:5/4553-129:11/4559] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     null
 ==============================================================
@@ -894,7 +894,7 @@
 ==============================================================
 'System', tokenID=identifier, offset=5055 [145:5/5055-145:11/5061]
 --OWNER:
-    VARIABLE MySystem [145:5/5055-145:21/5071] ReferencesTestCase/quote.cc  TYPE: System TEXT=System  [145:5/5055-145:11/5061]  INIT: null  SCOPE: Stmt  [123:33/4428-232:2/7723]
+    TYPE System TEXT=System  [145:5/5055-145:11/5061] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     CLASS System [52:1/2246-68:3/2616] ReferencesTestCase/system.h
 ==============================================================
@@ -1020,7 +1020,7 @@
 ==============================================================
 'Cpu', tokenID=identifier, offset=5712 [169:5/5712-169:8/5715]
 --OWNER:
-    VARIABLE MyCpu [169:5/5712-169:32/5739] ReferencesTestCase/quote.cc  TYPE: Cpu TEXT=Cpu  [169:5/5712-169:8/5715]  INIT: null  SCOPE: Stmt  [123:33/4428-232:2/7723]
+    TYPE Cpu TEXT=Cpu  [169:5/5712-169:8/5715] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     CLASS Cpu [47:1/2160-59:3/2557] ReferencesTestCase/cpu.h
 ==============================================================
@@ -1128,7 +1128,7 @@
 ==============================================================
 'Disk', tokenID=identifier, offset=6309 [191:5/6309-191:9/6313]
 --OWNER:
-    VARIABLE MyDisk [191:5/6309-191:34/6338] ReferencesTestCase/quote.cc  TYPE: Disk TEXT=Disk  [191:5/6309-191:9/6313]  INIT: null  SCOPE: Stmt  [123:33/4428-232:2/7723]
+    TYPE Disk TEXT=Disk  [191:5/6309-191:9/6313] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     CLASS Disk [46:1/2156-57:3/2535] ReferencesTestCase/disk.h
 ==============================================================
@@ -1254,7 +1254,7 @@
 ==============================================================
 'Memory', tokenID=identifier, offset=7015 [216:5/7015-216:11/7021]
 --OWNER:
-    VARIABLE MyMemory [216:5/7015-216:38/7048] ReferencesTestCase/quote.cc  TYPE: Memory TEXT=Memory  [216:5/7015-216:11/7021]  INIT: null  SCOPE: Stmt  [123:33/4428-232:2/7723]
+    TYPE Memory TEXT=Memory  [216:5/7015-216:11/7021] ReferencesTestCase/quote.cc
 --RESOLVED TO:
     CLASS Memory [46:1/2160-57:3/2513] ReferencesTestCase/memory.h
 ==============================================================

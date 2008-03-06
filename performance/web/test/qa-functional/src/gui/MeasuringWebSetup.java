@@ -67,7 +67,7 @@ public class MeasuringWebSetup extends NbTestCase {
         suite.addTest(new gui.setup.IDESetupTest("closeWelcome"));
         suite.addTest(new gui.setup.IDESetupTest("closeAllDocuments"));
         suite.addTest(new gui.setup.IDESetupTest("closeMemoryToolbar"));
-        suite.addTest(new gui.setup.WebSetupTest("testAddAppServer"));
+        suite.addTest(new gui.setup.IDESetupTest("testAddAppServer"));
         suite.addTest(new gui.setup.WebSetupTest("testOpenWebProject"));
         suite.addTest(new gui.setup.IDESetupTest("openFoldersProject"));
         suite.addTest(new gui.setup.WebSetupTest("testOpenWebFoldersProject"));

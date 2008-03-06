@@ -63,27 +63,33 @@ public class MarkOccurencesTest extends SemanticHighlightingTestBase {
     }
 
     public void testMacro() throws Exception {
-        doTest("macro", 214); // FOO
+        // FOO 
+        doTest("macro", 214); // NOI18N
     }
 
     public void testLocalVariable() throws Exception {
-        doTest("localvar", 236); // int moo
+        // int moo 
+        doTest("localvar", 236); // NOI18N
     }
 
     public void testField() throws Exception {
-        doTest("field", 122); //boo
+        //boo 
+        doTest("field", 122); // NOI18N
     }
 
     public void testCtor() throws Exception {
-        doTest("ctor", 115); // Foo()
+        // Foo() 
+        doTest("ctor", 115); // NOI18N
     }
 
     public void testCtor2() throws Exception {
-        doTest("ctor2", 138); // Foo(int)
+        // Foo(int) 
+        doTest("ctor2", 138); // NOI18N
     }
 
     public void testClassName() throws Exception {
-        doTest("classname", 110); // class Foo
+        // class Foo 
+        doTest("classname", 110); // NOI18N
     }
 
     protected Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {

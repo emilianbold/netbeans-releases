@@ -31,34 +31,34 @@
 <jsp:root version="2.1" xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:webuijsf="http://www.sun.com/webui/webuijsf">
     <jsp:directive.page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8"/>
     <f:view>
-        <webuijsf:page binding="#{UpdatePage.page1}" id="page1">
-            <webuijsf:html binding="#{UpdatePage.html1}" id="html1">
-                <webuijsf:head binding="#{UpdatePage.head1}" id="head1">
-                    <webuijsf:link binding="#{UpdatePage.link1}" id="link1" url="/resources/stylesheet.css"/>
+        <webuijsf:page id="page1">
+            <webuijsf:html id="html1">
+                <webuijsf:head id="head1">
+                    <webuijsf:link id="link1" url="/resources/stylesheet.css"/>
                 </webuijsf:head>
-                <webuijsf:body binding="#{UpdatePage.body1}" id="body1" style="-rave-layout: grid">
-                    <webuijsf:form binding="#{UpdatePage.form1}" id="form1" virtualFormsConfig="cancelForm | | mainPanel:buttonPanel:cancel">
+                <webuijsf:body id="body1" style="-rave-layout: grid">
+                    <webuijsf:form id="form1" virtualFormsConfig="cancelForm | | mainPanel:buttonPanel:cancel">
                         <div style="position: absolute; left: 0px; top: 0px">
                             <jsp:directive.include file="Masthead.jspf"/>
                         </div>
-                        <h:panelGrid binding="#{UpdatePage.mainPanel}" id="mainPanel" style="margin: 5px; padding: 5px; height: 100%; left: 0px; top: 160px; position: absolute; width: 760px">
-                            <h:panelGrid binding="#{UpdatePage.tripPanel}" columns="2" id="tripPanel" style="">
-                                <webuijsf:label binding="#{UpdatePage.label1}" id="label1" text="Date"/>
+                        <h:panelGrid id="mainPanel" style="margin: 5px; padding: 5px; height: 100%; left: 0px; top: 160px; position: absolute; width: 760px">
+                            <h:panelGrid columns="2" id="tripPanel" style="">
+                                <webuijsf:label id="label1" text="Date"/>
                                 <webuijsf:calendar binding="#{UpdatePage.dateCalendar}" id="dateCalendar" maxDate="#{SessionBean1.maxDate}" minDate="#{SessionBean1.minDate}"/>
-                                <webuijsf:label binding="#{UpdatePage.label2}" id="label2" text="From"/>
-                                <webuijsf:textField binding="#{UpdatePage.fromCity}" id="fromCity" text="#{UpdatePage.tripDataProvider.value['TRIP.DEPCITY']}" validatorExpression="#{UpdatePage.fromCity_validate}"/>
-                                <webuijsf:label binding="#{UpdatePage.label3}" id="label3" text="To"/>
-                                <webuijsf:textField binding="#{UpdatePage.toCity}" id="toCity" text="#{UpdatePage.tripDataProvider.value['TRIP.DESTCITY']}" validatorExpression="#{UpdatePage.toCity_validate}"/>
-                                <webuijsf:label binding="#{UpdatePage.label4}" id="label4" text="Trip Type"/>
+                                <webuijsf:label id="label2" text="From"/>
+                                <webuijsf:textField id="fromCity" text="#{UpdatePage.tripDataProvider.value['TRIP.DEPCITY']}" validatorExpression="#{UpdatePage.fromCity_validate}"/>
+                                <webuijsf:label id="label3" text="To"/>
+                                <webuijsf:textField id="toCity" text="#{UpdatePage.tripDataProvider.value['TRIP.DESTCITY']}" validatorExpression="#{UpdatePage.toCity_validate}"/>
+                                <webuijsf:label id="label4" text="Trip Type"/>
                                 <webuijsf:dropDown binding="#{UpdatePage.tripType}" converter="#{CreatePage.tripTypeConverter}" id="tripType"
                                     items="#{CreatePage.triptypeDataProvider.options['TRIPTYPE.TRIPTYPEID,TRIPTYPE.NAME']}"
                                     onChange="webui.suntheme.common.timeoutSubmitForm(this.form, 'mainPanel:tripPanel:tripType');" valueChangeListenerExpression="#{UpdatePage.tripType_processValueChange}"/>
                             </h:panelGrid>
-                            <h:panelGrid binding="#{UpdatePage.buttonPanel}" columns="2" id="buttonPanel" style="">
-                                <webuijsf:button actionExpression="#{UpdatePage.updateButton_action}" binding="#{UpdatePage.updateButton}" id="updateButton" text="Update"/>
-                                <webuijsf:button actionExpression="#{UpdatePage.cancel_action}" binding="#{UpdatePage.cancel}" id="cancel" text="Cancel"/>
+                            <h:panelGrid columns="2" id="buttonPanel" style="">
+                                <webuijsf:button actionExpression="#{UpdatePage.updateButton_action}" id="updateButton" text="Update"/>
+                                <webuijsf:button actionExpression="#{UpdatePage.cancel_action}" id="cancel" text="Cancel"/>
                             </h:panelGrid>
-                            <webuijsf:messageGroup binding="#{UpdatePage.messageGroup}" id="messageGroup"/>
+                            <webuijsf:messageGroup id="messageGroup"/>
                         </h:panelGrid>
                     </webuijsf:form>
                 </webuijsf:body>
