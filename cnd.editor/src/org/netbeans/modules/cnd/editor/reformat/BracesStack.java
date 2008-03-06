@@ -184,13 +184,25 @@ class BracesStack {
                     }
                     break;
                 }
+                case DO: //("do", "keyword-directive"),
+                {
+                    if (next != null && next.id() == WHILE) {
+                        if (i > 0 && stack.get(i-1).getKind() == WHILE) {
+                            stack.setSize(i);
+                            return getLength();
+                        } else {
+                            stack.setSize(i + 1);
+                            return getLength();
+                        }
+                    }
+                    break;
+                }
                 case ELSE: //("else", "keyword-directive"),
                 case TRY: //("try", "keyword-directive"), // C++
                 case CATCH: //("catch", "keyword-directive"), //C++
                 case SWITCH: //("switch", "keyword-directive"),
                 case FOR: //("for", "keyword-directive"),
                 case ASM: //("asm", "keyword-directive"), // gcc and C++
-                case DO: //("do", "keyword-directive"),
                 case WHILE: //("while", "keyword-directive"),
                     break;
             }
@@ -303,6 +315,7 @@ class BracesStack {
                 Token<CppTokenId> current = ts.token();
                 switch (current.id()) {
                     case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
