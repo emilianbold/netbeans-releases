@@ -2428,6 +2428,44 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         );
     }
 
+    public void testSpaceBinaryOperator2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int foo()\n" +
+            "{\n" +
+            "    BOOST_CHECK(\n" +
+            "            ((nc_result.begin()-str1.begin()) == 3) &&\n" +
+            "            ((nc_result.end()-str1.begin()) == 6));\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect spaces in binary operators",
+            "int foo()\n" +
+            "{\n" +
+            "    BOOST_CHECK(\n" +
+            "            ((nc_result.begin() - str1.begin()) == 3) &&\n" +
+            "            ((nc_result.end() - str1.begin()) == 6));\n" +
+            "}\n"
+        );
+    }
+
+    public void testSpaceTemplateSeparator() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int foo()\n" +
+            "{\n" +
+            "    vector<string> tokens1;\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect spaces before template separator",
+            "int foo()\n" +
+            "{\n" +
+            "    vector<string> tokens1;\n" +
+            "}\n"
+        );
+    }
+
     public void testSpaceCastOperator() {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
