@@ -41,7 +41,7 @@ var BUILD_DISPLAY_VERSION_SHORT = "{build.display.version.short}";
 var ZIP_FILES_PREFIX            = "{nb.zip.files.prefix}";
 var BUNDLE_FILES_PREFIX         = "{nb.bundle.files.prefix}";
 
-var JDK_LATEST_UPDATE = "4";
+var JDK_LATEST_UPDATE = "5";
 
 var LOAD_OMNITURE_CODE = 0;
 

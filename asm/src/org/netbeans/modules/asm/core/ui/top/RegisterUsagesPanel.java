@@ -44,6 +44,7 @@ package org.netbeans.modules.asm.core.ui.top;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
@@ -99,8 +100,9 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
         tmpModel.setColumnComparator(String.class, TableSorter.LEXICAL_COMPARATOR);
         tmpModel.setTableHeader(jRegisterTable.getTableHeader());
         
-        jRegisterTable.setDefaultRenderer(Register.class, new RegisterCellRendererForRegister());        
-        jRegisterTable.setDefaultRenderer(RegisterStatus.class, new RegisterCellRendererForUsage());        
+        jRegisterTable.setDefaultRenderer(Register.class, new RegisterCellRendererForRegister());
+        jRegisterTable.setDefaultRenderer(RegisterStatus.class, new RegisterCellRendererForUsage());
+        jRegisterTable.setDefaultRenderer(RegisterValuesProvider.RegisterValue.class, new RegisterCellRendererForValue());
                
         jRegisterTable.setModel(tmpModel); 
         
@@ -141,7 +143,7 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
     }
     
     private void updateRegisterValues() {
-        Map<String, String> res = RegisterValuesProvider.getInstance().getRegisterValues();
+        Map<String, RegisterValuesProvider.RegisterValue> res = RegisterValuesProvider.getInstance().getRegisterValues();
         if (res == null) {
             clearValues();
         } else {
@@ -163,15 +165,10 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
         return false;
     }
     
-    public void setRegisterValue(String reg, String value) {
+    public void setRegisterValue(String reg, RegisterValuesProvider.RegisterValue value) {
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             Register curReg = (Register)tableModel.getValueAt(i, RegisterTableModel.COLUMN_REGISTER);
             if (isTheSame(curReg, reg)) {
-                try {
-                    value += " (" + Integer.decode(value)  + ")"; // NOI18N
-                } catch (NumberFormatException nfe) {
-                    // do nothing
-                }
                 tableModel.setValueAt(value, i, RegisterTableModel.COLUMN_VALUE);
                 return;
             }
@@ -280,6 +277,24 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
 	}	                                             
     }
     
+    private static class RegisterCellRendererForValue extends DefaultTableCellRenderer.UIResource {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            setEnabled(table == null || table.isEnabled());
+            
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            
+            if (value instanceof RegisterValuesProvider.RegisterValue) {
+                RegisterValuesProvider.RegisterValue rval = (RegisterValuesProvider.RegisterValue) value;
+                if (rval.isModified()) {
+                    super.setFont(getFont().deriveFont(Font.BOLD));
+                }
+            }
+            
+            return this;
+        }
+    }
+    
     private static class RegisterTableModel extends DefaultTableModel {
         public static final int COLUMN_REGISTER=0;
         public static final int COLUMN_USAGE=1;
@@ -294,7 +309,7 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
                         NbBundle.getMessage(RegisterUsagesPanel.class, "LBL_REGUSAGE_USAGE"),
                         NbBundle.getMessage(RegisterUsagesPanel.class, "LBL_REGUSAGE_VALUE")});
              
-             types = new Class [] { Register.class, RegisterStatus.class, String.class };
+             types = new Class [] { Register.class, RegisterStatus.class, RegisterValuesProvider.RegisterValue.class };
          }
                
         @Override

@@ -480,6 +480,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if (evt.getNewValue() == STATE_STOPPED) {
                 updateLocalVariables(0);
                 gdb.data_list_register_values("");
+                gdb.data_list_changed_registers();
             } else if (evt.getNewValue() == STATE_SILENT_STOP) {
                 interrupt();
             } else if (evt.getNewValue() == STATE_RUNNING && 
@@ -493,6 +494,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             updateCurrentCallStack();
             updateLocalVariables(0);
             gdb.data_list_register_values("");
+            gdb.data_list_changed_registers();
         }
     }
     
@@ -743,6 +745,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             disassembly.updateRegNames(msg);
         } else if (msg.startsWith(Disassembly.REGISTER_VALUES_HEADER)) {
             disassembly.updateRegValues(msg);
+        } else if (msg.startsWith(Disassembly.REGISTER_MODIFIED_HEADER)) {
+            disassembly.updateRegModified(msg);
         } else if (msg.equals("^done") && getState().equals(STATE_SILENT_STOP)) { // NOI18N
             log.fine("GD.resultRecord[" + token + "]: Got \"^done\" in silent stop");
             setRunning();

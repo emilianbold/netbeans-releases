@@ -339,12 +339,14 @@ public final class Validator extends BpelValidator {
     List<BpelEntity> children = entity.getChildren();
     boolean hasExit = false;
 
-    for (BpelEntity child : children) {
-      if (hasExit) {
-        addError("FIX_Activity_after_Exit", child); // NOI18N
-      }
-      if (child instanceof Exit) {
-        hasExit = true;
+    if ( !(entity instanceof Flow)) {
+      for (BpelEntity child : children) {
+        if (hasExit) {
+          addError("FIX_Activity_after_Exit", child); // NOI18N
+        }
+        if (child instanceof Exit) {
+          hasExit = true;
+        }
       }
     }
     for (BpelEntity child : children) {
