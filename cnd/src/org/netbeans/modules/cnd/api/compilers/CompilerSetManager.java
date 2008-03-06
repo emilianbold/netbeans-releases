@@ -205,26 +205,32 @@ public class CompilerSetManager {
             "mpif77", // NOI18N
         };
 
-        CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), list);
-        CompilerSet cs = getCompilerSet(flavor);
-        if (cs != null && !cs.getDirectory().equals(path))
-            return;
-        cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
-        add(cs);
-//            for (String name : list) {
-//                File file = new File(dir, name);
-//                if (file.exists()) {
-//                    for (int i = 0; i < best.length; i++) {
-//                        if (name.equals(best[i]) || name.equals(best[i] + ".exe")) { // NOI18N
-//                            cs.addTool(name, path, kind);
-//                        }
-//                    }
-//                }
-//            }
-        for (int i = 0; i < best.length; i++) {
-            if (new File(dir, best[i]).exists() || new File(dir, best[i] + ".exe").exists()) { // NOI18N
-                cs.addTool(best[i], path, kind);
+        if (list != null && list.length > 0) {
+            CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), list);
+            CompilerSet cs = getCompilerSet(flavor);
+            if (cs != null && !cs.getDirectory().equals(path))
                 return;
+            cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
+            add(cs);
+    //            for (String name : list) {
+    //                File file = new File(dir, name);
+    //                if (file.exists()) {
+    //                    for (int i = 0; i < best.length; i++) {
+    //                        if (name.equals(best[i]) || name.equals(best[i] + ".exe")) { // NOI18N
+    //                            cs.addTool(name, path, kind);
+    //                        }
+    //                    }
+    //                }
+    //            }
+            for (int i = 0; i < best.length; i++) {
+                String name = best[i];
+                if (Utilities.isWindows()) {
+                    name = name + ".exe"; // NOI18N
+                }
+                if (new File(dir, name).exists()) { // NOI18N
+                    cs.addTool(name, path, kind);
+                    return;
+                }
             }
         }
     }
@@ -253,8 +259,12 @@ public class CompilerSetManager {
                     add(cs);
             }
             for (int i = 0; i < best.length; i++) {
-                if (new File(dir, best[i]).exists() || new File(dir, best[i] + ".exe").exists()) { // NOI18N
-                    cs.addTool(best[i], path, kind);
+                String name = best[i];
+                if (Utilities.isWindows()) {
+                    name = name + ".exe"; // NOI18N
+                }
+                if (new File(dir, best[i]).exists()) { // NOI18N
+                    cs.addTool(name, path, kind);
                     return;
                 }
             }
@@ -285,8 +295,12 @@ public class CompilerSetManager {
             cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
             add(cs);
             for (int i = 0; i < best.length; i++) {
-                if (new File(dir, best[i]).exists() || new File(dir, best[i] + ".exe").exists()) { // NOI18N
-                    cs.addTool(best[i], path, kind);
+                String name = best[i];
+                if (Utilities.isWindows()) {
+                    name = name + ".exe"; // NOI18N
+                }
+                if (new File(dir, name).exists()) { // NOI18N
+                    cs.addTool(name, path, kind);
                     return;
                 }
             }
