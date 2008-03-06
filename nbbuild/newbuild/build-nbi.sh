@@ -6,7 +6,7 @@ cd ${DIRNAME}
 SCRIPTS_DIR=`pwd`
 source init.sh
 
-if [ ! -z $NATIVE_MAC_MACHINE ]; then
+if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/installer
    ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then
@@ -41,10 +41,10 @@ if [ ! -z $NATIVE_MAC_MACHINE ]; then
    scp -q -v $NB_ALL/../build-private.sh $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild
    ssh $NATIVE_MAC_MACHINE chmod a+x $MAC_PATH/installer/mac/newbuild/build.sh
    if [ 1 -eq $ML_BUILD ] ; then
-       ssh $NATIVE_MAC_MACHINE $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH/zip-ml $BASENAME_PREFIX $BUILDNUMBER $ML_BUILD > $MAC_LOG_NEW 2>&1 &  
+       ssh $NATIVE_MAC_MACHINE $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH/zip-ml/moduleclusters $BASENAME_PREFIX $BUILDNUMBER $ML_BUILD > $MAC_LOG_NEW 2>&1 &  
        mv $MAC_PATH/installer/mac/dist/* $MAC_PATH/dist_ml 
    fi
-   ssh $NATIVE_MAC_MACHINE $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH/zip $BASENAME_PREFIX $BUILDNUMBER $ML_BUILD >> $MAC_LOG_NEW 2>&1 &
+   ssh $NATIVE_MAC_MACHINE $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH/zip/moduleclusters $BASENAME_PREFIX $BUILDNUMBER $ML_BUILD >> $MAC_LOG_NEW 2>&1 &
 
 fi
 
@@ -78,7 +78,7 @@ mv $DIST/installers/* $DIST
 rmdir $DIST/installers
 
 #Check if Mac installer was OK, 10 "BUILD SUCCESSFUL" messages should be in Mac log
-if [ ! -z $NATIVE_MAC_MACHINE ]; then
+if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
     IS_MAC_FAILED=`cat $MAC_LOG | grep "BUILD FAILED" | wc -l | tr " " "\n" | grep -v '^$'`
     IS_MAC_CONNECT=`cat $MAC_LOG | grep "Connection timed out" | wc -l | tr " " "\n" | grep -v '^$'`
     if [ $IS_MAC_FAILED -eq 0 -a $IS_MAC_CONNECT -eq 0 ]; then

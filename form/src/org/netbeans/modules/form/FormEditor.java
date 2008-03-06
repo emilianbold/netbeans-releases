@@ -499,7 +499,7 @@ public class FormEditor {
         logPersistenceError(t, -1);
     }
 
-    private boolean anyPersistenceError() {
+    boolean anyPersistenceError() {
         return persistenceErrors != null && !persistenceErrors.isEmpty();
     }
     

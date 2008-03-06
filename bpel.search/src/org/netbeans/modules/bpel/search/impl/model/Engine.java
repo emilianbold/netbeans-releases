@@ -47,7 +47,6 @@ import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 
 import org.netbeans.modules.bpel.search.api.SearchException;
-import org.netbeans.modules.bpel.search.api.SearchMatch;
 import org.netbeans.modules.bpel.search.api.SearchOption;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
