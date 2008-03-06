@@ -2175,14 +2175,29 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 }
             }
             // Fix for IZ#123815 : Cannot refresh the tree content
-            refreshNode( node );
+            refreshNode( path , node );
         }
         public void treeCollapsed(TreeExpansionEvent event) {
         }
         
         // Fix for IZ#123815 : Cannot refresh the tree content
-        private void refreshNode( DirectoryNode node ){
+        private void refreshNode( TreePath path, DirectoryNode node ){
             File folder = node.getFile();
+            
+            // Additional fixes for IZ#116859 [60cat] Node update bug in the "open project" panel while deleting directories
+            if ( !folder.exists() ){
+                TreePath parentPath = path.getParentPath();
+                boolean refreshTree = false;
+                
+                if(tree.isExpanded(path)) {
+                    tree.collapsePath(path);
+                    refreshTree = true;
+                }
+                model.removeNodeFromParent( node );
+                if ( refreshTree ){
+                    tree.expandPath( parentPath );
+                }
+            }
             
             int count = node.getChildCount();
             Map<String,DirectoryNode> currentFiles = 
@@ -2198,6 +2213,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             HashSet<String> realDirs = new HashSet<String>();
             
             File[] files =  folder.listFiles(); 
+            files = files == null ? new File[0] : files;
             for (File file : files) {
                 if ( !file.isDirectory() ){
                     continue;

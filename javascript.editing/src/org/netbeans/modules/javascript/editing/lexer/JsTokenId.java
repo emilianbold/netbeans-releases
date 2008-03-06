@@ -103,7 +103,13 @@ public enum JsTokenId implements TokenId {
     IF("if", "keyword"),
     ELSE("else", "keyword"),
     WHILE("while", "keyword"),
+    CASE("case", "keyword"),
+    DEFAULT("default", "keyword"),
+    BREAK("break", "keyword"),
+    SWITCH("switch", "keyword"),
 
+    COLON(":", "operator"),
+    
     SEMI(";", "operator"),
     FUNCTION("function", "keyword"),
     
