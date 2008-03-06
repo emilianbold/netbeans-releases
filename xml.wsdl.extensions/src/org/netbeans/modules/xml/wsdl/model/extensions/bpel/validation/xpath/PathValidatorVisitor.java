@@ -18,9 +18,12 @@
  */
 package org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.xpath;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import javax.xml.namespace.QName;
+
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.schema.model.GlobalAttribute;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
@@ -30,6 +33,8 @@ import org.netbeans.modules.xml.schema.model.LocalAttribute;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.TypeContainer;
 import org.netbeans.modules.xml.schema.model.ElementReference;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
@@ -41,6 +46,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext.SchemaCompPair;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathModelTracerVisitor;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
 
 /**
  * This visitor is intended to validate semantics of single XPath.
@@ -104,11 +110,12 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
             } 
             if (lastStepTypes.size() == 1) {
                 GlobalType gType = lastStepTypes.iterator().next();
-                //
                 // Check if the type of the last element of the XPath
-                if ( !propType.equals(gType)) {
-                    // Error. The type of the last XPath element differ from the type of the correlaton property.
-                    myContext.addResultItem(ResultType.ERROR, "QUERY_INCONSISTENT_TYPE", propType.getName()); // NOI18N
+//System.out.println();
+//System.out.println("1: " + getBasedSimpleType(propType));
+//System.out.println("2: " + getBasedSimpleType(gType));
+                if (ValidationUtil.getBasedSimpleType(propType) != ValidationUtil.getBasedSimpleType(gType)) {
+                    myContext.addResultItem(ResultType.ERROR, "QUERY_INCONSISTENT_TYPE", ValidationUtil.getTypeName(gType), ValidationUtil.getTypeName(propType)); // NOI18N
                 }
                 else {
                 // # 83335 vlv
@@ -144,13 +151,11 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
             }
         }
     }
-    
+
     @Override
     public void visit(XPathExpressionPath expressionPath) {
         myContext.addResultItem(ResultType.ERROR, "UNSUPPORTED_VARIABLE_EXPRESSION"); // NOI18N
     }
-    
-    //========================================================
     
     /**
      * This method is pertinent only for the first step of an absolute location path
