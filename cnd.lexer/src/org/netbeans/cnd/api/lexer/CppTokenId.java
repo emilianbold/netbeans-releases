@@ -71,76 +71,116 @@ public enum CppTokenId implements TokenId {
     
     ERROR(null, "error"), // NOI18N
     IDENTIFIER(null, "identifier"), // NOI18N
-
+    
     // C/C++ keywords
-    ASM("asm", "keyword-directive"), // NOI18N // gcc and C++
-    AUTO("auto", "keyword"), // NOI18N 
-    BOOL("bool", "keyword"), // NOI18N // C++
+    ALIGNOF("alignof", "keyword"), // g++ // NOI18N
+    __ALIGNOF__("__alignof__", "keyword"), // gcc // NOI18N
+    ASM("asm", "keyword-directive"), // gcc and C++ // NOI18N
+    _ASM("_asm", "keyword"), // g++ // NOI18N
+    __ASM("__asm", "keyword"), // gcc // NOI18N
+    __ASM__("__asm__", "keyword"), // gcc // NOI18N
+    AUTO("auto", "keyword"), // NOI18N
+    BOOL("bool", "keyword"), // C++ // NOI18N
     BREAK("break", "keyword-directive"), // NOI18N
     CASE("case", "keyword-directive"), // NOI18N
-    CATCH("catch", "keyword-directive"), // NOI18N //C++
+    CATCH("catch", "keyword-directive"), // C++ // NOI18N
     CHAR("char", "keyword"), // NOI18N
-    CLASS("class", "keyword"), // NOI18N //C++
+    CLASS("class", "keyword"), // C++ // NOI18N
     CONST("const", "keyword"), // NOI18N
-    CONST_CAST("const_cast", "keyword"), // NOI18N // C++
+    __CONST("__const", "keyword"), // gcc // NOI18N
+    __CONST__("__const__", "keyword"), // gcc C only // NOI18N
+    CONST_CAST("const_cast", "keyword"), // C++ // NOI18N
     CONTINUE("continue", "keyword-directive"), // NOI18N
     DEFAULT("default", "keyword-directive"), // NOI18N
-    DELETE("delete", "keyword"), // NOI18N // C++
+    DELETE("delete", "keyword"), // C++ // NOI18N
     DO("do", "keyword-directive"), // NOI18N
     DOUBLE("double", "keyword"), // NOI18N
-    DYNAMIC_CAST("dynamic_cast", "keyword"), // NOI18N // C++
+    DYNAMIC_CAST("dynamic_cast", "keyword"), // C++ // NOI18N
     ELSE("else", "keyword-directive"), // NOI18N
     ENUM("enum", "keyword"), // NOI18N
-    EXPLICIT("explicit", "keyword"), // NOI18N // C++
-    EXPORT("export", "keyword"), // NOI18N // C++
+    EXPLICIT("explicit", "keyword"), // C++ // NOI18N
+    EXPORT("export", "keyword"), // C++ // NOI18N
     EXTERN("extern", "keyword"), // NOI18N
-    FINALLY("finally", "keyword-directive"), // NOI18N //C++
+    FINALLY("finally", "keyword-directive"), // C++ // NOI18N
     FLOAT("float", "keyword"), // NOI18N
     FOR("for", "keyword-directive"), // NOI18N
-    FRIEND("friend", "keyword"), // NOI18N // C++
+    FRIEND("friend", "keyword"), // C++ // NOI18N
     GOTO("goto", "keyword-directive"), // NOI18N
     IF("if", "keyword-directive"), // NOI18N
-    INLINE("inline", "keyword"), // NOI18N // now in C also
+    INLINE("inline", "keyword"), // now in C also // NOI18N
+    _INLINE("_inline", "keyword"), // g++ // NOI18N
+    __INLINE("__inline", "keyword"), // gcc // NOI18N
+    __INLINE__("__inline__", "keyword"), // gcc // NOI18N
     INT("int", "keyword"), // NOI18N
     LONG("long", "keyword"), // NOI18N
-    MUTABLE("mutable", "keyword"), // NOI18N // C++
-    NAMESPACE("namespace", "keyword"), // NOI18N //C++
-    NEW("new", "keyword"), // NOI18N //C++
-    OPERATOR("operator", "keyword"), // NOI18N // C++
-    PRIVATE("private", "keyword"), // NOI18N //C++
-    PROTECTED("protected", "keyword"), // NOI18N //C++
-    PUBLIC("public", "keyword"), // NOI18N // C++
+    MUTABLE("mutable", "keyword"), // C++ // NOI18N
+    NAMESPACE("namespace", "keyword"), // C++ // NOI18N
+    NEW("new", "keyword"), // C++ // NOI18N
+    OPERATOR("operator", "keyword"), // C++ // NOI18N
+    PASCAL("pascal", "keyword"), // g++ // NOI18N
+    _PASCAL("_pascal", "keyword"), // g++ // NOI18N
+    __PASCAL("__pascal", "keyword"), // g++ // NOI18N
+    PRIVATE("private", "keyword"), //C++ // NOI18N
+    PROTECTED("protected", "keyword"), //C++ // NOI18N
+    PUBLIC("public", "keyword"), // C++ // NOI18N
     REGISTER("register", "keyword"), // NOI18N
-    REINTERPRET_CAST("reinterpret_cast", "keyword"), // NOI18N //C++
-    RESTRICT("restrict", "keyword"), // NOI18N // C
+    REINTERPRET_CAST("reinterpret_cast", "keyword"), //C++ // NOI18N
+    RESTRICT("restrict", "keyword"), // C // NOI18N
     RETURN("return", "keyword-directive"), // NOI18N
     SHORT("short", "keyword"), // NOI18N
-    SIZNED("signed", "keyword"), // NOI18N
+    SIGNED("signed", "keyword"), // NOI18N
+    __SIGNED("__signed", "keyword"), // gcc // NOI18N
+    __SIGNED__("__signed__", "keyword"), // gcc // NOI18N
     SIZEOF("sizeof", "keyword"), // NOI18N
     STATIC("static", "keyword"), // NOI18N
-    STATIC_CAST("static_cast", "keyword"), // NOI18N // C++
+    STATIC_CAST("static_cast", "keyword"), // C++ // NOI18N
     STRUCT("struct", "keyword"), // NOI18N
     SWITCH("switch", "keyword-directive"), // NOI18N
-    TEMPLATE("template", "keyword"), // NOI18N //C++
-    THIS("this", "keyword"), // NOI18N // C++
-    THROW("throw", "keyword-directive"), // NOI18N //C++
-    TRY("try", "keyword-directive"), // NOI18N // C++
+    TEMPLATE("template", "keyword"), // C++ // NOI18N
+    THIS("this", "keyword"), // C++ // NOI18N
+    THROW("throw", "keyword-directive"), //C++ // NOI18N
+    TRY("try", "keyword-directive"), // C++ // NOI18N
     TYPEDEF("typedef", "keyword"), // NOI18N
-    TYPEID("typeid", "keyword"), // NOI18N //C++
-    TYPENAME("typename", "keyword"), // NOI18N //C++
-    TYPEOF("typeof", "keyword"), // NOI18N // gcc, C++
+    TYPEID("typeid", "keyword"), // C++ // NOI18N
+    TYPENAME("typename", "keyword"), // C++ // NOI18N
+    TYPEOF("typeof", "keyword"), // gcc, C++ // NOI18N
+    __TYPEOF("__typeof", "keyword"), // gcc // NOI18N
+    __TYPEOF__("__typeof__", "keyword"), // gcc // NOI18N
     UNION("union", "keyword"), // NOI18N
     UNSIGNED("unsigned", "keyword"), // NOI18N
-    USING("using", "keyword"), // NOI18N //C++
-    VIRTUAL("virtual", "keyword"), // NOI18N //C++
+    __UNSIGNED__("__unsigned__", "keyword"), // g++ // NOI18N
+    USING("using", "keyword"), //C++ // NOI18N
+    VIRTUAL("virtual", "keyword"), //C++ // NOI18N
     VOID("void", "keyword"), // NOI18N
     VOLATILE("volatile", "keyword"), // NOI18N
-    WCHAR_T("wchar_t", "keyword"), // NOI18N // C++
+    __VOLATILE("__volatile", "keyword"), // gcc // NOI18N
+    __VOLATILE__("__volatile__", "keyword"), // gcc // NOI18N
+    WCHAR_T("wchar_t", "keyword"), // C++ // NOI18N
     WHILE("while", "keyword-directive"), // NOI18N
-    _BOOL("_Bool", "keyword"), // NOI18N // C 
-    _COMPLEX("_Complex", "keyword"), // NOI18N // C
-    _IMAGINARY("_Imaginary", "keyword"), // NOI18N // C
-    
+    __ATTRIBUTE__("__attribute__", "keyword"), // gcc // NOI18N
+    _BOOL("_Bool", "keyword"), // C // NOI18N
+    _CDECL("_cdecl", "keyword"), // g++ // NOI18N
+    __CDECL("__cdecl", "keyword"), // g++ // NOI18N
+    _COMPLEX("_Complex", "keyword"), // C // NOI18N
+    __COMPLEX__("__complex__", "keyword"), // gcc // NOI18N
+    _DECLSPEC("_declspec", "keyword"), // g++ // NOI18N
+    __DECLSPEC("__declspec", "keyword"), // g++ // NOI18N
+    __EXTENSION__("__extension__", "keyword"), // g++ // NOI18N
+    _FAR("_far", "keyword"), // g++ // NOI18N
+    __FAR("__far", "keyword"), // g++ // NOI18N
+    _IMAGINARY("_Imaginary", "keyword"), // C // NOI18N
+    __IMAG__("__imag__", "keyword"), // gcc // NOI18N
+    _INT64("_int64", "keyword"), // g++ // NOI18N
+    __INT64("__int64", "keyword"), // g++ // NOI18N
+    __INTERRUPT("__interrupt", "keyword"), // g++ // NOI18N
+    _NEAR("_near", "keyword"), // g++ // NOI18N
+    __NEAR("__near", "keyword"), // g++ // NOI18N
+    __REAL__("__real__", "keyword"), // gcc // NOI18N
+    __RESTRICT("__restrict", "keyword"), // g++ // NOI18N
+    _STDCALL("_stdcall", "keyword"), // g++ // NOI18N
+    __STDCALL("__stdcall", "keyword"), // g++ // NOI18N
+    __W64("__w64", "keyword"), // g++ // NOI18N
+
     INT_LITERAL(null, "number"), // NOI18N
     LONG_LITERAL(null, "number"), // NOI18N
     FLOAT_LITERAL(null, "number"), // NOI18N
@@ -149,8 +189,8 @@ public enum CppTokenId implements TokenId {
     CHAR_LITERAL(null, "character"), // NOI18N
     STRING_LITERAL(null, "string"), // NOI18N
     
-    TRUE("true", "literal"), // NOI18N // C++
-    FALSE("false", "literal"), // NOI18N // C++
+    TRUE("true", "literal"), // C++ // NOI18N
+    FALSE("false", "literal"), // C++ // NOI18N
     NULL("null", "literal"), // NOI18N
     
     LPAREN("(", "separator"), // NOI18N
@@ -179,8 +219,8 @@ public enum CppTokenId implements TokenId {
     GTEQ(">=", "operator"), // NOI18N
     NOTEQ("!=","operator"), // NOI18N
     AMPAMP("&&", "operator"), // NOI18N
-    BARBAR("||", "operator"), // NOI18N
-    PLUSPLUS("++", "operator"), // NOI18N
+    BARBAR("||", "operator"), // NOI18N 
+    PLUSPLUS("++", "operator"), // NOI18N 
     MINUSMINUS("--","operator"), // NOI18N
     PLUS("+", "operator"), // NOI18N
     MINUS("-", "operator"), // NOI18N
@@ -210,9 +250,9 @@ public enum CppTokenId implements TokenId {
     DBL_SHARP("##", "special"), // NOI18N
     BACK_SLASH("\\", "special"), // NOI18N
             
-    WHITESPACE(null, "whitespace"), // NOI18N // all spaces except new line
-    ESCAPED_LINE(null, "whitespace"), // NOI18N // line escape with \
-    NEW_LINE(null, "whitespace"), // NOI18N // new line \n or \r
+    WHITESPACE(null, "whitespace"), // all spaces except new line // NOI18N
+    ESCAPED_LINE(null, "whitespace"), // line escape with \ // NOI18N
+    NEW_LINE(null, "whitespace"), // new line \n or \r // NOI18N
     LINE_COMMENT(null, "comment"), // NOI18N
     BLOCK_COMMENT(null, "comment"), // NOI18N
     DOXYGEN_COMMENT(null, "comment"), // NOI18N
