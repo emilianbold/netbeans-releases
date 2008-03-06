@@ -1,0 +1,9 @@
+class |>CLASS:Hello<| {
+
+    def |>FIELD:name<| = 'World'
+
+    def |>FIELD:greeting<| = {
+        println "Hello, ${|>FIELD:name<|}!"
+    }
+
+}
