@@ -198,7 +198,11 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
           if (item.getType() != ResultType.ERROR) {
             continue;
           }
-          final Line line = Util.getLine(item);
+          Line line = Util.getLine(item);
+
+          if (line == null) {
+            continue;
+          }
           List<ResultItem> list = map.get(line);
 
           if (list == null) {
@@ -208,8 +212,8 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
           list.add(item);
       }
       for (Line line: map.keySet()) {
-          final StringBuilder description = new StringBuilder();
-          final List<ResultItem> list = map.get(line);
+          StringBuilder description = new StringBuilder();
+          List<ResultItem> list = map.get(line);
 
           for (int i = 0; i < list.size(); i++) {
               description.append(list.get(i).getDescription());

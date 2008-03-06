@@ -38,69 +38,57 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.mercurial.util;
 
-import java.util.*;
+package org.netbeans.modules.mercurial;
+
+import org.openide.util.actions.SystemAction;
+import org.openide.util.NbBundle;
+import org.openide.awt.Actions;
+import org.openide.awt.DynamicMenuContent;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
+import org.netbeans.modules.mercurial.ui.rollback.RollbackAction;
+import org.netbeans.modules.mercurial.ui.rollback.StripAction;
+import org.netbeans.modules.versioning.spi.VCSContext;
 
 /**
- * A class to encapsulate the parts of the hg log message we are interested in.
+ * Container menu for branch actions.
  *
- * @author Padraig O'Briain
+ * @author Maros Sandor
  */
-public class HgLogMessage {
+public class RecoverMenu extends AbstractAction implements DynamicMenuContent {
+    private VCSContext ctx;
 
-    private long    revision;
-    private Date    date;
-    private String  commitMessage;
-    private String  changeSet;
-    private String  timeZoneOffset;
-    
-    public String getCommitMessage() {
-        return commitMessage;
+    public RecoverMenu(VCSContext ctx) {
+        super(NbBundle.getMessage(RecoverMenu.class, "CTL_MenuItem_RecoverMenu"));
+        this.ctx = ctx;
     }
 
-    public void setCommitMessage(String commitMessage) {
-        this.commitMessage = commitMessage;
+    public JComponent[] getMenuPresenters() {
+        return new JComponent [] { createMenu() };
     }
 
-    public String getChangeSet() {
-        return changeSet;
+    public JComponent[] synchMenuPresenters(JComponent[] items) {
+        return new JComponent [] { createMenu() };
     }
 
-    public void setChangeSet(String changeSet) {
-        this.changeSet = changeSet;
+    public boolean isEnabled() {
+        return true;
     }
 
-    public String getTimeZoneOffset() {
-        return timeZoneOffset;
+    public void actionPerformed(ActionEvent ev) {
+        // no operation
     }
 
-    public void setTimeZoneOffset(String timeZoneOffset) {
-        this.timeZoneOffset = timeZoneOffset;
-    }
-
-    /**
-     * Returns the revision of this log message.
-     */
-    public Long getRevision() {
-        return revision;
-    }
-
-    /**
-     * Sets the revision of this log message.
-     */
-    public void setRevision(Long revision) {
-        this.revision = revision;
-    }
-
-    /**
-     * Returns the date of this log message.
-     */
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
+    private JMenu createMenu() {
+        JMenu menu = new JMenu(this);
+                    
+        menu.add(new StripAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Strip"), ctx)); // NOI18N
+        menu.add(new BackoutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Backout"), ctx)); // NOI18N
+        menu.add(new RollbackAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Rollback"), ctx)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(RecoverMenu.class, "CTL_MenuItem_RecoverMenu"));
+        return menu;
     }
 }

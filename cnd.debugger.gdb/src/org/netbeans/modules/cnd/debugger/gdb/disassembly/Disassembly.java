@@ -45,8 +45,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -81,6 +83,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     private final Map<Integer,String> regNames = new HashMap<Integer,String>();
     private final Map<Integer,String> regValues = new HashMap<Integer,String>();
+    private final Set<Integer> regModified = new  HashSet<Integer>();
 
     private static final String ADDRESS_HEADER="address"; // NOI18N
     private static final String FUNCTION_HEADER="func-name"; // NOI18N
@@ -93,6 +96,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     public static final String REGISTER_NAMES_HEADER="^done,register-names=["; // NOI18N
     public static final String REGISTER_VALUES_HEADER="^done,register-values=["; // NOI18N
+    public static final String REGISTER_MODIFIED_HEADER="^done,changed-registers=["; // NOI18N
     public static final String RESPONSE_HEADER="^done,asm_insns=["; // NOI18N
     private static final String COMBINED_HEADER="src_and_asm_line={"; // NOI18N
     
@@ -199,6 +203,26 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         }
     }
     
+    public void updateRegModified(String msg) {
+        assert msg.startsWith(REGISTER_MODIFIED_HEADER) : "Invalid asm response message"; // NOI18N
+        regModified.clear();
+        int pos = REGISTER_MODIFIED_HEADER.length();
+        while (pos != -1) {
+            int end = msg.indexOf("\"", pos+1); // NOI18N
+            if (end == -1) {
+                break;
+            }
+            String index = msg.substring(pos+1, end);
+            try {
+                regModified.add(Integer.valueOf(index));
+            } catch (NumberFormatException nfe) {
+                //do nothing
+            }
+            pos = msg.indexOf("\"", end+1); // NOI18N
+        }
+        RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
+    }
+    
     public void updateRegValues(String msg) {
         assert msg.startsWith(REGISTER_VALUES_HEADER) : "Invalid asm response message"; // NOI18N
         regValues.clear();
@@ -213,13 +237,14 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             }
             pos = msg.indexOf(NUMBER_HEADER, pos+1);
         }
-        RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
+        // Todo: we know that updated registers will fire the update, but better make it updated at one piece
+        //RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
     }
 
-    public Map<String, String> getRegisterValues() {
-        Map<String,String> res = new HashMap<String,String>();
+    public Map<String, RegisterValuesProvider.RegisterValue> getRegisterValues() {
+        Map<String,RegisterValuesProvider.RegisterValue> res = new HashMap<String,RegisterValuesProvider.RegisterValue>();
         for (Integer idx : regValues.keySet()) {
-            res.put(regNames.get(idx), regValues.get(idx));
+            res.put(regNames.get(idx), new RegisterValuesProvider.RegisterValue(regValues.get(idx), regModified.contains(idx)));
         }
         return res;
     }

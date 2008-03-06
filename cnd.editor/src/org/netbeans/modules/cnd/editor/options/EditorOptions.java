@@ -465,7 +465,7 @@ public class EditorOptions {
                 break;
         }
         List<String> res = new ArrayList<String>();
-        StringTokenizer st = new StringTokenizer(styles,",");
+        StringTokenizer st = new StringTokenizer(styles,","); // NOI18N
         while(st.hasMoreTokens()) {
             res.add(st.nextToken());
         }
