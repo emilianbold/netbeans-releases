@@ -161,7 +161,7 @@ public class Constants {
         myLabelByTag.put("catchAll", "Catch All");
         myLabelByTag.put("compensate", "Compensate");
         myLabelByTag.put("compensateScope", "Compensate Scope");
-        myLabelByTag.put("compensationHandler", "Compensaton Handler");
+        myLabelByTag.put("compensationHandler", "Compensation Handler");
         myLabelByTag.put("copy", "Copy");
         myLabelByTag.put("else", "Else");
         myLabelByTag.put("elseif", "Else If");

@@ -72,7 +72,6 @@ import org.netbeans.editor.TokenID;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
-import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;

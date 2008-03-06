@@ -45,7 +45,6 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.openide.nodes.Node;
@@ -140,20 +139,7 @@ public class CompilerSetNodeProp extends Node.Property {
         
         @Override
         public void setAsText(String text) throws java.lang.IllegalArgumentException {
-            CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSetByDisplayName(text);
-            if (compilerSet != null) {
-                configuration.setCachedDisplayName(text);
-            }
-            else {
-                configuration.setCachedDisplayName(null);
-                compilerSet = CompilerSetManager.getDefault().getCompilerSet(text);
-            }
-            if (compilerSet != null) {
-                setValue(compilerSet.getName());
-            }
-            else {
-                setValue(text);
-            }
+            setValue(text);
         }
         
         @Override
@@ -162,7 +148,7 @@ public class CompilerSetNodeProp extends Node.Property {
             if (CompilerSetManager.getDefault().getCompilerSet(getOldname()) == null) {
                 list.add(getOldname());
             }
-            list.addAll(CompilerSetManager.getDefault().getCompilerSetDisplayNames());
+            list.addAll(CompilerSetManager.getDefault().getCompilerSetNames());
             return (String[]) list.toArray(new String[list.size()]);
         }
     }
