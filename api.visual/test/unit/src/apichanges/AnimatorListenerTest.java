@@ -61,6 +61,9 @@ public class AnimatorListenerTest extends VisualTestCase {
     }
 
     public void testAnimatorListener () {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         final Scene scene = new Scene ();
         Widget widget = new Widget (scene);
         scene.addChild (widget);
