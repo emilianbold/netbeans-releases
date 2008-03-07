@@ -118,13 +118,17 @@ public class ServiceUnitProcessNode extends CasaNode {
 
     @Override
     public String getName() {
+        /*
         CasaServiceEngineServiceUnit su = getServiceEngineServiceUnit();
         if (su != null) {
             return NbBundle.getMessage(getClass(), "LBL_Process");      // NOI18N
         }
         return super.getName();
+        */
+        return getProcessName();
     }
 
+    /*
     @Override
     public String getHtmlDisplayName() {
         try {
@@ -144,6 +148,7 @@ public class ServiceUnitProcessNode extends CasaNode {
             return getBadName();
         }
     }
+    */
 
     @Override
     protected void setupPropertySheet(Sheet sheet) {
