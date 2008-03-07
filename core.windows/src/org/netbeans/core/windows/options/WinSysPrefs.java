@@ -61,11 +61,13 @@ public interface WinSysPrefs {
      
     public final String TRANSPARENCY_DRAGIMAGE = "transparency.dragimage";
     
-    public final String TRANSPARENCY_DRAGIMAGE_LEVEL = "transparency.dragimage.level";
+    public final String TRANSPARENCY_DRAGIMAGE_ALPHA = "transparency.dragimage.alpha";
     
     public final String TRANSPARENCY_FLOATING = "transparency.floating";
     
     public final String TRANSPARENCY_FLOATING_TIMEOUT = "transparency.floating.timeout";
+    
+    public final String TRANSPARENCY_FLOATING_ALPHA = "transparency.floating.alpha";
     
     public final String SNAPPING = "snapping";
     

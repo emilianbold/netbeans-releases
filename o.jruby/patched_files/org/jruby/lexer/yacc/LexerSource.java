@@ -1,4 +1,5 @@
-/***** BEGIN LICENSE BLOCK *****
+/*
+ ***** BEGIN LICENSE BLOCK *****
  * Version: CPL 1.0/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Common Public
@@ -31,8 +32,10 @@
 package org.jruby.lexer.yacc;
 
 import java.io.IOException;
-import java.io.Reader;
+import java.io.InputStream;
+import java.util.List;
 
+import org.jruby.parser.ParserConfiguration;
 import org.jruby.util.ByteList;
 
 /**
@@ -43,35 +46,25 @@ import org.jruby.util.ByteList;
  * safe than sorry.  I could have combined this implementation with a 
  * PushbackBuffer, but the added complexity did not seem worth it.
  * 
- * @author enebo
  */
-public class LexerSource {
-    private static final int INITIAL_PUSHBACK_SIZE = 100;
-    
+public abstract class LexerSource {
 	// Where we get new positions from.
 	private ISourcePositionFactory positionFactory;
 	
-	// Where we get our newest char's
-    private final Reader reader;
-    
-    // Our readback/pushback buffer.
-    private char buf[] = new char[INITIAL_PUSHBACK_SIZE];
-    
-    // index of last character in pushback buffer
-    private int bufLength = -1;
-    
-    // Character read before previous read
-    private int oneAgo = '\n';
-    private int twoAgo = 0;
-    
     // The name of this source (e.g. a filename: foo.rb)
     private final String sourceName;
     
     // Number of newlines read from the reader
-    private int line = 0;
+    protected int line = 0;
     
     // How many bytes into the source are we?
-    private int offset = 0;
+    protected int offset = 0;
+    
+    // Store each line into this list if not null.
+    private List<String> list;
+    
+    // For 'list' and only populated if list is not null.
+    private StringBuilder lineBuffer;
 
     /**
      * Create our food-source for the lexer
@@ -81,82 +74,20 @@ public class LexerSource {
      * @param line starting line number for source (used by eval)
      * @param extraPositionInformation will gives us extra information that an IDE may want
      */
-    public LexerSource(String sourceName, Reader reader, int line, 
-            boolean extraPositionInformation) {
+    protected LexerSource(String sourceName, List<String> list, int line, boolean extraPositionInformation) {
         this.sourceName = sourceName;
-        this.reader = reader;
+        this.line = line;
+
         if (extraPositionInformation) {
             positionFactory = new IDESourcePositionFactory(this, line);
         } else {
             positionFactory = new SimplePositionFactory(this, line);
         }
-        this.line = line;
-    }
-    
-    /**
-     * Read next character from this source
-     * 
-     * @return next character to viewed by the source
-     */
-    public char read() throws IOException {
-        int length = bufLength;
-        char c;
-    	
-    	if (length >= 0) {
-    		c = buf[bufLength--];
-    	} else {
-    		c = wrappedRead();
-            
-            // EOF...Do not advance column...Go straight to jail
-            if (c == 0) {
-                //offset++;
-                return c;
-            }
-    	}
 
-        twoAgo = oneAgo;
-        oneAgo = c;
-        offset++;
-
-        if (c == '\n') line++;
-        
-        return c; 
+        this.list = list;
+        lineBuffer = new StringBuilder();
     }
 
-    /**
-     * Pushes char back onto this source.  Note, this also
-     * allows us to push whatever is passes back into the source.
-     * 
-     * @param c to be put back onto the source
-     */
-    public void unread(char c) {
-        if (c == 0) return;
-        
-        offset--;
-        oneAgo = twoAgo;
-        twoAgo = 0;
-            
-        if (c == '\n') line--;
-
-        buf[++bufLength] = c;
-        
-        // If we outgrow our pushback stack then grow it (this should only happen in pretty 
-        // pathological cases).
-        if (bufLength + 1 == buf.length) {
-            char[] newBuf = new char[buf.length + INITIAL_PUSHBACK_SIZE];
-
-            System.arraycopy(buf, 0, newBuf, 0, buf.length);
-
-            buf = newBuf;
-        }
-    }
-    
-    public boolean peek(char to) throws IOException {
-        char c = read();
-        unread(c);
-        return c == to;
-    }
-    
     /**
      * What file are we lexing?
      * @return the files name
@@ -170,7 +101,7 @@ public class LexerSource {
      * @return the line number 0...line_size-1
      */
     public int getLine() {
-    	return line;
+        return line;
     }
     
     /**
@@ -179,7 +110,7 @@ public class LexerSource {
      * @return current location of source
      */
     public int getOffset() {
-    	return (offset <= 0 ? 0 : offset);
+        return (offset <= 0 ? 0 : offset);
     }
 
     /**
@@ -205,264 +136,74 @@ public class LexerSource {
     }
 
     /**
-     * Convenience method to hide exception.  If we do hit an exception
-     * we will pretend we EOF'd.
-     * 
-     * @return the current char or EOF (at EOF or on error)
-     */
-    private char wrappedRead() throws IOException {
-        int c = reader.read();
-
-        // If \r\n then just pass along \n (windows)
-        // If \r[^\n] then pass along \n (MAC)
-        if (c == '\r') {
-            if ((c = reader.read()) != '\n') {
-                unread((char)c);
-                c = '\n';
-            } else {
-                // Position within source must reflect the actual offset and column.  Since
-                // we ate an extra character here (this accounting is normally done in read
-                // ), we should update position info.
-                offset++;
-            }
-        }
-                   
-        return c != -1 ? (char) c : '\0';
-    }
-    
-    /**
      * Create a source.
      * 
      * @param name the name of the source (e.g a filename: foo.rb)
      * @param content the data of the source
      * @return the new source
      */
-    public static LexerSource getSource(String name, Reader content, int line, 
-            boolean extraPositionInformation) {
-        return new LexerSource(name, content, line, extraPositionInformation);
+    public static LexerSource getSource(String name, InputStream content, List<String> list,
+            ParserConfiguration configuration) {
+        return new InputStreamLexerSource(name, content, list, configuration.getLineNumber(), 
+                configuration.hasExtraPositionInformation());
     }
 
-    public String readLine() throws IOException {
-        StringBuffer sb = new StringBuffer(80);
-        for (char c = read(); c != '\n' && c != '\0'; c = read()) {
-            sb.append(c);
-        }
-        return sb.toString();
-    }
-    
-    public ByteList readLineBytes() throws IOException {
-        ByteList bytelist = new ByteList(80);
-
-        for (char c = read(); c != '\n' && c != '\0'; c = read()) {
-            bytelist.append(c);
-        }
-        return bytelist;
-    }
-
-    public void unreadMany(CharSequence buffer) {
-    	int length = buffer.length();
-        for (int i = length - 1; i >= 0; i--) {
-            unread(buffer.charAt(i));
-        }
-    }
-
-    public boolean matchString(String match, boolean indent) throws IOException {
-        int length = match.length();
-        StringBuffer buffer = new StringBuffer(length + 20);
+    protected void captureFeature(int c) {
+        // Ruby's OMG capture all source in a Hash feature
+        if (list != null) {
+            // Only append real characters (EOF does not count). 
+            if (c != -1) lineBuffer.append((char) c);
         
-        if (indent) {
-        	char c;
-        	while ((c = read()) != '\0') {
-                if (!Character.isWhitespace(c) || c == '\n') {
-        			unread(c);
-        			break;
-        		}
-            	buffer.append(c);
-        	}
-        }
-        
-        for (int i = 0; i < length; i++) {
-            char c = read();
-            buffer.append(c);
-            if (match.charAt(i) != c) {
-                unreadMany(buffer);
-                return false;
+            if (c == '\n' || c == -1) {
+                list.add(lineBuffer.toString());
+                lineBuffer.setLength(0);
             }
         }
-        
-        char c = read();
-        if (c != '\n' && c != '\0') {
-            unread(c);
-            return false;
-        }
-
-        return true;
-    }
-
-    public boolean wasBeginOfLine() {
-        return twoAgo == '\n';
-    }
-
-    public char readEscape() throws IOException {
-        char c = read();
-
-        switch (c) {
-            case '\\' : // backslash
-                return c;
-            case 'n' : // newline
-                return '\n';
-            case 't' : // horizontal tab
-                return '\t';
-            case 'r' : // carriage return
-                return '\r';
-            case 'f' : // form feed
-                return '\f';
-            case 'v' : // vertical tab
-                return '\u000B';
-            case 'a' : // alarm(bell)
-                return '\u0007';
-            case 'e' : // escape
-                return '\u001B';
-            case '0' : case '1' : case '2' : case '3' : // octal constant
-            case '4' : case '5' : case '6' : case '7' :
-                unread(c);
-                return scanOct(3);
-            case 'x' : // hex constant
-                int i = 0;
-                //char hexValue = scanHex(2);
-
-                char hexValue = '\0';
-
-                for (; i < 2; i++) {
-                    char h1 = read();
-
-                    if (!RubyYaccLexer.isHexChar(h1)) {
-                        unread(h1);
-                        break;
-                    }
-
-                    hexValue <<= 4;
-                    hexValue |= Integer.parseInt(""+h1, 16) & 15;
-                }
-                
-                // No hex value after the 'x'.
-                if (i == 0) {
-                    throw new SyntaxException(getPosition(), "Invalid escape character syntax");
-                }
-                return hexValue;
-            case 'b' : // backspace
-                return '\010';
-            case 's' : // space
-                return ' ';
-            case 'M' :
-                if ((c = read()) != '-') {
-                    throw new SyntaxException(getPosition(), "Invalid escape character syntax");
-                } else if ((c = read()) == '\\') {
-                    return (char) (readEscape() | 0x80);
-                } else if (c == '\0') {
-                    throw new SyntaxException(getPosition(), "Invalid escape character syntax");
-                } 
-                return (char) ((c & 0xff) | 0x80);
-            case 'C' :
-                if ((c = read()) != '-') {
-                    throw new SyntaxException(getPosition(), "Invalid escape character syntax");
-                }
-            case 'c' :
-                if ((c = read()) == '\\') {
-                    c = readEscape();
-                } else if (c == '?') {
-                    return '\u0177';
-                } else if (c == '\0') {
-                    throw new SyntaxException(getPosition(), "Invalid escape character syntax");
-                }
-                return (char) (c & 0x9f);
-            case '\0' :
-                throw new SyntaxException(getPosition(), "Invalid escape character syntax");
-            default :
-                return c;
-        }
-    }
-
-    private char scanOct(int count) throws IOException {
-    	char value = '\0';
-
-    	for (int i = 0; i < count; i++) {
-    		char c = read();
-
-    		if (!RubyYaccLexer.isOctChar(c)) {
-        		unread(c);
-    			break;
-    		}
-
-    		value <<= 3;
-    		value |= Integer.parseInt(""+c, 8);
-    	}
-
-    	return value;
     }
 
     /**
-     * Get character ahead of current position by offset positions.
+     * Match marker against input consumering lexer source as it goes...Unless it does not match
+     * then it reverts lexer source back to point when this method was invoked.
      * 
-     * @param anOffset is location past current position to get char at
-     * @return character index positions ahead of source location or EOF
+     * @param marker to match against
+     * @param indent eat any leading whitespace
+     * @param withNewline includes a check that marker is followed by newline or EOF
+     * @return true if marker matches...false otherwise
+     * @throws IOException if an error occurred reading from underlying IO source
      */
-    public char getCharAt(int anOffset) throws IOException {
-    	StringBuffer buffer = new StringBuffer(anOffset);
-    
-    	// read next offset chars
-        for (int i = 0; i < anOffset; i++) {
-            buffer.append(read());
-        }
-        
-        int length = buffer.length();
-        
-        // Whoops not enough chars left EOF!
-        if (length == 0){
-        	return '\0';
-        }
-        
-        // Push chars back now that we found it
-        for (int i = 0; i < length; i++) {
-            unread(buffer.charAt(i));
-        }
-        
-        return buffer.charAt(length - 1);
-    }
+    public abstract boolean matchMarker(ByteList marker, boolean indent, boolean withNewline) throws IOException;
 
-    public String toString() {
-        try {
-            StringBuffer buffer = new StringBuffer(20);
-            for (int i = 0; i < 20; i++) {
-                buffer.append(read());
-            }
-            for (int i = 0; i < 20; i++) {
-                unread(buffer.charAt(buffer.length() - i - 1));
-            }
-            buffer.append(" ...");
-            return buffer.toString();
-        } catch(Exception e) {
-            return null;
-        }
-    }
+    public abstract int read() throws IOException;
+    public abstract ByteList readUntil(char c) throws IOException;
+    public abstract ByteList readLineBytes() throws IOException;
+    public abstract int skipUntil(int c) throws IOException;
+    public abstract void unread(int c);
+    public abstract void unreadMany(CharSequence line);
+    public abstract boolean peek(int c) throws IOException;
+    public abstract boolean lastWasBeginOfLine();
+    public abstract boolean wasBeginOfLine();
     
     // BEGIN NETBEANS MODIFICATIONS
-    public int chompReadAhead() {
-        int result = bufLength+1;
-        bufLength = -1;
-        return result;
-    }
-    
-    public boolean isANewLine() {
-        return oneAgo == '\n';
-    }
+    public abstract int chompReadAhead();
+//    public int chompReadAhead() {
+//        int result = bufLength+1;
+//        bufLength = -1;
+//        return result;
+//    }
+
+    public abstract boolean isANewLine();
+//    public boolean isANewLine() {
+//        return oneAgo == '\n';
+//    }
     // Various places where we call LexerSource.unread(), the nextCharIsOnANewline value gets inaccurate (column/line too, but I don't care about those)
-    public void setIsANewLine(boolean nextCharIsOnANewLine) {
-        oneAgo = nextCharIsOnANewLine ? '\n' : oneAgo;
-    }
-    
-    public void setOffset(int offset) {
-        this.offset = offset;
-    }
+    //public void setIsANewLine(boolean nextCharIsOnANewLine) {
+    public abstract void setIsANewLine(boolean nextCharIsOnANewLine);
+//        oneAgo = nextCharIsOnANewLine ? '\n' : oneAgo;
+//    }
+
+//    public void setOffset(int offset) {
+    public abstract void setOffset(int offset);
+//        this.offset = offset;
+//    }
     // END NETBEANS MODIFICATIONS
 }

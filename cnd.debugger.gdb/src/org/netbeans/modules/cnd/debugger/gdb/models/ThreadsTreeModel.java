@@ -66,7 +66,7 @@ public class ThreadsTreeModel implements TreeModel {
     private Listener        listener;
    
     public ThreadsTreeModel(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
     /** 

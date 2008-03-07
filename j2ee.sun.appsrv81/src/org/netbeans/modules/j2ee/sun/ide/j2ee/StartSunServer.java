@@ -491,7 +491,8 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
             };
             
             //Starts JavaDB if it is not running:
-            if (ServerLocationManager.isJavaDBPresent(sunDm.getPlatformRoot())){
+            if ((ServerLocationManager.isJavaDBPresent(sunDm.getPlatformRoot())) 
+                    && (dmProps.isDatabaseStartEnabled())){
                 DerbySupport.ensureStarted();
             }
             
@@ -624,7 +625,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 } else {
                     
                     // startup timeout support
-                    new Thread(new Runnable() {
+                    Thread tmp = new Thread(new Runnable() {
 
                         public void run() {
                             try {
@@ -644,6 +645,11 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                     
                         
                     });
+                    
+                    if (null == tmp) {
+                        Logger.getLogger(StartSunServer.class.getName()).finer(
+                                "timeout support thread is null");
+                    }
 
                     // use the return value to determine if we want to make 
                     // sure the command has been successful...  

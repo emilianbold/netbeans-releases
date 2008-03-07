@@ -114,15 +114,15 @@ made subject to such option by the copyright holder.
             </folder>
             
             <folder name="x-asm">
-                <!--<folder name="ToolTips">
-                    <file name="org-netbeans-modules-cnd-debugger-gdb-ToolTipAnnotation.instance"/>
-                </folder>-->
+                <folder name="ToolTips">
+                    <file name="org-netbeans-modules-cnd-debugger-gdb-disassembly-DisToolTipAnnotation.instance"/>
+                </folder>
                 <folder name="GlyphGutterActions">
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
                     </file>
                 </folder>
-                <!--<folder name="Popup">
+                <folder name="Popup">
                     <file name="SeparatorBeforeCut.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1852"/>
@@ -131,7 +131,7 @@ made subject to such option by the copyright holder.
                     <file name="SeparatorAfterFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/> 
                         <attr name="position" intvalue="1426"/>
-                    </file> 
+                    </file>
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/> 
                         <attr name="position" intvalue="1710"/>
@@ -139,9 +139,7 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance">
                         <attr name="position" intvalue="1568"/>
                     </file> 
-                     
-                     
-                </folder>-->
+                </folder>
             </folder>
         </folder>
         

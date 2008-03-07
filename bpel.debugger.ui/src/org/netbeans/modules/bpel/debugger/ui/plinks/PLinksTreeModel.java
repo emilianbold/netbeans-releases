@@ -27,10 +27,11 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
 import org.netbeans.modules.bpel.debugger.api.ProcessInstance;
 import org.netbeans.modules.bpel.debugger.api.RuntimePartnerLink;
+import org.netbeans.modules.bpel.debugger.api.pem.PemEntity;
+import org.netbeans.modules.bpel.debugger.api.pem.ProcessExecutionModel;
 import org.netbeans.modules.bpel.debugger.ui.plinks.models.EndpointWrapper;
 import org.netbeans.modules.bpel.debugger.ui.plinks.models.PartnerLinkWrapper;
 import org.netbeans.modules.bpel.debugger.ui.plinks.models.RoleRefWrapper;
@@ -39,6 +40,7 @@ import org.netbeans.modules.bpel.debugger.ui.util.VariablesUtil;
 import org.netbeans.modules.bpel.debugger.ui.util.XmlUtil;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
+import org.netbeans.modules.bpel.model.api.PartnerLinkContainer;
 import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -71,8 +73,7 @@ public class PLinksTreeModel implements TreeModel {
      */
     public PLinksTreeModel(
             final ContextProvider contextProvider) {
-        myDebugger = (BpelDebugger) contextProvider.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
     }
     
     /**{@inheritDoc}*/
@@ -271,12 +272,32 @@ public class PLinksTreeModel implements TreeModel {
         final List<PartnerLink> pLinks = new LinkedList<PartnerLink>();
         
         // Add the variables from the process
-        pLinks.addAll(Arrays.asList(model.getProcess().
-                getPartnerLinkContainer().getPartnerLinks()));
+        PartnerLinkContainer pLinksContainer = 
+                model.getProcess().getPartnerLinkContainer();
+        if ((pLinksContainer != null) && 
+                (pLinksContainer.sizeOfPartnerLink() > 0)) {
+            
+            pLinks.addAll(Arrays.asList(pLinksContainer.getPartnerLinks()));
+        }
         
-        final String xpath = myDebugger.getCurrentProcessInstance().
-                getProcessExecutionModel().getLastStartedEntity().
-                getPsmEntity().getXpath();
+        final ProcessInstance currentInstance = 
+                myDebugger.getCurrentProcessInstance();
+        if (currentInstance == null) {
+            return pLinks.toArray(new PartnerLink[pLinks.size()]);
+        }
+        
+        final ProcessExecutionModel peModel = 
+                currentInstance.getProcessExecutionModel();
+        if (peModel == null) {
+            return pLinks.toArray(new PartnerLink[pLinks.size()]);
+        }
+        
+        final PemEntity lastStartedEntity = peModel.getLastStartedEntity();
+        if (lastStartedEntity == null) {
+            return pLinks.toArray(new PartnerLink[pLinks.size()]);
+        }
+        
+        final String xpath = lastStartedEntity.getPsmEntity().getXpath();
         
         int scopeIndex = xpath.indexOf("scope"); // NOI18N
         while (scopeIndex != -1) {
@@ -287,8 +308,13 @@ public class PLinksTreeModel implements TreeModel {
             
             final Scope scope = helper.getScopeEntity(scopeXpath);
             if (scope != null) {
-                pLinks.addAll(Arrays.asList(
-                        scope.getPartnerLinkContainer().getPartnerLinks()));
+                pLinksContainer = scope.getPartnerLinkContainer();
+                if ((pLinksContainer != null) && 
+                        (pLinksContainer.sizeOfPartnerLink() > 0)) {
+                        
+                    pLinks.addAll(
+                            Arrays.asList(pLinksContainer.getPartnerLinks()));
+                }
             }
             
             scopeIndex = index == -1 ? 
@@ -317,6 +343,8 @@ public class PLinksTreeModel implements TreeModel {
             myModel = new WeakReference(model);
             
             myDebugger.addPropertyChangeListener(this);
+            getModel().setProcessInstance(
+                    myDebugger.getCurrentProcessInstance());
         }
 
         private void destroy() {

@@ -69,6 +69,10 @@ public class WadlSaas extends Saas {
         super(parentGroup, services);
     }
     
+    public WadlSaas(SaasGroup parent, String url, String displayName, String packageName) {
+        super(parent, url, displayName, packageName);
+    }
+    
     public Application getWadlModel() throws IOException {
         if (wadlModel == null) {
             InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(getUrl());

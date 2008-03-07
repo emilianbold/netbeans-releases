@@ -251,6 +251,86 @@ public class LexUtilities {
         return 0;
     }
 
+    public static Token<?extends JsTokenId> findNext(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> ignores) {
+        if (ignores.contains(ts.token().id())) {
+            while (ts.moveNext() && ignores.contains(ts.token().id())) {}
+        }
+        return ts.token();
+    }
+    
+    public static Token<?extends JsTokenId> findNextIncluding(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> includes) {
+        while (ts.moveNext() && !includes.contains(ts.token().id())) {}
+        return ts.token();
+    }
+    
+    public static Token<?extends JsTokenId> findPreviousIncluding(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> includes) {
+            while (ts.movePrevious() && !includes.contains(ts.token().id())) {}
+        return ts.token();
+    }
+    
+    public static Token<?extends JsTokenId> findPrevious(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> ignores) {
+        if (ignores.contains(ts.token().id())) {
+            while (ts.movePrevious() && ignores.contains(ts.token().id())) {}
+        }
+        return ts.token();
+    }
+    
+    static boolean skipParenthesis(TokenSequence<?extends JsTokenId> ts) {
+        return skipParenthesis(ts, false);
+    }
+    
+    /**
+     * Tries to skip parenthesis 
+     */
+    public static boolean skipParenthesis(TokenSequence<?extends JsTokenId> ts, boolean back) {
+        int balance = 0;
+
+        Token<?extends JsTokenId> token = ts.token();
+        if (token == null) {
+            return false;
+        }
+
+        TokenId id = token.id();
+            
+//        // skip whitespaces
+//        if (id == JsTokenId.WHITESPACE) {
+//            while (ts.moveNext() && ts.token().id() == JsTokenId.WHITESPACE) {}
+//        }
+        if (id == JsTokenId.WHITESPACE || id == JsTokenId.EOL) {
+            while ((back ? ts.movePrevious() : ts.moveNext()) && (ts.token().id() == JsTokenId.WHITESPACE || ts.token().id() == JsTokenId.EOL)) {}
+        }
+
+        // if current token is not left parenthesis
+        if (ts.token().id() != (back ? JsTokenId.RPAREN : JsTokenId.LPAREN)) {
+            return false;
+        }
+
+        do {
+            token = ts.token();
+            id = token.id();
+
+            if (id == (back ? JsTokenId.RPAREN : JsTokenId.LPAREN)) {
+                balance++;
+            } else if (id == (back ? JsTokenId.LPAREN : JsTokenId.RPAREN)) {
+                if (balance == 0) {
+                    return false;
+                } else if (balance == 1) {
+                    int length = ts.offset() + token.length();
+                    if (back) {
+                        ts.movePrevious();
+                    } else {
+                        ts.moveNext();
+                    }
+                    return true;
+                }
+
+                balance--;
+            }
+        } while (back ? ts.movePrevious() : ts.moveNext());
+
+        return false;
+    }
+    
     /** Search forwards in the token sequence until a token of type <code>down</code> is found */
     public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends JsTokenId> ts, TokenId up,
         TokenId down) {
@@ -390,8 +470,7 @@ public class LexUtilities {
 //        if (id == JsTokenId.DO) {
 //            return isEndmatchingDo(doc, offset);
 //        }
-//        return END_PAIRS.contains(id);
-        return false;
+        return END_PAIRS.contains(id);
     }
 
     /**
@@ -404,6 +483,61 @@ public class LexUtilities {
         return false;
     }
 
+    private static OffsetRange findMultilineRange(TokenSequence<? extends JsTokenId> ts) {
+        int startOffset = ts.offset();
+        JsTokenId id = ts.token().id();
+        switch (id) {
+            case ELSE:
+                ts.moveNext();
+                id = ts.token().id();
+                break;
+            case IF:
+            case FOR:
+            case WHILE:
+                ts.moveNext();
+                if (!skipParenthesis(ts, false)) {
+                    return OffsetRange.NONE;
+                }
+                id = ts.token().id();
+                break;
+            default:
+                return OffsetRange.NONE;
+        }
+        
+        boolean eolFound = false;
+        int lastEolOffset = ts.offset();
+        
+        // skip whitespaces and comments
+        if (id == JsTokenId.WHITESPACE || id == JsTokenId.LINE_COMMENT || id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.EOL) {
+            if (ts.token().id() == JsTokenId.EOL) {
+                lastEolOffset = ts.offset();
+                eolFound = true;
+            }
+            while (ts.moveNext() && (
+                    ts.token().id() == JsTokenId.WHITESPACE ||
+                    ts.token().id() == JsTokenId.LINE_COMMENT ||
+                    ts.token().id() == JsTokenId.EOL ||
+                    ts.token().id() == JsTokenId.BLOCK_COMMENT)) {
+                if (ts.token().id() == JsTokenId.EOL) {
+                    lastEolOffset = ts.offset();
+                    eolFound = true;
+                }
+            }
+        }
+        // if we found end of sequence or end of line
+        if (ts.token() == null || (ts.token().id() != JsTokenId.LBRACE && eolFound)) {
+            return new OffsetRange(startOffset, lastEolOffset);
+        }
+        return  OffsetRange.NONE;
+    }
+    
+    public static OffsetRange getMultilineRange(BaseDocument doc, TokenSequence<? extends JsTokenId> ts) {
+        int index = ts.index();
+        OffsetRange offsetRange = findMultilineRange(ts);
+        ts.moveIndex(index);
+        ts.moveNext();
+        return offsetRange;
+    }
     
     /**
      * Return true iff the given token is a token that should be matched
@@ -411,8 +545,7 @@ public class LexUtilities {
      * etc.
      */
     public static boolean isBeginToken(TokenId id, BaseDocument doc, TokenSequence<?extends JsTokenId> ts) {
-//        if (id == JsTokenId.DO) {
-//            return isEndmatchingDo(doc, ts.offset());
+//        if (id == JsTokenId.IF) {
 //        }
 //        return END_PAIRS.contains(id);
         return false;

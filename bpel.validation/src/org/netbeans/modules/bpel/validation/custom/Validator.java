@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.bpel.validation.custom;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
@@ -59,9 +58,11 @@ import org.netbeans.modules.bpel.model.api.Correlation;
 import org.netbeans.modules.bpel.model.api.CorrelationContainer;
 import org.netbeans.modules.bpel.model.api.CorrelationsHolder;
 import org.netbeans.modules.bpel.model.api.CorrelationSet;
+import org.netbeans.modules.bpel.model.api.CreateInstanceActivity;
 import org.netbeans.modules.bpel.model.api.Else;
 import org.netbeans.modules.bpel.model.api.ElseIf;
 import org.netbeans.modules.bpel.model.api.EventHandlers;
+import org.netbeans.modules.bpel.model.api.Exit;
 import org.netbeans.modules.bpel.model.api.FaultHandlers;
 import org.netbeans.modules.bpel.model.api.Flow;
 import org.netbeans.modules.bpel.model.api.ForEach;
@@ -97,6 +98,10 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  * @version 2007.05.03
  */
 public final class Validator extends BpelValidator {
+
+  protected void init() {
+    myErrored = new ArrayList<Component>();
+  }
 
   @Override
   public void visit(ForEach forEach) {
@@ -301,7 +306,7 @@ public final class Validator extends BpelValidator {
     }
   }
 
-  // vlv # 93078
+  // # 93078
   @Override
   public void visit(Branches branches) {
     String content = branches.getContent();
@@ -317,15 +322,36 @@ public final class Validator extends BpelValidator {
     }
   }
 
-  // vlv # 81404
   @Override
   public void visit(Process process) {
     List<Reply> replies = new ArrayList<Reply>();
     List<CorrelationsHolder> holders = new ArrayList<CorrelationsHolder>();
     visitEntities(process.getChildren(), replies, holders);
+    // # 81404
     checkReplies(replies);
     // # 109412
     checkHolders(holders);
+    // # 129266
+    checkExit(process);
+  }
+
+  private void checkExit(BpelEntity entity) {
+    List<BpelEntity> children = entity.getChildren();
+    boolean hasExit = false;
+
+    if ( !(entity instanceof Flow)) {
+      for (BpelEntity child : children) {
+        if (hasExit) {
+          addError("FIX_Activity_after_Exit", child); // NOI18N
+        }
+        if (child instanceof Exit) {
+          hasExit = true;
+        }
+      }
+    }
+    for (BpelEntity child : children) {
+      checkExit(child);
+    }
   }
 
   private void visitEntities(List<BpelEntity> entities, List<Reply> replies, List<CorrelationsHolder> holders) {
@@ -372,43 +398,86 @@ public final class Validator extends BpelValidator {
 //out();
 //out("reply1: " + reply1.getName());
 //out("reply2: " + reply2.getName());
+
     if ( !isInGate(reply1) && !isInGate(reply2)) {
-      if (haveTheSamePartnerLink(reply1, reply2)) {
-        addError("FIX_Replies_PartnerLink", reply1); // NOI18N
-        addError("FIX_Replies_PartnerLink", reply2); // NOI18N
-        return;
+      if (haveTheSamePartnerLinkAndOperation(reply1, reply2)) {
+        if ( !hasNextExit(reply1) && !hasNextExit(reply2)) {
+          addErrorCheck("FIX_Replies_PartnerLink_Gate", reply1); // NOI18N
+          addErrorCheck("FIX_Replies_PartnerLink_Gate", reply2); // NOI18N
+          return;
+        }
       }
     }
     if (getParent(reply1) == getParent(reply2)) {
-      if (haveTheSamePartnerLink(reply1, reply2)) {
-        addError("FIX_Replies_PartnerLink", reply1); // NOI18N
-        addError("FIX_Replies_PartnerLink", reply2); // NOI18N
+      if (haveTheSamePartnerLinkAndOperation(reply1, reply2)) {
+        addErrorCheck("FIX_Replies_PartnerLink_Scope", reply1); // NOI18N
+        addErrorCheck("FIX_Replies_PartnerLink_Scope", reply2); // NOI18N
         return;
       }
     }
+  }
+
+  private boolean hasNextExit(BpelEntity entity) {
+    if (entity == null) {
+      return false;
+    }
+    BpelEntity parent = entity.getParent();
+
+    if (parent == null) {
+      return false;
+    }
+    List<BpelEntity> children = parent.getChildren();
+    boolean findExit = false;
+
+    for (BpelEntity child : children) {
+      if (findExit) {
+        if (child instanceof Exit) {
+          return true;
+        }
+      }
+      if (child == entity) {
+        findExit = true;
+      }
+    }
+    return false;
   }
 
   private void checkHolders(CorrelationsHolder holder1, CorrelationsHolder holder2) {
 //out();
 //out("holder1: " + holder1);
 //out("holder2: " + holder2);
+    BpelEntity parent1 = getParent(holder1);
+    BpelEntity parent2 = getParent(holder2);
+
     if ( !isInGate(holder1) && !isInGate(holder2)) {
-      if (haveTheSameCorrelationWithInitiateYes(holder1, holder2)) {
-        addError("FIX_Holder_Correlation", holder1); // NOI18N
-        addError("FIX_Holder_Correlation", holder2); // NOI18N
+      if (haveTheSameCorrelationWithInitiateYes(holder1, holder2, parent1, parent2)) {
+        addErrorCheck("FIX_Holder_Correlation_Gate", holder1); // NOI18N
+        addErrorCheck("FIX_Holder_Correlation_Gate", holder2); // NOI18N
         return;
       }
     }
-    if (getParent(holder1) == getParent(holder2)) {
-      if (haveTheSameCorrelationWithInitiateYes(holder1, holder2)) {
-        addError("FIX_Holder_Correlation", holder1); // NOI18N
-        addError("FIX_Holder_Correlation", holder2); // NOI18N
+    if (parent1 == parent2) {
+      if (haveTheSameCorrelationWithInitiateYes(holder1, holder2, parent1, parent2)) {
+        addErrorCheck("FIX_Holder_Correlation_Scope", holder1); // NOI18N
+        addErrorCheck("FIX_Holder_Correlation_Scope", holder2); // NOI18N
         return;
       }
     }
   }
 
-  private boolean haveTheSameCorrelationWithInitiateYes(CorrelationsHolder holder1, CorrelationsHolder holder2) {
+  private boolean haveTheSameCorrelationWithInitiateYes(
+    CorrelationsHolder holder1,
+    CorrelationsHolder holder2,
+    BpelEntity parent1,
+    BpelEntity parent2)
+  {
+    // # 128357
+    if (holder1 instanceof OnMessage && parent1 instanceof Pick) {
+      return false;
+    }
+    if (holder2 instanceof OnMessage && parent2 instanceof Pick) {
+      return false;
+    }
     CorrelationContainer container1 = holder1.getCorrelationContainer();
 //out("  1");
 
@@ -476,7 +545,7 @@ public final class Validator extends BpelValidator {
     return ref1.get() == ref2.get();
   }
 
-  private boolean haveTheSamePartnerLink(Reply reply1, Reply reply2) {
+  private boolean haveTheSamePartnerLinkAndOperation(Reply reply1, Reply reply2) {
     if (reply1.getPartnerLink() == null) {
 //out("  reply1 has PL ref null");
       return false;
@@ -497,7 +566,27 @@ public final class Validator extends BpelValidator {
 //out("  reply2 has PL null");
       return false;
     }
-    return partnerLink1 == partnerLink2;
+    if (partnerLink1 != partnerLink2) {
+      return false;
+    }
+    // operation
+    if (reply1.getOperation() == null) {
+      return false;
+    }
+    Operation operation1 = reply1.getOperation().get();
+
+    if (operation1 == null) {
+      return false;
+    }
+    if (reply2.getOperation() == null) {
+      return false;
+    }
+    Operation operation2 = reply2.getOperation().get();
+
+    if (operation2 == null) {
+      return false;
+    }
+    return operation1 == operation2;
   }
 
   private BpelEntity getParent(BpelEntity entity) {
@@ -514,8 +603,11 @@ public final class Validator extends BpelValidator {
   }
 
   private boolean isInGate(BpelEntity entity) {
-//out("  isInIfElse...");
+//out();
+//out("is in gate ...");
     BpelEntity parent = entity.getParent();
+//out("  entity: " + entity);
+//out("  parent: " + parent);
 
     while (true) {
 //out("  parent: " + parent);
@@ -545,6 +637,37 @@ public final class Validator extends BpelValidator {
     return false;
   }
   
+  // # 90125
+  @Override
+  public void visit(CorrelationContainer container) {
+//out();
+//out("see container: " + container + " " + container.getParent());
+//out();
+    Component parent = container.getParent();
+
+    if ( !(parent instanceof CreateInstanceActivity)) {
+      return;
+    }
+    CreateInstanceActivity activity = (CreateInstanceActivity) parent;
+
+    if ( !isCreateInstanceYes(activity)) {
+      return;
+    }
+    Correlation [] correlations = container.getCorrelations();
+
+    if (correlations == null) {
+      return;
+    }
+    for (Correlation correlation : correlations) {
+      Initiate initiate = correlation.getInitiate();
+
+      if (initiate != Initiate.NO) {
+        return;
+      }
+    }
+    addError("FIX_Activity_with_Correlation", parent); // NOI18N
+  }
+  
   @Override
   public void visit(Reply reply) {
       super.visit(reply);
@@ -572,6 +695,8 @@ public final class Validator extends BpelValidator {
       return;
     }
     if (isValidationComplete()) {
+//out();
+//out("Vadlidate model: " + model);
       validate(model);
     }
   }
@@ -584,4 +709,14 @@ public final class Validator extends BpelValidator {
     }
     return ImportHelper.getSchemaModel(imp, false);
   }
+
+  private void addErrorCheck(String key, Component component) {
+    if (myErrored.contains(component)) {
+      return;
+    }
+    myErrored.add(component);
+    addError(key, component);
+  }
+
+  private List<Component> myErrored;
 }

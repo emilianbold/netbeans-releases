@@ -191,7 +191,9 @@ public final class OpenProjectList {
         synchronized ( OpenProjectList.class ) {
             if ( INSTANCE == null ) {
                 INSTANCE = new OpenProjectList();
-                INSTANCE.openProjects = loadProjectList();                
+                INSTANCE.openProjects = loadProjectList();
+                // Load recent project list
+                INSTANCE.recentProjects.load();
                 WindowManager.getDefault().invokeWhenUIReady(INSTANCE.LOAD);
             }
         }
@@ -300,8 +302,6 @@ public final class OpenProjectList {
             }
             recentTemplates = new ArrayList<String>( OpenProjectListSettings.getInstance().getRecentTemplates() );
             URL mainProjectURL = OpenProjectListSettings.getInstance().getMainProjectURL();
-            // Load recent project list
-            INSTANCE.recentProjects.load();
             synchronized (toOpenProjects) {
                 for( Iterator it = toOpenProjects.iterator(); it.hasNext(); ) {
                     Project p = (Project)it.next();
@@ -1078,7 +1078,7 @@ public final class OpenProjectList {
             }
             return ok;
         } else {
-            // issue 43958, if attr 'templateCategorized' is not set => all is ok
+            // issue 44871, if attr 'templateCategorized' is not set => all is ok
             // no category set, ok display it
             return true;
         }

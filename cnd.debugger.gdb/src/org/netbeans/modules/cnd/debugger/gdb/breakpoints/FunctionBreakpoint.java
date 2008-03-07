@@ -87,6 +87,8 @@ public class FunctionBreakpoint extends GdbBreakpoint {
      * @param function the function to stop on
      */
     public void setFunctionName(String function) {
+        String old = this.function;
+        
         synchronized (this) {
             if (function == null) {
                 function = ""; // NOI18N
@@ -107,6 +109,7 @@ public class FunctionBreakpoint extends GdbBreakpoint {
                 return;
             }
             this.function = function;
+            firePropertyChange(PROP_FUNCTION_NAME, old, function);
         }
     }
     
@@ -146,9 +149,9 @@ public class FunctionBreakpoint extends GdbBreakpoint {
         
         public int compareTo(Object o) {
             if (o instanceof FunctionBreakpointComparable) {
-                FunctionBreakpoint lbthis = this;
-                FunctionBreakpoint lb = (FunctionBreakpoint) o;
-                return lbthis.function.compareTo(lb.function);
+                FunctionBreakpoint fbthis = this;
+                FunctionBreakpoint fb = (FunctionBreakpoint) o;
+                return fbthis.function.compareTo(fb.function);
             } else {
                 return -1;
             }

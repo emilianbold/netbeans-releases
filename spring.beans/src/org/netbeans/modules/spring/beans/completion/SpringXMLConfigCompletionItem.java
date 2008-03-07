@@ -50,6 +50,7 @@ import java.beans.BeanInfo;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -88,6 +89,8 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
+import org.netbeans.modules.spring.beans.editor.Property;
+import org.netbeans.modules.spring.beans.editor.PropertyType;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.util.SpringBeansUIs;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
@@ -134,8 +137,8 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         return new MethodItem(substitutionOffset, element, isInherited, isDeprecated);
     }
     
-    public static SpringXMLConfigCompletionItem createPropertyItem(int substitutionOffset, ExecutableElement setter) {
-        return new PropertyItem(substitutionOffset, setter);
+    public static SpringXMLConfigCompletionItem createPropertyItem(int substitutionOffset, Property property) {
+        return new PropertyItem(substitutionOffset, property);
     }
     
     public static SpringXMLConfigCompletionItem createAttribValueItem(int substitutionOffset, String displayText, String docText) {
@@ -150,8 +153,8 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         return new FileItem(substitutionOffset, file);
     }
 
-    public static SpringXMLConfigCompletionItem createPropertyAttribItem(int substitutionOffset, String text, ExecutableElement ee) {
-        return new PropertyAttribItem(substitutionOffset, text, ee);
+    public static SpringXMLConfigCompletionItem createPropertyAttribItem(int substitutionOffset, String text, Property property) {
+        return new PropertyAttribItem(substitutionOffset, text, property);
     }
     
     protected int substitutionOffset;
@@ -297,7 +300,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/spring/beans/resources/spring.png")); // NOI18N
+            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/spring/beans/resources/spring-bean.png")); // NOI18N
         }
 
         @Override
@@ -810,15 +813,18 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     
     private static class PropertyItem extends SpringXMLConfigCompletionItem {
 
-        private ElementHandle<ExecutableElement> eh;
-        private String displayName;
+        private static final String PROP_RO = "org/netbeans/modules/beans/resources/propertyRO.gif"; // NOI18N
+        private static final String PROP_RW = "org/netbeans/modules/beans/resources/propertyRW.gif"; // NOI18N
+        private static final String PROP_WO = "org/netbeans/modules/beans/resources/propertyWO.gif"; // NOI18N
         
-        public PropertyItem(int substitutionOffset, ExecutableElement setter) {
+        private String displayName;
+        private PropertyType propertyType;
+        private static EnumMap<PropertyType, ImageIcon> type2Icon = new EnumMap<PropertyType, ImageIcon>(PropertyType.class);
+        
+        public PropertyItem(int substitutionOffset, Property property) {
             super(substitutionOffset);
-            char[] propertyName = setter.getSimpleName().toString().substring(3).toCharArray();
-            propertyName[0] = Character.toLowerCase(propertyName[0]);
-            this.displayName = new String(propertyName);
-            this.eh = ElementHandle.create(setter);
+            this.displayName = property.getName();
+            this.propertyType = property.getType();
         }
         
         public int getSortPriority() {
@@ -837,27 +843,50 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         protected String getLeftHtmlText() {
             return displayName;
         }
+        
+        @Override
+        protected ImageIcon getIcon() {
+            ImageIcon cachedIcon = type2Icon.get(propertyType);
+            if(cachedIcon == null) {
+                switch(propertyType) {
+                    case READ_ONLY:
+                        cachedIcon = new ImageIcon(Utilities.loadImage(PROP_RO));
+                        break;
+                    case READ_WRITE:
+                        cachedIcon = new ImageIcon(Utilities.loadImage(PROP_RW));
+                        break;
+                    case WRITE_ONLY:
+                        cachedIcon = new ImageIcon(Utilities.loadImage(PROP_WO));
+                        break;
+                }
+                
+                type2Icon.put(propertyType, cachedIcon);
+            }
+            
+            return cachedIcon;
+        }
     }
     
-    private static class PropertyAttribItem extends SpringXMLConfigCompletionItem {
+    private static class PropertyAttribItem extends PropertyItem {
 
-        private ElementHandle<ExecutableElement> eh;
         private String text;
         
-        public PropertyAttribItem(int substitutionOffset, String text, ExecutableElement ee) {
-            super(substitutionOffset);
-            this.eh = ElementHandle.create(ee);
+        public PropertyAttribItem(int substitutionOffset, String text, Property property) {
+            super(substitutionOffset, property);
             this.text = text;
         }
 
+        @Override
         public int getSortPriority() {
             return 200;
         }
 
+        @Override
         public CharSequence getSortText() {
             return text;
         }
 
+        @Override
         public CharSequence getInsertPrefix() {
             return text;
         }

@@ -41,11 +41,12 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-
+import java.util.Stack;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -53,17 +54,17 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
-//import org.netbeans.modules.javascript.editing.options.CodeStyle;
 import org.openide.util.Exceptions;
 
 
 /**
  * Formatting and indentation for JavaScript
  * 
+ * @todo dojo.js.uncompressed.js:5786 indentation
  * @todo Handle JSP
- * @todo Handle if-blocks that don't have an associated block - just indents the next statement
  * @todo Handle block comments - similar to multiline literals but should be indented by a relative amount
  * @todo Handle XML/E4X content
  * @todo Use the Context.modifyIndent() method to change line indents instead of
@@ -72,11 +73,30 @@ import org.openide.util.Exceptions;
  *   char somehow such that it lines up with the * in /*
  *
  * @author Tor Norbye
+ * @author Martin Adamek
  */
 public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     private boolean embeddedJavaScript;
     private CodeStyle codeStyle;
     private int rightMarginOverride = -1;
+    
+    /**
+     * <p>
+     * Stack describing indentation of blocks defined by '{', '[' and blocks
+     * with missing optional curly braces '{'. See also getBracketBalanceDelta()
+     * </p>
+     * For example:
+     * <pre>
+     * if (true)        // [ StackItem[block=true] ]
+     *   if (true) {    // [ StackItem[block=true], StackItem[block=false] ]
+     *     if (true)    // [ StackItem[block=true], StackItem[block=false], StackItem[block=true] ]
+     *       foo();     // [ StackItem[block=true], StackItem[block=false] ]
+     *     bar();       // [ StackItem[block=true], StackItem[block=false] ]
+     *   }              // [ StackItem[block=true] ]
+     * fooBar();        // [ ]
+     * </pre>
+     */
+    private Stack<StackItem> stack = new Stack<StackItem>();
 
     public JsFormatter() {
         this.codeStyle = CodeStyle.getDefault(null);
@@ -93,7 +113,6 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
 
     public void reformat(Document document, int startOffset, int endOffset, CompilationInfo info) {
-
         reindent(document, startOffset, endOffset, info, false);
     }
     public void reindent(Document document, int startOffset, int endOffset) {
@@ -152,25 +171,176 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return ts.offset();
     }
     
-    private int getTokenBalanceDelta(TokenId id, Token<? extends JsTokenId> token,
-            BaseDocument doc, TokenSequence<? extends JsTokenId> ts, boolean includeKeywords) {
-        if ((!includeKeywords && id == JsTokenId.LPAREN) || id == JsTokenId.LBRACKET || (includeKeywords && id == JsTokenId.LBRACE)) {
-            return 1;
-        } else if ((!includeKeywords && id == JsTokenId.RPAREN) || id == JsTokenId.RBRACKET || (includeKeywords && id == JsTokenId.RBRACE)) {
-            return -1;
-//        } else if (includeKeywords) {
-//            if (LexUtilities.isBeginToken(id, doc, ts)) {
-//                return 1;
-//            } else if (id == JsTokenId.END) {
-//                return -1;
-//            }
+    private static int getPreviousLineFirstNonWhiteOffset(BaseDocument doc, int offset) {
+        int offsetPrevLine = -1;
+        try {
+            if (offset > -1) {
+                int o = Utilities.getRowStart(doc, offset);
+                if (o > 0) {
+                    offsetPrevLine = Utilities.getRowStart(doc, o - 1);
+                    if (offsetPrevLine > -1) {
+                        offsetPrevLine = Utilities.getRowFirstNonWhite(doc, offsetPrevLine);
+                    }
+                }
+            }
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
         }
+        return offsetPrevLine;
+    }
+    
+    private int getBracketBalanceDelta(TokenId id) {
+        if (id == JsTokenId.LPAREN || id == JsTokenId.LBRACKET) {
+            return 1;
+        } else if (id == JsTokenId.RPAREN || id == JsTokenId.RBRACKET) {
+            return -1;
+        }
+        return 0;
+    }
+    
+    private int getTokenBalanceDelta(TokenId id, BaseDocument doc, TokenSequence<? extends JsTokenId> ts, boolean indentOnly) {
+        try {
+            OffsetRange range = OffsetRange.NONE;
+            if (id == JsTokenId.LBRACKET || id == JsTokenId.LBRACE) {
+                // block with braces, just record it to stack and return 1
+                stack.push(new StackItem(false, new OffsetRange(ts.offset(), ts.offset())));
+                return 1;
+            } else if (id == JsTokenId.CASE || id == JsTokenId.DEFAULT) {
+                
+                int index = ts.index();
+                
+                // find colon ':'
+                LexUtilities.findNextIncluding(ts, Collections.singletonList(JsTokenId.COLON));
 
+                // skip whitespaces, comments and newlines
+                Token<? extends JsTokenId> token = LexUtilities.findNext(ts, 
+                        Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                JsTokenId tokenId = token.id();
+                
+                if (tokenId == JsTokenId.CASE || tokenId == JsTokenId.DEFAULT) {
+                    return 0;
+                } else if (tokenId == JsTokenId.RBRACE) {
+                    return -1;
+                } else {
+                    // look at the beginning of next line if there is case or default
+                    LexUtilities.findNextIncluding(ts, Collections.singletonList(JsTokenId.EOL));
+                    LexUtilities.findNext(ts, 
+                            Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                    if (ts.token().id() == JsTokenId.CASE || ts.token().id() == JsTokenId.DEFAULT) {
+                        return 0;
+                    }
+                }
+
+                ts.moveIndex(index);
+                ts.moveNext();
+                
+                return 1;
+            } else if (id == JsTokenId.RBRACKET || id == JsTokenId.RBRACE) {
+                /*
+                 * End of braces block.
+                 * If we are not on same line where block started, try to push 
+                 * all braceless blocks from stack and decrease indent for them,
+                 * otherwise just decrese indent by 1.
+                 * For example:
+                 * if (true)
+                 *   if (true)
+                 *     if (true)
+                 *       foo();     // we should decrease indent by 3 levels
+                 * 
+                 * but:
+                 * if (true)
+                 *   if (true)
+                 *     if (map[0]) // at ']' we should decrease only by 1
+                 *       foo();
+                 */
+                int delta = -1;
+                StackItem lastPop = stack.empty() ? null : stack.pop();
+                if (lastPop != null && Utilities.getLineOffset(doc, lastPop.range.getStart()) != Utilities.getLineOffset(doc, ts.offset())) {
+                    int blocks = 0;
+                    while (!stack.empty() && stack.pop().braceless) {
+                        blocks++;
+                    }
+                    delta -= blocks;
+                }
+                return delta;
+            } else if ((range = LexUtilities.getMultilineRange(doc, ts)) != OffsetRange.NONE) {
+                // we found braceless block, let's record it in the stack
+                stack.push(new StackItem(true, range));
+            } else if (id == JsTokenId.EOL) {
+
+                if (!indentOnly) {
+                    TokenSequence<? extends JsTokenId> ts2 = LexUtilities.getPositionedSequence(doc, ts.offset());
+                    // skip whitespaces and newlines
+                    Token<? extends JsTokenId> nextToken = LexUtilities.findNext(ts2, 
+                            Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                    TokenId tokenId = nextToken == null ? null : nextToken.id();
+                    if (tokenId == JsTokenId.RBRACE) {
+                        // if it is end of 'switch'
+                        OffsetRange offsetRange = LexUtilities.findBwd(doc, ts2, JsTokenId.LBRACE, JsTokenId.RBRACE);
+                        if (offsetRange != OffsetRange.NONE) {
+                            ts2.movePrevious();
+                            if (LexUtilities.skipParenthesis(ts2, true)) {
+                                Token<? extends JsTokenId> token = ts2.token();
+                                token = LexUtilities.findPrevious(ts2,
+                                        Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                                if (token.id() == JsTokenId.SWITCH) {
+                                    return -1;
+                                }
+                            }
+                        }
+                    } else if (tokenId == JsTokenId.CASE || tokenId == JsTokenId.DEFAULT) {
+                        ts2 = LexUtilities.getPositionedSequence(doc, ts.offset());
+                        Token<? extends JsTokenId> prevToken = LexUtilities.findPrevious(ts2, 
+                                Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                        if (prevToken.id() != JsTokenId.LBRACE) {
+                            // it must be case or default
+                            ts2 = LexUtilities.getPositionedSequence(doc, ts.offset());
+                            prevToken = LexUtilities.findPreviousIncluding(ts2, 
+                                    Arrays.asList(JsTokenId.CASE, JsTokenId.DEFAULT));
+                            int beginLine = Utilities.getLineOffset(doc, ts2.offset());
+                            int eolLine = Utilities.getLineOffset(doc, ts.offset());
+                            if (beginLine != eolLine) {
+                                return -1;
+                            }
+                        }
+                    }
+                }
+                
+                // other
+                if (!stack.empty()) {
+                    if (stack.peek().braceless) {
+                        // end of line after braceless block start
+                        OffsetRange stackOffset = stack.peek().range;
+                        if (stackOffset.containsInclusive(ts.offset())) {
+                            // we are in the braceless block statement
+                            int stackEndLine = Utilities.getLineOffset(doc, stackOffset.getEnd());
+                            int offsetLine = Utilities.getLineOffset(doc, ts.offset());
+                            if (stackEndLine == offsetLine) {
+                                // if we are at the last line of braceless block statement
+                                // increse indent by 1
+                                return 1;
+                            }
+                        } else {
+                            // we are not in braceless block statement,
+                            // let's decrease indent for all braceless blocks in top of stack (if any)
+                            int blocks = 0;
+                            while (!stack.empty() && stack.peek().braceless) {
+                                blocks++;
+                                stack.pop();
+                            }
+                            return -blocks;
+                        }
+                    }
+                }
+            }
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+        }
         return 0;
     }
     
     // TODO RHTML - there can be many discontiguous sections, I've gotta process all of them on the given line
-    private int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords) {
+    private int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords, boolean indentOnly) {
         int balance = 0;
 
         if (embeddedJavaScript) {
@@ -206,6 +376,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                             TokenSequence<? extends JsTokenId> ts = hts.embedded(JsTokenId.language());
                             ts.move(begin);
                             ts.moveNext();
+                            
                             do {
                                 Token<?extends JsTokenId> jsToken = ts.token();
                                 if (jsToken == null) {
@@ -213,7 +384,11 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                                 }
                                 TokenId jsId = jsToken.id();
 
-                                balance += getTokenBalanceDelta(jsId, jsToken, doc, ts, includeKeywords);
+                                if (includeKeywords) {
+                                    balance += getTokenBalanceDelta(jsId, doc, ts, indentOnly);
+                                } else {
+                                    balance += getBracketBalanceDelta(jsId);
+                                }
                             } while (ts.moveNext() && (ts.offset() < end));
                         }
                     } while (hts.moveNext() && (hts.offset() < end));
@@ -221,6 +396,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     TokenSequence<? extends JsTokenId> ts = t.embedded(JsTokenId.language());
                     ts.move(begin);
                     ts.moveNext();
+                    
                     do {
                         Token<?extends JsTokenId> jsToken = ts.token();
                         if (jsToken == null) {
@@ -228,7 +404,11 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                         }
                         TokenId jsId = jsToken.id();
 
-                        balance += getTokenBalanceDelta(jsId, jsToken, doc, ts, includeKeywords);
+                        if (includeKeywords) {
+                            balance += getTokenBalanceDelta(jsId, doc, ts, indentOnly);
+                        } else {
+                            balance += getBracketBalanceDelta(jsId);
+                        }
                     } while (ts.moveNext() && (ts.offset() < end));
                 }
 
@@ -249,7 +429,12 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 Token<?extends JsTokenId> token = ts.token();
                 TokenId id = token.id();
                 
-                balance += getTokenBalanceDelta(id, token, doc, ts, includeKeywords);
+                if (includeKeywords) {
+                    int delta = getTokenBalanceDelta(id, doc, ts, indentOnly);
+                    balance += delta;
+                } else {
+                    balance += getBracketBalanceDelta(id);
+                }
             } while (ts.moveNext() && (ts.offset() < end));
         }
 
@@ -457,26 +642,15 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return 0;
     }
     
-    private boolean isLineContinued(BaseDocument doc, int offset, int bracketBalance) throws BadLocationException {
+    private static boolean isLineContinued(BaseDocument doc, int offset, int bracketBalance) throws BadLocationException {
         // TODO RHTML - this isn't going to work for rhtml embedded strings...
         offset = Utilities.getRowLastNonWhite(doc, offset);
         if (offset == -1) {
             return false;
         }
 
-        
-        TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, offset);
-
-        if (ts == null) {
-            return false;
-        }
-        ts.move(offset);
-
-        if (!ts.moveNext() && !ts.movePrevious()) {
-            return false;
-        }
-
-        Token<?extends JsTokenId> token = ts.token();
+        TokenSequence<?extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, offset);
+        Token<?extends JsTokenId> token = (ts != null ? ts.token() : null);
 
         if (token != null) {
             TokenId id = token.id();
@@ -514,6 +688,17 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 //      secondarg,  # indented both by ( and hanging indent ,
                 //      thirdarg)
                 isContinuationOperator = (bracketBalance == 0);
+            }
+            
+            if (id == JsTokenId.COLON) {
+                TokenSequence<? extends JsTokenId> ts2 = LexUtilities.getPositionedSequence(doc, ts.offset());
+                Token<? extends JsTokenId> foundToken = LexUtilities.findPreviousIncluding(ts2,
+                        Arrays.asList(JsTokenId.CASE, JsTokenId.DEFAULT, JsTokenId.COLON));
+                if (foundToken != null && (foundToken.id() == JsTokenId.CASE || foundToken.id() == JsTokenId.DEFAULT)) {
+                    isContinuationOperator = false;
+                } else {
+                    isContinuationOperator = true;
+                }
             }
             
 //            if (isContinuationOperator) {
@@ -791,6 +976,9 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 } else {
                     assert lineType == IN_CODE || lineType == IN_BLOCK_COMMENT_START;
                     indent = balance * indentSize + hangingIndent + initialIndent;
+                    
+//                    System.out.println("### indent " + indent + " = " + balance + " * " + indentSize + " + " + hangingIndent + " + " + initialIndent);
+                    
                     if (lineType == IN_BLOCK_COMMENT_START) {
                         adjustedBlockCommentIndention = indent;
                     }
@@ -813,14 +1001,10 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 int endOfLine = Utilities.getRowEnd(doc, offset) + 1;
 
                 if (lineBegin != -1) {
-                    balance += getTokenBalance(doc, lineBegin, endOfLine, true);
-                    int bracketDelta = getTokenBalance(doc, lineBegin, endOfLine, false);
+                    balance += getTokenBalance(doc, lineBegin, endOfLine, true, indentOnly);
+                    int bracketDelta = getTokenBalance(doc, lineBegin, endOfLine, false, indentOnly);
                     bracketBalance += bracketDelta;
                     continued = isLineContinued(doc, offset, bracketBalance);
-                    if (!continued && bracketDelta == 0 && ts != null && LexUtilities.isIndentToken(ts.token().id()) &&
-                        !hasBlockOnLine(doc, lineBegin, endOfLine)) {
-                        continued = true;
-                    }
                 }
 
                 offset = endOfLine;
@@ -857,4 +1041,33 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
             formatter.setSpacesPerTab(style.getIndentSize());
         }
     }
+
+    /**
+     * One item in indent stack, see description of stack variable
+     */
+    private static final class StackItem {
+        
+        private StackItem(boolean braceless, OffsetRange range) {
+            this.braceless = braceless;
+            this.range = range;
+        }
+        
+        /**
+         * true for block without optional curly braces, false otherwise
+         */
+        private final boolean braceless;
+        
+        /**
+         * For braceless blocks it is range from statement beginning (e.g. |if...)
+         * to end of line where curly brace would be (e.g. if(...) |\n )<br>
+         * For braces and brackets blocks it is offset of beginning of token for 
+         * both - beginning and end of range (e.g. OffsetRange[ts.token(), ts.token()])
+         */
+        private final OffsetRange range;
+        
+        public String toString() {
+            return "StackItem[" + braceless + "," + range + "]";
+        }
+    }
+    
 }

@@ -580,7 +580,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     return null;
                 if (left == null)
                     return null;
-                if (right.getKind() != TypeKind.ERROR && cInfo.getTypes().isAssignable(right, left))
+                if (right.getKind() == TypeKind.ERROR || cInfo.getTypes().isAssignable(right, left))
                     return null;
                 return left;
             }

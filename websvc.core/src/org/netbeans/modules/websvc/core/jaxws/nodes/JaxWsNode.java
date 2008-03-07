@@ -129,12 +129,11 @@ import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
-public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTesterCookie, ConfigureHandlerCookie {
+public class JaxWsNode extends AbstractNode implements 
+        WsWsdlCookie, JaxWsTesterCookie, ConfigureHandlerCookie {
 
     Service service;
     FileObject srcRoot;
@@ -204,7 +203,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
     }
     private static final String WAITING_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/waiting.png"; // NOI18N
     private static final String ERROR_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/error-badge.gif"; //NOI18N
-    private static final String SERVICE_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif"; //NOI18N
+    private static final String SERVICE_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.png"; //NOI18N
     private java.awt.Image cachedWaitingBadge;
     private java.awt.Image cachedErrorBadge;
     private java.awt.Image cachedServiceBadge;
@@ -856,40 +855,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         return new WebServiceTransferable(new WebServiceReference(url, service.getWsdlUrl() != null ? service.getServiceName() : service.getName(), project.getProjectDirectory().getName()));
     }
 
-    @Override
-    protected Sheet createSheet() {
-        Sheet sheet = super.createSheet();
-        if (service.getWsdlUrl() == null) {
-            Sheet.Set set = sheet.get(Sheet.PROPERTIES);
-            if (set == null) {
-                set = Sheet.createPropertiesSet();
-
-            }
-            sheet.put(set);
-            set.put(
-                    new PropertySupport("useSoap12", Boolean.class,
-                    NbBundle.getMessage(JaxWsNode.class, "TTL_USE_SOAP12"),
-                    "", true, true) {
-
-                        public Object getValue() {
-                            return service.isUseSoap12();
-                        }
-
-                        public void setValue(Object value) {
-                            try {
-                                Boolean val = (Boolean) value;
-                                service.setUseSoap12(val);
-                                jaxWsModel.write();
-                                JaxWsUtils.setSOAP12Binding(implBeanClass, val);
-                            } catch (IOException ex) {
-                                ErrorManager.getDefault().notify(ex);
-                            }
-                        }
-                    });
-        }
-        return sheet;
-    }
-
+ 
     private class RefreshServiceImpl implements JaxWsRefreshCookie {
 
         /**

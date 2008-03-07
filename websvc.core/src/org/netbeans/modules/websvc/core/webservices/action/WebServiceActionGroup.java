@@ -65,6 +65,7 @@ public class WebServiceActionGroup extends NodeAction implements Presenter.Popup
     private static final SystemAction[] grouped() {
         return new SystemAction[] {
             SystemAction.get(AddOperationEditorAction.class),
+            SystemAction.get(SetSoapVersionEditorAction.class)
         };
     }
     

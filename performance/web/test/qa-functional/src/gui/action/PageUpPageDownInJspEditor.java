@@ -86,6 +86,7 @@ public class PageUpPageDownInJspEditor extends WebPerformanceTestCase {
     protected void init() {
         super.init();
         expectedTime = UI_RESPONSE;
+        WAIT_AFTER_OPEN = 100;
     }
     
     private EditorOperator editorOperator;

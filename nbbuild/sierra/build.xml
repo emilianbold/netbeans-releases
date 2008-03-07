@@ -247,7 +247,6 @@
         
     <target name="test-5">
         <!-- correlation -->
-        <antcall target="do-test-jbi"><param name="dir" value="correlation/correlationBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="correlation/correlationBPEL2"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="correlation/outoforder"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="correlation/CorrelationOnePropBPEL"/></antcall>
@@ -274,10 +273,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="eventHandlers/onEvent"/></antcall>
 
         <!-- exit -->
-        <antcall target="do-test-jbi"><param name="dir" value="exit/ExitBpel"/></antcall>
-
-        <!-- faulthandling -->
-        <antcall target="do-test-jbi"><param name="dir" value="faulthandling/FaultHandlingBpel"/></antcall>
+        <!--antcall target="do-test-jbi"><param name="dir" value="exit/ExitBpel"/></antcall--> <!-- todo a? -->
     </target>
 
     <target name="test-7">
@@ -392,6 +388,7 @@
     <target name="do-print">
         <subant target="${action}" inheritAll="false">
             <buildpath location="${home}/print"/>
+            <buildpath location="${home}/xml.wsdl.extensions"/> <!-- todo r -->
         </subant>
     </target>
 

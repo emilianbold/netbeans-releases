@@ -4,8 +4,8 @@
 #rm -rf nbbuild/user.build.properties
 #echo nb.clusters.list=nb.cluster.nb,nb.cluster.platform,nb.cluster.ide,nb.cluster.ruby>> nbbuild/user.build.properties
 #echo "verify.checkout=false" >> nbbuild/user.build.properties
-ant -f nbbuild/build.xml checkout && \
-ant -f nbbuild/build.xml build-nozip all-xtest && \
+ant checkout && \
+ant build-nozip all-xtest && \
 ant -f lexer/test/build.xml buildtests && \
 ant -f editor/mimelookup/test/build.xml buildtests && \
 ant -f editor/indent/test/build.xml buildtests && \

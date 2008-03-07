@@ -432,41 +432,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     
     private void registerFileSystemListener  () {
-        final File[] roots = File.listRoots();
-        final Set<FileSystem> fss = new HashSet<FileSystem> ();
-        for (File root : roots) {
-            final FileObject fo = FileUtil.toFileObject (root);
-            if (fo != null) {                
-                try {
-                    final FileSystem fs = fo.getFileSystem();
-                    if (!fss.contains(fs)) {
-                        fs.addFileChangeListener (this);
-                        fss.add(fs);
-                    }
-                } catch (FileStateInvalidException e) {
-                    Exceptions.printStackTrace(e);
-                }
-            }
-        }
+        FileUtil.addFileChangeListener(this);
     }
     
     private void unregisterFileSystemListener () {
-        final File[] roots = File.listRoots();
-        final Set<FileSystem> fss = new HashSet<FileSystem> ();
-        for (File root : roots) {
-            final FileObject fo = FileUtil.toFileObject (root);
-            if (fo != null) {                
-                try {
-                    final FileSystem fs = fo.getFileSystem();
-                    if (!fss.contains(fs)) {
-                        fs.removeFileChangeListener (this);
-                        fss.add(fs);
-                    }
-                } catch (FileStateInvalidException e) {
-                    Exceptions.printStackTrace(e);
-                }
-            }
-        }
+        FileUtil.removeFileChangeListener(this);
     }
     
     private URL getOwningSourceRoot (final FileObject fo) {
@@ -1254,7 +1224,7 @@ Set added = null;
                         //final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompile",rootFile.getAbsolutePath());
                         String path = rootFile.getAbsolutePath();
                         // Shorten path by prefix to ruby location if possible
-                        int rubyIndex = path.indexOf("jruby-1.1RC1");
+                        int rubyIndex = path.indexOf("jruby-1.1RC2");
                         if (rubyIndex != -1) {
                             path = path.substring(rubyIndex);
                         }

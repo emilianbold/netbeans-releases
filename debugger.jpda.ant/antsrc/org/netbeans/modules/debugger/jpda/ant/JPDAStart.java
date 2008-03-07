@@ -569,8 +569,7 @@ public class JPDAStart extends Task implements Runnable {
         }
         
         public void engineAdded (DebuggerEngine engine) {
-            JPDADebugger debugger = (JPDADebugger) engine.lookupFirst 
-                (null, JPDADebugger.class);
+            JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
             if (debugger == null) return;
             debugger.addPropertyChangeListener (
                 JPDADebugger.PROP_STATE,
@@ -580,8 +579,7 @@ public class JPDAStart extends Task implements Runnable {
         }
         
         public void engineRemoved (DebuggerEngine engine) {
-            JPDADebugger debugger = (JPDADebugger) engine.lookupFirst 
-                (null, JPDADebugger.class);
+            JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
             if (debugger == null) return;
             debugger.removePropertyChangeListener (
                 JPDADebugger.PROP_STATE,

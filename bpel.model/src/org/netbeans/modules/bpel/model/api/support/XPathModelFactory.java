@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.bpel.model.api.support;
 
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

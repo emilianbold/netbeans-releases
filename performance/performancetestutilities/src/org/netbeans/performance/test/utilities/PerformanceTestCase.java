@@ -79,7 +79,7 @@ import org.netbeans.performance.test.guitracker.LoggingEventQueue;
  * Number of repeatedly measured time can be set by system property
  * <b> org.netbeans.performance.repeat </b>. If property isn't set time is measured only once.
  *
- * @author  mmirilovic@netbeans.org, rkubacki@netbeans.org, anebuzelsky@netbeans.org
+ * @author  mmirilovic@netbeans.org, rkubacki@netbeans.org, anebuzelsky@netbeans.org, mrkam@netbeans.org
  */
 public abstract class PerformanceTestCase extends JellyTestCase implements NbPerformanceTest{
 
@@ -119,11 +119,11 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
     /** Wait No Event in the Event Queue after call method <code>prepare()</code>.
      * <br><b>default</b> = 1000 ms */
-    public int WAIT_AFTER_PREPARE = 250;
+    public int WAIT_AFTER_PREPARE = 1000;
 
     /** Wait No Event in the Event Queue after call method {@link close}.
      * <br><b>default</b> = 1000 ms */
-    public int WAIT_AFTER_CLOSE = 250;
+    public int WAIT_AFTER_CLOSE = 1000;
 
     /** Factor for wait_after_open_heuristic timeout, negative HEURISTIC_FACTOR
      * disables heuristic */
@@ -264,7 +264,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * for quiet period of time after this call.</p>
      */
     public void measureTime() {
-        String exceptionDuringMeasurement = null;
+        Exception exceptionDuringMeasurement = null;
 
         long wait_after_open_heuristic = WAIT_AFTER_OPEN;
 
@@ -299,6 +299,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
             for(int i=1; i<=repeat && exceptionDuringMeasurement==null; i++){
                 try {
+                    testedComponentOperator = null;
                     tr.startNewEventList("Iteration no." + i);
                     tr.connectToAWT(true);
                     prepare();
@@ -350,7 +351,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     log("------- [ "+i+" ] ---------------- Exception rises while measuring performance :"+exc.getMessage());
                     exc.printStackTrace(getLog());
                     getScreenshot("exception_during_open");
-                    exceptionDuringMeasurement = exc.getMessage();
+                    exceptionDuringMeasurement = exc;
                     // throw new JemmyException("Exception arises during measurement:"+exc.getMessage());
                 }finally{ // finally for prepare(), open()
                     try{
@@ -367,7 +368,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                         log("------- [ "+i+" ] ---------------- Exception rises while closing tested component :"+e.getMessage());
                         e.printStackTrace(getLog());
                         getScreenshot("exception_during_close");
-                        exceptionDuringMeasurement = e.getMessage();
+                        exceptionDuringMeasurement = e;
                         //throw new JemmyException("Exception arises while closing tested component :"+e.getMessage());
                     }finally{ // finally for close()
                         tr.connectToAWT(false);
@@ -384,14 +385,14 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             e.printStackTrace(getLog());
             getScreenshot("exception_during_init_or_shutdown");
             // throw new JemmyException("Exception rises while shuting down :"+e.getMessage());
-            exceptionDuringMeasurement = e.getMessage();
+            exceptionDuringMeasurement = e;
         }finally{ // finally for initialize(), shutdown(), closeAllDialogs()
             repaintManager().resetRegionFilters();
         }
 
         dumpLog();
         if(exceptionDuringMeasurement!=null)
-            throw new Error("Exception {" + exceptionDuringMeasurement+ "} rises during measurement, look at appropriate log file for stack trace(s).");
+            throw new Error("Exception {" + exceptionDuringMeasurement.getMessage() + "} rises during measurement.", exceptionDuringMeasurement);
 
         compare(measuredTime);
 
@@ -433,6 +434,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
         for(int i=1; i<=repeat_memory && exceptionDuringMeasurement==null; i++){
             try {
+                testedComponentOperator = null;
+                
                 prepare();
 
                 waitNoEvent(WAIT_AFTER_PREPARE);
@@ -893,7 +896,9 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     protected void waitNoEvent(long time) {
         if(repeat_memory!=-1){
             try {
-                Thread.currentThread().wait(time);
+                synchronized (Thread.currentThread()) {
+                    Thread.currentThread().wait(time);
+                }
             } catch(Exception exc){
                 log("Exception rises during waiting " + time + " ms");
                 exc.printStackTrace(getLog());

@@ -57,7 +57,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Enumerations;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -75,6 +74,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
 
     private static final Logger LOGGER = Logger.getLogger(ProxyClassLoader.class.getName());
     private static final boolean LOG_LOADING;
+    private static final ClassLoader TOP_CL = ProxyClassLoader.class.getClassLoader();
 
     static {
         boolean prop1 = System.getProperty("org.netbeans.ProxyClassLoader.level") != null;
@@ -90,7 +90,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
     private final boolean transitive;
 
     /** The base class loader that is before all ProxyClassLoaders. */
-    private ClassLoader systemCL = ClassLoader.getSystemClassLoader();
+    private ClassLoader systemCL = TOP_CL;
  
     /** A shared map of all packages known by all classloaders. Also covers META-INF based resources.
      * It contains two kinds of keys: dot-separated package names and slash-separated
@@ -112,6 +112,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
      *                   automatically search through its parent list
      */
     public ProxyClassLoader(ClassLoader[] parents, boolean transitive) {
+        super(TOP_CL);
         this.transitive = transitive;
         
         this.parents = coalesceParents(parents);
@@ -462,15 +463,10 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
 		String implVersion, String implVendor, URL sealBase )
 		throws IllegalArgumentException {
 	synchronized (packages) {
-            try {
-                Package pkg = super.definePackage(name, specTitle, specVersion, specVendor, implTitle,
-                        implVersion, implVendor, sealBase);
-                packages.put(name, pkg);
-                return pkg;
-            } catch (IllegalArgumentException x) {
-                Exceptions.attachMessage(x, "If you are getting this, probably it is because you have several modules trying to load from the same package. This is not supported (#71524).");
-                throw x;
-            }
+            Package pkg = super.definePackage(name, specTitle, specVersion, specVendor, implTitle,
+                    implVersion, implVendor, sealBase);
+            packages.put(name, pkg);
+            return pkg;
 	}
     }
 

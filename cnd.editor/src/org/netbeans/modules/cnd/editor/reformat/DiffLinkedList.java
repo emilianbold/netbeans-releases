@@ -50,23 +50,26 @@ import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
 /*package local*/ class DiffLinkedList {
     private LinkedList<Diff> storage = new LinkedList<Diff>();
     
-    /*package local*/ void addFirst(int start, int end, String text){
-        Diff diff = new Diff(start, end, text);
-        Diff top = getFirst();
-        if (top != null && top.getStartOffset()>start) {
-            storage.remove();
-            storage.addFirst(diff);
-            storage.addFirst(top);
-        } else  if (top != null && top.getStartOffset()==start){
-            storage.remove();
-            storage.addFirst(diff);
-        } else {
-            storage.addFirst(diff);
-        }
+    /*package local*/ Diff addFirst(int start, int end, int newLines, int spaces){
+        Diff diff = new Diff(start, end, newLines, spaces);
+        storage.add(getIndex(start, end), diff);
+        return diff;
     }
 
+    private int getIndex(int start, int end) {
+        int res = 0;
+        Iterator<Diff> it = storage.iterator();
+        while(it.hasNext()) {
+            Diff diff = it.next();
+            if (diff.getStartOffset()<=start) {
+                break;
+            }
+            res++;
+        }
+        return res;
+    }
+    
     /*package local*/ DiffResult getDiffs(ExtendedTokenSequence ts, int shift){
-        DiffResult result = null;
         int start;
         int end;
         if (shift != 0) {
@@ -97,6 +100,11 @@ import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
             start = ts.offset();
             end = ts.offset()+ts.token().length();
         }
+        return getDiffs(start, end);
+    }
+
+    /*package local*/ DiffResult getDiffs(int start, int end){
+        DiffResult result = null;
         Iterator<Diff> it = storage.iterator();
         while(it.hasNext()) {
             Diff diff = it.next();

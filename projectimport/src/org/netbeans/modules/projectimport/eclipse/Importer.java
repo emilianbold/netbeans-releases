@@ -144,7 +144,7 @@ final class Importer {
                                 nbProjects[pos++] = importProject(eclPrj);
                             }
                         } catch (Exception ex) {
-                            logger.log(Level.WARNING, "Error occured during project importing", ex); // NOI18N
+                            logger.log(Level.WARNING, "Error occurred during project importing", ex); // NOI18N
                         } finally {
                             done = true;
                         }
@@ -210,7 +210,7 @@ final class Importer {
         }
         // create basic NB project
         final AntProjectHelper helper = J2SEProjectGenerator.createProject(
-                nbProjectDir, eclProject.getName(), srcFiles, testDirs, null, null);
+                nbProjectDir, eclProject.getName(), srcFiles, testDirs, null, null, null);
         // get NB project
         J2SEProject nbProject = (J2SEProject) ProjectManager.getDefault().
                 findProject(FileUtil.toFileObject(

@@ -97,19 +97,19 @@ public class ComponentAddTest extends org.netbeans.performance.test.utilities.Pe
     }
     
     public void testAddTableComponent() {
-        categoryName = "Basic"; // NOI18N
+        categoryName = "Woodstock Basic"; // NOI18N
         componentName = "Table"; // NOI18N
         doMeasurement();
     }
     
     public void testAddButtonComponent() {
-        categoryName = "Basic"; // NOI18N
+        categoryName = "Woodstock Basic"; // NOI18N
         componentName = "Button"; // NOI18N
         doMeasurement();
     }
     
     public void testAddListboxComponent() {
-        categoryName = "Basic"; // NOI18N
+        categoryName = "Woodstock Basic"; // NOI18N
         componentName = "Listbox"; // NOI18N
         doMeasurement();
     }

@@ -75,11 +75,11 @@ public class SaasServicesModelTest extends NbTestCase {
         SetupUtil.commonSetUp(super.getWorkDir());
 
         SaasServicesModel instance = SaasServicesModel.getInstance();
-        assertEquals("YouTube", instance.getGroups().get(0).getName());
+        assertEquals("YouTube", instance.getGroups().get(1).getName());
         //No Sub-group for now
         //SaasGroup group = instance.getGroups().get(0).getChildGroup("Videos");
         //assertNotNull(group);
-        SaasGroup group = instance.getGroups().get(0);
+        SaasGroup group = instance.getGroups().get(1);
         WadlSaas service = (WadlSaas) group.getServices().get(0);
         assertEquals("YouTubeVideos", service.getDisplayName());
         assertNotNull(service.getWadlModel());
@@ -87,7 +87,9 @@ public class SaasServicesModelTest extends NbTestCase {
         SetupUtil.commonTearDown();
     }
     
-    public void testAddGroup() {
+    public void testAddGroup() throws Exception {
+        SetupUtil.commonSetUp(super.getWorkDir());
+
         System.out.println("addGroup");
         SaasServicesModel instance = SaasServicesModel.getInstance();
         instance.createGroup(instance.getRootGroup(), "groupA");
@@ -105,6 +107,8 @@ public class SaasServicesModelTest extends NbTestCase {
         assertEquals(2, reloaded.getChildrenGroups().size());
         assertEquals("child1", reloaded.getChildGroup("child1").getName());
         assertEquals("grandChild", reloaded.getChildGroup("child2").getChildGroup("grandChild").getName());
+
+        SetupUtil.commonTearDown();
     }
 
     /*public void testRemoveGroup() {

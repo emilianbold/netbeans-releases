@@ -50,9 +50,9 @@
                api-doc="http://www.zillow.com/howto/api/APIOverview.htm"
                url="org/netbeans/modules/websvc/saas/services/zillow/resources/ZillowWadl.xml">
 
-    <description>Zillow Service</description>
+    <description>Zillow Real Estate Services</description>
     
-    <display-name>Zillow</display-name>
+    <display-name>Real Estate Services</display-name>
 
     <saas-metadata>
 
@@ -67,10 +67,12 @@
 
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="getComps" href="#zillow.homevaluation_GetComps"/>
         <method name="getRegionChart" href="#zillow.homevaluation_GetRegionChart"/>
         <method name="getZestimate" href="#zillow.homevaluation_GetZestimate"/>
     </methods>
-
+    -->
+    
 </saas-services>

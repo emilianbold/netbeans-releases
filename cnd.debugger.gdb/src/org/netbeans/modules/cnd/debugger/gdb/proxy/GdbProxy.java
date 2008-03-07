@@ -185,15 +185,6 @@ public class GdbProxy implements GdbMiDefinitions {
     }
 
     /**
-     *  Do a "set environment" gdb command.
-     *
-     *  @param var Variable of the form "foo=value"
-     */
-    public int gdb_set_environment(String var) {
-        return engine.sendCommand("-gdb-set environment " + var); // NOI18N
-    }
-
-    /**
      *  Ask gdb about threads. We don't really care about the threads, but it also returns
      *  the process ID, which we do care about.
      *
@@ -249,21 +240,36 @@ public class GdbProxy implements GdbMiDefinitions {
     
     /**
      */
-    public int data_list_register_names(CommandBuffer cb, String regIds) {
-        return engine.sendCommand(cb, "-data-list-register-names " + regIds); // NOI18N
+    public int data_list_register_names(String regIds) {
+        return engine.sendCommand("-data-list-register-names " + regIds); // NOI18N
     }
     
     /**
      */
-    public int data_list_register_values(CommandBuffer cb, String regIds) {
-        return engine.sendCommand(cb, "-data-list-register-values r " + regIds); // NOI18N
+    public int data_list_register_values(String regIds) {
+        return engine.sendCommand("-data-list-register-values x " + regIds); // NOI18N
+    }
+    
+    /**
+     */
+    public int data_list_changed_registers() {
+        return engine.sendCommand("-data-list-changed-registers"); // NOI18N
     }
     
     /*
      * @param filename - source file to disassemble
      */
-    public int data_disassemble(String filename, int line) {
-        return engine.sendCommand("-data-disassemble -f " + filename + " -l " + line + " -- 0"); // NOI18N
+    public int data_disassemble(String filename, int line, boolean withSource) {
+        int src = withSource ? 1 : 0;
+        return engine.sendCommand("-data-disassemble -f " + filename + " -l " + line + " -- " + src); // NOI18N
+    }
+    
+    /*
+     * @param size - size in bytes
+     */
+    public int data_disassemble(int size, boolean withSource) {
+        int src = withSource ? 1 : 0;
+        return engine.sendCommand("-data-disassemble -s $pc -e \"$pc+" + size + "\" -- " + src); // NOI18N
     }
     
     public int print(CommandBuffer cb, String expression) {
