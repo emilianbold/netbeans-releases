@@ -39,22 +39,29 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
-import java.awt.event.ActionEvent;
+import java.awt.Component;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
-import java.util.List;
+import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.plaf.UIResource;
+import javax.swing.plaf.basic.BasicComboBoxEditor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * @author  Tomas Mysik
  */
-public class SourcesPanelVisual extends JPanel implements ActionListener {
+public class SourcesPanelVisual extends JPanel {
 
     private static final long serialVersionUID = -358263102348820543L;
 
-    private final DefaultComboBoxModel localServerComboBoxModel = new DefaultComboBoxModel();
+    private final DefaultComboBoxModel localServerComboBoxModel = new LocalServerComboBoxModel();
 
     /** Creates new form SourcesPanelVisual */
     public SourcesPanelVisual() {
@@ -63,19 +70,7 @@ public class SourcesPanelVisual extends JPanel implements ActionListener {
     }
 
     private void init() {
-        projectFolderRadioButton.addActionListener(this);
-        localServerRadioButton.addActionListener(this);
         localServerComboBox.setModel(localServerComboBoxModel);
-    }
-
-    public void actionPerformed(ActionEvent evt) {
-        changeLocalServerFieldsStates(localServerRadioButton.isSelected());
-    }
-
-    private void changeLocalServerFieldsStates(boolean enabled) {
-        localServerComboBox.setEnabled(enabled);
-        findButton.setEnabled(enabled);
-        browseButton.setEnabled(enabled);
     }
 
     /** This method is called from within the constructor to
@@ -87,28 +82,24 @@ public class SourcesPanelVisual extends JPanel implements ActionListener {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        sourcesGroup = new javax.swing.ButtonGroup();
         sourcesLabel = new javax.swing.JLabel();
-        projectFolderLabel = new javax.swing.JLabel();
         localServerComboBox = new javax.swing.JComboBox();
-        findButton = new javax.swing.JButton();
+        locateButton = new javax.swing.JButton();
         browseButton = new javax.swing.JButton();
         localServerLabel = new javax.swing.JLabel();
-        projectFolderRadioButton = new javax.swing.JRadioButton();
-        localServerRadioButton = new javax.swing.JRadioButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(sourcesLabel, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "LBL_Sources")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(projectFolderLabel, "Project Folder"); // NOI18N
-        projectFolderLabel.setEnabled(false);
+        localServerComboBox.setEditable(true);
 
-        localServerComboBox.setEnabled(false);
-
-        org.openide.awt.Mnemonics.setLocalizedText(findButton, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "LBL_FindLocalServer")); // NOI18N
-        findButton.setEnabled(false);
+        org.openide.awt.Mnemonics.setLocalizedText(locateButton, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "LBL_LocateLocalServer")); // NOI18N
+        locateButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                locateButtonActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "LBL_BrowseLocalServer")); // NOI18N
-        browseButton.setEnabled(false);
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
@@ -116,14 +107,6 @@ public class SourcesPanelVisual extends JPanel implements ActionListener {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(localServerLabel, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "TXT_LocalServer")); // NOI18N
-        localServerLabel.setEnabled(false);
-
-        sourcesGroup.add(projectFolderRadioButton);
-        projectFolderRadioButton.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(projectFolderRadioButton, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "LBL_UseProjectFolder")); // NOI18N
-
-        sourcesGroup.add(localServerRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(localServerRadioButton, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "LBL_UseLocalServer")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -132,96 +115,79 @@ public class SourcesPanelVisual extends JPanel implements ActionListener {
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(sourcesLabel)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(localServerRadioButton)
-                            .add(layout.createSequentialGroup()
-                                .add(21, 21, 21)
-                                .add(localServerComboBox, 0, 0, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(findButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(browseButton))))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(21, 21, 21)
-                                .add(projectFolderLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE))
-                            .add(layout.createSequentialGroup()
-                                .add(projectFolderRadioButton)
-                                .add(137, 137, 137))))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(29, 29, 29)
-                        .add(localServerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(localServerComboBox, 0, 297, Short.MAX_VALUE)
+                            .add(localServerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(browseButton)
+                            .add(locateButton))))
+                .add(18, 18, 18))
         );
+
+        layout.linkSize(new java.awt.Component[] {browseButton, locateButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(sourcesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(projectFolderRadioButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(projectFolderLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(localServerRadioButton)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(localServerLabel)
+                    .add(locateButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(browseButton)
-                    .add(findButton)
-                    .add(localServerComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(localServerLabel)
+                    .add(localServerComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(browseButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        String location = (String) localServerComboBox.getSelectedItem();
-        String newLocation = Utils.browseLocationAction(this, location);
+        LocalServer ls = (LocalServer) localServerComboBox.getSelectedItem();
+        String newLocation = Utils.browseLocationAction(this, ls.getDocumentRoot());
         if (newLocation == null) {
             return;
         }
 
         for (int i = 0; i < localServerComboBoxModel.getSize(); i++) {
-            String element = (String) localServerComboBoxModel.getElementAt(i);
-            if (newLocation.equals(element)) {
+            LocalServer element = (LocalServer) localServerComboBoxModel.getElementAt(i);
+            if (newLocation.equals(element.getDocumentRoot())) {
                 localServerComboBox.setSelectedIndex(i);
                 return;
             }
         }
-        localServerComboBoxModel.addElement(newLocation);
-        localServerComboBox.setSelectedItem(newLocation);
+        LocalServer localServer = new LocalServer(null, newLocation);
+        localServerComboBoxModel.addElement(localServer);
+        localServerComboBox.setSelectedItem(localServer);
         Utils.sortComboBoxModel(localServerComboBoxModel);
     }//GEN-LAST:event_browseButtonActionPerformed
+
+    private void locateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locateButtonActionPerformed
+        // XXX
+        String message = "Not implemented yet."; // NOI18N
+        NotifyDescriptor descriptor = new NotifyDescriptor(
+                message,
+                message,
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.INFORMATION_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(descriptor);
+    }//GEN-LAST:event_locateButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
-    private javax.swing.JButton findButton;
     private javax.swing.JComboBox localServerComboBox;
     private javax.swing.JLabel localServerLabel;
-    private javax.swing.JRadioButton localServerRadioButton;
-    private javax.swing.JLabel projectFolderLabel;
-    private javax.swing.JRadioButton projectFolderRadioButton;
-    private javax.swing.ButtonGroup sourcesGroup;
+    private javax.swing.JButton locateButton;
     private javax.swing.JLabel sourcesLabel;
     // End of variables declaration//GEN-END:variables
 
-    boolean isProjectFolderUsed() {
-        return projectFolderRadioButton.isSelected();
-    }
-
-    boolean isLocalServerUsed() {
-        return localServerRadioButton.isSelected();
-    }
-
-    String getLocalServerLocation() {
-        if (isProjectFolderUsed()) {
-            return null;
-        }
+    String getSourcesLocation() {
         return (String) localServerComboBox.getSelectedItem();
     }
 
@@ -229,15 +195,54 @@ public class SourcesPanelVisual extends JPanel implements ActionListener {
         return localServerComboBoxModel;
     }
 
-    void setProjectFolderLabel(String path) {
-        projectFolderLabel.setText(path);
-    }
-
     void replaceLocalServerLocation(String path) {
         int idx = localServerComboBox.getSelectedIndex();
         if (idx != -1) {
             localServerComboBoxModel.removeElementAt(idx);
             localServerComboBoxModel.insertElementAt(path, idx);
+        }
+    }
+
+    static class LocalServer implements Comparable<LocalServer> {
+        private final String virtualHost;
+        private final String documentRoot;
+
+        public LocalServer(String virtualHost, String documentRoot) {
+            this.virtualHost = virtualHost;
+            this.documentRoot = documentRoot;
+        }
+
+        public String getDocumentRoot() {
+            return documentRoot;
+        }
+
+        public String getVirtualHost() {
+            return virtualHost;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("[");
+            sb.append(virtualHost);
+            sb.append(" : ");
+            sb.append(documentRoot);
+            sb.append("]");
+            return sb.toString();
+        }
+
+        public int compareTo(LocalServer ls) {
+            return documentRoot.compareTo(ls.getDocumentRoot());
+        }
+    }
+
+    private static class LocalServerComboBoxModel extends DefaultComboBoxModel {
+        private static final long serialVersionUID = 193082264935872743L;
+
+        public LocalServerComboBoxModel() {
+            LocalServer localServer = new LocalServer(null,
+                    NbBundle.getMessage(SourcesPanelVisual.class, "LBL_UseProjectFolder"));
+            addElement(localServer);
         }
     }
 }

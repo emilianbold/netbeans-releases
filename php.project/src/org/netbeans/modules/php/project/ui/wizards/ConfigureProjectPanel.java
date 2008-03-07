@@ -40,11 +40,8 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.MessageFormat;
-import javax.swing.JFileChooser;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -112,7 +109,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
 
         // sources
         SourcesPanelVisual sourcesPanelVisual = getConfigureProjectPanelVisual().getSourcesPanelVisual();
-        sourcesPanelVisual.setProjectFolderLabel(getProjectSourcesLocation(projectFolder));
     }
 
     public void storeSettings(Object settings) {
@@ -181,10 +177,5 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
             return null;
         }
         return name;
-    }
-
-    private String getProjectSourcesLocation(File projectFolder) {
-        File src = new File(projectFolder, "src"); // NOI18N
-        return src.getAbsolutePath();
     }
 }
