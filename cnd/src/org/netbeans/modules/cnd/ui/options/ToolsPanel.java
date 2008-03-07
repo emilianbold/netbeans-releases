@@ -1097,15 +1097,10 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 setSelectedAsDefault();
             } else {
                 if (o == btMakeVersion) {
-                    postVersionInfo(tfMakePath.getText(), tfMakePath.getText());
                 } else if (o == btGdbVersion) {
-                    postVersionInfo(tfGdbPath.getText(), tfGdbPath.getText());
                 } else if (o == btCVersion) {
-                    postVersionInfo(tfCPath.getText(), tfCPath.getText());
                 } else if (o == btCppVersion) {
-                    postVersionInfo(tfCppPath.getText(), tfCppPath.getText());
                 } else if (o == btFortranVersion) {
-                    postVersionInfo(tfFortranPath.getText(), tfFortranPath.getText());
                 }
             }
         }
@@ -1620,10 +1615,15 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         add(btBaseDirectory, gridBagConstraints);
 
         btVersions.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btVersions.text")); // NOI18N
+        btVersions.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btVersionsActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 12;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 6);
         add(btVersions, gridBagConstraints);
@@ -1771,6 +1771,21 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         add(cbFamily, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btVersionsActionPerformed
+    if (isPathFieldValid(tfMakePath))
+        postVersionInfo(tfMakePath.getText(), tfMakePath.getText());
+    if (isPathFieldValid(tfGdbPath))
+        postVersionInfo(tfGdbPath.getText(), tfGdbPath.getText());
+    if (isPathFieldValid(tfCppPath))
+        postVersionInfo(tfCppPath.getText(), tfCppPath.getText());
+    if (isPathFieldValid(tfCPath))
+        postVersionInfo(tfCPath.getText(), tfCPath.getText());
+    if (isPathFieldValid(tfFortranPath))
+        postVersionInfo(tfFortranPath.getText(), tfFortranPath.getText());
+    
+                    
+}//GEN-LAST:event_btVersionsActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
