@@ -38,43 +38,39 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package apichanges;
+package org.netbeans.modules.visual.bugs;
 
-import framework.VisualTestCase;
+import org.netbeans.modules.visual.framework.VisualTestCase;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.layout.LayoutFactory;
+
+import java.awt.*;
 
 /**
- * Test for issue #98307 - Widget.paintBorder method added
  * @author David Kaspar
  */
-public class WidgetPaintBorderTest extends VisualTestCase {
+public class FlowLayout105400Test extends VisualTestCase {
 
-    public WidgetPaintBorderTest (String s) {
-        super (s);
+    public FlowLayout105400Test (String testName) {
+        super (testName);
     }
 
-    public void testPaintWidgetBorder () {
+    public void testFlowLayoutInsets () {
         Scene scene = new Scene ();
-        MyWidget widget = new MyWidget (scene);
-        scene.addChild (widget);
-        takeOneTimeSnapshot (scene, 10, 10);
-        assertTrue ("Widget border is not painted", widget.borderPainted);
-    }
+        Widget parent = new Widget (scene);
+        parent.setBorder (BorderFactory.createResizeBorder (10));
+        parent.setLayout (LayoutFactory.createVerticalFlowLayout ());
+        scene.addChild (parent);
 
-    private static class MyWidget extends Widget {
+        Widget child = new Widget (scene);
+        child.setBackground (Color.BLUE);
+        child.setOpaque (true);
+        child.setPreferredBounds (new Rectangle (-50, -30, 30, 20));
+        parent.addChild (child);
 
-        private boolean borderPainted = false;
-
-        public MyWidget (Scene scene) {
-            super (scene);
-        }
-
-        protected void paintBorder () {
-            borderPainted = true;
-            super.paintBorder ();
-        }
-
+        assertScene (scene, Color.WHITE, new Rectangle (-1, -1, 52, 42));
     }
 
 }
