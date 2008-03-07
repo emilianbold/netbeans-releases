@@ -162,7 +162,6 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
-import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.util.RelativePath;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
