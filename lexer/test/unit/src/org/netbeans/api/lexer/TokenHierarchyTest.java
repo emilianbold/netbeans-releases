@@ -93,9 +93,15 @@ public class TokenHierarchyTest extends NbTestCase {
         String text = "/**abc*/";
         doc.insertString(0, text, null);
         
-        doc.putProperty(Language.class,TestLineTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         Set<LanguagePath> lps = hi.languagePaths();
+        assertEquals(0, lps.size());
+        
+        // Now put a valid language into document
+        doc.putProperty(Language.class,TestLineTokenId.language());
+        
+        // Re-check language paths again
+        lps = hi.languagePaths();
         assertNotNull(lps);
         assertEquals(1, lps.size());
         assertTrue(lps.contains(LanguagePath.get(TestLineTokenId.language())));
