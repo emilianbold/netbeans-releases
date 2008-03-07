@@ -43,10 +43,6 @@ public class CssRuleContext {
         private CssRule selectedRule;
         private CssModel model;
         
-        public CssRuleContext(CssRule selectedRule, CssModel model) {
-            this(selectedRule, model, null, null);
-        }
-        
         public CssRuleContext(CssRule selectedRule, CssModel model, Document doc, FileObject source) {
             this.selectedRule = selectedRule;
             this.model = model;
