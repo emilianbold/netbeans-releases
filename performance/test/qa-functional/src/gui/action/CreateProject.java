@@ -143,6 +143,7 @@ public class CreateProject extends org.netbeans.performance.test.utilities.Perfo
     }
     
     public ComponentOperator open(){
+        if (project_type=="WebProject") wizard_location.next();
         wizard_location.finish();
         ProjectSupport.waitScanFinished();
         new EventTool().waitNoEvent(1000);

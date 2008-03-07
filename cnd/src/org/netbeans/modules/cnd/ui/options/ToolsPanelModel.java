@@ -117,6 +117,10 @@ public abstract class ToolsPanelModel {
     
     public abstract String getCompilerSetName();
     
+    public void setSelectedCompilerSetName(String name) {};
+    
+    public String getSelectedCompilerSetName() {return null;}
+    
 //    protected abstract void setCCompilerName(String name);
 //    
 //    protected abstract void setCppCompilerName(String name);

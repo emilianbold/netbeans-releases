@@ -404,6 +404,10 @@
                 <runtime-relative-path>ext/etl/sbme.jar</runtime-relative-path>
                 <binary-origin>external/sbme.jar</binary-origin>
             </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/bulkloader/ETLEngineInvoker-1.0.jar</runtime-relative-path>
+                <binary-origin>external/ETLEngineInvoker-1.0.jar</binary-origin>
+            </class-path-extension>           
         </data>
     </configuration>
 </project>

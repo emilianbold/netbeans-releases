@@ -111,7 +111,7 @@ made subject to such option by the copyright holder.
                 But There seems to be none, so the Spring config file template shows up in
                 both Spring and Other categories in the web project.
                 -->
-                <attr name="templateCategory" stringvalue="java-types"/>
+                <attr name="templateCategory" stringvalue="XML"/>
                 <attr name="position" intvalue="475"/>
             </file>
         </folder>

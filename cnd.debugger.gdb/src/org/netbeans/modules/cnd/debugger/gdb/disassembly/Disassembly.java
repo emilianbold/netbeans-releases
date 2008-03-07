@@ -45,8 +45,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -81,6 +83,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     private final Map<Integer,String> regNames = new HashMap<Integer,String>();
     private final Map<Integer,String> regValues = new HashMap<Integer,String>();
+    private final Set<Integer> regModified = new  HashSet<Integer>();
 
     private static final String ADDRESS_HEADER="address"; // NOI18N
     private static final String FUNCTION_HEADER="func-name"; // NOI18N
@@ -93,6 +96,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     public static final String REGISTER_NAMES_HEADER="^done,register-names=["; // NOI18N
     public static final String REGISTER_VALUES_HEADER="^done,register-values=["; // NOI18N
+    public static final String REGISTER_MODIFIED_HEADER="^done,changed-registers=["; // NOI18N
     public static final String RESPONSE_HEADER="^done,asm_insns=["; // NOI18N
     private static final String COMBINED_HEADER="src_and_asm_line={"; // NOI18N
     
@@ -123,53 +127,33 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
                 writer = new OutputStreamWriter(getFileObject().getOutputStream());
 
-                // Dis is opened - write to document
-                //if (doc != null) {
-                    //doc.remove(0, doc.getLength());
-                    //doc.insertString(doc.getLength(), debugger.getCurrentCallStackFrame().getFunctionName() + "()\n", null);
-                    writer.write(functionName + "()\n"); // NOI18N
-                    int idx = 2;
+                writer.write(functionName + "()\n"); // NOI18N
+                int idx = 2;
 
-                    /*int combinedPos = msg.indexOf(COMBINED_HEADER, pos);
-                    while (combinedPos != -1) {
-                        int lineIdx = Integer.valueOf(readValue(LINE_HEADER, msg, pos));
-                        String fileStr = readValue(FILE_HEADER, msg, pos);
-                        doc.insertString(doc.getLength(), "// file:" + fileStr + ", line " + lineIdx + "\n", null);
-                        idx++;
-                        /*FileObject fobj = URLMapper.findFileObject(new URL(fileStr));
-                        DataObject srcdobj = DataObject.find(fobj);
-                        org.openide.text.Line srcLine = srcdobj.getCookie(LineCookie.class).getLineSet().getOriginal(lineIdx);
-                        doc.insertString(doc.getLength(), "//" + srcLine.getText() + "\n", null);*/
-
-                        //combinedPos = msg.indexOf(COMBINED_HEADER, combinedPos + COMBINED_HEADER.length());
-                        int combinedPos = -1;
-
-                        // read instructions in this line
-                        int start = msg.indexOf(ADDRESS_HEADER, pos);
-                        while (start != -1 && (combinedPos == -1 || start < combinedPos)) {
-                            pos = start;
-                            Line line = new Line(msg, start, idx++);
-                            if (functionName.equals(line.function)) {
-                                lines.add(line);
-                                writer.write(line + "\n"); // NOI18N
-                            }
-                            //doc.insertString(doc.getLength(), line.toString() + "\n", null);
-                            start = msg.indexOf(ADDRESS_HEADER, start+1);
-                        }
-                    //}
-            //}
-                 /*else {
-                    // Dis is not opened - write to file
-                    OutputStreamWriter writer = new OutputStreamWriter(getFileObject().getOutputStream());
-                    int start = msg.indexOf(ONLY_HEADER, pos);
-                    while (start != -1) {
-                        Line line = new Line(msg, start);
-                        lines.add(line);
-                        writer.write(line + "\n");
-                        start = msg.indexOf(ONLY_HEADER, start+1);
+                for (;;) {
+                    int combinedPos = msg.indexOf(COMBINED_HEADER, pos);
+                    int addressPos = msg.indexOf(ADDRESS_HEADER, pos);
+                    
+                    if (addressPos == -1) {
+                        break;
                     }
-                    writer.close();
-                }*/
+                    
+                    if (combinedPos != -1 && combinedPos < addressPos) {
+                        int lineIdx = Integer.valueOf(readValue(LINE_HEADER, msg, combinedPos));
+                        String fileStr = readValue(FILE_HEADER, msg, combinedPos);
+                        writer.write("// file:" + fileStr + ", line " + lineIdx + "\n"); // NOI18N
+                        idx++;
+                        pos = combinedPos+1;
+                    }
+                    
+                    // read instruction in this line
+                    Line line = new Line(msg, addressPos, idx++);
+                    if (functionName.equals(line.function)) {
+                        lines.add(line);
+                        writer.write(line + "\n"); // NOI18N
+                    }
+                    pos = addressPos+1;
+                }
             } catch (Exception ioe) {
                 ioe.printStackTrace();
             }
@@ -180,6 +164,10 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             } catch (IOException ioe) {
                 // do nothing
             }
+        }
+        // If we got empty dis try to reload without source line info
+        if (lines.isEmpty()) {
+            reloadDis(false, true);
         }
     }
     
@@ -199,6 +187,26 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         }
     }
     
+    public void updateRegModified(String msg) {
+        assert msg.startsWith(REGISTER_MODIFIED_HEADER) : "Invalid asm response message"; // NOI18N
+        regModified.clear();
+        int pos = REGISTER_MODIFIED_HEADER.length();
+        while (pos != -1) {
+            int end = msg.indexOf("\"", pos+1); // NOI18N
+            if (end == -1) {
+                break;
+            }
+            String index = msg.substring(pos+1, end);
+            try {
+                regModified.add(Integer.valueOf(index));
+            } catch (NumberFormatException nfe) {
+                //do nothing
+            }
+            pos = msg.indexOf("\"", end+1); // NOI18N
+        }
+        RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
+    }
+    
     public void updateRegValues(String msg) {
         assert msg.startsWith(REGISTER_VALUES_HEADER) : "Invalid asm response message"; // NOI18N
         regValues.clear();
@@ -213,13 +221,14 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             }
             pos = msg.indexOf(NUMBER_HEADER, pos+1);
         }
-        RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
+        // Todo: we know that updated registers will fire the update, but better make it updated at one piece
+        //RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
     }
 
-    public Map<String, String> getRegisterValues() {
-        Map<String,String> res = new HashMap<String,String>();
+    public Map<String, RegisterValuesProvider.RegisterValue> getRegisterValues() {
+        Map<String,RegisterValuesProvider.RegisterValue> res = new HashMap<String,RegisterValuesProvider.RegisterValue>();
         for (Integer idx : regValues.keySet()) {
-            res.put(regNames.get(idx), regValues.get(idx));
+            res.put(regNames.get(idx), new RegisterValuesProvider.RegisterValue(regValues.get(idx), regModified.contains(idx)));
         }
         return res;
     }
@@ -251,19 +260,23 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(evt.getPropertyName())) {
-            // stack is updated, reload disassembler if needed
-            // TODO: there may be functions with the same name called one from the other, we need to check that too
-            CallStackFrame frame = debugger.getCurrentCallStackFrame();
-            if (lastFrame == null || !lastFrame.getFunctionName().equals(frame.getFunctionName())) {
-                String filename = frame.getFileName();
-                if (filename != null && filename.length() > 0) {
-                    debugger.getGdbProxy().data_disassemble(filename, frame.getLineNumber());
-                } else {
-                    // if filename is not known - just disassemble using address
-                    debugger.getGdbProxy().data_disassemble(1000);
-                }
-                lastFrame = frame;
+            reloadDis(true, false);
+        }
+    }
+    
+    private void reloadDis(boolean withSource, boolean force) {
+        // reload disassembler if needed
+        // TODO: there may be functions with the same name called one from the other, we need to check that too
+        CallStackFrame frame = debugger.getCurrentCallStackFrame();
+        if (force || lastFrame == null || !lastFrame.getFunctionName().equals(frame.getFunctionName())) {
+            String filename = frame.getFileName();
+            if (filename != null && filename.length() > 0) {
+                debugger.getGdbProxy().data_disassemble(filename, frame.getLineNumber(), withSource);
+            } else {
+                // if filename is not known - just disassemble using address
+                debugger.getGdbProxy().data_disassemble(1000, withSource);
             }
+            lastFrame = frame;
         }
     }
     

@@ -262,11 +262,10 @@ public class EditorOptions {
     public static final Boolean addLeadingStarInCommentDefault = true;
     
     private static final String APACHE_PROFILE = "Apache"; // NOI18N
-    private static final String CUSTOM_PROFILE = "Custom"; // NOI18N
     private static final String DEFAULT_PROFILE = "Default"; // NOI18N
 
     public static final String[] PREDEFINED_STYLES = new String[]
-                              {DEFAULT_PROFILE, APACHE_PROFILE, CUSTOM_PROFILE};
+                              {DEFAULT_PROFILE, APACHE_PROFILE};
 
     private static Map<String,Object> defaults;
     private static Map<String,Map<String,Object>> namedDefaults;
@@ -379,9 +378,12 @@ public class EditorOptions {
         Map<String,Object> apache = new HashMap<String,Object>();
         namedDefaults.put(APACHE_PROFILE, apache);
         apache.put(indentCasesFromSwitch, false);
-// Placeholder for custom style        
-        Map<String,Object> custom = new HashMap<String,Object>();
-        namedDefaults.put(CUSTOM_PROFILE, custom);
+        apache.put(alignMultilineCallArgs, true);
+        apache.put(alignMultilineMethodParams, true);
+        apache.put(newLineCatch, true);
+        apache.put(newLineElse, true);
+        apache.put(newLineWhile, true);
+        
     }
 
     public static Object getDefault(CodeStyle.Language language, String styleId, String id){
@@ -465,7 +467,7 @@ public class EditorOptions {
                 break;
         }
         List<String> res = new ArrayList<String>();
-        StringTokenizer st = new StringTokenizer(styles,",");
+        StringTokenizer st = new StringTokenizer(styles,","); // NOI18N
         while(st.hasMoreTokens()) {
             res.add(st.nextToken());
         }
