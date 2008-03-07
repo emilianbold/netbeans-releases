@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -65,6 +66,7 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.sax.SAXSource;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
@@ -76,6 +78,7 @@ import org.netbeans.modules.websvc.saas.model.wadl.ParamStyle;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
+import org.netbeans.modules.xml.retriever.Retriever;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -92,6 +95,11 @@ import org.xml.sax.XMLReader;
  * @author nam
  */
 public class SaasUtil {
+    public static final String APPLICATION_WADL = "resources/application.wadl";
+    public static final String DEFAULT_SERVICE_NAME = "Service";
+    public static final String CATALOG = "catalog";
+    
+    
 
     public static <T> T loadJaxbObject(FileObject input, Class<T> type, boolean includeAware) throws IOException {
         if (input == null) {
@@ -448,8 +456,6 @@ public class SaasUtil {
         return null;
     }
     
-    public static final String CATALOG = "catalog";
-    
     public static String deriveFileName(String path) {
         String name = null;
         try {
@@ -465,7 +471,7 @@ public class SaasUtil {
         return name;
     }
     
-    public static FileObject getWadlFile(WadlSaas saas) throws IOException {
+    public static FileObject extractWadlFile(WadlSaas saas) throws IOException {
         InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(saas.getUrl());
         if (in == null) {
             return null;
@@ -501,6 +507,55 @@ public class SaasUtil {
             if (s.getUrl().equals(url)) {
                 return s;
             }
+        }
+        return null;
+    }
+
+    public static String getWadlServiceDirName(String wadlUrl) {
+            String urlPath = wadlUrl.replace('\\', '/');
+            if (urlPath.endsWith(APPLICATION_WADL)) {
+                urlPath = urlPath.substring(0, urlPath.length() - APPLICATION_WADL.length() - 1);
+            }
+            int start = urlPath.lastIndexOf("/") + 1; //NOI18N
+            String name = urlPath.substring(start);
+            if (name.endsWith(".wadl") || name.endsWith(".WADL")) {
+                name = name.substring(0, name.length()- 5);
+            }
+            name = name.replace('.', '-'); // NOI18N
+            return ensureUniqueServiceDirName(name);
+    }
+    
+    public static String ensureUniqueServiceDirName(String name) {
+        String result = name;
+        for (int i=0 ; i<1000 ; i++) {
+            FileObject websvcHome = SaasServicesModel.getWebServiceHome();
+            if (i > 0) {
+                result = name + i;
+            }
+            if (websvcHome.getFileObject(result) == null) {
+                try {
+                    websvcHome.createFolder(result);
+                } catch(IOException e) {
+                    Exceptions.printStackTrace(e);
+                }
+                break;
+            }
+        }
+        return result;
+    }
+
+    public static FileObject retrieveWadlFile(WadlSaas saas) {
+        try {
+            FileObject catalogFolder = saas.getSaasFolder().getFileObject(CATALOG); //NOI18N
+            if (catalogFolder == null) {
+                catalogFolder = saas.getSaasFolder().createData(CATALOG);
+            }
+            File catalogFile = new File(saas.getDisplayName());
+            URI catalog  = catalogFile.toURI();
+            URI wadlUrl = new URI(saas.getUrl());
+            return Retriever.getDefault().retrieveResource(catalogFolder, catalog, wadlUrl);
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
         return null;
     }

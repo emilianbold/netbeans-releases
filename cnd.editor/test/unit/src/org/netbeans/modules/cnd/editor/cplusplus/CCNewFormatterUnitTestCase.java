@@ -2586,4 +2586,93 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 );
     }
 
+    public void testDoubleFunctionComment() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "void foo();\n" +
+                "/* Stream status */\n" +
+                "/* Data structure describing a single value and its code string. */\n" +
+                "typedef struct ct_data_s\n" +
+                "{\n" +
+                "    ush code;\n" +
+                "} FAR ct_data;\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect blank lines between block comments",
+                "void foo();\n" +
+                "/* Stream status */\n" +
+                "\n" +
+                "/* Data structure describing a single value and its code string. */\n" +
+                "typedef struct ct_data_s\n" +
+                "{\n" +
+                "    ush code;\n" +
+                "} FAR ct_data;\n"
+                );
+    }
+
+    public void testArrayAsParameter() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
+                "{\n" +
+                "public:\n" +
+                "    int number;\n" +
+                "    char** cc;\n" +
+                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\"}), number(2)\n" +
+                "    {\n" +
+                "    }\n" +
+                "} FAR ct_data;\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting of array as parameter",
+                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
+                "{\n" +
+                "public:\n" +
+                "    int number;\n" +
+                "    char** cc;\n" +
+                "\n" +
+                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\"}), number(2)\n" +
+                "    {\n" +
+                "    }\n" +
+                "} FAR ct_data;\n"
+                );
+    }
+
+    public void testArrayAsParameter2() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentNamespace, false);
+        setLoadDocumentText(
+                "namespace AC\n" +
+                "{\n" +
+                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
+                "{\n" +
+                "public:\n" +
+                "    int number;\n" +
+                "    char** cc;\n" +
+                "ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
+                "    {\n" +
+                "    }\n" +
+                "} FAR ct_data;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting of array as parameter",
+                "namespace AC\n" +
+                "{\n" +
+                "\n" +
+                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
+                "{\n" +
+                "public:\n" +
+                "    int number;\n" +
+                "    char** cc;\n" +
+                "\n" +
+                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
+                "    {\n" +
+                "    }\n" +
+                "} FAR ct_data;\n" +
+                "}\n"
+                );
+    }
+
 }
