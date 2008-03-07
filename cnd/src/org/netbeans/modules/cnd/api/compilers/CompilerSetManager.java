@@ -275,7 +275,7 @@ public class CompilerSetManager {
                 if (Utilities.isWindows()) {
                     name = name + ".exe"; // NOI18N
                 }
-                if (new File(dir, best[i]).exists()) { // NOI18N
+                if (new File(dir, name).exists()) { // NOI18N
                     cs.addTool(name, path, kind);
                     return;
                 }
@@ -402,6 +402,9 @@ public class CompilerSetManager {
             }
         }
         sets.add(cs);
+        if (sets.size() == 1) {
+            setDefault(cs);
+        }
     }
     
     /**
