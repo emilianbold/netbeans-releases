@@ -241,13 +241,15 @@ implements DocumentListener, KeyListener {
     }
 
     public int getInsertOffset() {
-        return positionRegion.getStartOffset();
+        if (allParameters.isEmpty())
+            return positionRegion.getStartOffset();
+        return Math.min(paramImpl(allParameters.get(0)).getPositionRegion().getStartOffset(), positionRegion.getStartOffset());
     }
 
     public String getInsertText() {
         if (inserted) {
             try {
-                int startOffset = positionRegion.getStartOffset();
+                int startOffset = getInsertOffset();
                 return doc.getText(startOffset, positionRegion.getEndOffset() - startOffset);
             } catch (BadLocationException e) {
                 ErrorManager.getDefault().notify(e);
