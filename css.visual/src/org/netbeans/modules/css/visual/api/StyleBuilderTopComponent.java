@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.css.visual.ui;
+package org.netbeans.modules.css.visual.api;
 
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
@@ -53,6 +53,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import org.netbeans.modules.css.editor.model.CssRule;
+import org.netbeans.modules.css.visual.ui.StyleBuilderAction;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -76,11 +77,12 @@ public final class StyleBuilderTopComponent extends TopComponent {
     public static final int OUT_OF_RULE = 4;
     
     
-    private static final String DEFAULT_TC_NAME = NbBundle.getMessage(StyleBuilderTopComponent.class, "CTL_CSSStyleBuilderTopComponent");
+    private static final String DEFAULT_TC_NAME = NbBundle.getMessage(StyleBuilderAction.class, "CTL_CSSStyleBuilderTopComponent");
     
     private static StyleBuilderTopComponent instance;
+    
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/css/resources/style_builder_view_toolbar.png"; //NOI18N
+    private static final String ICON_PATH = "org/netbeans/modules/css/resources/style_builder_view_toolbar.png"; //NOI18N
     
     private static final String PREFERRED_ID = "StyleBuilderTC"; //NOI18N
     
@@ -91,51 +93,48 @@ public final class StyleBuilderTopComponent extends TopComponent {
     private StyleBuilderTopComponent() {
         initComponents();
         
-        setToolTipText(NbBundle.getMessage(StyleBuilderTopComponent.class, "HINT_CSSStyleBuilderTopComponent"));
+        setToolTipText(NbBundle.getMessage(StyleBuilderAction.class, "HINT_CSSStyleBuilderTopComponent"));
         setIcon(Utilities.loadImage(ICON_PATH, true));
         
-        NO_RULE_SELECTED_PANEL = makeMsgPanel(NbBundle.getMessage(StyleBuilderTopComponent.class, "Out_Of_Rule"));
-        BROKEN_MODEL_PANEL = makeMsgPanel(NbBundle.getMessage(StyleBuilderTopComponent.class, "Broken_Model"));
+        NO_RULE_SELECTED_PANEL = makeMsgPanel(NbBundle.getMessage(StyleBuilderAction.class, "Out_Of_Rule"));
+        BROKEN_MODEL_PANEL = makeMsgPanel(NbBundle.getMessage(StyleBuilderAction.class, "Broken_Model"));
         
     }
     
-//    private Document document;
-//    
-//    public void setEditorPane(JEditorPane pane) {
-//        
-//        //hack - the fix should be done in the caller - CSSTCController
-//        if(this.document == doc) {
-//            return;
-//        }
-//        
-//        if(doc == null) {
-//            deactivate();
-//        } else {
-//            activate(doc);
-//        }
-//        
-//    }
-//    
-//    private void activate(Document doc) {
-//        deactivate(); //deactivate the old document
-//        
-//        //and activate the new one
-//        System.out.println("+SB: activating document " + doc);
-//        this.document = doc;
-//        
-//        //attach the caret listener
-//        //attach the parser listener
-//    }
-//    
-//    //called when the css file has been closed or switched 
-//    private void deactivate() {
-//        System.out.println("-SB: deactivating document " + this.document);
-//        this.document = null;
-//        
-//        //detattach the caret listener
-//        //detattach the parser listener
-//    }
+     public void setContent(CssRuleContext content){
+        CssRule rule = content.selectedRule();
+        setName((rule != null ? rule.name() + " - " : "") + DEFAULT_TC_NAME);//NOI18N
+        styleBuilderPanel.setContent(content);
+    }
     
+    public void setPanelMode(int mode) {
+        JPanel shownPanel = null;
+        switch(mode) {
+        case MODEL_OK:
+            styleBuilderPanel.setCursor(null);
+            removeAll();
+            add(styleBuilderPanel, java.awt.BorderLayout.CENTER);
+            break;
+        case MODEL_ERROR:
+            removeAll();
+            setName(DEFAULT_TC_NAME);//set default TC name
+            add(BROKEN_MODEL_PANEL, java.awt.BorderLayout.CENTER);
+            break;
+        case MODEL_UPDATING:
+            styleBuilderPanel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            break;
+        case OUT_OF_RULE:
+            setName(DEFAULT_TC_NAME);//set default TC name
+            removeAll();
+            add(NO_RULE_SELECTED_PANEL, java.awt.BorderLayout.CENTER);
+            break;
+        default:
+            throw new IllegalArgumentException("Invalid StyleBuilder mode = " + mode); //NOI18N
+        }
+        validate();
+        repaint();
+    }
+      
     private JPanel makeMsgPanel(String message) {
         JPanel p = new JPanel();
         p.setBackground(Color.WHITE);
@@ -151,7 +150,7 @@ public final class StyleBuilderTopComponent extends TopComponent {
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         setLayout(new java.awt.BorderLayout());
@@ -217,37 +216,5 @@ public final class StyleBuilderTopComponent extends TopComponent {
         }
     }
     
-    public void setContent(CssRuleContext content){
-        CssRule rule = content.selectedRule();
-        setName((rule != null ? rule.name() + " - " : "") + DEFAULT_TC_NAME);//NOI18N
-        styleBuilderPanel.setContent(content);
-    }
-    
-    public void setPanelMode(int mode) {
-        JPanel shownPanel = null;
-        switch(mode) {
-        case MODEL_OK:
-            styleBuilderPanel.setCursor(null);
-            removeAll();
-            add(styleBuilderPanel, java.awt.BorderLayout.CENTER);
-            break;
-        case MODEL_ERROR:
-            removeAll();
-            setName(DEFAULT_TC_NAME);//set default TC name
-            add(BROKEN_MODEL_PANEL, java.awt.BorderLayout.CENTER);
-            break;
-        case MODEL_UPDATING:
-            styleBuilderPanel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            break;
-        case OUT_OF_RULE:
-            setName(DEFAULT_TC_NAME);//set default TC name
-            removeAll();
-            add(NO_RULE_SELECTED_PANEL, java.awt.BorderLayout.CENTER);
-            break;
-        default:
-            throw new IllegalArgumentException("Invalid StyleBuilder mode = " + mode); //NOI18N
-        }
-        validate();
-        repaint();
-    }
+   
 }
