@@ -75,9 +75,11 @@ made subject to such option by the copyright holder.
     
     <folder name="Services">
         <folder name="IndentEngine">
+            <!--
             <file name="org-netbeans-modules-xml-text-settings-XMLIndentEngine.settings" url="XMLIndentEngine.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.text.indent.Bundle"/>
             </file>
+            -->
             <file name="org-netbeans-modules-xml-text-settings-DTDIndentEngine.settings" url="DTDIndentEngine.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.text.indent.Bundle"/>
             </file>
