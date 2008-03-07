@@ -659,9 +659,9 @@ public class ReformatterImpl {
     }
 
     /*package local*/ int getIndent(int shift) {
-        shift = shift * codeStyle.getGlobalIndentSize();
+        shift = shift * codeStyle.indentSize();
         if (codeStyle.indentCasesFromSwitch()) {
-            shift += codeStyle.getGlobalIndentSize() * braces.switchDepth();
+            shift += codeStyle.indentSize() * braces.switchDepth();
         }
         StackEntry entry = braces.peek();
         if (entry != null) {
@@ -680,7 +680,7 @@ public class ReformatterImpl {
                     case WHILE: 
                     case SWITCH: 
                     case CATCH: 
-                        shift += codeStyle.getFormatStatementContinuationIndent() - codeStyle.getGlobalIndentSize();
+                        shift += codeStyle.getFormatStatementContinuationIndent() - codeStyle.indentSize();
                         break;
                     default:
                     {
@@ -844,8 +844,8 @@ public class ReformatterImpl {
     }
 
     private void formatElse(Token<CppTokenId> previous) {
-        spaceBefore(previous, codeStyle.spaceBeforeElse());
-        if (previous != null && ts.isFirstLineToken()) {
+        //spaceBefore(previous, codeStyle.spaceBeforeElse());
+        if (ts.isFirstLineToken()) {
             DiffResult diff = diffs.getDiffs(ts, -1);
             if (diff != null) {
                 boolean done = false;
@@ -883,6 +883,8 @@ public class ReformatterImpl {
             } else if (previous.id() == NEW_LINE || previous.id() == PREPROCESSOR_DIRECTIVE) {
                 ts.addBeforeCurrent(0, getParentIndent());
             }
+        } else if (previous != null) {
+            makeSpaceBefore(codeStyle.spaceBeforeElse());
         }
     }
 
@@ -1209,7 +1211,7 @@ public class ReformatterImpl {
             newLineBefore();
         } else if (where == CodeStyle.BracePlacement.SAME_LINE) {
             if (ts.isFirstLineToken()){
-                if (!tryRemoveLine(spaceBefore)){
+                if (!removeLineBefore(spaceBefore)){
                     newLineBefore();
                 }
             } else {
@@ -1612,6 +1614,7 @@ public class ReformatterImpl {
                     switch (ts.token().id()) {
                         case RPAREN:
                             depth++;
+                            break;
                         case LPAREN:
                         {
                             depth--;
@@ -1635,7 +1638,38 @@ public class ReformatterImpl {
         return p != null && p.id() == OPERATOR;
     }
 
-    private boolean tryRemoveLine(boolean addSpace){
+    
+    // <importantFrom><WS><NL><WS><importantTo>
+    // where <NL> replaced on nonNL
+    // indexTo point to importantTo
+    // importantTo shoul be not first line token
+    // method removes chain <WS><NL><WS> or replaces it to on space
+    private boolean makeSpaceBefore(boolean addSpace){
+        int index = ts.index();
+        try {
+            while(true) {
+                if (!ts.movePrevious()){
+                    return false;
+                }
+                if (ts.token().id() == NEW_LINE){
+                    DiffResult diff = diffs.getDiffs(ts, 0);
+                    if (diff.replace == null || diff.replace.hasNewLine()){
+                        return false;
+                    }
+                } else if (ts.token().id() == PREPROCESSOR_DIRECTIVE){
+                    return false;
+                } else if (ts.token().id() != WHITESPACE){
+                    replaceSegment(addSpace, index);
+                    return true;
+                }
+            }
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+    
+    private boolean removeLineBefore(boolean addSpace){
         int index = ts.index();
         try {
             while(true) {

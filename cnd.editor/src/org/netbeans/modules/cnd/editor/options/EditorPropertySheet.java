@@ -183,6 +183,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.setName("Indents"); // NOI18N
 	set.setDisplayName(getString("LBL_TabsAndIndents")); // NOI18N
         set.setShortDescription(getString("HINT_TabsAndIndents")); // NOI18N
+	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.indentSize));
 	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.statementContinuationIndent));
 	set.put(new PreprocessorIndentProperty(currentLanguage, preferences, EditorOptions.indentPreprocessorDirectives));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.sharpAtStartLine));
@@ -656,7 +657,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(jSplitPane1, gridBagConstraints);
 
-        jSeparator1.setForeground(javax.swing.UIManager.getDefaults().getColor("Button.disabledText"));
+        jSeparator1.setForeground(java.awt.SystemColor.activeCaptionBorder);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;

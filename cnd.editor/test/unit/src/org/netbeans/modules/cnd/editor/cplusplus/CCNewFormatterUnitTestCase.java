@@ -2586,4 +2586,28 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 );
     }
 
+    public void testDoubleFunctionComment() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "void foo();\n" +
+                "/* Stream status */\n" +
+                "/* Data structure describing a single value and its code string. */\n" +
+                "typedef struct ct_data_s\n" +
+                "{\n" +
+                "    ush code;\n" +
+                "} FAR ct_data;\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect blank lines between block comments",
+                "void foo();\n" +
+                "/* Stream status */\n" +
+                "\n" +
+                "/* Data structure describing a single value and its code string. */\n" +
+                "typedef struct ct_data_s\n" +
+                "{\n" +
+                "    ush code;\n" +
+                "} FAR ct_data;\n"
+                );
+    }
+
 }

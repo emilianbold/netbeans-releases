@@ -78,6 +78,10 @@ public class EditorOptions {
      */
     public static final String statementContinuationIndent = "statementContinuationIndent"; // NOI18N 
     public static final int statementContinuationIndentDefault = 8;
+
+    public static final String indentSize = "indentSize"; // NOI18N 
+    public static final int indentSizeDefault = 4;
+
     /**
      * Whether to indent preprocessors positioned at start of line.
      * Those not starting at column 0 of the line will automatically be indented.
@@ -277,6 +281,7 @@ public class EditorOptions {
     private static void createDefaults() {
         defaults = new HashMap<String,Object>();
         // Indents
+        defaults.put(indentSize, indentSizeDefault);
         defaults.put(statementContinuationIndent,statementContinuationIndentDefault);
         defaults.put(indentPreprocessorDirectives,indentPreprocessorDirectivesDefault);
         defaults.put(sharpAtStartLine, sharpAtStartLineDefault);
@@ -486,13 +491,13 @@ public class EditorOptions {
         }
     }
 
-    public static int getGlobalIndentSize(CodeStyle.Language language) {
-        Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter"); // NOI18N
-        if (f != null) {
-            return f.getShiftWidth();
-        }
-        return 4;
-    }
+//    public static int getGlobalIndentSize(CodeStyle.Language language) {
+//        Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter"); // NOI18N
+//        if (f != null) {
+//            return f.getShiftWidth();
+//        }
+//        return 4;
+//    }
 
     public static int getGlobalTabSize(CodeStyle.Language language) {
         Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter"); // NOI18N
