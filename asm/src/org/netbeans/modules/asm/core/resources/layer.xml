@@ -71,10 +71,10 @@
             
     <folder name="Menu">
         <folder name="Window">
-            <folder name="Navigator">
+            <folder name="Debug">
                 <file name="NavigatorAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-asm-core-ui-top-NavigatorAction.instance"/>
-                    <attr name="position" intvalue="650"/>
+                    <attr name="position" intvalue="952"/>
                 </file>                          
             </folder>
         </folder>       
@@ -158,16 +158,20 @@
         </folder>
     </folder> 
     
-    <folder name="Templates">        
-        <folder name="Other">            
-            <file name="AsmTemplate.s" url="AsmTemplate.s">                
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.asm.core.resources.Bundle"/>                
+    <folder name="Templates">
+        <folder name="asmFiles">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.asm.core.resources.Bundle"/>
+            <attr name="position" intvalue="565"/>
+            
+            <file name="AsmTemplate.s" url="AsmTemplate.s">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.asm.core.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="position" intvalue="221"/>
-            </file>            
-        </folder>             
-    </folder>    
-    
+                <attr name="position" intvalue="100"/>
+                <attr name="templateCategory" stringvalue="asm-types"/>
+            </file>
+        </folder>
+    </folder>
+        
     <folder name="Windows2">
         <folder name="Components">
             <file name="NavigatorTopComponent.settings" url="NavigatorTopComponentSettings.xml"/>                                 

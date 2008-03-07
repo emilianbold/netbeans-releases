@@ -89,7 +89,7 @@ final class PanelWebService<T> extends Panel<T> {
   @Override
   protected Object getResult()
   {
-    return WSDLUtilities.getWSDLModel(myFile);
+    return PanelUtil.getWSDLModel(myFile);
   }
 
   @Override

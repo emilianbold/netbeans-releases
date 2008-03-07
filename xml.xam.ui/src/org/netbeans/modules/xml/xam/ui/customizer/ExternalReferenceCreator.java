@@ -135,6 +135,7 @@ public abstract class ExternalReferenceCreator<T extends Component>
         explorerManager = new ExplorerManager();
         explorerManager.addPropertyChangeListener(this);
         explorerManager.setRootContext(createRootNode());
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExternalReferenceCreator.class,"DSC_ExternalReferenceCreator"));
     }
 
     public void applyChanges() throws IOException {

@@ -128,121 +128,193 @@ public class CompilerSetManager {
     }
     
     /** Search $PATH for all desired compiler sets and initialize cbCompilerSet and spCompilerSets */
-    private void initCompilerSets() {
-        
+    public void initCompilerSets() {
         for (String path : dirlist) {
-            if (path.equals("/usr/ccs/bin")) { // NOI18N
-                // contains only softlinks
-                continue;
-            }
             File dir = new File(path);
-            if (dir.isDirectory()) {
-                initCompiler(gcc_filter, "gcc", Tool.CCompiler, path); // NOI18N
-                initCompiler(gpp_filter, "g++", Tool.CCCompiler, path); // NOI18N
-                initCompiler(cc_filter, "cc", Tool.CCompiler, path); // NOI18N
-                initFortranCompiler(fortran_filter, Tool.FortranCompiler, path); // NOI18N
-                if (Utilities.isUnix()) {  // CC and cc are the same on Windows, so skip this step on Windows
-                    initCompiler(CC_filter, "CC", Tool.CCCompiler, path); // NOI18N
-                }
-                initMakeTool(make_filter, Tool.MakeTool, path); // NOI18N
-                initDebuggerTool(debugger_filter, Tool.DebuggerTool, path); // NOI18N
+            if (dir.isDirectory()&& isACompilerSetFolder(dir)) {
+                initCompilerSet(path, null);
             }
         }
         completeCompilerSets();
     }
     
-    private void initCompiler(CompilerFilenameFilter filter, String best, int kind, String path) {
+    public void initCompilerSet(CompilerSet cs) {
+        initCompilerSet(cs.getDirectory(), cs);
+        completeCompilerSet(cs);
+    }
+    
+    private void initCompilerSet(String path, CompilerSet cs) {
+        initCompiler(gcc_filter, "gcc", Tool.CCompiler, path, cs); // NOI18N
+        initCompiler(gpp_filter, "g++", Tool.CCCompiler, path, cs); // NOI18N
+        initCompiler(cc_filter, "cc", Tool.CCompiler, path, cs); // NOI18N
+        initFortranCompiler(fortran_filter, Tool.FortranCompiler, path, cs); // NOI18N
+        if (Utilities.isUnix()) {  // CC and cc are the same on Windows, so skip this step on Windows
+            initCompiler(CC_filter, "CC", Tool.CCCompiler, path, cs); // NOI18N
+        }
+        initMakeTool(make_filter, Tool.MakeTool, path, cs); // NOI18N
+        initDebuggerTool(debugger_filter, Tool.DebuggerTool, path, cs); // NOI18N
+    }
+    
+    /**
+     * Check whether folder is a compilerset. It needs at least one C or C++ compiler.
+     * @param folder
+     * @return
+     */
+    private boolean isACompilerSetFolder(File folder) {
+        String[] compilerNames = new String[] {"gcc", "g++", "cc", "CC"}; // NOI18N
+        if (folder.getPath().contains("msys") && new File(folder, "make.exe").exists()) { // NOI18N
+            return true;
+        }
+        for (int i = 0; i < compilerNames.length; i++) {
+            if (new File(folder, compilerNames[i]).exists() || new File(folder, compilerNames[i] + ".exe").exists()) // NOI18N
+                return true;
+        }
+        return false;
+    }
+    
+    private void initCompiler(CompilerFilenameFilter filter, String best, int kind, String path, CompilerSet cs) {
         File dir = new File(path);
         String[] list = dir.list(filter);
 
         if (list != null && list.length > 0) {
-            CompilerSet cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
-            add(cs);
+            if (cs == null) {
+                CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), list);
+                cs = getCompilerSet(flavor);
+                if (cs != null && !cs.getDirectory().equals(path))
+                    return;
+                cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
+                add(cs);
+                if (cs.findTool(kind) != null) {
+                    // Only one tool of each kind in a cs
+                    return;
+                }
+            }
             for (String name : list) {
                 File file = new File(dir, name);
                 if (file.exists() && (name.equals(best) || name.equals(best + ".exe"))) { // NOI18N
                     cs.addTool(name, path, kind);
+                    break;
                 }
             }
         }
     }
     
-    private void initFortranCompiler(CompilerFilenameFilter filter, int kind, String path) {
+    private void initFortranCompiler(CompilerFilenameFilter filter, int kind, String path, CompilerSet cs) {
         File dir = new File(path);
         String[] list = dir.list(filter);
         String[] best = {
             "gfortran", // NOI18N
+            "g95", // NOI18N
+            "g90", // NOI18N
             "g77", // NOI18N
+            "ffortran", // NOI18N
             "f95", // NOI18N
             "f90", // NOI18N
             "f77", // NOI18N
         };
 
         if (list != null && list.length > 0) {
-            CompilerSet cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
-            add(cs);
-            for (String name : list) {
-                File file = new File(dir, name);
-                if (file.exists()) {
-                    for (int i = 0; i < best.length; i++) {
-                        if (name.equals(best[i]) || name.equals(best[i] + ".exe")) { // NOI18N
-                            cs.addTool(name, path, kind);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    private void initMakeTool(CompilerFilenameFilter filter, int kind, String path) {
-        File dir = new File(path);
-        String[] list = dir.list(filter);
-        String[] best = {
-            "dmake", // NOI18N
-            "gmake", // NOI18N
-            "make", // NOI18N
-            "make.exe", // NOI18N
-        };
-
-        if (list != null && list.length > 0) {
-            CompilerSet cs = null;
-            if (path.contains("msys")) { // NOI18N
-                // use minGW cs
-                cs = getCompilerSet(CompilerFlavor.MinGW);
-            }
             if (cs == null) {
+                CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), list);
+                cs = getCompilerSet(flavor);
+                if (cs != null && !cs.getDirectory().equals(path))
+                    return;
                 cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
                 add(cs);
+        //            for (String name : list) {
+        //                File file = new File(dir, name);
+        //                if (file.exists()) {
+        //                    for (int i = 0; i < best.length; i++) {
+        //                        if (name.equals(best[i]) || name.equals(best[i] + ".exe")) { // NOI18N
+        //                            cs.addTool(name, path, kind);
+        //                        }
+        //                    }
+        //                }
+        //            }
             }
             for (int i = 0; i < best.length; i++) {
-                File file = new File(dir, best[i]);
-                if (file.exists() && !file.isDirectory()) {
-                    cs.addTool(best[i], path, kind);
+                String name = best[i];
+                if (Utilities.isWindows()) {
+                    name = name + ".exe"; // NOI18N
+                }
+                if (new File(dir, name).exists()) { // NOI18N
+                    cs.addTool(name, path, kind);
                     return;
                 }
             }
         }
     }
     
-    private void initDebuggerTool(CompilerFilenameFilter filter, int kind, String path) {
+    private void initMakeTool(CompilerFilenameFilter filter, int kind, String path, CompilerSet cs) {
+        File dir = new File(path);
+        String[] list = dir.list(filter);
+        String[] best = {
+            "dmake", // NOI18N
+            "gmake", // NOI18N
+            "make", // NOI18N
+        };
+
+        if (list != null && list.length > 0) {
+            if (cs == null) {
+                cs = null;
+                if (path.contains("msys")) { // NOI18N
+                    // use minGW cs
+                    cs = getCompilerSet(CompilerFlavor.MinGW);
+                }
+                if (cs == null) {
+                    CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), list);
+                    cs = getCompilerSet(flavor);
+                    if (cs != null && !cs.getDirectory().equals(path))
+                        return;
+                    cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
+                        add(cs);
+                }
+            }
+            for (int i = 0; i < best.length; i++) {
+                String name = best[i];
+                if (Utilities.isWindows()) {
+                    name = name + ".exe"; // NOI18N
+                }
+                if (new File(dir, name).exists()) { // NOI18N
+                    cs.addTool(name, path, kind);
+                    return;
+                }
+            }
+        }
+    }
+    
+    private void initDebuggerTool(CompilerFilenameFilter filter, int kind, String path, CompilerSet cs) {
         File dir = new File(path);
         String[] list = dir.list(filter);
         String[] best;
         if (IpeUtils.isGdbEnabled()) {
-            best = new String[] {"gdb", "gdb.exe"}; // NOI18N
+            best = new String[] {
+                "gdb", // NOI18N
+            };
         }
         else {
             // Assume dbxgui
-            best = new String[] {"dbx"}; // NOI18N
+            best = new String[] {
+                "dbx", // NOI18N
+            };
         }
 
         if (list != null && list.length > 0) {
-            CompilerSet cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
-            add(cs);
+            if (cs == null) {
+                CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), list);
+                cs = getCompilerSet(flavor);
+                if (cs != null && !cs.getDirectory().equals(path))
+                    return;
+                cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
+                add(cs);
+            }
             for (int i = 0; i < best.length; i++) {
-                File file = new File(dir, best[i]);
-                if (file.exists() && !file.isDirectory()) {
-                    cs.addTool(best[i], path, kind);
+                String name = best[i];
+                if (Utilities.isWindows()) {
+                    name = name + ".exe"; // NOI18N
+                }
+                if (new File(dir, name).exists()) { // NOI18N
+                    cs.addTool(name, path, kind);
                     return;
                 }
             }
@@ -255,45 +327,50 @@ public class CompilerSetManager {
      */
     private void completeCompilerSets() {
         for (CompilerSet cs : sets) {
-            if (cs.getTool(Tool.CCompiler) == null) {
-                cs.addTool("", "", Tool.CCompiler); // NOI18N
-            }
-            if (cs.getTool(Tool.CCCompiler) == null) {
-                cs.addTool("", "", Tool.CCCompiler); // NOI18N
-            }
-            if (cs.getTool(Tool.FortranCompiler) == null) {
-                cs.addTool("", "", Tool.FortranCompiler); // NOI18N
-            }
-            if (cs.getTool(Tool.CustomTool) == null) {
-                cs.addTool("", "", Tool.CustomTool); // NOI18N
-            }
-            if (cs.findTool(Tool.MakeTool) == null) {
-                String path = Path.findCommand("make"); // NOI18N
-                if (path != null)
-                    cs.addNewTool(IpeUtils.getBaseName(path), IpeUtils.getDirName(path), Tool.MakeTool); // NOI18N
-            }
-            if (cs.getTool(Tool.MakeTool) == null) {
-                    cs.addTool("", "", Tool.MakeTool); // NOI18N
-            }
-            if (cs.findTool(Tool.DebuggerTool) == null) {
-                String path;
-                if (IpeUtils.isGdbEnabled()) {
-                    path = Path.findCommand("gdb"); // NOI18N
-                }
-                else {
-                    path = Path.findCommand("dbx"); // NOI18N
-                }
-                if (path != null)
-                    cs.addNewTool(IpeUtils.getBaseName(path), IpeUtils.getDirName(path), Tool.DebuggerTool); // NOI18N
-            }
-            if (cs.getTool(Tool.DebuggerTool) == null) {
-                    cs.addTool("", "", Tool.DebuggerTool); // NOI18N
-            }
+            completeCompilerSet(cs);
         }
         
         if (sets.size() == 0) { // No compilers found
             add(CompilerSet.createEmptyCompilerSet());
         }
+    }
+    
+    private void completeCompilerSet(CompilerSet cs) {
+        if (cs.getTool(Tool.CCompiler) == null) {
+            cs.addTool("", "", Tool.CCompiler); // NOI18N
+        }
+        if (cs.getTool(Tool.CCCompiler) == null) {
+            cs.addTool("", "", Tool.CCCompiler); // NOI18N
+        }
+        if (cs.getTool(Tool.FortranCompiler) == null) {
+            cs.addTool("", "", Tool.FortranCompiler); // NOI18N
+        }
+        if (cs.getTool(Tool.CustomTool) == null) {
+            cs.addTool("", "", Tool.CustomTool); // NOI18N
+        }
+        if (cs.findTool(Tool.MakeTool) == null) {
+            String path = Path.findCommand("make"); // NOI18N
+            if (path != null)
+                cs.addNewTool(IpeUtils.getBaseName(path), IpeUtils.getDirName(path), Tool.MakeTool); // NOI18N
+        }
+        if (cs.getTool(Tool.MakeTool) == null) {
+                cs.addTool("", "", Tool.MakeTool); // NOI18N
+        }
+        if (cs.findTool(Tool.DebuggerTool) == null) {
+            String path;
+            if (IpeUtils.isGdbEnabled()) {
+                path = Path.findCommand("gdb"); // NOI18N
+            }
+            else {
+                path = Path.findCommand("dbx"); // NOI18N
+            }
+            if (path != null)
+                cs.addNewTool(IpeUtils.getBaseName(path), IpeUtils.getDirName(path), Tool.DebuggerTool); // NOI18N
+        }
+        if (cs.getTool(Tool.DebuggerTool) == null) {
+                cs.addTool("", "", Tool.DebuggerTool); // NOI18N
+        }
+        
     }
     
     private void initCompilerFilters() {
@@ -325,6 +402,9 @@ public class CompilerSetManager {
             }
         }
         sets.add(cs);
+        if (sets.size() == 1) {
+            setDefault(cs);
+        }
     }
     
     /**
@@ -337,6 +417,7 @@ public class CompilerSetManager {
     public void remove(CompilerSet cs) {
         if (sets.contains(cs)) {
             sets.remove(cs);
+            CompilerSet.removeCompilerSet(cs); // has it's own cache!!!!!!
             if (CppSettings.getDefault().getCompilerSetName().equals(cs.getName())) {
                 CppSettings.getDefault().setCompilerSetName("");
             }
@@ -365,6 +446,15 @@ public class CompilerSetManager {
     public CompilerSet getCompilerSetByDisplayName(String name) {
         for (CompilerSet cs : sets) {
             if (cs.getDisplayName().equals(name)) {
+                return cs;
+            }
+        }
+        return null;
+    }
+    
+    public CompilerSet getCompilerSetByPath(String path) {
+        for (CompilerSet cs : sets) {
+            if (cs.getDirectory().equals(path)) {
                 return cs;
             }
         }
@@ -403,6 +493,28 @@ public class CompilerSetManager {
             names.add(cs.getName());
         }
         return names;
+    }
+    
+    public void setDefault(CompilerSet newDefault) {
+        boolean set = false;
+        for (CompilerSet cs : getCompilerSets()) {
+            cs.setAsDefault(false);
+            if (cs == newDefault) {
+                newDefault.setAsDefault(true);
+                set = true;
+            }
+        }
+        if (!set && sets.size() > 0) {
+            getCompilerSet(0).setAsDefault(true);
+        }
+    }
+    
+    public CompilerSet getDefaultCompilerSet() {
+        for (CompilerSet cs : getCompilerSets()) {
+            if (cs.isDefault())
+                return cs;
+        }
+        return null;
     }
     
     /**

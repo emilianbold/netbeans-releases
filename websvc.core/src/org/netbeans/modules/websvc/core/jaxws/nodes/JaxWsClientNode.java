@@ -517,35 +517,5 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
         return null;
     }
     
-     @Override
-    protected Sheet createSheet() {
-        Sheet sheet = super.createSheet();
-        Sheet.Set set = sheet.get(Sheet.PROPERTIES);
-        if (set == null) {
-            set = Sheet.createPropertiesSet();
-
-        }
-        sheet.put(set);
-        set.put(
-                new PropertySupport("useDispatch", Boolean.class,
-                NbBundle.getMessage(JaxWsClientNode.class, "TTL_USE_DISPATCH"),
-                "", true, true) {
-
-                    public Object getValue() {
-                        return client.getUseDispatch();
-                    }
-
-                    public void setValue(Object value) {
-                        try {
-                            Boolean val = (Boolean) value;
-                            client.setUseDispatch(val);
-                            jaxWsModel.write();
-                        } catch (IOException ex) {
-                            ErrorManager.getDefault().notify(ex);
-                        }
-                    }
-                });
-        
-        return sheet;
-    }
+ 
 }

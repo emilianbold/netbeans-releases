@@ -54,6 +54,7 @@ import java.util.Set;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.URI;
 import java.net.URL;
 import java.text.DateFormat;
 import java.util.Date;
@@ -62,8 +63,18 @@ import java.util.List;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.api.EncodingUtil;
 
+import org.netbeans.modules.xml.retriever.RetrieveEntry;
+import org.netbeans.modules.xml.retriever.Retriever;
+import org.netbeans.modules.xml.retriever.RetrieverEngine;
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
+import org.netbeans.modules.xml.retriever.catalog.Utilities.DocumentTypesEnum;
+
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.spi.project.CacheDirectoryProvider;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.loaders.TemplateWizard;
 import org.openide.WizardDescriptor;
@@ -572,9 +583,59 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
     }
     
     private void generateXMLBody(DocumentModel model, String root, Writer writer){
-        XMLGeneratorVisitor visitor = new XMLGeneratorVisitor(model.getPrimarySchema(), model.getXMLContentAttributes(), writer);
-        visitor.generateXML(root);
-       
-       
+        String schemaFileName = model.getPrimarySchema();
+        if(model.getPrimarySchema().startsWith("http")) {
+            schemaFileName = retrieveURLSchema(model.getPrimarySchema());             
+        }
+         XMLGeneratorVisitor visitor = new XMLGeneratorVisitor(schemaFileName, model.getXMLContentAttributes(), writer);
+         visitor.generateXML(root);
     }
+    
+    private String retrieveURLSchema(String sourceURL)  {
+        try {
+            Project prj = Templates.getProject(templateWizard); 
+            FileObject prjrtfo = prj.getProjectDirectory();
+           // File saveFile = new File(selectedSaveRootFolder.getPath() + File.separator + "nbproject" + File.separator + "private" + File.separator+ schemaFileName);
+            
+            File prjrt = FileUtil.toFile(prjrtfo);
+            URI privateCatalogURI = null;
+            URI privateCacheURI = null;
+            //determine the cache dir
+            CacheDirectoryProvider cdp = (CacheDirectoryProvider) prj.getLookup().
+                lookup(CacheDirectoryProvider.class);
+            String cachestr = Utilities.DEFAULT_PRIVATE_CAHCE_URI_STR;
+            try{
+                if( (cdp != null) && (cdp.getCacheDirectory() != null) ){
+                    URI prjrturi = prjrt.toURI();
+                    URI cpduri = FileUtil.toFile(cdp.getCacheDirectory()).toURI();
+                    String cachedirstr = Utilities.relativize(prjrturi, cpduri);
+                    cachestr = cachedirstr+"/"+Utilities.PRIVATE_CAHCE_URI_STR;
+                }
+                privateCacheURI = new URI(cachestr);
+           }catch(Exception e){
+                
+           }
+           if(privateCacheURI == null)
+               return null;
+            URI cacheURI = prjrt.toURI().resolve(privateCacheURI);
+            File saveFile = new File(cacheURI );
+            if(!saveFile.isDirectory())
+               saveFile.mkdirs();
+            
+            RetrieverEngine instance = RetrieverEngine.getRetrieverEngine(saveFile, false);
+            RetrieveEntry rent =new RetrieveEntry(null, sourceURL, null, null, DocumentTypesEnum.schema, true);
+            instance.addResourceToRetrieve(rent);
+            instance.setFileOverwrite(true);
+            instance.start();
+           
+            //find where the file was downloaded, remove the "http:/" from the url
+            String returnstr = saveFile.getPath() + sourceURL.substring(6, sourceURL.length());
+            return returnstr;
+        } catch (Exception e) {
+            //e.printStackTrace();
+            return null;
+        }
+    }
+    
+
 }

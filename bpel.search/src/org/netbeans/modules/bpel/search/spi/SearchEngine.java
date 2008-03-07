@@ -146,9 +146,6 @@ public interface SearchEngine {
     }
 
     protected boolean accepts(String text) {
-      if (text == null) {
-        return false;
-      }
       return mySearchPattern.accepts(text);
     }
 

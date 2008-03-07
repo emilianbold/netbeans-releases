@@ -173,12 +173,12 @@ public class EarProjectPropertiesTest extends NbTestCase {
         assertEquals("ejb path", "testEA-ejb.jar", app.getModule(0).getEjb());
         
         // simulate change through customizer
-        EarProjectProperties epp = earProject.getProjectProperties();
         EditableProperties projectProperties = earProject.getUpdateHelper().getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
-        List<ClassPathSupport.Item> vcpis = EarProjectProperties.getJarContentAdditional(earProject);
-        vcpis.get(0).setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, "otherPath");
+        List<ClassPathSupport.Item> old = EarProjectProperties.getJarContentAdditional(earProject);
+        List<ClassPathSupport.Item> updated = EarProjectProperties.getJarContentAdditional(earProject);
+        updated.get(0).setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, "otherPath");
         EarProjectProperties.updateContentDependency(earProject,
-                vcpis, vcpis,
+                old, updated,
                 projectProperties);
         
         assertEquals("ejb path", "otherPath/testEA-ejb.jar", app.getModule(0).getEjb());

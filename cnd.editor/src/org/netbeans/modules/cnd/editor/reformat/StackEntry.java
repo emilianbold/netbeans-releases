@@ -53,6 +53,7 @@ class StackEntry {
     private CppTokenId importantKind;
     private boolean likeToFunction = false;
     private boolean likeToArrayInitialization = false;
+    private boolean likeToArrayInExpression = false;
     private String text;
 
     StackEntry(ExtendedTokenSequence ts) {
@@ -147,6 +148,7 @@ class StackEntry {
                     {
                         if (paren == 0 && curly == 0 && triangle == 0) {
                             importantKind = current.id();
+                            likeToFunction = false;
                             return;
                         }
                         break;
@@ -184,6 +186,7 @@ class StackEntry {
                     {
                         if (paren == 0 && curly == 0 && triangle == 0) {
                             importantKind = current.id();
+                            likeToFunction = false;
                             return;
                         }
                         break;
@@ -226,6 +229,14 @@ class StackEntry {
 
     public void setLikeToArrayInitialization(boolean likeToArrayInitialization) {
         this.likeToArrayInitialization = likeToArrayInitialization;
+    }
+
+    public boolean isLikeToArrayInExpression() {
+        return likeToArrayInExpression;
+    }
+
+    public void setLikeToArrayInExpression(boolean likeToArrayInExpression) {
+        this.likeToArrayInExpression = likeToArrayInExpression;
     }
 
     @Override

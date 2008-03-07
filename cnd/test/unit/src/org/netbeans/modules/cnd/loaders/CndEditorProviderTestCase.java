@@ -65,7 +65,7 @@ public class CndEditorProviderTestCase extends BaseTestCase {
     }
     
     public void testEditorSupport() throws Exception {
-        File newFile = new File(super.getWorkDir(), "file.h");
+        File newFile = new File(super.getWorkDir(), "file.h"); // NOI18N
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = FileUtil.toFileObject(newFile);        

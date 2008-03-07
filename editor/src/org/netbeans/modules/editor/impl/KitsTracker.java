@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.EditorKit;
@@ -133,22 +134,32 @@ public final class KitsTracker {
                 // these classes are not directly registered as a kit for any mime type
                 return null;
             }
+
+            String contextMimeType = null;
+            Stack<String> context = contexts.get();
+            if (context != null && !context.empty()) {
+                contextMimeType = context.peek();
+            }
             
-            List mimeTypes = getMimeTypesForKitClass(kitClass);
-            if (mimeTypes.size() == 0) {
-                if (LOG.isLoggable(Level.WARNING)) {
-                    logOnce(Level.WARNING, "No mime type uses editor kit implementation class: " + kitClass); //NOI18N
+            if (contextMimeType == null || contextMimeType.length() ==0) {
+                List mimeTypes = getMimeTypesForKitClass(kitClass);
+                if (mimeTypes.size() == 0) {
+                    if (LOG.isLoggable(Level.WARNING)) {
+                        logOnce(Level.WARNING, "No mime type uses editor kit implementation class: " + kitClass); //NOI18N
+                    }
+                    return null;
+                } else if (mimeTypes.size() == 1) {
+                    return (String) mimeTypes.get(0);
+                } else {
+                    if (LOG.isLoggable(Level.WARNING)) {
+        //                Throwable t = new Throwable("Stacktrace"); //NOI18N
+        //                LOG.log(Level.WARNING, "Ambiguous mime types for editor kit implementation class: " + kitClass + "; mime types: " + mimeTypes, t); //NOI18N
+                        logOnce(Level.WARNING, "Ambiguous mime types for editor kit implementation class: " + kitClass + "; mime types: " + mimeTypes); //NOI18N
+                    }
+                    return null;
                 }
-                return null;
-            } else if (mimeTypes.size() == 1) {
-                return (String) mimeTypes.get(0);
-            } else {
-                if (LOG.isLoggable(Level.WARNING)) {
-    //                Throwable t = new Throwable("Stacktrace"); //NOI18N
-    //                LOG.log(Level.WARNING, "Ambiguous mime types for editor kit implementation class: " + kitClass + "; mime types: " + mimeTypes, t); //NOI18N
-                    logOnce(Level.WARNING, "Ambiguous mime types for editor kit implementation class: " + kitClass + "; mime types: " + mimeTypes); //NOI18N
-                }
-                return null;
+            } else{
+                return contextMimeType;
             }
         } else {
             return ""; //NOI18N
@@ -163,6 +174,30 @@ public final class KitsTracker {
     @SuppressWarnings("unchecked")
     public Set<String> getMimeTypes() {
         return (Set<String>) updateAndGet(null);
+    }
+    
+    public String setContextMimeType(String mimeType) {
+        String previousMimeType = null;
+        
+        Stack<String> context = contexts.get();
+        if (context == null) {
+            context = new Stack<String>();
+            contexts.set(context);
+        }
+        
+        if (mimeType != null) {
+            assert MimePath.validate(mimeType) : "Invalid mime type: '" + mimeType + "'"; //NOI18N
+            if (!context.empty()) {
+                previousMimeType = context.peek();
+            }
+            context.push(mimeType);
+        } else {
+            if (!context.empty()) {
+                previousMimeType = context.pop();
+            }
+        }
+        
+        return previousMimeType;
     }
     
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -192,6 +227,8 @@ public final class KitsTracker {
         "org.netbeans.editor.ext.ExtKit", //NOI18N
         "org.netbeans.modules.editor.NbEditorKit", //NOI18N
     }));
+    
+    private final ThreadLocal<Stack<String>> contexts = new ThreadLocal<Stack<String>>();
     
     private final FileChangeListener fcl = new FileChangeAdapter() {
         @Override
