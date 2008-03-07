@@ -39,17 +39,9 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
-import java.awt.Component;
-import java.awt.event.ActionListener;
-import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
-import javax.swing.plaf.UIResource;
-import javax.swing.plaf.basic.BasicComboBoxEditor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -61,7 +53,7 @@ public class SourcesPanelVisual extends JPanel {
 
     private static final long serialVersionUID = -358263102348820543L;
 
-    private final DefaultComboBoxModel localServerComboBoxModel = new LocalServerComboBoxModel();
+    private MutableComboBoxModel localServerComboBoxModel = new LocalServerComboBoxModel();
 
     /** Creates new form SourcesPanelVisual */
     public SourcesPanelVisual() {
@@ -187,20 +179,21 @@ public class SourcesPanelVisual extends JPanel {
     private javax.swing.JLabel sourcesLabel;
     // End of variables declaration//GEN-END:variables
 
-    String getSourcesLocation() {
-        return (String) localServerComboBox.getSelectedItem();
+    LocalServer getSourcesLocation() {
+        return (LocalServer) localServerComboBox.getSelectedItem();
     }
 
     MutableComboBoxModel getLocalServerModel() {
         return localServerComboBoxModel;
     }
 
-    void replaceLocalServerLocation(String path) {
-        int idx = localServerComboBox.getSelectedIndex();
-        if (idx != -1) {
-            localServerComboBoxModel.removeElementAt(idx);
-            localServerComboBoxModel.insertElementAt(path, idx);
-        }
+    void setLocalServerModel(MutableComboBoxModel localServers) {
+        localServerComboBoxModel = localServers;
+        localServerComboBox.setModel(localServerComboBoxModel);
+    }
+
+    void selectSourcesLocation(LocalServer localServer) {
+        localServerComboBox.setSelectedItem(localServer);
     }
 
     static class LocalServer implements Comparable<LocalServer> {

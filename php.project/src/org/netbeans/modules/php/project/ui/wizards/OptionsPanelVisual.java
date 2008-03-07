@@ -166,12 +166,12 @@ class OptionsPanelVisual extends JPanel {
         return createIndexCheckBox.isSelected();
     }
 
-    void setCreateIndex(boolean isCreateIndex) {
-        createIndexCheckBox.setSelected(isCreateIndex);
+    void setCreateIndex(boolean createIndex) {
+        createIndexCheckBox.setSelected(createIndex);
     }
 
     String getIndexName() {
-        return indexNameTextField.getText();
+        return indexNameTextField.getText().trim();
     }
 
     void setIndexName(String indexName) {
@@ -182,12 +182,16 @@ class OptionsPanelVisual extends JPanel {
         return (Charset) encodingComboBox.getSelectedItem();
     }
 
+    void setEncoding(Charset encoding) {
+        encodingComboBox.setSelectedItem(encoding);
+    }
+
     boolean isSetAsMain() {
         return setAsMainCheckBox.isSelected();
     }
 
-    void setSetAsMain(boolean isSetAsMain) {
-        setAsMainCheckBox.setSelected(isSetAsMain);
+    void setSetAsMain(boolean setAsMain) {
+        setAsMainCheckBox.setSelected(setAsMain);
     }
 
     private static class EncodingModel extends DefaultComboBoxModel {

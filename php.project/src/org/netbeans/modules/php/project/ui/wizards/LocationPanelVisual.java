@@ -173,15 +173,15 @@ class LocationPanelVisual extends JPanel {
     // End of variables declaration//GEN-END:variables
 
     public String getProjectName() {
-        return projectNameTextField.getText();
+        return projectNameTextField.getText().trim();
     }
 
     public String getFullProjectPath() {
-        return createdFolderTextField.getText();
+        return createdFolderTextField.getText().trim();
     }
 
     public String getProjectLocation() {
-        return projectLocationTextField.getText();
+        return projectLocationTextField.getText().trim();
     }
 
     public void setProjectName(String projectName) {

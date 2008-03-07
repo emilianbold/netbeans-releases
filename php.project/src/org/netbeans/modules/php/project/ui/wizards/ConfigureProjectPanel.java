@@ -44,9 +44,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.MessageFormat;
+import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.php.project.ui.wizards.SourcesPanelVisual.LocalServer;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -64,6 +66,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     static final String PROJECT_DIR = "projectDir"; // NOI18N
     static final String SET_AS_MAIN = "setAsMain"; // NOI18N
     static final String WWW_FOLDER = "wwwFolder"; // NOI18N
+    static final String LOCAL_SERVERS = "localServers"; // NOI18N
     static final String CREATE_INDEX_FILE = "createIndexFile"; // NOI18N
     static final String INDEX_FILE = "indexFile"; // NOI18N
     static final String ENCODING = "encoding"; // NOI18N
@@ -89,19 +92,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
             locationPanelVisual = configureProjectPanelVisual.getLocationPanelVisual();
             sourcesPanelVisual = configureProjectPanelVisual.getSourcesPanelVisual();
             optionsPanelVisual = configureProjectPanelVisual.getOptionsPanelVisual();
-
-            // listeners
-            DocumentListener listener = new LocationListener();
-            locationPanelVisual.addProjectLocationListener(listener);
-            locationPanelVisual.addProjectNameListener(listener);
-
-            // sources
-
-            // options
-            ActionListener defaultActionListener = new DefaultActionListener();
-            DocumentListener defaultDocumentListener = new DefaultDocumentListener();
-            optionsPanelVisual.addCreateIndexListener(defaultActionListener);
-            optionsPanelVisual.addIndexNameListener(defaultDocumentListener);
         }
         return configureProjectPanelVisual;
     }
@@ -123,14 +113,49 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         locationPanelVisual.setCreatedProjectFolder(projectFolder.getAbsolutePath());
 
         // sources
+        MutableComboBoxModel localServers = getLocalServers();
+        if (localServers != null) {
+            sourcesPanelVisual.setLocalServerModel(localServers);
+        }
+        LocalServer wwwFolder = getLocalServer();
+        if (wwwFolder != null) {
+            sourcesPanelVisual.selectSourcesLocation(wwwFolder);
+        }
+
+        // options
+        Boolean createIndex = isCreateIndex();
+        if (createIndex != null) {
+            optionsPanelVisual.setCreateIndex(createIndex);
+        }
+        String indexName = getIndexName();
+        if (indexName != null) {
+            optionsPanelVisual.setIndexName(indexName);
+        }
+        Boolean setAsMain = isSetAsMain();
+        if (setAsMain != null) {
+            optionsPanelVisual.setSetAsMain(setAsMain);
+        }
+
+        // listeners
+        registerListeners();
+        fireChangeEvent();
     }
 
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
 
         // location
+        d.putProperty(PROJECT_DIR, new File(locationPanelVisual.getProjectLocation()));
         d.putProperty(PROJECT_NAME, locationPanelVisual.getProjectName());
-        d.putProperty(PROJECT_DIR, locationPanelVisual.getProjectLocation());
+
+        // sources
+        d.putProperty(WWW_FOLDER, sourcesPanelVisual.getSourcesLocation());
+        d.putProperty(LOCAL_SERVERS, sourcesPanelVisual.getLocalServerModel());
+
+        // options
+        d.putProperty(CREATE_INDEX_FILE, optionsPanelVisual.isCreateIndex());
+        d.putProperty(INDEX_FILE, optionsPanelVisual.getIndexName());
+        d.putProperty(SET_AS_MAIN, optionsPanelVisual.isSetAsMain());
     }
 
     public boolean isValid() {
@@ -178,10 +203,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         File projectLocation = (File) descriptor.getProperty(PROJECT_DIR);
         if (projectLocation == null
                 || projectLocation.getParentFile() == null
-                || !projectLocation.getParentFile().isDirectory()) {
+                || !projectLocation.isDirectory()) {
             projectLocation = ProjectChooser.getProjectsFolder();
-        } else {
-            projectLocation = projectLocation.getParentFile();
         }
         return projectLocation;
     }
@@ -201,6 +224,42 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
             projectName = validFreeProjectName(projectLocation, i++);
         } while (projectName == null);
         return projectName;
+    }
+
+    private String getIndexName() {
+        return (String) descriptor.getProperty(INDEX_FILE);
+    }
+
+    private LocalServer getLocalServer() {
+        return (LocalServer) descriptor.getProperty(WWW_FOLDER);
+    }
+
+    private MutableComboBoxModel getLocalServers() {
+        return (MutableComboBoxModel) descriptor.getProperty(LOCAL_SERVERS);
+    }
+
+    private Boolean isCreateIndex() {
+        return (Boolean) descriptor.getProperty(CREATE_INDEX_FILE);
+    }
+
+    private Boolean isSetAsMain() {
+        return (Boolean) descriptor.getProperty(SET_AS_MAIN);
+    }
+
+    private void registerListeners() {
+        ActionListener defaultActionListener = new DefaultActionListener();
+        DocumentListener defaultDocumentListener = new DefaultDocumentListener();
+
+        // location
+        DocumentListener listener = new LocationListener();
+        locationPanelVisual.addProjectLocationListener(listener);
+        locationPanelVisual.addProjectNameListener(listener);
+
+        // sources
+
+        // options
+        optionsPanelVisual.addCreateIndexListener(defaultActionListener);
+        optionsPanelVisual.addIndexNameListener(defaultDocumentListener);
     }
 
     private String validFreeProjectName(File parentFolder, int index) {
