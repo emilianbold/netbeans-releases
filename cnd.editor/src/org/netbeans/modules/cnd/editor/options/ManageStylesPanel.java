@@ -133,7 +133,7 @@ public class ManageStylesPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 0);
         add(jScrollPane1, gridBagConstraints);
 
-        jSeparator1.setForeground(javax.swing.UIManager.getDefaults().getColor("Button.disabledText"));
+        jSeparator1.setForeground(java.awt.SystemColor.activeCaptionBorder);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -187,7 +187,8 @@ private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     PreviewPreferences pp = allPreferences.get(currentLanguage).get("Default"); // NOI18N
     String id = nextId();
     String resourceId = id+"_Style_Name"; // NOI18N
-    String displayName = getDisplayName(id);
+    String displayName = getString("Custom_Name"); // NOI18N
+    displayName = getDisplayName(displayName);
     if (displayName != null) {
         NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put(resourceId, displayName); // NOI18N
         PreviewPreferences np = new PreviewPreferences(pp, currentLanguage, id);

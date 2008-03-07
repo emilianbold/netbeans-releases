@@ -88,12 +88,15 @@ import org.openide.xml.XMLUtil;
  */
 public final class LayerNode extends FilterNode implements Node.Cookie {
     
+    private final boolean specialDisplayName;
+
     public LayerNode(LayerUtils.LayerHandle handle) {
-        this(getDataNode(handle), handle);
+        this(getDataNode(handle), handle, true);
     }
     
-    LayerNode(Node delegate, LayerUtils.LayerHandle handle) {
+    private LayerNode(Node delegate, LayerUtils.LayerHandle handle, boolean specialDisplayName) {
         super(delegate, new LayerChildren(handle));
+        this.specialDisplayName = specialDisplayName;
     }
     
     private static Node getDataNode(LayerUtils.LayerHandle handle) {
@@ -109,21 +112,10 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
     public static Environment.Provider createProvider() {
         class EP implements Environment.Provider {
             public Lookup getEnvironment(DataObject obj) {
-                Project p = FileOwnerQuery.getOwner(obj.getPrimaryFile());
-                if (p == null) {
-                    return Lookup.EMPTY;
-                }
-                LayerUtils.LayerHandle h = LayerUtils.layerForProject(p);
-                if (h == null) {
-                    return Lookup.EMPTY;
-                }
-                if (obj.getPrimaryFile().equals(h.getLayerFile())) {
-                    DataNode dn = new DataNode(obj, Children.LEAF);
-                    dn.setIconBaseWithExtension("org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif"); // NOI18N
-                    LayerNode ln = new LayerNode(dn, h);
-                    return Lookups.singleton(ln);
-                }
-                return Lookup.EMPTY;
+                DataNode dn = new DataNode(obj, Children.LEAF);
+                dn.setIconBaseWithExtension("org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif"); // NOI18N
+                LayerNode ln = new LayerNode(dn, new LayerUtils.LayerHandle(null, obj.getPrimaryFile()), false);
+                return Lookups.singleton(ln);
             }
         }
         return new EP();
@@ -143,6 +135,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
             this.handle = handle;
         }
         
+        @Override
         protected void addNotify() {
             super.addNotify();
             handle.setAutosave(true);
@@ -160,10 +153,21 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                         }
                         layerfs = handle.layer(false);
                         setKeys(Arrays.asList(KeyType.RAW, KeyType.WAIT));
-                        FileSystem _sfs = LayerUtils.getEffectiveSystemFilesystem(p);
-                        if (cp != null) { // has not been removeNotify()d yet
-                            sfs = _sfs;
-                            setKeys(Arrays.asList(KeyType.RAW, KeyType.CONTEXTUALIZED));
+                        Project p = FileOwnerQuery.getOwner(handle.getLayerFile());
+                        boolean context = false;
+                        if (p != null) {
+                            LayerUtils.LayerHandle h = LayerUtils.layerForProject(p);
+                            if (h != null && layer.equals(h.getLayerFile())) {
+                                FileSystem _sfs = LayerUtils.getEffectiveSystemFilesystem(p);
+                                if (cp != null) { // has not been removeNotify()d yet
+                                    sfs = _sfs;
+                                    setKeys(Arrays.asList(KeyType.RAW, KeyType.CONTEXTUALIZED));
+                                    context = true;
+                                }
+                            }
+                        }
+                        if (!context) {
+                            setKeys(Collections.singleton(KeyType.RAW));
                         }
                     } catch (IOException e) {
                         Util.err.notify(ErrorManager.INFORMATIONAL, e);
@@ -172,6 +176,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
             });
         }
         
+        @Override
         protected void removeNotify() {
             setKeys(Collections.<KeyType>emptySet());
             cp = null;
@@ -247,6 +252,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                     }
                 });
             }
+            @Override
             public FileSystem.Status getStatus() {
                 return new FileSystem.HtmlStatus() {
                     public String annotateNameHtml(String name, Set files) {
@@ -288,9 +294,11 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                     }
                 };
             }
+            @Override
             public String getDisplayName() {
                 return FileUtil.getFileDisplayName(layer);
             }
+            @Override
             public SystemAction[] getActions(Set<FileObject> foSet) {
                 return new SystemAction[] {
                     SystemAction.get(PickNameAction.class),
@@ -311,8 +319,13 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
          */
     }
     
+    @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(LayerNode.class, "LayerNode_label");
+        if (specialDisplayName) {
+            return NbBundle.getMessage(LayerNode.class, "LayerNode_label");
+        } else {
+            return super.getDisplayName();
+        }
     }
     
     /**

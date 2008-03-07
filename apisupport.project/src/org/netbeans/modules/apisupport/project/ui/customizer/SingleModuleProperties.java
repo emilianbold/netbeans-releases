@@ -696,19 +696,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         DependencyListModel dependencyModel = getDependenciesListModel();
         if (dependencyModel.isChanged()) {
             Set<ModuleDependency> depsToSave = new TreeSet<ModuleDependency>(dependencyModel.getDependencies());
-            
-            // process removed modules
-            depsToSave.removeAll(dependencyModel.getRemovedDependencies());
-            
-            // process added modules
-            depsToSave.addAll(dependencyModel.getAddedDependencies());
-            
-            // process edited modules
-            for (Map.Entry<ModuleDependency,ModuleDependency> entry : dependencyModel.getEditedDependencies().entrySet()) {
-                depsToSave.remove(entry.getKey());
-                depsToSave.add(entry.getValue());
-            }
-            
+
             logNetBeansAPIUsage("DEPENDENCIES", dependencyModel.getDependencies()); // NOI18N
             
             getProjectXMLManager().replaceDependencies(depsToSave);

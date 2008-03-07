@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.io.BufferedInputStream;
 import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileUtil;
@@ -362,7 +363,7 @@ public final class ModuleDeleterImpl  {
         Document document = null;
         InputStream is;
         try {
-            is = new FileInputStream (moduleUpdateTracking);
+            is = new BufferedInputStream (new FileInputStream (moduleUpdateTracking));
             InputSource xmlInputSource = new InputSource (is);
             document = XMLUtil.parse (xmlInputSource, false, false, null, org.openide.xml.EntityCatalog.getDefault ());
             if (is != null) {
