@@ -401,7 +401,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     private String getExtension() {
-        return Utilities.isWindows() ? ".dll" : ".so"; // NOI18N
+        return Utilities.isWindows() ? ".dll" : Utilities.isMac() ? ".dylib" : ".so"; // NOI18N
     }
     
     private String fixPath(String path) {
@@ -799,6 +799,17 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             cb = CommandBuffer.getCommandBuffer(itok);
             if (cb != null) {
                 cb.done();
+            }
+        } else if (msg.startsWith("^done,shlib-info=") && // NOI18N
+                Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            lastShare = msg.substring(17);
+            if (lastShare.contains("GdbHelper")) { // NOI18N
+                ProjectActionEvent pae;
+                pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+                int conType = pae.getProfile().getConsoleType().getValue();
+                if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+                    gdb.data_evaluate_expression("_gdbHelperSetLineBuffered()"); // NOI18N
+                }
             }
         } else if (msg.startsWith(Disassembly.RESPONSE_HEADER)) {
             disassembly.update(msg);
