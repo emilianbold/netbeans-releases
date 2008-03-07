@@ -220,7 +220,8 @@ public class SparcX86Resolver implements AsmTypesProvider {
             }
             
             // VERY MAGIC NUMBERS :)
-            return opCodesPerLine > 2.f && plusesPerLine > 0.2f; 
+            return Float.compare(opCodesPerLine, 2f) > 0 || 
+                   Float.compare(plusesPerLine, 0.9f) > 0; 
         }
                        
         private boolean isOpcode(String res) {
