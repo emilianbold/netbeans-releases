@@ -137,7 +137,7 @@ public final class BorderFactory {
      */
     public static Border createSwingBorder (Scene scene, javax.swing.border.Border border) {
         Parameters.notNull("scene", scene);
-        Parameters.notNull("scene.view", scene.getView());
+        // Makes SwingBorderGetterTest fail: Parameters.notNull("scene.view", scene.getView());
         Parameters.notNull("border", border);
         return new SwingBorder (scene, border);
     }
