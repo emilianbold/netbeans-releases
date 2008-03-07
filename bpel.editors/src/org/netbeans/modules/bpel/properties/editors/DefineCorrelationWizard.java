@@ -1270,7 +1270,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             private void setCorrelationInitiateValue(BaseCorrelation correlation) {
                 correlation.setInitiate(mainBpelEntity.equals(activity) ? // is this activity CORRELATED
                     Initiate.NO :  // for CORRELATED activity
-                    Initiate.YES); // for INITIATED activity
+                    Initiate.YES); // for INITIATING activity
             }
             
             private Pattern defineInvokeCorrelationPattern(BpelEntity bpelEntity) {
