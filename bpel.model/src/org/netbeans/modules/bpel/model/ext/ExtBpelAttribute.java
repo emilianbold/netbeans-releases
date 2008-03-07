@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.bpel.model.ext;
 
 import javax.xml.XMLConstants;
@@ -136,5 +135,4 @@ public abstract class ExtBpelAttribute implements Attribute {
             return null;
         }
     }
-
 }
