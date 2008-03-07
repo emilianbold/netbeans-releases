@@ -621,6 +621,12 @@ public class CompilerSet {
         }
     }
     
+    public void reparent(String newPath) {
+        directory = new StringBuffer(256);
+        addDirectory(newPath);
+        tools.clear();
+    }
+    
     /**
      * Get a tool by name
      *

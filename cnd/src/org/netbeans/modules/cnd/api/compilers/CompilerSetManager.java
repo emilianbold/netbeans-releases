@@ -145,6 +145,11 @@ public class CompilerSetManager {
         completeCompilerSet(cs);
     }
     
+    public void reInitCompilerSet(CompilerSet cs, String path) {
+        cs.reparent(path);
+        initCompilerSet(cs);
+    }
+    
     private void initCompilerSet(String path, CompilerSet cs) {
         initCompiler(gcc_filter, "gcc", Tool.CCompiler, path, cs); // NOI18N
         initCompiler(gpp_filter, "g++", Tool.CCCompiler, path, cs); // NOI18N

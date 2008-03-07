@@ -98,6 +98,9 @@
           <ResourceString bundle="org/netbeans/modules/cnd/ui/options/Bundle.properties" key="ACSD_MakeVersion" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btMakeVersionActionPerformed"/>
+      </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="btMakeVersion.addActionListener(this);"/>
       </AuxValues>
@@ -157,6 +160,9 @@
           <ResourceString bundle="org/netbeans/modules/cnd/ui/options/Bundle.properties" key="ACSD_GdbVersion" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btGdbVersionActionPerformed"/>
+      </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="btGdbVersion.addActionListener(this);"/>
       </AuxValues>
@@ -193,6 +199,9 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="tfCPath">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="tfCPath.getDocument().putProperty(Document.TitleProperty, C_NAME);&#xa;tfCPath.getDocument().addDocumentListener(this);"/>
       </AuxValues>
@@ -216,6 +225,9 @@
           <ResourceString bundle="org/netbeans/modules/cnd/ui/options/Bundle.properties" key="ACSD_CVersion" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btCVersionActionPerformed"/>
+      </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="btCVersion.addActionListener(this);"/>
       </AuxValues>
@@ -252,6 +264,9 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="tfCppPath">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="tfCppPath.getDocument().putProperty(Document.TitleProperty, CPP_NAME);&#xa;tfCppPath.getDocument().addDocumentListener(this);"/>
       </AuxValues>
@@ -275,6 +290,9 @@
           <ResourceString bundle="org/netbeans/modules/cnd/ui/options/Bundle.properties" key="ACSD_CppVersion" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btCppVersionActionPerformed"/>
+      </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="btCppVersion.addActionListener(this);"/>
       </AuxValues>
@@ -311,6 +329,9 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="tfFortranPath">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="tfFortranPath.getDocument().putProperty(Document.TitleProperty, FORTRAN_NAME);&#xa;tfFortranPath.getDocument().addDocumentListener(this);"/>
       </AuxValues>
@@ -334,6 +355,9 @@
           <ResourceString bundle="org/netbeans/modules/cnd/ui/options/Bundle.properties" key="ACSD_FortranVersion" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btFortranVersionActionPerformed"/>
+      </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="btFortranVersion.addActionListener(this);"/>
       </AuxValues>
@@ -522,6 +546,9 @@
           <ResourceString bundle="org/netbeans/modules/cnd/ui/options/Bundle.properties" key="ToolsPanel.btBaseDirectory.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btBaseDirectoryActionPerformed"/>
+      </Events>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints gridX="4" gridY="6" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="6" insetsLeft="6" insetsBottom="0" insetsRight="6" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -590,6 +617,9 @@
               <ResourceString bundle="org/netbeans/modules/cnd/ui/options/Bundle.properties" key="ToolsPanel.btRestore.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btRestoreActionPerformed"/>
+          </Events>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="3" gridY="0" gridWidth="2" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="6" insetsBottom="0" insetsRight="7" anchor="14" weightX="0.0" weightY="0.0"/>

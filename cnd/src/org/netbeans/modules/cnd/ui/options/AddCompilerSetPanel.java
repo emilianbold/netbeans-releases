@@ -324,8 +324,8 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
 
 private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
     String seed = null;
-    if (tfName.getText().length() > 0) {
-        seed = tfName.getText();
+    if (tfBaseDirectory.getText().length() > 0) {
+        seed = tfBaseDirectory.getText();
     }
     else if (FileChooser.getCurrectChooserFile() != null) {
         seed = FileChooser.getCurrectChooserFile().getPath();
