@@ -218,8 +218,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         
         setStarting();
         try {
-            pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
-            iotab = lookupProvider.lookupFirst(null, InputOutput.class);
+            pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+            iotab = (InputOutput) lookupProvider.lookupFirst(null, InputOutput.class);
             if (iotab != null) {
                 iotab.setErrSeparated(false);
             }
@@ -257,7 +257,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold()));
             gdb.data_list_register_names("");
             if (pae.getID() == DEBUG_ATTACH) {
-                programPID = lookupProvider.lookupFirst(null, Long.class);
+                programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
                 CommandBuffer cb = new CommandBuffer();
                 gdb.target_attach(cb, Long.toString(programPID));
                 cb.waitForCompletion();
@@ -344,7 +344,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     gdb.exec_run(pae.getProfile().getArgsFlat());
                 } catch (Exception ex) {
                     ErrorManager.getDefault().notify(ex);
-                    lookupProvider.lookupFirst(null, Session.class).kill();
+                    ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
                 }
                 if (Utilities.isWindows()) {
                     CommandBuffer cb = new CommandBuffer();
@@ -673,7 +673,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
             if (gdb != null) {
                 if (state.equals(STATE_RUNNING)) {
-                    ProjectActionEvent pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+                    ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
                     gdb.exec_interrupt();
                     if (pae.getID() == DEBUG_ATTACH) {
                         gdb.target_detach();
@@ -816,7 +816,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     lastShare = cb.toString();
                     if (lastShare.contains("GdbHelper")) { // NOI18N
                         ProjectActionEvent pae;
-                        pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+                        pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
                         int conType = pae.getProfile().getConsoleType().getValue();
                         if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                             gdb.data_evaluate_expression("_gdbHelperSetLineBuffered()"); // NOI18N
@@ -838,7 +838,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 DialogDisplayer.getDefault().notify(
                        new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                        "ERR_CantAttach"))); // NOI18N
-                (lookupProvider.lookupFirst(null, Session.class)).kill();
+                ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
             } else if (msg.startsWith("\"No symbol ") && msg.endsWith(" in current context.\"")) { // NOI18N
                 String type = msg.substring(13, msg.length() - 23);
                 log.warning("Failed type lookup for " + type);
@@ -848,7 +848,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 DialogDisplayer.getDefault().notify(
                        new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                        "ERR_CorruptedStack"))); // NOI18N
-                (lookupProvider.lookupFirst(null, Session.class)).kill();
+                ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
             } else if (msg.contains("error reading line numbers")) { // NOI18N
                 DialogDisplayer.getDefault().notify(
                        new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
@@ -857,7 +857,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 DialogDisplayer.getDefault().notify(
                        new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                        "ERR_NoSymbolTable"))); // NOI18N
-                (lookupProvider.lookupFirst(null, Session.class)).kill();
+                ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
             } else if (msg.contains("Cannot access memory at address")) { // NOI18N
                 // ignore - probably dereferencing an uninitialized pointer
             } else if (msg.contains("mi_cmd_break_insert: Garbage following <location>")) { // NOI18N
