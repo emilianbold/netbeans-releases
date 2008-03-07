@@ -59,6 +59,9 @@ import java.io.IOException;
  */
 public class VisualTestCase extends NbTestCase {
 
+    // Set this system property if you want to actually have frames pop up on you.
+    private static final boolean DISPLAY_FRAMES = Boolean.getBoolean(VisualTestCase.class.getName() + ".DISPLAY_FRAMES");
+
     /**
      * Creates a new visual test case.
      * @param testName the test name
@@ -92,13 +95,17 @@ public class VisualTestCase extends NbTestCase {
         view.setPreferredSize (new Dimension (width, height));
         frame.getContentPane().add(view, BorderLayout.CENTER);
         frame.pack ();
-        frame.setVisible(true);
+        if (DISPLAY_FRAMES) {
+            frame.setVisible(true);
+        }
         int countdown = 10;
         for (;;) {
-            if (frame.isShowing()  &&  scene.isValidated())
+            if ((!DISPLAY_FRAMES || frame.isShowing()) && scene.isValidated())
                 break;
             if (-- countdown < 0) {
-                frame.setVisible(false);
+                if (DISPLAY_FRAMES) {
+                    frame.setVisible(false);
+                }
                 frame.dispose ();
                 return null;
             }
