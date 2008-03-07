@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.io.BufferedInputStream;
 import java.text.ParseException;
 import java.util.jar.JarEntry;
 import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
@@ -878,7 +879,7 @@ public class Utilities {
         Document document = null;
         InputStream is;
         try {
-            is = new FileInputStream (moduleUpdateTracking);
+            is = new BufferedInputStream (new FileInputStream (moduleUpdateTracking));
             InputSource xmlInputSource = new InputSource (is);
             document = XMLUtil.parse (xmlInputSource, false, false, null, org.openide.xml.EntityCatalog.getDefault ());
             if (is != null) {

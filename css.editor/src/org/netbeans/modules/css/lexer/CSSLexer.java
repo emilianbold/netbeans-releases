@@ -43,6 +43,7 @@ package org.netbeans.modules.css.lexer;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
 import org.netbeans.modules.css.parser.CSSParserTokenManager;
+import org.netbeans.modules.css.parser.TokenMgrError;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
@@ -57,15 +58,16 @@ public final class CSSLexer implements Lexer<CSSTokenId> {
 
     private int lexerState;
     private final TokenFactory<CSSTokenId> tokenFactory;
-
     private CSSParserTokenManager tokenManager;
-    
+    private LexerRestartInfo<CSSTokenId> lexerRestartInfo;
+
     public Object state() {
         return lexerState;
     }
 
     public CSSLexer(LexerRestartInfo<CSSTokenId> info) {
-        if(info.state() != null) {
+        this.lexerRestartInfo = info;
+        if (info.state() != null) {
             tokenManager = new CSSParserTokenManager(new LexerCharStream(info), ((Integer) info.state()).intValue());
         } else {
             tokenManager = new CSSParserTokenManager(new LexerCharStream(info));
@@ -74,30 +76,54 @@ public final class CSSLexer implements Lexer<CSSTokenId> {
     }
 
     public Token<CSSTokenId> nextToken() {
-        org.netbeans.modules.css.parser.Token token = tokenManager.getNextToken();
-        
-        if(token.image.length() == 0) {
+        org.netbeans.modules.css.parser.Token token = null;
+        try {
+
+            //read a token from the javacc tokenizer
+            //this may throw TokenMgrError under some circumstances
+            //for example if EOF appears in the middle of regular expression evaluation
+            //or just after MORE lexical state (which currently happens for unclosed
+            //comments.
+            token = tokenManager.getNextToken();
+
+            //looks like we successfully obtained a token
+            if (token.image.length() > 0) {
+
+                int array_index = token.kind;
+
+                //hack - enum member to int conversion
+                //see the SACParserConstants indexes
+                if (array_index == 0 || array_index == 1) {
+                    //EOF or S tokens
+                    //no change, jj token indexes match lexer token indexes
+                    //        } else if(array_index == 3) {
+                    //            //COMMENT
+                    //            array_index = 2;
+                } else {
+                    //the rest of tokens 
+                    array_index -= 3;
+                }
+
+                //return netbeans lexer's token based on the type of the obtained javacc token
+                //all info like the image and offset will be got from the lexer input
+                return tokenFactory.createToken(CSSTokenId.values()[array_index]);
+            }
+
+        } catch (TokenMgrError tme) {
+            //something bad happened in the javacc lexer, the following section tries to recover
+        }
+
+        //the token got from the javacc lexer has an empty text or a TME has been thrown
+        if (lexerRestartInfo.input().readLength() > 0) {
+            //there is something in the buffer, return it as unknown token
+            return tokenFactory.createToken(CSSTokenId.UNKNOWN);
+        } else {
+            //just EOF in the buffer, finish lexing
             return null;
         }
-        
-        int array_index = token.kind;
-        
-        //hack - enum member to int conversion
-        //see the SACParserConstants indexes
-        if(array_index == 0 || array_index == 1) {
-            //EOF or S tokens
-            //no change, jj token indexes match lexer token indexes
-//        } else if(array_index == 3) {
-//            //COMMENT
-//            array_index = 2;
-        } else {
-            //the rest of tokens 
-            array_index -= 3;
-        }
-        
-        return tokenFactory.createToken(CSSTokenId.values()[array_index]);
-        
-        
+
+
+
 //        int actChar;
 //
 //        while (true) {
@@ -146,7 +172,7 @@ public final class CSSLexer implements Lexer<CSSTokenId> {
 //
 //        return tokenFactory.createToken(tokenId);
 //    }
-
     public void release() {
+        tokenManager = null;
     }
 }

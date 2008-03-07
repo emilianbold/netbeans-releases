@@ -78,6 +78,8 @@ import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.Receive;
 import org.netbeans.modules.bpel.model.api.Reply;
 import org.netbeans.modules.bpel.model.api.Sequence;
+import org.netbeans.modules.bpel.model.api.TerminationHandler;
+import org.netbeans.modules.bpel.model.api.Throw;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
@@ -400,7 +402,7 @@ public final class Validator extends BpelValidator {
 //out("reply2: " + reply2.getName());
 
     if ( !isInGate(reply1) && !isInGate(reply2)) {
-      if (haveTheSamePartnerLink(reply1, reply2)) {
+      if (haveTheSamePartnerLinkAndOperation(reply1, reply2)) {
         if ( !hasNextExit(reply1) && !hasNextExit(reply2)) {
           addErrorCheck("FIX_Replies_PartnerLink_Gate", reply1); // NOI18N
           addErrorCheck("FIX_Replies_PartnerLink_Gate", reply2); // NOI18N
@@ -409,7 +411,7 @@ public final class Validator extends BpelValidator {
       }
     }
     if (getParent(reply1) == getParent(reply2)) {
-      if (haveTheSamePartnerLink(reply1, reply2)) {
+      if (haveTheSamePartnerLinkAndOperation(reply1, reply2)) {
         addErrorCheck("FIX_Replies_PartnerLink_Scope", reply1); // NOI18N
         addErrorCheck("FIX_Replies_PartnerLink_Scope", reply2); // NOI18N
         return;
@@ -545,7 +547,7 @@ public final class Validator extends BpelValidator {
     return ref1.get() == ref2.get();
   }
 
-  private boolean haveTheSamePartnerLink(Reply reply1, Reply reply2) {
+  private boolean haveTheSamePartnerLinkAndOperation(Reply reply1, Reply reply2) {
     if (reply1.getPartnerLink() == null) {
 //out("  reply1 has PL ref null");
       return false;
@@ -566,7 +568,27 @@ public final class Validator extends BpelValidator {
 //out("  reply2 has PL null");
       return false;
     }
-    return partnerLink1 == partnerLink2;
+    if (partnerLink1 != partnerLink2) {
+      return false;
+    }
+    // operation
+    if (reply1.getOperation() == null) {
+      return false;
+    }
+    Operation operation1 = reply1.getOperation().get();
+
+    if (operation1 == null) {
+      return false;
+    }
+    if (reply2.getOperation() == null) {
+      return false;
+    }
+    Operation operation2 = reply2.getOperation().get();
+
+    if (operation2 == null) {
+      return false;
+    }
+    return operation1 == operation2;
   }
 
   private BpelEntity getParent(BpelEntity entity) {
@@ -664,6 +686,24 @@ public final class Validator extends BpelValidator {
       if ( !(operation instanceof RequestResponseOperation)) {
           addError("FIX_ReplyOperation", reply, opRef.getQName().toString()); // NOI18N
       }
+  }
+
+  // # 111409
+  @Override
+  public void visit(Throw _throw) {
+    if (hasParentTerminationHandler(_throw.getParent())) {
+      addError("FIX_Throw_in_TerminationHandler", _throw); // NOI18N
+    }
+  }
+
+  private boolean hasParentTerminationHandler(Component component) {
+    if (component == null) {
+      return false;
+    }
+    if (component instanceof TerminationHandler) {
+      return true;
+    }
+    return hasParentTerminationHandler(component.getParent());
   }
 
   @Override
