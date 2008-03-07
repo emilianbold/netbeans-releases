@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.bpel.model.api.BpelContainer;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
@@ -45,7 +44,7 @@ import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
-import org.netbeans.modules.bpel.model.api.support.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.bpel.model.impl.BpelEntityImpl;
 import org.netbeans.modules.bpel.model.impl.Utils;
 import org.netbeans.modules.bpel.model.xam.spi.ExternalModelRetriever;

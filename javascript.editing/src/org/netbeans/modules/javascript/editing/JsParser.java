@@ -46,7 +46,6 @@ import javax.swing.text.BadLocationException;
 
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParseEvent;
 import org.netbeans.modules.gsf.api.ParseListener;
@@ -381,7 +380,7 @@ public class JsParser implements Parser {
 //            assert offset == getOffset(context, line, lineOffset) : " offset=" + offset + " and computed offset=" + getOffset(context,line,lineOffset) + " and line/lineOffset = " + line + "/" + lineOffset;
 //        }
         
-        Error error =
+        DefaultError error =
             new DefaultError(key, message, null, context.file.getFileObject(),
                 offset, offset, severity);
         if (params != null) {

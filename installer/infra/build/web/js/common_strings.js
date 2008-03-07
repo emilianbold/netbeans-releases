@@ -70,8 +70,8 @@ BUNDLE_LONG_NAMES[3] = "Ruby";
 BUNDLE_LONG_NAMES[4] = "C/C++";
 BUNDLE_LONG_NAMES[5] = "All";
 
-var BUILD_DISPLAY_VERSION = "{build.display.version}";
-var BUILD_DISPLAY_VERSION_SHORT = "{build.display.version.short}";
+var NETBEANS_DOWNLOAD_PAGE_TITLE       = "NetBeans IDE {0} Download";
+var NETBEANS_DOWNLOAD_PAGE_DESCRIPTION = "NetBeans IDE {0} Download";
 
 var RELEASE_NOTES_LINK  = "http://www.netbeans.org/community/releases/61/relnotes.html";
 var INSTALL_NOTES_LINK  = "http://www.netbeans.org/community/releases/61/install.html";

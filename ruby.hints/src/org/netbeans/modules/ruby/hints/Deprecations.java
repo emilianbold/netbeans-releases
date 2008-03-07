@@ -39,7 +39,7 @@ import javax.swing.JComponent;
 import org.jruby.ast.FCallNode;
 import org.jruby.ast.ListNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.StrNode;
 import org.jruby.ast.types.INameNode;
 import org.jruby.util.ByteList;
@@ -91,13 +91,13 @@ public class Deprecations implements AstRule {
         }
     }
     
-    static Set<Integer> kinds = new HashSet<Integer>();
+    static Set<NodeType> kinds = new HashSet<NodeType>();
     private static Map<String,Deprecation> deprecatedMethods = new HashMap<String,Deprecation>();
     private static Map<String,Deprecation> deprecatedRequires = new HashMap<String,Deprecation>();
     static {
-        kinds.add(NodeTypes.FCALLNODE);
-        kinds.add(NodeTypes.VCALLNODE);
-        kinds.add(NodeTypes.CALLNODE);
+        kinds.add(NodeType.FCALLNODE);
+        kinds.add(NodeType.VCALLNODE);
+        kinds.add(NodeType.CALLNODE);
 
         Deprecation require_gem = new Deprecation("require_gem", "gem", "HELP_require_gem", "http://www.ruby-forum.com/topic/136010"); // NOI18N
         deprecatedMethods.put(require_gem.oldName, require_gem);
@@ -129,7 +129,7 @@ public class Deprecations implements AstRule {
         return true;
     }
 
-    public Set<Integer> getKinds() {
+    public Set<NodeType> getKinds() {
         return kinds;
     }
 
@@ -183,7 +183,7 @@ public class Deprecations implements AstRule {
     }
     
     private static String getStringArg(Node node) {
-        if (node.nodeId == NodeTypes.FCALLNODE) {
+        if (node.nodeId == NodeType.FCALLNODE) {
             Node argsNode = ((FCallNode)node).getArgsNode();
 
             if (argsNode instanceof ListNode) {

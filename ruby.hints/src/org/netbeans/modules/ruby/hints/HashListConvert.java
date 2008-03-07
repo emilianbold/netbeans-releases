@@ -49,7 +49,7 @@ import javax.swing.text.BadLocationException;
 import org.jruby.ast.HashNode;
 import org.jruby.ast.ListNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
@@ -71,8 +71,8 @@ import org.openide.util.NbBundle;
  */
 public class HashListConvert implements AstRule {
 
-    public Set<Integer> getKinds() {
-        return Collections.singleton(NodeTypes.HASHNODE);
+    public Set<NodeType> getKinds() {
+        return Collections.singleton(NodeType.HASHNODE);
     }
 
     public void run(RuleContext context, List<Description> result) {

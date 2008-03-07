@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.editor.reformat;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -46,6 +48,7 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.reformat.DiffLinkedList.DiffResult;
+import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
 
 /**
  *
@@ -57,7 +60,7 @@ public class PreprocessorFormatter {
     private final CodeStyle codeStyle;
     private final DiffLinkedList diffs;
     private int prepocessorDepth = 0;
-    private Stack<BracesStack> stateStack = new Stack<BracesStack>();
+    private Stack<PreprocessorStateStack> stateStack = new Stack<PreprocessorStateStack>();
     private BracesStack braces;
 
     
@@ -86,19 +89,24 @@ public class PreprocessorFormatter {
         if (prep.token() != null) {
             directive = prep.token();
         }
+        PreprocessorStateStack ps = null;
         if (directive != null) {
             switch (directive.id()) {
                 case PREPROCESSOR_ELSE: //("else", "preprocessor-keyword-directive"),
                 case PREPROCESSOR_ELIF: //("elif", "preprocessor-keyword-directive"),
                     prepocessorDepth--;
                     if (!stateStack.empty()){
-                        braces.reset(stateStack.pop());
+                        ps = stateStack.pop();
+                        ps.outputStack.add(braces.clone());
+                        braces.reset(ps.inputStack);
                     }
                     break;
                 case PREPROCESSOR_ENDIF: //("endif", "preprocessor-keyword-directive"),
                     prepocessorDepth--;
                     if (!stateStack.empty()){
-                        stateStack.pop();
+                        ps = stateStack.pop();
+                        ps.outputStack.add(braces.clone());
+                        braces.reset(ps.getBestOutputStack());
                     }
                     break;
             }
@@ -120,12 +128,16 @@ public class PreprocessorFormatter {
                 case PREPROCESSOR_IFDEF: //("ifdef", "preprocessor-keyword-directive"),
                 case PREPROCESSOR_IFNDEF: //("ifndef", "preprocessor-keyword-directive"),
                     prepocessorDepth++;
-                    stateStack.push(braces.clone());
+                    stateStack.push(new PreprocessorStateStack(braces.clone()));
                     break;
                 case PREPROCESSOR_ELSE: //("else", "preprocessor-keyword-directive"),
                 case PREPROCESSOR_ELIF: //("elif", "preprocessor-keyword-directive"),
                     prepocessorDepth++;
-                    stateStack.push(braces.clone());
+                    if (ps != null) {
+                        stateStack.push(ps);
+                    } else {
+                        stateStack.push(new PreprocessorStateStack(braces.clone()));
+                    }
                     break;
             }
         }
@@ -151,17 +163,17 @@ public class PreprocessorFormatter {
     }
 
     private void noIndent(Token<CppTokenId> previous, TokenSequence<CppTokenId> prep, Token<CppTokenId> next) {
-        indentBefore(previous, ""); // NOI18N
-        indentAfter(prep, next, ""); // NOI18N
+        indentBefore(previous, 0); // NOI18N
+        indentAfter(prep, next, 0); // NOI18N
     }
 
-    private void indentBefore(Token<CppTokenId> previous, String spaces) {
+    private void indentBefore(Token<CppTokenId> previous, int spaces) {
         DiffResult diff = diffs.getDiffs(ts, -1);
         if (diff != null) {
             if (diff.after != null) {
                 diff.after.replaceSpaces(spaces); // NOI18N
                 if (diff.replace != null && !diff.after.hasNewLine()){
-                    diff.replace.replaceSpaces(""); // NOI18N
+                    diff.replace.replaceSpaces(0); // NOI18N
                 }
                 return;
             } else if (diff.replace != null) {
@@ -170,26 +182,26 @@ public class PreprocessorFormatter {
             }
         }
         if (previous != null && previous.id() == WHITESPACE) {
-            if (!spaces.equals(previous.text().toString())){
-                ts.replacePrevious(previous, spaces);
+            if (!Diff.equals(previous.text().toString(),0,spaces)){
+                ts.replacePrevious(previous, 0, spaces);
             }
         } else {
-            if (spaces.length()>0){
-                ts.addBeforeCurrent(spaces);
+            if (spaces > 0){
+                ts.addBeforeCurrent(0, spaces);
             }
         }
     }
 
-    private void indentAfter(TokenSequence<CppTokenId> prep, Token<CppTokenId> next, String spaces) {
+    private void indentAfter(TokenSequence<CppTokenId> prep, Token<CppTokenId> next, int spaces) {
         if (next.id() == WHITESPACE) {
-            if (!spaces.equals(next.text().toString())){
+            if (!Diff.equals(next.text().toString(),0,spaces)){
                 diffs.addFirst(prep.offset() + prep.token().length(),
-                               prep.offset() + prep.token().length() + next.length(), spaces);
+                               prep.offset() + prep.token().length() + next.length(), 0, spaces);
             }
         } else {
-            if (spaces.length() > 0) {
+            if (spaces > 0) {
                 diffs.addFirst(prep.offset()+ prep.token().length(),
-                               prep.offset()+ prep.token().length(), spaces);
+                               prep.offset()+ prep.token().length(), 0, spaces);
             }
         }
     }
@@ -197,29 +209,68 @@ public class PreprocessorFormatter {
 
     private void indentByCode(Token<CppTokenId> previous, TokenSequence<CppTokenId> prep, Token<CppTokenId> next) {
         if (codeStyle.sharpAtStartLine()) {
-            indentBefore(previous, ""); // NOI18N
-            indentAfter(prep, next, context.getIndent("")); // NOI18N
+            indentBefore(previous, 0); // NOI18N
+            indentAfter(prep, next, context.getIndent());
         } else {
-            indentBefore(previous, context.getIndent("")); // NOI18N
-            indentAfter(prep, next, ""); // NOI18N
+            indentBefore(previous, context.getIndent());
+            indentAfter(prep, next, 0); // NOI18N
         }
     }
 
     private void indentByPreprocessor(Token<CppTokenId> previous, TokenSequence<CppTokenId> prep, Token<CppTokenId> next) {
         if (codeStyle.sharpAtStartLine()) {
-            indentBefore(previous, ""); // NOI18N
-            indentAfter(prep, next, getPreprocessorIndent("", prepocessorDepth)); // NOI18N
+            indentBefore(previous, 0); // NOI18N
+            indentAfter(prep, next, getPreprocessorIndent(prepocessorDepth));
         } else {
-            indentBefore(previous, getPreprocessorIndent("", prepocessorDepth)); // NOI18N
-            indentAfter(prep, next, ""); // NOI18N
+            indentBefore(previous, getPreprocessorIndent(prepocessorDepth));
+            indentAfter(prep, next, 0);
         }
     }
 
-    private String getPreprocessorIndent(String prefix, int shift) {
+    private int getPreprocessorIndent(int shift) {
         if (shift > 0) {
-            return context.spaces(prefix, shift * codeStyle.getGlobalIndentSize());
+            return shift * codeStyle.getGlobalIndentSize();
         } else {
-            return prefix;
+            return 0;
         }
+    }
+    private static class PreprocessorStateStack {
+        private BracesStack inputStack;
+        private List<BracesStack> outputStack = new ArrayList<BracesStack>();
+        private PreprocessorStateStack(BracesStack inputStack){
+            this.inputStack = inputStack;
+        }
+        private BracesStack getBestOutputStack(){
+            if (outputStack.size()>0){
+                BracesStack min =null;
+                int minLen = Integer.MAX_VALUE;
+                BracesStack max =null;
+                int maxLen = Integer.MIN_VALUE;
+                int inLen = inputStack.getLength();
+                for(BracesStack out : outputStack){
+                    int currentLen = out.getLength();
+                    if (currentLen < inLen){
+                        if (currentLen <= minLen) {
+                            min = out;
+                            minLen = currentLen;
+                        }
+                    } else if (currentLen > inLen) {
+                        if (currentLen >= maxLen) {
+                            max = out;
+                            maxLen = currentLen;
+                        }
+                    }
+                }
+                if (min != null && max == null) {
+                    return min;
+                }
+                if (max != null) {
+                    return max;
+                }
+                return outputStack.get(outputStack.size()-1);
+            }
+            return inputStack;
+        }
+        
     }
 }

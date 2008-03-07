@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -51,7 +51,6 @@ import java.io.IOException;
 
 import org.netbeans.modules.visualweb.gravy.*;
 import org.netbeans.modules.visualweb.gravy.ProjectNavigatorOperator;
-import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
 import org.netbeans.modules.visualweb.gravy.toolbox.PaletteContainerOperator;
 import org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator;
 import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
@@ -63,6 +62,7 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import static org.netbeans.modules.visualweb.test.components.util.ComponentUtils.typeLines;
 
 /**
  * @author Sherry Zhou (sherry.zhou@sun.com)
@@ -254,19 +254,20 @@ public class AcceptanceTest extends RaveTestCase {
         editor.requestFocus();
         TestUtils.wait(2000);
         editor.pushKey(KeyEvent.VK_ENTER);
-        editor.setText("String[] mySelections = getSessionBean1().getChoices();\n");
-        editor.setText("String showSelections = \"\"; \n");
-        editor.setText("if (mySelections != null) { \n");
-        editor.setText("// Create a list of the values of the selected items \n");
-        editor.setText("for (int i = 0; i < mySelections.length; i++) \n");
-        editor.setText("showSelections = showSelections + mySelections[i] +\"\n\"; \n");
-        //  editor.setText("} \n");
-        editor.setText("if (showSelections.equals(\"\")) \n");
-        editor.setText("showSelections = \"nothing selected\"; \n");
-        editor.setText("else \n");
-        editor.setText("showSelections = \"Values chosen:\n\" + showSelections; \n");
-        editor.setText("// Display the list in the textArea1 text area \n");
-        editor.setText("getTextArea1().setValue(showSelections);  \n");
+        String code =
+                "String[] mySelections = getSessionBean1().getChoices();\n"+
+                "String showSelections = \"\"; \n"+
+                "if (mySelections != null) { \n"+
+                "// Create a list of the values of the selected items \n"+
+                "for (int i = 0; i < mySelections.length; i++) \n"+
+                "showSelections = showSelections + mySelections[i] +\"\n\"; \n"+
+                "if (showSelections.equals(\"\")) \n"+
+                "showSelections = \"nothing selected\"; \n"+
+                "else \n"+
+                "showSelections = \"Values chosen:\n\" + showSelections; \n"+
+                "// Display the list in the textArea1 text area \n"+
+                "getTextArea1().setValue(showSelections);  \n";
+        typeLines(code, editor);
         TestUtils.wait(200);
         
         log("Reformat code");
@@ -372,7 +373,7 @@ public class AcceptanceTest extends RaveTestCase {
         editor.requestFocus();
         TestUtils.wait(2000);
         editor.pushKey(KeyEvent.VK_ENTER);
-        editor.setText("getTextArea1().setText(getSessionBean1().getChoices2()); \n");
+        editor.typeText("getTextArea1().setText(getSessionBean1().getChoices2()); \n");
         // Switch to design panel
         designer.makeComponentVisible();
         TestUtils.wait(10000);

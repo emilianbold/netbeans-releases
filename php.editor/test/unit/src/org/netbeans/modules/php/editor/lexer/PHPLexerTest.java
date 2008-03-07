@@ -41,9 +41,12 @@ package org.netbeans.modules.php.editor.lexer;
 import java.io.StringReader;
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
@@ -125,6 +128,7 @@ public class PHPLexerTest extends TestCase {
 
     public void testPHPCommnet2() {
         TokenSequence<?> ts = seqForText("<?/***\n**$a***\n****/$b?>");
+       // printTokenSequence(ts, "testPHPComment2"); ts.moveStart();
         next(ts, PHPTokenId.PHP_OPENTAG, "<?");
         next(ts, PHPTokenId.PHP_COMMENT_START, "/*");
         next(ts, PHPTokenId.PHP_COMMENT, "**\n**$a***\n***");
@@ -135,10 +139,11 @@ public class PHPLexerTest extends TestCase {
 
     public void testPHPCommnet3() {
         // test unfinished comment at the end of file
-        TokenSequence<?> ts = seqForText("<?/*a**\n**$a***\n***hello");
+        TokenSequence<?> ts = seqForText("<?/*a**\n**$a***\n***hello\nword");
+        //printTokenSequence(ts, "testPHPComment3"); ts.moveStart();
         next(ts, PHPTokenId.PHP_OPENTAG, "<?");
         next(ts, PHPTokenId.PHP_COMMENT_START, "/*");
-        next(ts, PHPTokenId.PHP_COMMENT, "a**\n**$a***\n***hello");
+        next(ts, PHPTokenId.PHP_COMMENT, "a**\n**$a***\n***hello\nword");
     }
 
     public void testPHPCommnet4() {
@@ -189,11 +194,12 @@ public class PHPLexerTest extends TestCase {
 
     public void testPHPDocumentor2() {
         TokenSequence<?> ts = seqForText("<?/**\n * Enter description here...\n * @ppp private\n * @var string $name\n */\nvar $name = \"ahoj\"\n?>");
+        //printTokenSequence(ts, "testPHPDocumentor2"); ts.moveStart();
         next(ts, PHPTokenId.PHP_OPENTAG, "<?");
         next(ts, PHPTokenId.PHPDOC_COMMENT_START, "/**");
         next(ts, PHPTokenId.PHPDOC_COMMENT, "\n * Enter description here...\n * ");
-        next(ts, PHPTokenId.PHPDOC_ACCESS, "@access");
-        next(ts, PHPTokenId.PHPDOC_COMMENT, " private\n * ");
+        next(ts, PHPTokenId.PHPDOC_COMMENT, "@");
+        next(ts, PHPTokenId.PHPDOC_COMMENT, "ppp private\n * ");
         next(ts, PHPTokenId.PHPDOC_VAR, "@var");
         next(ts, PHPTokenId.PHPDOC_COMMENT, " string $name\n ");
         next(ts, PHPTokenId.PHPDOC_COMMENT_END, "*/");
@@ -209,6 +215,44 @@ public class PHPLexerTest extends TestCase {
         next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
 
+    public void testPHPDocumentor3() {
+        TokenSequence<?> ts = seqForText("<?/**\n * Comment 1\n */\nvar $name = \"ahoj\"\n /**\n * Comment 2\n */\nvar $age = 10?>");
+        next(ts, PHPTokenId.PHP_OPENTAG, "<?");
+        next(ts, PHPTokenId.PHPDOC_COMMENT_START, "/**");
+        next(ts, PHPTokenId.PHPDOC_COMMENT, "\n * Comment 1\n ");
+        next(ts, PHPTokenId.PHPDOC_COMMENT_END, "*/");
+        next(ts, PHPTokenId.WHITESPACE, "\n");
+        next(ts, PHPTokenId.PHP_VAR, "var");
+        next(ts, PHPTokenId.WHITESPACE, " ");
+        next(ts, PHPTokenId.PHP_VARIABLE, "$name");
+        next(ts, PHPTokenId.WHITESPACE, " ");
+        next(ts, PHPTokenId.PHP_TOKEN, "=");
+        next(ts, PHPTokenId.WHITESPACE, " ");
+        next(ts, PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, "\"ahoj\"");
+        next(ts, PHPTokenId.WHITESPACE, "\n ");
+        next(ts, PHPTokenId.PHPDOC_COMMENT_START, "/**");
+        next(ts, PHPTokenId.PHPDOC_COMMENT, "\n * Comment 2\n ");
+        next(ts, PHPTokenId.PHPDOC_COMMENT_END, "*/");
+        next(ts, PHPTokenId.WHITESPACE, "\n");
+        next(ts, PHPTokenId.PHP_VAR, "var");
+        next(ts, PHPTokenId.WHITESPACE, " ");
+        next(ts, PHPTokenId.PHP_VARIABLE, "$age");
+        next(ts, PHPTokenId.WHITESPACE, " ");
+        next(ts, PHPTokenId.PHP_TOKEN, "=");
+        next(ts, PHPTokenId.WHITESPACE, " ");
+        next(ts, PHPTokenId.PHP_NUMBER, "10");
+        next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
+    }
+    
+    public void testPHPDocumentor4() {
+        TokenSequence<?> ts = seqForText("<?/**\n This File is free software; you can redistribute it and/or modify\n */?>");
+        next(ts, PHPTokenId.PHP_OPENTAG, "<?");
+        next(ts, PHPTokenId.PHPDOC_COMMENT_START, "/**");
+        next(ts, PHPTokenId.PHPDOC_COMMENT, "\n This File is free software; you can redistribute it and/or modify\n ");
+        next(ts, PHPTokenId.PHPDOC_COMMENT_END, "*/");
+        next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
+    }
+    
     public void testShortOpenTag() {
         TokenSequence<?> ts = seqForText("<? echo \"ahoj\" ?>");
 
@@ -229,5 +273,18 @@ public class PHPLexerTest extends TestCase {
     void next(TokenSequence<?> ts, PHPTokenId id, String fixedText) {
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, id, fixedText, -1);
+    }
+    
+    /** This is used for debugging purposes
+     * 
+     * @param ts
+     * @param name
+     */
+    private void printTokenSequence (TokenSequence<?> ts, String name) {
+        System.out.println("--- " + name + " ---");
+        while (ts.moveNext()) {
+            System.out.println(ts.token().id()+"\t"+ts.token());
+        }
+        System.out.println("-----------------------");
     }
 }

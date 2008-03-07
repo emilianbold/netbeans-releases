@@ -19,9 +19,14 @@
 package org.netbeans.modules.bpel.core.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 

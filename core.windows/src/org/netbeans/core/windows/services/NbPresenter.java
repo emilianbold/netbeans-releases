@@ -902,8 +902,11 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             Component fo = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getFocusOwner ();
             updateHelp();
             // In case buttons have changed: //just buttons!!
-            currentButtonsPanel.revalidate();
-            currentButtonsPanel.repaint();
+            // note, currentButtonsPanel may be null
+            if (currentButtonsPanel != null) {
+                currentButtonsPanel.revalidate();
+                currentButtonsPanel.repaint();
+            }
             if (fo != null) fo.requestFocus();
         } else if (DialogDescriptor.PROP_VALID.equals(evt.getPropertyName())) {
             updateOKButton(((Boolean)(evt.getNewValue())).booleanValue());

@@ -114,16 +114,18 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public static final String ADAPTOR = "adaptor"; //NOI18N
     public static final String ADAPTOR_CLASSNAME = "adaptorClass"; //NOI18N
 
+    // Multi-operation changes are synchronized on this
     private static Map gtab = null;
     static final String gtabfile = "org/netbeans/modules/db/resources/explorer.plist"; //NOI18N
 
+    // Sychronized on this
     private boolean connected = false;
 
     protected static ResourceBundle bundle() {
         return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
     }
 
-    public static Map getGlobalNodeInfo() {
+    public synchronized static Map getGlobalNodeInfo() {
         if (gtab == null)
             gtab = readInfo();
         
@@ -387,15 +389,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
                 }
             }
 
-            Children.MUTEX.postWriteRequest(new Runnable() {
-                public void run() {
-                    // remove current sub-tree
-                    children.remove(children.getNodes());
-
-                    // add built sub-tree
-                    children.add(subTreeNodes);
-                }
-            });
+            children.replaceNodes(subTreeNodes);
             
             fireRefresh();
         } catch (ClassCastException ex) {
@@ -539,11 +533,11 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
     }
 
-    public void setConnected(boolean connected) {
+    public synchronized void setConnected(boolean connected) {
         this.connected = connected;
     }
     
-    public boolean isConnected() {
+    public synchronized boolean isConnected() {
         return connected;
     }
 
@@ -699,7 +693,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     {
     }
 
-    public Vector getChildren()
+    public synchronized Vector getChildren()
     throws DatabaseException
     {
         Vector children = (Vector)get(CHILDREN);

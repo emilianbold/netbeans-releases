@@ -62,18 +62,17 @@ final class BPELValidationAnnotation extends Annotation implements PropertyChang
   
   public void show(Annotatable annotatable, String message) {
     myMessage = message;
-    attach(annotatable);
-    annotatable.addPropertyChangeListener(this);
+
+    if (annotatable != null) {
+      attach(annotatable);
+      annotatable.addPropertyChangeListener(this);
+    }
   }
   
   public void propertyChange( PropertyChangeEvent propertyChangeEvent ) {
-    // Ignore the event which notifies about the number of annotations for
-    // the annotatable object -- we're not really interested
-    if (Annotatable.PROP_ANNOTATION_COUNT.equals(
-            propertyChangeEvent.getPropertyName())) {
-        return;
+    if (Annotatable.PROP_ANNOTATION_COUNT.equals(propertyChangeEvent.getPropertyName())) {
+      return;
     }
-    
     Annotatable annotatable = (Annotatable) propertyChangeEvent.getSource();
 
     if (annotatable != null) {

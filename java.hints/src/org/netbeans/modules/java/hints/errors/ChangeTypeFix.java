@@ -53,7 +53,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 
