@@ -94,10 +94,21 @@ public class JbiDefaultComponentInfo {
      * DOCUMENT ME!
      */
     public static final String COMP_NAMESPACE = "namespace"; // NOI18N
+    
     /**
      * DOCUMENT ME!
      */
     public static final String COMP_ICON = "icon"; // NOI18N
+    
+    /**
+     * DOCUMENT ME!
+     */
+    public static final String PROJ_ICON = "projectIcon"; // NOI18N
+    
+    /**
+     * DOCUMENT ME!
+     */
+    public static final String FILE_ICON = "fileIcon"; // NOI18N
 
     /**
      * DOCUMENT ME!
@@ -200,21 +211,27 @@ public class JbiDefaultComponentInfo {
                 String desc = ""; // NOI18N
                 String type = ""; // NOI18N
                 String state = "Installed"; // NOI18N
+                URL projectIconURL = null; 
+                URL fileIconURL = null; 
                 List<String> nsList = new ArrayList<String>();
                 
                 FileObject compFO = compDO.getPrimaryFile();  // e.x., SeeBeyondJbiComponents/sun-file-binding
                 for (Enumeration<String> e = compFO.getAttributes(); e.hasMoreElements();) {
                     String attrName = e.nextElement();
-                    String attrValue = (String) compFO.getAttribute(attrName);
+                    Object attrValue = compFO.getAttribute(attrName);
                     
                     if (attrName.equals(COMP_ID)) {
-                        id = attrValue;
+                        id = (String) attrValue;
                     } else if (attrName.equals(COMP_DESC)) {
-                        desc = attrValue;
+                        desc = (String) attrValue;
                     } else if (attrName.equals(COMP_TYPE)) {
-                        type = attrValue;
+                        type = (String) attrValue;
                     } else if (attrName.equals(COMP_NAMESPACE)) {
-                        nsList.add(attrValue);
+                        nsList.add((String) attrValue);  
+                    } else if (attrName.equals(PROJ_ICON)) {
+                        projectIconURL = (URL) attrValue;
+                    } else if (attrName.equals(FILE_ICON)) {
+                        fileIconURL = (URL) attrValue;
                     }
                 }
                         
@@ -240,6 +257,8 @@ public class JbiDefaultComponentInfo {
                 if (id.length() > 0 && !singleton.componentMap.containsKey(id)) {
                     JBIComponentStatus jcs = 
                             new JBIComponentStatus(id, desc, type, state, nsList);
+                    jcs.setProjectIconURL(projectIconURL);
+                    jcs.setFileIconURL(fileIconURL);
                     singleton.componentList.add(jcs);
                     singleton.componentMap.put(id, jcs);
                 }

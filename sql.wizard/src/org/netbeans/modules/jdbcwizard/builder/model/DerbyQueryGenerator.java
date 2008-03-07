@@ -121,7 +121,7 @@ public class DerbyQueryGenerator implements DBQueryModel {
      */
     public String createInsertQuery() throws Exception {
         final StringBuffer sb = new StringBuffer();
-        sb.append("insert into");
+        /*sb.append("insert into");
         sb.append(" ");
         sb.append("\"" + this.mSchemaName + "\"");
         sb.append(".");
@@ -130,6 +130,34 @@ public class DerbyQueryGenerator implements DBQueryModel {
         sb.append("(");
         for (int i = 0; i < this.mInsertColumns.size(); i++) {
             sb.append("\"" + ((DBColumn) this.mInsertColumns.get(i)).getName() + "\"");
+            if (i == this.mInsertColumns.size() - 1) {
+                sb.append(")");
+            } else {
+                sb.append(",");
+            }
+        }
+        sb.append(" ");
+        sb.append("values (");
+        for (int i = 0; i < this.mInsertColumns.size(); i++) {
+            sb.append("?");
+            if (i == this.mInsertColumns.size() - 1) {
+                sb.append(")");
+            } else {
+                sb.append(",");
+            }
+        }
+        DerbyQueryGenerator.mLog.log(Level.INFO, "Generated Insert Query " + sb.toString());
+        return sb.toString();*/
+        //Modified Query
+        sb.append("insert into");
+        sb.append(" ");
+        //sb.append(this.mSchemaName);
+        //sb.append(".");
+        sb.append(this.mtabName);
+        sb.append(" ");
+        sb.append("(");
+        for (int i = 0; i < this.mInsertColumns.size(); i++) {
+            sb.append(((DBColumn) this.mInsertColumns.get(i)).getName());
             if (i == this.mInsertColumns.size() - 1) {
                 sb.append(")");
             } else {
@@ -156,7 +184,7 @@ public class DerbyQueryGenerator implements DBQueryModel {
      */
     public String createUpdateQuery() throws Exception {
         final StringBuffer sb = new StringBuffer();
-        sb.append("update");
+        /*sb.append("update");
         sb.append(" ");
         sb.append("\"" + this.mSchemaName + "\"");
         sb.append(".");
@@ -175,6 +203,22 @@ public class DerbyQueryGenerator implements DBQueryModel {
             }
         }
         DerbyQueryGenerator.mLog.log(Level.INFO, "Generated Update Query " + sb.toString());
+        return sb.toString();*/
+        sb.append("update");
+        sb.append(" ");
+        sb.append(this.mtabName);
+        sb.append(" ");
+        sb.append("set ");
+        for (int i = 0; i < this.mUpdateColumns.size(); i++) {
+            sb.append(((DBColumn) this.mUpdateColumns.get(i)).getName());
+            sb.append("  ");
+            sb.append("=");
+            sb.append(" ?");
+            if (i != this.mUpdateColumns.size() - 1) {
+                sb.append(",");
+            }
+        }
+        DerbyQueryGenerator.mLog.log(Level.INFO, "Generated Update Query " + sb.toString());
         return sb.toString();
     }
 
@@ -184,13 +228,20 @@ public class DerbyQueryGenerator implements DBQueryModel {
      */
     public String createDeleteQuery() throws Exception {
         final StringBuffer sb = new StringBuffer();
-        sb.append("delete");
+       /* sb.append("delete");
         sb.append(" ");
         sb.append("from");
         sb.append(" ");
         sb.append("\"" + this.mSchemaName + "\"");
         sb.append(".");
         sb.append("\"" + this.mtabName + "\"");
+        DerbyQueryGenerator.mLog.log(Level.INFO, "Generated Delete Query " + sb.toString());
+        return sb.toString();*/
+        sb.append("delete");
+        sb.append(" ");
+        sb.append("from");
+        sb.append(" ");
+        sb.append(this.mtabName);
         DerbyQueryGenerator.mLog.log(Level.INFO, "Generated Delete Query " + sb.toString());
         return sb.toString();
     }
@@ -201,7 +252,7 @@ public class DerbyQueryGenerator implements DBQueryModel {
      */
     public String createFindQuery() throws Exception {
         final StringBuffer sb = new StringBuffer();
-        sb.append("select");
+        /*sb.append("select");
         sb.append(" ");
 
         for (int i = 0; i < this.mChooseColumns.size(); i++) {
@@ -221,6 +272,25 @@ public class DerbyQueryGenerator implements DBQueryModel {
         sb.append("\"" + this.mtabName + "\"");
 
         DerbyQueryGenerator.mLog.log(Level.INFO, "Generated Find Query " + sb.toString());
+        return sb.toString();*/
+        sb.append("select");
+        sb.append(" ");
+
+        for (int i = 0; i < this.mChooseColumns.size(); i++) {
+            sb.append(((DBColumn) this.mChooseColumns.get(i)).getName());
+            if (i == this.mChooseColumns.size() - 1) {
+                sb.append(" ");
+            } else {
+                sb.append(",");
+            }
+        }
+        // selected columns
+
+        sb.append("from");
+        sb.append(" ");
+        sb.append(this.mtabName);
+
+        DerbyQueryGenerator.mLog.log(Level.INFO, "Generated Find Query " + sb.toString());
         return sb.toString();
     }
 
@@ -230,7 +300,7 @@ public class DerbyQueryGenerator implements DBQueryModel {
      */
     public String createPoolQuery() throws Exception {
         final StringBuffer sb = new StringBuffer();
-        sb.append("select");
+        /*sb.append("select");
         sb.append(" ");
         for (int i = 0; i < this.mPollColumns.size(); i++) {
             sb.append("\"" + ((DBColumn) this.mPollColumns.get(i)).getName() + "\"");
@@ -246,6 +316,22 @@ public class DerbyQueryGenerator implements DBQueryModel {
         sb.append("\"" + this.mSchemaName + "\"");
         sb.append(".");
         sb.append("\"" + this.mtabName + "\"");
+        DerbyQueryGenerator.mLog.log(Level.INFO, "Generated Pool Query " + sb.toString());
+        return sb.toString();*/
+        sb.append("select");
+        sb.append(" ");
+        for (int i = 0; i < this.mPollColumns.size(); i++) {
+            sb.append(((DBColumn) this.mPollColumns.get(i)).getName());
+            if (i == this.mPollColumns.size() - 1) {
+                sb.append(" ");
+            } else {
+                sb.append(",");
+            }
+        }
+        // selected columns
+        sb.append("from");
+        sb.append(" ");
+        sb.append(this.mtabName);
         DerbyQueryGenerator.mLog.log(Level.INFO, "Generated Pool Query " + sb.toString());
         return sb.toString();
     }
