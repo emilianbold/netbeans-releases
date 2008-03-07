@@ -109,7 +109,7 @@ public final class UI {
     return (modifiers & mask) != 0;
   }
 
-  public static JComboBox createComboBox(Object [] items) {
+  public static MyComboBox createComboBox(Object [] items) {
     return new MyComboBox(items);
   }
 
@@ -480,16 +480,25 @@ public final class UI {
   }
 
   // ------------------------------------------------
-  private static class MyComboBox extends JComboBox {
+  public static class MyComboBox extends JComboBox {
     public MyComboBox(Object [] items) {
       super(items);
       init();
     }
 
-    public boolean selectWithKeyChar(char key) {
+    @Override
+    public boolean selectWithKeyChar(char key)
+    {
       processKey(key);
       setSelectedIndex(myIndex);
       return true;
+    }
+
+    public void init() {
+//out();
+//out("init");
+      myIndex = 0;
+      myPrefix = ""; // NOI18N
     }
 
     private void processKey(char key) {
@@ -511,13 +520,6 @@ public final class UI {
           return;
         }
       }
-    }
-
-    private void init() {
-//out();
-//out("init");
-      myIndex = 0;
-      myPrefix = ""; // NOI18N
     }
 
     private int myIndex;
