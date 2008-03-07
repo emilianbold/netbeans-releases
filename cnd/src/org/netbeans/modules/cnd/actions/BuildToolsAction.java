@@ -144,7 +144,7 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(16, 16, 16, 16);
         panel.add(innerPanel, gridBagConstraints);
         return panel;
     }

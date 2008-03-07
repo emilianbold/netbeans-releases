@@ -85,6 +85,8 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -222,46 +224,22 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 //        cbCompilerSet.removeAllItems();
     } 
     
-    static int count = 0;
     private void addDirectory() {
-        File file;
-        int rc;
+        AddCompilerSetPanel panel = new AddCompilerSetPanel(csm);
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, "Add New Tool Set");
+        panel.setDialogDescriptor(dialogDescriptor);
+        DialogDisplayer.getDefault().notify(dialogDescriptor);
+        if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION)
+            return;
+        String baseDirectory = panel.getBaseDirectory();
+        CompilerSet.CompilerFlavor flavor = panel.getFamily();
+        String compilerSetName = panel.getCompilerSetName().trim();
         
-        if (addDirectoryChooser == null) {
-            ResourceBundle bundle = NbBundle.getBundle(ToolsPanel.class);
-            addDirectoryChooser = new JFileChooser();
-            addDirectoryChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            addDirectoryChooser.setDialogTitle(bundle.getString("LBL_AddDirectoryTitle")); // NOI18N
-            addDirectoryChooser.setApproveButtonText(bundle.getString("LBL_AddDirectoryAcceptButton")); // NOI18N
-            addDirectoryChooser.setApproveButtonMnemonic(bundle.getString("MNEM_AddDirectoryAcceptButton").charAt(0)); // NOI18N
-        }
-        try {
-            rc = addDirectoryChooser.showDialog(this, null);
-            if (rc == JFileChooser.APPROVE_OPTION) {
-                // Base
-                file = addDirectoryChooser.getSelectedFile();
-                
-                // Flavor
-                ArrayList<String> list = new ArrayList<String>();
-                if (new File(file, "cc").exists()) // NOI18N
-                    list.add("cc"); // NOI18N
-                if (new File(file, "gcc").exists()) // NOI18N
-                    list.add("gcc"); // NOI18N
-                CompilerSet.CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(file.getAbsolutePath(), (String[])list.toArray(new String[list.size()]));
-                
-                // Name
-                String name = "Custom" + count++;
-                
-                CompilerSet cs = CompilerSet.getCustomCompilerSet(file.getAbsolutePath(), flavor, name);
-                CompilerSetManager.getDefault().initCompilerSet(cs);
-                csm.add(cs);
-//                dirlist.add(0, file.getAbsolutePath());
-//                csm = new CompilerSetManager(dirlist);
-                changed = true;
-                update(false, cs);
-            }
-        } catch (HeadlessException ex) {
-        }
+        CompilerSet cs = CompilerSet.getCustomCompilerSet(new File(baseDirectory).getAbsolutePath(), flavor, compilerSetName);
+        CompilerSetManager.getDefault().initCompilerSet(cs);
+        csm.add(cs);
+        changed = true;
+        update(false, cs);
     }
     
     private void removeDirectory() {
@@ -1383,7 +1361,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 10, 0, 0);
         add(lbMakeCommand, gridBagConstraints);
         lbMakeCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_MakeCommand")); // NOI18N
         lbMakeCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MakeCommand")); // NOI18N
@@ -1415,7 +1393,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbGdbCommand, gridBagConstraints);
         lbGdbCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_GdbCommand")); // NOI18N
         lbGdbCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_GdbCommand")); // NOI18N
@@ -1447,7 +1425,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 18, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 22, 0, 0);
         add(lbCCommand, gridBagConstraints);
         lbCCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CCommand")); // NOI18N
         lbCCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CCommand")); // NOI18N
@@ -1479,7 +1457,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 18, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 22, 0, 0);
         add(lbCppCommand, gridBagConstraints);
         lbCppCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CppCommand")); // NOI18N
         lbCppCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CppCommand")); // NOI18N
@@ -1511,7 +1489,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 18, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 22, 0, 0);
         add(lbFortranCommand, gridBagConstraints);
         lbFortranCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_FortranCommand")); // NOI18N
         lbFortranCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_FortranCommand")); // NOI18N
@@ -1544,7 +1522,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
         add(lbCompilerCollection, gridBagConstraints);
         lbCompilerCollection.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CompilerCollection")); // NOI18N
         lbCompilerCollection.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CompilerCollection")); // NOI18N
@@ -1556,7 +1534,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 13;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 10, 0, 0);
         add(jLabel1, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
@@ -1618,7 +1596,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbBaseDirectory, gridBagConstraints);
 
         tfBaseDirectory.setEditable(false);
