@@ -73,6 +73,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     private BreakpointsReader reader;
     private final Session session;
     private String err;
+    private boolean runWhenValidated;
     
     protected BreakpointImpl(GdbBreakpoint breakpoint, BreakpointsReader reader, GdbDebugger debugger, Session session) {
         this.debugger = debugger;
@@ -82,6 +83,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         this.state = BPSTATE_UNVALIDATED;
         this.breakpointNumber = -1;
         this.err = null;
+        runWhenValidated = false;
     }
 
     public void completeValidation(Map<String, String> map) {
@@ -258,6 +260,14 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
             //getDebugger().setStoppedState(thread);
         }
         return resume;
+    }
+    
+    public void setRunWhenValidated(boolean runWhenValidated) {
+        this.runWhenValidated = runWhenValidated;
+    }
+    
+    public boolean isRunWhenValidated() {
+        return runWhenValidated;
     }
         
     private static final class ValidityChangeEvent extends ChangeEvent {
