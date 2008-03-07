@@ -259,15 +259,17 @@ public class GdbProxy implements GdbMiDefinitions {
     /*
      * @param filename - source file to disassemble
      */
-    public int data_disassemble(String filename, int line) {
-        return engine.sendCommand("-data-disassemble -f " + filename + " -l " + line + " -- 0"); // NOI18N
+    public int data_disassemble(String filename, int line, boolean withSource) {
+        int src = withSource ? 1 : 0;
+        return engine.sendCommand("-data-disassemble -f " + filename + " -l " + line + " -- " + src); // NOI18N
     }
     
     /*
      * @param size - size in bytes
      */
-    public int data_disassemble(int size) {
-        return engine.sendCommand("-data-disassemble -s $pc -e \"$pc+" + size + "\" -- 0"); // NOI18N
+    public int data_disassemble(int size, boolean withSource) {
+        int src = withSource ? 1 : 0;
+        return engine.sendCommand("-data-disassemble -s $pc -e \"$pc+" + size + "\" -- " + src); // NOI18N
     }
     
     public int print(CommandBuffer cb, String expression) {

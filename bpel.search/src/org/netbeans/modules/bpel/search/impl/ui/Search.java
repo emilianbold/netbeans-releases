@@ -50,7 +50,6 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -94,7 +93,9 @@ public final class Search extends Dialog {
   @Override
   protected void updated()
   {
+//out("UPDATED");
     setItems(myTarget, myTargets);
+    myTarget.init();
   }
 
   private JPanel createPanel() {
@@ -290,13 +291,13 @@ public final class Search extends Dialog {
     };
   }
 
-  private Object mySource;
   private Field myName;
+  private Object mySource;
   private JButton mySearchButton;
-  private JComboBox myTarget;
   private JCheckBox myMatchCase;
   private JCheckBox myPatternMatch;
   private JCheckBox myRegularExpression;
+  private MyComboBox myTarget;
   private SearchTarget [] myTargets;
   private SearchEngine mySearchEngine;
   private DialogDescriptor myDescriptor;

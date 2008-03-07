@@ -69,7 +69,7 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         super(parentGroup, services);
     }
 
-    public WsdlSaas(SaasGroup parentGroup, String displayName, String url, String packageName) {
+    public WsdlSaas(SaasGroup parentGroup, String url, String displayName, String packageName) {
         super(parentGroup, url, displayName, packageName);
         getDelegate().setType(NS_WSDL);
     }

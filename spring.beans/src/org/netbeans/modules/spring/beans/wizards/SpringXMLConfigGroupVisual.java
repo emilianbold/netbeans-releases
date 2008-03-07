@@ -133,7 +133,7 @@ public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
         }
 
         public String getColumnName(int columnIndex) {
-            return (columnIndex == 0) ? "" : ""; // NOI18N
+            return ""; // NOI18N
         }
 
         public Class<?> getColumnClass(int columnIndex) {
