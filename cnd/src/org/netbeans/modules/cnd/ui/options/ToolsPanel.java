@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
@@ -218,6 +219,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 //        cbCompilerSet.removeAllItems();
     } 
     
+    static int count = 0;
     private void addDirectory() {
         File file;
         int rc;
@@ -233,25 +235,26 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         try {
             rc = addDirectoryChooser.showDialog(this, null);
             if (rc == JFileChooser.APPROVE_OPTION) {
-                // Validate first
-                // FIXUP: need dialog with proper validation....
+                // Base
                 file = addDirectoryChooser.getSelectedFile();
-                if (csm.getCompilerSetByPath(file.getAbsolutePath()) != null) {
-                    // FIXUP: error message
-                    return;
-                }
+                
+                // Flavor
                 ArrayList<String> list = new ArrayList<String>();
                 if (new File(file, "cc").exists()) // NOI18N
                     list.add("cc"); // NOI18N
                 if (new File(file, "gcc").exists()) // NOI18N
                     list.add("gcc"); // NOI18N
-                CompilerSet cs = CompilerSet.getCompilerSet(file.getAbsolutePath(), (String[])list.toArray(new String[list.size()]));
+                CompilerSet.CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(file.getAbsolutePath(), (String[])list.toArray(new String[list.size()]));
                 
-                changed = true;
-//                dirlist.add(0, file.getAbsolutePath());
-//                csm = new CompilerSetManager(dirlist);
+                // Name
+                String name = "Custom" + count++;
+                
+                CompilerSet cs = CompilerSet.getCustomCompilerSet(file.getAbsolutePath(), flavor, name);
                 CompilerSetManager.getDefault().initCompilerSet(cs);
                 csm.add(cs);
+//                dirlist.add(0, file.getAbsolutePath());
+//                csm = new CompilerSetManager(dirlist);
+                changed = true;
                 update(false, cs);
             }
         } catch (HeadlessException ex) {
@@ -637,11 +640,15 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         
         if (cs != null) {
             tfBaseDirectory.setText(cs.getDirectory());
-            tfFamily.setText(cs.getCompilerFlavor().isSunCompiler() ? "Sun" : "GNU"); // NOI18N
+            cbFamily.removeAllItems();
+            List<CompilerFlavor> list = CompilerFlavor.getFlavors();
+            for (CompilerFlavor cf : list)
+                cbFamily.addItem(cf);
+            cbFamily.setSelectedItem(cs.getCompilerFlavor());
         }
         else {
             tfBaseDirectory.setText(""); // NOI18N
-            tfFamily.setText(""); // NOI18N
+            cbFamily.removeAllItems();
             return;
         }
         
@@ -1348,7 +1355,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         btUp.addActionListener(this);
         btDown = new javax.swing.JButton();
         btDown.addActionListener(this);
-        tfFamily = new javax.swing.JTextField();
+        cbFamily = new javax.swing.JComboBox();
 
         setMinimumSize(new java.awt.Dimension(600, 400));
         setLayout(new java.awt.GridBagLayout());
@@ -1527,6 +1534,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         btFortranVersion.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_FortranVersion")); // NOI18N
 
         lbCompilerCollection.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_CompilerCollection").charAt(0));
+        lbCompilerCollection.setLabelFor(cbFamily);
         lbCompilerCollection.setText(bundle.getString("LBL_CompilerCollection")); // NOI18N
         lbCompilerCollection.setToolTipText(bundle.getString("HINT_CompilerCollection")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1773,16 +1781,14 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(ToolSetPanel, gridBagConstraints);
 
-        tfFamily.setColumns(4);
-        tfFamily.setEditable(false);
+        cbFamily.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
-        add(tfFamily, gridBagConstraints);
+        add(cbFamily, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -1804,6 +1810,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private javax.swing.JPanel buttonPanel;
     private javax.swing.JCheckBox cbCRequired;
     private javax.swing.JCheckBox cbCppRequired;
+    private javax.swing.JComboBox cbFamily;
     private javax.swing.JCheckBox cbFortranRequired;
     private javax.swing.JCheckBox cbGdbRequired;
     private javax.swing.JCheckBox cbMakeRequired;
@@ -1824,7 +1831,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private javax.swing.JTextField tfBaseDirectory;
     private javax.swing.JTextField tfCPath;
     private javax.swing.JTextField tfCppPath;
-    private javax.swing.JTextField tfFamily;
     private javax.swing.JTextField tfFortranPath;
     private javax.swing.JTextField tfGdbPath;
     private javax.swing.JTextField tfMakePath;

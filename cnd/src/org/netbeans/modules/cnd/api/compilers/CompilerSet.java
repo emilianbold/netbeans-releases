@@ -72,7 +72,7 @@ public class CompilerSet {
     public void setAsDefault(boolean isDefault) {
         this.isDefault = isDefault;
     }
-    
+
     /** Recognized (and prioritized) types of compiler sets */
     public enum CompilerFlavor {
             Sun12("Sun12"), // NOI18N
@@ -148,6 +148,55 @@ public class CompilerSet {
             }
             return GNU;
         }
+        
+        public static CompilerFlavor getFlavor(String name) {
+            if (name == null) {
+                return null;
+            }
+            if (name.equals("Sun")) { // NOI18N
+                return Sun;
+            } else if (name.equals("Sun12")) { // NOI18N
+                return Sun12;
+            } else if (name.equals("Sun11")) { // NOI18N
+                return Sun11;
+            } else if (name.equals("Sun10")) { // NOI18N
+                return Sun10;
+            } else if (name.equals("Sun9")) { // NOI18N
+                return Sun9;
+            } else if (name.equals("Sun8")) { // NOI18N
+                return Sun8;
+            } else if (name.equals("SunUCB")) { // NOI18N
+                return SunUCB;
+            } else if (name.equals("Cygwin")) { // NOI18N
+                return Cygwin;
+            } else if (name.equals("MinGW")) { // NOI18N
+                return MinGW;
+            } else if (name.equals("DJGPP")) { // NOI18N
+                return DJGPP;
+            } else if (name.equals("Interix")) { // NOI18N
+                return Interix;
+            } else if (name.equals("Unknown")) { // NOI18N
+                return Unknown;
+            }
+            return null;
+        }
+        
+        public static List getFlavors() {
+            ArrayList<CompilerFlavor> list = new ArrayList<CompilerFlavor>();
+            list.add(GNU);
+            list.add(Cygwin);
+            list.add(MinGW);
+            list.add(Sun12);
+            list.add(Sun11);
+            list.add(Sun10);
+            list.add(Sun9);
+            list.add(Sun8);
+            list.add(SunUCB);
+            list.add(DJGPP);
+            list.add(Interix);
+            list.add(Unknown);
+            return list;
+        }
     
         public String toString() {
             return sval;
@@ -173,18 +222,18 @@ public class CompilerSet {
     private CompilerProvider compilerProvider;
     private String driveLetterPrefix = "/"; // NOI18N
     
-    private String[] noCompDNames = {
-        NbBundle.getMessage(CompilerSet.class, "LBL_NoCCompiler"), // NOI18N
-        NbBundle.getMessage(CompilerSet.class, "LBL_NoCppCompiler"), // NOI18N
-        NbBundle.getMessage(CompilerSet.class, "LBL_NoFortranCompiler"), // NOI18N
-        NbBundle.getMessage(CompilerSet.class, "LBL_NoCustomBuildTool"), // NOI18N
-        NbBundle.getMessage(CompilerSet.class, "LBL_NoAssembler"), // NOI18N
-        NbBundle.getMessage(CompilerSet.class, "LBL_NoMakeTool"), // NOI18N
-        NbBundle.getMessage(CompilerSet.class, "LBL_NoDebuggerTool") // NOI18N
-    };
+//    private String[] noCompDNames = {
+//        NbBundle.getMessage(CompilerSet.class, "LBL_NoCCompiler"), // NOI18N
+//        NbBundle.getMessage(CompilerSet.class, "LBL_NoCppCompiler"), // NOI18N
+//        NbBundle.getMessage(CompilerSet.class, "LBL_NoFortranCompiler"), // NOI18N
+//        NbBundle.getMessage(CompilerSet.class, "LBL_NoCustomBuildTool"), // NOI18N
+//        NbBundle.getMessage(CompilerSet.class, "LBL_NoAssembler"), // NOI18N
+//        NbBundle.getMessage(CompilerSet.class, "LBL_NoMakeTool"), // NOI18N
+//        NbBundle.getMessage(CompilerSet.class, "LBL_NoDebuggerTool") // NOI18N
+//    };
     
     /** Creates a new instance of CompilerSet */
-    protected CompilerSet(CompilerFlavor flavor, String directory) {
+    protected CompilerSet(CompilerFlavor flavor, String directory, String name) {
         addDirectory(directory);
         
         compilerProvider = (CompilerProvider) Lookup.getDefault().lookup(CompilerProvider.class);
@@ -214,7 +263,10 @@ public class CompilerSet {
         if (directory.length() > 0) {
             id = flavor.nextId();
         }
-        name = flavor.toString();
+        if (name != null)
+            this.name = name;
+        else
+            this.name = flavor.toString();
         displayName = mapNameToDisplayName(flavor, directory.length() == 0);
         if (flavor.isSunCompiler()) {
             librarySearchOption = "-L"; // NOI18N
@@ -298,7 +350,7 @@ public class CompilerSet {
         if (cs == null) {
             CompilerFlavor flavor = CompilerFlavor.toFlavor(name);
             flavor = flavor == null ? CompilerFlavor.Unknown : flavor;
-            cs = new CompilerSet(flavor, ""); // NOI18N
+            cs = new CompilerSet(flavor, "", null); // NOI18N
         }
         return cs;
     }
@@ -341,6 +393,12 @@ public class CompilerSet {
         return CompilerFlavor.GNU;
     }
     
+    public static CompilerSet getCustomCompilerSet(String directory, CompilerFlavor flavor, String name) {
+        CompilerSet cs = new CompilerSet(flavor, directory, name);
+        cs.setAutoGenerated(false);
+        return cs;
+    }
+    
     public static CompilerSet getCompilerSet(String directory, String[] list) {
         CompilerSet cs = csmap.get(directory);
         if (cs != null) {
@@ -356,7 +414,7 @@ public class CompilerSet {
         }
         
         CompilerFlavor flavor = getCompilerSetFlavor(directory, list);
-        return new CompilerSet(flavor, directory);
+        return new CompilerSet(flavor, directory, null);
         
 //        if (Utilities.isWindows()) {
 //            if (directory.toLowerCase().indexOf("cygwin") != -1) { // NOI18N
