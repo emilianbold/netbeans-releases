@@ -191,7 +191,9 @@ public final class OpenProjectList {
         synchronized ( OpenProjectList.class ) {
             if ( INSTANCE == null ) {
                 INSTANCE = new OpenProjectList();
-                INSTANCE.openProjects = loadProjectList();                
+                INSTANCE.openProjects = loadProjectList();
+                // Load recent project list
+                INSTANCE.recentProjects.load();
                 WindowManager.getDefault().invokeWhenUIReady(INSTANCE.LOAD);
             }
         }
@@ -300,8 +302,6 @@ public final class OpenProjectList {
             }
             recentTemplates = new ArrayList<String>( OpenProjectListSettings.getInstance().getRecentTemplates() );
             URL mainProjectURL = OpenProjectListSettings.getInstance().getMainProjectURL();
-            // Load recent project list
-            INSTANCE.recentProjects.load();
             synchronized (toOpenProjects) {
                 for( Iterator it = toOpenProjects.iterator(); it.hasNext(); ) {
                     Project p = (Project)it.next();
