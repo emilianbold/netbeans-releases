@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,28 +31,23 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.xml.text.syntax;
 
 import javax.swing.text.Document;
 import org.netbeans.editor.Syntax;
-import org.netbeans.modules.editor.*;
-import org.netbeans.modules.xml.text.syntax.javacc.lib.*;
-import org.netbeans.modules.xml.text.syntax.javacc.*;
+import org.netbeans.modules.editor.NbEditorDocument;
 
 /**
- * Editor kit implementation for dtd content type.
- * In inherits inband encoding handling from UniKit because
- * a DTD is an external entity that must be UTF-8 encoded
- * or it must begin with "<?xml ...?>" i.e. encoding can be retrieved by 
- * inband-encoding atribute assisted autodetection.
  *
- * @author Libor Kramolis
- * @author Petr Kuzel
- * @version jj
+ * @author samaresh
  */
-public class DTDKit extends UniKit {
-
+public class ENTKit extends UniKit {
     /** Serial Version UID */
     private static final long serialVersionUID =-6140259975700590155L;
     
@@ -66,16 +55,12 @@ public class DTDKit extends UniKit {
      * Default MIME type.
      * Read http://www.ietf.org/rfc/rfc3023.txt
      */
-    public static final String MIME_TYPE = "application/xml-dtd"; // NOI18N
+    public static final String MIME_TYPE = "text/xml-external-parsed-entity"; // NOI18N
     
     /** Create new instance of syntax coloring parser */
     @Override
     public Syntax createSyntax(Document doc) {
-        return new JJEditorSyntax( 
-            new DTDSyntaxTokenManager(null).new Bridge(),
-            new DTDSyntaxTokenMapper(),
-            DTDTokenContext.contextPath
-        );
+        return new XMLDefaultSyntax();
     }
 
     @Override

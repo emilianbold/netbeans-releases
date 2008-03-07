@@ -184,7 +184,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.text.resources.Bundle"/>
                 <!-- It reuses kit only -->
                 <file name="EditorKit.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.text.syntax.XMLKit"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.text.syntax.ENTKit"/>
                 </file>
                 
                 <folder name="CompletionProviders">
