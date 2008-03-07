@@ -93,7 +93,11 @@ public class HibernateCfgHyperlinkProvider implements HyperlinkProvider {
         }
 
         HyperlinkEnv env = new HyperlinkEnv(document, offset);
-        currentProcessor = locateHyperlinkProcessor(env.getTagName(), env.getAttribName(), attribValueProcessors);
+        if (env.getType().isValueHyperlink()) {
+            currentProcessor = locateHyperlinkProcessor(env.getTagName(), env.getAttribName(), attribValueProcessors);
+        } else {
+            currentProcessor = null;
+        }
         
         return currentProcessor != null;
     }
