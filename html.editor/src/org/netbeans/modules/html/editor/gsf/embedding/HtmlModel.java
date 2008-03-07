@@ -173,7 +173,14 @@ public class HtmlModel {
     /** @DocumenLock(type=READ) */
     void extractHtml(Document doc, StringBuilder buffer, boolean inCss) {
         TokenHierarchy th = TokenHierarchy.get(doc);
-        List<TokenSequence> tsl = th.tokenSequenceList(findLanguagePath(th, HTML_MIME_TYPE), 0, doc.getLength());
+        LanguagePath lpath = findLanguagePath(th, HTML_MIME_TYPE);
+        
+        //issue #127778
+        if(!th.isActive() || lpath == null) {
+            return;
+        }
+        
+        List<TokenSequence> tsl = th.tokenSequenceList(lpath, 0, doc.getLength());
         Token<HTMLTokenId> htmlToken = null;
         for (TokenSequence ts : tsl) {
             ts.moveStart();
