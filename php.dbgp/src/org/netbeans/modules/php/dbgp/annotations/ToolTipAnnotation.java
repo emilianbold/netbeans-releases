@@ -56,10 +56,6 @@ import org.netbeans.modules.php.dbgp.api.UnsufficientValueException;
 import org.netbeans.modules.php.dbgp.breakpoints.Utils;
 import org.netbeans.modules.php.dbgp.packets.EvalCommand;
 import org.netbeans.modules.php.dbgp.packets.Property;
-import org.netbeans.modules.php.model.Expression;
-import org.netbeans.modules.php.model.ModelAccess;
-import org.netbeans.modules.php.model.PhpModel;
-import org.netbeans.modules.php.model.SourceElement;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -180,21 +176,23 @@ public class ToolTipAnnotation extends Annotation
         if ( selectedText != null ){
             sendEvalCommand( selectedText );
         }
-        else {
+        //TODO: review, replace the code depending on lexer.model - part I
+        /*else {
             Runnable runnable = new Runnable(){
                 public void run() {
                     computeVariable(fileObject, offset);                    
                 }
             };
             RequestProcessor.getDefault().post(runnable);
-        }
+        }*/
     }
     
     private boolean isPhpDataObject( DataObject dataObject ) {
         return Utils.isPhpFile( dataObject.getPrimaryFile() );
     }
 
-    private void computeVariable( FileObject fObject, int offset ){
+    //TODO: review, replace the code depending on lexer.model - part II (methods computeVariable, getExpression)
+    /*private void computeVariable( FileObject fObject, int offset ){
         PhpModel model = ModelAccess.getAccess().getModel( 
                 ModelAccess.getModelOrigin( fObject ));
         if ( model == null ){
@@ -220,7 +218,7 @@ public class ToolTipAnnotation extends Annotation
         else {
             return getExpression( element.getParent() );
         }
-    }
+    }*/
 
     private void sendEvalCommand( String str ){
         DebugSession session = getSession();
