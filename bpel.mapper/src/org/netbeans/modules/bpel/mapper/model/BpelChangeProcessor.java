@@ -21,13 +21,11 @@ package org.netbeans.modules.bpel.mapper.model;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.openide.ErrorManager;
 
 /**
- * Controlls a BPEL model's updating process. 
- * 
+ * Controlls a BPEL model's updating process after a change at the BPEL mapper. 
  * 
  * @author nk160297
  */

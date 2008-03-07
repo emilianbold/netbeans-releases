@@ -399,7 +399,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
             
             // copy faces-config.xml
-            if (canCreateNewFile(webModule.getWebInf(),"faces-config.xml")) { //NO18N
+            File fileConfig = new File(FileUtil.toFile(webModule.getWebInf()), "faces-config.xml"); // NOI18N
+            if (!fileConfig.exists()) {
+                // Fix Issue#105180, new project wizard lets me select both jsf and visual jsf.
+                // The new faces-config.xml template contains no elements;
+                // it's better the framework don't replace user's original one if exist.
                 String facesConfigTemplate = "faces-config.xml"; //NOI18N
                 if (ddRoot != null) {
                     if (WebApp.VERSION_2_5.equals(ddRoot.getVersion())) {
@@ -412,7 +416,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
             
             //copy Welcome.jsp
-            
             if (canCreateNewFile(webModule.getDocumentBase(), WELCOME_JSF)) {
                 String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF), "UTF-8"); //NOI18N
                 Charset encoding = FileEncodingQuery.getDefaultEncoding();

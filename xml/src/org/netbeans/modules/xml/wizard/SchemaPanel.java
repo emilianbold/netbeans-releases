@@ -250,11 +250,12 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 }//GEN-LAST:event_removeButtonActionPerformed
 
    private void browseButtonActionPerformed(ActionEvent evt){
-       gui = new SchemaImportGUI(templateWizard);
+      gui = new SchemaImportGUI(templateWizard);
        final DialogDescriptor descriptor = new DialogDescriptor(gui,
-                "Test_Titile",
+                NbBundle.getMessage(SchemaPanel.class,"LBL_Browser"),
                 true, this);
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+        dlg.getAccessibleContext().setAccessibleDescription("DSC_Browser");
         dlg.setVisible(true);
    }
     private void initAccessibility() {

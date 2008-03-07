@@ -163,42 +163,6 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
 
-    public void testSpaceBinaryOperator() {
-        setDefaultsOptions();
-        setLoadDocumentText(
-            "int foo()\n" +
-            "{\n" +
-            "    if (s == NULL ||| s->mode != 'r') return - 1;\n" +
-            "}\n"
-            );
-        reformat();
-        assertDocumentText("Incorrect spaces in binary operators",
-            "int foo()\n" +
-            "{\n" +
-            "    if (s == NULL || s->mode != 'r') return -1;\n" +
-            "}\n"
-        );
-    }
-
-
-//static const char* _dbname = "TEST_DB";
-//static struct my_option my_long_options[] =
-//{
-//  NDB_STD_OPTS("ndb_desc"),
-//  { "database", 'd', "Name of database table is in",
-//    (gptr*) &_dbname, (gptr*) &_dbname, 0,
-//    GET_STR, REQUIRED_ARG, 0, 0, 0, 0, 0, 0 },
-//  { 0, 0, 0, 0, 0, 0, GET_NO_ARG, NO_ARG, 0, 0, 0, 0, 0, 0}
-//};
-//static void usage()
-//{
-//  char desc[] = 
-//    "[<table> <index>]+\n"\
-//    "This program will drop index(es) in Ndb\n";
-//    ndb_std_print_version();
-//    my_print_help(my_long_options);
-//    my_print_variables(my_long_options);
-//}
 //----------------------------
 //unsigned long ZEXPORT crc32(crc, buf, len)
 //unsigned long crc;
@@ -236,5 +200,29 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
+    public void testBlankLineAfterEndLineComment() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "void foo()\n" +
+                "{\n" +
+                "    if (len) if (true) do {\n" +
+                "        DO1;\n" +
+                "        } while (--len);\n" +
+                "    else return;\n" +
+                "    else return;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect blak line after end line comment",
+                "void foo()\n" +
+                "{\n" +
+                "    if (len) if (true) do {\n" +
+                "                DO1;\n" +
+                "            } while (--len);\n" +
+                "        else return;\n" +
+                "    else return;\n" +
+                "}\n"
+                );
+    }
 
 }
