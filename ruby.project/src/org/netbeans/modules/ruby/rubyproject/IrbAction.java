@@ -41,27 +41,124 @@
 
 package org.netbeans.modules.ruby.rubyproject;
 
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Action which shows Irb component.
  */
 public class IrbAction extends AbstractAction {
+    private static final boolean USE_JRUBY_CONSOLE = Boolean.getBoolean("irb.jruby"); // NOI18N
     
     public IrbAction() {
         super(NbBundle.getMessage(IrbAction.class, "CTL_IrbAction"));
         putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(IrbTopComponent.ICON_PATH, true)));
     }
     
-    public void actionPerformed(ActionEvent evt) {
-        TopComponent win = IrbTopComponent.findInstance();
-        win.open();
-        win.requestActive();
+    private boolean runIrbConsole(Project project) {
+        PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
+
+        ActionProvider provider = project.getLookup().lookup(ActionProvider.class);
+        if (!(provider instanceof ScriptDescProvider)) { // Lookup ScriptDescProvider directly?
+            return false;
+        }
+        
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (platform == null) {
+            platform = RubyPlatformManager.getDefaultPlatform();
+        }
+        String irbPath = platform.findExecutable("irb"); // NOI18N
+        if (irbPath == null) {
+            return false;
+        }
+
+        ScriptDescProvider descProvider = (ScriptDescProvider)provider;
+        List<String> additionalArgs = new ArrayList<String>(2);
+        additionalArgs.add("--simple-prompt"); // NOI18N
+        additionalArgs.add("--noreadline"); // NOI18N
+        
+        String displayName = NbBundle.getMessage(IrbAction.class, "CTL_IrbTopComponent");
+        
+        ExecutionDescriptor desc = null;
+        boolean debug = false;
+        File pwd = FileUtil.toFile(project.getProjectDirectory());
+        
+        String charsetName = null;
+        if (evaluator != null) {
+            charsetName = evaluator.getProperty(SharedRubyProjectProperties.SOURCE_ENCODING);
+        }
+        OutputRecognizer[] extraRecognizers = new OutputRecognizer[] { new TestNotifier(true, true) };
+        String target = irbPath;
+        desc = descProvider.getScriptDescriptor(pwd, null/*specFile?*/, target, displayName, project.getLookup(), debug, extraRecognizers);
+
+        // Override args
+        desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
+        desc.frontWindow(true);
+        new RubyExecution(desc, charsetName).run();
+        
+        return true;
     }
     
+    public void actionPerformed(ActionEvent evt) {
+        if (USE_JRUBY_CONSOLE) {
+            TopComponent win = IrbTopComponent.findInstance();
+            win.open();
+            win.requestActive();
+            return;
+        }
+        
+        Node[] activatedNodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+        OpenProjects projects = OpenProjects.getDefault();
+
+        if (activatedNodes != null) {
+            Project p = null;
+            for (Node n : activatedNodes) {
+                p = n.getLookup().lookup(Project.class);
+                if (p != null) {
+                    break;
+                }
+            }
+            
+            if (p != null) {
+                boolean ok = runIrbConsole(p);
+                if (ok) {
+                    return;
+                }
+            }
+        }
+        
+        Project project = projects.getMainProject();
+        if (project != null) {
+            if (runIrbConsole(project)) {
+                return;
+            }
+        }
+
+        for (Project p : projects.getOpenProjects()) {
+            if (runIrbConsole(p)) {
+                return;
+            }
+        }
+        Toolkit.getDefaultToolkit().beep();
+    }
 }

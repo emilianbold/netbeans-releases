@@ -84,6 +84,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Parameters;
 import org.openide.util.UserQuestionException;
 
 /**
@@ -259,9 +260,7 @@ public final class ReferencesSupport {
     }
 
     public static Scope fastCheckScope(CsmReference ref) {
-        if (ref == null) {
-            throw new NullPointerException("null reference is not allowed");
-        }
+        Parameters.notNull("ref", ref); // NOI18N
         CsmObject target = getTargetIfPossible(ref);
         if (target == null) {
             // try to resolve using only local context
@@ -282,6 +281,8 @@ public final class ReferencesSupport {
         }
         if (isLocalElement(obj)) {
             return Scope.LOCAL;
+        } else if (isFileLocalElement(obj)) {
+            return Scope.FILE_LOCAL;
         } else {
             return Scope.GLOBAL;
         }
@@ -346,6 +347,18 @@ public final class ReferencesSupport {
         return false;
     }    
 
+    private static boolean isFileLocalElement(CsmObject decl) {
+        assert decl != null;
+        if (CsmBaseUtilities.isDeclarationFromUnnamedNamespace(decl)) {
+            return true;
+        } else if (CsmKindUtilities.isFileLocalVariable(decl)) {
+            return true;
+        } else if (CsmKindUtilities.isFunction(decl)) {
+            return CsmBaseUtilities.isFileLocalFunction(((CsmFunction)decl));
+        }
+        return false;    
+    }
+    
     static BaseDocument getDocument(CsmFile file) {
         BaseDocument doc = null;
         try {
@@ -361,8 +374,10 @@ public final class ReferencesSupport {
     static CsmReferenceKind getReferenceKind(CsmReference ref) {
         CsmReferenceKind kind = CsmReferenceKind.UNKNOWN;
         CsmObject owner = ref.getOwner();
-        if (CsmKindUtilities.isType(owner)) {
+        if (CsmKindUtilities.isType(owner) || CsmKindUtilities.isInheritance(owner)) {
             kind = getReferenceUsageKind(ref);
+        } else if (CsmKindUtilities.isInclude(owner)) {
+            kind = CsmReferenceKind.DIRECT_USAGE;
         } else {
             CsmObject target = ref.getReferencedObject();
             if (target != null) {

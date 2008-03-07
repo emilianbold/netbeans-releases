@@ -305,7 +305,7 @@ public class LogReader {
         String option = null;
         if (st.hasNext()) {
             option = st.next();
-            if (option.equals("+") && st.hasNext()) {
+            if (option.equals("+") && st.hasNext()) { // NOI18N
                 option = st.next();
             }
         }

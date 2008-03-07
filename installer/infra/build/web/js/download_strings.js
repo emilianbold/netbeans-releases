@@ -92,12 +92,6 @@ var DOWNLOAD_BUTTON_HIGHLIGHT = "img/download_h.gif";
 // DO NOT TRANSLATE
 var START_PAGE = "start.html";
 
-// DO NOT TRANSLATE
-var ZIP_FILES_PREFIX    = "{nb.zip.files.prefix}";
-// DO NOT TRANSLATE
-var BUNDLE_FILES_PREFIX = "{nb.bundle.files.prefix}";
-
-
 var LEGAL_INFO_HEADER = "Important Legal Information:";
 
 var CDDL_GPLV2_LINK = "http://www.netbeans.org/cddl-gplv2.html";

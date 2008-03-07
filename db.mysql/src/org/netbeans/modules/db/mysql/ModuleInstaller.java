@@ -111,11 +111,18 @@ public class ModuleInstaller extends ModuleInstall {
                 // have deleted it, but nothing to do here.
                 return;
             }
-                        
+            
+            registerConnectionListener();
             findAndRegisterInstallation();            
             findAndRegisterRunningServer();
         }
         
+        private void registerConnectionListener() {
+            // Register a listener that will auto-register the MySQL
+            // server provider when a user adds a MySQL connection
+            ConnectionManager.getDefault().addConnectionListener(
+                    new DbExplorerConnectionListener());
+        }
         private void findAndRegisterRunningServer() {
             String host = MySQLOptions.getDefaultHost();
             
@@ -223,7 +230,7 @@ public class ModuleInstaller extends ModuleInstall {
         }
 
         private void registerProvider(boolean value) {
-            ServerNodeProvider.getDefault().setRegistered(true);
+            ServerNodeProvider.getDefault().setRegistered(value);
         }
 
     }   

@@ -65,6 +65,7 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
@@ -162,6 +163,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private String[] threadsList = emptyThreadsList;
     private Timer startupTimer = null;
     private boolean cygwin = false;
+    private boolean mingw = false;
     private boolean cplusplus = false;
     private String firstBPfullname;
     private String firstBPfile;
@@ -172,6 +174,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private String lastShare;
     private int shareToken;
     private final Disassembly disassembly;
+    private GdbBreakpoint currentBreakpoint = null;
         
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -202,6 +205,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         ProjectActionEvent pae;
         GdbProfile profile;
         String termpath = null;
+        int conType;
         GdbTimer.getTimer("Startup").start("Startup1"); // NOI18N
         GdbTimer.getTimer("Stop").start("Stop1"); // NOI18N
         
@@ -214,7 +218,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
             runDirectory = pae.getProfile().getRunDirectory().replace("\\", "/") + "/";  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
-            int conType = pae.getProfile().getConsoleType().getValue();
+            conType = pae.getProfile().getConsoleType().getValue();
             if (!Utilities.isWindows() && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW &&
                     pae.getID() != DEBUG_ATTACH) {
                 termpath = pae.getProfile().getTerminalPath();
@@ -234,6 +238,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             String gdbCommand = profile.getGdbPath((MakeConfiguration)pae.getConfiguration());
             if (gdbCommand.toLowerCase().contains("cygwin")) { // NOI18N
                 cygwin = true;
+            } else if (gdbCommand.toLowerCase().contains("mingw")) { // NOI18N
+                mingw = true;
             }
             gdb = new GdbProxy(this, gdbCommand, pae.getProfile().getEnvironment().getenv(),
                     runDirectory, termpath);
@@ -302,6 +308,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
+                if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+                    String gdbHelper = getGdbHelper();
+                    if (gdbHelper != null) {
+                        gdb.gdb_set("environment", "LD_PRELOAD=" + gdbHelper); // NOI18N
+                    }
+                }
         
                 if (Utilities.isWindows()) {
                     if (conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
@@ -356,6 +368,28 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             finish(false);
         }
     }
+    
+    private String getGdbHelper() {
+        String name = "bin/GdbHelper-" + System.getProperty("os.name").replace(" ", "_") + // NOI18N
+                "-" + System.getProperty("os.arch") + // NOI18N
+                (Utilities.isWindows() ? ".dll" : ".so"); // NOI18N
+        File file = InstalledFileLocator.getDefault().locate(name, null, false);
+        if (file != null && file.exists()) {
+            return fixPath(file.getAbsolutePath());
+        } else {
+            return null;
+        }
+    }
+    
+    private String fixPath(String path) {
+        if (isCygwin() && path.charAt(1) == ':') {
+            return "/cygdrive/" + path.charAt(0) + path.substring(2).replace("\\", "/"); // NOI18N
+        } else if (isMinGW() && path.charAt(1) == ':') {
+            return "/" + path.charAt(0) + path.substring(2).replace("\\", "/");
+        } else {
+            return path;
+        }
+    }
         
     private String getFullPath(String rundir, String path) {
         if (Utilities.isWindows() && Character.isLetter(path.charAt(0)) && path.charAt(1) == ':') {
@@ -369,14 +403,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     public void showCurrentSource() {
         final CallStackFrame csf = getCurrentCallStackFrame();
-        if (csf != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    // show current line
-                    EditorContextBridge.showSource(csf);
-                }
-            });
+        if (csf == null) {
+            return;
         }
+        final boolean inDis = (currentBreakpoint == null) ? Disassembly.isInDisasm() : (currentBreakpoint instanceof AddressBreakpoint);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // show current line
+                EditorContextBridge.showSource(csf, inDis);
+            }
+        });
     }
     
     public String[] getThreadsList() {
@@ -476,6 +512,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if (evt.getNewValue() == STATE_STOPPED) {
                 updateLocalVariables(0);
                 gdb.data_list_register_values("");
+                gdb.data_list_changed_registers();
             } else if (evt.getNewValue() == STATE_SILENT_STOP) {
                 interrupt();
             } else if (evt.getNewValue() == STATE_RUNNING && 
@@ -489,6 +526,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             updateCurrentCallStack();
             updateLocalVariables(0);
             gdb.data_list_register_values("");
+            gdb.data_list_changed_registers();
         }
     }
     
@@ -739,6 +777,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             disassembly.updateRegNames(msg);
         } else if (msg.startsWith(Disassembly.REGISTER_VALUES_HEADER)) {
             disassembly.updateRegValues(msg);
+        } else if (msg.startsWith(Disassembly.REGISTER_MODIFIED_HEADER)) {
+            disassembly.updateRegModified(msg);
         } else if (msg.equals("^done") && getState().equals(STATE_SILENT_STOP)) { // NOI18N
             log.fine("GD.resultRecord[" + token + "]: Got \"^done\" in silent stop");
             setRunning();
@@ -844,6 +884,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (msg.contains("cygwin")) { // NOI18N
                 cygwin = true;
             }
+        } else if (msg.toLowerCase().contains("mingw")) { // NOI18N
+            mingw = true;
         } else if (msg.startsWith("Breakpoint ") && msg.contains(" at 0x")) { // NOI18N
             // Due to a gdb bug (6.6 and earlier) we use a "break" command for multi-byte filenames
             int pos = msg.indexOf(' ', 12);
@@ -1878,11 +1920,19 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return cygwin;
     }
     
+    public boolean isMinGW() {
+        return mingw;
+    }
+    
     public boolean isCplusPlus() {
         return cplusplus;
     }
 
     public Disassembly getDisassembly() {
         return disassembly;
+    }
+
+    public void setCurrentBreakpoint(GdbBreakpoint currentBreakpoint) {
+        this.currentBreakpoint = currentBreakpoint;
     }
 }

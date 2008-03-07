@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -122,6 +121,7 @@ public class BreakpointOutput extends LazyActionsManagerListener
         }
         GdbBreakpoint breakpoint = (GdbBreakpoint) event.getSource();
         getBreakpointsNodeModel().setCurrentBreakpoint(breakpoint);
+        debugger.setCurrentBreakpoint(breakpoint);
         synchronized (lock) {
             if (ioManager == null) {
                 lookupIOManager();
@@ -173,7 +173,7 @@ public class BreakpointOutput extends LazyActionsManagerListener
             }
         }
         getBreakpointsNodeModel().setCurrentBreakpoint(null);
-            
+        debugger.setCurrentBreakpoint(null);
     }
 
     
