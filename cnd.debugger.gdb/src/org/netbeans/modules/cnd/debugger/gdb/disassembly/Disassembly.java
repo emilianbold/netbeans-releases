@@ -127,53 +127,33 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
                 writer = new OutputStreamWriter(getFileObject().getOutputStream());
 
-                // Dis is opened - write to document
-                //if (doc != null) {
-                    //doc.remove(0, doc.getLength());
-                    //doc.insertString(doc.getLength(), debugger.getCurrentCallStackFrame().getFunctionName() + "()\n", null);
-                    writer.write(functionName + "()\n"); // NOI18N
-                    int idx = 2;
+                writer.write(functionName + "()\n"); // NOI18N
+                int idx = 2;
 
-                    /*int combinedPos = msg.indexOf(COMBINED_HEADER, pos);
-                    while (combinedPos != -1) {
-                        int lineIdx = Integer.valueOf(readValue(LINE_HEADER, msg, pos));
-                        String fileStr = readValue(FILE_HEADER, msg, pos);
-                        doc.insertString(doc.getLength(), "// file:" + fileStr + ", line " + lineIdx + "\n", null);
-                        idx++;
-                        /*FileObject fobj = URLMapper.findFileObject(new URL(fileStr));
-                        DataObject srcdobj = DataObject.find(fobj);
-                        org.openide.text.Line srcLine = srcdobj.getCookie(LineCookie.class).getLineSet().getOriginal(lineIdx);
-                        doc.insertString(doc.getLength(), "//" + srcLine.getText() + "\n", null);*/
-
-                        //combinedPos = msg.indexOf(COMBINED_HEADER, combinedPos + COMBINED_HEADER.length());
-                        int combinedPos = -1;
-
-                        // read instructions in this line
-                        int start = msg.indexOf(ADDRESS_HEADER, pos);
-                        while (start != -1 && (combinedPos == -1 || start < combinedPos)) {
-                            pos = start;
-                            Line line = new Line(msg, start, idx++);
-                            if (functionName.equals(line.function)) {
-                                lines.add(line);
-                                writer.write(line + "\n"); // NOI18N
-                            }
-                            //doc.insertString(doc.getLength(), line.toString() + "\n", null);
-                            start = msg.indexOf(ADDRESS_HEADER, start+1);
-                        }
-                    //}
-            //}
-                 /*else {
-                    // Dis is not opened - write to file
-                    OutputStreamWriter writer = new OutputStreamWriter(getFileObject().getOutputStream());
-                    int start = msg.indexOf(ONLY_HEADER, pos);
-                    while (start != -1) {
-                        Line line = new Line(msg, start);
-                        lines.add(line);
-                        writer.write(line + "\n");
-                        start = msg.indexOf(ONLY_HEADER, start+1);
+                for (;;) {
+                    int combinedPos = msg.indexOf(COMBINED_HEADER, pos);
+                    int addressPos = msg.indexOf(ADDRESS_HEADER, pos);
+                    
+                    if (addressPos == -1) {
+                        break;
                     }
-                    writer.close();
-                }*/
+                    
+                    if (combinedPos != -1 && combinedPos < addressPos) {
+                        int lineIdx = Integer.valueOf(readValue(LINE_HEADER, msg, combinedPos));
+                        String fileStr = readValue(FILE_HEADER, msg, combinedPos);
+                        writer.write("// file:" + fileStr + ", line " + lineIdx + "\n"); // NOI18N
+                        idx++;
+                        pos = combinedPos+1;
+                    }
+                    
+                    // read instruction in this line
+                    Line line = new Line(msg, addressPos, idx++);
+                    if (functionName.equals(line.function)) {
+                        lines.add(line);
+                        writer.write(line + "\n"); // NOI18N
+                    }
+                    pos = addressPos+1;
+                }
             } catch (Exception ioe) {
                 ioe.printStackTrace();
             }
@@ -184,6 +164,10 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             } catch (IOException ioe) {
                 // do nothing
             }
+        }
+        // If we got empty dis try to reload without source line info
+        if (lines.isEmpty()) {
+            reloadDis(false, true);
         }
     }
     
@@ -276,19 +260,23 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(evt.getPropertyName())) {
-            // stack is updated, reload disassembler if needed
-            // TODO: there may be functions with the same name called one from the other, we need to check that too
-            CallStackFrame frame = debugger.getCurrentCallStackFrame();
-            if (lastFrame == null || !lastFrame.getFunctionName().equals(frame.getFunctionName())) {
-                String filename = frame.getFileName();
-                if (filename != null && filename.length() > 0) {
-                    debugger.getGdbProxy().data_disassemble(filename, frame.getLineNumber());
-                } else {
-                    // if filename is not known - just disassemble using address
-                    debugger.getGdbProxy().data_disassemble(1000);
-                }
-                lastFrame = frame;
+            reloadDis(true, false);
+        }
+    }
+    
+    private void reloadDis(boolean withSource, boolean force) {
+        // reload disassembler if needed
+        // TODO: there may be functions with the same name called one from the other, we need to check that too
+        CallStackFrame frame = debugger.getCurrentCallStackFrame();
+        if (force || lastFrame == null || !lastFrame.getFunctionName().equals(frame.getFunctionName())) {
+            String filename = frame.getFileName();
+            if (filename != null && filename.length() > 0) {
+                debugger.getGdbProxy().data_disassemble(filename, frame.getLineNumber(), withSource);
+            } else {
+                // if filename is not known - just disassemble using address
+                debugger.getGdbProxy().data_disassemble(1000, withSource);
             }
+            lastFrame = frame;
         }
     }
     
