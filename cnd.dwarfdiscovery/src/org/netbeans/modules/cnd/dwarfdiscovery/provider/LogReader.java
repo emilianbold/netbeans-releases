@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,19 +54,14 @@ import java.util.Set;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Alexander Simon
  */
 public class LogReader {
-    private static final boolean TRACE = true;
-    
-    private static final String CURRENT_DIRECTORY = "Current working directory"; //NOI18N
-    private static final String INVOKE_SUN_C = "cc -"; //NOI18N
-    private static final String INVOKE_SUN_CC = "CC -"; //NOI18N
-    private static final String INVOKE_GNU_C = "gcc -"; //NOI18N
-    private static final String INVOKE_GNU_CC = "g++ -"; //NOI18N
+    private static boolean TRACE = false;
     
     private String workingDir;
     private final String root;
@@ -77,7 +73,7 @@ public class LogReader {
         this.fileName = fileName;
        
         // XXX
-        workingDir = root;
+        setWorkingDir(root);
     }
     
     private void run() {
@@ -88,18 +84,32 @@ public class LogReader {
         if (file.exists() && file.canRead()){
             try {
                 BufferedReader in = new BufferedReader(new FileReader(file));
-                int i = 0;
+                int nFoundFiles = 0;
                 while(true){
                     String line = in.readLine();
                     if (line == null){
                         break;
                     }
-                    if (parseLine(line)){
-                        i++;
+                    line = line.trim();
+                    while (line.endsWith("\\")) { // NOI18N
+                        String oneMoreLine = in.readLine();
+                        if (oneMoreLine == null) {
+                            break;
+                        }
+                        line = line.substring(0, line.length()-2) + " " + oneMoreLine.trim(); //NOI18Na
                     }
+                    line = trimBackApostropheCalls(line);
+
+                    String[] cmds = line.split(";|\\|\\||&&"); // ||, &&
+                    for (int i = 0; i < cmds.length; i++) {
+                        if (parseLine(cmds[i])){
+                            nFoundFiles++;
+                        }
+                    }
+
                 }
                 if (TRACE) {
-                    System.out.println("Files found: "+i); //NOI18N
+                    System.out.println("Files found: " + nFoundFiles); //NOI18N
                     System.out.println("Files included in result: "+ result.size()); //NOI18N
                 }
                 in.close();
@@ -116,15 +126,106 @@ public class LogReader {
         return result;
     }
     
-    private boolean parseLine(String line){
+    private static final String CURRENT_DIRECTORY = "Current working directory"; //NOI18N
+    private static final String LABEL_CD = "cd "; //NOI18N
+    private static final String INVOKE_SUN_C = "cc "; //NOI18N
+    private static final String INVOKE_SUN_CC = "CC "; //NOI18N
+    private static final String INVOKE_GNU_C = "gcc "; //NOI18N
+    private static final String INVOKE_GNU_CC = "g++ "; //NOI18N
+    private static final String MAKE_DELIMITER = ";"; //NOI18N
+    
+    private boolean checkDirectoryChange(String line) {
        if (line.startsWith(CURRENT_DIRECTORY)) {
-           workingDir= line.substring(CURRENT_DIRECTORY.length()+1).trim();
+           setWorkingDir( line.substring(CURRENT_DIRECTORY.length()+1).trim() );
+           return true;
+       }
+       if (line.startsWith(LABEL_CD)) {
+           int end = line.indexOf(MAKE_DELIMITER);
+           setWorkingDir( (end == -1 ? line : line.substring(0, end)).substring(LABEL_CD.length()).trim() );
+           return true;
+       }
+       return false;
+    }
+    
+    private enum CompilerType {
+        CPP, C, UNKNOWN;
+    };
+    
+    private class LineInfo {
+        public String compileLine;
+        public CompilerType compilerType = CompilerType.UNKNOWN;
+        
+        LineInfo(String line) {
+            compileLine = line;
+        }
+    }
+    
+    private LineInfo testCompilerInvocation(String line) {
+        LineInfo li = new LineInfo(line);
+        int start = line.indexOf(INVOKE_GNU_C), end = -1;
+        if (start>=0) {
+            li.compilerType = CompilerType.C;
+            end = start + INVOKE_GNU_C.length();
+        }
+        if (li.compilerType == CompilerType.UNKNOWN) {
+            start = line.indexOf(INVOKE_GNU_CC);
+            if (start>=0) {
+                li.compilerType = CompilerType.CPP;
+                end = start + INVOKE_GNU_CC.length();
+            }
+        } 
+        if (li.compilerType == CompilerType.UNKNOWN) {
+            start = line.indexOf(INVOKE_SUN_C);
+            if (start>=0) {
+                li.compilerType = CompilerType.C;
+                end = start + INVOKE_SUN_C.length();
+            }
+        } 
+        if (li.compilerType == CompilerType.UNKNOWN) {
+            start = line.indexOf(INVOKE_SUN_CC);
+            if (start>=0) {
+                li.compilerType = CompilerType.CPP;
+                end = start + INVOKE_SUN_CC.length();
+            }
+        }
+       
+        if (li.compilerType != CompilerType.UNKNOWN) {
+            li.compileLine = line.substring(start);
+            while(end < line.length() && (line.charAt(end) == ' ' || line.charAt(end) == '\t'))
+                end++;
+            if (end >= line.length() || line.charAt(end)!='-') {
+                // suspected compiler invocation has no options?? -- noway
+                li.compilerType =  CompilerType.UNKNOWN;
+            } 
+            
+            else if (start > 0 && line.charAt(start-1)!='/'  && 
+                !( line.charAt(start-1)==' ' &&  line.substring(0, start-1).trim().equals("if"))) { //NOI18N
+                // suspected compiler invocation is not first command in line?? -- noway
+                li.compilerType =  CompilerType.UNKNOWN;
+            }
+        }
+        return li;
+    }
+    
+    private void setWorkingDir(String workingDir) {
+        if (TRACE) {
+            System.err.println("**>> new working dir: " + workingDir);
+        }
+        this.workingDir = workingDir;
+    }
+    
+    private boolean parseLine(String line){
+       if (checkDirectoryChange(line)) {
            return false;
        }
+//       if (line.startsWith(CURRENT_DIRECTORY)) {
+//           workingDir= line.substring(CURRENT_DIRECTORY.length()+1).trim();
+//           return false;
+//       }
        if (line.startsWith("/")){  //NOI18N
            if (line.indexOf(" ")<0){  //NOI18N
                if (new File(line).exists()){
-                   workingDir= line.trim();
+                   setWorkingDir( line.trim() );
                    return false;
                }
            }
@@ -135,38 +236,31 @@ public class LogReader {
        if (!workingDir.startsWith(root)){
            return false;
        }
-       int i = line.indexOf(INVOKE_GNU_C);
-       if (i < 0) {
-           i = line.indexOf(INVOKE_SUN_C);
-       }
-       if (i >= 0) {
-           if (i > 0){
-               if (line.charAt(i-1)!='/'){
-                   return false;
-               }
-           }
-           gatherLine(line, false);
-           
+       
+       LineInfo li = testCompilerInvocation(line);
+       if (li.compilerType != CompilerType.UNKNOWN) {
+           gatherLine(li.compileLine, li.compilerType == CompilerType.CPP);
            return true;
-       } else {
-           i = line.indexOf(INVOKE_SUN_CC);
-           if (i < 0) {
-               i = line.indexOf(INVOKE_GNU_CC);
-           }
-           if (i >= 0) {
-               if (i > 0){
-                   if (line.charAt(i-1)!='/'){
-                       return false;
-                   }
-               }
-               if (gatherLine(line, true)) {
-                  return true;
-               }
-           }
        }
        return false;
     }
 
+    private static String trimBackApostropheCalls(String line) {
+        int i = line.indexOf('`');
+        if (i < 0 || i == line.length() - 1) {
+            return line;
+        } else {
+            String out = line.substring(0, i-1);
+            line = line.substring(i+1);
+            int j = line.indexOf('`');
+            if (j < 0) {
+                return line;
+            }
+            out += line.substring(j+1);
+            return trimBackApostropheCalls(out);
+        }
+    }
+    
     private boolean gatherLine(String line, boolean isCPP) {
         // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
         // /opt/SUNWspro/bin/cc -xO3 -xarch=amd64 -Ui386 -U__i386 -Xa -xildoff -errtags=yes -errwarn=%all
@@ -293,6 +387,23 @@ public class LogReader {
                 if (st.hasNext()){
                     st.next();
                 }
+            // generation 2 of params
+            } else if (option.equals("-z")){ // NOI18N
+                // XXXX: what's this? All I know it has param
+                if (st.hasNext()){
+                    st.next();
+                }
+            } else if (option.equals("-MF")){ // NOI18N
+                // ignore dependency output file
+                if (st.hasNext()){
+                    st.next();
+                }
+            } else if (option.equals("-MT")){ // NOI18N
+                // once more fancy preprocessor option with parameter. Ignore.
+                if (st.hasNext()){
+                    st.next();
+                }
+            // end of generation 2    
             } else if (option.equals("-fopenmp")){ // NOI18N
                     userMacros.put("_OPENMP", null); // NOI18N
             } else if (option.startsWith("-")){ // NOI18N
@@ -311,8 +422,8 @@ public class LogReader {
                     what = option;
                 } else {
                     if (TRACE) {
-                        System.out.println("What is this "+option + " previous "+what); //NOI18N
-                        System.out.println("   in "+line); //NOI18N
+                        System.out.println("**** What is this ["+option + "] if previous was ["+ what + "]?"); //NOI18N
+                        System.out.println("*> "+line); //NOI18N
                     }
                 }
             }
@@ -328,13 +439,37 @@ public class LogReader {
         }
         File f = new File(file);
         if (!f.exists() || !f.isFile()) {
-            if (true){
-                if (TRACE)  {
-                    System.out.println("Not found "+file); //NOI18N
-                    System.out.println("    "+line); //NOI18N
-                }
+            if (TRACE)  {
+                System.err.println("**** Not found "+file); //NOI18N
             }
+            
+            if (!what.startsWith("/")){  //NOI18N
+                try {
+                    //NOI18N
+                    String[] out = new String[1];
+                    boolean areThereOnlyOne = findFiles(new File(root), what, out);
+                    if (out[0] == null) {
+                        if (TRACE) System.err.println("** And there is no such file under root"); 
+                    } else {
+                        if (areThereOnlyOne) {
+                            result.add(new CommandLineSource(isCPP, out[0], what, userIncludes, userMacros));
+                            if (TRACE) System.err.println("** Gotcha: " + out[0] + File.separator + what);
+                            // kinda adventure but it works
+                            setWorkingDir(out[0]);
+                            return true;
+                        } else {
+                            if (TRACE) System.err.println("**There are several candidates and I'm not clever enough yet to find correct one.");
+                        }
+                    }
+                } catch (IOException ex) {
+                    if (TRACE) Exceptions.printStackTrace(ex);
+                }
+            } 
+            
+            if (TRACE) System.err.println(""+ (line.length() > 120 ? line.substring(0,117) + ">>>" : line) + " [" + what + "]"); //NOI18N
             return false;
+        } else if (TRACE) {
+            if (TRACE) System.err.println("**** Gotcha: " + file);
         }
         result.add(new CommandLineSource(isCPP, workingDir, what, userIncludes, userMacros));
         return true;
@@ -410,4 +545,46 @@ public class LogReader {
             return language;
         }
     }
+
+    // java -cp main/nbbuild/netbeans/cnd2/modules/org-netbeans-modules-cnd-dwarfdiscovery.jar:main/nbbuild/netbeans/cnd2/modules/org-netbeans-modules-cnd-discovery.jar:main/nbbuild/netbeans/cnd2/modules/org-netbeans-modules-cnd-apt.jar:main/nbbuild/netbeans/cnd2/modules/org-netbeans-modules-cnd-utils.jar:main/nbbuild/netbeans/platform8/core/org-openide-filesystems.jar:main/nbbuild/netbeans/platform8/lib/org-openide-util.jar org.netbeans.modules.cnd.dwarfdiscovery.provider.LogReader filename root
+    public static void main(String[] args) {
+        if (args.length < 2) {
+            System.err.println("Not enough parameters. Format: bla-bla-bla filename root");
+            return;
+        }
+        String objFileName = args[0];
+        String root = args[1];
+        LogReader.TRACE = true;
+        LogReader clrf = new LogReader(objFileName, root);
+        List<SourceFileProperties> list = clrf.getResults();
+        System.err.print("\n*** Results: ");
+        for (SourceFileProperties sourceFileProperties : list) {
+            System.err.print(sourceFileProperties.getItemName() + " ");
+        }
+        System.err.println();
+    }
+    
+    private static boolean findFiles(File file, String relativePath, String[] out) throws IOException {
+        File f = new File(file.getAbsolutePath() + File.separator + relativePath);
+        //System.err.println("# " + file.getAbsolutePath());
+        if (f.exists() && f.isFile()) {
+            if (out[0] != null && !new File(out[0] + File.separator + relativePath).getCanonicalPath().equals(f.getCanonicalPath()) ) {
+                return false;
+            }
+            out[0] = file.getAbsolutePath();
+        }
+        for (File subs : file.listFiles(dirFilter)) {
+            if (!findFiles(subs, relativePath, out)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    private final static FileFilter dirFilter = new FileFilter() {
+
+            public boolean accept(File pathname) {
+                return pathname.isDirectory();
+            }
+        };
 }
