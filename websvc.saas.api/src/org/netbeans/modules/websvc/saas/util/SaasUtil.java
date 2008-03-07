@@ -407,7 +407,10 @@ public class SaasUtil {
             sb.append(r.getPath());
             sb.append('/');
         }
-        Param[] params = m.getRequest().getParam().toArray(new Param[m.getRequest().getParam().size()]);
+        Param[] params = null;
+        if (m.getRequest() != null && m.getRequest().getParam() != null) {
+            params = m.getRequest().getParam().toArray(new Param[m.getRequest().getParam().size()]);
+        }
         if (params.length > 0) {
             sb.append(" (");
         }
@@ -548,7 +551,7 @@ public class SaasUtil {
         try {
             FileObject catalogFolder = saas.getSaasFolder().getFileObject(CATALOG); //NOI18N
             if (catalogFolder == null) {
-                catalogFolder = saas.getSaasFolder().createData(CATALOG);
+                catalogFolder = saas.getSaasFolder().createFolder(CATALOG);
             }
             File catalogFile = new File(saas.getDisplayName());
             URI catalog  = catalogFile.toURI();
