@@ -580,7 +580,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             super();
             wizardPanel.setLayout(new FlowLayout(FlowLayout.LEFT, insetX, insetY));
             wizardPanel.add(new JLabel(NbBundle.getMessage(
-                WizardSelectMessagingActivityPanel.class, "LBL_Initiated_Messaging_Activities")));
+                WizardSelectMessagingActivityPanel.class, "LBL_Initiating_Messaging_Activities")));
 
             fillActivityComboBox();
             activityComboBox.setRenderer(new ComboBoxRenderer());
@@ -1263,7 +1263,7 @@ public class DefineCorrelationWizard implements WizardProperties {
              *  - for a CORRELATED activity, on which a pop-up menu has been invoked
              *    and which is related to the RIGHT mapper tree, the value "no" is used
              *    <correlation ... initiate="no"/>
-             *  - for an INITIATED activity, which is related to the LEFT mapper tree, 
+             *  - for an INITIATING activity, which is related to the LEFT mapper tree, 
              *    the value "yes" is used
              *    <correlation ... initiate="yes"/>
              */
