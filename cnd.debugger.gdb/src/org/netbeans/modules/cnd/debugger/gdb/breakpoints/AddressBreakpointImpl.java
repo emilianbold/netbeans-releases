@@ -63,6 +63,7 @@ public class AddressBreakpointImpl extends BreakpointImpl {
         String st = getState();
         if (getDebugger().getState().equals(GdbDebugger.STATE_RUNNING)) {
             getDebugger().setSilentStop();
+            setRunWhenValidated(true);
         }
         
         if (st.equals(BPSTATE_UNVALIDATED) || st.equals(BPSTATE_REVALIDATE)) {
@@ -88,6 +89,10 @@ public class AddressBreakpointImpl extends BreakpointImpl {
                 } else {
                     getDebugger().getGdbProxy().break_disable(getBreakpointNumber());
                 }
+            }
+            if (isRunWhenValidated()) {
+                getDebugger().setRunning();
+                setRunWhenValidated(false);
             }
         }
     }
