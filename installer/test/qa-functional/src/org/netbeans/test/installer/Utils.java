@@ -457,7 +457,7 @@ public class Utils {
 
         for (int attempt = 0; attempt < 5; attempt++) {
             try {
-                URL downloadPage = new URL(data.getNetbeansDownloadPage() + "js/build_info.js");
+                URL downloadPage = new URL(data.getNetbeansDownloadPage() + "/js/build_info.js");
                 InputStream in = downloadPage.openConnection(data.getProxy()).getInputStream();
                 StringBuilder pageContent = new StringBuilder();
 
