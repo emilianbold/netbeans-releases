@@ -122,7 +122,6 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         }
         PreviewPreferences clone = new PreviewPreferences(
                                    EditorOptions.getPreferences(language, styleId), language, styleId);
-        clone.addPreferenceChangeListener(this);
         map.put(styleId, clone);
     }
     
@@ -177,7 +176,12 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         actionPerformed(new ActionEvent(styleComboBox, 0, null));
     }
     
+    private PreviewPreferences lastSheetPreferences = null;
+    
     private void initSheets(PreviewPreferences preferences){
+        if (lastSheetPreferences != null){
+            lastSheetPreferences.removePreferenceChangeListener(this);
+        }
 	Sheet sheet = new Sheet();
 	Sheet.Set set = new Sheet.Set();
 	set.setName("Indents"); // NOI18N
@@ -333,6 +337,9 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         categoryPanel.validate();
         categoryPanel.repaint();
         categoryPanel.setVisible(true);
+    
+        preferences.addPreferenceChangeListener(this);
+        lastSheetPreferences = preferences;
     }
 
     void load() {
@@ -357,6 +364,9 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
                 buf.append(style);
                 PreviewPreferences preferences = prefEntry.getValue();
                 Preferences toSave = EditorOptions.getPreferences(language, style);
+                if (style.equals(defaultStyles.get(language))){
+                    EditorOptions.setPreferences(CodeStyle.getDefault(language), toSave);
+                }
                 for(String key : EditorOptions.keys()){
                     Object o = EditorOptions.getDefault(language, style, key);
                     if (o instanceof Boolean) {
