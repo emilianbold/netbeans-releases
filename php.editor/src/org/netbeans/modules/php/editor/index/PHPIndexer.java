@@ -58,7 +58,9 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -204,7 +206,16 @@ public class PHPIndexer implements Indexer {
             
             Program program = result.getProgram();
             
-            program.getStatements();
+            for (Statement statement : program.getStatements()){
+                if (statement instanceof FunctionDeclaration){
+                    FunctionDeclaration functionDeclaration = (FunctionDeclaration)statement;
+                    
+                    String name = functionDeclaration.getFunctionName().getName();
+                    
+                    document.addPair(FIELD_FQN, name, true);
+                    System.err.println("PHP Indexer: indexed function " + name);
+                }
+            }
             
             
 //            AnalysisResult ar = result.getStructure();
