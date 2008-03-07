@@ -46,9 +46,9 @@ import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.MIMENames;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointAnnotationListener;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
@@ -63,8 +63,6 @@ import org.openide.util.NbBundle;
  * @author gordonp
  */
 public class ToggleBreakpointActionProvider extends ActionsProviderSupport implements PropertyChangeListener {
-    
-    private BreakpointAnnotationListener breakpointAnnotationListener;
     
     /** Creates a new instance of ToggleBreakpointActionProvider */
     public ToggleBreakpointActionProvider() {
@@ -87,13 +85,13 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
         }
         
         // 2) find and remove existing line breakpoint
-        GdbBreakpoint lb = getBreakpointAnnotationListener().findBreakpoint(url, ln);
+        GdbBreakpoint lb = findBreakpoint(url, ln);
         if (lb != null) {
             d.removeBreakpoint(lb);
             return;
         }
         
-        if (Disassembly.isInDisasm()) {
+        if (Disassembly.isDisasm(url)) {
             Disassembly dis = Disassembly.getCurrent();
             if (dis == null) {
                 return;
@@ -113,12 +111,24 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
         d.addBreakpoint(lb);
     }
     
-    private BreakpointAnnotationListener getBreakpointAnnotationListener() {
-        if (breakpointAnnotationListener == null) {
-            breakpointAnnotationListener = (BreakpointAnnotationListener) 
-                DebuggerManager.getDebuggerManager().lookupFirst(null, BreakpointAnnotationListener.class);
+    static GdbBreakpoint findBreakpoint(String url, int lineNumber) {
+        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
+        Disassembly dis = Disassembly.getCurrent();
+        boolean inDis = Disassembly.isDisasm(url);
+        for (Breakpoint b : breakpoints) {
+            if (b instanceof LineBreakpoint) {
+                LineBreakpoint lb = (LineBreakpoint) b;
+                if (lb.getURL().equals(url) && lb.getLineNumber() == lineNumber) {
+                    return lb;
+                }
+            } else if (inDis && b instanceof AddressBreakpoint && (dis != null)) {
+                AddressBreakpoint ab = (AddressBreakpoint)b;
+                if (dis.getAddressLine(ab.getAddress()) == lineNumber) {
+                    return ab;
+                }
+            }
         }
-        return breakpointAnnotationListener;
+        return null;
     }
     
     public Set getActions() {

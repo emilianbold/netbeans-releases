@@ -49,8 +49,10 @@ import java.util.List;
 public class SyntaxTree {
     
     public static AstNode makeTree(List<SyntaxElement> elements) {
+        SyntaxElement last = elements.size() > 0 ? elements.get(elements.size() - 1) : null;
+        int lastEndOffset = last == null ? 0 : last.offset() + last.length();
         
-        AstNode root = new AstNode("root", null, 0, 0);
+        AstNode root = new AstNode("root", null, 0, lastEndOffset);
         LinkedList<AstNode> nodeStack = new  LinkedList<AstNode>();
         nodeStack.add(root);
         
@@ -97,10 +99,25 @@ public class SyntaxTree {
                 
                 if (tagName.equals(nodeStack.get(lastMatchedTag).name())){
                     int nodesToDelete = nodeStack.size() - lastMatchedTag - 1;
+                    LinkedList<AstNode> orphans = new LinkedList<AstNode>();
                     
                     for (int i = 0; i < nodesToDelete; i ++){
                         nodeStack.getLast().markUnmatched();
+                        
+                        for (AstNode child : nodeStack.getLast().children()){
+                            if (child.type() == AstNode.NodeType.TAG 
+                                    || child.type() == AstNode.NodeType.UNMATCHED_TAG){
+                                orphans.add(child);
+                            }
+                        }
+                        
+                        nodeStack.getLast().removeTagChildren();
+                        
                         nodeStack.removeLast();
+                    }
+                    
+                    for (AstNode orphan : orphans){
+                        nodeStack.getLast().addChild(orphan);
                     }
                     
                     nodeStack.getLast().addChild(closingTag);

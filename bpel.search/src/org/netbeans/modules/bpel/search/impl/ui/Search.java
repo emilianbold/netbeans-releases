@@ -61,6 +61,7 @@ import org.netbeans.modules.bpel.search.api.SearchMatch;
 import org.netbeans.modules.bpel.search.api.SearchOption;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
+import org.netbeans.modules.bpel.search.impl.output.View;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -79,7 +80,7 @@ public final class Search extends Dialog {
     mySearchEngine = engines.get(0);
 
     mySearchEngine.removeSearchListeners();
-    mySearchEngine.addSearchListener(new Tree());
+    mySearchEngine.addSearchListener(new View());
     mySearchEngine.addSearchListener(new Progress());
 
     show();
@@ -146,7 +147,7 @@ public final class Search extends Dialog {
     c.fill = GridBagConstraints.HORIZONTAL;
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     c.weightx = 1.0;
-    myTarget = new JComboBox(myTargets);
+    myTarget = createComboBox(myTargets);
     a11y(myTarget, i18n("ACS_Type")); // NOI18N
     label.setLabelFor(myTarget);
     panel.add(myTarget, c);

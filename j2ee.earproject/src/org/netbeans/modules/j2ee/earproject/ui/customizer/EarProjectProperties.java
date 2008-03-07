@@ -64,6 +64,10 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -281,6 +285,19 @@ public final class EarProjectProperties {
         ARCHIVE_NAME_MODEL = projectGroup.createStringDocument( evaluator, JAR_NAME );
         BUILD_CLASSES_EXCLUDES_MODEL = projectGroup.createStringDocument( evaluator, BUILD_CLASSES_EXCLUDES );
         EAR_CONTENT_ADDITIONAL_MODEL = AdditionalContentTableModel.createTableModel( cs.itemsIterator( (String)projectProperties.get( JAR_CONTENT_ADDITIONAL ), TAG_WEB_MODULE__ADDITIONAL_LIBRARIES) );
+        EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel().addListDataListener(new ListDataListener() {
+            public void intervalAdded(ListDataEvent e) {
+                CLIENT_MODULE_MODEL.refresh(ClassPathUiSupport.getList( EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()));
+            }
+
+            public void intervalRemoved(ListDataEvent e) {
+                CLIENT_MODULE_MODEL.refresh(ClassPathUiSupport.getList( EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()));
+            }
+
+            public void contentsChanged(ListDataEvent e) {
+                CLIENT_MODULE_MODEL.refresh(ClassPathUiSupport.getList( EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()));
+            }
+        });
         CLASS_PATH_TABLE_RENDERER = ProjectProperties.createClassPathTableRendered(evaluator, project.getProjectDirectory());
 
         // CustomizerRun
@@ -292,7 +309,7 @@ public final class EarProjectProperties {
         ARUGMENTS_MODEL = projectGroup.createStringDocument(evaluator, APPCLIENT_ARGS);
         VM_OPTIONS_MODEL = projectGroup.createStringDocument(evaluator, APPCLIENT_JVM_OPTIONS);
         APPLICATION_CLIENT_MODEL = projectGroup.createStringDocument(evaluator, APPLICATION_CLIENT);
-        CLIENT_MODULE_MODEL = CustomizerRun.createApplicationUrisComboBoxModel(project, this);
+        CLIENT_MODULE_MODEL = CustomizerRun.createApplicationUrisComboBoxModel(project);
     }
 
     private void saveLibrariesLocation() throws IOException, IllegalArgumentException {
@@ -345,9 +362,7 @@ public final class EarProjectProperties {
         libs.addAll(ClassPathUiSupport.getList(EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()));
         ProjectProperties.storeLibrariesLocations (libs.iterator(), projectProperties, project.getProjectDirectory());
         
-        if (CLIENT_MODULE_MODEL.getSelectedItem() != null) {
-            CLIENT_MODULE_MODEL.storeSelectedItem(projectProperties);
-        }
+        CLIENT_MODULE_MODEL.storeSelectedItem(projectProperties);
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
@@ -492,7 +507,7 @@ public final class EarProjectProperties {
         boolean saveNeeded = false;
         // delete the old entries out of the application
         for (ClassPathSupport.Item item : deleted) {
-            removeItemFromAppDD(project, app,item, props);
+            removeItemFromAppDD(project, app, item);
             saveNeeded = true;
         }
         // add the new stuff "back"
@@ -502,23 +517,28 @@ public final class EarProjectProperties {
         }
         for (ClassPathSupport.Item item : needsUpdate) {
             ClassPathSupport.Item old = oldContent.get(oldContent.indexOf(item));
-            // #76008 - PATH_IN_DEPLOYMENT could have changed; remove old one and save new one:
-            removeItemFromAppDD(project, app, old, props);
-            addItemToAppDD(project, app, item);
-            saveNeeded = true;
+            boolean changed = old.getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT) == null ? 
+                item.getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT) != null : 
+                !old.getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT).equals(
+                item.getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT));
+            if (changed) {
+                // #76008 - PATH_IN_DEPLOYMENT have changed; remove old one and save new one:
+                removeItemFromAppDD(project, app, old);
+                addItemToAppDD(project, app, item);
+                saveNeeded = true;
+            }
         }
         
         if (saveNeeded && EarProjectUtil.isDDWritable(project)) {
-            try {
-                app.write(project.getAppModule().getDeploymentDescriptor());
-            } catch (IOException ioe) {
-                Logger.getLogger("global").log(Level.INFO, ioe.getLocalizedMessage());
-            }
+                try {
+                    app.write(project.getAppModule().getDeploymentDescriptor());
+                } catch (IOException ioe) {
+                    Logger.getLogger("global").log(Level.INFO, ioe.getLocalizedMessage());
+                }
         }
     }
     
-    static private void removeItemFromAppDD(EarProject project, final Application dd,
-            final ClassPathSupport.Item item, EditableProperties props) {
+    static private void removeItemFromAppDD(EarProject project, Application dd, ClassPathSupport.Item item) {
         String pathInEAR = getCompletePathInArchive(project, item);
         Module m = searchForModule(dd, pathInEAR);
         if (null != m) {
@@ -526,8 +546,6 @@ public final class EarProjectProperties {
             if (item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
                 AntArtifact aa = item.getArtifact();
                 Project p = aa.getProject();
-                // update clientModule / appCLient properties:
-                ApplicationUrisComboBoxModel.moduleWasRemove(p, props);
                 J2eeModuleProvider jmp = p.getLookup().lookup(J2eeModuleProvider.class);
                 if (null != jmp) {
                     J2eeModule jm = jmp.getJ2eeModule();
@@ -575,7 +593,6 @@ public final class EarProjectProperties {
         Module mod = null;
         if (item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
             mod = getModFromAntArtifact(project, item.getArtifact(), dd, path);
-            // TODO: init clientModule / appCLient here
         } else if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
            mod = getModFromFile(item.getResolvedFile(), dd, path);
         }
@@ -713,7 +730,7 @@ public final class EarProjectProperties {
         Map<String, J2eeModuleProvider> mods = new HashMap<String, J2eeModuleProvider>();
         for (ClassPathSupport.Item item : getJarContentAdditional(project)) {
             Project p;
-            if (item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
+            if (item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT && !item.isBroken()) {
                 AntArtifact aa = item.getArtifact();
                 p = aa.getProject();
             } else {
@@ -733,6 +750,14 @@ public final class EarProjectProperties {
 
 
     public static void addJ2eeSubprojects(final EarProject project, final Project[] moduleProjects) {
+        addRemoveJ2eeSubprojects(project, moduleProjects, true);
+    }
+    
+    public static void removeJ2eeSubprojects(final EarProject project, final Project[] moduleProjects) {
+        addRemoveJ2eeSubprojects(project, moduleProjects, false);
+    }
+    
+    private static void addRemoveJ2eeSubprojects(final EarProject project, final Project[] moduleProjects, final boolean add) {
         ProjectManager.mutex().writeAccess(new Runnable() {
             public void run() {
                 try {
@@ -747,13 +772,20 @@ public final class EarProjectProperties {
                         for (AntArtifact artifact : artifacts) {
                             ClassPathSupport.Item item = ClassPathSupport.Item.create(artifact, artifact.getArtifactLocations()[0], null);
                             item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, "/"); // NOI18N
-                            l.add(item);
+                            if (add) {
+                                l.add(item);
+                            } else {
+                                l.remove(item);
+                            }
                         }
                     }
                     String[] newValue = project.getClassPathSupport().encodeToStrings(l, TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
                     ep = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     ep.setProperty(JAR_CONTENT_ADDITIONAL, newValue);
                     updateContentDependency(project, oldContent, l, ep);
+                    // ptu properties here so that updateClientModule can read them from project:
+                    project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                    updateClientModule(project, ep);
                     project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                     ProjectManager.getDefault().saveProject(project);
                 } catch (IOException e) {
@@ -763,11 +795,16 @@ public final class EarProjectProperties {
         });
     }
 
+    private static void updateClientModule(EarProject project, EditableProperties ep) {
+        // using model here just to update currently selected client module / app client
+        ApplicationUrisComboBoxModel m = new ApplicationUrisComboBoxModel(project);
+        m.storeSelectedItem(ep);
+    }
     /**
      * @see #getApplicationSubprojects(Object)
      */
     static List<Project> getApplicationSubprojects(EarProject p) {
-        return getApplicationSubprojects(p, null);
+        return getApplicationSubprojects(getJarContentAdditional(p), null);
     }
 
     /**
@@ -778,8 +815,7 @@ public final class EarProjectProperties {
      *                   If it is <code>null</code> then all modules are returned.
      * @return list of EAR project subprojects.
      */
-    static List<Project> getApplicationSubprojects(EarProject p, Object moduleType) {
-        List<ClassPathSupport.Item> items = getJarContentAdditional(p);
+    static List<Project> getApplicationSubprojects(List<ClassPathSupport.Item> items, Object moduleType) {
         List<Project> projects = new ArrayList<Project>(items.size());
         for (ClassPathSupport.Item item : items) {
             if (item.getType() != ClassPathSupport.Item.TYPE_ARTIFACT || item.getArtifact() == null) {
@@ -934,10 +970,12 @@ public final class EarProjectProperties {
         newArtifacts.addAll(ClassPathUiSupport.getList( DEBUG_CLASSPATH_MODEL));
         newArtifacts.addAll(ClassPathUiSupport.getList( EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()));
 
+        projectProperties = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         updateContentDependency(project,
             cs.itemsList(projectProperties.get(JAR_CONTENT_ADDITIONAL), TAG_WEB_MODULE__ADDITIONAL_LIBRARIES), 
             ClassPathUiSupport.getList( EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()),
             projectProperties);
+        updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
         
         // Create set of removed artifacts and remove them
         Set removed = new HashSet( oldArtifacts );
@@ -1025,10 +1063,6 @@ public final class EarProjectProperties {
 
     public EarProject getProject() {
         return project;
-    }
-    
-    public void removeAdditionalContentItem(ClassPathSupport.Item item) {
-        EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel().removeElement(item);
     }
     
 }

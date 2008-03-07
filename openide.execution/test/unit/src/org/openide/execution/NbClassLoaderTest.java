@@ -49,6 +49,11 @@ import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.security.Permission;
 import java.util.Arrays;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.LocalFileSystem;
@@ -102,6 +107,17 @@ public class NbClassLoaderTest extends NbTestCase {
                 throw new Exception(t.toString());
             }
         }
+    }
+    
+    public void testFastIsUsedForFileUrl() throws Exception {
+        CharSequence log = Log.enable(NbClassLoader.class.getName(), Level.FINE);
+        LocalFileSystem lfs = new LocalFileSystem();
+        File here = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
+        lfs.setRootDirectory(here);
+        lfs.setReadOnly(true);
+        ClassLoader cl = new NbClassLoader(new FileObject[]{lfs.getRoot()}, ClassLoader.getSystemClassLoader().getParent(), null);
+        Class c = cl.loadClass("org.openide.execution.NbClassLoaderTest$User");
+        assertFalse(log.toString().contains("NBFS used!"));
     }
     
     public static final class User {

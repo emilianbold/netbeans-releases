@@ -72,99 +72,157 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
     }
 
-    public void testIdentMultyConstructor3() {
+//    public void testIdentMultyConstructor5() {
+//        setDefaultsOptions();
+//        setLoadDocumentText(
+//            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" +
+//            "        ulong query_length, bool using_trans,\n" +
+//            "        bool suppress_use)\n" +
+//            ":Log_event(thd_arg,\n" +
+//            "        ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
+//            "        & (suppress_use          ? LOG_EVENT_SUPPRESS_USE_F    : 0)),\n" +
+//            "                using_trans),\n" +
+//            "                data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
+//            "                db(thd_arg->db), q_len((uint32) query_length),\n" +
+//            "                error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
+//            "                    ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
+//            "                        0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
+//            "                                thread_id(thd_arg->thread_id),\n" +
+//            "                                /* save the original thread id; we already know the server id */\n" +
+//            "                                slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
+//            "                                flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
+//            "                                sql_mode(thd_arg->variables.sql_mode),\n" +
+//            "                                auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
+//            "                                auto_increment_offset(thd_arg->variables.auto_increment_offset)\n" +
+//            "                        {\n" +
+//            "                            time_t end_time;\n" +
+//            "                        }\n"
+//            );
+//        reformat();
+//        assertDocumentText("Incorrect identing multyline constructor",
+//            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" +
+//            "        ulong query_length, bool using_trans,\n" +
+//            "        bool suppress_use)\n" +
+//            ": Log_event(thd_arg,\n" +
+//            "        ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
+//            "        & (suppress_use ? LOG_EVENT_SUPPRESS_USE_F : 0)),\n" +
+//            "        using_trans),\n" +
+//            "        data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
+//            "        db(thd_arg->db), q_len((uint32) query_length),\n" +
+//            "        error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
+//            "            ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
+//            "                 0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
+//            "        thread_id(thd_arg->thread_id),\n" +
+//            "        /* save the original thread id; we already know the server id */\n" +
+//            "        slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
+//            "        flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
+//            "        sql_mode(thd_arg->variables.sql_mode),\n" +
+//            "        auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
+//            "        auto_increment_offset(thd_arg->variables.auto_increment_offset) {\n" +
+//            "    time_t end_time;\n" +
+//            "}\n"
+//        );
+//    }
+
+//    public void testCaseIndentAftePreprocessor() {
+//        setDefaultsOptions();
+//        setLoadDocumentText(
+//            " C_MODE_START\n" +
+//            "#    include <decimal.h>\n" +
+//            "        C_MODE_END\n" +
+//            "\n" +
+//            "#    define DECIMAL_LONGLONG_DIGITS 22\n" +
+//            "\n" +
+//            "\n" +
+//            "        /* maximum length of buffer in our big digits (uint32) */\n" +
+//            "#    define DECIMAL_BUFF_LENGTH 9\n" +
+//            "        /*\n" +
+//            "        point on the border of our big digits))\n" +
+//            "*/\n" +
+//            "#    define DECIMAL_MAX_PRECISION ((DECIMAL_BUFF_LENGTH * 9) - 8*2)\n" +
+//            "\n"
+//            );
+//        reformat();
+//        assertDocumentText("Incorrect identing case after preprocessor",
+//            "C_MODE_START\n" +
+//            "#include <decimal.h>\n" +
+//            "C_MODE_END\n" +
+//            "\n" +
+//            "#define DECIMAL_LONGLONG_DIGITS 22\n" +
+//            "\n" +
+//            "\n" +
+//            "/* maximum length of buffer in our big digits (uint32) */\n" +
+//            "#define DECIMAL_BUFF_LENGTH 9\n" +
+//            "/*\n" +
+//            "point on the border of our big digits))\n" +
+//            "*/\n" +
+//            "#define DECIMAL_MAX_PRECISION ((DECIMAL_BUFF_LENGTH * 9) - 8*2)\n" +
+//            "\n"
+//        );
+//    }
+//
+
+
+//----------------------------
+//unsigned long ZEXPORT crc32(crc, buf, len)
+//unsigned long crc;
+//const unsigned char FAR *buf;
+//unsigned len;
+//{
+//    crc = crc ^ 0xffffffffUL;
+//    while (len >= 8) {
+//        DO8;
+//        len -= 8;
+//    }
+//    if (len) do {
+//            DO1;
+//        } while (--len);
+//    return crc ^ 0xffffffffUL;
+//}
+//-------------------------------
+//#define FINISH_STATE 666
+///* Stream status */
+//
+//
+///* Data structure describing a single value and its code string. */
+//typedef struct ct_data_s {
+//    union {
+//        ush  freq;       /* frequency count */
+//        ush  code;       /* bit string */
+//    } fc;
+//    union {
+//        ush  dad;        /* father node in Huffman tree */
+//        ush  len;        /* length of bit string */
+//    } dl;
+//} FAR ct_data;
+
+//What about []:
+//        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
+//
+
+    public void testBlankLineAfterEndLineComment() {
         setDefaultsOptions();
         setLoadDocumentText(
-            "class IndexReader : LUCENE_BASE\n" +
-            "{\n" +
-            "public:\n" +
-            "class IndexReaderCommitLockWith : \n" +
-            "public CL_NS(store)::LuceneLockWith\n" +
-            "{\n" +
-            "private:\n" +
-            "IndexReader* reader;\n" +
-            "};\n" +
-            "};\n"
-            );
+                "void foo()\n" +
+                "{\n" +
+                "    if (len) if (true) do {\n" +
+                "        DO1;\n" +
+                "        } while (--len);\n" +
+                "    else return;\n" +
+                "    else return;\n" +
+                "}\n"
+                );
         reformat();
-        assertDocumentText("Incorrect identing multyline constructor",
-            "class IndexReader : LUCENE_BASE\n" +
-            "{\n" +
-            "public:\n" +
-            "    class IndexReaderCommitLockWith :\n" +
-            "    public CL_NS(store)::LuceneLockWith\n" +
-            "    {\n" +
-            "    private:\n" +
-            "        IndexReader* reader;\n" +
-            "    };\n" +
-            "};\n"
-        );
+        assertDocumentText("Incorrect blak line after end line comment",
+                "void foo()\n" +
+                "{\n" +
+                "    if (len) if (true) do {\n" +
+                "                DO1;\n" +
+                "            } while (--len);\n" +
+                "        else return;\n" +
+                "    else return;\n" +
+                "}\n"
+                );
     }
-    
-//        if (!line) // End of file
-//            {
-//            status.exit_status = 0;
-//            break;
-//        }
-//----------------------
-//     switch (optid) {
-//#ifdef __NETWARE__
-//        case OPT_AUTO_CLOSE:
-//        setscreenmode(SCR_AUTOCLOSE_ON_EXIT);
-//        break;
-//#endif
-//        case OPT_CHARSETS_DIR:
-//        strmov(mysql_charsets_dir, argument);
-//        charsets_dir = mysql_charsets_dir;
-//        break;
-//    case OPT_DEFAULT_CHARSET:
-//        default_charset_used = 1;
-//        break;
-// -----------------------
-// C_MODE_START
-//#    include <decimal.h>
-//        C_MODE_END
-//
-//#    define DECIMAL_LONGLONG_DIGITS 22
-//#    define DECIMAL_LONG_DIGITS 10
-//#    define DECIMAL_LONG3_DIGITS 8
-//
-//        /* maximum length of buffer in our big digits (uint32) */
-//#    define DECIMAL_BUFF_LENGTH 9
-//        /*
-//        maximum guaranteed precision of number in decimal digits (number of our
-//        digits * number of decimal digits in one our big digit - number of decimal
-//        digits in one our big digit decreased on 1 (because we always put decimal
-//        point on the border of our big digits))
-//*/
-//#    define DECIMAL_MAX_PRECISION ((DECIMAL_BUFF_LENGTH * 9) - 8*2)
-//#    define DECIMAL_MAX_SCALE 30
-//#    define DECIMAL_NOT_SPECIFIED 31
-//---------------------------    
-//typedef struct st_line_buffer
-//{
-//    File file;
-//    char *buffer;
-//    /* The buffer itself, grown as needed. */
-//    char *end;
-//    /* Pointer at buffer end */
-//    char *start_of_line, *end_of_line;
-//    uint bufread;
-//    /* Number of bytes to get with each read(). */
-//    uint eof;
-//    ulong max_size;
-//    ulong read_length;
-//    /* Length of last read string */
-//}
-//LINE_BUFFER;
-//-----------------------    
-//    end :
-//            if (fd >= 0)
-//        my_close(fd, MYF(MY_WME));
-//    end_io_cache(file);
-//    delete description_event;
-//    return error;
-//}
 
-    
 }

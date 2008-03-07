@@ -127,9 +127,12 @@ public class SelectDatabaseVisualPanel extends javax.swing.JPanel {
         }
         
         for (DatabaseConnection model : models) {
-            if (MashupTableWizardIterator.IS_PROJECT_CALL) {
+            //java.util.logging.Logger.getLogger(SelectDatabaseVisualPanel.class.getName()).info("SelectDatabaseVisualPanel "+model.getDatabaseURL());
+            if (MashupTableWizardIterator.IS_PROJECT_CALL) {               
                 String url = model.getDatabaseURL();
+                 //java.util.logging.Logger.getLogger(SelectDatabaseVisualPanel.class.getName()).info("SelectDatabaseVisualPanel url "+url);
                 if (url.contains(ETLEditorSupport.PRJ_NAME.trim())) {
+                   //  java.util.logging.Logger.getLogger(SelectDatabaseVisualPanel.class.getName()).info("SelectDatabaseVisualPanel inside if ");
                     databasesCombo.addItem(new DBURL(url, true));
                 }
             } else {

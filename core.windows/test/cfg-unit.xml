@@ -58,7 +58,7 @@ made subject to such option by the copyright holder.
     <testbag testattribs="commit" executor="ide" name="Before Commit Validation">
         <testset dir="unit/src">
             <patternset>
-		<include name="**/ValidateLayer*Test.class" />
+		<include name="**/Validate*Test.class" />
             </patternset>
         </testset>
     </testbag>

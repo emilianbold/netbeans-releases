@@ -49,6 +49,7 @@ import java.util.Set;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
@@ -58,7 +59,6 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SimpleType;
@@ -72,20 +72,16 @@ import java.util.Collection;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
-import org.netbeans.modules.bpel.model.api.support.ValidationVisitor;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.05.03
  */
-public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implements ValidationVisitor, Validator {
-
-  public CoreValidator() {
-    myResultItems = new HashSet<ResultItem>();
-  }
+public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implements Validator {
 
   public abstract ValidationResult validate(Model model, Validation validation, ValidationType type);
+  protected void init() {}
 
   protected final String getDisplayName() {
     String name = getName();
@@ -105,13 +101,15 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
     return myResultItems;
   }
 
-  protected final void setParam(Validation validation, ValidationType type) {
-    myValidation = validation;
-    myType = type;
+  protected final void validate(Model model) {
+    myValidation.validate(model, myType);
   }
 
-  protected final void addWarning(String key, Component component) {
-    addMessage(i18n(getClass(), key), ResultType.WARNING, component);
+  protected final void init(Validation validation, ValidationType type) {
+    myType = type;
+    myValidation = validation;
+    myResultItems = new HashSet<ResultItem>();
+    init();
   }
 
   protected final void addError(String key, Component component) {
@@ -124,23 +122,33 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
   }
 
   protected final void addError(String key, Component component, String param1, String param2) {
+//out("add error: " + key + " " + param1 + " " + param2);
+//out("      msg: " + i18n(getClass(), key, param1, param2));
     addMessage(i18n(getClass(), key, param1, param2), ResultType.ERROR, component);
   }
 
-  protected final void addQuickFix(Outcome outcome) {
-    myResultItems.add(outcome);
+  protected final void addWarning(String key, Component component) {
+    addMessage(i18n(getClass(), key), ResultType.WARNING, component);
   }
 
-  protected final void addErrorMessage(String message, Component component) {
-    myResultItems.add(new ResultItem(this, ResultType.ERROR, component, message));
+  protected final void addWarning(String key, Component component, String param) {
+    addMessage(i18n(getClass(), key, param), ResultType.WARNING, component);
+  }
+
+  protected final void addWarning(String key, Component component, String param1, String param2) {
+    addMessage(i18n(getClass(), key, param1, param2), ResultType.WARNING, component);
   }
 
   protected final void addMessage(String message, ResultType type, Component component) {
-    myResultItems.add(new ResultItem(this, type, component, message));
+    addQuickFixable(component, type, message, null);
   }
 
-  protected final void validate(Model model) {
-    myValidation.validate(model, myType);
+  protected final void addQuickFix(String key, Component component, String param1, String param2, QuickFix quickFix) {
+    addQuickFixable(component, ResultType.ERROR, i18n(getClass(), key, param1, param2), quickFix);
+  }
+
+  private void addQuickFixable(Component component, ResultType type, String message, QuickFix quickFix) {
+    myResultItems.add(new QuickFixable(this, type, component, message, quickFix));
   }
 
   protected final boolean isValidationComplete() {
@@ -261,7 +269,7 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
     return value.substring(k + 1);
   }
 
-  private static void out() {
+  private void out() {
     System.out.println();
   }
 

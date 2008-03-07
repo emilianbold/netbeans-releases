@@ -210,8 +210,8 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
                 setErrorMessage(defaultMsg);
                 addButton.setEnabled(true);
             }
-        }else if (jTxtWsdlURL.isEnabled()) {
-            String urlText = jTxtWsdlURL.getText().trim();
+        }else if (jTxServiceURL.isEnabled()) {
+            String urlText = jTxServiceURL.getText().trim();
             if (urlText.length() == 0) {
                 setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "EMPTY_URL"));
                 addButton.setEnabled(false);
@@ -262,17 +262,17 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         });
         
         
-        jTxtWsdlURL.getDocument().addDocumentListener(new DocumentListener() {
+        jTxServiceURL.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxtWsdlURL);
+                updateAddButtonState(jTxServiceURL);
             }
 
             public void removeUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxtWsdlURL);
+                updateAddButtonState(jTxServiceURL);
             }
 
             public void changedUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxtWsdlURL);
+                updateAddButtonState(jTxServiceURL);
             }
         });
         
@@ -321,12 +321,12 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
     
     private void enableControls(){
         if (jRbnUrl.isSelected()) {
-            jTxtWsdlURL.setEnabled(true);
+            jTxServiceURL.setEnabled(true);
             jTxtLocalFilename.setEnabled(false);
-            updateAddButtonState(jTxtWsdlURL);
+            updateAddButtonState(jTxServiceURL);
         }else if (jRbnFilesystem.isSelected()) {
             jTxtLocalFilename.setEnabled(true);
-            jTxtWsdlURL.setEnabled(false);
+            jTxServiceURL.setEnabled(false);
             updateAddButtonState(jTxtLocalFilename);
         }
     }
@@ -368,14 +368,14 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
      * This represents the event on the "Add" button
      */
     private void addButtonAction(ActionEvent evt) {
-        if ( (jTxtWsdlURL.getText() == null ) && (jTxtLocalFilename.getText() == null))
+        if ( (jTxServiceURL.getText() == null ) && (jTxtLocalFilename.getText() == null))
             return;
         
-        final String wsdl;
+        final String url;
         if (jRbnUrl.isSelected()) {
-            wsdl = fixWsdlURL(jTxtWsdlURL.getText().trim());
+            url = fixWsdlURL(jTxServiceURL.getText().trim());
         } else {
-            wsdl = fixFileURL(jTxtLocalFilename.getText().trim());
+            url = fixFileURL(jTxtLocalFilename.getText().trim());
         }
         String packageName = jTxtpackageName.getText().trim();
         if (packageName.equals(NbBundle.getMessage(AddWebServiceDlg.class, "MSG_ClickToOverride"))) {
@@ -387,7 +387,11 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         dialog = null;
         
         // Run the add W/S asynchronously
-        SaasServicesModel.getInstance().createWsdlService(group, wsdl, packageName);
+        if (url.endsWith("WSDL") || url.endsWith("wsdl")) { //NOI18N
+            SaasServicesModel.getInstance().createWsdlService(group, url, packageName);
+        } else if (url.endsWith("WADL") || url.endsWith("wadl")) { //NOI18N
+            SaasServicesModel.getInstance().createWadlService(group, url, packageName);
+        }
     }    
     
     public void actionPerformed(ActionEvent evt) {
@@ -415,7 +419,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         jTxtLocalFilename = new javax.swing.JTextField();
         jBtnBrowse = new javax.swing.JButton();
         jRbnUrl = new javax.swing.JRadioButton();
-        jTxtWsdlURL = new javax.swing.JTextField();
+        jTxServiceURL = new javax.swing.JTextField();
         jBtnProxy = new javax.swing.JButton();
         pkgNameLbl = new javax.swing.JLabel();
         jTxtpackageName = new javax.swing.JTextField();
@@ -450,7 +454,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
             }
         });
 
-        jTxtWsdlURL.setColumns(20);
+        jTxServiceURL.setColumns(20);
 
         org.openide.awt.Mnemonics.setLocalizedText(jBtnProxy, org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "LBL_ProxySettings")); // NOI18N
         jBtnProxy.addActionListener(new java.awt.event.ActionListener() {
@@ -499,7 +503,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
                         .add(29, 29, 29)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jTxtpackageName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
-                            .add(jTxtWsdlURL, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
+                            .add(jTxServiceURL, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, jTxtLocalFilename, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE))
                         .add(6, 6, 6)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -527,7 +531,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
                         .add(12, 12, 12)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(jRbnUrl)
-                            .add(jTxtWsdlURL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jTxServiceURL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(jBtnProxy)))
                     .add(jRbnFilesystem))
                 .add(18, 18, 18)
@@ -545,8 +549,8 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         jTxtLocalFilename.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.localFileComboBox.ACC_desc"));
         jBtnBrowse.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.localFileButton.ACC_desc"));
         jRbnUrl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.urlRadioButton.ACC_desc"));
-        jTxtWsdlURL.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.urlComboBox.ACC_name"));
-        jTxtWsdlURL.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.urlComboBox.ACC_desc"));
+        jTxServiceURL.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.urlComboBox.ACC_name"));
+        jTxServiceURL.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.urlComboBox.ACC_desc"));
         jBtnProxy.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.httpProxyButton.ACC_desc"));
         jTxtpackageName.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.packageTextField.ACC_name"));
         jTxtpackageName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.packageTextField.ACC_desc"));
@@ -605,8 +609,8 @@ private void jTxtpackageNameMouseClicked(java.awt.event.MouseEvent evt) {//GEN-F
     private javax.swing.JLabel jLblChooseSource;
     private javax.swing.JRadioButton jRbnFilesystem;
     private javax.swing.JRadioButton jRbnUrl;
+    private javax.swing.JTextField jTxServiceURL;
     private javax.swing.JTextField jTxtLocalFilename;
-    private javax.swing.JTextField jTxtWsdlURL;
     private javax.swing.JTextField jTxtpackageName;
     private javax.swing.JLabel pkgNameLbl;
     // End of variables declaration//GEN-END:variables

@@ -48,37 +48,45 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 public class LocalToolsPanelModel extends ToolsPanelModel {
     
     private String compilerSetName;
+    private String selectedCompilerSetName;
 //    private String cCompilerName;
 //    private String cppCompilerName;
 //    private String fortranCompilerName;
-    private String gdbPath;
-    private boolean gdbEnabled;
+//    private String gdbPath;
+//    private boolean gdbEnabled;
+    private boolean makeRequired;
     private boolean gdbRequired;
     private boolean cRequired;
     private boolean cppRequired;
     private boolean fortranRequired;
+    private boolean showBuildTools;
+    private boolean showDebugTools;
     
     public LocalToolsPanelModel() {
         compilerSetName = null;
+        selectedCompilerSetName = null;
 //        cCompilerName = null;
 //        cppCompilerName = null;
 //        fortranCompilerName = null;
-        gdbPath = null;
-        gdbEnabled = super.isGdbEnabled();
+//        gdbPath = null;
+//        gdbEnabled = super.isGdbEnabled();
+        makeRequired = false;
         gdbRequired = false;
         cRequired = false;
         cppRequired = false;
         fortranRequired = false;
+        showBuildTools = false;
+        showDebugTools = false;
     }
     
-    @Override
-    public boolean isGdbEnabled() {
-        return gdbEnabled;
-    }
-    
-    public void setGdbEnabled(boolean enabled) {
-        gdbEnabled = enabled;
-    }
+//    @Override
+//    public boolean isGdbEnabled() {
+//        return gdbEnabled;
+//    }
+//    
+//    public void setGdbEnabled(boolean enabled) {
+//        // gdbEnabled = enabled;
+//    }
     
     public void setCompilerSetName(String name) {
         compilerSetName = name;
@@ -89,6 +97,16 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
             compilerSetName = CppSettings.getDefault().getCompilerSetName();
         }
         return compilerSetName;
+    }
+    
+    @Override
+    public void setSelectedCompilerSetName(String name) {
+        selectedCompilerSetName = name;
+    }
+    
+    @Override
+    public String getSelectedCompilerSetName() {
+        return selectedCompilerSetName;
     }
     
 //    protected void setCompilerSetDirectories(String directories) {
@@ -127,15 +145,23 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
 //    protected void setFortranCompilerName(String name) {
 //        fortranCompilerName = name;
 //    }
+//    
+//    @Override
+//    public String getGdbPath() {
+//        return gdbPath;
+//    }
+//    
+//    @Override
+//    public void setGdbPath(String gdbPath) {
+//        this.gdbPath = gdbPath;
+//    }
     
-    @Override
-    public String getGdbPath() {
-        return gdbPath;
+    public boolean isMakeRequired() {
+        return makeRequired;
     }
     
-    @Override
-    public void setGdbPath(String gdbPath) {
-        this.gdbPath = gdbPath;
+    public void setMakeRequired(boolean enabled) {
+        makeRequired = enabled;
     }
     
     public boolean isGdbRequired() {
@@ -172,5 +198,21 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     
     public boolean showRequiredTools() {
         return true;
+    }
+    
+    public void setShowRequiredBuildTools(boolean enabled) {
+        showBuildTools = enabled;
+    }
+    
+    public boolean showRequiredBuildTools() {
+        return showBuildTools;
+    }
+    
+    public void setShowRequiredDebugTools(boolean enabled) {
+        showDebugTools = enabled;
+    }
+    
+    public boolean showRequiredDebugTools() {
+        return showDebugTools;
     }
 }

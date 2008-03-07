@@ -45,31 +45,49 @@ package org.netbeans.modules.spring.beans.wizards;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.spring.api.SpringUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public final class SpringXMLConfigNamespacesVisual extends JPanel {
+
+    private Library springLibrary;
+    private ClassPath classPath;
+    private boolean addSpringToClassPath;
 
     public SpringXMLConfigNamespacesVisual() {
         initComponents();
         // set the color of the table's JViewport
         includesTable.getParent().setBackground(includesTable.getBackground());
-        ((DefaultTableModel)includesTable.getModel()).setColumnIdentifiers(new String[] {
-            "Include", "Namespace"
-        }); // NOI18N
         TableColumn col1 = includesTable.getColumnModel().getColumn(0);
         col1.setMaxWidth(0);
         includesTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         includesTable.revalidate();
+        springLibrary = SpringUtilities.findSpringLibrary();
     }
 
     @Override
     public String getName() {
         return NbBundle.getMessage(SpringXMLConfigNamespacesVisual.class, "LBL_Namespaces_Include_Step");
+    }
+
+    public void setClassPath(ClassPath classPath) {
+        this.classPath = classPath;
+        updateClassPathWarning();
+    }
+
+    private void updateClassPathWarning() {
+        boolean alreadyAdded = classPath != null && SpringUtilities.containsSpring(classPath);
+        boolean needToAdd = !(alreadyAdded || addSpringToClassPath || springLibrary == null);
+        springNotOnClassPathLabel.setVisible(needToAdd);
+        addSpringButton.setVisible(needToAdd);
     }
 
     /** This method is called from within the constructor to
@@ -82,6 +100,9 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
 
         includesScrollPane = new javax.swing.JScrollPane();
         includesTable = new javax.swing.JTable();
+
+        addSpringButton = new javax.swing.JButton();
+        springNotOnClassPathLabel = new javax.swing.JLabel();
 
         includesTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -123,32 +144,55 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
         includesTable.setIntercellSpacing(new java.awt.Dimension(0, 0));
         includesScrollPane.setViewportView(includesTable);
 
+        org.openide.awt.Mnemonics.setLocalizedText(addSpringButton, org.openide.util.NbBundle.getMessage(SpringXMLConfigNamespacesVisual.class, "LBL_AddSpringFramework")); // NOI18N
+        addSpringButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addSpringButtonActionPerformed(evt);
+            }
+        });
+
+        springNotOnClassPathLabel.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/spring/beans/resources/warning.gif"))   );
+        org.openide.awt.Mnemonics.setLocalizedText(springNotOnClassPathLabel, org.openide.util.NbBundle.getMessage(SpringXMLConfigNamespacesVisual.class, "LBL_SpringNotOnClassPath")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(includesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(includesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
+                .add(addSpringButton)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(springNotOnClassPathLabel)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(includesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(includesScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 196, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 36, Short.MAX_VALUE)
+                .add(springNotOnClassPathLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(addSpringButton))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void addSpringButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSpringButtonActionPerformed
+        addSpringToClassPath = true;
+        updateClassPathWarning();
+}//GEN-LAST:event_addSpringButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addSpringButton;
     private javax.swing.JScrollPane includesScrollPane;
     private javax.swing.JTable includesTable;
+    private javax.swing.JLabel springNotOnClassPathLabel;
     // End of variables declaration//GEN-END:variables
-    
+
     public String[] getIncludedNamespaces() {
         List<String> incs = new ArrayList<String>();
         TableModel model = includesTable.getModel();
-        
+
         for(int i = 0; i < model.getRowCount(); i++) {
             Boolean selected = (Boolean) model.getValueAt(i, 0);
             if(selected != null && selected == Boolean.TRUE) {
@@ -158,5 +202,12 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
         }
         return incs.toArray(new String[0]);
     }
-}
 
+    public boolean getAddSpringToClassPath() {
+        return addSpringToClassPath;
+    }
+
+    public Library getSpringLibrary() {
+        return springLibrary;
+    }
+}

@@ -61,11 +61,13 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver.Scope;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionProvider;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.QueryScope;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider;
 import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
@@ -82,6 +84,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Parameters;
+import org.openide.util.UserQuestionException;
 
 /**
  *
@@ -113,8 +117,14 @@ public final class ReferencesSupport {
             throw new IllegalStateException("Given file (\"" + dataObject.getName() + "\") does not have EditorCookie."); // NOI18N
         }
         
-        StyledDocument doc = cookie.openDocument();
-
+        StyledDocument doc = null;
+        try {
+            doc = cookie.openDocument();
+        } catch (UserQuestionException ex) {
+            ex.confirmed();
+            doc = cookie.openDocument();
+        }
+        
         return doc instanceof BaseDocument ? (BaseDocument)doc : null;
     }
     
@@ -170,15 +180,15 @@ public final class ReferencesSupport {
         }
         // check but not for function call
         if (idFunBlk != null && idFunBlk.length != 3) {
-            csmItem = findDeclaration(csmFile, doc, tokenUnderOffset, offset, true);
+            csmItem = findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.SMART_QUERY);
         }
         // then full check if needed
-        csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, false);
+        csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY);
         return csmItem;
     }
     
     public static CsmObject findDeclaration(final CsmFile csmFile, final BaseDocument doc, 
-            Token tokenUnderOffset, final int offset, final boolean onlyLocal) {
+            Token tokenUnderOffset, final int offset, final QueryScope queryScope) {
         assert csmFile != null;
         tokenUnderOffset = tokenUnderOffset != null ? tokenUnderOffset : getTokenByOffset(doc, offset);
         // no token in document under offset position
@@ -206,7 +216,7 @@ public final class ReferencesSupport {
         }
         if (csmObject == null) {
             // try with code completion engine
-            csmObject = CompletionUtilities.findItemAtCaretPos(null, doc, CsmCompletionProvider.getCompletionQuery(csmFile, onlyLocal), offset);
+            csmObject = CompletionUtilities.findItemAtCaretPos(null, doc, CsmCompletionProvider.getCompletionQuery(csmFile, queryScope), offset);
         }     
         return csmObject;
     }
@@ -250,9 +260,7 @@ public final class ReferencesSupport {
     }
 
     public static Scope fastCheckScope(CsmReference ref) {
-        if (ref == null) {
-            throw new NullPointerException("null reference is not allowed");
-        }
+        Parameters.notNull("ref", ref); // NOI18N
         CsmObject target = getTargetIfPossible(ref);
         if (target == null) {
             // try to resolve using only local context
@@ -260,7 +268,7 @@ public final class ReferencesSupport {
             BaseDocument doc = getRefDocument(ref);
             if (doc != null) {
                 Token token = getRefTokenIfPossible(ref);
-                target = findDeclaration(ref.getContainingFile(), doc, token, offset, true);
+                target = findDeclaration(ref.getContainingFile(), doc, token, offset, QueryScope.LOCAL_QUERY);
                 setResolvedInfo(ref, target);
             }
         } 
@@ -273,6 +281,8 @@ public final class ReferencesSupport {
         }
         if (isLocalElement(obj)) {
             return Scope.LOCAL;
+        } else if (isFileLocalElement(obj)) {
+            return Scope.FILE_LOCAL;
         } else {
             return Scope.GLOBAL;
         }
@@ -337,6 +347,18 @@ public final class ReferencesSupport {
         return false;
     }    
 
+    private static boolean isFileLocalElement(CsmObject decl) {
+        assert decl != null;
+        if (CsmBaseUtilities.isDeclarationFromUnnamedNamespace(decl)) {
+            return true;
+        } else if (CsmKindUtilities.isFileLocalVariable(decl)) {
+            return true;
+        } else if (CsmKindUtilities.isFunction(decl)) {
+            return CsmBaseUtilities.isFileLocalFunction(((CsmFunction)decl));
+        }
+        return false;    
+    }
+    
     static BaseDocument getDocument(CsmFile file) {
         BaseDocument doc = null;
         try {
@@ -352,8 +374,28 @@ public final class ReferencesSupport {
     static CsmReferenceKind getReferenceKind(CsmReference ref) {
         CsmReferenceKind kind = CsmReferenceKind.UNKNOWN;
         CsmObject owner = ref.getOwner();
-        if (CsmKindUtilities.isType(owner)) {
+        if (CsmKindUtilities.isType(owner) || CsmKindUtilities.isInheritance(owner)) {
             kind = getReferenceUsageKind(ref);
+        } else if (CsmKindUtilities.isInclude(owner)) {
+            kind = CsmReferenceKind.DIRECT_USAGE;
+        } else {
+            CsmObject target = ref.getReferencedObject();
+            if (target != null) {
+                CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, true);
+                CsmObject targetDecl = decDef[0];
+                CsmObject targetDef = decDef[1];        
+                assert targetDecl != null;
+                kind = CsmReferenceKind.DIRECT_USAGE;
+                if (owner != null) {
+                    if (owner.equals(targetDecl)) {
+                        kind = CsmReferenceKind.DECLARATION;
+                    } else if (owner.equals(targetDef)) {
+                        kind = CsmReferenceKind.DEFINITION;
+                    } else {
+                        kind = getReferenceUsageKind(ref);                        
+                    }
+                }
+            }
         }
         return kind;
     }

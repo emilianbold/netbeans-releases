@@ -468,7 +468,7 @@ public class MakeActionProvider implements ActionProvider {
                 }
                 if (validateBuildSystem(pd, conf, validated)) {
                     MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                    String buildCommand = makeArtifact.getBuildCommand(CppSettings.getDefault().getMakeCommand(), "");
+                    String buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf), "");
                     String args = "";
                     int index = buildCommand.indexOf(' ');
                     if (index > 0) {
@@ -487,6 +487,9 @@ public class MakeActionProvider implements ActionProvider {
                             true);
                     actionEvents.add(projectActionEvent);
                 }
+                else {
+                    return; // Stop here
+                }
                 validated = true;
             } else if (targetName.equals("clean")) { // NOI18N
 //                if (conf.isCompileConfiguration() && !validateProject(conf)) {
@@ -494,7 +497,7 @@ public class MakeActionProvider implements ActionProvider {
 //                }
                 if (validateBuildSystem(pd, conf, validated)) {
                     MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                    String buildCommand = makeArtifact.getCleanCommand(CppSettings.getDefault().getMakeCommand(), ""); // NOI18N
+                    String buildCommand = makeArtifact.getCleanCommand(getMakeCommand(pd, conf), ""); // NOI18N
                     String args = ""; // NOI18N
                     int index = buildCommand.indexOf(' '); // NOI18N
                     if (index > 0) {
@@ -512,6 +515,9 @@ public class MakeActionProvider implements ActionProvider {
                             profile,
                             true);
                     actionEvents.add(projectActionEvent);
+                }
+                else {
+                    return; // Stop here
                 }
                 validated = true;
             } else if (targetName.equals("compile-single")) { // NOI18N
@@ -564,7 +570,7 @@ public class MakeActionProvider implements ActionProvider {
                                     true);
                             actionEvents.add(projectActionEvent);
                             // Build commandLine
-                            commandLine = CppSettings.getDefault().getMakeCommand() + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
+                            commandLine = getMakeCommand(pd, conf) + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
                             args = ""; // NOI18N
                             index = commandLine.indexOf(' '); // NOI18N
                             if (index > 0) {
@@ -584,6 +590,9 @@ public class MakeActionProvider implements ActionProvider {
                                     true);
                             actionEvents.add(projectActionEvent);
                     }
+                }
+                else {
+                    return; // Stop here
                 }
                 validated = true;
             } else if (targetName.equals("custom-action")) { // NOI18N
@@ -740,6 +749,22 @@ public class MakeActionProvider implements ActionProvider {
         return DefaultProjectActionHandler.getInstance().getCustomDebugActionHandlerProvider() != null;
     }
     
+    private String getMakeCommand(MakeConfigurationDescriptor pd, MakeConfiguration conf) {
+        String cmd = null;
+        CompilerSet2Configuration csconf = conf.getCompilerSet();
+        String csname = csconf.getOption();
+        CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(csname);
+        if (cs != null) {
+            cmd = cs.getTool(Tool.MakeTool).getPath();
+        }
+        else {
+            assert false;
+            cmd = "make"; // NOI18N
+        }
+        //cmd = cmd + " " + MakeOptions.getInstance().getMakeOptions(); // NOI18N
+        return cmd;
+    }
+    
     public boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf, boolean validated) {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         ArrayList<String> errs = new ArrayList<String>();
@@ -767,8 +792,8 @@ public class MakeActionProvider implements ActionProvider {
         boolean runBTA = false;
         
         // Check for a valid make program
-        file = new File(CppSettings.getDefault().getMakePath());
-        if (!file.exists()) {
+        file = new File(cs.getTool(Tool.MakeTool).getPath());
+        if (!file.exists() && Path.findCommand(cs.getTool(Tool.MakeTool).getPath()) == null) {
             runBTA = true;
         }
         
@@ -797,13 +822,17 @@ public class MakeActionProvider implements ActionProvider {
         
         if (bt != null) {
             ToolsPanelModel model = new LocalToolsPanelModel();
-            model.setCompilerSetName(csname);
-            model.setGdbEnabled(false);
+            model.setCompilerSetName(null); // means don't change
+            model.setSelectedCompilerSetName(csname);
+            model.setMakeRequired(true);
+            model.setGdbRequired(false);
             model.setCRequired(cRequired);
             model.setCppRequired(cppRequired);
             model.setFortranRequired(fRequired);
+            model.setShowRequiredBuildTools(true);
+            model.setShowRequiredDebugTools(false);
             if (bt.initBuildTools(model, errs)) {
-                String name = model.getCompilerSetName();
+                String name = model.getSelectedCompilerSetName();
                 conf.getCRequired().setValue(model.isCRequired());
                 conf.getCppRequired().setValue(model.isCppRequired());
                 conf.getFortranRequired().setValue(model.isFortranRequired());

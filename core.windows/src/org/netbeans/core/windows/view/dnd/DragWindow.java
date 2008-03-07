@@ -41,7 +41,6 @@
 
 package org.netbeans.core.windows.view.dnd;
 
-import org.netbeans.swing.tabcontrol.*;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
@@ -61,7 +60,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.core.windows.options.WinSysPrefs;
 import org.netbeans.core.windows.view.ui.Tabbed;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -89,20 +87,14 @@ class DragWindow extends JWindow {
         
         tabImage = createTabImage();
         
-        Runnable imageCreator = new Runnable() {
-            public void run() {
-                contentImage = createContentImage( content, contentSize );
-                if( useFadeEffects ) {
-                    imageBuffer = createImageBuffer( contentImage );
-                    currentEffect = createInitialEffect();
-                    currentEffect.start();
-                } else {
-                    contentAlpha = 1.0f;
-                }
-                repaint();
-            }
-        };
-        RequestProcessor.getDefault().post(imageCreator);
+        contentImage = createContentImage( content, contentSize );
+        if( useFadeEffects ) {
+            imageBuffer = createImageBuffer( contentImage );
+            currentEffect = createInitialEffect();
+            currentEffect.start();
+        } else {
+            contentAlpha = 1.0f;
+        }
     }
     
     private BufferedImage createTabImage() {
@@ -240,6 +232,10 @@ class DragWindow extends JWindow {
     private void repaintImageBuffer() {
         if( !useFadeEffects )
             return;
+        // #128324 - image might not be created yet
+        if ( null == imageBuffer ) {
+            return;
+        }
         Graphics2D g2d = imageBuffer.createGraphics();
         g2d.setColor( contentBackground );
         g2d.fillRect(0, 0, imageBuffer.getWidth(), imageBuffer.getHeight() );

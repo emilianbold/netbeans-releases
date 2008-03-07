@@ -41,8 +41,7 @@ public class BpelSessionView
     private Vector listeners = new Vector();
 
     public BpelSessionView(ContextProvider contextProvider) {
-        BpelDebugger debugger = (BpelDebugger) contextProvider.
-            lookupFirst (null, BpelDebugger.class);
+        BpelDebugger debugger = contextProvider.lookupFirst(null, BpelDebugger.class);
         debugger.addPropertyChangeListener(debugger.PROP_STATE, this);
     }
     
@@ -55,7 +54,7 @@ public class BpelSessionView
         if (e == null) {
             return "";
         }
-        BpelDebugger d = (BpelDebugger)e.lookupFirst(null, BpelDebugger.class);
+        BpelDebugger d = e.lookupFirst(null, BpelDebugger.class);
         if (d != null) {
             switch (d.getState()) {
             case BpelDebugger.STATE_DISCONNECTED:

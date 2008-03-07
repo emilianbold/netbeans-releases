@@ -357,8 +357,7 @@ public final class JsfForm implements ActiveEditorDrop {
                 if (attributes.iterator().hasNext()) {
                     AnnotationValue annotationValue = attributes.iterator().next();
                     if (annotationValue != null) {
-                        //TODO: RETOUCHE annotation attribute value
-                        return null;//annotationValue.getValue();
+                        return annotationValue.getValue().toString();
                     }
                 }
             }
@@ -471,7 +470,7 @@ public final class JsfForm implements ActiveEditorDrop {
     }
     
     public static void createForm(CompilationController controller, TypeElement bean, int formType, String variable, StringBuffer stringBuffer, boolean createSelectForRel) {
-        createForm(controller, bean, formType, variable, stringBuffer, createSelectForRel, null);
+        createForm(controller, bean, formType, variable, stringBuffer, createSelectForRel, "");
     }
     
     public static void createForm(CompilationController controller, TypeElement bean, int formType, String variable, StringBuffer stringBuffer, boolean createSelectForRel, String entityClass) {

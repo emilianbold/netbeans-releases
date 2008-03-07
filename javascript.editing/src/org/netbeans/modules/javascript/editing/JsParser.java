@@ -46,7 +46,6 @@ import javax.swing.text.BadLocationException;
 
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParseEvent;
 import org.netbeans.modules.gsf.api.ParseListener;
@@ -366,6 +365,14 @@ public class JsParser implements Parser {
     protected void notifyError(Context context, String message, String sourceName, int line,
                            String lineSource, int lineOffset, Sanitize sanitizing, Severity severity, String key, Object params) {
         // Replace a common but unwieldy JRuby error message with a shorter one
+        
+        if (JsIndexer.PREINDEXING && severity == Severity.ERROR && context.file.getNameExt().startsWith("stub_")) {
+            // Ensure there are no code generator bugs in the stubs
+            System.err.println("\n\n\n**********************************************************\n**********************************************************\n" + // NOI18N
+                    "Parsing error for " + message + ", sourceName= " + sourceName + ", line= " + line + ", lineSource=" + lineSource + ", lineOffset=" + lineOffset + ", key=" + key + "\n" + // NOI18N
+                    "**********************************************************\n**********************************************************\n"); // NOI18N
+            System.exit(0);
+        }
 
         int offset = context.parser.getTokenStream().getBufferOffset();
 
@@ -373,7 +380,7 @@ public class JsParser implements Parser {
 //            assert offset == getOffset(context, line, lineOffset) : " offset=" + offset + " and computed offset=" + getOffset(context,line,lineOffset) + " and line/lineOffset = " + line + "/" + lineOffset;
 //        }
         
-        Error error =
+        DefaultError error =
             new DefaultError(key, message, null, context.file.getFileObject(),
                 offset, offset, severity);
         if (params != null) {

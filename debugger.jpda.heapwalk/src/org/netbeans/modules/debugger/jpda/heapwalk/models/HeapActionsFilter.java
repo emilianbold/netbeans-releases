@@ -79,8 +79,7 @@ public class HeapActionsFilter implements NodeActionsProviderFilter {
     
     /** Creates a new instance of HeapActionsFilter */
     public HeapActionsFilter(ContextProvider contextProvider) {
-        debugger = (JPDADebugger) contextProvider.
-            lookupFirst (null, JPDADebugger.class);
+        debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
 
     }
     

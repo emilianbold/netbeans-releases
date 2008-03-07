@@ -98,6 +98,7 @@ public class EarProjectTest extends NbTestCase {
         File dirCopy = copyFolder(prjDirF);
         File ddF = new File(dirCopy, "src/conf/application.xml");
         assertFalse("has no deployment descriptor", ddF.isFile());
+        FileUtil.toFileObject(getWorkDir()).getFileSystem().refresh(false);
         FileObject fo = FileUtil.toFileObject(dirCopy);
         Project project = ProjectManager.getDefault().findProject(fo);
         assertNotNull("project is found", project);
@@ -112,6 +113,7 @@ public class EarProjectTest extends NbTestCase {
         File ddF = new File(dirCopy, "src/conf/application.xml");
         assertTrue("has deployment descriptor", ddF.isFile());
         ddF.delete(); // one of #75586 scenario
+        FileUtil.toFileObject(getWorkDir()).getFileSystem().refresh(false);
         FileObject fo = FileUtil.toFileObject(dirCopy);
         Project project = ProjectManager.getDefault().findProject(fo);
         assertNotNull("project is found", project);
@@ -130,6 +132,7 @@ public class EarProjectTest extends NbTestCase {
         File dirCopy = copyFolder(earDirF);
         File ddF = new File(dirCopy, "src/conf/application.xml");
         assertFalse("has no deployment descriptor", ddF.isFile());
+        FileUtil.toFileObject(getWorkDir()).getFileSystem().refresh(false);
         FileObject fo = FileUtil.toFileObject(dirCopy);
         Project project = ProjectManager.getDefault().findProject(fo);
         assertNotNull("project is found", project);
@@ -152,6 +155,7 @@ public class EarProjectTest extends NbTestCase {
         File dirCopy = copyFolder(earDirF);
         File ddF = new File(dirCopy, "src/conf/application.xml");
         assertTrue("has deployment descriptor", ddF.isFile());
+        FileUtil.toFileObject(getWorkDir()).getFileSystem().refresh(false);
         validate(ddF);
         ddF.delete(); // one of #81154 scenario
         FileObject fo = FileUtil.toFileObject(dirCopy);
@@ -177,6 +181,7 @@ public class EarProjectTest extends NbTestCase {
         TestUtil.deleteRec(new File(dirCopy, "src"));
         TestUtil.deleteRec(new File(new File(new File(dirCopy, "testEA-ac"), "nbproject"), "private"));
         TestUtil.deleteRec(new File(new File(new File(dirCopy, "testEA-ejb"), "nbproject"), "private"));
+        FileUtil.toFileObject(getWorkDir()).getFileSystem().refresh(false);
         FileObject fo = FileUtil.toFileObject(dirCopy);
         Project project = ProjectManager.getDefault().findProject(fo);
         assertNotNull("project is found", project);
@@ -241,7 +246,7 @@ public class EarProjectTest extends NbTestCase {
             if (from.getName().equals("CVS")) {
                 return;
             }
-            to.mkdir();
+            FileUtil.createFolder(to);
             String[] kids = from.list();
             for (int i = 0; i < kids.length; i++) {
                 doCopy(new File(from, kids[i]), new File(to, kids[i]));

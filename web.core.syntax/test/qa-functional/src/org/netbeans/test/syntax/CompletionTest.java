@@ -50,6 +50,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -130,6 +131,7 @@ public class CompletionTest extends JellyTestCase {
         this.testFileObj = testFileObj;
     }
 
+    @Override
     public void setUp() {
         System.out.println("########  " + getName() + "  #######");
     }
@@ -151,6 +153,7 @@ public class CompletionTest extends JellyTestCase {
                 projectsDir, filter);
     }
 
+    @Override
     public void runTest() throws Exception {
         String ext = testFileObj.getExt();
         if (JSP_EXTS.contains(ext)) {
@@ -390,12 +393,14 @@ public class CompletionTest extends JellyTestCase {
             doc.atomicLock();
             int rowStart = Utilities.getRowStart(doc, step.getOffset() + 1);
             int rowEnd = Utilities.getRowEnd(doc, step.getOffset() + 1);
-            String result = doc.getText(new int[]{rowStart, rowEnd});
+            String result2 = doc.getText(new int[]{rowStart, rowEnd});
             doc.atomicUnlock();
-            if (!result.equals(step.getResult())) {
+            String result = result2.trim();
+            int removed_whitespaces = result2.length() - result.length();
+            if (!result.equals(step.getResult().trim())) {
                 ref("EE: unexpected CC result:\n< " + result + "\n> " + step.getResult());
             }
-            ref("End cursor position = " + caret.getDot());
+            ref("End cursor position = " + (caret.getDot() - removed_whitespaces));
         } finally {
             // undo all changes
             final UndoAction ua = SystemAction.get(UndoAction.class);
@@ -556,6 +561,7 @@ public class CompletionTest extends JellyTestCase {
             cursorPos += offset + 1;
         }
 
+        @Override
         public String toString() {
             StringBuffer sb = new StringBuffer(prefix);
             sb.insert(cursorPos - offset - 1, '|');

@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandler;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -63,7 +64,8 @@ public class GdbActionHandler implements CustomProjectActionHandler {
     public void execute(final ProjectActionEvent ev, final InputOutput io) {
         GdbProfile profile = (GdbProfile) ev.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
         if (profile != null) { // profile can be null if dbxgui is enabled
-            String gdb = profile.getGdbPath(profile.getGdbCommand(), ev.getProfile().getRunDirectory());
+//            String gdb = profile.getGdbPath(profile.getGdbCommand(), ev.getProfile().getRunDirectory());
+            String gdb = profile.getGdbPath((MakeConfiguration)ev.getConfiguration());
             if (gdb != null) {
                 executionStarted();
                 Runnable loadProgram = new Runnable() {

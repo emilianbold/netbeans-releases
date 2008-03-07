@@ -520,15 +520,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     /**
-     * Gets the maximum size of this component.
-     *
-     * @return the maximum size of this component
-     */
-    public Dimension getMaximumSize() {
-        return getPreferredSize();
-    }
-
-    /**
      * Gets the preferred width of this component.
      *
      * @return the preferred width of this component

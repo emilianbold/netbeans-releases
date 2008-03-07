@@ -61,14 +61,14 @@
         <group name="Google">
         </group>
 
-        <authentication profile="Templates/WebServices/profile.properties">
-            <api-key id="dev_id"/>
+        <authentication profile="SaaSServices/Google/profile.properties">
+            <api-key id="key"/>
         </authentication>
 
     </saas-metadata>
 
     <methods>
-        <method name="getComps" href="#google.Geocode"/>
+        <method name="getGeocode" href="#google.Geocode"/>
     </methods>
 
 </saas-services>

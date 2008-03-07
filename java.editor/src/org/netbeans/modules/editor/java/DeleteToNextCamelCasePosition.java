@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor.java;
 
 import javax.swing.Action;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
 /**
@@ -54,9 +55,8 @@ import javax.swing.text.JTextComponent;
         super(JavaKit.deleteNextCamelCasePosition, originalAction);
     }
 
-    protected void moveToNewOffset(JTextComponent textComponent, int offset) {
-        super.moveToNewOffset(textComponent, offset);
-        textComponent.replaceSelection("");
+    protected @Override void moveToNewOffset(JTextComponent textComponent, int offset) throws BadLocationException {
+        textComponent.getDocument().remove(textComponent.getCaretPosition(), offset - textComponent.getCaretPosition());
     }
 }
 

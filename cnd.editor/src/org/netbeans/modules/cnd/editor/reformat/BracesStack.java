@@ -50,14 +50,16 @@ import static org.netbeans.cnd.api.lexer.CppTokenId.*;
  */
 class BracesStack {
     
-    private static final boolean TRACE_STACK = true;
-    private static final boolean TRACE_STATEMENT = true;
+    private static final boolean TRACE_STACK = false;
+    private static final boolean TRACE_STATEMENT = false;
     
     private Stack<StackEntry> stack = new Stack<StackEntry>();
     private StatementContinuation statementContinuation = StatementContinuation.STOP;
-    private int lastStatementStart = -1;
+    int lastStatementStart = -1;
     int parenDepth = 0;
+    int lastKRstart = -1;
     boolean isDoWhile = false;
+    boolean isLabel = false;
 
     BracesStack() {
         super();
@@ -68,8 +70,10 @@ class BracesStack {
         BracesStack clone = new BracesStack();
         clone.statementContinuation = statementContinuation;
         clone.lastStatementStart = lastStatementStart;
+        clone.lastKRstart = lastKRstart;
         clone.parenDepth = parenDepth;
         clone.isDoWhile = isDoWhile;
+        clone.isLabel = isLabel;
         for(int i = 0; i < stack.size(); i++){
             clone.stack.add(stack.get(i));
         }
@@ -79,8 +83,10 @@ class BracesStack {
     public void reset(BracesStack clone){
         statementContinuation = clone.statementContinuation;
         lastStatementStart = clone.lastStatementStart;
+        lastKRstart = clone.lastKRstart;
         parenDepth = clone.parenDepth;
         isDoWhile = clone.isDoWhile;
+        isLabel = clone.isLabel;
         stack.clear();
         for(int i = 0; i < clone.stack.size(); i++){
             stack.add(clone.stack.get(i));
@@ -108,7 +114,7 @@ class BracesStack {
             }
         } else if (lastStatementStart != entry.getIndex()) {
             lastStatementStart = entry.getIndex();
-            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+entry.getText());
+            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+entry.getText()); // NOI18N
         }
         stack.push(entry);
         if (TRACE_STACK) System.out.println("push: "+toString()); // NOI18N
@@ -178,13 +184,25 @@ class BracesStack {
                     }
                     break;
                 }
+                case DO: //("do", "keyword-directive"),
+                {
+                    if (next != null && next.id() == WHILE) {
+                        if (i > 0 && stack.get(i-1).getKind() == WHILE) {
+                            stack.setSize(i);
+                            return getLength();
+                        } else {
+                            stack.setSize(i + 1);
+                            return getLength();
+                        }
+                    }
+                    break;
+                }
                 case ELSE: //("else", "keyword-directive"),
                 case TRY: //("try", "keyword-directive"), // C++
                 case CATCH: //("catch", "keyword-directive"), //C++
                 case SWITCH: //("switch", "keyword-directive"),
                 case FOR: //("for", "keyword-directive"),
                 case ASM: //("asm", "keyword-directive"), // gcc and C++
-                case DO: //("do", "keyword-directive"),
                 case WHILE: //("while", "keyword-directive"),
                     break;
             }
@@ -297,6 +315,7 @@ class BracesStack {
                 Token<CppTokenId> current = ts.token();
                 switch (current.id()) {
                     case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
@@ -475,7 +494,7 @@ class BracesStack {
     public void setLastStatementStart(ExtendedTokenSequence ts) {
         if (lastStatementStart == -1) {
             lastStatementStart = ts.index();
-            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+ts.token().text());
+            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+ts.token().text()); // NOI18N
         }
     }
     

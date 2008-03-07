@@ -98,7 +98,7 @@ public class JsFormatterTest extends JsTestBase {
         }
         
         //ParserResult result = parse(fo);
-        JsFormatter.reindent(doc, startPos, endPos);
+        JsFormatter.reformat(doc, startPos, endPos, null);
 
         String formatted = doc.getText(0, doc.getLength());
         assertEquals(reformatted, formatted);
@@ -113,7 +113,7 @@ public class JsFormatterTest extends JsTestBase {
         
         JsFormatter formatter = getFormatter(preferences);
 
-        formatter.reindent(doc, 0, doc.getLength());
+        formatter.reformat(doc, 0, doc.getLength(), null);
         String after = doc.getText(0, doc.getLength());
         
         assertDescriptionMatches(file, after, false, ".formatted");
@@ -269,17 +269,17 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/prototype.js",new IndentPrefs(2,2));
     }
 
-//    public void testFormat2() throws Exception {
-//        reformatFileContents("testfiles/SpryEffects.js",new IndentPrefs(2,2));
-//    }
-//
-//    public void testFormat3() throws Exception {
-//        reformatFileContents("testfiles/dragdrop.js",new IndentPrefs(2,2));
-//    }
-//
-//    public void testFormat4() throws Exception {
-//        reformatFileContents("testfiles/dojo.js.uncompressed.js",new IndentPrefs(2,2));
-//    }
+    public void testFormat2() throws Exception {
+        reformatFileContents("testfiles/SpryEffects.js",new IndentPrefs(2,2));
+    }
+
+    public void testFormat3() throws Exception {
+        reformatFileContents("testfiles/dragdrop.js",new IndentPrefs(2,2));
+    }
+
+    public void testFormat4() throws Exception {
+        reformatFileContents("testfiles/dojo.js.uncompressed.js",new IndentPrefs(2,2));
+    }
     
     public void testSimpleBlock() throws Exception {
         format("if (true) {\nfoo();\n  }\n",
@@ -292,6 +292,28 @@ public class JsFormatterTest extends JsTestBase {
                "if(true){\n    foo();\n}\n", null);
         format("if (true){\nfoo();\n  }\n",
                "if (true){\n    foo();\n}\n", null);
+        format(
+                " if (true)\n" +
+                " {\n" +
+                " foo();\n" +
+                " }",
+                "if (true)\n" +
+                "{\n" +
+                "    foo();\n" +
+                "}", null
+                );
+        format(
+                "if (true) x = {};\n" +
+                "foo()\n" +
+                "{\n" +
+                "bar();\n" +
+                "}",
+                "if (true) x = {};\n" +
+                "foo()\n" +
+                "{\n" +
+                "    bar();\n" +
+                "}", null
+                );
     }
 
     public void testCombinedBlocks() throws Exception {
@@ -392,21 +414,147 @@ public class JsFormatterTest extends JsTestBase {
         // What about thesed: do? with?
     }
     
-//    public void testLineContinuationAsgn() throws Exception {
-//        format("x =\n1",
-//               "x =\n  1", null);
-//    }
-//
-//    public void testLineContinuation2() throws Exception {
-//        format("x =\n1", 
-//               "x =\n    1", new IndentPrefs(2,4));
-//    }
-//
-//    public void testLineContinuation3() throws Exception {
-//        format("x =\n1\ny = 5", 
-//               "x =\n    1\ny = 5", new IndentPrefs(2,4));
-//    }
-//
+    public void testLineContinuationAsgn() throws Exception {
+        format("x =\n1",
+               "x =\n    1", null);
+    }
+
+    public void testLineContinuation2() throws Exception {
+        format("x =\n1", 
+               "x =\n    1", new IndentPrefs(2,4));
+    }
+
+    public void testLineContinuation3() throws Exception {
+        format("x =\n1\ny = 5", 
+               "x =\n    1\ny = 5", new IndentPrefs(2,4));
+    }
+
+    public void testQuestionmarkIndent1() throws Exception {
+        format("j = t ?\n1 : 0\nx = 1",
+                "j = t ?\n    1 : 0\nx = 1", null);
+    }
+
+    public void testQuestionmarkIndent2() throws Exception {
+        format("j = t ?\n1 :\n0\nx = 1",
+                "j = t ?\n    1 :\n    0\nx = 1", null);
+    }
+
+    public void testSwitch1() throws Exception {
+        format(
+                " switch (n) {\n" +
+                " case 1:\n" +
+                " // comment\n" +
+                " foo();\n" +
+                " break;\n" +
+                " default: break;\n",
+                "switch (n) {\n" +
+                "    case 1:\n" +
+                "        // comment\n" +
+                "        foo();\n" +
+                "        break;\n" +
+                "    default: break;\n", null
+                );
+    }
+    
+    public void testSwitch2() throws Exception {
+        format(
+                " switch (n) {\n" +
+                " case 1:\n" +
+                " foo();\n" +
+                " foo2();\n" +
+                " case 2:\n" +
+                " bar();\n" +
+                " break;\n" +
+                " default:\n" +
+                " bar2();\n" +
+                " bar3();\n" +
+                " break;\n" +
+                " }",
+                "switch (n) {\n" +
+                "    case 1:\n" +
+                "        foo();\n" +
+                "        foo2();\n" +
+                "    case 2:\n" +
+                "        bar();\n" +
+                "        break;\n" +
+                "    default:\n" +
+                "        bar2();\n" +
+                "        bar3();\n" +
+                "        break;\n" +
+                "}", null
+                );
+    }
+    
+    public void testSwitch3() throws Exception {
+        format(
+                " switch (n) {\n" +
+                " case '1':\n" +
+                " case '2':\n" +
+                " case '3': return\n" +
+                " case '4':\n" +
+                " }\n",
+                "switch (n) {\n" +
+                "    case '1':\n" +
+                "    case '2':\n" +
+                "    case '3': return\n" +
+                "    case '4':\n" +
+                "}\n", null
+                );
+    }
+    
+    public void testSwitch4() throws Exception {
+        format(
+                " for (var a in b) {\n" +
+                " if (true) {\n" +
+                " break;\n" +
+                " }\n" +
+                " }\n" +
+                " foo();\n" +
+                " for (var c in d)\n" +
+                " if (false) break;\n" +
+                " bar();",
+                "for (var a in b) {\n" +
+                "    if (true) {\n" +
+                "        break;\n" +
+                "    }\n" +
+                "}\n" +
+                "foo();\n" +
+                "for (var c in d)\n" +
+                "    if (false) break;\n" +
+                "bar();", null
+                );
+    }
+    
+    public void testSwitch5() throws Exception {
+        format(
+                " switch (n) {\n" +
+                " case 1: foo(); break;\n" +
+                " default: return null;\n" +
+                " }\n" +
+                " bar();\n",
+                "switch (n) {\n" +
+                "    case 1: foo(); break;\n" +
+                "    default: return null;\n" +
+                "}\n" +
+                "bar();\n", null
+                );
+    }
+    
+    public void testSwitch6() throws Exception {
+        format(
+                " switch(n) {\n" +
+                " case 1: foo(); break;\n" +
+                " default: return null;\n" +
+                " }\n" +
+                " bar();\n",
+                "switch(n) {\n" +
+                "    case 1: foo(); break;\n" +
+                "    default: return null;\n" +
+                "}\n" +
+                "bar();\n", null
+                );
+    }
+    
 //    public void testLineContinuation4() throws Exception {
 //        format("def foo\nfoo\nif true\nx\nend\nend", 
 //               "def foo\n  foo\n  if true\n    x\n  end\nend", null);
@@ -428,16 +576,6 @@ public class JsFormatterTest extends JsTestBase {
 //               "render foo,\n  bar\nbaz", null);
 //    }
 //    
-//    public void testQuestionmarkIndent1() throws Exception {
-//        format("j = t ?\n1 : 0\nx = 1",
-//                "j = t ?\n  1 : 0\nx = 1", null);
-//    }
-//
-//    public void testQuestionmarkIndent2() throws Exception {
-//        format("j = t ?\n1 :\n0\nx = 1",
-//                "j = t ?\n  1 :\n  0\nx = 1", null);
-//    }
-//
 //    public void testCommaIndent() throws Exception {
 //        insertNewline("puts foo,^", "puts foo,\n  ^", null);
 //    }

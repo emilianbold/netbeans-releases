@@ -78,7 +78,7 @@ public class ATTSparcSyntaxProvider implements AsmSyntaxProvider {
                      
         @Override
         protected void patchAttParser(ATTParser parser) {
-            parser.setMemOpMarks("[", "]");
+            parser.setMemOpMarks("[", "]"); // NOI18N
         }
     }
 
