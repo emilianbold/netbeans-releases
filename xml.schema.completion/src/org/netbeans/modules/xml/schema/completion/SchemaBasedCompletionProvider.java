@@ -43,7 +43,7 @@ package org.netbeans.modules.xml.schema.completion;
 
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
+import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -75,9 +75,9 @@ public class SchemaBasedCompletionProvider implements CompletionProvider {
     }
     
     public CompletionTask createTask(int queryType, JTextComponent component) {
-        FileObject primaryFile = getPrimaryFile();        
-        if (queryType == COMPLETION_QUERY_TYPE || queryType == COMPLETION_ALL_QUERY_TYPE)
+        if (queryType == COMPLETION_QUERY_TYPE || queryType == COMPLETION_ALL_QUERY_TYPE) {
             return new AsyncCompletionTask(new CompletionQuery(getPrimaryFile()), component);
+        }
         
         return null;
     }
@@ -92,5 +92,5 @@ public class SchemaBasedCompletionProvider implements CompletionProvider {
         
         return activeFile.getPrimaryFile();
     }
-    
+        
 }

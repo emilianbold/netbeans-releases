@@ -343,6 +343,8 @@ public class PLinksTreeModel implements TreeModel {
             myModel = new WeakReference(model);
             
             myDebugger.addPropertyChangeListener(this);
+            getModel().setProcessInstance(
+                    myDebugger.getCurrentProcessInstance());
         }
 
         private void destroy() {

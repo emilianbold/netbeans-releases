@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -190,7 +191,7 @@ public class Tool {
     public boolean exists() {
         if (getPath() == null || getPath().length() == 0)
             return false;
-        return new File(getPath()).exists();
+        return new File(getPath()).exists() || Path.findCommand(getPath()) != null;
     }
     
     private static ResourceBundle bundle = null;

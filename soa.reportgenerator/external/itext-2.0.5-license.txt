@@ -1,6 +1,9 @@
 License: MPL-1.1
 Name: itext
 Version: 2.0.5
+OSR: 7662
+Description: Use to generate PDF graphs
+Origin: http://sourceforge.net/projects/itext
 
   MOZILLA PUBLIC LICENSE
                                 Version 1.1

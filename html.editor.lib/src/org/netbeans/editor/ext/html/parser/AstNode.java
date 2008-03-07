@@ -41,6 +41,8 @@ package org.netbeans.editor.ext.html.parser;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  *
@@ -56,7 +58,7 @@ public class AstNode {
     private int startOffset;
     private int endOffset;
     private boolean closed;
-    private Collection<AstNode> children = new ArrayList<AstNode>();
+    private List<AstNode> children = new ArrayList<AstNode>();
     private AstNode parent = null;
 
     public AstNode(String name, NodeType nodeType, int startOffset, int endOffset) {
@@ -83,7 +85,7 @@ public class AstNode {
         return endOffset;
     }
 
-    public Collection<AstNode> children() {
+    public List<AstNode> children() {
         return children;
     }
     
@@ -118,13 +120,21 @@ public class AstNode {
         return parent;
     }
     
-    /** returns the AST path from the root element */
+       /** returns the AST path from the root element */
     public AstPath path() {
         return new AstPath(null, this);
     }
     
-    void removeAllChildren(){
-        children.clear();
+    void removeTagChildren(){
+        for (Iterator<AstNode> it = children().iterator(); it.hasNext();){
+            if (it.next().isTagNode()){
+                it.remove();
+            }
+        }
+    }
+    
+    boolean isTagNode(){
+        return type() == NodeType.TAG || type() == NodeType.UNMATCHED_TAG;
     }
     
     private void setParent(AstNode parent) {
@@ -134,6 +144,4 @@ public class AstNode {
     void setEndOffset(int endOffset){
         this.endOffset = endOffset;
     }
-    
-    
 }

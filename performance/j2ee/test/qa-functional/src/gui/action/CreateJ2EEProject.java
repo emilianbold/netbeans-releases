@@ -130,6 +130,7 @@ public class CreateJ2EEProject extends org.netbeans.performance.test.utilities.P
     }
     
     public ComponentOperator open(){
+        wizard_location.next();
         wizard_location.finish();
         return null;
     }

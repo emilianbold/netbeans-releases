@@ -69,15 +69,36 @@ public class WadlSaas extends Saas {
         super(parentGroup, services);
     }
     
+    public WadlSaas(SaasGroup parent, String url, String displayName, String packageName) {
+        super(parent, url, displayName, packageName);
+    }
+    
     public Application getWadlModel() throws IOException {
         if (wadlModel == null) {
-            InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(getUrl());
+            InputStream in = null;
+            if (isUserDefined() ) {
+                if (wadlFile == null) {
+                    wadlFile = SaasUtil.retrieveWadlFile(this);
+                }
+                if (wadlFile != null) {
+                    in = wadlFile.getInputStream();
+                }
+            } else {
+                in = Thread.currentThread().getContextClassLoader().getResourceAsStream(getUrl());
+            }
+            
             try {
-                wadlModel = SaasUtil.loadWadl(in);
-            } catch(JAXBException ex) {
+                if (in != null) {
+                    wadlModel = SaasUtil.loadWadl(in);
+                }
+            } catch (JAXBException ex) {
                 String msg = NbBundle.getMessage(WadlSaas.class, "MSG_ErrorLoadingWadl", getUrl());
                 IOException ioe = new IOException(msg);
                 ioe.initCause(ex);
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
             }
         }
         return wadlModel;
@@ -101,7 +122,7 @@ public class WadlSaas extends Saas {
     public FileObject getLocalWadlFile() {
         if (wadlFile == null) {
             try {
-                wadlFile = SaasUtil.getWadlFile(this);
+                wadlFile = SaasUtil.extractWadlFile(this);
             } catch(IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }

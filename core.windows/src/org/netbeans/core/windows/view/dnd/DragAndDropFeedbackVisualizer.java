@@ -41,7 +41,6 @@
 
 package org.netbeans.core.windows.view.dnd;
 
-import org.netbeans.swing.tabcontrol.*;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -52,7 +51,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Area;
 import java.util.prefs.Preferences;
-import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
 import org.netbeans.core.windows.options.WinSysPrefs;
 import org.netbeans.core.windows.view.ui.Tabbed;
@@ -122,28 +120,20 @@ public class DragAndDropFeedbackVisualizer {
             originalLocationOnScreen.x += tabRect.x;
         }
 
-        SwingUtilities.invokeLater( new Runnable() {
-
-            public void run() {
-                DragWindow tmp = createDragWindow( tabIndex );
-                if( null != tmp ) {
-                    dragOffset = e.getDragOrigin();
-                    if( prefs.getBoolean(WinSysPrefs.DND_SMALLWINDOWS, true) ) {
-                        dragOffset.x -= tabRect.x;
-                    }
-                    //move the window of the visible screen area to avoid blinking
-                    //TODO make sure the window is really not visible
-//                        dragImageSize = w.getSize();
-//                        w.setSize( new Dimension(1,1) );
-                    tmp.setLocation(-1000, -1000);
-                    //let the JNA transparency stuff to kick in
-                    tmp.setVisible( true );
-                    //make drag window visible, i.e. move to proper location, 
-                    //dragImage.setLocation( startingPoint );
-                    dragWindow = tmp;
-                }
+        DragWindow tmp = createDragWindow( tabIndex );
+        if( null != tmp ) {
+            dragOffset = e.getDragOrigin();
+            if( prefs.getBoolean(WinSysPrefs.DND_SMALLWINDOWS, true) ) {
+                dragOffset.x -= tabRect.x;
             }
-        });
+            //move the window of the visible screen area to avoid blinking
+            tmp.setLocation( e.getDragOrigin().x-dragOffset.x, e.getDragOrigin().y-dragOffset.y );
+            //let the JNA transparency stuff to kick in
+            tmp.setVisible( true );
+            //make drag window visible, i.e. move to proper location, 
+            //dragImage.setLocation( startingPoint );
+            dragWindow = tmp;
+        }
     }
 
     public void update(DragSourceDragEvent e) {
