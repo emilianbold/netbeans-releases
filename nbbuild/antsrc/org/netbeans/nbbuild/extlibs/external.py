@@ -1,7 +1,7 @@
 import os, re, urllib2, sha, inspect, sys
 from mercurial import util, httprepo, ui
 
-if sys.version_info < (2, 4, 4):
+if sys.version_info < (2, 4, 2):
     ui.ui().warn('Warning: external hook requires Python 2.4.4+ (2.5.1 preferred)\n')
 
 # Workaround for a Python bug (in linecache.py?):
