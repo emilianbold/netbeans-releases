@@ -38,9 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package apichanges;
+package org.netbeans.modules.visual.apichanges;
 
-import framework.VisualTestCase;
+import org.netbeans.modules.visual.framework.VisualTestCase;
 import org.netbeans.api.visual.animator.AnimatorEvent;
 import org.netbeans.api.visual.animator.AnimatorListener;
 import org.netbeans.api.visual.widget.Scene;
@@ -61,6 +61,9 @@ public class AnimatorListenerTest extends VisualTestCase {
     }
 
     public void testAnimatorListener () {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         final Scene scene = new Scene ();
         Widget widget = new Widget (scene);
         scene.addChild (widget);

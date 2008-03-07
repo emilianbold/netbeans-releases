@@ -38,40 +38,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package bugs;
+package org.netbeans.modules.visual.apichanges;
 
-import framework.VisualTestCase;
-import org.netbeans.api.visual.widget.LayerWidget;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.border.BorderSupport;
 
-import java.awt.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
 
 /**
+ * Test for issue #103456 - BorderSupport.getSwingBorder method introduced
  * @author David Kaspar
  */
-public class LayerWidget103528Test extends VisualTestCase {
+public class SwingBorderGetterTest extends NbTestCase {
 
-    public LayerWidget103528Test (String testName) {
-        super (testName);
+    public SwingBorderGetterTest (String name) {
+        super (name);
     }
 
-    public void testLayerPreferredLocation () {
+    public void testGetter () {
         Scene scene = new Scene ();
-
-        scene.addChild (new LayerWidget (scene));
-
-        LayerWidget layer = new LayerWidget (scene);
-        layer.setPreferredLocation (new Point (100, 100));
-        scene.addChild (layer);
-
-        Widget widget = new Widget (scene);
-        widget.setPreferredBounds (new Rectangle (-20, -10, 100, 50));
-        widget.setOpaque (true);
-        widget.setBackground (Color.RED);
-        layer.addChild (widget);
-
-        assertScene (scene, Color.WHITE, new Rectangle (80, 90, 100, 50));
+        BevelBorder originalBorder = new BevelBorder (BevelBorder.RAISED);
+        scene.setBorder (originalBorder);
+        Border foundBorder = BorderSupport.getSwingBorder (scene.getBorder ());
+        assertEquals (originalBorder, foundBorder);
     }
 
 }

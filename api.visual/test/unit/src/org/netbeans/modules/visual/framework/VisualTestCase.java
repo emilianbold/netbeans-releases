@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package framework;
+package org.netbeans.modules.visual.framework;
 
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.junit.NbTestCase;
@@ -58,6 +58,9 @@ import java.io.IOException;
  * @author David Kaspar
  */
 public class VisualTestCase extends NbTestCase {
+
+    // Set this system property if you want to actually have frames pop up on you.
+    private static final boolean DISPLAY_FRAMES = Boolean.getBoolean(VisualTestCase.class.getName() + ".DISPLAY_FRAMES");
 
     /**
      * Creates a new visual test case.
@@ -92,13 +95,17 @@ public class VisualTestCase extends NbTestCase {
         view.setPreferredSize (new Dimension (width, height));
         frame.getContentPane().add(view, BorderLayout.CENTER);
         frame.pack ();
-        frame.setVisible(true);
+        if (DISPLAY_FRAMES) {
+            frame.setVisible(true);
+        }
         int countdown = 10;
         for (;;) {
-            if (frame.isShowing()  &&  scene.isValidated())
+            if ((!DISPLAY_FRAMES || frame.isShowing()) && scene.isValidated())
                 break;
             if (-- countdown < 0) {
-                frame.setVisible(false);
+                if (DISPLAY_FRAMES) {
+                    frame.setVisible(false);
+                }
                 frame.dispose ();
                 return null;
             }
