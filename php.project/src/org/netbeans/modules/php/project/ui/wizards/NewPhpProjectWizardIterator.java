@@ -66,9 +66,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     public void uninitialize(WizardDescriptor wizard) {
-        wizard.putProperty(ConfigureProjectPanel.USE_PROJECT_FOLDER, null);
-        wizard.putProperty(ConfigureProjectPanel.USE_WWW_FOLDER, null);
+        wizard.putProperty(ConfigureProjectPanel.PROJECT_NAME, null);
+        wizard.putProperty(ConfigureProjectPanel.PROJECT_DIR, null);
+        wizard.putProperty(ConfigureProjectPanel.SET_AS_MAIN, null);
         wizard.putProperty(ConfigureProjectPanel.WWW_FOLDER, null);
+        wizard.putProperty(ConfigureProjectPanel.CREATE_INDEX_FILE, null);
         wizard.putProperty(ConfigureProjectPanel.INDEX_FILE, null);
         wizard.putProperty(ConfigureProjectPanel.ENCODING, null);
 

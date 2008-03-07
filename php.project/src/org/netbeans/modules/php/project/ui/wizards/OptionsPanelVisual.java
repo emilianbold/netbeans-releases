@@ -51,7 +51,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
 
-class OptionsPanelVisual extends JPanel implements ActionListener {
+class OptionsPanelVisual extends JPanel {
 
     private static final long serialVersionUID = -38388194985L;
 
@@ -65,13 +65,13 @@ class OptionsPanelVisual extends JPanel implements ActionListener {
     }
 
     private void init(String originalEncoding) {
-        createIndexCheckBox.addActionListener(this);
+        createIndexCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                indexNameTextField.setEnabled(createIndexCheckBox.isSelected());
+            }
+        });
         encodingComboBox.setModel(new EncodingModel(originalEncoding));
         encodingComboBox.setRenderer(new EncodingRenderer());
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        indexNameTextField.setEnabled(createIndexCheckBox.isSelected());
     }
 
     void addCreateIndexListener(ActionListener listener) {

@@ -120,4 +120,16 @@ public final class Utils {
             return null;
         }
     }
+
+    /**
+     * Check whether the provided String is valid file name.
+     * @param fileName file name.
+     * @return <code>true</true> if the provided String is valid file name.
+     */
+    public static boolean isValidFileName(String fileName) {
+        return fileName != null && fileName.length() > 0
+                && fileName.indexOf('/')  == -1 // NOI18N
+                && fileName.indexOf('\\') == -1 // NOI18N
+                && fileName.indexOf(':') == -1; // NOI18N
+    }
 }
