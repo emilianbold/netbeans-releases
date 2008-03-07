@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.debugger.gdb.disassembly;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
@@ -61,6 +62,7 @@ import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.openide.cookies.CloseCookie;
+import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -117,7 +119,6 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
             try {
                 DataObject dobj = DataObject.find(getFileObject());
-                functionName = debugger.getCurrentCallStackFrame().getFunctionName();
                 dobj.getNodeDelegate().setDisplayName(getHeader());
                 Document doc = ((DataEditorSupport)dobj.getCookie(OpenCookie.class)).getDocument();
                 if (doc != null) {
@@ -127,6 +128,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
                 writer = new OutputStreamWriter(getFileObject().getOutputStream());
 
+                functionName = lastFrame.getFunctionName();
                 writer.write(functionName + "()\n"); // NOI18N
                 int idx = 2;
 
@@ -140,19 +142,27 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
                     
                     if (combinedPos != -1 && combinedPos < addressPos) {
                         int lineIdx = Integer.valueOf(readValue(LINE_HEADER, msg, combinedPos));
+                        String path = debugger.getRunDirectory();
                         String fileStr = readValue(FILE_HEADER, msg, combinedPos);
-                        writer.write("// file:" + fileStr + ", line " + lineIdx + "\n"); // NOI18N
-                        idx++;
+                        File file = new File(path, fileStr);
+                        FileObject src_fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                        if (src_fo != null) {
+                            writer.write("//" + DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText()); // NOI18N
+                            idx++;
+                        } else {
+                            writer.write("//" + NbBundle.getMessage(Disassembly.class, "MSG_Source_Not_Found", fileStr, lineIdx)); // NOI18N
+                            idx++;
+                        }
                         pos = combinedPos+1;
+                    } else {
+                        // read instruction in this line
+                        Line line = new Line(msg, addressPos, idx++);
+                        if (functionName.equals(line.function)) {
+                            lines.add(line);
+                            writer.write(line + "\n"); // NOI18N
+                        }
+                        pos = addressPos+1;
                     }
-                    
-                    // read instruction in this line
-                    Line line = new Line(msg, addressPos, idx++);
-                    if (functionName.equals(line.function)) {
-                        lines.add(line);
-                        writer.write(line + "\n"); // NOI18N
-                    }
-                    pos = addressPos+1;
                 }
             } catch (Exception ioe) {
                 ioe.printStackTrace();
@@ -384,7 +394,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         @Override
         public String toString() {
             //return function + "+" + offset + ": (" + address + ") " + instruction; // NOI18N
-            return function + "+" + offset + ": 00 00 " + instruction + " // " + address; // NOI18N
+            return function + "+" + offset + ": " + instruction; // NOI18N
         }
     }
     
