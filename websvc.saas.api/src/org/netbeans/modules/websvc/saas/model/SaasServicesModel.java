@@ -326,6 +326,18 @@ public class SaasServicesModel {
         return createWsdlService(parent, WsdlUtil.getServiceDirName(url), url, packageName);
     }
 
+    public WadlSaas createWadlService(SaasGroup parent, String url, String packageName) {
+        initRootGroup();
+        String displayName = SaasUtil.getWadlServiceDirName(url);
+        WadlSaas service = new WadlSaas(parent, displayName, url, packageName);
+        service.toStateReady(false);
+        service.setUserDefined(true);
+        parent.addService(service);
+        service.save();
+        fireChange(PROP_SERVICES, parent, null, service);
+        return service;
+    }
+
     /**
      * Model mutation: remve service from parent group, delete file, fire event
      * @param service to remove.
