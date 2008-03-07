@@ -91,21 +91,23 @@ public class CompilerSetManager {
     private CompilerFilenameFilter debugger_filter;
     
     private ArrayList<CompilerSet> sets = new ArrayList();
-    private ArrayList<String> dirlist;
     
     private static CompilerSetManager instance = null;
-    private static Set<CompilerSetChangeListener> listeners = new HashSet();
+//    private static Set<CompilerSetChangeListener> listeners = new HashSet();
     
     public CompilerSetManager() {
-        dirlist = Path.getPath();
         initCompilerFilters();
-        initCompilerSets();
+        initCompilerSets(Path.getPath());
     }
     
-    public CompilerSetManager(ArrayList dirlist) {
-        this.dirlist = dirlist;
-        initCompilerFilters();
-        initCompilerSets();
+    public CompilerSetManager(ArrayList<CompilerSet> sets) {
+        this.sets = sets;
+    }
+    
+    public CompilerSetManager deepCopy() {
+        // FIXUP: need a real deep copy..
+        CompilerSetManager copy = new CompilerSetManager((ArrayList<CompilerSet>)sets.clone());
+        return copy;
     }
     
     public static CompilerSetManager getDefault() {
@@ -124,11 +126,11 @@ public class CompilerSetManager {
      */
     public static synchronized void setDefault(CompilerSetManager csm) {
         instance = csm;
-        fireCompilerSetChangeNotification(csm);
+//        fireCompilerSetChangeNotification(csm);
     }
     
     /** Search $PATH for all desired compiler sets and initialize cbCompilerSet and spCompilerSets */
-    public void initCompilerSets() {
+    public void initCompilerSets(ArrayList<String> dirlist) {
         for (String path : dirlist) {
             File dir = new File(path);
             if (dir.isDirectory()&& isACompilerSetFolder(dir)) {
@@ -423,9 +425,9 @@ public class CompilerSetManager {
             if (CppSettings.getDefault().getCompilerSetName().equals(cs.getName())) {
                 CppSettings.getDefault().setCompilerSetName("");
             }
-            if (this == instance) {
-                fireCompilerSetChangeNotification(instance);
-            }
+//            if (this == instance) {
+//                fireCompilerSetChangeNotification(instance);
+//            }
         }
         if (sets.size() == 0) { // No compilers found
             add(CompilerSet.createEmptyCompilerSet());
@@ -534,20 +536,20 @@ public class CompilerSetManager {
         }
         return false;
     }
-    
-    public static void addCompilerSetChangeListener(CompilerSetChangeListener l) {
-        listeners.add(l);
-    }
-    
-    public static void removeCompilerSetChangeListener(CompilerSetChangeListener l) {
-        listeners.remove(l);
-    }
-    
-    private static void fireCompilerSetChangeNotification(CompilerSetManager csm) {
-        for (CompilerSetChangeListener l : listeners) {
-            l.compilerSetChange(new CompilerSetEvent(csm));
-        }
-    }
+//    
+//    public static void addCompilerSetChangeListener(CompilerSetChangeListener l) {
+//        listeners.add(l);
+//    }
+//    
+//    public static void removeCompilerSetChangeListener(CompilerSetChangeListener l) {
+//        listeners.remove(l);
+//    }
+//    
+//    private static void fireCompilerSetChangeNotification(CompilerSetManager csm) {
+//        for (CompilerSetChangeListener l : listeners) {
+//            l.compilerSetChange(new CompilerSetEvent(csm));
+//        }
+//    }
     
     /** Special FilenameFilter which should recognize different variations of supported compilers */
     private class CompilerFilenameFilter implements FilenameFilter {

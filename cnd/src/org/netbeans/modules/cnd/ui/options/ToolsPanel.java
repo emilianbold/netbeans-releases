@@ -188,9 +188,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 //            dirlist.addAll(Path.getPath());
 //        }
 ////        dirlist = model.getPath();
-        if (csm == null) {
-            csm = CompilerSetManager.getDefault();
-        }
+//        if (csm == null) {
+            csm = (CompilerSetManager)CompilerSetManager.getDefault().deepCopy(); // FIXUP: need a real deep copy...
+//        }
         gdbEnabled = IpeUtils.isGdbEnabled();
         
 //        cSelections = new HashMap();
