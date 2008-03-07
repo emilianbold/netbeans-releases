@@ -88,6 +88,8 @@ public final class View extends TopComponent implements SearchListener {
     myTree.finished(text, myFoundCount);
 
     View view = (View) WindowManager.getDefault().findTopComponent(View.NAME);
+//out();
+//out("VIEW: " + view.getClass().getName() + " " + view.hashCode());
     view.show(myList, myTree);
   }
 
@@ -148,7 +150,8 @@ public final class View extends TopComponent implements SearchListener {
     super.componentClosed();
     myList = null;
     myTree = null;
-    myTabbed = null;
+//  myTabbed.removeAll();
+//  myTabbed = null;
   }
 
   @Override
