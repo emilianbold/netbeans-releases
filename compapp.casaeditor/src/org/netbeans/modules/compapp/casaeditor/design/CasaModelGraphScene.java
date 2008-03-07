@@ -552,18 +552,6 @@ implements PropertyChangeListener, CasaValidationListener {
     protected Widget attachProcessWidget (CasaComponent node, CasaComponent endpoint) {
         
         Image image = ServiceUnitProcessNode.getFileIconImage((CasaEndpoint) endpoint);
-//        CasaWrapperModel model = (CasaWrapperModel) endpoint.getModel();
-//        CasaEndpointRef endpointRef = model.getServiceEngineEndpointRef((CasaEndpoint)endpoint);
-//        CasaServiceEngineServiceUnit sesu = (CasaServiceEngineServiceUnit) endpointRef.getParent();
-//        String compName = sesu.getComponentName();
-//        JbiDefaultComponentInfo defaultCompInfo = 
-//                JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
-//        JBIComponentStatus compStatus = defaultCompInfo.getComponentHash().get(compName);
-//        
-//        URL fileIconURL = null;        
-//        if (compStatus != null) {
-//            fileIconURL = compStatus.getFileIconURL();
-//        }
                 
         CasaProcessTitleWidget widget = new CasaProcessTitleWidget(
                 this, ((CasaEndpoint)endpoint).getProcessName(), image);

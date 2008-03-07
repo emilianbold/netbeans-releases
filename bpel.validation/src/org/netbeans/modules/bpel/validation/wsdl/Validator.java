@@ -155,8 +155,8 @@ public final class Validator extends WsdlValidator {
         }
         // check
         if (ValidationUtil.getBasedSimpleType(aliasType) != ValidationUtil.getBasedSimpleType(propertyType)) {
-          addError("FIX_TYPE_IN_PROPERTY_ALIAS", alias, getTypeName(aliasType), getTypeName(propertyType)); // NOI18N
-//out("ERROR: " + getTypeName(aliasType) + " "  + getTypeName(propertyType));
+          addWarning("FIX_TYPE_IN_PROPERTY_ALIAS", alias, getTypeName(aliasType), getTypeName(propertyType)); // NOI18N
+//out("WARNING: " + getTypeName(aliasType) + " "  + getTypeName(propertyType));
         }
 //out();
       }
