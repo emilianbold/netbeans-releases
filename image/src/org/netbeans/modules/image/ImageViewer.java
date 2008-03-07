@@ -177,6 +177,8 @@ public class ImageViewer extends CloneableTopComponent {
         };
         
         obj.addPropertyChangeListener(WeakListeners.propertyChange(nameChangeL, obj));
+        
+        setFocusable(true);
     }
     
     /**

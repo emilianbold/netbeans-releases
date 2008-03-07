@@ -41,6 +41,7 @@
 
 package org.netbeans.api.db.explorer;
 
+import java.net.URL;
 import org.netbeans.modules.db.test.TestBase;
 import org.netbeans.modules.db.test.Util;
 
@@ -60,7 +61,12 @@ public class DatabaseConnectionTest extends TestBase {
     }
     
     public void testConnectionsRemovedWhenFilesDeleted() throws Exception{
-        JDBCDriver driver = JDBCDriverManager.getDefault().getDrivers("sun.jdbc.odbc.JdbcOdbcDriver")[0];
+        Util.deleteConnectionFiles();
+        Util.deleteDriverFiles();
+
+        JDBCDriver driver = createDriver();
+        assertEquals(1, JDBCDriverManager.getDefault().getDrivers().length);
+
         DatabaseConnection dbconn = DatabaseConnection.create(driver, "database", "user", "schema", "password", true);
         ConnectionManager.getDefault().addConnection(dbconn);
         
@@ -72,12 +78,45 @@ public class DatabaseConnectionTest extends TestBase {
     }
 
     public void testSameDatabaseConnectionReturned() throws Exception {
+        Util.deleteConnectionFiles();
+        Util.deleteDriverFiles();
         assertEquals(0, ConnectionManager.getDefault().getConnections().length);
         
-        JDBCDriver driver = JDBCDriverManager.getDefault().getDrivers("sun.jdbc.odbc.JdbcOdbcDriver")[0];
+        JDBCDriver driver = createDriver();
+        assertEquals(1, JDBCDriverManager.getDefault().getDrivers().length);
+
         DatabaseConnection dbconn = DatabaseConnection.create(driver, "database", "user", "schema", "password", true);
         ConnectionManager.getDefault().addConnection(dbconn);
+        assertTrue(ConnectionManager.getDefault().getConnections().length == 1);
         
         assertEquals(dbconn, ConnectionManager.getDefault().getConnections()[0]);
+    }
+
+    public void testDeleteConnection() throws Exception {
+        Util.deleteConnectionFiles();
+        Util.deleteDriverFiles();
+        
+        assertEquals(0, ConnectionManager.getDefault().getConnections().length);
+        assertEquals(0, JDBCDriverManager.getDefault().getDrivers().length);
+        
+        JDBCDriver driver = createDriver();
+        
+        DatabaseConnection dbconn = DatabaseConnection.create(
+                    driver, "jdbc:bar:localhost", 
+                    "user", "schema", "password", true);
+        ConnectionManager.getDefault().addConnection(dbconn);
+        
+        assertEquals(1, ConnectionManager.getDefault().getConnections().length);
+        
+        ConnectionManager.getDefault().removeConnection(dbconn);
+        assertEquals(0, ConnectionManager.getDefault().getConnections().length);
+    }
+    
+    private JDBCDriver createDriver() throws Exception {
+        JDBCDriver driver = JDBCDriver.create("bar_driver", "Bar Driver", 
+                "org.bar.BarDriver", new URL[]{ new URL("file://foo/path/foo.jar")});
+        JDBCDriverManager.getDefault().addDriver(driver);
+                
+        return driver;
     }
 }

@@ -53,7 +53,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -175,7 +174,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         EntryWrapper entry = (EntryWrapper)styleComboBox.getSelectedItem();
         initSheets(entry.preferences);
         styleComboBox.addActionListener(this);
-        //actionPerformed(new ActionEvent(styleComboBox, 0, null));
+        actionPerformed(new ActionEvent(styleComboBox, 0, null));
     }
     
     private void initSheets(PreviewPreferences preferences){
@@ -450,8 +449,9 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     private void repaintPreview() { 
         EntryWrapper category = (EntryWrapper)styleComboBox.getSelectedItem();
         if (category != null) {
-            Preferences p = new PreviewPreferences(category.preferences,
+            PreviewPreferences p = new PreviewPreferences(category.preferences,
                             category.preferences.getLanguage(), category.preferences.getStyleId());
+            p.makeAllKeys(category.preferences);
             jScrollPane1.setIgnoreRepaint(true);
             refreshPreview(previewPane, p);
             previewPane.setIgnoreRepaint(false);

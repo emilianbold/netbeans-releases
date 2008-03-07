@@ -162,4 +162,67 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //    }
 //
 
+
+//----------------------------
+//unsigned long ZEXPORT crc32(crc, buf, len)
+//unsigned long crc;
+//const unsigned char FAR *buf;
+//unsigned len;
+//{
+//    crc = crc ^ 0xffffffffUL;
+//    while (len >= 8) {
+//        DO8;
+//        len -= 8;
+//    }
+//    if (len) do {
+//            DO1;
+//        } while (--len);
+//    return crc ^ 0xffffffffUL;
+//}
+//-------------------------------
+//#define FINISH_STATE 666
+///* Stream status */
+//
+//
+///* Data structure describing a single value and its code string. */
+//typedef struct ct_data_s {
+//    union {
+//        ush  freq;       /* frequency count */
+//        ush  code;       /* bit string */
+//    } fc;
+//    union {
+//        ush  dad;        /* father node in Huffman tree */
+//        ush  len;        /* length of bit string */
+//    } dl;
+//} FAR ct_data;
+
+//What about []:
+//        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
+//
+
+    public void testBlankLineAfterEndLineComment() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "void foo()\n" +
+                "{\n" +
+                "    if (len) if (true) do {\n" +
+                "        DO1;\n" +
+                "        } while (--len);\n" +
+                "    else return;\n" +
+                "    else return;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect blak line after end line comment",
+                "void foo()\n" +
+                "{\n" +
+                "    if (len) if (true) do {\n" +
+                "                DO1;\n" +
+                "            } while (--len);\n" +
+                "        else return;\n" +
+                "    else return;\n" +
+                "}\n"
+                );
+    }
+
 }

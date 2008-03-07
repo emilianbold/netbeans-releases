@@ -39,11 +39,12 @@ if [ 1 -eq $ml_build ] ; then
 ml_postfix="-ml"
 fi
 
-. build-private.sh
+basename=`dirname "$0"`
+. "$basename"/build-private.sh
 
-progdir=`dirname $0`
+cd "$basename"
 
 commonname=$zipmodulclustersdir/$prefix-$buildnumber 
 
-ant -f $progdir/build.xml build-all-dmg -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dml_postfix=$ml_postfix -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST 
+ant -f $basename/build.xml build-all-dmg -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dml_postfix=$ml_postfix -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST 
 

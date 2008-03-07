@@ -58,6 +58,7 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.web.NewJspFileNameStepOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -377,19 +378,20 @@ public class WsValidation extends WebServicesTestBase {
 
     public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new WsValidation("testCreateNewWs")); //NOI18N
-        suite.addTest(new WsValidation("testAddOperation")); //NOI18N
-        suite.addTest(new WsValidation("testStartServer")); //NOI18N
-        suite.addTest(new WsValidation("testWsHandlers")); //NOI18N
-        suite.addTest(new WsValidation("testDeployWsProject")); //NOI18N
-        suite.addTest(new WsValidation("testCreateWsClient")); //NOI18N
-        suite.addTest(new WsValidation("testCallWsOperationInServlet")); //NOI18N
-        suite.addTest(new WsValidation("testCallWsOperationInJSP")); //NOI18N
-        suite.addTest(new WsValidation("testCallWsOperationInJavaClass")); //NOI18N
-        suite.addTest(new WsValidation("testWsClientHandlers")); //NOI18N
-        suite.addTest(new WsValidation("testDeployWsClientProject")); //NOI18N
-        suite.addTest(new WsValidation("testUndeployProjects")); //NOI18N
-        suite.addTest(new WsValidation("testStopServer")); //NOI18N
+//        suite.addTest(new WsValidation("testCreateNewWs")); //NOI18N
+//        suite.addTest(new WsValidation("testAddOperation")); //NOI18N
+//        suite.addTest(new WsValidation("testStartServer")); //NOI18N
+//        suite.addTest(new WsValidation("testWsHandlers")); //NOI18N
+//        suite.addTest(new WsValidation("testDeployWsProject")); //NOI18N
+//        suite.addTest(new WsValidation("testCreateWsClient")); //NOI18N
+//        suite.addTest(new WsValidation("testCallWsOperationInServlet")); //NOI18N
+//        suite.addTest(new WsValidation("testCallWsOperationInJSP")); //NOI18N
+//        suite.addTest(new WsValidation("testCallWsOperationInJavaClass")); //NOI18N
+        suite.addTest(new WsValidation("testRefreshClient")); //NOI18N
+//        suite.addTest(new WsValidation("testWsClientHandlers")); //NOI18N
+//        suite.addTest(new WsValidation("testDeployWsClientProject")); //NOI18N
+//        suite.addTest(new WsValidation("testUndeployProjects")); //NOI18N
+//        suite.addTest(new WsValidation("testStopServer")); //NOI18N
         return suite;
     }
 
@@ -674,24 +676,26 @@ public class WsValidation extends WebServicesTestBase {
     }
 
     private void refreshWSDL(String type) {
+        ProjectsTabOperator prj = new ProjectsTabOperator();
+        JTreeOperator prjtree = new JTreeOperator(prj);
+        ProjectRootNode prjnd;
+        Node actual;
+        NbDialogOperator ccr;
         if (type.equalsIgnoreCase("service")) {
-            ProjectsTabOperator prj = new ProjectsTabOperator();
-            JTreeOperator prjtree = new JTreeOperator(prj);
-            ProjectRootNode prjnd = new ProjectRootNode(prjtree, getWsProjectName());
-            Node actual = new Node(prjnd, "Web Services|" + getWsName()); //NOI18N    
-
+            prjnd = new ProjectRootNode(prjtree, getWsProjectName());
+            actual = new Node(prjnd, "Web Services|" + getWsName()); //NOI18N  
+            actual.performPopupActionNoBlock(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_RefreshServiceAction")); //NOI18N
+            ccr = new NbDialogOperator("Confirm Client Refresh"); //NOI18N
+            new EventTool().waitNoEvent(2000);
+            ccr.yes();
         } else {
-            ProjectsTabOperator prj = new ProjectsTabOperator();
-            JTreeOperator prjtree = new JTreeOperator(prj);
-            ProjectRootNode prjnd = new ProjectRootNode(prjtree, getWsClientProjectName());
-            Node actual = new Node(prjnd, "Web Service References |" + getWsName()); //NOI18N 
-//            new EventTool().waitNoEvent(10000);
+            prjnd = new ProjectRootNode(prjtree, getWsClientProjectName());
+            actual = new Node(prjnd, "Web Service References|" + getWsName() + "Service"); //NOI18N 
             actual.performPopupActionNoBlock(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_RefreshClientAction")); //NOI18N
-            NbDialogOperator ccr = new NbDialogOperator("Confirm Client Refresh"); //NOI18N
-
+            ccr = new NbDialogOperator("Confirm Client Refresh"); //NOI18N
+            new EventTool().waitNoEvent(2000);
             ccr.yes();
         }
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     private void checkHandlers(String[] handlerClasses, FileObject handlerConfigFO, boolean isService) throws IOException {

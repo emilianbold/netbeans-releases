@@ -37,7 +37,7 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -54,7 +54,6 @@ import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.netbeans.modules.ruby.hints.spi.RuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
-import org.openide.cookies.EditorCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -81,11 +80,11 @@ public class CamelCaseNames implements AstRule {
         return true;
     }
 
-    public Set<Integer> getKinds() {
-        Set<Integer> integers = new HashSet<Integer>();
-        integers.add(NodeTypes.LOCALASGNNODE);
-        integers.add(NodeTypes.DEFNNODE);
-        integers.add(NodeTypes.DEFSNODE);
+    public Set<NodeType> getKinds() {
+        Set<NodeType> integers = new HashSet<NodeType>();
+        integers.add(NodeType.LOCALASGNNODE);
+        integers.add(NodeType.DEFNNODE);
+        integers.add(NodeType.DEFSNODE);
         return integers;
     }
     
@@ -97,7 +96,7 @@ public class CamelCaseNames implements AstRule {
 
         for (int i = 0; i < name.length(); i++) {
             if (Character.isUpperCase(name.charAt(i))) {
-                String key =  node.nodeId == NodeTypes.LOCALASGNNODE ? "InvalidLocalName" : "InvalidMethodName"; // NOI18N
+                String key =  node.nodeId == NodeType.LOCALASGNNODE ? "InvalidLocalName" : "InvalidMethodName"; // NOI18N
                 String displayName = NbBundle.getMessage(CamelCaseNames.class, key);
                 OffsetRange range = AstUtilities.getNameRange(node);
                 range = LexUtilities.getLexerOffsets(info, range);
@@ -105,7 +104,7 @@ public class CamelCaseNames implements AstRule {
                     List<Fix> fixList = new ArrayList<Fix>(2);
                     Node root = AstUtilities.getRoot(info);
                     AstPath childPath = new AstPath(root, node); // TODO - make a simple clone method to clone AstPath path
-                    if (node.nodeId == NodeTypes.LOCALASGNNODE) {
+                    if (node.nodeId == NodeType.LOCALASGNNODE) {
                         fixList.add(new RenameFix(info, childPath, RubyUtils.camelToUnderlinedName(name)));
                     }
                     fixList.add(new RenameFix(info, childPath, null));
@@ -167,7 +166,7 @@ public class CamelCaseNames implements AstRule {
         
         private Set<OffsetRange> getRanges() {
             Node node = path.leaf();
-            assert node.nodeId == NodeTypes.LOCALASGNNODE;
+            assert node.nodeId == NodeType.LOCALASGNNODE;
             String oldName = ((INameNode)node).getName();
 
             Node scope = AstUtilities.findLocalScope(node, path);
@@ -179,7 +178,7 @@ public class CamelCaseNames implements AstRule {
         
         private String getOldName() {
             Node node = path.leaf();
-            assert node.nodeId == NodeTypes.LOCALASGNNODE;
+            assert node.nodeId == NodeType.LOCALASGNNODE;
             String oldName = ((INameNode)node).getName();
             return oldName;
         }
@@ -242,7 +241,7 @@ public class CamelCaseNames implements AstRule {
         }
         
         private void addLocalRegions(Node node, String name, Set<OffsetRange> ranges) {
-            if ((node.nodeId == NodeTypes.LOCALASGNNODE || node.nodeId == NodeTypes.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
+            if ((node.nodeId == NodeType.LOCALASGNNODE || node.nodeId == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = AstUtilities.getNameRange(node);
                 range = LexUtilities.getLexerOffsets(info, range);
                 if (range != OffsetRange.NONE) {

@@ -16,10 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/**
- *
- */
 package org.netbeans.modules.bpel.model.impl.references;
 
 import java.util.Collection;
@@ -36,12 +32,9 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Model.State;
-//import org.openide.filesystems.FileObject;
-
 
 /**
  * @author ads
- *
  */
 public class ExternalModelRetrieverImpl implements ExternalModelRetriever {
 

@@ -61,7 +61,6 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
 final class Tabbed extends JTabbedPane {
 
   Tabbed() {
-//  setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
     addMouseListener(new MouseAdapter() {
       public void mousePressed(MouseEvent event) {
         if (SwingUtilities.isRightMouseButton(event)) {
@@ -72,11 +71,10 @@ final class Tabbed extends JTabbedPane {
   }
 
   void addTrees(Tree list, Tree tree) {
-    addTab(tree.toString(), new Panel(list, tree));
+    String title = tree.toString();
+    addTab(title, new Panel(list, tree));
+//  setTabComponentAt(getTabCount() - 1, new Tab(title));
     setSelectedIndex(getTabCount() - 1);
-//  String title = "Tab " + i;
-//  add(title, new JLabel(title));
-//  setTabComponentAt(i, new Tab(pane));
   }
 
   private void showPopupMenu(ComponentEvent event, int x, int y) {
@@ -132,70 +130,49 @@ final class Tabbed extends JTabbedPane {
 
   private JMenuItem createItem(String name, ActionListener listener) {
     JMenuItem item = new JMenuItem(i18n(Tabbed.class, name));
-    
     item.addActionListener(listener);
-
     return item;
   }
 /*
   // -------------------------------
   private class Tab extends JPanel {
-    Tab(JPanel panel) {
+    Tab(final String title) {
       super(new FlowLayout(FlowLayout.LEFT, 0, 0));
-
+      setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
       setOpaque(false);
       
-      JLabel label = new JLabel() {
-          public String getText() {
-              int i = Tabbed.this.indexOfTabComponent(Tab.this);
-
-              if (i != -1) {
-                  return Tabbed.this.getTitleAt(i);
-              }
-              return null;
-          }
-      };
-      add(label);
+      JLabel label = new JLabel(title);
       label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
-      JButton button = new TabButton();
-      add(button);
-
-      setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
+      add(label);
+      add(new TabButton());
     }
 
     // ----------------------------------------------------------------
     private class TabButton extends JButton implements ActionListener {
       public TabButton() {
-        int size = 17;
+        final int size = 17;
         setPreferredSize(new Dimension(size, size));
         setToolTipText("close this tab");
-        //Make the button looks the same for all Laf's
         setUI(new BasicButtonUI());
-        //Make it transparent
         setContentAreaFilled(false);
-        //No need to be focusable
         setFocusable(false);
         setBorder(BorderFactory.createEtchedBorder());
         setBorderPainted(false);
-        //Making nice rollover effect
-        //we use the same listener for all buttons
         addMouseListener(new MouseAdapter() {
-          public void mouseEntered(MouseEvent e) {
-              Component component = e.getComponent();
+          public void mouseEntered(MouseEvent event) {
+            Component component = event.getComponent();
               
-              if (component instanceof AbstractButton) {
-                  AbstractButton button = (AbstractButton) component;
-                  button.setBorderPainted(true);
-              }
+            if (component instanceof AbstractButton) {
+              ((AbstractButton) component).setBorderPainted(true);
+            }
           }
 
-          public void mouseExited(MouseEvent e) {
-              Component component = e.getComponent();
-          
-              if (component instanceof AbstractButton) {
-                  AbstractButton button = (AbstractButton) component;
-                  button.setBorderPainted(false);
-              }
+          public void mouseExited(MouseEvent event) {
+            Component component = event.getComponent();
+        
+            if (component instanceof AbstractButton) {
+              ((AbstractButton) component).setBorderPainted(false);
+            }
           }
         });
         setRolloverEnabled(true);
@@ -203,32 +180,28 @@ final class Tabbed extends JTabbedPane {
       }
 
       public void actionPerformed(ActionEvent e) {
-          int i = Tabbed.this.indexOfTabComponent(Tab.this);
+        int i = Tabbed.this.indexOfTabComponent(Tab.this);
 
-          if (i != -1) {
-              Tabbed.this.remove(i);
-          }
+        if (i != -1) {
+          Tabbed.this.remove(i);
+        }
       }
 
       public void updateUI() {}
 
-      protected void paintComponent(Graphics g) {
-          super.paintComponent(g);
-          Graphics2D g2 = (Graphics2D) g.create();
+      protected void paintComponent(Graphics graphics) {
+        super.paintComponent(graphics);
+        Graphics2D g = (Graphics2D) graphics.create();
 
-          if (getModel().isPressed()) {
-              g2.translate(1, 1);
-          }
-          g2.setStroke(new BasicStroke(2));
-          g2.setColor(Color.BLACK);
+        if (getModel().isPressed()) {
+          g.translate(1, 1);
+        }
+        g.setStroke(new BasicStroke(2));
+        int delta = 6;
 
-          if (getModel().isRollover()) {
-              g2.setColor(Color.MAGENTA);
-          }
-          int delta = 6;
-          g2.drawLine(delta, delta, getWidth() - delta - 1, getHeight() - delta - 1);
-          g2.drawLine(getWidth() - delta - 1, delta, delta, getHeight() - delta - 1);
-          g2.dispose();
+        g.drawLine(delta, delta, getWidth() - delta - 1, getHeight() - delta - 1);
+        g.drawLine(getWidth() - delta - 1, delta, delta, getHeight() - delta - 1);
+        g.dispose();
       }
     }
   }
