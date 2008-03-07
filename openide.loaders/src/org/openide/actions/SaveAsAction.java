@@ -81,8 +81,7 @@ final class SaveAsAction extends AbstractAction implements ContextAwareAction {
     private Lookup context;
     private Lookup.Result<SaveAsCapable> lkpInfo;
     private boolean isGlobal = false;
-    //package private for unit testing
-    boolean isDirty = true;
+    private boolean isDirty = true;
     private PropertyChangeListener registryListener;
     private LookupListener lookupListener;
 
@@ -108,7 +107,8 @@ final class SaveAsAction extends AbstractAction implements ContextAwareAction {
     
     @Override
     public boolean isEnabled() {
-        if (isDirty) {
+        if (isDirty
+            || null == changeSupport || !changeSupport.hasListeners("enabled") ) { //NOI18N
             refreshEnabled();
         }
         return super.isEnabled();
@@ -235,6 +235,13 @@ final class SaveAsAction extends AbstractAction implements ContextAwareAction {
     }
 
     private void refreshEnabled() {
+        if (lkpInfo == null) {
+            //The thing we want to listen for the presence or absence of
+            //on the global selection
+            Lookup.Template<SaveAsCapable> tpl = new Lookup.Template<SaveAsCapable>(SaveAsCapable.class);
+            lkpInfo = context.lookup (tpl);
+        }
+        
         TopComponent tc = TopComponent.getRegistry().getActivated();
         boolean isEditorWindowActivated = null != tc && WindowManager.getDefault().isEditorTopComponent(tc);
         setEnabled(null != lkpInfo && lkpInfo.allItems().size() != 0 && isEditorWindowActivated);
@@ -273,6 +280,11 @@ final class SaveAsAction extends AbstractAction implements ContextAwareAction {
             }
             refreshEnabled();
         }
+    }
+    
+    //for unit testing
+    boolean _isEnabled() {
+        return super.isEnabled();
     }
 }
 
