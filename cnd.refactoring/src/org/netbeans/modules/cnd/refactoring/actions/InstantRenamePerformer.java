@@ -65,6 +65,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
@@ -185,6 +186,9 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         CsmReferenceResolver.Scope scope = CsmReferenceResolver.getDefault().fastCheckScope(ref);
         if (scope == CsmReferenceResolver.Scope.LOCAL) {
             return true;
+        } else if (scope == CsmReferenceResolver.Scope.FILE_LOCAL) {
+            // allow if file is not included anywhere
+            return CsmIncludeHierarchyResolver.getDefault().getFiles(ref.getContainingFile()).isEmpty();
         } else {
             return false;
         }

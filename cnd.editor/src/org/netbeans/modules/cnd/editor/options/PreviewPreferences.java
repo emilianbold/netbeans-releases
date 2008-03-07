@@ -73,30 +73,33 @@ public class PreviewPreferences extends AbstractPreferences {
         }
     }
 
-    public void makeAllKeys(Preferences master){
+    public void makeAllKeys(PreviewPreferences master){
         for(String key : EditorOptions.keys()){
             if (!map.containsKey(key)) {
                 Object o = EditorOptions.getDefault(language, styleId, key);
                 if (o instanceof Boolean) {
-                    Boolean v = master.getBoolean(key, (Boolean)o);
-                    if (!o.equals(v)) {
+                    Boolean v = master.getBoolean(key,
+                                (Boolean)EditorOptions.getDefault(language, master.getStyleId(), key));
+                    //if (!o.equals(v)) {
                         putBoolean(key, v);
-                    }
+                    //}
                 } else if (o instanceof Integer) {
-                    Integer v = master.getInt(key, (Integer)o);
-                    if (!o.equals(v)) {
+                    Integer v = master.getInt(key, 
+                                (Integer)EditorOptions.getDefault(language, master.getStyleId(), key));
+                    //if (!o.equals(v)) {
                         putInt(key, v);
-                    }
+                    //}
                 } else {
-                    String v = master.get(key, o.toString());
-                    if (!o.equals(v)) {
+                    String v = master.get(key, 
+                               (String)EditorOptions.getDefault(language, master.getStyleId(), key));
+                    //if (!o.equals(v)) {
                         map.put(key, v);
-                    }
+                    //}
                 }
             }
         }
     }
-    
+
     public CodeStyle.Language getLanguage() {
         return language;
     }

@@ -58,7 +58,7 @@ public class Utils {
     private static Logger LOGGER = Logger.getLogger(Utils.class.getName());
     
     public static void displayError(String msg, Exception ex) {
-        LOGGER.log(Level.WARNING, msg, ex);
+        LOGGER.log(Level.INFO, msg, ex);
         
         String reason = ex.getMessage() != null ? ex.getMessage() : 
             NbBundle.getMessage(Utils.class, "MSG_SeeErrorLog");

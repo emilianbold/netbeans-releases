@@ -52,6 +52,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbCollections;
 
 /**
  *
@@ -79,15 +80,14 @@ public class WebProjectSpringConfigFileProvider implements SpringConfigFileProvi
         if (webInf != null) {
             addFilesInWebInf(webInf, result);
         }
-        FileObject webXml = webModule.getDeploymentDescriptor();
-        if (webXml != null) {
-            addFilesInWebXml(webXml, result);
-        }
         return Collections.unmodifiableSet(result);
     }
 
     private static void addFilesInWebInf(FileObject webInf, Set<File> result) {
-        for (FileObject fo : webInf.getChildren()) {
+        for (FileObject fo : NbCollections.iterable(webInf.getChildren(true))) {
+            if (Thread.currentThread().isInterrupted()) {
+                return;
+            }
             if (!SpringConstants.CONFIG_MIME_TYPE.equals(fo.getMIMEType())) {
                 continue;
             }
@@ -97,9 +97,5 @@ public class WebProjectSpringConfigFileProvider implements SpringConfigFileProvi
             }
             result.add(file);
         }
-    }
-
-    private static void addFilesInWebXml(FileObject webXml, Set<File> result) {
-        // XXX implement.
     }
 }

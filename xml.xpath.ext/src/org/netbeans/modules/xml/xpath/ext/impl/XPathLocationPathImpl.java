@@ -22,6 +22,7 @@ package org.netbeans.modules.xml.xpath.ext.impl;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitor;
 
 
@@ -131,4 +132,26 @@ public class XPathLocationPathImpl
     public void accept(XPathVisitor visitor) {
         visitor.visit(this);
     }
+
+    /**
+     * The schema context for the expression path means the schema context 
+     * of the last location step. It is convenient method to escase such 
+     * calculations in users' code.
+     * @return schema context
+     */
+    public XPathSchemaContext getSchemaContext() {
+        if (mSteps != null && mSteps.length != 0) {
+            LocationStep lastStep = mSteps[mSteps.length - 1];
+            if (lastStep != null) {
+                return lastStep.getSchemaContext();
+            }
+        }
+        return null;
+    }
+
+    public void setSchemaContext(XPathSchemaContext newContext) {
+        throw new UnsupportedOperationException("It's not implemented because" +
+                " it is dangerous to specify a schema such way!"); // NOI18N
+    }
+    
 }
