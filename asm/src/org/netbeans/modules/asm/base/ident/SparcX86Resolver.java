@@ -186,19 +186,27 @@ public class SparcX86Resolver implements AsmTypesProvider {
         
         private int numPluses;
         private int numOpcodes;
+        private int numComments;
         private int numLines;
 
         public void token(Token tok) {
             String text = tok.getText();
             int type = tok.getType();
             
-            if (type == IdentScannerTokenTypes.Mark) {
-                if ("+".equals(text)) { // NOI18N
-                    numPluses++;
-                }                
-            }    
-            if (type == IdentScannerTokenTypes.Ident && isOpcode(text)) {
-                numOpcodes++;
+            switch (type) {
+                case IdentScannerTokenTypes.Mark:
+                    if ("+".equals(text)) { // NOI18N
+                        numPluses++;
+                    }                
+                    break;
+                case IdentScannerTokenTypes.Comment:
+                    numComments++;
+                    break;
+                case IdentScannerTokenTypes.Ident:
+                    if (isOpcode(text)) {
+                        numOpcodes++;
+                    }
+                    break;
             }
         }
         
@@ -233,7 +241,7 @@ public class SparcX86Resolver implements AsmTypesProvider {
            return false;
         }
 
-        public void end(int lines) { numLines = lines; }
+        public void end(int lines) { numLines = lines - numComments; }
         
         public void start() { }        
     }
