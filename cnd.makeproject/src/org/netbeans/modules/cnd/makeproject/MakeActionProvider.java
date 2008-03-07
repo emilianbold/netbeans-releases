@@ -784,7 +784,14 @@ public class MakeActionProvider implements ActionProvider {
             cs = CompilerSetManager.getDefault().getCompilerSet(csname);
         } else {
             csname = csconf.getOldName();
-            cs = CompilerSet.getCompilerSet(csconf.getOldName());
+            CompilerFlavor flavor = null;
+            if (csconf.getFlavor() != null) {
+                flavor = CompilerFlavor.toFlavor(csconf.getFlavor());
+            }
+            else {
+                flavor = CompilerFlavor.GNU;
+            }
+            cs = CompilerSet.getCustomCompilerSet("", flavor, csconf.getOldName());
             CompilerSetManager.getDefault().add(cs);
             csconf.setValid();
         }
