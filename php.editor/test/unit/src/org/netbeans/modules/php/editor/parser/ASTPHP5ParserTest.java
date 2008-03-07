@@ -40,7 +40,9 @@
 package org.netbeans.modules.php.editor.parser;
 
 import java.io.StringReader;
+import java_cup.runtime.Symbol;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.editor.parser.ASTPHP5Symbols;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 /**
@@ -63,14 +65,29 @@ public class ASTPHP5ParserTest extends NbTestCase {
         super.tearDown();
     }
     
-    public void testPHPDoc1() throws Exception {
-        String source = "<?php\n/**\n * PHP Template.\n */\necho \"ahoj\"\n?>";
+//    public void testPHPDoc1() throws Exception {
+//        String source = "<?php\n/**\n * PHP Template.\n */\necho \"ahoj\"\n?>";
+//        System.out.println("-----------------start: ------------------");
+//        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source));
+//        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
+//        Program result = (Program)parser.parse().value;
+//        
+//        System.out.println((new PrintASTVisitor()).printTree(result));
+//        System.out.println("-----------------end: ------------------\n\n\n");
+//    }
+    
+    public void testPHPError1() throws Exception {
+        String source = "<?php\npublic class User {\n  \n}\n?>";
         System.out.println("-----------------start: ------------------");
         ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source));
         ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
-        Program result = (Program)parser.parse().value;
+        Symbol root = parser.parse();
+        if (root != null){
+            Program result = (Program)root.value;
         
-        System.out.println((new PrintASTVisitor()).printTree(result));
+            System.out.println((new PrintASTVisitor()).printTree(result));
+        }
         System.out.println("-----------------end: ------------------\n\n\n");
     }
+    
 }

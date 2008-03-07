@@ -191,12 +191,14 @@ public class Reformatter implements ReformatTask {
     static class Diff {
         private int start;
         private int end;
-        private String text;
+        private int newLines;
+        private int spaces;
 
-        Diff(int start, int end, String text) {
+        Diff(int start, int end, int newLines, int spaces) {
             this.start = start;
             this.end = end;
-            this.text = text;
+            this.spaces = spaces;
+            this.newLines = newLines;
         }
 
         public int getStartOffset() {
@@ -208,37 +210,42 @@ public class Reformatter implements ReformatTask {
         }
 
         public String getText() {
-            return text;
+            return repeatChar(newLines, '\n')+repeatChar(spaces, ' '); // NOI18N
         }
 
-        public void setText(String text) {
-            this.text = text;
+        public void setText(int newLines, int spaces) {
+            this.newLines = newLines;
+            this.spaces = spaces;
         }
         
-        public void replaceSpaces(String space){
-            int i = text.lastIndexOf('\n'); // NOI18N
-            if (i >= 0) {
-                text = text.substring(0, i + 1)+space;
-            } else {
-                text = space; // NOI18N
-            }
+        public void replaceSpaces(int spaces){
+            this.spaces = spaces;
         }
 
         public boolean hasNewLine(){
-            return text.lastIndexOf('\n') >= 0; // NOI18N
+            return newLines > 0;
         }
 
         public int spaceLength() {
-            int i = text.lastIndexOf('\n'); // NOI18N
-            if (i >= 0) {
-                return text.length()-i+1;
-            }
-            return text.length();
+            return spaces;
         }
 
         @Override
         public String toString() {
-            return "Diff<" + start + "," + end + ">:" + text; //NOI18N
+            return "Diff<" + start + "," + end + ">: newLines="+newLines+" spaces="+spaces; //NOI18N
+        }
+
+        public static String repeatChar(int length, char c){
+            StringBuilder buf = new StringBuilder(length);
+            for (int i = 0; i < length; i++) {
+                buf.append(c);
+            }
+            return buf.toString();
+        }
+
+        public static boolean equals(String text, int newLines, int spaces){
+           String space = repeatChar(newLines, '\n')+repeatChar(spaces, ' '); // NOI18N
+           return text.equals(space);
         }
     }
 }

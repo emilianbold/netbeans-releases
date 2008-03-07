@@ -119,7 +119,12 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                     if (!tokenInTag(t3)) {
                                         return null;
                                     } else if (t3.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
-                                        return new int[]{t2.offset(th), t3.offset(th) + t3.length()};
+                                        if("/>".equals(t3.text().toString())) {
+                                            //do no match empty tags
+                                            return null;
+                                        } else {
+                                            return new int[]{t2.offset(th), t3.offset(th) + t3.length()};
+                                        }
                                     }
                                 } while (ts.moveNext());
                                 break;
