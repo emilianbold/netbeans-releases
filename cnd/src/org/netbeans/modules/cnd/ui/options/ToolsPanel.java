@@ -190,6 +190,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 ////        dirlist = model.getPath();
 //        if (csm == null) {
             csm = (CompilerSetManager)CompilerSetManager.getDefault().deepCopy(); // FIXUP: need a real deep copy...
+            if (csm.getCompilerSets().size() == 1 && csm.getCompilerSets().get(0).getName() == CompilerSet.None) {
+                csm.remove(csm.getCompilerSets().get(0));
+            }
 //        }
         gdbEnabled = IpeUtils.isGdbEnabled();
         

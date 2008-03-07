@@ -429,9 +429,9 @@ public class CompilerSetManager {
 //                fireCompilerSetChangeNotification(instance);
 //            }
         }
-        if (sets.size() == 0) { // No compilers found
-            add(CompilerSet.createEmptyCompilerSet());
-        }
+//        if (sets.size() == 0) { // No compilers found
+//            add(CompilerSet.createEmptyCompilerSet());
+//        }
     }
     
     public CompilerSet getCompilerSet(CompilerFlavor flavor) {
@@ -475,8 +475,10 @@ public class CompilerSetManager {
     }
 
     public CompilerSet getCompilerSet(int idx) {
-        assert idx >= 0 && idx < sets.size();
-        return sets.get(idx);
+        if (idx >= 0 && idx < sets.size())
+            return sets.get(idx);
+        else
+            return null;
     }
     
     public List<CompilerSet> getCompilerSets() {
