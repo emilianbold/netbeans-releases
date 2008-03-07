@@ -84,7 +84,7 @@ public class SetupUtil {
     }
 
     public static void commonTearDown() throws Exception {
-        
+        SaasServicesModel.getWebServiceHome().delete();
         MockServices.setServices();
     }
     

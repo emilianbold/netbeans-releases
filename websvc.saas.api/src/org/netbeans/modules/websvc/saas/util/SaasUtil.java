@@ -65,6 +65,7 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.sax.SAXSource;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
@@ -92,6 +93,9 @@ import org.xml.sax.XMLReader;
  * @author nam
  */
 public class SaasUtil {
+    public static final String APPLICATION_WADL = "resources/application.wadl";
+    public static final String DEFAULT_SERVICE_NAME = "Service";
+    
 
     public static <T> T loadJaxbObject(FileObject input, Class<T> type, boolean includeAware) throws IOException {
         if (input == null) {
@@ -504,5 +508,39 @@ public class SaasUtil {
         }
         return null;
     }
+
+    public static String getWadlServiceDirName(String wadlUrl) {
+            String urlPath = wadlUrl.replace('\\', '/');
+            if (urlPath.endsWith(APPLICATION_WADL)) {
+                urlPath = urlPath.substring(0, urlPath.length() - APPLICATION_WADL.length() - 1);
+            }
+            int start = urlPath.lastIndexOf("/") + 1; //NOI18N
+            String name = urlPath.substring(start);
+            if (name.endsWith(".wadl") || name.endsWith(".WADL")) {
+                name = name.substring(0, name.length()- 5);
+            }
+            name = name.replace('.', '-'); // NOI18N
+            return ensureUniqueServiceDirName(name);
+    }
+    
+    public static String ensureUniqueServiceDirName(String name) {
+        String result = name;
+        for (int i=0 ; i<1000 ; i++) {
+            FileObject websvcHome = SaasServicesModel.getWebServiceHome();
+            if (i > 0) {
+                result = name + i;
+            }
+            if (websvcHome.getFileObject(result) == null) {
+                try {
+                    websvcHome.createFolder(result);
+                } catch(IOException e) {
+                    Exceptions.printStackTrace(e);
+                }
+                break;
+            }
+        }
+        return result;
+    }
+
 }
 
