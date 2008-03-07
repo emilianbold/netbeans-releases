@@ -59,7 +59,6 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
 import org.netbeans.modules.bpel.model.api.events.ChangeEventListenerAdapter;
-import org.netbeans.modules.bpel.model.api.support.Util;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -198,7 +197,7 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
           if (item.getType() != ResultType.ERROR) {
             continue;
           }
-          Line line = Util.getLine(item);
+          Line line = ValidationUtil.getLine(item);
 
           if (line == null) {
             continue;

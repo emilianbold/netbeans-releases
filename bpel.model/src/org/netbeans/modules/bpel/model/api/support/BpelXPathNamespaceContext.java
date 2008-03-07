@@ -18,7 +18,8 @@ package org.netbeans.modules.bpel.model.api.support;
 
 import java.util.Iterator;
 import javax.xml.XMLConstants;
-import javax.xml.namespace.NamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
 
 /**
  * This namespace context is a wrapper. 
@@ -30,11 +31,11 @@ import javax.xml.namespace.NamespaceContext;
  * 
  * @author nk160297
  */
-public class BpelXPathNamespaceContext implements NamespaceContext {
+public class BpelXPathNamespaceContext implements ExNamespaceContext {
 
-    private NamespaceContext myParentNsContext;
+    private ExNamespaceContext myParentNsContext;
     
-    public BpelXPathNamespaceContext(NamespaceContext parentNsContext) {
+    public BpelXPathNamespaceContext(ExNamespaceContext parentNsContext) {
         myParentNsContext = parentNsContext;
     }
 
@@ -52,6 +53,18 @@ public class BpelXPathNamespaceContext implements NamespaceContext {
 
     public Iterator getPrefixes(String namespaceURI) {
         return myParentNsContext.getPrefixes(namespaceURI);
+    }
+
+    public Iterator<String> getPrefixes() {
+        return myParentNsContext.getPrefixes();
+    }
+
+    public String addNamespace(String uri) throws InvalidNamespaceException {
+        return myParentNsContext.addNamespace(uri);
+    }
+
+    public void addNamespace(String prefix, String uri) throws InvalidNamespaceException {
+        myParentNsContext.addNamespace(prefix, uri);
     }
 
 }

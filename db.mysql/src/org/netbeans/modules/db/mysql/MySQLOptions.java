@@ -84,6 +84,8 @@ public class MySQLOptions {
     // How long to wait on the network before giving up on an attempt to
     // connect, in milliseconds
     static final String PROP_CONNECT_TIMEOUT = "connect-timeout"; // NOII18N
+    static final String PROP_REFRESH_THREAD_SLEEP_INTERVAL = 
+            "refresh-thread-sleep-interval"; // NOI18N
     
     // Currently not modifiable...
     private static final String DRIVER_CLASS = "com.mysql.jdbc.Driver";
@@ -93,6 +95,8 @@ public class MySQLOptions {
     private static final String DEFAULT_ADMIN_PASSWORD = "";
     // In milliseconds
     private static final String DEFAULT_CONNECT_TIMEOUT = "15000";
+    // In milliseconds
+    private static final long DEFAULT_REFRESH_THREAD_SLEEP_INTERVAL = 3000;
     
     private CopyOnWriteArrayList<PropertyChangeListener> listeners = 
             new CopyOnWriteArrayList<PropertyChangeListener>();
@@ -127,7 +131,17 @@ public class MySQLOptions {
             NbPreferences.forModule(MySQLOptions.class).putBoolean(key, value);
         }
         
-        notifyPropertyChange(key, new Boolean(oldval), new Boolean(value)   );
+        notifyPropertyChange(key, oldval, value);
+    }
+    
+    protected final void putProperty(String key, long value, long def) {
+        long oldval;
+        synchronized(this) {
+            oldval = getLongProperty(key, def);
+            NbPreferences.forModule(MySQLOptions.class).putLong(key, value);
+        }
+        
+        notifyPropertyChange(key, oldval, value);
     }
     
     protected final void clearProperty(String key) {
@@ -145,6 +159,10 @@ public class MySQLOptions {
     
     protected final boolean getBooleanProperty(String key) {
         return NbPreferences.forModule(MySQLOptions.class).getBoolean(key, false); 
+    }
+    
+    protected final long getLongProperty(String key, long def) {
+        return NbPreferences.forModule(MySQLOptions.class).getLong(key, def);
     }
     
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -326,6 +344,16 @@ public class MySQLOptions {
     
     public void setConnectTimeout(String timeout) {
         putProperty(PROP_CONNECT_TIMEOUT, timeout);
+    }
+    
+    public long getRefreshThreadSleepInterval() {
+        return getLongProperty(PROP_REFRESH_THREAD_SLEEP_INTERVAL,
+                DEFAULT_REFRESH_THREAD_SLEEP_INTERVAL);
+    }
+    
+    public void setRefreshThreadSleepInterval(long interval) {
+        putProperty(PROP_REFRESH_THREAD_SLEEP_INTERVAL, interval,
+                DEFAULT_REFRESH_THREAD_SLEEP_INTERVAL);
     }
 
     public static String getDriverClass() {

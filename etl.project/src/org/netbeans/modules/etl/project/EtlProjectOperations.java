@@ -49,10 +49,13 @@ public class EtlProjectOperations implements DeleteOperationImplementation, Copy
     public List getMetadataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
         List files = new ArrayList();
-        
+        java.util.logging.Logger.getLogger(EtlProjectOperations.class.getName()).info("EtlProjectOperations********************** "+ projectDirectory.getName());
         addFile(projectDirectory, "nbproject", files); // NOI18N
+        addFile(projectDirectory, "private", files); 
+        addFile(projectDirectory, "databases", files); 
         addFile(projectDirectory, "build.xml", files); // NOI18N
         addFile(projectDirectory, "data", files); //NOI18N
+        addFile(projectDirectory, "collaborations", files); //NOI18N
         addFile(projectDirectory, projectDirectory.getName(), files); //NOI18N
         //addFile(projectDirectory, org.netbeans.modules.xml.retriever.XMLCatalogProvider.TYPE_RETRIEVED , files); //NOI18N
         
