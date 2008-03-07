@@ -523,7 +523,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
             // so do not call translateSurrogates()
             if (c == EOF || !Character.isWhitespace(c) || c == '\n' || c == '\r') {
                 backup(1);
-                return token(CppTokenId.WHITESPACE);
+                return isTokenSplittedByEscapedLine() ? token(CppTokenId.ESCAPED_WHITESPACE) : token(CppTokenId.WHITESPACE);
             }
         }
     }

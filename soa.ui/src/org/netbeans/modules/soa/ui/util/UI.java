@@ -46,6 +46,7 @@ import java.awt.Insets;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Event;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
@@ -106,6 +107,10 @@ public final class UI {
 
   private static boolean isModifier(int modifiers, int mask) {
     return (modifiers & mask) != 0;
+  }
+
+  public static MyComboBox createComboBox(Object [] items) {
+    return new MyComboBox(items);
   }
 
   public static JLabel createLabel(String message) {
@@ -472,6 +477,53 @@ public final class UI {
     if (ENABLE_OUT) {
       System.out.println("*** " + object); // NOI18N
     }
+  }
+
+  // ------------------------------------------------
+  public static class MyComboBox extends JComboBox {
+    public MyComboBox(Object [] items) {
+      super(items);
+      init();
+    }
+
+    @Override
+    public boolean selectWithKeyChar(char key)
+    {
+      processKey(key);
+      setSelectedIndex(myIndex);
+      return true;
+    }
+
+    public void init() {
+//out();
+//out("init");
+      myIndex = 0;
+      myPrefix = ""; // NOI18N
+    }
+
+    private void processKey(char key) {
+//out("select: '" + key);
+      if (((int) key) == Event.BACK_SPACE) {
+        init();
+        return;
+      }
+      myPrefix += key;
+      myPrefix = myPrefix.toLowerCase();
+
+//out("prefix: " + myPrefix);
+      for (int i=myIndex; i < getItemCount(); i++) {
+        String item = getItemAt(i).toString().toLowerCase();
+//out("  see: " + item);
+
+        if (item.startsWith(myPrefix)) {
+          myIndex = i;
+          return;
+        }
+      }
+    }
+
+    private int myIndex;
+    private String myPrefix;
   }
 
   // -------------------------------------------------------------

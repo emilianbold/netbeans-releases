@@ -646,7 +646,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             token = token.getNextSibling();
         }
         while( token != null ) {
-            if( token.getType() == CPPTokenTypes.LITERAL_const ) {
+            if( token.getType() == CPPTokenTypes.LITERAL_const ||
+                token.getType() == CPPTokenTypes.LITERAL___const ||
+                token.getType() == CPPTokenTypes.LITERAL___const__) {
                 ret = true;
                 break;
             }
