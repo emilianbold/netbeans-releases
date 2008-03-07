@@ -20,7 +20,7 @@
 /**
  *
  */
-package org.netbeans.modules.bpel.model.api.support;
+package org.netbeans.modules.xml.xpath.ext.schema;
 
 import java.util.Iterator;
 

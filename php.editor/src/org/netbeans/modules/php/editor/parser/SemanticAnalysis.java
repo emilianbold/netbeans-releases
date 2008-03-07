@@ -147,13 +147,15 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         Map<OffsetRange, ColoringAttributes> highlights =
             new HashMap<OffsetRange, ColoringAttributes>(100);
         
-        result.getProgram().accept(new SemanticHighlightVisitor(highlights));
-        
-        if (highlights.size() > 0) {
-            semanticHighlights = highlights;
-        }
-        else {
-            semanticHighlights = null;
+        if (result.getProgram() != null) {
+            result.getProgram().accept(new SemanticHighlightVisitor(highlights));
+
+            if (highlights.size() > 0) {
+                semanticHighlights = highlights;
+            }
+            else {
+                semanticHighlights = null;
+            }
         }
     }
     

@@ -52,11 +52,8 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -92,64 +89,6 @@ public class DatabaseUtils {
         /** We were able to connect and authenticate */
         CONNECT_SUCCEEDED
 
-    }
-
-    /**
-     * Connect to the MySQL server on a task thread, showing a progress bar
-     * and displaying a dialog if an error occurred
-     * 
-     * @param instance the server instance to connect with
-     */
-    public static void connectToServerAsync(final ServerInstance instance) {
-         connectToServerAsync(instance, false);
-    }
-     
-    /**
-     * Connect to the server asynchronously, with the option not to display
-     * a dialog but just write to the log if an error occurs
-     * @param instance the instance to connect to
-     * @param quiet true if you don't want this to happen without any dialogs
-     *   being displayed in case of error or to get more information.
-     */
-    static void connectToServerAsync(final ServerInstance instance, 
-            final boolean quiet) {
-        
-         if ( instance == null ) {
-                 throw new NullPointerException();
-         }
-         
-         if ( isEmpty(instance.getHost()) || isEmpty(instance.getUser()) ||
-                 (isEmpty(instance.getPassword()) && !instance.isSavePassword()) ) {
-             if ( ! quiet ) {
-                 Utils.displayErrorMessage(NbBundle.getMessage(
-                         DatabaseUtils.class,
-                         "MSG_UnableToConnect"));
-             }
-             return;
-         }
-         
-         final ProgressHandle progress = ProgressHandleFactory.createHandle(
-                 NbBundle.getMessage(DatabaseUtils.class, "MSG_ConnectingToServer"));
-         progress.start();
-         progress.switchToIndeterminate();
-         
-         RequestProcessor.getDefault().post(new Runnable() {
-             public void run() {
-                 try { 
-                     instance.connect();
-                 } catch ( DatabaseException dbe ) {
-                     LOGGER.log(Level.INFO, null, dbe);
-                     if ( ! quiet ) {
-                         Utils.displayError(NbBundle.getMessage(DatabaseUtils.class,
-                                     "MSG_UnableToConnect"), 
-                                 dbe);
-                     }
-                 } finally {
-                     progress.finish();
-                 }
-             }
-         });
-        
     }
      
     public static boolean isEmpty(String val) {
