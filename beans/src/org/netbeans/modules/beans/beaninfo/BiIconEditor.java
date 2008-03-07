@@ -41,30 +41,58 @@
 
 package org.netbeans.modules.beans.beaninfo;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyEditorSupport;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.io.IOException;
 import java.net.URL;
-
-import javax.swing.*;
-import javax.swing.border.*;
-
-import org.openide.*;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.util.HelpCtx;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.List;
 import java.util.ListIterator;
+import javax.imageio.ImageIO;
+import javax.swing.ButtonGroup;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+
 /**
  * PropertyEditor for Icons. Depends on existing DataObject for images.
  * Images must be represented by some DataObject which returns itselv
@@ -73,11 +101,12 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Jan Jancura
  */
-class BiIconEditor extends PropertyEditorSupport {
+final class BiIconEditor extends PropertyEditorSupport implements ExPropertyEditor {
     
     private static final String BEAN_ICONEDITOR_HELP = "beans.icon"; // NOI18N
     
     private FileObject sourceFileObject;
+    private PropertyEnv env;
     
     /** Standard variable for localization. */
     static java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(
@@ -108,9 +137,23 @@ class BiIconEditor extends PropertyEditorSupport {
      * resource path to the image on classpath */
     public String getSourceName() {
         if (getValue() instanceof BiImageIcon)
-            return ((BiImageIcon)getValue()).getName();
+            return getValue().getName();
         else
             return null;
+    }
+
+    @Override
+    public void setValue(Object value) {
+        BiImageIcon old = getValue();
+        if (old == value || old != null && old.equals(value)) {
+            return;
+        }
+        super.setValue(value);
+    }
+
+    @Override
+    public BiImageIcon getValue() {
+        return (BiImageIcon) super.getValue();
     }
     
     /**
@@ -119,15 +162,10 @@ class BiIconEditor extends PropertyEditorSupport {
      * <p>   If a non-null value is returned, then the PropertyEditor should
      *       be prepared to parse that string back in setAsText().
      */
+    @Override
     public String getAsText() {
         Object val = getValue();        
-        if (val == null) return "null"; // NOI18N
-        
-        if (val instanceof BiImageIcon) {
-            BiImageIcon ii = (BiImageIcon)val;
-            return ii.getName(); // NOI18N
-        }
-        return null;
+        return textFromIcon((BiImageIcon) val);
     }
     
     /**
@@ -137,6 +175,7 @@ class BiIconEditor extends PropertyEditorSupport {
      * as text.
      * @param text  The string to be parsed.
      */
+    @Override
     public void setAsText(String string) throws IllegalArgumentException {
         try { 
             setValue(iconFromText(string));
@@ -148,7 +187,13 @@ class BiIconEditor extends PropertyEditorSupport {
         }
     }
     
-    private BiImageIcon iconFromText(String string) throws IllegalArgumentException {
+    String textFromIcon(BiImageIcon icon) {
+        return icon == null
+                ? "null" // NOI18N
+                : icon.getName();
+    }
+    
+    BiImageIcon iconFromText(String string) throws IllegalArgumentException {
         BiImageIcon ii;
         try {
             if (string.length() == 0 || string.equals("null")) { // NOI18N
@@ -162,7 +207,7 @@ class BiIconEditor extends PropertyEditorSupport {
             }
         } catch (Throwable e) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
-            throw new IllegalArgumentException(e.toString());
+            throw new IllegalArgumentException(e);
         }
         return ii;
     }
@@ -170,6 +215,7 @@ class BiIconEditor extends PropertyEditorSupport {
     /**
      * @return  True if the class will honor the paintValue method.
      */
+    @Override
     public boolean isPaintable() {
         return false;
     }
@@ -177,6 +223,7 @@ class BiIconEditor extends PropertyEditorSupport {
     /**
      * @return  True if the propertyEditor can provide a custom editor.
      */
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
@@ -195,55 +242,74 @@ class BiIconEditor extends PropertyEditorSupport {
      *      edit the current property value.  May be null if this is
      *      not supported.
      */
+    @Override
     public java.awt.Component getCustomEditor() {
-        return new IconPanel();
+        return new IconPanel(this, env);
+    }
+
+    public void attachEnv(PropertyEnv env) {
+        this.env = env;
     }
     
-    public static class BiImageIcon extends ImageIcon /* implements Externalizable */ {
-        /** generated Serialized Version UID */
-        //static final long serialVersionUID = 7018807466471349466L;
+    public static final class BiImageIcon {
         private String name;
+        private URL url;
+        private Icon icon;
         
         public BiImageIcon() {
         }
         
         BiImageIcon(URL url, String name) {
-            super(url);
-            this.name = name;
-        }
-        
-        BiImageIcon(String file, String name ) {
-            super(file);
+            this.url = url;
             this.name = name;
         }
         
         String getName() {
             return name;            
         }
-        
-        /*
-        public void writeExternal(ObjectOutput oo) throws IOException {
-            oo.writeObject(name);
+
+        public Icon getIcon() {
+            if (icon == null) {
+                try {
+                    Image image = ImageIO.read(url);
+                    icon = new ImageIcon(image);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return icon;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final BiImageIcon other = (BiImageIcon) obj;
+            if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
+                return false;
+            }
+            return true;
         }
         
-        public void readExternal(ObjectInput in)
-        throws IOException, ClassNotFoundException {
-            name = (String) in.readObject();
-            ImageIcon ii = null;
-            ii = new ImageIcon(Repository.getDefault().findResource(name).getURL());
-            setImage(ii.getImage());
-        }
-         */
     }
     
-    class IconPanel extends JPanel implements EnhancedCustomPropertyEditor {
+    private static final class IconPanel extends JPanel implements VetoableChangeListener {
         JRadioButton rbClasspath, rbNoPicture;
         JTextField tfName;
         JButton bSelect;
         JScrollPane spImage;
+        private final PropertyEnv env;
+        private BiImageIcon value;
+        private BiIconEditor editor;
         
-        static final long serialVersionUID =-6904264999063788703L;
-        IconPanel() {
+        IconPanel(BiIconEditor editor, PropertyEnv env) {
+            this.env = env;
+            this.editor = editor;
+            
             // visual components .............................................
             
             JLabel lab;
@@ -305,6 +371,7 @@ class BiIconEditor extends PropertyEditorSupport {
             p.add(p1, "South"); // NOI18N
             add(p, "North"); // NOI18N
             spImage = new JScrollPane() {
+                @Override
                 public Dimension getPreferredSize() {
                     return new Dimension(60, 60);
                 }
@@ -330,7 +397,7 @@ class BiIconEditor extends PropertyEditorSupport {
                     bSelect.setEnabled(false);
                     tfName.setEnabled(false);
                     
-                    BiIconEditor.this.setValue(null);
+                    setValue(null);
                     updateIcon();
                 }
             });
@@ -347,26 +414,29 @@ class BiIconEditor extends PropertyEditorSupport {
             });
             // initialization ......................................
  
+            env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+            env.addVetoableChangeListener(this);
+            setValue(editor.getValue());
             updateIcon();
             
             HelpCtx.setHelpIDString(this, BEAN_ICONEDITOR_HELP); 
             
-            Icon i = (Icon)getValue();
+            BiImageIcon i = getValue();
             if (i == null) {
                 rbNoPicture.setSelected(true);
                 bSelect.setEnabled(false);
                 tfName.setEnabled(false);
                 return;
             }
-            if (!(i instanceof BiImageIcon)) return;
             
             rbClasspath.setSelected(true);
             bSelect.setEnabled(true);
-            tfName.setText(((BiImageIcon)i).getName());
+            tfName.setText((i).getName());
         }
         
         void updateIcon() {
-            Icon i = (Icon)getValue();
+            BiImageIcon bii = getValue();
+            Icon i = bii == null? null: bii.getIcon();
             spImage.setViewportView((i == null) ? new JLabel() : new JLabel(i));
             //      repaint();
             validate();
@@ -376,12 +446,12 @@ class BiIconEditor extends PropertyEditorSupport {
             String val = tfName.getText();
             val.trim();
             if ("".equals(val)) { // NOI18N
-                BiIconEditor.this.setValue(null);
+                setValue(null);
                 return;
             }
             
             try {
-                BiIconEditor.this.setValue(iconFromText(val));
+                setValue(editor.iconFromText(val));
             } catch (IllegalArgumentException ee) {
                 // Reporting the exception is maybe too much let's do nothing
                 // instead 
@@ -390,36 +460,42 @@ class BiIconEditor extends PropertyEditorSupport {
             updateIcon();
         }
         
-        public Object getPropertyValue() throws IllegalStateException {
-            BiImageIcon ii = null;
-            String s = tfName.getText().trim();
-            try {
-                if (rbClasspath.isSelected() && s.length() != 0 ) {                    
-                    ClassPath cp = ClassPath.getClassPath( sourceFileObject, ClassPath.SOURCE );
-                    FileObject f = cp.findResource( s.substring(1) );
-                    try{
-                        ii = new BiImageIcon(f.getURL(), s);
-                    }
-                    catch(java.lang.Throwable t){
-                        MessageFormat message = new MessageFormat( bundle.getString("CTL_Icon_not_exists")); //NOI18N
-                        Object[] form = {s};//CTL_Icon_not_exists=Image class path for {0} is not valid
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message.format(form), NotifyDescriptor.ERROR_MESSAGE ));
-                    }
-                }
-            } catch (Exception e) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
-                throw new IllegalStateException(e.toString());
-            }
-            BiIconEditor.this.setValue(ii);
-            return ii;
+        private void setValue(BiImageIcon icon) {
+            this.value = icon;
         }
         
-        private java.util.List getRoots(ClassPath cp) {
-            ArrayList list = new ArrayList(cp.entries().size());
-            Iterator eit = cp.entries().iterator();
-            while(eit.hasNext()) {
-                ClassPath.Entry e = (ClassPath.Entry)eit.next();
-                
+        private BiImageIcon getValue() {
+            return this.value;
+        }
+        
+        private Object getPropertyValue(PropertyChangeEvent evt) throws PropertyVetoException {
+            BiImageIcon ii = null;
+            String s = tfName.getText().trim();
+            if (rbClasspath.isSelected() && s.length() != 0 ) {                    
+                ClassPath cp = ClassPath.getClassPath( editor.sourceFileObject, ClassPath.SOURCE );
+                FileObject f = cp.findResource( s.substring(1) );
+                try{
+                    ii = new BiImageIcon(f.getURL(), s);
+                }
+                catch(java.lang.Throwable t){
+                    throw new PropertyVetoException(
+                            NbBundle.getMessage(IconPanel.class, "CTL_Icon_not_exists", s), //NOI18N
+                            evt);
+                }
+            }
+            return ii;
+        }
+
+        public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+            if (PropertyEnv.PROP_STATE == evt.getPropertyName()) {
+                BiImageIcon ii = (BiImageIcon) getPropertyValue(evt);
+                editor.setValue(ii);
+            }
+        }
+        
+        private List<FileObject> getRoots(ClassPath cp) {
+            List<FileObject> list = new ArrayList<FileObject>(cp.entries().size());
+            for (ClassPath.Entry e : cp.entries()) {
                 // try to map it to sources
                 URL url = e.getURL();
                 SourceForBinaryQuery.Result r = SourceForBinaryQuery.findSourceRoots(url);
@@ -445,20 +521,22 @@ class BiIconEditor extends PropertyEditorSupport {
          * @returns name of the selected resource or <code>null</code>.
          */
         private String selectResource() {
-            ClassPath executionClassPath = ClassPath.getClassPath(sourceFileObject, ClassPath.EXECUTE);
-            java.util.List roots = (executionClassPath == null) ? Collections.EMPTY_LIST : getRoots(executionClassPath);
+            ClassPath executionClassPath = ClassPath.getClassPath(editor.sourceFileObject, ClassPath.EXECUTE);
+            List<FileObject> roots = (executionClassPath == null)
+                    ? Collections.<FileObject>emptyList()
+                    : getRoots(executionClassPath);
             Node nodes[] = new Node[roots.size()];
             int selRoot = -1;
             try {
-                ListIterator iter = roots.listIterator();
+                ListIterator<FileObject> iter = roots.listIterator();
                 while (iter.hasNext()) {
-                    FileObject root = (FileObject)iter.next();
+                    FileObject root = iter.next();
                     DataObject dob = DataObject.find(root);
                     final String displayName = rootDisplayName(root);
                     nodes[iter.previousIndex()] = new RootNode(dob.getNodeDelegate(), displayName);
                 }
             } catch (DataObjectNotFoundException donfex) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, donfex);
+                Exceptions.printStackTrace(donfex);
                 return null;
             }
             Children children = new Children.Array();
@@ -473,7 +551,7 @@ class BiIconEditor extends PropertyEditorSupport {
             nodes = (res == DialogDescriptor.OK_OPTION) ? selector.getNodes() : null;
             String name = null;
             if ((nodes != null) && (nodes.length == 1)) {
-                DataObject dob = (DataObject)nodes[0].getCookie(DataObject.class);
+                DataObject dob = nodes[0].getCookie(DataObject.class);
                 if (dob != null) {
                     FileObject fob = dob.getPrimaryFile();
                     if (fob != null) {                        
@@ -491,7 +569,7 @@ class BiIconEditor extends PropertyEditorSupport {
         
     } // end of IconPanel
     
-    private static class RootNode extends FilterNode {
+    private static final class RootNode extends FilterNode {
         RootNode(Node node, String displayName) {
             super(node);
             if (displayName != null) {
@@ -501,7 +579,7 @@ class BiIconEditor extends PropertyEditorSupport {
         }
     } // RootNode
     
-    private static class ResourceSelector extends JPanel implements ExplorerManager.Provider {
+    private static final class ResourceSelector extends JPanel implements ExplorerManager.Provider {
         /** Manages the tree. */
         private ExplorerManager manager = new ExplorerManager();
                 
@@ -526,6 +604,7 @@ class BiIconEditor extends PropertyEditorSupport {
          * Gets preferred size. Overrides superclass method.
          * Height is adjusted to 1/2 screen.
          */
+        @Override
         public Dimension getPreferredSize() {
             Dimension dim = super.getPreferredSize();
             dim.height = Math.max(dim.height, org.openide.util.Utilities.getUsableScreenBounds().height / 2);
