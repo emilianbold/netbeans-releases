@@ -63,7 +63,7 @@ class LocationPanelVisual extends JPanel {
     }
 
     void addProjectNameListener(DocumentListener listener) {
-        projectLocationTextField.getDocument().addDocumentListener(listener);
+        projectNameTextField.getDocument().addDocumentListener(listener);
     }
 
     void addProjectLocationListener(DocumentListener listener) {
@@ -174,6 +174,10 @@ class LocationPanelVisual extends JPanel {
 
     public String getProjectName() {
         return projectNameTextField.getText();
+    }
+
+    public String getFullProjectPath() {
+        return createdFolderTextField.getText();
     }
 
     public String getProjectLocation() {

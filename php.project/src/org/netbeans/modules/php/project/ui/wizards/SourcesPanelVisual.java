@@ -124,7 +124,7 @@ public class SourcesPanelVisual extends JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(browseButton)
                             .add(locateButton))))
-                .add(18, 18, 18))
+                .addContainerGap())
         );
 
         layout.linkSize(new java.awt.Component[] {browseButton, locateButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);

@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.IOException;
 import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.List;
@@ -109,6 +110,14 @@ public final class Utils {
         }
         if (selected != null) {
             comboBoxModel.setSelectedItem(selected);
+        }
+    }
+
+    public static File getCanonicalFile(File file) {
+        try {
+            return file.getCanonicalFile();
+        } catch (IOException e) {
+            return null;
         }
     }
 }

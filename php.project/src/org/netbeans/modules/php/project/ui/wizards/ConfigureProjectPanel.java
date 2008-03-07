@@ -43,11 +43,15 @@ import java.awt.Component;
 import java.io.File;
 import java.text.MessageFormat;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * @author Tomas Mysik
@@ -66,6 +70,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private ConfigureProjectPanelVisual configureProjectPanelVisual;
+    LocationPanelVisual locationPanelVisual;
+    SourcesPanelVisual sourcesPanelVisual;
+    OptionsPanelVisual optionsPanelVisual;
     private WizardDescriptor descriptor;
     private final String[] steps;
 
@@ -79,15 +86,15 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     public Component getComponent() {
         if (configureProjectPanelVisual == null) {
             configureProjectPanelVisual = new ConfigureProjectPanelVisual(this);
+            locationPanelVisual = configureProjectPanelVisual.getLocationPanelVisual();
+            sourcesPanelVisual = configureProjectPanelVisual.getSourcesPanelVisual();
+            optionsPanelVisual = configureProjectPanelVisual.getOptionsPanelVisual();
 
-            // location
-            final LocationPanelVisual locationPanelVisual = configureProjectPanelVisual.getLocationPanelVisual();
+            // listeners
+            DocumentListener listener = new LocationListener();
+            locationPanelVisual.addProjectLocationListener(listener);
+            locationPanelVisual.addProjectNameListener(listener);
         }
-        return configureProjectPanelVisual;
-    }
-
-    private ConfigureProjectPanelVisual getConfigureProjectPanelVisual() {
-        getComponent();
         return configureProjectPanelVisual;
     }
 
@@ -96,10 +103,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     }
 
     public void readSettings(Object settings) {
+        getComponent();
         descriptor = (WizardDescriptor) settings;
 
         // location
-        LocationPanelVisual locationPanelVisual = getConfigureProjectPanelVisual().getLocationPanelVisual();
         String projectLocation = getProjectLocation().getAbsolutePath();
         String projectName = getProjectName();
         File projectFolder = new File(projectLocation, projectName);
@@ -108,7 +115,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         locationPanelVisual.setCreatedProjectFolder(projectFolder.getAbsolutePath());
 
         // sources
-        SourcesPanelVisual sourcesPanelVisual = getConfigureProjectPanelVisual().getSourcesPanelVisual();
     }
 
     public void storeSettings(Object settings) {
@@ -117,7 +123,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
 
     public boolean isValid() {
         getComponent();
-        return false;
+        return isLocationValid() && areSourcesValid() && areOptionsValid();
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -177,5 +183,101 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
             return null;
         }
         return name;
+    }
+
+    private boolean isLocationValid() {
+        String err = null;
+        String projectLocation = locationPanelVisual.getProjectLocation();
+        String projectName = locationPanelVisual.getProjectName();
+        String projectPath = locationPanelVisual.getFullProjectPath();
+
+        if (projectName.length() == 0
+                || projectName.indexOf('/')  != -1 // NOI18N
+                || projectName.indexOf('\\') != -1 // NOI18N
+                || projectName.indexOf(':') != -1) { // NOI18N
+            err = NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectName");
+            descriptor.putProperty("WizardPanel_errorMessage", err); // NOI18N
+            return false; // Display name not specified
+        }
+
+        File f = new File(projectLocation).getAbsoluteFile();
+        if (Utils.getCanonicalFile(f) == null) {
+            err = NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation");
+            descriptor.putProperty("WizardPanel_errorMessage", err); // NOI18N
+            return false;
+        }
+        // not allow to create project on unix root folder, see #82339
+        File cfl = Utils.getCanonicalFile(new File(projectPath));
+        if (Utilities.isUnix() && cfl != null && cfl.getParentFile().getParent() == null) {
+            err = NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectInRootNotSupported");
+            descriptor.putProperty("WizardPanel_errorMessage", err); // NOI18N
+            return false;
+        }
+
+        final File destFolder = new File(projectPath).getAbsoluteFile();
+        if (Utils.getCanonicalFile(destFolder) == null) {
+            err = NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation");
+            descriptor.putProperty("WizardPanel_errorMessage", err); // NOI18N
+            return false;
+        }
+
+        File projLoc = FileUtil.normalizeFile(destFolder);
+        while (projLoc != null && !projLoc.exists()) {
+            projLoc = projLoc.getParentFile();
+        }
+        if (projLoc == null || !projLoc.canWrite()) {
+            err = NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectFolderReadOnly");
+            descriptor.putProperty("WizardPanel_errorMessage", err); // NOI18N
+            return false;
+        }
+
+        if (FileUtil.toFileObject(projLoc) == null) {
+            err = NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation");
+            descriptor.putProperty("WizardPanel_errorMessage", err); // NOI18N
+            return false;
+        }
+
+        File[] kids = destFolder.listFiles();
+        if (destFolder.exists() && kids != null && kids.length > 0) {
+            // Folder exists and is not empty
+            err = NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectFolderExists");
+            descriptor.putProperty("WizardPanel_errorMessage", err); // NOI18N
+            return false;
+        }
+        descriptor.putProperty("WizardPanel_errorMessage", " "); // NOI18N
+        return true;
+    }
+
+    private boolean areSourcesValid() {
+        return true;
+    }
+
+    private boolean areOptionsValid() {
+        return true;
+    }
+
+    private class LocationListener implements DocumentListener {
+
+        public void insertUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+
+        private void processUpdate() {
+            String projectLocation = locationPanelVisual.getProjectLocation();
+            String projectName = locationPanelVisual.getProjectName();
+
+            File f = new File(projectLocation, projectName);
+            locationPanelVisual.setCreatedProjectFolder(f.getAbsolutePath());
+
+            fireChangeEvent();
+        }
     }
 }
