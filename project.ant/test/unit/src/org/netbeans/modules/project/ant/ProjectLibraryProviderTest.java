@@ -150,6 +150,10 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         assertEquals(Arrays.asList(new URL("jar:file:jgraph.jar!/"), new URL("jar:file:../extra%20libs/jgraph-extras.jar!/")), lib.getRawContent("classpath"));
         assertEquals(Arrays.asList(new URL("file:api/jgraph-docs/"), new URL("jar:file:api/jgraph-docs.zip!/docs/api/")), lib.getRawContent("javadoc"));
         assertEquals(Collections.emptyList(), lib.getContent("src"));
+        
+        //if this field is null, it means the reflection won't work on Library instances
+        // and localized names fro libraries won't be found
+        assertNotNull(ProjectLibraryProvider.ProjectLibraryImplementation.libraryImplField);
     }
 
     public void testLibraryLoadingPrivateAbsolute() throws Exception {

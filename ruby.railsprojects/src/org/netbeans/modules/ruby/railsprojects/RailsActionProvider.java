@@ -61,6 +61,7 @@ import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectPropert
 import org.netbeans.modules.ruby.rubyproject.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
@@ -156,7 +157,12 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     }
 
     private RubyPlatform getPlatform() {
-        return RubyPlatform.platformFor(project);
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (platform == null) {
+            platform = RubyPlatformManager.getDefaultPlatform();
+        }
+        
+        return platform;
     }
 
     /** Return true iff the given file is a migration file */

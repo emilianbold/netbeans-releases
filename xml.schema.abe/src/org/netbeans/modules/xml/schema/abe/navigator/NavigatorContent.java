@@ -72,8 +72,6 @@ import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorContent;
 public class NavigatorContent extends AbstractXMLNavigatorContent {
     /** silence compiler warnings */
     private static final long serialVersionUID = 1L;
-    private final javax.swing.JLabel notAvailableLabel = new javax.swing.JLabel(
-            NbBundle.getMessage(NavigatorContent.class, "MSG_NotAvailable")); //NOI18N
     
     /**
      * Creates a new instance of SchemaNavigatorContent.
@@ -83,33 +81,22 @@ public class NavigatorContent extends AbstractXMLNavigatorContent {
 	treeView = new BeanTreeView();
 	treeView.setRootVisible(false);
 	explorerManager.addPropertyChangeListener(this);
-        //initialize the notAvailableLabel
-        notAvailableLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        notAvailableLabel.setEnabled(false);
-        Color usualWindowBkg = UIManager.getColor("window"); //NOI18N
-        notAvailableLabel.setBackground(usualWindowBkg != null ? usualWindowBkg : Color.white);
-        // to ensure our background color will have effect
-        notAvailableLabel.setOpaque(true);        
     }
     
-    public void navigate(DataObject dobj) {
-        AXIModel model = getAXIModel(dobj);
-        if (model == null || model.getState() != Model.State.VALID) {
-            showError();
-        } else {
-            show(model.getRoot());
-        }
+    public void navigate(final DataObject dobj) {
+        showWaitPanel();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                AXIModel model = getAXIModel(dobj);
+                if (model == null || model.getState() != Model.State.VALID) {
+                    showError(AbstractXMLNavigatorContent.ERROR_NO_DATA_AVAILABLE);
+                } else {
+                    show(model.getRoot());
+                }
+            }
+        });
     }
     
-    private void showError() {
-        if (notAvailableLabel.isShowing()) {
-            return;
-        }
-        remove(treeView);
-        add(notAvailableLabel, BorderLayout.CENTER);
-        redraw();
-    }
-
     private void redraw() {
 	TopComponent tc = (TopComponent) SwingUtilities.
                 getAncestorOfClass(TopComponent.class,this);
@@ -120,18 +107,18 @@ public class NavigatorContent extends AbstractXMLNavigatorContent {
     }
     
     private void show(final AXIComponent component) {
-        remove(notAvailableLabel);
+        removeAll();
         if (!treeView.isShowing())
         add(treeView, BorderLayout.CENTER);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 treeView.setRootVisible(false);
-	AXINodeVisitor nv = new AXINodeVisitor();
-	Node n = nv.getNode(component);
-        getExplorerManager().setRootContext(n);
-        redraw();
-        }
-    });
+                AXINodeVisitor nv = new AXINodeVisitor();
+                Node n = nv.getNode(component);
+                getExplorerManager().setRootContext(n);
+                redraw();
+            }
+        });
     }
     
     // TODO add explorer manager listener to trigger navigation in
@@ -169,7 +156,7 @@ public class NavigatorContent extends AbstractXMLNavigatorContent {
     public void onModelStateChanged(PropertyChangeEvent evt) {
         State newState = (State)evt.getNewValue();
         if(newState != AXIModel.State.VALID) {
-            showError();
+            showError(AbstractXMLNavigatorContent.ERROR_NO_DATA_AVAILABLE);
             return;
         }
         AXIModel model = (AXIModel)evt.getSource();
