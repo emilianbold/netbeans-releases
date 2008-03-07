@@ -187,6 +187,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.statementContinuationIndent));
 	set.put(new PreprocessorIndentProperty(currentLanguage, preferences, EditorOptions.indentPreprocessorDirectives));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.sharpAtStartLine));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.indentNamespace));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.indentCasesFromSwitch));
         sheet.put(set);
         
@@ -273,7 +274,6 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.setShortDescription(getString("HINT_WithinParentheses")); // NOI18N
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinMethodDeclParens));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinMethodCallParens));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinArrayInitBrackets));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinBraces));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinParens));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinCatchParens));

@@ -169,26 +169,38 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testBlankLineAfterEndLineComment() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentNamespace, false);
         setLoadDocumentText(
-                "void foo();\n" +
-                "/* Stream status */\n" +
-                "/* Data structure describing a single value and its code string. */\n" +
-                "typedef struct ct_data_s\n" +
+                "namespace AC\n" +
                 "{\n" +
-                "    ush code;\n" +
-                "} FAR ct_data;\n"
+                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
+                "{\n" +
+                "public:\n" +
+                "    int number;\n" +
+                "    char** cc;\n" +
+                "ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
+                "    {\n" +
+                "    }\n" +
+                "} FAR ct_data;\n" +
+                "}\n"
                 );
         reformat();
         assertDocumentText("Incorrect blak line after end line comment",
-                "void foo();\n" +
-                "/* Stream status */\n" +
-                "\n" +
-                "/* Data structure describing a single value and its code string. */\n" +
-                "typedef struct ct_data_s\n" +
+                "namespace AC\n" +
                 "{\n" +
-                "    ush code;\n" +
-                "} FAR ct_data;\n"
+                "\n" +
+                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
+                "{\n" +
+                "public:\n" +
+                "    int number;\n" +
+                "    char** cc;\n" +
+                "\n" +
+                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
+                "    {\n" +
+                "    }\n" +
+                "} FAR ct_data;\n" +
+                "}\n"
                 );
     }
-
 }

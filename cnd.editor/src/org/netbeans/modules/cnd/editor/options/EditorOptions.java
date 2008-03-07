@@ -96,6 +96,9 @@ public class EditorOptions {
     public static final String indentCasesFromSwitch = "indentCasesFromSwitch"; //NOI18N
     public static final boolean indentCasesFromSwitchDefault = true;
 
+    public static final String indentNamespace = "indentNamespace"; //NOI18N
+    public static final boolean indentNamespaceDefault = true;
+    
     //BracesPlacement
     public static final String newLineBeforeBraceNamespace = "newLineBeforeBraceNamespace"; //NOI18N
     public static final String newLineBeforeBraceNamespaceDefault = BracePlacement.NEW_LINE.name();
@@ -225,8 +228,6 @@ public class EditorOptions {
     public static final boolean spaceWithinTypeCastParensDefault = false;
     public static final String spaceWithinBraces = "spaceWithinBraces"; //NOI18N
     public static final boolean spaceWithinBracesDefault = false;
-    public static final String spaceWithinArrayInitBrackets = "spaceWithinArrayInitBrackets"; //NOI18N
-    public static final boolean spaceWithinArrayInitBracketsDefault = false;
     
     //SpacesOther
     public static final String spaceBeforeComma = "spaceBeforeComma"; //NOI18N
@@ -285,7 +286,9 @@ public class EditorOptions {
         defaults.put(statementContinuationIndent,statementContinuationIndentDefault);
         defaults.put(indentPreprocessorDirectives,indentPreprocessorDirectivesDefault);
         defaults.put(sharpAtStartLine, sharpAtStartLineDefault);
+        defaults.put(indentNamespace, indentNamespaceDefault);
         defaults.put(indentCasesFromSwitch, indentCasesFromSwitchDefault);
+
         //BracesPlacement
         defaults.put(newLineBeforeBraceNamespace,newLineBeforeBraceNamespaceDefault);
         defaults.put(newLineBeforeBraceClass,newLineBeforeBraceClassDefault);
@@ -339,7 +342,6 @@ public class EditorOptions {
         defaults.put(spaceWithinCatchParens,spaceWithinCatchParensDefault);
         defaults.put(spaceWithinTypeCastParens,spaceWithinTypeCastParensDefault);
         defaults.put(spaceWithinBraces,spaceWithinBracesDefault);
-        defaults.put(spaceWithinArrayInitBrackets,spaceWithinArrayInitBracketsDefault);
         //SpacesOther
         defaults.put(spaceBeforeComma,spaceBeforeCommaDefault);
         defaults.put(spaceAfterComma,spaceAfterCommaDefault);

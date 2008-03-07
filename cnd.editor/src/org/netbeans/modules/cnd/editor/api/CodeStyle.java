@@ -117,6 +117,11 @@ public final class CodeStyle {
                                       EditorOptions.indentPreprocessorDirectivesDefault));
     }
     
+    public boolean indentNamespace() {
+        return getOption(EditorOptions.indentNamespace,
+                         EditorOptions.indentNamespaceDefault);
+    }
+
     public boolean indentCasesFromSwitch() {
         return getOption(EditorOptions.indentCasesFromSwitch,
                          EditorOptions.indentCasesFromSwitchDefault);
@@ -361,10 +366,6 @@ public final class CodeStyle {
     public boolean spaceWithinBraces(){
         return getOption(EditorOptions.spaceWithinBraces,
                          EditorOptions.spaceWithinBracesDefault);
-    }
-    public boolean spaceWithinArrayInitBrackets(){
-        return getOption(EditorOptions.spaceWithinArrayInitBrackets,
-                         EditorOptions.spaceWithinArrayInitBracketsDefault);
     }
 
     public int blankLinesBeforeClass(){

@@ -58,12 +58,13 @@ public class ReformatterImpl {
     /*package local*/ final ContextDetector ts;
     /*package local*/ final CodeStyle codeStyle;
     /*package local*/ final DiffLinkedList diffs = new DiffLinkedList();
-    /*package local*/ final BracesStack braces = new BracesStack();
+    /*package local*/ final BracesStack braces;
     private final int startOffset;
     private final int endOffset;
     private PreprocessorFormatter preprocessorFormatter;
     
     ReformatterImpl(TokenSequence<CppTokenId> ts, int startOffset, int endOffset, CodeStyle codeStyle){
+        braces = new BracesStack(codeStyle);
         this.ts = new ContextDetector(ts, diffs, braces);
         this.startOffset = startOffset;
         this.endOffset = endOffset;
@@ -104,6 +105,8 @@ public class ReformatterImpl {
                 case SEMICOLON:
                 case LBRACE:
                 case RBRACE:
+                case LPAREN:
+                case RPAREN:
                     break;
                 default:
                     braces.setLastStatementStart(ts);
@@ -164,7 +167,7 @@ public class ReformatterImpl {
                             Token<CppTokenId> prevImportant = ts.lookPreviousImportant();
                             if (prevImportant != null &&
                                 prevImportant.id() == SEMICOLON &&
-                                braces.getLength()==1) {
+                                braces.getLength() == 1) {
                                 // TODO detect K&R style.
                                 entry.setLikeToFunction(true);
                                 newLinesBeforeDeclaration(codeStyle.blankLinesBeforeMethods(), braces.lastKRstart);
@@ -180,7 +183,7 @@ public class ReformatterImpl {
                         if (braces.getStatementContinuation() == BracesStack.StatementContinuation.STOP) {
                             braces.setStatementContinuation(BracesStack.StatementContinuation.START);
                         }
-                        if (braces.getLength()==0){
+                        if (braces.getLength() == 0){
                             // save K&R start
                             braces.lastKRstart = braces.lastStatementStart;
                         }
@@ -922,7 +925,12 @@ public class ReformatterImpl {
                     if (ts.isFirstLineToken()) {
                         ts.replacePrevious(previous, 0, getIndent(indent));
                     } else {
-                        ts.replacePrevious(previous, 1, getIndent(indent));
+                        if (braces.parenDepth <= 0) {
+                            ts.replacePrevious(previous, 1, getIndent(indent));
+                        } else {
+                            //it a array?
+                            // do nothing
+                        }
                     }
                 } else if (previous.id() == NEW_LINE || previous.id() == PREPROCESSOR_DIRECTIVE) {
                     ts.addBeforeCurrent(0, getIndent(indent));
@@ -997,7 +1005,7 @@ public class ReformatterImpl {
             }
         }
         next = ts.lookNextLineImportant();
-        if (next != null && !(next.id() == COMMA || next.id() == SEMICOLON || next.id() == NEW_LINE)) {
+        if (next != null && !(next.id() == RPAREN || next.id() == COMMA || next.id() == SEMICOLON || next.id() == NEW_LINE)) {
             ts.addAfterCurrent(current, 1, getIndent(indent));
         }
     }
