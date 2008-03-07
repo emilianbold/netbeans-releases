@@ -171,6 +171,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
              (!GdbBreakpoint.PROP_URL.equals(propertyName)) &&
              (!GdbBreakpoint.PROP_FUNCTION_NAME.equals(propertyName)) &&
              (!GdbBreakpoint.PROP_LINE_NUMBER.equals(propertyName)) &&
+             (!AddressBreakpoint.PROP_ADDRESS_VALUE.equals(propertyName)) &&
              (!AddressBreakpoint.PROP_REFRESH.equals(propertyName))) {
             return;
         }

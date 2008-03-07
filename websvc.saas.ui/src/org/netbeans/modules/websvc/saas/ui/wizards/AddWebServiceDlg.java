@@ -348,22 +348,6 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         return returnFileURL;
     }
     
-    private String fixWsdlURL(String inURL) {
-        String returnWsdlURL = inURL;
-        if (!returnWsdlURL.toLowerCase().endsWith("wsdl")) { // NOI18N
-            /**
-             * If the user has left the ending withoug WSDL, they are pointing to the
-             * web service representation on a web which will if suffixed by a ?WSDL
-             * will return the WSDL.  This is true for web services created with JWSDP
-             * - David Botterill 3/25/2004
-             */
-            returnWsdlURL += "?WSDL";
-        }
-        
-        return returnWsdlURL;
-    }
-    
-    
     /**
      * This represents the event on the "Add" button
      */
@@ -373,7 +357,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         
         final String url;
         if (jRbnUrl.isSelected()) {
-            url = fixWsdlURL(jTxServiceURL.getText().trim());
+            url = jTxServiceURL.getText().trim();
         } else {
             url = fixFileURL(jTxtLocalFilename.getText().trim());
         }
@@ -387,9 +371,10 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         dialog = null;
         
         // Run the add W/S asynchronously
-        if (url.endsWith("WSDL") || url.endsWith("wsdl")) { //NOI18N
+        String checking = url.toLowerCase();
+        if (checking.endsWith("wsdl")) { //NOI18N
             SaasServicesModel.getInstance().createWsdlService(group, url, packageName);
-        } else if (url.endsWith("WADL") || url.endsWith("wadl")) { //NOI18N
+        } else if (checking.endsWith("wadl")) { //NOI18N
             SaasServicesModel.getInstance().createWadlService(group, url, packageName);
         }
     }    

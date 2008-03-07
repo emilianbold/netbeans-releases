@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package apichanges;
+package org.netbeans.modules.visual.apichanges;
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.api.visual.widget.Scene;

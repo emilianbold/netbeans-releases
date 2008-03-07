@@ -64,7 +64,7 @@ public class PreviewPreferences extends AbstractPreferences {
                     putBoolean(key, master.getBoolean(key, (Boolean)o));
                 } else if (o instanceof Integer) {
                     putInt(key, master.getInt(key, (Integer)o));
-                } else {
+                } else if (o instanceof String) {
                     map.put(key, master.get(key, o.toString()));
                 }
             }
@@ -80,21 +80,15 @@ public class PreviewPreferences extends AbstractPreferences {
                 if (o instanceof Boolean) {
                     Boolean v = master.getBoolean(key,
                                 (Boolean)EditorOptions.getDefault(language, master.getStyleId(), key));
-                    //if (!o.equals(v)) {
-                        putBoolean(key, v);
-                    //}
+                    putBoolean(key, v);
                 } else if (o instanceof Integer) {
                     Integer v = master.getInt(key, 
                                 (Integer)EditorOptions.getDefault(language, master.getStyleId(), key));
-                    //if (!o.equals(v)) {
-                        putInt(key, v);
-                    //}
-                } else {
+                    putInt(key, v);
+                } else if (o instanceof String) {
                     String v = master.get(key, 
                                (String)EditorOptions.getDefault(language, master.getStyleId(), key));
-                    //if (!o.equals(v)) {
-                        map.put(key, v);
-                    //}
+                    map.put(key, v);
                 }
             }
         }

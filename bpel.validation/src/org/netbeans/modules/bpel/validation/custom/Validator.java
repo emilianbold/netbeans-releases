@@ -78,6 +78,8 @@ import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.Receive;
 import org.netbeans.modules.bpel.model.api.Reply;
 import org.netbeans.modules.bpel.model.api.Sequence;
+import org.netbeans.modules.bpel.model.api.TerminationHandler;
+import org.netbeans.modules.bpel.model.api.Throw;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
@@ -684,6 +686,24 @@ public final class Validator extends BpelValidator {
       if ( !(operation instanceof RequestResponseOperation)) {
           addError("FIX_ReplyOperation", reply, opRef.getQName().toString()); // NOI18N
       }
+  }
+
+  // # 111409
+  @Override
+  public void visit(Throw _throw) {
+    if (hasParentTerminationHandler(_throw.getParent())) {
+      addError("FIX_Throw_in_TerminationHandler", _throw); // NOI18N
+    }
+  }
+
+  private boolean hasParentTerminationHandler(Component component) {
+    if (component == null) {
+      return false;
+    }
+    if (component instanceof TerminationHandler) {
+      return true;
+    }
+    return hasParentTerminationHandler(component.getParent());
   }
 
   @Override

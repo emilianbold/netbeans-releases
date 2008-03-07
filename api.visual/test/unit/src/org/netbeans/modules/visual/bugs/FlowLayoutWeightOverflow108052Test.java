@@ -38,65 +38,61 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package apichanges;
+package org.netbeans.modules.visual.bugs;
 
-import framework.VisualTestCase;
+import org.netbeans.modules.visual.framework.VisualTestCase;
 import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.LayerWidget;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
 /**
  * @author David Kaspar
  */
-public class OffscreenRenderingTest extends VisualTestCase {
+public class FlowLayoutWeightOverflow108052Test extends VisualTestCase {
 
-    public OffscreenRenderingTest (String testName) {
+    public FlowLayoutWeightOverflow108052Test (String testName) {
         super (testName);
     }
 
-    public void testOffscreenRendering () {
+    public void testFlowLayoutWeightOverflow () {
         Scene scene = new Scene ();
-
         LayerWidget layer = new LayerWidget (scene);
-        layer.setPreferredBounds (new Rectangle (0, 0, 80, 80));
+        layer.setMinimumSize (new Dimension (300, 200));
         scene.addChild (layer);
 
-        LabelWidget widget = new LabelWidget (scene, "Hi");
-        widget.setVerticalAlignment (LabelWidget.VerticalAlignment.CENTER);
-        widget.setAlignment (LabelWidget.Alignment.CENTER);
-        widget.setBorder (BorderFactory.createLineBorder ());
-        widget.setPreferredLocation (new Point (20, 20));
-        widget.setPreferredBounds (new Rectangle (0, 0, 40, 40));
-        layer.addChild (widget);
+        Widget vbox = new Widget (scene);
+        vbox.setBorder (BorderFactory.createLineBorder (1, Color.BLACK));
+        vbox.setLayout (LayoutFactory.createVerticalFlowLayout (LayoutFactory.SerialAlignment.JUSTIFY, 0));
+        layer.addChild (vbox);
 
-        BufferedImage image = dumpSceneOffscreenRendering (scene);
-        assertCleaness (testCleaness (image, Color.WHITE, Color.BLACK), image, null);
+        Widget hbox1 = new Widget (scene);
+        hbox1.setBorder (BorderFactory.createLineBorder (1, Color.BLUE));
+        hbox1.setLayout (LayoutFactory.createHorizontalFlowLayout ());
+        vbox.addChild (hbox1);
 
-        assertScene (scene, Color.WHITE, new Rectangle (19, 19, 42, 42));
-    }
+        Widget item1 = new LabelWidget (scene, "Item1");
+        item1.setBorder (BorderFactory.createLineBorder (1, Color.GREEN));
+        hbox1.addChild (item1);
 
-    private BufferedImage dumpSceneOffscreenRendering (Scene scene) {
-        // validate the scene with a off-screen graphics
-        BufferedImage emptyImage = new BufferedImage (1, 1, BufferedImage.TYPE_4BYTE_ABGR);
-        Graphics2D emptyGraphics = emptyImage.createGraphics ();
-        scene.validate (emptyGraphics);
-        emptyGraphics.dispose ();
+        Widget item2 = new LabelWidget (scene, "Item2");
+        item2.setBorder (BorderFactory.createLineBorder (1, Color.YELLOW));
+        hbox1.addChild (item2, 1000);
 
-        // now the scene is calculated using the emptyGraphics, all widgets should be layout and scene has its size resolved
-        // paint the scene with a off-screen graphics
-        Rectangle viewBounds = scene.convertSceneToView (scene.getBounds ());
-        BufferedImage image = new BufferedImage (viewBounds.width, viewBounds.height, BufferedImage.TYPE_4BYTE_ABGR);
-        Graphics2D graphics = image.createGraphics ();
-        double zoomFactor = scene.getZoomFactor ();
-        graphics.scale (zoomFactor, zoomFactor);
-        scene.paint (graphics);
-        graphics.dispose ();
+        Widget item3 = new LabelWidget (scene, "Item3");
+        item3.setBorder (BorderFactory.createLineBorder (1, Color.RED));
+        hbox1.addChild (item3);
 
-        return image;
+        Widget hbox2 = new Widget (scene);
+        hbox2.setBorder (BorderFactory.createLineBorder (1, Color.BLUE));
+        hbox2.setPreferredSize (new Dimension (200, 20));
+        vbox.addChild (hbox2);
+
+        assertScene (scene, Color.WHITE, new Rectangle (-5, -5, 210, 100));
     }
 
 }

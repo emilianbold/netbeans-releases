@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -77,6 +78,7 @@ import org.netbeans.modules.websvc.saas.model.wadl.ParamStyle;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
+import org.netbeans.modules.xml.retriever.Retriever;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -95,6 +97,8 @@ import org.xml.sax.XMLReader;
 public class SaasUtil {
     public static final String APPLICATION_WADL = "resources/application.wadl";
     public static final String DEFAULT_SERVICE_NAME = "Service";
+    public static final String CATALOG = "catalog";
+    
     
 
     public static <T> T loadJaxbObject(FileObject input, Class<T> type, boolean includeAware) throws IOException {
@@ -403,7 +407,10 @@ public class SaasUtil {
             sb.append(r.getPath());
             sb.append('/');
         }
-        Param[] params = m.getRequest().getParam().toArray(new Param[m.getRequest().getParam().size()]);
+        Param[] params = null;
+        if (m.getRequest() != null && m.getRequest().getParam() != null) {
+            params = m.getRequest().getParam().toArray(new Param[m.getRequest().getParam().size()]);
+        }
         if (params.length > 0) {
             sb.append(" (");
         }
@@ -452,8 +459,6 @@ public class SaasUtil {
         return null;
     }
     
-    public static final String CATALOG = "catalog";
-    
     public static String deriveFileName(String path) {
         String name = null;
         try {
@@ -469,7 +474,7 @@ public class SaasUtil {
         return name;
     }
     
-    public static FileObject getWadlFile(WadlSaas saas) throws IOException {
+    public static FileObject extractWadlFile(WadlSaas saas) throws IOException {
         InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(saas.getUrl());
         if (in == null) {
             return null;
@@ -542,5 +547,20 @@ public class SaasUtil {
         return result;
     }
 
+    public static FileObject retrieveWadlFile(WadlSaas saas) {
+        try {
+            FileObject catalogFolder = saas.getSaasFolder().getFileObject(CATALOG); //NOI18N
+            if (catalogFolder == null) {
+                catalogFolder = saas.getSaasFolder().createFolder(CATALOG);
+            }
+            File catalogFile = new File(saas.getDisplayName());
+            URI catalog  = catalogFile.toURI();
+            URI wadlUrl = new URI(saas.getUrl());
+            return Retriever.getDefault().retrieveResource(catalogFolder, catalog, wadlUrl);
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+        }
+        return null;
+    }
 }
 
