@@ -533,6 +533,20 @@ public final class UI {
       super(name, icon);
       putValue(SHORT_DESCRIPTION, toolTip);
     }
+
+    protected final Node getLastNode() {
+      Node node = getSelectedNode();
+
+      if (node == null) {
+        node = myLastNode;
+      }
+      else {
+        myLastNode = node;
+      }
+      return node;
+    }
+  
+    private Node myLastNode;
   }
 
   // ---------------------------------------------------------------
