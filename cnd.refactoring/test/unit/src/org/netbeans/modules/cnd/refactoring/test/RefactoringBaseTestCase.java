@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,9 +20,20 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
  * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -38,56 +49,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.wsdl.model.visitor;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+package org.netbeans.modules.cnd.refactoring.test;
 
-import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.Import;
+import java.io.File;
+import org.netbeans.junit.Manager;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2007.10.22
+ *
+ * @author Vladimir Voskresensky
  */
-public class WSDLUtilities {
+public class RefactoringBaseTestCase extends ProjectBasedTestCase {
 
-  private WSDLUtilities() {}
-
-  public static void visitRecursively(WSDLModel model, WSDLModelVisitor visitor) {
-    visitRecursively(model, visitor, new ArrayList<WSDLModel>());
-  }
-
-  private static void visitRecursively(WSDLModel model, WSDLModelVisitor visitor, List<WSDLModel> visited) {
-    if (model == null) {
-      return;
+    public RefactoringBaseTestCase(String testName) {
+        super(testName);
     }
-    if (visited.contains(model)) {
-      return;
-    }
-    visited.add(model);
-    visitor.visit(model);
 
-    Definitions definitions = model.getDefinitions();
-
-    if (definitions == null) {
-      return;
+    protected final File getQuoteDataDir() {
+        String dataPath = getDataDir().getAbsolutePath().replaceAll("cnd.refactoring", "cnd.modelimpl"); //NOI18N
+        String filePath = "common/quote_nosyshdr";
+        return Manager.normalizeFile(new File(dataPath, filePath));
     }
-    Collection<Import> imports = definitions.getImports();
-
-    if (imports == null) {
-      return;
+    
+    protected final CsmReference getReference(String source, int line, int column) throws Exception {
+        File testSourceFile = super.getDataFile(source);
+        int offset = super.getOffset(testSourceFile, line, column);
+        CsmFile csmFile = super.getCsmFile(testSourceFile);
+        CsmReference ref = CsmReferenceResolver.getDefault().findReference(csmFile, offset);
+        return ref;
     }
-    for (Import _import : imports) {
-      try {
-        visitRecursively(_import.getImportedWSDLModel(), visitor, visited);
-      }
-      catch (CatalogModelException e) {
-        continue;
-      }
-    }
-  }
 }
