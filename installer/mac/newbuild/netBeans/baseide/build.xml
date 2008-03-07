@@ -20,10 +20,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="Base IDE" basedir="." default="build-pkg">  
-    
-    <!--property name="nbClusterDir" value="nb6.1"/-->
-    <property name="appdir" value="build/app/${appname}.app"/>
-    
+       
+    <property name="appdir" value="${basedir}/build/app/${appname}.app"/>    
     
     <target name="build-app" description="Builds Mac OS X application bundle">
         <echo>Creating ${appname}.app bundle using buid/netbeans as master</echo>
@@ -35,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Copying netbeans home dir to ${appdir}/Contents/Resources/NetBeans"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cp -p -r build/netbeans '${appdir}/Contents/Resources/NetBeans'"/>
+            <arg value="cp -RP ${basedir}/build/netbeans '${appdir}/Contents/Resources/NetBeans'"/>
         </exec>
         
         <echo message="Delete launchers for another platforms"/>
@@ -59,7 +57,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Creating launch script symlink ${appdir}/Contents/MacOS/netbeans"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="ln -s '../Resources/NetBeans/bin/netbeans' '${appdir}/Contents/MacOS/netbeans'"/>
+            <arg value="ln -s '${basedir}/../Resources/NetBeans/bin/netbeans' '${appdir}/Contents/MacOS/netbeans'"/>
         </exec>
     </target>
     
@@ -79,18 +77,18 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/../../commonfiles/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>
         
         
-        <copy file="../../commonfiles/Description.plist" filtering="true" overwrite="true" tofile="pkg/scripts/Description.plist">
+        <copy file="${basedir}/../../commonfiles/Description.plist" filtering="true" overwrite="true" tofile="pkg/scripts/Description.plist">
             <filterset>
                 <filter token="TITLE" value="${baseide.install.name}"/>
             </filterset>
         </copy>
         
                 
-        <echo message="Building ${baseide.pkg.name} into ${basedir}/../build/${baseide.pkg.name}"/>
+        <echo message="Building ${baseide.pkg.name} into ${basedir}/../../build/${baseide.pkg.name}"/>
         
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="/Developer/Tools/packagemaker -build -v -p ../../build/${baseide.pkg.name} -f build/app -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
+            <arg value="/Developer/Tools/packagemaker -build -v -p ${basedir}/../../build/${baseide.pkg.name} -f ${basedir}/build/app -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
         </exec>
     </target>
     

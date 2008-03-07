@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="openesb" basedir="." default="build-pkg">
 
-    <property name="appdir" value="build/app"/>
+    <property name="appdir" value="${basedir}/build/app"/>
     
     <target name="clean">
         <delete dir="build"/>
@@ -56,7 +56,7 @@ Microsystems, Inc. All Rights Reserved.
             </filterset>
         </copy>
         
-        <copy file="../commonfiles/Description.plist" overwrite="true" filtering="true" tofile="pkg/scripts/Description.plist">
+        <copy file="${basedir}/../commonfiles/Description.plist" overwrite="true" filtering="true" tofile="pkg/scripts/Description.plist">
             <filterset>
                 <filter token="TITLE" value="${openesb.appname}"/>
             </filterset>

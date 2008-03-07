@@ -39,7 +39,6 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.HashSet;
-import java.util.Set;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,7 +47,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.jruby.ast.IfNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
@@ -77,8 +76,8 @@ import org.netbeans.modules.ruby.hints.spi.RuleContext;
  */
 public class AccidentalAssignment implements AstRule {
 
-    public Set<Integer> getKinds() {
-        return Collections.singleton(NodeTypes.IFNODE);
+    public Set<NodeType> getKinds() {
+        return Collections.singleton(NodeType.IFNODE);
     }
 
     public void run(RuleContext context,
@@ -90,7 +89,7 @@ public class AccidentalAssignment implements AstRule {
         IfNode ifNode = (IfNode) node;
         Node condition = ifNode.getCondition();
         if (condition != null) {
-            if (condition.nodeId == NodeTypes.NEWLINENODE) {
+            if (condition.nodeId == NodeType.NEWLINENODE) {
                 @SuppressWarnings("unchecked")
                 List<Node> children = condition.childNodes();
                 if (children.size() == 0) {
@@ -98,8 +97,8 @@ public class AccidentalAssignment implements AstRule {
                 }
                 condition = children.get(0);
             }
-            if (((condition.nodeId == NodeTypes.LOCALASGNNODE) && !isFirstUsage(path, condition)) ||
-               (condition.nodeId == NodeTypes.ATTRASSIGNNODE)) {
+            if (((condition.nodeId == NodeType.LOCALASGNNODE) && !isFirstUsage(path, condition)) ||
+               (condition.nodeId == NodeType.ATTRASSIGNNODE)) {
                 String displayName = NbBundle.getMessage(AccidentalAssignment.class,
                         "AccidentalAssignment");
                 OffsetRange range = AstUtilities.getRange(condition);
@@ -180,7 +179,7 @@ public class AccidentalAssignment implements AstRule {
             BaseDocument doc = (BaseDocument) info.getDocument();
             OffsetRange range = AstUtilities.getNameRange(assignment);
             int endOffset = range.getEnd();
-            if (assignment.nodeId == NodeTypes.ATTRASSIGNNODE) {
+            if (assignment.nodeId == NodeType.ATTRASSIGNNODE) {
                 // Workaround: the name-range of attr nodes isn't computed 
                 // correctly so just use the LHS
                 endOffset = range.getStart();
@@ -232,11 +231,11 @@ public class AccidentalAssignment implements AstRule {
                 }
             }
             switch (node.nodeId) {
-            case NodeTypes.LOCALVARNODE:
+            case LOCALVARNODE:
                 names.add(((INameNode) node).getName());
                 break;
             // TODO - handle blocks properly
-            case NodeTypes.DVARNODE:
+            case DVARNODE:
                 names.add(((INameNode) node).getName());
                 break;
             }
@@ -245,11 +244,11 @@ public class AccidentalAssignment implements AstRule {
 
         public boolean unvisit(Node node) {
             switch (node.nodeId) {
-            case NodeTypes.LOCALASGNNODE:
+            case LOCALASGNNODE:
                 names.add(((INameNode) node).getName());
                 break;
             // TODO - handle blocks properly
-            case NodeTypes.DASGNNODE:
+            case DASGNNODE:
                 names.add(((INameNode) node).getName());
                 break;
             }

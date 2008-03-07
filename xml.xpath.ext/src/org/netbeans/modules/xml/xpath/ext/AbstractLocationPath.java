@@ -23,7 +23,7 @@ package org.netbeans.modules.xml.xpath.ext;
  *
  * @author nk160297
  */
-public interface AbstractLocationPath {
+public interface AbstractLocationPath extends XPathSchemaContextHolder {
 
     /**
      * Gets the steps of the location path.

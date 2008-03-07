@@ -822,7 +822,8 @@ public class MakeActionProvider implements ActionProvider {
         
         if (bt != null) {
             ToolsPanelModel model = new LocalToolsPanelModel();
-            model.setCompilerSetName(csname);
+            model.setCompilerSetName(null); // means don't change
+            model.setSelectedCompilerSetName(csname);
             model.setMakeRequired(true);
             model.setGdbRequired(false);
             model.setCRequired(cRequired);
@@ -831,7 +832,7 @@ public class MakeActionProvider implements ActionProvider {
             model.setShowRequiredBuildTools(true);
             model.setShowRequiredDebugTools(false);
             if (bt.initBuildTools(model, errs)) {
-                String name = model.getCompilerSetName();
+                String name = model.getSelectedCompilerSetName();
                 conf.getCRequired().setValue(model.isCRequired());
                 conf.getCppRequired().setValue(model.isCppRequired());
                 conf.getFortranRequired().setValue(model.isFortranRequired());
