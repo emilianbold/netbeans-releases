@@ -154,19 +154,7 @@ is divided into following sections:
                         <fileset dir="${{netbeans.home}}/../platform8/lib"><include name="*.jar" /></fileset>
                     </classpath>
                 </taskdef>   
-                <!--taskdef name="generate-schema" classname="org.netbeans.modules.etl.project.anttasks.MasterIndexDesignTime">
-                    <classpath>
-                        <fileset dir="${{module.install.dir}}"><include name="*.jar" /></fileset>
-                        <fileset dir="${{module.install.dir}}/ext/etlpro"><include name="*.jar" /></fileset>
-                        <fileset dir="${{module.install.dir}}/ext/etl"><include name="*.jar" /></fileset>                                                
-                        <fileset dir="${{module.install.dir}}/ext"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../ide9/modules"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../platform8/modules"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../platform8/core"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../platform8/lib"><include name="*.jar" /></fileset>
-                    </classpath>
-                </taskdef-->
-                 <taskdef name="bulk-loader" classname="org.netbeans.modules.etl.project.anttasks.ETLBulkLoader">
+                <taskdef name="generate-schema" classname="org.netbeans.modules.etl.project.anttasks.EViewDesignTime">
                     <classpath>
                         <fileset dir="${{module.install.dir}}"><include name="*.jar" /></fileset>
                         <fileset dir="${{module.install.dir}}/ext/etlpro"><include name="*.jar" /></fileset>
@@ -446,13 +434,13 @@ is divided into following sections:
                     srcDirectoryLocation="${{basedir}}/${{src.dir}}"
                     buildDirectoryLocation="${{basedir}}/${{build.dir}}" />
             </target>
-            <!--target name="gen-schema">      
+            <target name="gen-schema">      
                 <xsl:attribute name="depends">init</xsl:attribute>
-                <generate-schema/>  
-            </target-->
-             <target name="etl_bulkloader">      
-                <xsl:attribute name="depends">init</xsl:attribute>
-                <bulk-loader/> 
+                <!--echo message="SAMPLE" /--> 
+                <generate-schema/>      
+                <!--taskdef name="generate-schema" classname="org.netbeans.modules.etl.project.anttasks.EViewDesignTime">                        
+                </taskdef-->
+                <!--echo message="SAMPLE COMPLETED" /--> 
             </target>
             
             <target name="pre-dist">
