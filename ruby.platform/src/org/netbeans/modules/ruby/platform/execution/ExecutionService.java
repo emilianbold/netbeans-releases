@@ -155,18 +155,16 @@ public class ExecutionService {
         currentPath = path + File.pathSeparator + currentPath;
         
         if (descriptor.getAppendJdkToPath()) {
-            String javaHome = System.getProperty("jruby.java.home"); // NOI18N
+            String jrubyJavaHome = System.getProperty("jruby.java.home"); // NOI18N
 
-            if (javaHome == null) {
-                javaHome = System.getProperty("java.home"); // NOI18N
-            }
-            
-            if (javaHome != null) {
-                javaHome = javaHome + File.separator + "bin"; // NOI18N
+            if (jrubyJavaHome == null) {
+                // #115377 - add jdk bin to path
+                String jdkHome = System.getProperty("jdk.home"); // NOI18N
+                String jdkBin = jdkHome + File.separator + "bin"; // NOI18N
                 if (!Utilities.isWindows()) {
-                    javaHome = javaHome.replace(" ", "\\ "); // NOI18N
+                    jdkBin = jdkBin.replace(" ", "\\ "); // NOI18N
                 }
-                currentPath = currentPath + File.pathSeparator + javaHome;
+                currentPath = currentPath + File.pathSeparator + jdkBin;
             }
         }
 

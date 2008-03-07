@@ -16,10 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/**
- *
- */
 package org.netbeans.modules.bpel.model.impl.references;
 
 import java.util.Collection;
@@ -68,10 +64,8 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 
-
 /**
  * @author ads
- *
  */
 public final class WSDLReferenceBuilder {
     
