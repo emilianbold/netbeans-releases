@@ -75,6 +75,23 @@ public class HibernateCfgProperties {
         "org.hibernate.dialect.SybaseDialect",
         "org.hibernate.dialect.SybaseAnywhereDialect"
     };
+    
+    public static String[] driverClassess = new String[]{
+        "com.ibm.db2.jdbc.app.DB2Driver",
+        "com.informix.jdbc.IfxDriver",
+        "com.mckoi.JDBCDriver",
+        "com.mysql.jdbc.Driver",
+        "com.pointbase.jdbc.jdbcUniversalDriver",
+        "com.sun.sql.jdbc.sqlserver.SQLServerDriver",
+        "com.sun.sql.jdbc.sybase.SybaseDriver",
+        "interbase.interclient.Driver",
+        "oracle.jdbc.driver.OracleDriver",
+        "oracle.jdbc.OracleDriver",
+        "org.apache.derby.jdbc.ClientDriver",
+        "org.firebirdsql.jdbc.FBDriver",
+        "org.hsqldb.jdbcDriver",
+        "org.postgresql:Driver"
+    };
 
     public final static String[] jdbcProps = new String[] {
         Environment.DRIVER,
@@ -160,7 +177,7 @@ public class HibernateCfgProperties {
 
     private static Map<String, Object> possiblePropertyValues = new HashMap<String, Object>();
     static {
-        possiblePropertyValues.put(Environment.DRIVER, null);
+        possiblePropertyValues.put(Environment.DRIVER, driverClassess);
         possiblePropertyValues.put(Environment.URL, null);
         possiblePropertyValues.put(Environment.USER, null);
         possiblePropertyValues.put(Environment.PASS, null);
