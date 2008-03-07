@@ -44,6 +44,7 @@ import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Stack;
+import java.util.logging.Level;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import junit.framework.Test;
@@ -81,6 +82,15 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
         return suite;
     }
     
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+
+    @Override
+    protected int timeOut() {
+        return 20000;
+    }
 
     @Override
     protected void setUp () throws Exception {

@@ -44,6 +44,7 @@ package org.openide.text;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Date;
+import java.util.logging.Level;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -91,6 +92,16 @@ implements CloneableEditorSupport.Env  {
         super(testName);
     }
     
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+
+    @Override
+    protected int timeOut() {
+        return 20000;
+    }
     @Override
     protected void setUp () throws Exception {
         System.setProperty ("org.openide.util.Lookup", "org.openide.text.ExternalDeleteOfModifiedContentTest$Lkp");
