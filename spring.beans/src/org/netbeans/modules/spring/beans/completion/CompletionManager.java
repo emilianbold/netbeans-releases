@@ -413,87 +413,6 @@ public final class CompletionManager {
 
         return null;
     }
-
-    private static class BeansRefCompletor extends Completor {
-
-        final private boolean includeGlobal;
-
-        public BeansRefCompletor(boolean includeGlobal) {
-            this.includeGlobal = includeGlobal;
-        }
-
-        @Override
-        public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
-            Document doc = context.getDocument();
-            final FileObject fo = NbEditorUtilities.getFileObject(doc);
-            if (fo == null) {
-                return Collections.emptyList();
-            }
-            SpringConfigModel model = SpringConfigModel.forFileObject(fo);
-            if (model == null) {
-                return Collections.emptyList();
-            }
-            final List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
-            final String prefix = context.getTypedPrefix();
-       
-            final List<String> cNames = new ArrayList<String>();
-            // get current bean parameters
-            if(SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), "id")) { // NOI18N
-                String cId = SpringXMLConfigEditorUtils.getAttribute(context.getTag(), "id"); // NOI18N
-                cNames.add(cId);
-            }
-            if(SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), "name")) { // NOI18N
-                List<String> names = StringUtils.tokenize(
-                        SpringXMLConfigEditorUtils.getAttribute(context.getTag(), "name"), 
-                        SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS); // NOI18N
-                cNames.addAll(names);
-            }
-            
-            try {
-                model.runReadAction(new Action<SpringBeans>() {
-
-                    public void run(SpringBeans sb) {
-                        List<SpringBean> beans = includeGlobal ? sb.getBeans() : sb.getBeans(FileUtil.toFile(fo));
-                        Map<String, SpringBean> name2Bean = getName2Beans(beans, includeGlobal); // if local beans, then add only bean ids;
-                        for(String beanName : name2Bean.keySet()) {
-                            if(!beanName.startsWith(prefix) || cNames.contains(beanName)) {
-                                continue;
-                            }
-                            SpringBean bean = name2Bean.get(beanName);
-                            SpringXMLConfigCompletionItem item = 
-                                    SpringXMLConfigCompletionItem.createBeanRefItem(context.getCurrentToken().getOffset() + 1, 
-                                    beanName, bean, fo);
-                            results.add(item);
-                        }
-                    }
-
-                    private Map<String, SpringBean> getName2Beans(List<SpringBean> beans, boolean addNames) {
-                        Map<String, SpringBean> name2Bean = new HashMap<String, SpringBean>();
-                        for (SpringBean bean : beans) {
-                            String beanId = bean.getId();
-                            if (beanId != null) {
-                                name2Bean.put(beanId, bean);
-                            }
-                            if (addNames) {
-                                List<String> beanNames = bean.getNames();
-                                for (String beanName : beanNames) {
-                                    name2Bean.put(beanName, bean);
-                                }
-                            }
-                        }
-
-                        return name2Bean;
-                    }
-                });
-                
-                setAnchorOffset(context.getCurrentToken().getOffset() + 1);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-
-            return results;
-        }
-    }
     
     private static class AttributeValueCompletorFactory implements CompletorFactory {
 
@@ -571,6 +490,88 @@ public final class CompletionManager {
             }
 
             setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            return results;
+        }
+    }
+    
+    private static class BeansRefCompletor extends Completor {
+
+        final private boolean includeGlobal;
+
+        public BeansRefCompletor(boolean includeGlobal) {
+            this.includeGlobal = includeGlobal;
+        }
+
+        @Override
+        public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
+            Document doc = context.getDocument();
+            final FileObject fo = NbEditorUtilities.getFileObject(doc);
+            if (fo == null) {
+                return Collections.emptyList();
+            }
+            SpringConfigModel model = SpringConfigModel.forFileObject(fo);
+            if (model == null) {
+                return Collections.emptyList();
+            }
+            final List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
+            final String prefix = context.getTypedPrefix();
+       
+            final List<String> cNames = new ArrayList<String>();
+            String tagName = context.getTag().getNodeName();
+            // get current bean parameters
+            if(tagName.equals(BEAN_TAG) && SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), "id")) { // NOI18N
+                String cId = SpringXMLConfigEditorUtils.getAttribute(context.getTag(), "id"); // NOI18N
+                cNames.add(cId);
+            }
+            if(tagName.equals(BEAN_TAG) && SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), "name")) { // NOI18N
+                List<String> names = StringUtils.tokenize(
+                        SpringXMLConfigEditorUtils.getAttribute(context.getTag(), "name"), 
+                        SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS); // NOI18N
+                cNames.addAll(names);
+            }
+            
+            try {
+                model.runReadAction(new Action<SpringBeans>() {
+
+                    public void run(SpringBeans sb) {
+                        List<SpringBean> beans = includeGlobal ? sb.getBeans() : sb.getBeans(FileUtil.toFile(fo));
+                        Map<String, SpringBean> name2Bean = getName2Beans(beans, includeGlobal); // if local beans, then add only bean ids;
+                        for(String beanName : name2Bean.keySet()) {
+                            if(!beanName.startsWith(prefix) || cNames.contains(beanName)) {
+                                continue;
+                            }
+                            SpringBean bean = name2Bean.get(beanName);
+                            SpringXMLConfigCompletionItem item = 
+                                    SpringXMLConfigCompletionItem.createBeanRefItem(context.getCurrentToken().getOffset() + 1, 
+                                    beanName, bean, fo);
+                            results.add(item);
+                        }
+                    }
+
+                    private Map<String, SpringBean> getName2Beans(List<SpringBean> beans, boolean addNames) {
+                        Map<String, SpringBean> name2Bean = new HashMap<String, SpringBean>();
+                        for (SpringBean bean : beans) {
+                            String beanId = bean.getId();
+                            if (beanId != null) {
+                                name2Bean.put(beanId, bean);
+                            }
+                            if (addNames) {
+                                List<String> beanNames = bean.getNames();
+                                for (String beanName : beanNames) {
+                                    name2Bean.put(beanName, bean);
+                                }
+                            }
+                        }
+
+                        return name2Bean;
+                    }
+                });
+                
+                setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+
             return results;
         }
     }
