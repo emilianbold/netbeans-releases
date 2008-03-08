@@ -53,6 +53,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.net.URL;
+import java.util.Properties;
 import javax.swing.ImageIcon;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -401,7 +402,7 @@ public class SaasUtil {
         try {
             sb.append(saas.getWadlModel().getResources().getBase());
         } catch(IOException ex) {
-            // should not happen at this point
+            Exceptions.printStackTrace(ex);
         }
         for (Resource r : paths) {
             sb.append(r.getPath());
@@ -410,36 +411,36 @@ public class SaasUtil {
         Param[] params = null;
         if (m.getRequest() != null && m.getRequest().getParam() != null) {
             params = m.getRequest().getParam().toArray(new Param[m.getRequest().getParam().size()]);
-        }
-        if (params.length > 0) {
-            sb.append(" (");
-        }
-        for (int i=0 ; i < params.length; i++) {
-            Param p = params[i];
-            if (i > 0) {
-                sb.append(",");
+            if (params.length > 0) {
+                sb.append(" (");
             }
-            if (p.getStyle() == ParamStyle.TEMPLATE) {
-                sb.append('{');
-                sb.append(p.getName());
-                sb.append('}');
-            } else if (p.getStyle() == ParamStyle.QUERY) {
-                sb.append('?');
-                sb.append(p.getName());
-            } else if (p.getStyle() == ParamStyle.MATRIX) {
-                sb.append('[');
-                sb.append(p.getName());
-                sb.append(']');
-            } else if (p.getStyle() == ParamStyle.HEADER) {
-                sb.append('<');
-                sb.append(p.getName());
-                sb.append('>');
-            } else {
-                sb.append(p.getName());
+            for (int i=0 ; i < params.length; i++) {
+                Param p = params[i];
+                if (i > 0) {
+                    sb.append(",");
+                }
+                if (p.getStyle() == ParamStyle.TEMPLATE) {
+                    sb.append('{');
+                    sb.append(p.getName());
+                    sb.append('}');
+                } else if (p.getStyle() == ParamStyle.QUERY) {
+                    sb.append('?');
+                    sb.append(p.getName());
+                } else if (p.getStyle() == ParamStyle.MATRIX) {
+                    sb.append('[');
+                    sb.append(p.getName());
+                    sb.append(']');
+                } else if (p.getStyle() == ParamStyle.HEADER) {
+                    sb.append('<');
+                    sb.append(p.getName());
+                    sb.append('>');
+                } else {
+                    sb.append(p.getName());
+                }
             }
-        }
-        if (params.length > 0) {
-            sb.append(" )");
+            if (params.length > 0) {
+                sb.append(" )");
+            }
         }
         return sb.toString();
     }
@@ -549,18 +550,17 @@ public class SaasUtil {
 
     public static FileObject retrieveWadlFile(WadlSaas saas) {
         try {
-            FileObject catalogFolder = saas.getSaasFolder().getFileObject(CATALOG); //NOI18N
-            if (catalogFolder == null) {
-                catalogFolder = saas.getSaasFolder().createFolder(CATALOG);
-            }
-            File catalogFile = new File(saas.getDisplayName());
+            FileObject saasFolder = saas.getSaasFolder();
+            File catalogFile = new File(FileUtil.toFile(saasFolder), saas.getDisplayName());
             URI catalog  = catalogFile.toURI();
             URI wadlUrl = new URI(saas.getUrl());
-            return Retriever.getDefault().retrieveResource(catalogFolder, catalog, wadlUrl);
+            
+            return Retriever.getDefault().retrieveResource(saasFolder, catalog, wadlUrl);
+            
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
         }
         return null;
     }
+    
 }
-
