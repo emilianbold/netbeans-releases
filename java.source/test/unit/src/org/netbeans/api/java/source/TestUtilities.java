@@ -51,16 +51,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.classpath.GlobalSourcePathTestUtil;
+import org.netbeans.modules.java.source.usages.BinaryAnalyser;
+import org.netbeans.modules.java.source.usages.ClassIndexImpl;
+import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -305,4 +310,33 @@ public final class TestUtilities {
             
         return f;
     }   
+
+    private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
+    
+    /**
+     * Prepare Java caches for given binary roots.
+     * 
+     * @param urls to analyze
+     */
+    public final static void analyzeBinaries(final Collection<URL> urls) throws IOException {
+        final ClasspathInfo cpInfo = ClasspathInfo.create(EMPTY, EMPTY, EMPTY);
+        final ClassIndexManager mgr  = ClassIndexManager.getDefault();
+        final JavaSource js = JavaSource.create(cpInfo);
+        js.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController parameter) throws Exception {                
+                for (final URL url : urls) {
+                    final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);            
+                    ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+                        public Void run() throws IOException, InterruptedException {
+                            BinaryAnalyser ba = cii.getBinaryAnalyser();            
+                            ba.start(url, null, new AtomicBoolean(false), new AtomicBoolean(false));
+                            ba.finish();
+                            return null;
+                        }
+                    });            
+                }
+            }
+        }, true);
+    }
+    
 }
