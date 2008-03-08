@@ -128,7 +128,7 @@ Microsystems, Inc. All Rights Reserved.
         </exec>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="${basedir}/pack200.sh ${basedir}/netBeans/${module.name}/build"/>
+            <arg value="sh ${basedir}/pack200.sh ${basedir}/netBeans/${module.name}/build"/>
         </exec>         
     </target>
         

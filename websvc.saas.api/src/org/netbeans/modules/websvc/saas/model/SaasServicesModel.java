@@ -309,7 +309,7 @@ public class SaasServicesModel {
      */
     public synchronized WsdlSaas createWsdlService(SaasGroup parent, String displayName, String url, String packageName) {
         initRootGroup();
-        WsdlSaas service = new WsdlSaas(parent, displayName, url, packageName);
+        WsdlSaas service = new WsdlSaas(parent, url, displayName, packageName);
         service.setUserDefined(true);
         WsdlData data = WsdlUtil.addWsdlData(url, packageName);
         if (data != null) {
@@ -329,7 +329,7 @@ public class SaasServicesModel {
     public WadlSaas createWadlService(SaasGroup parent, String url, String packageName) {
         initRootGroup();
         String displayName = SaasUtil.getWadlServiceDirName(url);
-        WadlSaas service = new WadlSaas(parent, displayName, url, packageName);
+        WadlSaas service = new WadlSaas(parent, url, displayName, packageName);
         service.toStateReady(false);
         service.setUserDefined(true);
         parent.addService(service);

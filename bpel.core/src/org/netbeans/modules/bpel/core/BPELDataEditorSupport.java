@@ -46,7 +46,6 @@ import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.core.util.SelectBpelElement;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.support.Util;
 import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.validation.ShowCookie;
@@ -78,6 +77,7 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
+import org.netbeans.modules.bpel.core.util.ValidationUtil;
 
 /**
  * @author ads
@@ -432,7 +432,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                 else if (mvp.preferredID().equals(
                         BPELSourceMultiViewElementDesc.PREFERED_ID))
                 {
-                    Line line = Util.getLine(resultItem);
+                    Line line = ValidationUtil.getLine(resultItem);
 
                     if (line != null) {
                       line.show(Line.SHOW_GOTO);

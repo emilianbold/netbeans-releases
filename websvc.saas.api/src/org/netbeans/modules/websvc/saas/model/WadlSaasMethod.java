@@ -70,7 +70,12 @@ public class WadlSaasMethod extends SaasMethod {
     @Override
     public String getName() {
         if (getMethod() == null) {
-            return wadlMethod.getId();
+            if (wadlMethod.getId() != null) {
+                return wadlMethod.getId();
+            } else {
+                String mimes = wadlMethod.getResponse().getParam().toString();
+                return wadlMethod.getName() + " : " + mimes;
+            }
         }
         return super.getName();
     }
