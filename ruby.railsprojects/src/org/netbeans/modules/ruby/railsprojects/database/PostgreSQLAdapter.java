@@ -73,6 +73,10 @@ class PostgreSQLAdapter implements RailsDatabaseConfiguration {
             uncommentTcpIpConfig(project.getProjectDirectory());
         }
     }
+
+    public String getDisplayName() {
+        return railsGenerationParam();
+    }
     
     /**
      * Uncomments host and port entries that rails generates
@@ -131,6 +135,19 @@ class PostgreSQLAdapter implements RailsDatabaseConfiguration {
                 Exceptions.printStackTrace(ioe);
             }
         }
+    }
+
+    public JdbcInfo getJdbcInfo() {
+        return new JdbcInfo() {
+
+            public String getDriverClass() {
+                return "org.postgresql.Driver"; //NOI18N
+            }
+
+            public String getURL(String host, String database) {
+                return "jdbc:postgresql://" + host + "/" + database;
+            }
+        };
     }
 
 

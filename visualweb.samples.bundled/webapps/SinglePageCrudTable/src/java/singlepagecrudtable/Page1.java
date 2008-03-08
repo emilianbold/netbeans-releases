@@ -107,56 +107,6 @@ public class Page1 extends AbstractPageBean {
         personDataProvider.setCachedRowSet((javax.sql.rowset.CachedRowSet) getValue("#{SessionBean1.personRowSet}"));
         triptypeDataProvider.setCachedRowSet((javax.sql.rowset.CachedRowSet) getValue("#{SessionBean1.triptypeRowSet}"));
     }
-
-    private Page page1 = new Page();
-    
-    public Page getPage1() {
-        return page1;
-    }
-    
-    public void setPage1(Page p) {
-        this.page1 = p;
-    }
-    
-    private Html html1 = new Html();
-    
-    public Html getHtml1() {
-        return html1;
-    }
-    
-    public void setHtml1(Html h) {
-        this.html1 = h;
-    }
-    
-    private Head head1 = new Head();
-    
-    public Head getHead1() {
-        return head1;
-    }
-    
-    public void setHead1(Head h) {
-        this.head1 = h;
-    }
-    
-    private Link link1 = new Link();
-    
-    public Link getLink1() {
-        return link1;
-    }
-    
-    public void setLink1(Link l) {
-        this.link1 = l;
-    }
-    
-    private Body body1 = new Body();
-    
-    public Body getBody1() {
-        return body1;
-    }
-    
-    public void setBody1(Body b) {
-        this.body1 = b;
-    }
     
     private Form form1 = new Form();
     
@@ -167,123 +117,6 @@ public class Page1 extends AbstractPageBean {
     public void setForm1(Form f) {
         this.form1 = f;
     }
-    private HtmlPanelGrid mainPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getMainPanel() {
-        return mainPanel;
-    }
-
-    public void setMainPanel(HtmlPanelGrid hpg) {
-        this.mainPanel = hpg;
-    }
-    private HtmlPanelGrid personInfoPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getPersonInfoPanel() {
-        return personInfoPanel;
-    }
-
-    public void setPersonInfoPanel(HtmlPanelGrid hpg) {
-        this.personInfoPanel = hpg;
-    }
-    private HtmlPanelGrid tripsPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getTripsPanel() {
-        return tripsPanel;
-    }
-
-    public void setTripsPanel(HtmlPanelGrid hpg) {
-        this.tripsPanel = hpg;
-    }
-    private HtmlPanelGrid addTripParentPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getAddTripParentPanel() {
-        return addTripParentPanel;
-    }
-
-    public void setAddTripParentPanel(HtmlPanelGrid hpg) {
-        this.addTripParentPanel = hpg;
-    }
-    private HtmlPanelGrid headerPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getHeaderPanel() {
-        return headerPanel;
-    }
-
-    public void setHeaderPanel(HtmlPanelGrid hpg) {
-        this.headerPanel = hpg;
-    }
-    private HtmlPanelGrid newTripInfoPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getNewTripInfoPanel() {
-        return newTripInfoPanel;
-    }
-
-    public void setNewTripInfoPanel(HtmlPanelGrid hpg) {
-        this.newTripInfoPanel = hpg;
-    }
-    private HtmlPanelGrid footerPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getFooterPanel() {
-        return footerPanel;
-    }
-
-    public void setFooterPanel(HtmlPanelGrid hpg) {
-        this.footerPanel = hpg;
-    }
-    private Table trips = new Table();
-
-    public Table getTrips() {
-        return trips;
-    }
-
-    public void setTrips(Table t) {
-        this.trips = t;
-    }
-    private TableRowGroup tableRowGroup1 = new TableRowGroup();
-
-    public TableRowGroup getTableRowGroup1() {
-        return tableRowGroup1;
-    }
-
-    public void setTableRowGroup1(TableRowGroup trg) {
-        this.tableRowGroup1 = trg;
-    }
-    private HtmlPanelGrid buttonsPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getButtonsPanel() {
-        return buttonsPanel;
-    }
-
-    public void setButtonsPanel(HtmlPanelGrid hpg) {
-        this.buttonsPanel = hpg;
-    }
-    private Button updateButton = new Button();
-
-    public Button getUpdateButton() {
-        return updateButton;
-    }
-
-    public void setUpdateButton(Button b) {
-        this.updateButton = b;
-    }
-    private Button deleteButton = new Button();
-
-    public Button getDeleteButton() {
-        return deleteButton;
-    }
-
-    public void setDeleteButton(Button b) {
-        this.deleteButton = b;
-    }
-    private Label label1 = new Label();
-
-    public Label getLabel1() {
-        return label1;
-    }
-
-    public void setLabel1(Label l) {
-        this.label1 = l;
-    }
     private DropDown personId = new DropDown();
 
     public DropDown getPersonId() {
@@ -292,60 +125,6 @@ public class Page1 extends AbstractPageBean {
 
     public void setPersonId(DropDown dd) {
         this.personId = dd;
-    }
-    private Label label2 = new Label();
-
-    public Label getLabel2() {
-        return label2;
-    }
-
-    public void setLabel2(Label l) {
-        this.label2 = l;
-    }
-    private StaticText jobTitle = new StaticText();
-
-    public StaticText getJobTitle() {
-        return jobTitle;
-    }
-
-    public void setJobTitle(StaticText st) {
-        this.jobTitle = st;
-    }
-    private Label label3 = new Label();
-
-    public Label getLabel3() {
-        return label3;
-    }
-
-    public void setLabel3(Label l) {
-        this.label3 = l;
-    }
-    private Message message1 = new Message();
-
-    public Message getMessage1() {
-        return message1;
-    }
-
-    public void setMessage1(Message m) {
-        this.message1 = m;
-    }
-    private StaticText staticText4 = new StaticText();
-
-    public StaticText getStaticText4() {
-        return staticText4;
-    }
-
-    public void setStaticText4(StaticText st) {
-        this.staticText4 = st;
-    }
-    private Label label4 = new Label();
-
-    public Label getLabel4() {
-        return label4;
-    }
-
-    public void setLabel4(Label l) {
-        this.label4 = l;
     }
     private Calendar departureDate = new Calendar();
 
@@ -356,24 +135,6 @@ public class Page1 extends AbstractPageBean {
     public void setDepartureDate(Calendar c) {
         this.departureDate = c;
     }
-    private Message message2 = new Message();
-
-    public Message getMessage2() {
-        return message2;
-    }
-
-    public void setMessage2(Message m) {
-        this.message2 = m;
-    }
-    private Label label5 = new Label();
-
-    public Label getLabel5() {
-        return label5;
-    }
-
-    public void setLabel5(Label l) {
-        this.label5 = l;
-    }
     private DropDown tripType = new DropDown();
 
     public DropDown getTripType() {
@@ -382,24 +143,6 @@ public class Page1 extends AbstractPageBean {
 
     public void setTripType(DropDown dd) {
         this.tripType = dd;
-    }
-    private Message message3 = new Message();
-
-    public Message getMessage3() {
-        return message3;
-    }
-
-    public void setMessage3(Message m) {
-        this.message3 = m;
-    }
-    private Label label6 = new Label();
-
-    public Label getLabel6() {
-        return label6;
-    }
-
-    public void setLabel6(Label l) {
-        this.label6 = l;
     }
     private TextField departureCity = new TextField();
 
@@ -410,15 +153,6 @@ public class Page1 extends AbstractPageBean {
     public void setDepartureCity(TextField tf) {
         this.departureCity = tf;
     }
-    private Label label7 = new Label();
-
-    public Label getLabel7() {
-        return label7;
-    }
-
-    public void setLabel7(Label l) {
-        this.label7 = l;
-    }
     private TextField destinationCity = new TextField();
 
     public TextField getDestinationCity() {
@@ -427,42 +161,6 @@ public class Page1 extends AbstractPageBean {
 
     public void setDestinationCity(TextField tf) {
         this.destinationCity = tf;
-    }
-    private Message message4 = new Message();
-
-    public Message getMessage4() {
-        return message4;
-    }
-
-    public void setMessage4(Message m) {
-        this.message4 = m;
-    }
-    private StaticText staticText5 = new StaticText();
-
-    public StaticText getStaticText5() {
-        return staticText5;
-    }
-
-    public void setStaticText5(StaticText st) {
-        this.staticText5 = st;
-    }
-    private Message message5 = new Message();
-
-    public Message getMessage5() {
-        return message5;
-    }
-
-    public void setMessage5(Message m) {
-        this.message5 = m;
-    }
-    private Button addButton = new Button();
-
-    public Button getAddButton() {
-        return addButton;
-    }
-
-    public void setAddButton(Button b) {
-        this.addButton = b;
     }
     private CachedRowSetDataProvider tripDataProvider = new CachedRowSetDataProvider();
 
@@ -473,51 +171,6 @@ public class Page1 extends AbstractPageBean {
     public void setTripDataProvider(CachedRowSetDataProvider crsdp) {
         this.tripDataProvider = crsdp;
     }
-    private TableColumn tableColumn3 = new TableColumn();
-
-    public TableColumn getTableColumn3() {
-        return tableColumn3;
-    }
-
-    public void setTableColumn3(TableColumn tc) {
-        this.tableColumn3 = tc;
-    }
-    private TableColumn tableColumn4 = new TableColumn();
-
-    public TableColumn getTableColumn4() {
-        return tableColumn4;
-    }
-
-    public void setTableColumn4(TableColumn tc) {
-        this.tableColumn4 = tc;
-    }
-    private TableColumn tableColumn5 = new TableColumn();
-
-    public TableColumn getTableColumn5() {
-        return tableColumn5;
-    }
-
-    public void setTableColumn5(TableColumn tc) {
-        this.tableColumn5 = tc;
-    }
-    private TableColumn tableColumn6 = new TableColumn();
-
-    public TableColumn getTableColumn6() {
-        return tableColumn6;
-    }
-
-    public void setTableColumn6(TableColumn tc) {
-        this.tableColumn6 = tc;
-    }
-    private TableColumn tableColumn8 = new TableColumn();
-
-    public TableColumn getTableColumn8() {
-        return tableColumn8;
-    }
-
-    public void setTableColumn8(TableColumn tc) {
-        this.tableColumn8 = tc;
-    }
     private Checkbox selectedTripCheckbox = new Checkbox();
 
     public Checkbox getSelectedTripCheckbox() {
@@ -526,78 +179,6 @@ public class Page1 extends AbstractPageBean {
 
     public void setSelectedTripCheckbox(Checkbox c) {
         this.selectedTripCheckbox = c;
-    }
-    private TextField tripsDepartureDate = new TextField();
-
-    public TextField getTripsDepartureDate() {
-        return tripsDepartureDate;
-    }
-
-    public void setTripsDepartureDate(TextField tf) {
-        this.tripsDepartureDate = tf;
-    }
-    private TextField tripsDestinationCity = new TextField();
-
-    public TextField getTripsDestinationCity() {
-        return tripsDestinationCity;
-    }
-
-    public void setTripsDestinationCity(TextField tf) {
-        this.tripsDestinationCity = tf;
-    }
-    private DropDown tripsTripType = new DropDown();
-
-    public DropDown getTripsTripType() {
-        return tripsTripType;
-    }
-
-    public void setTripsTripType(DropDown dd) {
-        this.tripsTripType = dd;
-    }
-    private TextField tripsDepartureCity = new TextField();
-
-    public TextField getTripsDepartureCity() {
-        return tripsDepartureCity;
-    }
-
-    public void setTripsDepartureCity(TextField tf) {
-        this.tripsDepartureCity = tf;
-    }
-    private Message message6 = new Message();
-
-    public Message getMessage6() {
-        return message6;
-    }
-
-    public void setMessage6(Message m) {
-        this.message6 = m;
-    }
-    private Message message7 = new Message();
-
-    public Message getMessage7() {
-        return message7;
-    }
-
-    public void setMessage7(Message m) {
-        this.message7 = m;
-    }
-    private Message message8 = new Message();
-
-    public Message getMessage8() {
-        return message8;
-    }
-
-    public void setMessage8(Message m) {
-        this.message8 = m;
-    }
-    private Message message9 = new Message();
-
-    public Message getMessage9() {
-        return message9;
-    }
-
-    public void setMessage9(Message m) {
-        this.message9 = m;
     }
     private CachedRowSetDataProvider personDataProvider = new CachedRowSetDataProvider();
 

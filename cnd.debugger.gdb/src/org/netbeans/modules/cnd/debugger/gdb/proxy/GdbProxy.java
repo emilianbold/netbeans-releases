@@ -185,15 +185,6 @@ public class GdbProxy implements GdbMiDefinitions {
     }
 
     /**
-     *  Do a "set environment" gdb command.
-     *
-     *  @param var Variable of the form "foo=value"
-     */
-    public int gdb_set_environment(String var) {
-        return engine.sendCommand("-gdb-set environment " + var); // NOI18N
-    }
-
-    /**
      *  Ask gdb about threads. We don't really care about the threads, but it also returns
      *  the process ID, which we do care about.
      *
@@ -268,15 +259,17 @@ public class GdbProxy implements GdbMiDefinitions {
     /*
      * @param filename - source file to disassemble
      */
-    public int data_disassemble(String filename, int line) {
-        return engine.sendCommand("-data-disassemble -f " + filename + " -l " + line + " -- 0"); // NOI18N
+    public int data_disassemble(String filename, int line, boolean withSource) {
+        int src = withSource ? 1 : 0;
+        return engine.sendCommand("-data-disassemble -f " + filename + " -l " + line + " -- " + src); // NOI18N
     }
     
     /*
      * @param size - size in bytes
      */
-    public int data_disassemble(int size) {
-        return engine.sendCommand("-data-disassemble -s $pc -e \"$pc+" + size + "\" -- 0"); // NOI18N
+    public int data_disassemble(int size, boolean withSource) {
+        int src = withSource ? 1 : 0;
+        return engine.sendCommand("-data-disassemble -s $pc -e \"$pc+" + size + "\" -- " + src); // NOI18N
     }
     
     public int print(CommandBuffer cb, String expression) {
@@ -324,6 +317,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * If it is, stop at the first instruction of the called function.
      */
     public int exec_step() {
+        debugger.setLastGo(GdbDebugger.LAST_GO_WAS_STEP);
         return engine.sendCommand("-exec-step"); // NOI18N
     }
 
@@ -333,6 +327,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * when the beginning of the next source line is reached.
      */
     public int exec_next() {
+        debugger.setLastGo(GdbDebugger.LAST_GO_WAS_NEXT);
         return engine.sendCommand("-exec-next"); // NOI18N
     }
     
@@ -349,6 +344,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * the current function is exited.
      */
     public int exec_finish() {
+        debugger.setLastGo(GdbDebugger.LAST_GO_WAS_FINISH);
         return engine.sendCommand("-exec-finish"); // NOI18N
     }
 
@@ -358,6 +354,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * breakpoint is encountered, or until the inferior exits.
      */
     public int exec_continue() {
+        debugger.setLastGo(GdbDebugger.LAST_GO_WAS_CONTINUE);
         return engine.sendCommand("-exec-continue"); // NOI18N
     }
 
@@ -547,6 +544,11 @@ public class GdbProxy implements GdbMiDefinitions {
     /** Request a stack dump from gdb */
     public int stack_list_frames() {
         return engine.sendCommand("-stack-list-frames "); // NOI18N
+    }
+
+    /** Request a stack dump from gdb */
+    public int stack_list_frames(CommandBuffer cb) {
+        return engine.sendCommand(cb, "-stack-list-frames "); // NOI18N
     }
     
     public int gdb_set(String command, String value) {

@@ -106,7 +106,9 @@ public class EscapeLineTestCase extends TestCase {
                        "t\\\n" + 
                        " a\\\r" + 
                        "\\\r\n" +
-                       ";";
+                       "; \\\r a\n" +
+                       " \\\n b\n" +
+                       "  \\\r\n c";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INT, "in\\\nt");
@@ -116,8 +118,18 @@ public class EscapeLineTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.ESCAPED_LINE, "\\\r");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.ESCAPED_LINE, "\\\r\n");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SEMICOLON, ";");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.ESCAPED_WHITESPACE, " \\\r ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "a");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.ESCAPED_WHITESPACE, " \\\n ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "b");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.ESCAPED_WHITESPACE, "  \\\r\n ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "c");
 
         assertFalse("No more tokens", ts.moveNext());
+
+        CndLexerUnitTest.dumpTokens(ts);
     }
    
 }

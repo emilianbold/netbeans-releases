@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="glassfish" basedir="." default="build-pkg">
 
-    <property name="appdir" value="build/app"/>
+    <property name="appdir" value="${basedir}/build/app"/>
     
     <target name="clean">
         <delete dir="build"/>

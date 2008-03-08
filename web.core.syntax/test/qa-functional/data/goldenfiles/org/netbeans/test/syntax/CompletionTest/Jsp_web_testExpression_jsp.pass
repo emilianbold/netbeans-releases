@@ -28,14 +28,19 @@ paramValues
 param
 End cursor position = 991
 [${pageContext.|, request ServletRequest, ${pageContext.request, 1051]
+class Class<?>
+eLContext ELContext
 errorData ErrorData
 exception Exception
+expressionEvaluator ExpressionEvaluator
+out JspWriter
 page Object
 request ServletRequest
 response ServletResponse
 servletConfig ServletConfig
 servletContext ServletContext
 session HttpSession
+variableResolver VariableResolver
 End cursor position = 1073
 [#{|, sessionScope, #{sessionScope[], 1098]
 calendar Calendar
@@ -59,6 +64,7 @@ cookie
 End cursor position = 1155
 [#{calendar.|, time Date, #{calendar.time, 1195]
 availableLocales Locale[]
+class Class<?>
 firstDayOfWeek int
 instance Calendar
 lenient boolean
@@ -70,6 +76,7 @@ toString
 End cursor position = 1211
 [#{calendar.|, toString , #{calendar.toString, 1250]
 availableLocales Locale[]
+class Class<?>
 firstDayOfWeek int
 instance Calendar
 lenient boolean

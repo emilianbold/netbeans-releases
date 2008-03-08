@@ -42,7 +42,7 @@ package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
-import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.railsprojects.database.RailsAdapterFactory;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
 import org.netbeans.modules.ruby.railsprojects.database.RailsJdbcAsAdapterConnection;
 import org.netbeans.modules.ruby.railsprojects.database.RailsJdbcConnection;
@@ -149,9 +149,16 @@ public class JdbcConnectionsPanel extends SettingsPanel {
         DatabaseConnection devel = (DatabaseConnection) developmentComboBox.getSelectedItem();
         DatabaseConnection production = (DatabaseConnection) productionComboBox.getSelectedItem();
         DatabaseConnection test = (DatabaseConnection) testComboBox.getSelectedItem();
+        
         RailsDatabaseConfiguration databaseConfiguration = null;
         Boolean jdbc = (Boolean) settings.getProperty(NewRailsProjectWizardIterator.JDBC_WN);
-        if (jdbc != null && jdbc.booleanValue()) {
+        boolean useJdbc = jdbc != null ? jdbc.booleanValue() : false;
+        // see #129332 - if nothing is specified, use the default adapter
+        boolean useDefault = !jdbc && devel == null && production == null && test == null;
+        
+        if (useDefault) {
+            databaseConfiguration = RailsAdapterFactory.getDefaultAdapter();
+        } else if (useJdbc) {
             databaseConfiguration = new RailsJdbcConnection(devel, test, production);
         } else {
             databaseConfiguration = new RailsJdbcAsAdapterConnection(devel, test, production);

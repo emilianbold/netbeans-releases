@@ -41,13 +41,10 @@
 
 package org.netbeans.modules.ruby;
 
-import junit.framework.TestCase;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
 
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 
 
@@ -60,11 +57,13 @@ public class RubyLexerTest extends RubyTestBase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws java.lang.Exception {
         // Set-up testing environment
         LexerTestUtilities.setTesting(true);
     }
 
+    @Override
     protected void tearDown() throws java.lang.Exception {
     }
 
@@ -507,6 +506,31 @@ public class RubyLexerTest extends RubyTestBase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.RPAREN, ")");
         assertFalse(ts.moveNext());
     }
+    
+    @SuppressWarnings("unchecked")
+    public void testSpaceEot() {
+        // Make sure I can handle input AFTER a heredoc marker and properly tokenize it
+        String text = "f <<EOT\nfoo\nEOT\ng <<EOM\nbar\nEOM\n";
+        TokenHierarchy hi = TokenHierarchy.create(text, RubyTokenId.language());
+        TokenSequence<?extends RubyTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "f");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<EOT");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "foo\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "EOT\n");
+
+        // TODO!!
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "g");
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, " ");
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<EOM");
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "bar\n");
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "EOM\n");
+//        
+//        assertFalse(ts.moveNext());
+    }
+    
 
     // Not yet passing
 //    @SuppressWarnings("unchecked")
