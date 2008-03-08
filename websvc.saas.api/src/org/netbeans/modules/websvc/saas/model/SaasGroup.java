@@ -229,14 +229,7 @@ public class SaasGroup {
         if (child != null) {
             for (Saas saas : child.getServices()) {
                 removeService(saas);
-                try {
-                    FileObject saasFile = saas.getSaasFile();
-                    if (saasFile != null) {
-                        saasFile.delete();
-                    }
-                } catch(Exception e) {
-                    Exceptions.printStackTrace(e);
-                }
+                SaasServicesModel.getInstance()._removeService(saas);
             }
             for (SaasGroup c : child.getChildrenGroups()) {
                 _removeChildGroup(c);
