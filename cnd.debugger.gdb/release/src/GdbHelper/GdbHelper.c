@@ -39,36 +39,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.apisupport.project.ui.wizard;
+#include <stdio.h>
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.jar.Manifest;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.apisupport.project.TestBase;
+#ifndef __declspec
+#   define __declspec(a)
+#endif
 
-/**
- * Test wizard logic.
- * @author Milos Kleint, Jesse Glick
- */
-public class LibraryStartVisualPanelTest extends NbTestCase {
+void __declspec(dllexport) _GdbHelperSetLineBuffered();
 
-    public LibraryStartVisualPanelTest(String testName) {
-        super(testName);
-    }
+static char buf[BUFSIZ];
 
-    public void testPopulateProjectData() throws Exception {
-        Map<String, String> contents = new HashMap<String, String>();
-        contents.put("org/apache/commons/logging/Log.class", "");
-        contents.put("1.0-beta/X.class", ""); // #72669
-        contents.put("org/apache/commons/logging/impl/NoOpLog.class", "");
-        File libraryPath = new File(getWorkDir(), "test-library-0.1_01.jar");
-        TestBase.createJar(libraryPath, contents, new Manifest());
-        NewModuleProjectData data = new NewModuleProjectData(NewNbModuleWizardIterator.Type.LIBRARY_MODULE);
-        LibraryStartVisualPanel.populateProjectData(data, libraryPath.getAbsolutePath(), true);
-        assertEquals("test-library", data.getProjectName());
-        assertEquals("org.apache.commons.logging", data.getCodeNameBase());
-    }
-    
+void _gdbHelperSetLineBuffered() {
+    setvbuf(stdout, buf, _IOLBF, BUFSIZ);
 }
