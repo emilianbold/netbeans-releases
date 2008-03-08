@@ -87,10 +87,10 @@ public final class TestUtilities {
     /**
      * Waits for the end of the background scan, this helper method 
      * is designed for tests which require to wait for the end of initial scan.
-     * The method can be used as a barrier but it is not garanted that the
-     * backgoud scan will not start again after return from this method, the
+     * The method can be used as a barrier but it is not guaranteed that the
+     * background scan will not start again after return from this method, the
      * test is responsible for it itself. In general it's safer to use {@link JavaSource#runWhenScanFinished}
-     * method and do the critical action inside the run methed.
+     * method and do the critical action inside the run method.
      * @param timeout the maximum time to wait
      * @param unit the time unit of the timeout argument
      * @return true if the scan finished, false when the timeout elapsed before the end of the scan.
@@ -225,7 +225,7 @@ public final class TestUtilities {
      * Creates boot {@link ClassPath} for platform the test is running on,
      * it uses the sun.boot.class.path property to find out the boot path roots.
      * @return ClassPath
-     * @throws java.io.IOException when boot path property conatins non valid path
+     * @throws java.io.IOException when boot path property contains non valid path
      */
     public static ClassPath createBootClassPath () throws IOException {
         String bootPath = System.getProperty ("sun.boot.class.path");
