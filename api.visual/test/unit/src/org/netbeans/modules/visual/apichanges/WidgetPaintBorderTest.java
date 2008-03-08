@@ -38,61 +38,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package bugs;
+package org.netbeans.modules.visual.apichanges;
 
-import framework.VisualTestCase;
-import org.netbeans.api.visual.border.BorderFactory;
-import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.widget.LabelWidget;
+import org.netbeans.modules.visual.framework.VisualTestCase;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.api.visual.widget.LayerWidget;
-
-import java.awt.*;
 
 /**
+ * Test for issue #98307 - Widget.paintBorder method added
  * @author David Kaspar
  */
-public class FlowLayoutWeightOverflow108052Test extends VisualTestCase {
+public class WidgetPaintBorderTest extends VisualTestCase {
 
-    public FlowLayoutWeightOverflow108052Test (String testName) {
-        super (testName);
+    public WidgetPaintBorderTest (String s) {
+        super (s);
     }
 
-    public void testFlowLayoutWeightOverflow () {
+    public void testPaintWidgetBorder () {
         Scene scene = new Scene ();
-        LayerWidget layer = new LayerWidget (scene);
-        layer.setMinimumSize (new Dimension (300, 200));
-        scene.addChild (layer);
+        MyWidget widget = new MyWidget (scene);
+        scene.addChild (widget);
+        takeOneTimeSnapshot (scene, 10, 10);
+        assertTrue ("Widget border is not painted", widget.borderPainted);
+    }
 
-        Widget vbox = new Widget (scene);
-        vbox.setBorder (BorderFactory.createLineBorder (1, Color.BLACK));
-        vbox.setLayout (LayoutFactory.createVerticalFlowLayout (LayoutFactory.SerialAlignment.JUSTIFY, 0));
-        layer.addChild (vbox);
+    private static class MyWidget extends Widget {
 
-        Widget hbox1 = new Widget (scene);
-        hbox1.setBorder (BorderFactory.createLineBorder (1, Color.BLUE));
-        hbox1.setLayout (LayoutFactory.createHorizontalFlowLayout ());
-        vbox.addChild (hbox1);
+        private boolean borderPainted = false;
 
-        Widget item1 = new LabelWidget (scene, "Item1");
-        item1.setBorder (BorderFactory.createLineBorder (1, Color.GREEN));
-        hbox1.addChild (item1);
+        public MyWidget (Scene scene) {
+            super (scene);
+        }
 
-        Widget item2 = new LabelWidget (scene, "Item2");
-        item2.setBorder (BorderFactory.createLineBorder (1, Color.YELLOW));
-        hbox1.addChild (item2, 1000);
+        protected void paintBorder () {
+            borderPainted = true;
+            super.paintBorder ();
+        }
 
-        Widget item3 = new LabelWidget (scene, "Item3");
-        item3.setBorder (BorderFactory.createLineBorder (1, Color.RED));
-        hbox1.addChild (item3);
-
-        Widget hbox2 = new Widget (scene);
-        hbox2.setBorder (BorderFactory.createLineBorder (1, Color.BLUE));
-        hbox2.setPreferredSize (new Dimension (200, 20));
-        vbox.addChild (hbox2);
-
-        assertScene (scene, Color.WHITE, new Rectangle (-5, -5, 210, 100));
     }
 
 }

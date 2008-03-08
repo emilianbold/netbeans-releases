@@ -193,7 +193,7 @@ public final class Log extends Handler {
      * were send to it. This is supposed to be called at the begining of a test,
      * to get messages from the programs that use 
      * <a href="http://wiki.netbeans.org/wiki/view/FitnessViaTimersCounters">timers/counters</a>
-     * infrastructure. At the end one should call {@link assertInstances}.
+     * infrastructure. At the end one should call {@link #assertInstances}.
      * 
      * 
      * @param log logger to listen on, if null, it uses the standard timers/counters one
@@ -213,7 +213,7 @@ public final class Log extends Handler {
         }
     }
 
-    /** Assert to verify that all collected instances via {@link enableInstances} 
+    /** Assert to verify that all collected instances via {@link #enableInstances} 
      * can disappear. Uses {@link NbTestCase#assertGC} on each of them. 
      * 
      * @param msg message to display in case of potential failure

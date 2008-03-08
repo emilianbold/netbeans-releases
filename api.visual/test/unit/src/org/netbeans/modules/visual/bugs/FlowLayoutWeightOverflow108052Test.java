@@ -38,31 +38,61 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package apichanges;
+package org.netbeans.modules.visual.bugs;
 
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.visual.framework.VisualTestCase;
+import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.border.BorderSupport;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.widget.LayerWidget;
 
-import javax.swing.border.BevelBorder;
-import javax.swing.border.Border;
+import java.awt.*;
 
 /**
- * Test for issue #103456 - BorderSupport.getSwingBorder method introduced
  * @author David Kaspar
  */
-public class SwingBorderGetterTest extends NbTestCase {
+public class FlowLayoutWeightOverflow108052Test extends VisualTestCase {
 
-    public SwingBorderGetterTest (String name) {
-        super (name);
+    public FlowLayoutWeightOverflow108052Test (String testName) {
+        super (testName);
     }
 
-    public void testGetter () {
+    public void testFlowLayoutWeightOverflow () {
         Scene scene = new Scene ();
-        BevelBorder originalBorder = new BevelBorder (BevelBorder.RAISED);
-        scene.setBorder (originalBorder);
-        Border foundBorder = BorderSupport.getSwingBorder (scene.getBorder ());
-        assertEquals (originalBorder, foundBorder);
+        LayerWidget layer = new LayerWidget (scene);
+        layer.setMinimumSize (new Dimension (300, 200));
+        scene.addChild (layer);
+
+        Widget vbox = new Widget (scene);
+        vbox.setBorder (BorderFactory.createLineBorder (1, Color.BLACK));
+        vbox.setLayout (LayoutFactory.createVerticalFlowLayout (LayoutFactory.SerialAlignment.JUSTIFY, 0));
+        layer.addChild (vbox);
+
+        Widget hbox1 = new Widget (scene);
+        hbox1.setBorder (BorderFactory.createLineBorder (1, Color.BLUE));
+        hbox1.setLayout (LayoutFactory.createHorizontalFlowLayout ());
+        vbox.addChild (hbox1);
+
+        Widget item1 = new LabelWidget (scene, "Item1");
+        item1.setBorder (BorderFactory.createLineBorder (1, Color.GREEN));
+        hbox1.addChild (item1);
+
+        Widget item2 = new LabelWidget (scene, "Item2");
+        item2.setBorder (BorderFactory.createLineBorder (1, Color.YELLOW));
+        hbox1.addChild (item2, 1000);
+
+        Widget item3 = new LabelWidget (scene, "Item3");
+        item3.setBorder (BorderFactory.createLineBorder (1, Color.RED));
+        hbox1.addChild (item3);
+
+        Widget hbox2 = new Widget (scene);
+        hbox2.setBorder (BorderFactory.createLineBorder (1, Color.BLUE));
+        hbox2.setPreferredSize (new Dimension (200, 20));
+        vbox.addChild (hbox2);
+
+        assertScene (scene, Color.WHITE, new Rectangle (-5, -5, 210, 100));
     }
 
 }

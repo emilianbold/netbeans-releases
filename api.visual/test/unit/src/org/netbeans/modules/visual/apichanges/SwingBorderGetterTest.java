@@ -38,39 +38,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package bugs;
+package org.netbeans.modules.visual.apichanges;
 
-import framework.VisualTestCase;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.api.visual.border.BorderFactory;
-import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.border.BorderSupport;
 
-import java.awt.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
 
 /**
+ * Test for issue #103456 - BorderSupport.getSwingBorder method introduced
  * @author David Kaspar
  */
-public class FlowLayout105400Test extends VisualTestCase {
+public class SwingBorderGetterTest extends NbTestCase {
 
-    public FlowLayout105400Test (String testName) {
-        super (testName);
+    public SwingBorderGetterTest (String name) {
+        super (name);
     }
 
-    public void testFlowLayoutInsets () {
+    public void testGetter () {
         Scene scene = new Scene ();
-        Widget parent = new Widget (scene);
-        parent.setBorder (BorderFactory.createResizeBorder (10));
-        parent.setLayout (LayoutFactory.createVerticalFlowLayout ());
-        scene.addChild (parent);
-
-        Widget child = new Widget (scene);
-        child.setBackground (Color.BLUE);
-        child.setOpaque (true);
-        child.setPreferredBounds (new Rectangle (-50, -30, 30, 20));
-        parent.addChild (child);
-
-        assertScene (scene, Color.WHITE, new Rectangle (-1, -1, 52, 42));
+        BevelBorder originalBorder = new BevelBorder (BevelBorder.RAISED);
+        scene.setBorder (originalBorder);
+        Border foundBorder = BorderSupport.getSwingBorder (scene.getBorder ());
+        assertEquals (originalBorder, foundBorder);
     }
 
 }

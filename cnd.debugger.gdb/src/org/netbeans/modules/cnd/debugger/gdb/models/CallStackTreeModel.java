@@ -69,7 +69,7 @@ public class CallStackTreeModel implements TreeModel {
     
    
     public CallStackTreeModel(ContextProvider lookupProvider) {
-        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
     /** 

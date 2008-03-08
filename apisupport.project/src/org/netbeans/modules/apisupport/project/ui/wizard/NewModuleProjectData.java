@@ -52,7 +52,7 @@ import org.openide.WizardDescriptor;
 final class NewModuleProjectData {
 
     private WizardDescriptor settings;
-    private final int wizardType;
+    private final NewNbModuleWizardIterator.Type wizardType;
 
     private boolean netBeansOrg;
     private boolean standalone = true; // standalone is default
@@ -70,9 +70,9 @@ final class NewModuleProjectData {
     private int suiteCounter;
     
     /**
-     * @param wizardType one of NewNbModuleWizardIterator.TYPE_*
+     * @param wizardType
      */
-    NewModuleProjectData(int wizardType) {
+    NewModuleProjectData(NewNbModuleWizardIterator.Type wizardType) {
         this.wizardType = wizardType;
     }
     
@@ -201,7 +201,7 @@ final class NewModuleProjectData {
         this.suiteCounter = counter;
     }
     
-    int getWizardType() {
+    NewNbModuleWizardIterator.Type getWizardType() {
         return wizardType;
     }
     
