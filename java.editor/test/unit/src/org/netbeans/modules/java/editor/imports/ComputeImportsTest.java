@@ -43,7 +43,6 @@ package org.netbeans.modules.java.editor.imports;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.PrintStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,7 +52,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
 import junit.framework.Test;
@@ -62,20 +60,15 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
+import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.test.support.MemoryValidator;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.editor.overridden.IsOverriddenAnnotationCreatorTest;
 import org.netbeans.modules.java.editor.imports.ComputeImports.Pair;
 import org.netbeans.modules.java.source.TestUtil;
-import org.netbeans.modules.java.source.usages.BinaryAnalyser;
-import org.netbeans.modules.java.source.usages.ClassIndexImpl;
-import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
@@ -85,7 +78,7 @@ import org.openide.loaders.DataObject;
  */
 public class ComputeImportsTest extends NbTestCase {
     
-    private static final Set<String> JDK16_MASKS = new HashSet(Arrays.asList(new String[] {
+    private static final Set<String> JDK16_MASKS = new HashSet<String>(Arrays.asList(new String[] {
         "com.sun.xml.bind.v2.schemagen.xmlschema.List",
         "com.sun.xml.txw2.Document",
         "com.sun.xml.internal.txw2.Document",
@@ -99,7 +92,7 @@ public class ComputeImportsTest extends NbTestCase {
         "javax.lang.model.element.Element",
     }));
     
-    private static final Set<String> NO_MASKS = new HashSet();
+    private static final Set<String> NO_MASKS = new HashSet<String>();
     
     private FileObject testSource;
     private JavaSource js;
@@ -112,6 +105,7 @@ public class ComputeImportsTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
         
@@ -123,14 +117,7 @@ public class ComputeImportsTest extends NbTestCase {
             
             IndexUtil.setCacheFolder(cache);
             
-            for (URL u : SourceUtilsTestUtil.getBootClassPath()) {
-                final ClassIndexImpl ci = ClassIndexManager.getDefault().createUsagesQuery(u, false);
-                ProgressHandle handle = ProgressHandleFactory.createHandle("cache creation");
-                BinaryAnalyser ba = ci.getBinaryAnalyser();
-                
-                ba.start(u, handle, new AtomicBoolean(false), new AtomicBoolean(false));
-                ba.finish();
-            }
+            TestUtilities.analyzeBinaries(SourceUtilsTestUtil.getBootClassPath());
         }
     }
     
@@ -276,7 +263,7 @@ public class ComputeImportsTest extends NbTestCase {
         prepareTest(name);
         
         DataObject testDO = DataObject.find(testSource);
-        EditorCookie ec = (EditorCookie) testDO.getCookie(EditorCookie.class);
+        EditorCookie ec = testDO.getCookie(EditorCookie.class);
         
         assertNotNull(ec);
         
