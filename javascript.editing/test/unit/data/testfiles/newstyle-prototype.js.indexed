@@ -9,12 +9,18 @@ Document 1
 Indexed:
   base : initialize;Person;initialize|CONSTRUCTOR|;name;0;;;;
   base : john;;john|GLOBAL|;;0;;;Pirate;
+  base : name;Person;name|PROPERTY|;0;;;;
+  base : person;;Person|DOCUMENTED|PROPERTY|;0;62;;;
+  base : pirate;;Pirate|DOCUMENTED|PROPERTY|;0;138;;;
   base : say;Person;say|FUNCTION|message;0;;;;
   base : say;Pirate;say|DOCUMENTED|FUNCTION|,message;0;19e;;;
   extend : pirate;Pirate;Person
   fqn : john;;john|GLOBAL|;;0;;;Pirate;
   fqn : person.initialize;;Person.initialize|CONSTRUCTOR|;name;0;;;;
+  fqn : person.name;;Person.name|PROPERTY|;0;;;;
   fqn : person.say;;Person.say|FUNCTION|message;0;;;;
+  fqn : person;;Person|DOCUMENTED|PROPERTY|;0;62;;;
   fqn : pirate.say;;Pirate.say|DOCUMENTED|FUNCTION|,message;0;19e;;;
+  fqn : pirate;;Pirate|DOCUMENTED|PROPERTY|;0;138;;;
 
 Not Indexed:
