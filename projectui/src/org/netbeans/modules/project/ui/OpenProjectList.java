@@ -1182,17 +1182,26 @@ public final class OpenProjectList {
             int index = 0;
             for (ProjectReference prjRef : recentProjects) {
                 URL url = prjRef.getURL();
-                FileObject fo = null;
+                FileObject prjDir = null;
                 try {
-                    fo = FileUtil.toFileObject(new File(url.toURI()));
+                    prjDir = FileUtil.toFileObject(new File(url.toURI()));
                 } catch (URISyntaxException use) {
-                    //
+                    // invalid projectdir URL saved?
                 }
-                if (fo == null) { // externally deleted project
+                Project prj = null;
+                if (prjDir != null && prjDir.isFolder()) {
+                    try {
+                        prj = ProjectManager.getDefault().findProject(prjDir);
+                    } catch ( IOException ioEx ) {
+                        // Ignore invalid folders
+                    }
+                }
+                
+                if (prj == null) { // externally deleted project probably
                     refresh = true;
                     break;
-                } else if (fo.getFileObject("nbproject") == null || !fo.getFileObject("nbproject").isValid()) {
-                    fo.removeFileChangeListener(nbprojectDeleteListener);
+                } else if (prjDir.getFileObject("nbproject") == null || !prjDir.getFileObject("nbproject").isValid()) {
+                    prjDir.removeFileChangeListener(nbprojectDeleteListener);
                     refresh = true;
                     break;
                 }
@@ -1325,6 +1334,7 @@ public final class OpenProjectList {
         }
         
         private List<UnloadedProjectInformation> getRecentProjectsInfo() {
+            refresh();
             return recentProjectsInfos;
         }
         

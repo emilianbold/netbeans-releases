@@ -91,7 +91,7 @@ public abstract class IndexedElement extends PHPElement {
     }
 
     static IndexedElement create(String attributes, String fileUrl, String name, String in, int attrIndex, PHPIndex index, boolean createPackage) {
-        int flags = IndexedElement.decode(attributes, attrIndex, 0);
+        int flags = FUNCTION;//IndexedElement.decode(attributes, attrIndex, 0);
         if (createPackage) {
             IndexedPackage func = new IndexedPackage(name, in, index, fileUrl, attributes, flags, ElementKind.PACKAGE);
             return func;
