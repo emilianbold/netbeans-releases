@@ -102,7 +102,8 @@ public abstract class IndexedElement extends JsElement {
             IndexedFunction func = new IndexedFunction(name, in, index, fileUrl, attributes, flags, kind);
             return func;
         } else if ((flags & GLOBAL) != 0) {
-            IndexedProperty property = new IndexedProperty(name, in, index, fileUrl, attributes, flags, ElementKind.GLOBAL);
+            ElementKind kind = Character.isUpperCase(name.charAt(0)) ? ElementKind.CLASS : ElementKind.GLOBAL;
+            IndexedProperty property = new IndexedProperty(name, in, index, fileUrl, attributes, flags, kind);
             return property;
         } else {
             IndexedProperty property = new IndexedProperty(name, in, index, fileUrl, attributes, flags, ElementKind.PROPERTY);
