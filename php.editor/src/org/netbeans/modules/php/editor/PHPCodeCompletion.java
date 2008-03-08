@@ -61,6 +61,8 @@ import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
+import org.netbeans.modules.php.editor.index.IndexedFunction;
+import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -85,6 +87,7 @@ public class PHPCodeCompletion implements Completable {
         CompletionRequest request = new CompletionRequest();
         request.anchor = caretOffset - prefix.length();
 
+        // KEYWORDS
 
         for (String keyword : PHP_KEYWORDS) {
             if (startsWith(keyword, prefix)) {
@@ -92,8 +95,13 @@ public class PHPCodeCompletion implements Completable {
             }
         }
 
-
-        System.err.println("PHP Code completion");
+        // FUNCTIONS
+        
+        PHPIndex index = PHPIndex.get(info.getIndex(PHPLanguage.PHP_MIME_TYPE));
+        
+        for (IndexedFunction function : index.getFunctions(result, prefix, NameKind.PREFIX)){
+            proposals.add(new FunctionItem(function, request));
+        }
 
         return proposals;
     }
@@ -249,6 +257,26 @@ public class PHPCodeCompletion implements Completable {
         @Override
         public ElementKind getKind() {
             return ElementKind.KEYWORD;
+        }
+    }
+    
+    private class FunctionItem extends PHPCompletionItem {
+
+        private IndexedFunction function;
+
+        FunctionItem(IndexedFunction function, CompletionRequest request) {
+            super(request);
+            this.function = function;
+        }
+
+        @Override
+        public String getName() {
+            return function.getName();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.METHOD;
         }
     }
 

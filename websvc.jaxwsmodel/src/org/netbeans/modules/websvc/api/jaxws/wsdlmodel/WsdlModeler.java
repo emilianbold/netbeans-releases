@@ -150,9 +150,7 @@ public class WsdlModeler {
         RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
                 public void run() {
                     generateWsdlModel(errorHandler);
-                    synchronized (this) {
-                        fireModelCreated(wsdlModel);
-                    }
+                    fireModelCreated(wsdlModel);
                 }
             },true);
         addWsdlModelListener(listener);
@@ -251,7 +249,6 @@ public class WsdlModeler {
             }
             Logger.getLogger(this.getClass().getName()).log(Level.FINE, "WsdlModeler.generateWsdlModel", ex); //NOI18N
         }
-        
     }
     
     private synchronized void addWsdlModelListener(WsdlModelListener listener) {
@@ -260,12 +257,14 @@ public class WsdlModeler {
             modelListeners.add(listener);
     }
     
-    private synchronized void fireModelCreated(WsdlModel model) {
+    private void fireModelCreated(WsdlModel model) {
         for (WsdlModelListener l:modelListeners) {
             l.modelCreated(model);
         }
         // Removing all listeners
-        modelListeners.clear();
+        synchronized (this) {
+            modelListeners.clear();
+        }
     }
     
     private class IdeErrorReceiver extends ErrorReceiver{

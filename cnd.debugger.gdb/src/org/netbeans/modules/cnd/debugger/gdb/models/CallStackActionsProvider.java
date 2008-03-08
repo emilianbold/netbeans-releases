@@ -96,7 +96,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
 
     public CallStackActionsProvider(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
-        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
     public Action[] getActions(Object node) throws UnknownTypeException {

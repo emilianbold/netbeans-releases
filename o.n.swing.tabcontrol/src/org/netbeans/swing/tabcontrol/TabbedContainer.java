@@ -855,14 +855,13 @@ public class TabbedContainer extends JComponent implements Accessible {
      * @param transparent True to make the container transparent
      */
     public void setTransparent( boolean transparent ) {
-        if( !isSliding() ) {
-            //support only slided-in windows
-            throw new IllegalStateException( "Transparency is supported for sliding windows only." );
-        }
-        float oldAlpha = currentAlpha;
-        currentAlpha = transparent ? ALPHA_TRESHOLD : 1.0f;
-        if( oldAlpha != currentAlpha ) {
-            repaint();
+        if( isSliding() ) {
+            //#129444 - AWT events may be retargeted icorrectly sometimes
+            float oldAlpha = currentAlpha;
+            currentAlpha = transparent ? ALPHA_TRESHOLD : 1.0f;
+            if( oldAlpha != currentAlpha ) {
+                repaint();
+            }
         }
     }
     

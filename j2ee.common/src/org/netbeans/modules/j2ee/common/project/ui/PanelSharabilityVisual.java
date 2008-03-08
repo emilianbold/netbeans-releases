@@ -21,7 +21,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
@@ -68,31 +67,8 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
             }
         });
 
-        libraryRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                changeSupport.fireChange();
-            }
-        });
-        serverRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                changeSupport.fireChange();
-            }
-        });
-        libraryNameComboBox.addItemListener(new ItemListener() {
+        serverLibraryCheckbox.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                changeSupport.fireChange();
-            }
-        });
-        libraryNameComboBox.getEditor().getEditorComponent().addKeyListener(new KeyListener() {
-            public void keyTyped(KeyEvent e) {
-                changeSupport.fireChange();
-            }
-
-            public void keyPressed(KeyEvent e) {
-                changeSupport.fireChange();
-            }
-
-            public void keyReleased(KeyEvent e) {
                 changeSupport.fireChange();
             }
         });
@@ -109,18 +85,13 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
     public JCheckBox getSharableProject() {
         return sharableProject;
     }
-    
-    public JRadioButton getLibraryRadioButton() {
-        return libraryRadioButton;
-    }
 
-    public JComboBox getLibraryNameComboBox() {
-        return libraryNameComboBox;
+    public JCheckBox getServerLibraryCheckbox() {
+        return serverLibraryCheckbox;
     }
 
     public void setProjectLocation(File projectLocation) {
         this.projectLocation = projectLocation;
-        updateLibraryNameComboBox();
     }
 
     public void setServerInstance(String serverInstanceId) {
@@ -130,7 +101,6 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
         name = (name == null) ? "" : PropertyUtils.getUsablePropertyName(name); // NOI18N
 
         preselectedLibraryName = name;
-        libraryNameComboBox.setSelectedItem(preselectedLibraryName);
     }
 
     public String getSharedLibarariesLocation() {
@@ -138,7 +108,9 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
     }
 
     public String getServerLibraryName() {
-        return libraryRadioButton.isSelected() ? (String) libraryNameComboBox.getSelectedItem() : null;
+        return serverLibraryCheckbox.isSelected() && serverLibraryCheckbox.isEnabled()
+                ? preselectedLibraryName
+                : null;
     }
 
     /** This method is called from within the constructor to
@@ -151,39 +123,14 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        messageLabel = new javax.swing.JLabel();
-        serverRadioButton = new javax.swing.JRadioButton();
-        libraryRadioButton = new javax.swing.JRadioButton();
         sharableProject = new javax.swing.JCheckBox();
         librariesLabel = new javax.swing.JLabel();
         librariesLocation = new javax.swing.JTextField();
         browseLibraries = new javax.swing.JButton();
-        jSeparator1 = new javax.swing.JSeparator();
-        libraryNameComboBox = new javax.swing.JComboBox();
-        libraryNameLabel = new javax.swing.JLabel();
-
-        messageLabel.setText(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.messageLabel.text")); // NOI18N
-
-        buttonGroup1.add(serverRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(serverRadioButton, org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.serverRadioButton.text")); // NOI18N
-        serverRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                serverRadioButtonActionPerformed(evt);
-            }
-        });
-
-        buttonGroup1.add(libraryRadioButton);
-        libraryRadioButton.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(libraryRadioButton, org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.libraryRadioButton.text")); // NOI18N
-        libraryRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                libraryRadioButtonActionPerformed(evt);
-            }
-        });
+        serverLibraryCheckbox = new javax.swing.JCheckBox();
 
         sharableProject.setSelected(SharableLibrariesUtils.isLastProjectSharable());
         org.openide.awt.Mnemonics.setLocalizedText(sharableProject, org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.sharableProject.text")); // NOI18N
-        sharableProject.setMargin(new java.awt.Insets(0, 0, 0, 0));
         sharableProject.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sharableProjectActionPerformed(evt);
@@ -200,10 +147,7 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
             }
         });
 
-        libraryNameComboBox.setEditable(true);
-
-        libraryNameLabel.setLabelFor(libraryNameComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(libraryNameLabel, org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.libraryNameLabel.text")); // NOI18N
+        serverLibraryCheckbox.setText(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.serverLibraryCheckbox.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -213,26 +157,16 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
                 .add(sharableProject)
                 .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
                 .add(librariesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
+                .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseLibraries))
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
-                .add(messageLabel)
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(serverRadioButton)
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(21, 21, 21)
-                .add(libraryNameLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(libraryNameComboBox, 0, 269, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(libraryRadioButton)
-                .addContainerGap(182, Short.MAX_VALUE))
+                .addContainerGap()
+                .add(serverLibraryCheckbox)
+                .addContainerGap(288, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -240,27 +174,14 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
                 .add(sharableProject)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(librariesLabel)
                     .add(browseLibraries)
+                    .add(librariesLabel)
                     .add(librariesLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(messageLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(serverRadioButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(libraryRadioButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(libraryNameLabel)
-                    .add(libraryNameComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .add(serverLibraryCheckbox)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        serverRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.serverRadioButton.text")); // NOI18N
-        serverRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.serverRadioButton.text")); // NOI18N
-        libraryRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.libraryRadioButton.text")); // NOI18N
-        libraryRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.libraryRadioButton.text")); // NOI18N
         sharableProject.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.sharableProject.text")); // NOI18N
         sharableProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.sharableCheckBox.text")); // NOI18N
         librariesLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.librariesLabel.text")); // NOI18N
@@ -271,14 +192,6 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.label")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private void libraryRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_libraryRadioButtonActionPerformed
-        updateServerShareableFields();
-    }//GEN-LAST:event_libraryRadioButtonActionPerformed
-
-    private void serverRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverRadioButtonActionPerformed
-        updateServerShareableFields();
-    }//GEN-LAST:event_serverRadioButtonActionPerformed
-
     private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sharableProjectActionPerformed
         librariesLocation.setEnabled(sharableProject.isSelected());
         browseLibraries.setEnabled(sharableProject.isSelected());
@@ -287,9 +200,8 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
         } else {
             librariesLocation.setText("");
         }
-        serverRadioButton.setEnabled(sharableProject.isSelected());
-        libraryRadioButton.setEnabled(sharableProject.isSelected());
-        updateServerShareableFields();
+        serverLibraryCheckbox.setEnabled(sharableProject.isSelected());
+        changeSupport.fireChange();
     }//GEN-LAST:event_sharableProjectActionPerformed
 
     private void browseLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLibrariesActionPerformed
@@ -301,53 +213,15 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
             if (sharableProject.isSelected()) {
                 librariesLocation.setText(currentLibrariesLocation);
             }
-            updateLibraryNameComboBox();
         }
     }//GEN-LAST:event_browseLibrariesActionPerformed
-
-    private void updateServerShareableFields() {
-        boolean enabled = libraryRadioButton.isEnabled() && libraryRadioButton.isSelected();
-        libraryNameComboBox.setEnabled(enabled);
-        libraryNameComboBox.setEditable(enabled);
-        if (!libraryRadioButton.isSelected()) {
-            libraryNameComboBox.setSelectedItem(""); // NOI18N
-        } else {
-            libraryNameComboBox.setSelectedItem(preselectedLibraryName);
-        }
-    }
-
-    private void updateLibraryNameComboBox() {
-        DefaultComboBoxModel model = (DefaultComboBoxModel) libraryNameComboBox.getModel();
-        model.removeAllElements();
-
-        if (projectLocation == null) {
-            return;
-        }
-
-        // FIXME how to do this cleanly ?
-        File location = FileUtil.normalizeFile(
-                PropertyUtils.resolveFile(projectLocation,
-                currentLibrariesLocation + File.separator + SharabilityUtility.DEFAULT_LIBRARIES_FILENAME));
-        if (location == null || !location.exists()) {
-            return;
-        }
-        for (Library lib : SharabilityUtility.getSharedServerLibraries(location)) {
-            model.addElement(lib.getName());
-        }
-        model.setSelectedItem(preselectedLibraryName);
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseLibraries;
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel librariesLabel;
     private javax.swing.JTextField librariesLocation;
-    private javax.swing.JComboBox libraryNameComboBox;
-    private javax.swing.JLabel libraryNameLabel;
-    private javax.swing.JRadioButton libraryRadioButton;
-    private javax.swing.JLabel messageLabel;
-    private javax.swing.JRadioButton serverRadioButton;
+    private javax.swing.JCheckBox serverLibraryCheckbox;
     private javax.swing.JCheckBox sharableProject;
     // End of variables declaration//GEN-END:variables
 
