@@ -78,6 +78,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.windows.WindowManager;
 
 /**
@@ -126,7 +128,18 @@ public class AutoupdateCheckScheduler {
             t.waitFinished ();
         }
         err.log (Level.FINEST, "Waiting for all refreshTasks is done.");
-        RequestProcessor.getDefault ().post (doCheckAvailableUpdates, 500);
+        final int delay = 500;
+        final long startTime = System.currentTimeMillis ();
+        RequestProcessor.Task t = RequestProcessor.getDefault ().post (doCheckAvailableUpdates, delay);
+        t.addTaskListener (new TaskListener () {
+            public void taskFinished (Task task) {
+                task.removeTaskListener (this);
+                long time = (System.currentTimeMillis () - startTime - delay) / 1000;
+                if (time > 0) {
+                    Utilities.putTimeOfInitialization (time);
+                }
+            }
+        });
     }
     
     private static Runnable getRefresher (final UpdateUnitProvider p) {

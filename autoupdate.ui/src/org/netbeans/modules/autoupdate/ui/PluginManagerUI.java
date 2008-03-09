@@ -148,16 +148,19 @@ public class PluginManagerUI extends javax.swing.JPanel  {
                 public void windowOpened (WindowEvent e) {
                     final WindowAdapter waa = this;
                     setWaitingState (true);
-                    Utilities.startAsWorkerThread (PluginManagerUI.this, new Runnable () {
-                        public void run () {
-                            try {
-                                initTask.waitFinished ();
-                                w.removeWindowListener (waa);
-                            } finally {
-                                setWaitingState (false);
-                            }
-                        }
-                    }, NbBundle.getMessage (PluginManagerUI.class, "UnitTab_InitAndCheckingForUpdates"));
+                    Utilities.startAsWorkerThread (PluginManagerUI.this,
+                            new Runnable () {
+                                public void run () {
+                                    try {
+                                        initTask.waitFinished ();
+                                        w.removeWindowListener (waa);
+                                    } finally {
+                                        setWaitingState (false);
+                                    }
+                                }
+                            },
+                            NbBundle.getMessage (PluginManagerUI.class, "UnitTab_InitAndCheckingForUpdates"),
+                            Utilities.getTimeOfInitialization ());
                 }
             });
         }
