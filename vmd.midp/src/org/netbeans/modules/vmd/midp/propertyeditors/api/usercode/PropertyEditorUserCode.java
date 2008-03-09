@@ -238,7 +238,6 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
     }
 
     private static void setupTextUndoRedo(javax.swing.text.JTextComponent editor) {
-        //So smart So nice.... Missis O.R.
         String os = System.getProperty("os.name").toLowerCase(); //NOI18N
 
         KeyStroke[] undoKeys = null;
@@ -325,9 +324,9 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
             Mnemonics.setLocalizedText(userCodeRadioButton, NbBundle.getMessage(
                     PropertyEditorUserCode.class, "LBL_USER_CODE", userCodeLabel)); // NOI18N
             userCodeRadioButton.getAccessibleContext().setAccessibleName(
-                    NbBundle.getMessage(PropertyEditorUserCode.class, "ACSN_USER_CODE", userCodeLabel));
+                    NbBundle.getMessage(PropertyEditorUserCode.class, "ACSN_USER_CODE", userCodeLabel)); //NOI18N
             userCodeRadioButton.getAccessibleContext().setAccessibleDescription(
-                    NbBundle.getMessage(PropertyEditorUserCode.class, "ACSD_USER_CODE", userCodeLabel));
+                    NbBundle.getMessage(PropertyEditorUserCode.class, "ACSD_USER_CODE", userCodeLabel)); //NOI18N
             userCodeRadioButton.addActionListener(this);
             buttonGroup.add(userCodeRadioButton);
 
@@ -478,11 +477,11 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
             if (e.getSource() == userCodeEditorPane) {
                 userCodeRadioButton.setSelected(true);
             }
-                
+
         }
 
         public void focusLost(FocusEvent e) {
-            
+
         }
     }
 }

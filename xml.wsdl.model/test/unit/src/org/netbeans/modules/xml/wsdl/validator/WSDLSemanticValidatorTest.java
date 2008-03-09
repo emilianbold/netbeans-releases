@@ -212,7 +212,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
     }
     
     public void testValidateOnewayOperationFaultShouldNotBeDefined() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/oneway/faultDefined_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/OneWay/faultDefined_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         

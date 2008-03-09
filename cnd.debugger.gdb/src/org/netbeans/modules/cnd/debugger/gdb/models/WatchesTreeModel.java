@@ -85,7 +85,7 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
     
     public WatchesTreeModel(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
-        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
         debugger.addPropertyChangeListener(this);
         watchesTreeModel = this;
     }

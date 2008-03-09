@@ -44,13 +44,13 @@ public class ETLBLPackager {
         boolean statusL = ETLBLUtils.checkIfPackageExists(packageContainer, true);
         if (!statusL) {
             mLogger.infoNoloc(mLoc.t("ERROR: Unable To Create ETLLoader Package in the project home : " + packageContainer));
-            System.exit(0);
+        //System.exit(0);
         }
         String eTLProcessContainer = packageContainer + ETLBLPkgConstants.fs + ETLBLPkgConstants.toplevelrt;
         boolean statusP = ETLBLUtils.checkIfPackageExists(eTLProcessContainer, true);
         if (!statusP) {
             mLogger.infoNoloc(mLoc.t("ERROR: Unable To Create ETLProcess Package in the project home : " + eTLProcessContainer));
-            System.exit(0);
+        // System.exit(0);
         }
     }
 
@@ -86,10 +86,10 @@ public class ETLBLPackager {
         boolean statusEnginep = ETLBLUtils.checkIfPackageExists(enginep, false);
         if (!statusModelp) {
             mLogger.infoNoloc(mLoc.t("ERROR: Missing Source package from eTL Project : " + modelp));
-            System.exit(0);
+        //System.exit(0);
         } else if (!statusEnginep) {
             mLogger.infoNoloc(mLoc.t("ERROR: Missing Source package from eTL Project : " + enginep));
-            System.exit(0);
+        //System.exit(0);
         } else {
             //Read All the Model Files available under model files path.
             File models = new File(modelp);
@@ -154,22 +154,33 @@ public class ETLBLPackager {
     }
 
     private void copyRequiredLibsToPackage() {
-        //Create a lib folder if not exists
+        //Create a lib folder if not exists        
         String trgtLibdir = this.projecthome + ETLBLPkgConstants.fs + ETLBLPkgConstants.pkglibs;
         String srcLibPath = ETLBLPkgConstants.srclibs;
-        mLogger.infoNoloc(mLoc.t("copyRequiredLibsToPackage****** " + srcLibPath));
+        String etlEnginePath = ETLBLPkgConstants.etlEnginePath;
         boolean status = ETLBLUtils.checkIfPackageExists(trgtLibdir, true);
         if (status) {
             //NOTE : ***** Check if some of these libs can be copied from project system directly *****
             File srclibs = new File(srcLibPath);
+            if (!(srclibs.exists())) {
+                srcLibPath = ETLBLPkgConstants.srclibs1;
+                etlEnginePath = ETLBLPkgConstants.etlEnginePath1;
+                srclibs = new File(srcLibPath);
+            }
             String[] libnames = srclibs.list();
+            try {
+                CopyFile.copyFile(new File(etlEnginePath + ETLBLPkgConstants.fs + "etlengine.jar"), new File(trgtLibdir + ETLBLPkgConstants.fs + "etlengine.jar"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             for (int i = 0; i < libnames.length; i++) {
-                mLogger.infoNoloc(mLoc.t("Copying Lib [ " + libnames[i] + " ] ..."));
-                //eTLBLUtils.copyFile(srcLibPath + eTLBLPkgConstants.fs + libnames[i], trgtLibdir);
-                try {
-                    CopyFile.copyFile(new File(srcLibPath + ETLBLPkgConstants.fs + libnames[i]), new File(trgtLibdir + ETLBLPkgConstants.fs + libnames[i]));
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (libnames[i].endsWith(".jar")) {
+                    mLogger.infoNoloc(mLoc.t("Copying Lib [ " + libnames[i] + " ] ..."));
+                    try {
+                        CopyFile.copyFile(new File(srcLibPath + ETLBLPkgConstants.fs + libnames[i]), new File(trgtLibdir + ETLBLPkgConstants.fs + libnames[i]));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         } else {
@@ -179,12 +190,20 @@ public class ETLBLPackager {
 
     private void copyAndAppendTriggers() {
         //Copy the triggers first to the root dir
-        File triggertempl = new File(ETLBLPkgConstants.srctriggertempl);
-        String[] triggerstemp = triggertempl.list();
-        for (int i = 0; i < triggerstemp.length; i++) {
-            ETLBLUtils.copyFile(ETLBLPkgConstants.srctriggertempl + ETLBLPkgConstants.fs + triggerstemp[i], this.projecthome + ETLBLPkgConstants.fs + ETLBLPkgConstants.toplevelpkg);
+        String path = ETLBLPkgConstants.srctriggertempl;
+        File triggertempl = new File(path);
+        if (!(triggertempl.exists())) {
+            path = ETLBLPkgConstants.srctriggertempl1;
+            triggertempl = new File(path);
         }
 
+        String[] triggerstemp = triggertempl.list();
+        for (int i = 0; i < triggerstemp.length; i++) {
+            if (!(triggerstemp[i].endsWith(".jar"))) {
+                mLogger.infoNoloc(mLoc.t("Copying Lib [ " + triggerstemp[i] + " ] ..."));
+                ETLBLUtils.copyFile(path + ETLBLPkgConstants.fs + triggerstemp[i], this.projecthome + ETLBLPkgConstants.fs + ETLBLPkgConstants.toplevelpkg);
+            }
+        }
         //Modicy trigger with invocation calls
         String triggerpkg = this.projecthome + ETLBLPkgConstants.fs + ETLBLPkgConstants.toplevelpkg;
         File finaltrigfiles = new File(triggerpkg);
@@ -199,12 +218,12 @@ public class ETLBLPackager {
                         out.write("\n" + this.triggerStrings.get(j).toString());
                     }
                 } catch (IOException ex) {
-                    mLogger.errorNoloc(mLoc.t("PRSR023: Exception :{0}",ex.getMessage()),ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR023: Exception :{0}", ex.getMessage()), ex);
                 } finally {
                     try {
                         out.close();
                     } catch (IOException ex) {
-                        mLogger.errorNoloc(mLoc.t("PRSR024: Exception :{0}",ex.getMessage()),ex);
+                        mLogger.errorNoloc(mLoc.t("PRSR024: Exception :{0}", ex.getMessage()), ex);
                     }
                 }
             }

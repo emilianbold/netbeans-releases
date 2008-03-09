@@ -84,11 +84,6 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
     private final DataObjectCookieManager cookieManager;
     
 
-    //
-    // init
-    //
-
-
     /** Create new XMLDataObject
      *
      * @param fo the primary file object
@@ -123,6 +118,7 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         this.addPropertyChangeListener (this);  //??? - strange be aware of firing cycles
     }
     
+    @Override
     public final Lookup getLookup() {
         return Lookups.fixed( new Object[]{
                     super.getLookup(), 
@@ -130,17 +126,9 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
                     });
     }
 
-    
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * DATAOBJECT stuff
- *  cookie management
- *  node delegate
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- */
-
-
     /**
      */
+    @Override
     protected Node createNodeDelegate () {
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("--> XMLDataObject.createNodeDelegate: this = " + this);
 
@@ -174,12 +162,14 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
 
 
     // it is called by super class constructor
+    @Override
     protected EditorCookie createEditorCookie () {
         return null;        
     }
     
 
     /** Delegate to super with possible debug messages. */
+    @Override
     public void setModified (boolean state) {
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("XMLDataObject:setModified: state = " + state); // NOI18N
 
@@ -188,6 +178,7 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
 
 
     /** Delegate to super with possible debug messages. */
+    @Override
     public org.openide.nodes.Node.Cookie getCookie(Class klass) {       
                 
         Node.Cookie cake = null;
@@ -281,6 +272,7 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
     }
 
 
+    @Override
     public HelpCtx getHelpCtx() {
         //return new HelpCtx(XMLDataObject.class);
         return HelpCtx.DEFAULT_HELP;
@@ -303,6 +295,7 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
             setShortDescription (Util.THIS.getString ("PROP_XMLDataNode_description"));
         }
 
+        @Override
         public SystemAction getDefaultAction() {
             return SystemAction.get (EditAction.class);
         }
