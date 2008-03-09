@@ -551,11 +551,11 @@ public class SaasUtil {
     public static FileObject retrieveWadlFile(WadlSaas saas) {
         try {
             FileObject saasFolder = saas.getSaasFolder();
-            File catalogFile = new File(FileUtil.toFile(saasFolder), saas.getDisplayName());
+            File catalogFile = new File(FileUtil.toFile(saasFolder), CATALOG);
             URI catalog  = catalogFile.toURI();
             URI wadlUrl = new URI(saas.getUrl());
             
-            return Retriever.getDefault().retrieveResource(saasFolder, catalog, wadlUrl);
+            return getRetriever().retrieveResource(saasFolder, catalog, wadlUrl);
             
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
@@ -563,4 +563,11 @@ public class SaasUtil {
         return null;
     }
     
+    private static Retriever getRetriever() {
+        Retriever r = Lookup.getDefault().lookup(Retriever.class);
+        if (r != null) {
+            return r;
+        }
+        return Retriever.getDefault();
+    }
 }

@@ -216,22 +216,19 @@ public class SaasServicesModel {
                         child = new SaasGroup(parent, g);
                         parent.addChildGroup(child);
                     }
+                    
                     child.setUserDefined(userDefined);
 
-                    if (child.getChildrenGroups().size() == 0) {
+                    if (g.getGroup().size() == 0) {
                         service = createService(child, ss);
                         service.setUserDefined(userDefined);
                         child.addService(service);
                         break;
                     } else {
-                        if (g.getGroup().size() > 0) {
-                            // 'group' element part of straight path, has only single child
-                            g = g.getGroup().get(0); 
-                        } else {
-                            break;
-                        }
+                        // 'group' element part of straight path, has only single child
+                        g = g.getGroup().get(0);
+                        parent = child; // march on towards tip
                     }
-                    parent = child;
                 }
             }
         } catch (Exception ex) {
@@ -275,6 +272,14 @@ public class SaasServicesModel {
         return getRootGroup().getChildrenGroups();
     }
 
+    public SaasGroup getTopGroup(String name) {
+        return getRootGroup().getChildGroup(name);
+    }
+
+    public Saas getTopService(String name) {
+        return getRootGroup().getChildService(name);
+    }
+    
     /**
      * Model mutation: add group from UI
      * 
