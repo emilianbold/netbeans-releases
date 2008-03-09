@@ -133,7 +133,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 //    /** The default (or previously selected) Fortran compiler for each CompilerSet */
 //    private HashMap<String, String> fortranSelections;
     
-    private JFileChooser addDirectoryChooser;
+//    private JFileChooser addDirectoryChooser;
     private CompilerSetManager csm;
     private CompilerSet currentCompilerSet;
     
@@ -212,7 +212,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 //        cSelections = new HashMap();
 //        cppSelections = new HashMap();
 //        fortrancSelectionsSelections = new HashMap();
-        addDirectoryChooser = null;
+//        addDirectoryChooser = null;
         
 //        tfMakeCommand.setText(model.getMakeName());
 //        tfGdbCommand.setText(model.getGdbName());
@@ -629,7 +629,19 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private void changeCompilerSet(CompilerSet cs) {
 //        boolean fortran = CppSettings.getDefault().isFortranEnabled();
 //        Tool fortranSelection = null;
-        
+        if (currentCompilerSet != null) {
+            Tool tool;
+            tool = currentCompilerSet.findTool(Tool.CCompiler);
+            tool.setPath(tfCPath.getText());
+            tool = currentCompilerSet.findTool(Tool.CCCompiler);
+            tool.setPath(tfCppPath.getText());
+            tool = currentCompilerSet.findTool(Tool.FortranCompiler);
+            tool.setPath(tfFortranPath.getText());
+            tool = currentCompilerSet.findTool(Tool.MakeTool);
+            tool.setPath(tfMakePath.getText());
+            tool = currentCompilerSet.findTool(Tool.DebuggerTool);
+            tool.setPath(tfGdbPath.getText());
+        }
         if (cs != null) {
             tfBaseDirectory.setText(cs.getDirectory());
             cbFamily.removeAllItems();
@@ -1869,7 +1881,7 @@ private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//G
     else {
         seed = System.getProperty("user.home"); // NOI18N
     }
-    FileChooser fileChooser = new FileChooser(getString("BASE_DIRECTORY"), getString("SELECT"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+    FileChooser fileChooser = new FileChooser(getString("SELECT_BASE_DIRECTORY_TITLE"), null, JFileChooser.DIRECTORIES_ONLY, null, seed, true);
     int ret = fileChooser.showOpenDialog(this);
     if (ret == JFileChooser.CANCEL_OPTION) {
         return;
@@ -1886,7 +1898,7 @@ private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//G
 
 private void selectCompiler(JTextField tf) {
     String seed = tfBaseDirectory.getText();
-    FileChooser fileChooser = new FileChooser("", "", JFileChooser.FILES_ONLY, null, seed, false);
+    FileChooser fileChooser = new FileChooser(getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false);
     int ret = fileChooser.showOpenDialog(this);
     if (ret == JFileChooser.CANCEL_OPTION) {
         return;
@@ -1901,7 +1913,7 @@ private void selectCompiler(JTextField tf) {
 
 private void selectTool(JTextField tf) {
     String seed = tfBaseDirectory.getText();
-    FileChooser fileChooser = new FileChooser("", "", JFileChooser.FILES_ONLY, null, seed, false);
+    FileChooser fileChooser = new FileChooser(getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false);
     int ret = fileChooser.showOpenDialog(this);
     if (ret == JFileChooser.CANCEL_OPTION) {
         return;
