@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -175,8 +175,15 @@ public abstract class UpdateUnitImpl extends Object {
                 String moduleId = installed.getCodeName ();
                 List<UpdateElement> realUpdates = new ArrayList<UpdateElement> ();
                 for (UpdateElement update : updates) {
-                    if (new SpecificationVersion(update.getSpecificationVersion ()).compareTo (new SpecificationVersion(installed.getSpecificationVersion ())) > 0) {
-                        err.log (Level.FINE, "UpdateElement " + moduleId + "[" + installed.getSpecificationVersion () + "] has update " + moduleId + "[" + update.getSpecificationVersion () + "]");
+                    String uspec = update.getSpecificationVersion ();
+                    String ispec = installed.getSpecificationVersion ();
+                    if (uspec != null && ispec == null) {
+                        err.log (Level.FINE, "UpdateElement " + moduleId + "[" + ispec + "] has update " + moduleId + "[" + uspec + "]");
+                        realUpdates.add (update);
+                    } else if (uspec == null || ispec == null) {
+                        // no update
+                    } else if (new SpecificationVersion (uspec).compareTo (new SpecificationVersion (ispec)) > 0) {
+                        err.log (Level.FINE, "UpdateElement " + moduleId + "[" + ispec + "] has update " + moduleId + "[" + uspec + "]");
                         realUpdates.add (update);
                     }
                 }
@@ -191,7 +198,18 @@ public abstract class UpdateUnitImpl extends Object {
         }
         Collections.sort(res,new Comparator<UpdateElement>(){
             public int compare(UpdateElement o1, UpdateElement o2) {
-                return new SpecificationVersion(o2.getSpecificationVersion()).compareTo(new SpecificationVersion(o1.getSpecificationVersion()));
+                String sv1 = o1.getSpecificationVersion ();
+                String sv2 = o2.getSpecificationVersion ();
+                if (sv1 == null) {
+                    if (sv2 == null) {
+                        return 0;
+                    } else {
+                        return -1;
+                    }
+                } else if (sv2 == null) {
+                    return 1;
+                }
+                return new SpecificationVersion (sv2).compareTo (new SpecificationVersion (sv1));
             }
         });
         return res; 
@@ -227,6 +245,7 @@ public abstract class UpdateUnitImpl extends Object {
         return res;
     }
     
+    @Override
     public boolean equals(Object obj) {
         if (obj == null)
             return false;
@@ -258,6 +277,7 @@ public abstract class UpdateUnitImpl extends Object {
         return true;
     }
 
+    @Override
     public int hashCode() {
         int hash = 7;
 

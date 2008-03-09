@@ -393,7 +393,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     private String getOsArch() {
         String orig = System.getProperty("os.arch"); // NOI18N
-        return (orig.equals("i386") || orig.equals("i686")) ? "-x86" : orig; // NOI18N
+        return "-" + ((orig.equals("i386") || orig.equals("i686")) ? "x86" : orig); // NOI18N
     }
     
     private String getOsName() {
