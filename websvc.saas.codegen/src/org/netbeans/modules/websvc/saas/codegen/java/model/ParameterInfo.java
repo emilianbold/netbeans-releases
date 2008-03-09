@@ -245,4 +245,27 @@ public class ParameterInfo {
             throw new IllegalArgumentException(v);
         }
     }
+    
+    public enum ParamFilter {
+        FIXED("fixed");
+        
+        private String value;
+        
+        ParamFilter(String value) {
+            this.value = value;
+        }
+        
+        public String value() {
+            return value;
+        }
+        
+        public static ParamStyle fromValue(String v) {
+            for (ParamStyle c: ParamStyle.values()) {
+                if (c.value.equals(v)) {
+                    return c;
+                }
+            }
+            throw new IllegalArgumentException(v);
+        }
+    }
 }
