@@ -215,7 +215,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
                         // may ignore it
                     }
                 } else {
-                    String msg = NbBundle.getMessage(RecentProjects.class, "ERR_InvalidProject", project.getProjectDirectory().getPath()); //NOI18N
+                    String msg = NbBundle.getMessage(RecentProjects.class, "ERR_InvalidProject"); //NOI18N
                     NotifyDescriptor nd = new NotifyDescriptor.Message(msg);
                     DialogDisplayer.getDefault().notify(nd);
                 }

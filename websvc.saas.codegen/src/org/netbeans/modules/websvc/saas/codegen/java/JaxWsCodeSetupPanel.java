@@ -97,12 +97,14 @@ public class JaxWsCodeSetupPanel extends javax.swing.JPanel {
             uriTemplateTF.setVisible(false);
         }
         
-        if (showParams) {
-            messageLabel.setVisible(false);
+        if (showParams && !inputParams.isEmpty()) {
+            messageLabel.setVisible(false);     
         } else {
             paramLabel.setVisible(false);
             paramScrollPane.setVisible(false);
             messageLabel.setVisible(true);
+            if(inputParams.isEmpty())
+                messageLabel.setText(NbBundle.getMessage(JaxRsCodeSetupPanel.class, "MSG_EmptyParams"));
         }
     }
 
