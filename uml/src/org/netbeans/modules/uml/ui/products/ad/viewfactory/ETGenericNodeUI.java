@@ -132,9 +132,15 @@ public class ETGenericNodeUI extends TSEDefaultNodeUI implements IETNodeUI {
         return retVal;
     }
     
-    
-    
+    // lvv - 128186 TS StackOverflow fix
+    boolean inDraw = false;
     public void draw(TSEGraphics graphics) {
+        if (inDraw) 
+        {
+            return;
+        }
+        try {
+            inDraw = true;
         IDrawEngine de = getDrawEngine();
         if (de != null) {
             RenderingHints prevHint = graphics.getRenderingHints();
@@ -153,6 +159,9 @@ public class ETGenericNodeUI extends TSEDefaultNodeUI implements IETNodeUI {
                 GDISupport.frameRectangle(graphics.getGraphics(), ETBaseUI.getDeviceBounds(graphics, this),DrawEngineLineKindEnum.DELK_DOT, 1, Color.BLACK);
             }
             graphics.setRenderingHints(prevHint);
+        }
+        } finally {
+            inDraw = false;
         }
     }
     
