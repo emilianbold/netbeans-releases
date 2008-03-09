@@ -66,6 +66,8 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -212,6 +214,10 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
                     } catch (Exception ignore) {
                         // may ignore it
                     }
+                } else {
+                    String msg = NbBundle.getMessage(RecentProjects.class, "ERR_InvalidProject"); //NOI18N
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(msg);
+                    DialogDisplayer.getDefault().notify(nd);
                 }
                 
             }

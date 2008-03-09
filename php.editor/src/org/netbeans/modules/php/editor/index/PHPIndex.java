@@ -43,6 +43,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -53,6 +55,7 @@ import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
@@ -332,6 +335,29 @@ public class PHPIndex {
 //        
 //        return elements;
 //    }
+    
+    public Collection<IndexedFunction> getFunctions(PHPParseResult context, String name, NameKind kind){
+        final Set<SearchResult> result = new HashSet<SearchResult>();
+        Collection<IndexedFunction> functions = new ArrayList<IndexedFunction>();
+        search(name, name, kind, result, ALL_SCOPE, TERMS_FQN);
+        
+        for (SearchResult map : result) {
+            String[] signatures = map.getValues(PHPIndexer.FIELD_FQN);
+            
+            if (signatures == null){
+                continue;
+            }
+            
+            for (String signature : signatures){
+                
+                IndexedFunction func = (IndexedFunction)IndexedElement.create(signature,
+                        map.getPersistentUrl(), signature, "", 0, this, false);
+                
+                functions.add(func);
+            }
+        }
+        return functions;
+    }
     
 //    private Set<IndexedElement> getByFqn(String name, String type, NameKind kind,
 //        Set<Index.SearchScope> scope, boolean onlyConstructors, JsParseResult context,

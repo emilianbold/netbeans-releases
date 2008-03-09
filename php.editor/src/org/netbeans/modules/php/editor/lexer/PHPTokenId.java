@@ -86,7 +86,7 @@ public enum PHPTokenId implements TokenId {
     //	PHP_INT_CAST(null, "php"),
     //	PHP_BOOLEAN_OR(null, "php"),
     PHP_INCLUDE(null, "keyword"), //NOI18N
-    PHP_EMPTY(null, "php"), //NOI18N
+    PHP_EMPTY(null, "keyword"), //NOI18N
     //	PHP_XOR_EQUAL(null, "php"),
     PHP_CLASS("class", "keyword"), //NOI18N
     //	PHP_END_HEREDOC(null, "php"),
@@ -95,7 +95,7 @@ public enum PHPTokenId implements TokenId {
     //	PHP_DIV(null, "php"),
     //	PHP_START_HEREDOC(null, "php"),
     //	PHP_AT(null, "php"),
-    PHP_AS(null, "php"), //NOI18N
+    PHP_AS(null, "keyword"), //NOI18N
     //	PHP_STRING_CAST(null, "php"),
     PHP_TRY("try","keyword"), //NOI18N
     PHP_STATIC(null, "keyword"), //NOI18N
@@ -148,7 +148,7 @@ public enum PHPTokenId implements TokenId {
     PHP_FOREACH(null, "keyword"), //NOI18N
     PHP_IMPLEMENTS(null, "keyword"), //NOI18N
     //	PHP_NEKUDOTAIM(null, "php"),
-    PHP_CLONE(null, "php"), //NOI18N
+    PHP_CLONE(null, "keyword"), //NOI18N
     //	PHP_EOF(null, "php"),
     //	PHP_PLUS(null, "php"),
     //	PHP_NUM_STRING(null, "php"),
@@ -197,21 +197,21 @@ public enum PHPTokenId implements TokenId {
     //	PHP_CLOSE_PARENTHESE(null, "php"),
     PHP_NOT(null, "operator"), //NOI18N
     //	PHP_CONCAT_EQUAL(null, "php"),
-    PHP_LOGICAL_XOR(null, "php"), //NOI18N
-    PHP_ISSET(null, "php"), //NOI18N
+    PHP_LOGICAL_XOR(null, "operator"), //NOI18N
+    PHP_ISSET(null, "keyword"), //NOI18N
     //	PHP_QUESTION_MARK(null, "php"),
     //	PHP_OPEN_PARENTHESE(null, "php"),
-    PHP_LIST(null, "php"), //NOI18N
+    PHP_LIST(null, "keyword"), //NOI18N
     //	PHP_OR(null, "php"),
     //	PHP_COMMA(null, "php"),
-    PHP_CATCH(null, "php"), //NOI18N
+    PHP_CATCH(null, "keyword"), //NOI18N
     //	PHP_DEC(null, "php"),
     //	PHP_MUL_EQUAL(null, "php"),
     PHP_VAR("var", "keyword"), //NOI18N
     PHP_THROW(null, "keyword"), //NOI18N
     //	PHP_LGREATER(null, "php"),
     PHP_IF("if", "keyword"), //NOI18N
-    PHP_DECLARE(null, "php"), //NOI18N
+    PHP_DECLARE(null, "keyword"), //NOI18N
     PHP_OBJECT_OPERATOR(null, "php"), //NOI18N
     PHP_SELF(null, "keyword"), //NOI18N
     PHPDOC_VAR(null, "phpdockeyword"), //NOI18N

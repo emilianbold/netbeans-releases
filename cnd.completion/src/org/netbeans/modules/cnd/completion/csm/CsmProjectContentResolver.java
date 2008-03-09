@@ -67,6 +67,7 @@ import java.util.Set;
 import org.netbeans.editor.StringMap;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
@@ -428,35 +429,14 @@ public final class CsmProjectContentResolver {
         return res;
     }
     
-    public List getFileLocalVariables(CsmContext context, String strPrefix, boolean match) {
+    public List getFileLocalVariables(CsmContext context, String strPrefix, boolean match, boolean needDeclFromUnnamedNS) {
         List out = new ArrayList();
         if (!context.isEmpty()) {
             for (Iterator it = context.iterator(); it.hasNext();) {
                 CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
                 if (CsmKindUtilities.isFile(elem.getScope())) {
                     CsmFile currentFile = (CsmFile) elem.getScope();
-                    for (CsmDeclaration decl : currentFile.getDeclarations()) {
-                        if (CsmKindUtilities.isFileLocalVariable(decl)) {
-                            CharSequence varName = decl.getName();
-                            if (varName.length() != 0) {
-                                if(matchName(varName.toString(), strPrefix, match)) {
-                                    out.add(decl);
-                                }
-                            } else {
-                                CsmVariable var = (CsmVariable) decl;
-                                CsmType type = var.getType();
-                                if (type != null && CsmKindUtilities.isFileLocalVariable(var)) {
-                                    CsmClassifier clsfr = type.getClassifier();
-                                    if (clsfr != null) {
-                                        if (CsmKindUtilities.isUnion(clsfr)) {
-                                            CsmClass cls = (CsmClass) clsfr;
-                                            out.addAll(CsmSortUtilities.filterList(cls.getMembers(), strPrefix, match, caseSensitive));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    fillFileLocalVariables(strPrefix, match, currentFile.getDeclarations(), needDeclFromUnnamedNS, false, out);
                     break;
                 }
             }
@@ -464,23 +444,14 @@ public final class CsmProjectContentResolver {
         return out;
     }
     
-        public List getFileLocalFunctions(CsmContext context, String strPrefix, boolean match) {
+    public List getFileLocalFunctions(CsmContext context, String strPrefix, boolean match, boolean needDeclFromUnnamedNS) {
         List out = new ArrayList();
         if (!context.isEmpty()) {
             for (Iterator it = context.iterator(); it.hasNext();) {
                 CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
                 if (CsmKindUtilities.isFile(elem.getScope())) {
                     CsmFile currentFile = (CsmFile) elem.getScope();
-                    for (CsmDeclaration decl : currentFile.getDeclarations()) {
-                        if (CsmKindUtilities.isFunction(decl)) {
-                            CsmFunction fun = (CsmFunction) decl;
-                            if (CsmBaseUtilities.isFileLocalFunction(fun)) {
-                                if (decl.getName().length() != 0 && matchName(decl.getName().toString(), strPrefix, match)) {
-                                    out.add(fun);
-                                }
-                            }
-                        }
-                    }
+                    fillFileLocalFunctions(strPrefix, match, currentFile.getDeclarations(),needDeclFromUnnamedNS, false, out);
                     break;
                 }
             }
@@ -488,7 +459,60 @@ public final class CsmProjectContentResolver {
         return out;
     }
     
+    private void fillFileLocalFunctions(String strPrefix, boolean match, 
+            Collection<CsmOffsetableDeclaration> decls,boolean needDeclFromUnnamedNS, boolean fromUnnamedNamespace, 
+            Collection<CsmOffsetableDeclaration> out) {
+        for (CsmDeclaration decl : decls) {
+            if (CsmKindUtilities.isFunction(decl)) {
+                CsmFunction fun = (CsmFunction) decl;
+                if (fromUnnamedNamespace || CsmBaseUtilities.isFileLocalFunction(fun)) {
+                    if (decl.getName().length() != 0 && matchName(decl.getName().toString(), strPrefix, match)) {
+                        out.add(fun);
+                    }
+                }
+            } else if (needDeclFromUnnamedNS && CsmKindUtilities.isNamespaceDefinition(decl)) {
+                if (((CsmNamespaceDefinition)decl).getName().length() == 0) {
+                    // add all declarations from unnamed namespace as well
+                    fillFileLocalFunctions(strPrefix, match, ((CsmNamespaceDefinition)decl).getDeclarations(),needDeclFromUnnamedNS, true, out);
+                }
+            }
+        }        
+    }
     
+    private void fillFileLocalVariables(String strPrefix, boolean match, 
+            Collection<CsmOffsetableDeclaration> decls, boolean needDeclFromUnnamedNS, boolean fromUnnamedNamespace, 
+            Collection<CsmOffsetableDeclaration> out) {
+        for (CsmOffsetableDeclaration decl : decls) {
+            if (CsmKindUtilities.isVariable(decl)) {
+                CharSequence varName = decl.getName();
+                if (fromUnnamedNamespace || CsmKindUtilities.isFileLocalVariable(decl)) {
+                    if (varName.length() != 0) {
+                        if(matchName(varName.toString(), strPrefix, match)) {
+                            out.add(decl);
+                        }
+                    } else {
+                        CsmVariable var = (CsmVariable) decl;
+                        CsmType type = var.getType();
+                        if (type != null) {
+                            CsmClassifier clsfr = type.getClassifier();
+                            if (clsfr != null) {
+                                if (CsmKindUtilities.isUnion(clsfr)) {
+                                    CsmClass cls = (CsmClass) clsfr;
+                                    Collection filtered = CsmSortUtilities.filterList(cls.getMembers(), strPrefix, match, caseSensitive);
+                                    out.addAll(filtered);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (needDeclFromUnnamedNS && CsmKindUtilities.isNamespaceDefinition(decl)) {
+                if (((CsmNamespaceDefinition)decl).getName().length() == 0) {
+                    // add all declarations from unnamed namespace as well
+                    fillFileLocalVariables(strPrefix, match, ((CsmNamespaceDefinition)decl).getDeclarations(), needDeclFromUnnamedNS, true, out);
+                }
+            }
+        }        
+    }    
 //    public List getLocalDeclarations(CsmContext context, String strPrefix, boolean match) {
 //        List res = CsmContextUtilities.findLocalDeclarations(context, strPrefix, match, isCaseSensitive());
 //        if (res != null) {

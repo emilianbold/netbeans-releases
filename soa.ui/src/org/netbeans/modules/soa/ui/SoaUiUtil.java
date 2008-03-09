@@ -84,6 +84,8 @@ public class SoaUiUtil {
     
     private static String GRAY_COLOR = "#999999";
     
+    private SoaUiUtil() {}
+
     public static String getGrayString(String message) {
         return getGrayString("", message);
     }
@@ -396,5 +398,4 @@ public class SoaUiUtil {
             }
         }
     }
-    
 }

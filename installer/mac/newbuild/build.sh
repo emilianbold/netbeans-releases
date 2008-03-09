@@ -42,10 +42,10 @@ fi
 basename=`dirname "$0"`
 . "$basename"/build-private.sh
 
-
-progdir=`dirname $0`
+cd "$basename"
+chmod -R a+x *.sh
 
 commonname=$zipmodulclustersdir/$prefix-$buildnumber 
 
-ant -f $progdir/build.xml build-all-dmg -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dml_postfix=$ml_postfix -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST 
+ant -f $basename/build.xml build-all-dmg -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dml_postfix=$ml_postfix -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST 
 

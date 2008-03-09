@@ -176,17 +176,17 @@ private void userNameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     // End of variables declaration//GEN-END:variables
     @Override
     void store( WizardDescriptor settings) {
-        Boolean jdbc = (Boolean) settings.getProperty(NewRailsProjectWizardIterator.JDBC_WN);
+        boolean jdbc = settings.getProperty(NewRailsProjectWizardIterator.JDBC_WN) != null 
+                ? ((Boolean) settings.getProperty(NewRailsProjectWizardIterator.JDBC_WN)).booleanValue()
+                : false;
         RailsDatabaseConfiguration databaseConfiguration = (RailsDatabaseConfiguration) developmentComboBox.getSelectedItem();
-        if (jdbc != null && jdbc.booleanValue()) {
-            // TODO: try at least to bundle jdbc drives if possible
-        } else {
-            databaseConfiguration = 
-                    new ConfigurableRailsAdapter((RailsDatabaseConfiguration) developmentComboBox.getSelectedItem(),
-                    userNameField.getText(), 
-                    String.valueOf(passwordField.getPassword()), 
-                    databaseNameField.getText());
-        }
+        
+        databaseConfiguration =
+                new ConfigurableRailsAdapter((RailsDatabaseConfiguration) developmentComboBox.getSelectedItem(),
+                userNameField.getText(),
+                String.valueOf(passwordField.getPassword()),
+                databaseNameField.getText(),
+                jdbc);
 
         settings.putProperty(NewRailsProjectWizardIterator.RAILS_DEVELOPMENT_DB, databaseConfiguration);
 //        settings.putProperty(NewRailsProjectWizardIterator.RAILS_PRODUCTION_DB, StandardRailsAdapter.get(pr));
@@ -247,7 +247,7 @@ private void userNameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
             RailsDatabaseConfiguration dbConf = (RailsDatabaseConfiguration) value;
 
-            setText(dbConf.railsGenerationParam());
+            setText(dbConf.getDisplayName());
             setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
             setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
 

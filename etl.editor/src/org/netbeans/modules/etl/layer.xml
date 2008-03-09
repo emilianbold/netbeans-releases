@@ -139,7 +139,7 @@ made subject to such option by the copyright holder.
             <file name="varconcat">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/concat.gif"/>
-                <attr name="DisplayName" stringvalue="shankari"/>
+                <attr name="DisplayName" stringvalue="concat"/>
                 <attr name="Tooltip" stringvalue="TOOLTIP_String_varconcat"/>
                 <attr name="Checked" boolvalue="true"/>
                 <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
