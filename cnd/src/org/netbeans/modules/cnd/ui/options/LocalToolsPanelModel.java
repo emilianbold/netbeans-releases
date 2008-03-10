@@ -61,6 +61,7 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     private boolean fortranRequired;
     private boolean showBuildTools;
     private boolean showDebugTools;
+    private boolean enableRequiredCompilersCB;
     
     public LocalToolsPanelModel() {
         compilerSetName = null;
@@ -77,6 +78,7 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
         fortranRequired = false;
         showBuildTools = false;
         showDebugTools = false;
+        enableRequiredCompilersCB = true;
     }
     
 //    @Override
@@ -214,5 +216,15 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     
     public boolean showRequiredDebugTools() {
         return showDebugTools;
+    }
+    
+    @Override
+    public void SetEnableRequiredCompilerCB(boolean enabled) {
+        enableRequiredCompilersCB = enabled;
+    }
+    
+    @Override
+    public boolean enableRequiredCompilerCB() {
+        return enableRequiredCompilersCB;
     }
 }

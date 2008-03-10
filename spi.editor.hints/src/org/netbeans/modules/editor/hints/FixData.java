@@ -44,6 +44,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.editor.hints.HintsControllerImpl.CompoundLazyFixList;
@@ -66,8 +67,8 @@ public class FixData extends CompoundLazyFixList {
         LazyFixList otherFixes = delegates.get(1);
         List<Fix> result = new LinkedList<Fix>();
         
-        result.addAll(sortFixes(errorFixes.getFixes()));
-        result.addAll(sortFixes(otherFixes.getFixes()));
+        result.addAll(sortFixes(new LinkedHashSet<Fix>(errorFixes.getFixes())));
+        result.addAll(sortFixes(new LinkedHashSet<Fix>(otherFixes.getFixes())));
         
         return result;
     }
