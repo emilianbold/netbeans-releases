@@ -47,11 +47,11 @@ public class SchemaArtifactTreeCellEditor extends AbstractCellEditor implements 
         if(value instanceof SelectableTreeNode) {
             mCellValue = (SelectableTreeNode) value;
             
-            if (editor instanceof JCheckBox) {
-                JCheckBox checkBox = (JCheckBox) editor;
+            if (editor instanceof CheckBoxPanel) {
+                CheckBoxPanel checkBox = (CheckBoxPanel) editor;
                 // editor always selected and focused
-                ItemListener itemListener = new CheckBoxItemListener(mCellValue, checkBox);
-                checkBox.addItemListener(itemListener);
+                ItemListener itemListener = new CheckBoxItemListener(mCellValue, checkBox.getCheckBox());
+                checkBox.getCheckBox().addItemListener(itemListener);
             }
         }
 
