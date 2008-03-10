@@ -53,7 +53,7 @@ public class GdbEngineProvider extends DebuggerEngineProvider {
     private Session                     session;
 
     public GdbEngineProvider(ContextProvider contextProvider) {
-        session = contextProvider.lookupFirst(null, Session.class);
+        session = (Session) contextProvider.lookupFirst(null, Session.class);
     }
     
     public String[] getLanguages() {

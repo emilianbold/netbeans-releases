@@ -135,6 +135,14 @@ public interface XPathModel extends XPathSchemaContextHolder {
      */  
     NamespaceContext getNamespaceContext();
     
+    /**
+     * Specifies a namespace context to the model. 
+     * 
+     * Namespace prefixes will be declared automatically if ExNamespaceContext 
+     * is specified instead of simple NamespaceContext.
+     * 
+     * @param newContext
+     */
     void setNamespaceContext(NamespaceContext newContext);
     
     /**

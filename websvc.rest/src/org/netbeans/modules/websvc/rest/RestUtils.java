@@ -276,7 +276,7 @@ public class RestUtils {
         return false;
     }
     
-    public static String findElementName(MethodTree tree, ClientStubModel.Resource r) {
+    public static String findElementName(MethodTree tree) {
         String eName = "";
         List<? extends AnnotationTree> mAnons = tree.getModifiers().getAnnotations();
         if (mAnons != null && mAnons.size() > 0) {

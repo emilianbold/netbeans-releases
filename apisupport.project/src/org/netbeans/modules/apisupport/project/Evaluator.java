@@ -83,6 +83,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
 
@@ -519,7 +520,12 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                     }
                 }
                 if (bootcp == null) {
-                    bootcp = "${nbjdk.home}/jre/lib/rt.jar".replace('/', File.separatorChar); // NOI18N
+                    if (Utilities.isMac()) {
+                        bootcp = "${nbjdk.home}/../Classes/classes.jar";    //NOI18N
+                    }
+                    else {
+                        bootcp = "${nbjdk.home}/jre/lib/rt.jar".replace('/', File.separatorChar); // NOI18N
+                    }
                 }
             }
             if (bootcp == null) {
@@ -527,7 +533,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 bootcp = "${sun.boot.class.path}"; // NOI18N
             }
             props.put("nbjdk.bootclasspath", bootcp); // NOI18N
-            if (home != null) {
+            if (home != null && !Utilities.isMac()) {   //On Mac everything is in classes.jar, there is no tools.jar
                 props.put("tools.jar", home + "/lib/tools.jar".replace('/', File.separatorChar)); // NOI18N
             }
             if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {

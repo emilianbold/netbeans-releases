@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.bpel.search.api;
 
+import static org.netbeans.modules.soa.ui.util.UI.*;
+
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2006.11.20

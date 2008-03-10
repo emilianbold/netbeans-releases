@@ -58,6 +58,7 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.web.NewJspFileNameStepOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -675,25 +676,26 @@ public class WsValidation extends WebServicesTestBase {
     }
 
     private void refreshWSDL(String type) {
+        ProjectsTabOperator prj = new ProjectsTabOperator();
+        JTreeOperator prjtree = new JTreeOperator(prj);
+        ProjectRootNode prjnd;
+        Node actual;
+        NbDialogOperator ccr;
         if (type.equalsIgnoreCase("service")) {
-            ProjectsTabOperator prj = new ProjectsTabOperator();
-            JTreeOperator prjtree = new JTreeOperator(prj);
-            ProjectRootNode prjnd = new ProjectRootNode(prjtree, getWsProjectName());
-            Node actual = new Node(prjnd, "Web Services|" + getWsName()); //NOI18N  
+            prjnd = new ProjectRootNode(prjtree, getWsProjectName());
+            actual = new Node(prjnd, "Web Services|" + getWsName()); //NOI18N  
             actual.performPopupActionNoBlock(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_RefreshServiceAction")); //NOI18N
-            NbDialogOperator ccr = new NbDialogOperator("Confirm Client Refresh"); //NOI18N
+            ccr = new NbDialogOperator("Confirm Client Refresh"); //NOI18N
+            new EventTool().waitNoEvent(2000);
             ccr.yes();
         } else {
-            ProjectsTabOperator prj = new ProjectsTabOperator();
-            JTreeOperator prjtree = new JTreeOperator(prj);
-            ProjectRootNode prjnd = new ProjectRootNode(prjtree, getWsClientProjectName());
-            Node actual = new Node(prjnd, "Web Service References |" + getWsName()); //NOI18N 
-//            new EventTool().waitNoEvent(10000);
+            prjnd = new ProjectRootNode(prjtree, getWsClientProjectName());
+            actual = new Node(prjnd, "Web Service References|" + getWsName() + "Service"); //NOI18N 
             actual.performPopupActionNoBlock(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_RefreshClientAction")); //NOI18N
-            NbDialogOperator ccr = new NbDialogOperator("Confirm Client Refresh"); //NOI18N
+            ccr = new NbDialogOperator("Confirm Client Refresh"); //NOI18N
+            new EventTool().waitNoEvent(2000);
             ccr.yes();
         }
-        throw new UnsupportedOperationException("Not supported in this scenario");
     }
 
     private void checkHandlers(String[] handlerClasses, FileObject handlerConfigFO, boolean isService) throws IOException {

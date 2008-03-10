@@ -73,10 +73,10 @@
             
     <folder name="Menu">
         <folder name="Window">
-            <folder name="Navigator">
+            <folder name="Debug">
                 <file name="NavigatorAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-asm-core-ui-top-NavigatorAction.instance"/>
-                    <attr name="position" intvalue="650"/>
+                    <attr name="position" intvalue="952"/>
                 </file>                          
             </folder>
         </folder>       

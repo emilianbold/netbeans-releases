@@ -56,13 +56,14 @@ import javax.swing.event.CaretListener;
 import org.netbeans.modules.css.editor.model.CssRule;
 import org.netbeans.modules.css.editor.model.CssRuleItem;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
-import org.netbeans.modules.css.visual.ui.StyleBuilderTopComponent;
+import org.netbeans.modules.css.visual.api.StyleBuilderTopComponent;
 import org.netbeans.modules.css.visual.ui.preview.CssPreviewTopComponent;
 import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
 import org.netbeans.modules.css.visual.ui.preview.CssPreviewable.Listener;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.TopComponent;
@@ -313,8 +314,10 @@ public class CssEditorSupport {
         //cancel scheduled rule update task if scheduled
         RULE_UPDATE_TASK.cancel();
 
-        this.model.removePropertyChangeListener(MODEL_LISTENER);
-        this.model = null;
+        if(model != null) { //null may happen if source broken
+            this.model.removePropertyChangeListener(MODEL_LISTENER);
+            this.model = null;
+        }
 
         if (selected != null) {
             selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
@@ -389,10 +392,12 @@ public class CssEditorSupport {
             //TODO make activation of the selected rule consistent for StyleBuilder and CSSPreview,
             //now one uses direct call to TC, second property change listening on this class
 
-
             //update the css preview
             CssRuleContext content =
-                    new CssRuleContext(selectedRule, model, document, fileObject);
+                    new CssRuleContext(selectedRule, 
+                    model, 
+                    document, 
+                    FileUtil.toFile(fileObject.getParent()));
 
             //activate the selected rule in stylebuilder
             StyleBuilderTopComponent sbTC = StyleBuilderTopComponent.findInstance();

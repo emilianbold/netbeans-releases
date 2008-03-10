@@ -189,6 +189,7 @@ made subject to such option by the copyright holder.
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.compapp.casaeditor</friend>
                 <friend>org.netbeans.modules.compapp.projects.jbi</friend>
                 <package>org.netbeans.modules.sun.manager.jbi.management</package>
                 <package>org.netbeans.modules.sun.manager.jbi.management.connectors</package>

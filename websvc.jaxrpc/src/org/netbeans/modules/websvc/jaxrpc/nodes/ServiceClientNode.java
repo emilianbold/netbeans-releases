@@ -57,6 +57,7 @@ import org.netbeans.modules.websvc.core.ConfigureHandlerCookie;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.jaxrpc.ServiceInformation;
 import org.netbeans.modules.websvc.wsdl.config.ServiceInformationImpl;
+import org.netbeans.modules.websvc.wsdl.config.WsCompileConfigDataObject;
 import org.openide.loaders.DataObject;
 
 
@@ -106,6 +107,12 @@ public class ServiceClientNode extends FilterNode implements PropertyChangeListe
             WebServicesClientSupport wsc = WebServicesClientSupport.getWebServicesClientSupport(f);
             if(wsc != null){
                 wsc.removeServiceClient(f.getName());
+            }
+            FileObject parentFO = f.getParent();
+            if(parentFO != null && parentFO.isFolder()) {
+                FileObject configFO = parentFO.getFileObject(f.getName() + WsCompileConfigDataObject.WSCOMPILE_CONFIG_FILENAME_SUFFIX, "xml");
+                if(configFO!=null&&configFO.isValid())
+                    configFO.delete();
             }
         }
         WebServicesRegistryView registryView = (WebServicesRegistryView) Lookup.getDefault().lookup(WebServicesRegistryView.class);
