@@ -39,7 +39,6 @@
 
 package org.netbeans.core;
 
-import java.awt.AWTEvent;
 import java.awt.EventQueue;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -48,7 +47,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import junit.framework.TestCase;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Exceptions;
 
@@ -83,11 +81,11 @@ public class TimableEventQueueTest extends NbTestCase {
         handler.records.clear();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-    }
-
     public void testDispatchEvent() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         class Slow implements Runnable {
             private int ok;
             public void run() {
