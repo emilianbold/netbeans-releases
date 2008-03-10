@@ -148,6 +148,7 @@ public class CompilerSetManager {
                     // Skip ...
                     continue;
                 }
+                flavors.add(flavor);
                 CompilerSet cs = null;
                 if (path.contains("msys")) { // NOI18N)
                     cs = getCompilerSet(CompilerFlavor.MinGW);
