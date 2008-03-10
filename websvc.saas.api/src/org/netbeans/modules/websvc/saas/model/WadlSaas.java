@@ -51,6 +51,7 @@ import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -71,17 +72,15 @@ public class WadlSaas extends Saas {
     
     public WadlSaas(SaasGroup parent, String url, String displayName, String packageName) {
         super(parent, url, displayName, packageName);
+        getDelegate().setType(NS_WADL);
     }
     
     public Application getWadlModel() throws IOException {
         if (wadlModel == null) {
             InputStream in = null;
             if (isUserDefined() ) {
-                if (wadlFile == null) {
-                    wadlFile = SaasUtil.retrieveWadlFile(this);
-                }
-                if (wadlFile != null) {
-                    in = wadlFile.getInputStream();
+                if (getLocalWadlFile() != null) {
+                    in = getLocalWadlFile().getInputStream();
                 }
             } else {
                 in = Thread.currentThread().getContextClassLoader().getResourceAsStream(getUrl());
@@ -122,7 +121,24 @@ public class WadlSaas extends Saas {
     public FileObject getLocalWadlFile() {
         if (wadlFile == null) {
             try {
-                wadlFile = SaasUtil.extractWadlFile(this);
+                if (isUserDefined()) {
+                    String path = getProperty(PROP_LOCAL_SERVICE_FILE);
+                    if (path != null) {
+                        wadlFile = getSaasFolder().getFileObject(path);
+                    }
+                    if (wadlFile == null) {
+                        wadlFile = SaasUtil.retrieveWadlFile(this);
+                        if (wadlFile != null) {
+                            path = FileUtil.getRelativePath(saasFolder, wadlFile);
+                            setProperty(PROP_LOCAL_SERVICE_FILE, path);
+                            save();
+                        } else {
+                            throw new IllegalStateException("Failed to retrieved " + getUrl());
+                        }
+                    }
+                } else {
+                    wadlFile = SaasUtil.extractWadlFile(this);
+                }
             } catch(IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
@@ -138,6 +154,7 @@ public class WadlSaas extends Saas {
     @Override
     public void toStateReady(boolean synchronous) {
         if (wadlModel == null) {
+            setState(State.INITIALIZING);
             if (synchronous) {
                 toStateReady();
             } else {
@@ -178,5 +195,21 @@ public class WadlSaas extends Saas {
             // should not happen at this point
             return NbBundle.getMessage(WadlSaas.class, "LBL_BAD_WADL");
         }
+    }
+    
+    @Override
+    public void refresh() {
+        super.refresh();
+        if (wadlFile != null) {
+            try {
+                wadlFile.delete();
+            } catch(Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        wadlFile = null;
+        wadlModel = null;
+        resources = null;
+        toStateReady(false);
     }
 }
