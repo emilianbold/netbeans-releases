@@ -116,7 +116,7 @@ public final class SearchBar extends JPanel {
     private static final Color INVALID_REGEXP = Color.red;
     
     // Delay times for incremental search [ms]
-    private static final int SEARCH_DELAY_TIME_LONG = 2000; // < 3 chars
+    private static final int SEARCH_DELAY_TIME_LONG = 300; // < 3 chars
     private static final int SEARCH_DELAY_TIME_SHORT = 20; // >= 3 chars
     
     private static final int defaultIncremantalSearchComboWidth = 200;
