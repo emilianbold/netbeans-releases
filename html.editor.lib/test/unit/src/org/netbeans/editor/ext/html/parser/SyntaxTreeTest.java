@@ -63,6 +63,14 @@ public class SyntaxTreeTest extends TestBase {
         testSyntaxTree("trivial.html");
     }
     
+    public void testIssue127786() throws Exception {
+        testSyntaxTree("issue127786.html");
+    }
+    
+    public void testIssue129347() throws Exception {
+        testSyntaxTree("issue129347.html");
+    }
+    
     private void testSyntaxTree(String testCaseName) throws Exception {
         System.out.println("testSyntaxTree(" + testCaseName + ")");
         
