@@ -449,47 +449,54 @@ public class Settings {
                     Class type = null;
                     String javaType = prefs.get(JAVATYPE_KEY_PREFIX + settingName, null);
                     if (javaType != null) {
-                        type = typeFromString(javaType);
-                    }
-                    
-                    if (type != null) {
-                        if (type.equals(Boolean.class)) {
-                            value = prefs.getBoolean(settingName, false);
-                            hasValue = true;
-                        } else if (type.equals(Integer.class)) {
-                            value = prefs.getInt(settingName, 0);
-                            hasValue = true;
-                        } else if (type.equals(Long.class)) {
-                            value = prefs.getLong(settingName, 0L);
-                            hasValue = true;
-                        } else if (type.equals(Float.class)) {
-                            value = prefs.getFloat(settingName, 0.0F);
-                            hasValue = true;
-                        } else if (type.equals(Double.class)) {
-                            value = prefs.getDouble(settingName, 0.0D);
-                            hasValue = true;
-                        } else if (type.equals(Insets.class)) {
-                            value = parseInsets(prefs.get(settingName, null));
-                            hasValue = true;
-                        } else if (type.equals(Dimension.class)) {
-                            value = parseDimension(prefs.get(settingName, null));
-                            hasValue = true;
-                        } else if (type.equals(Color.class)) {
-                            value = parseColor(prefs.get(settingName, null));
-                            hasValue = true;
-                        } else if (type.equals(String.class)) {
-                            value = prefs.get(settingName, null);
+                        if (javaType.equals(METHOD_VALUE)) {
+                            value = methodFactory(prefs.get(settingName, null), mimePath);
                             hasValue = true;
                         } else {
-                            LOG.log(Level.WARNING, "Can't load setting '" + settingName + "' with value '" + prefs.get(settingName, null) //NOI18N
-                                + "' through org.netbeans.editor.Settings! Unsupported value conversion to " + type, new Throwable("Stacktrace")); //NOI18N
+                            type = typeFromString(javaType);
                         }
-                    } else {
-                        // unknown setting type, treat it as String
-                        LOG.warning("Can't determine type of '" + settingName + "' editor setting. If you supplied this setting" //NOI18N
-                            + " through the editor implementation of java.util.prefs.Preferences you should use the 'javaType'" //NOI18N
-                            + " attribute and specify the class representing values of this setting. There seem to be legacy" //NOI18N
-                            + " clients accessing your setting through the old org.netbeans.editor.Settings."); //NOI18N
+                    }
+                    
+                    if (!hasValue) {
+                        if (type != null) {
+                            if (type.equals(Boolean.class)) {
+                                value = prefs.getBoolean(settingName, false);
+                                hasValue = true;
+                            } else if (type.equals(Integer.class)) {
+                                value = prefs.getInt(settingName, 0);
+                                hasValue = true;
+                            } else if (type.equals(Long.class)) {
+                                value = prefs.getLong(settingName, 0L);
+                                hasValue = true;
+                            } else if (type.equals(Float.class)) {
+                                value = prefs.getFloat(settingName, 0.0F);
+                                hasValue = true;
+                            } else if (type.equals(Double.class)) {
+                                value = prefs.getDouble(settingName, 0.0D);
+                                hasValue = true;
+                            } else if (type.equals(Insets.class)) {
+                                value = parseInsets(prefs.get(settingName, null));
+                                hasValue = true;
+                            } else if (type.equals(Dimension.class)) {
+                                value = parseDimension(prefs.get(settingName, null));
+                                hasValue = true;
+                            } else if (type.equals(Color.class)) {
+                                value = parseColor(prefs.get(settingName, null));
+                                hasValue = true;
+                            } else if (type.equals(String.class)) {
+                                value = prefs.get(settingName, null);
+                                hasValue = true;
+                            } else {
+                                LOG.log(Level.WARNING, "Can't load setting '" + settingName + "' with value '" + prefs.get(settingName, null) //NOI18N
+                                    + "' through org.netbeans.editor.Settings! Unsupported value conversion to " + type, new Throwable("Stacktrace")); //NOI18N
+                            }
+                        } else {
+                            // unknown setting type, treat it as String
+                            LOG.warning("Can't determine type of '" + settingName + "' editor setting. If you supplied this setting" //NOI18N
+                                + " through the editor implementation of java.util.prefs.Preferences you should use the 'javaType'" //NOI18N
+                                + " attribute and specify the class representing values of this setting. There seem to be legacy" //NOI18N
+                                + " clients accessing your setting through the old org.netbeans.editor.Settings."); //NOI18N
+                        }
                     }
                 }
             }
@@ -1576,6 +1583,7 @@ public class Settings {
 //        }
 //    }
     
+    private static final String METHOD_VALUE = "methodvalue"; //NOI18N
     private static final String JAVATYPE_KEY_PREFIX = "nbeditor-javaType-for-legacy-setting_"; //NOI18N
     private static Class typeFromString(String javaType) {
         try {
@@ -1585,5 +1593,48 @@ public class Settings {
             LOG.log(Level.WARNING, null, cnfe);
             return null;
         }
+    }
+    
+    private static Object methodFactory(String methodFqn, MimePath mimePath) {
+        int lastDot = methodFqn.lastIndexOf('.'); //NOI18N
+        assert lastDot != -1 : "Need fully qualified name of class with the setting factory method."; //NOI18N
+
+        String classFqn = methodFqn.substring(0, lastDot);
+        String methodName = methodFqn.substring(lastDot + 1);
+
+        ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+        try {
+            // load the factory class
+            Class factoryClass = loader == null ? Class.forName(classFqn) : loader.loadClass(classFqn);
+
+            // find the factory method
+            Method factoryMethod = findDeclaredMethod(factoryClass, methodName, MimePath.class);
+            if (factoryMethod == null) {
+                factoryMethod = findDeclaredMethod(factoryClass, methodName);
+            }
+            if (factoryMethod == null) {
+                throw new NoSuchMethodException(methodFqn);
+            }
+            
+            // call the method
+            factoryMethod.setAccessible(true);
+            if (factoryMethod.getParameterTypes().length == 0) {
+                return factoryMethod.invoke(null);
+            } else {
+                return factoryMethod.invoke(null, mimePath);
+            }
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, null, e);
+            return null;
+        }
+    }
+
+    private static Method findDeclaredMethod(Class<?> clazz, String methodName, Class<?>... parameters) {
+        for(Method m : clazz.getDeclaredMethods()) {
+            if (m.getName().equals(methodName) && Arrays.equals(m.getParameterTypes(), parameters)) {
+                return m;
+            }
+        }
+        return null;
     }
 }

@@ -163,6 +163,8 @@ made subject to such option by the copyright holder.
                 
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.text.syntax.XMLKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.xml.text.syntax.XMLKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 
                 <!-- <folder name="Toolbars">
@@ -185,6 +187,8 @@ made subject to such option by the copyright holder.
                 <!-- It reuses kit only -->
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.text.syntax.XMLKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.xml.text.syntax.XMLKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 
                 <folder name="CompletionProviders">
@@ -288,6 +292,8 @@ made subject to such option by the copyright holder.
                 <file name="Settings.settings" url="DTDEditor-options.xml"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.text.syntax.DTDKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.xml.text.syntax.DTDKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
             </folder> <!-- xml-dtd -->
         </folder> <!-- application -->

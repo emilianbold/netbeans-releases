@@ -103,8 +103,8 @@ public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
     public void updateSettingsMap(Class kitClass, Map settingsMap) {
 
         if (kitClass == BaseKit.class) {
-            settingsMap.put(BaseOptions.TOOLBAR_VISIBLE_PROP, Boolean.TRUE);
-            settingsMap.put(BaseOptions.LINE_NUMBER_VISIBLE_PROP, SettingsDefaults.defaultLineNumberVisible);
+//            settingsMap.put(BaseOptions.TOOLBAR_VISIBLE_PROP, Boolean.TRUE);
+//            settingsMap.put(BaseOptions.LINE_NUMBER_VISIBLE_PROP, SettingsDefaults.defaultLineNumberVisible);
             
 	    //Fix for IZ bug #53744:
 	    //On MAC OS X, Ctrl+left click has the same meaning as the right-click.

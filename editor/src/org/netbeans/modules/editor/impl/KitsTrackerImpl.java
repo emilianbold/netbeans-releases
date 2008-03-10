@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.editor.impl;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -72,6 +73,7 @@ public final class KitsTrackerImpl extends KitsTracker {
         
     private static final Logger LOG = Logger.getLogger(KitsTrackerImpl.class.getName());
     private static final Set<String> ALREADY_LOGGED = Collections.synchronizedSet(new HashSet<String>(10));
+    private static final Logger TIMER = Logger.getLogger("TIMER");
     
     public KitsTrackerImpl() {
         super();
@@ -87,7 +89,12 @@ public final class KitsTrackerImpl extends KitsTracker {
     @SuppressWarnings("unchecked")
     public List<String> getMimeTypesForKitClass(Class kitClass) {
         if (kitClass != null) {
-            return (List<String>) updateAndGet(kitClass);
+            if (WELL_KNOWN_PARENTS.contains(kitClass.getName())) {
+                // these classes are not directly registered as a kit for any mime type
+                return Collections.<String>emptyList();
+            } else {
+                return (List<String>) updateAndGet(kitClass);
+            }
         } else {
             return Collections.singletonList(""); //NOI18N
         }
@@ -171,6 +178,10 @@ public final class KitsTrackerImpl extends KitsTracker {
         
         return previousMimeType;
     }
+
+    public @Override String toString() {
+        return "KitsTrackerImpl"; //NOI18N
+    }
     
     // ------------------------------------------------------------------
     // private implementation
@@ -181,6 +192,7 @@ public final class KitsTrackerImpl extends KitsTracker {
     private final Set<String> knownMimeTypes = new HashSet<String>();
     private List<FileObject> eventSources = null;
     private boolean needsReloading = true;
+    private boolean mimeType2kitClassLoaded = false;
 
     private static final Set<String> WELL_KNOWN_PARENTS = new HashSet<String>(Arrays.asList(new String [] {
         "java.lang.Object", //NOI18N
@@ -228,18 +240,18 @@ public final class KitsTrackerImpl extends KitsTracker {
      * @param eventSources The list of folders with registered <code>EditorKits</code>.
      *   Changes in these folders mean that the map may need to be recalculated.
      */
-    private static void reload(Map<String, FileObject> map, Set<String> set, List<FileObject> eventSources) {
+    private static void reload(Set<String> set, List<FileObject> eventSources) {
         assert !inReload.get() : "Re-entering KitsTracker.reload() is prohibited. This situation usually indicates wrong initialization of some setting."; //NOI18N
         
         inReload.set(true);
         try {
-            _reload(map, set, eventSources);
+            _reload(set, eventSources);
         } finally {
             inReload.set(false);
         }
     }
     
-    private static void _reload(Map<String, FileObject> map, Set<String> set, List<FileObject> eventSources) {
+    private static void _reload(Set<String> set, List<FileObject> eventSources) {
         // Get the root of the MimeLookup registry
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Editors"); //NOI18N
 
@@ -260,16 +272,6 @@ public final class KitsTrackerImpl extends KitsTracker {
                     }
 
                     String mimeType = types[i].getNameExt() + "/" + subTypes[j].getNameExt(); //NOI18N
-                    FileObject kitInstanceFile = findKitRegistration(subTypes[j]);
-                    
-                    if (kitInstanceFile != null) {
-                        map.put(mimeType, kitInstanceFile);
-                    } else {
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("No kit for '" + mimeType + "'");
-                        }
-                    }
-                    
                     set.add(mimeType);
                 }
 
@@ -296,9 +298,15 @@ public final class KitsTrackerImpl extends KitsTracker {
             InstanceCookie ic = d.getLookup().lookup(InstanceCookie.class);
 
             if (ic != null) {
-                if (!exactMatch && (ic instanceof InstanceCookie.Of)) {
-                    if (((InstanceCookie.Of) ic).instanceOf(clazz)) {
-                        return true;
+                if (ic instanceof InstanceCookie.Of) {
+                    if (!exactMatch) {
+                        return ((InstanceCookie.Of) ic).instanceOf(clazz);
+                    } else {
+                        if (!((InstanceCookie.Of) ic).instanceOf(clazz)) {
+                            return false;
+                        } else {
+                            return ic.instanceClass() == clazz;
+                        }
                     }
                 } else {
                     Class instanceClass = ic.instanceClass();
@@ -354,12 +362,8 @@ public final class KitsTrackerImpl extends KitsTracker {
 
     private Object updateAndGet(Class kitClass) {
         boolean reload;
-        Map<String, FileObject> reloadedMap = new HashMap<String, FileObject>();
         Set<String> reloadedSet = new HashSet<String>();
         List<FileObject> newEventSources = new ArrayList<FileObject>();
-        
-        ArrayList<String> list = new ArrayList<String>();
-        HashSet<String> set = new HashSet<String>();
         
         synchronized (mimeType2kitClass) {
             reload = needsReloading;
@@ -368,10 +372,13 @@ public final class KitsTrackerImpl extends KitsTracker {
         // This needs to be outside of the synchronized block to prevent deadlocks
         // See eg #107400
         if (reload) {
-            reload(reloadedMap, reloadedSet, newEventSources);
+            reload(reloadedSet, newEventSources);
         }
             
         synchronized (mimeType2kitClass) {
+            ArrayList<String> list = new ArrayList<String>();
+            HashSet<String> set = new HashSet<String>();
+
             if (reload) {
                 // Stop listening
                 if (eventSources != null) {
@@ -381,8 +388,6 @@ public final class KitsTrackerImpl extends KitsTracker {
                 }
 
                 // Update the cache
-                mimeType2kitClass.clear();
-                mimeType2kitClass.putAll(reloadedMap);
                 knownMimeTypes.clear();
                 knownMimeTypes.addAll(reloadedSet);
 
@@ -394,21 +399,54 @@ public final class KitsTrackerImpl extends KitsTracker {
 
                 // Set the flag
                 needsReloading = false;
+                mimeType2kitClassLoaded = false;
             }
             
             // Compute the list
             if (kitClass != null) {
+                if (!mimeType2kitClassLoaded) {
+                    long tm = System.currentTimeMillis();
+                    
+                    mimeType2kitClassLoaded = true;
+                    mimeType2kitClass.clear();
+
+                    // Get the root of the MimeLookup registry
+                    FileObject root = Repository.getDefault().getDefaultFileSystem().findResource("Editors"); //NOI18N
+                    for(String mimeType : knownMimeTypes) {
+                        FileObject mimeTypeFolder = root.getFileObject(mimeType);
+                        FileObject kitInstanceFile = findKitRegistration(mimeTypeFolder);
+                        if (kitInstanceFile != null) {
+                            mimeType2kitClass.put(mimeType, kitInstanceFile);
+                        } else {
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("No kit for '" + mimeType + "'"); //NOI18N
+                            }
+                        }
+                    }
+
+                    long tm2 = System.currentTimeMillis();
+                    TIMER.log(Level.FINE, "Kits scan", new Object [] { this, tm2 - tm }); //NOI18N
+                    TIMER.log(Level.FINE, "[M] Kits", new Object [] { this, mimeType2kitClass.size() }); //NOI18N
+                    
+                    // uncomment to see where this was called from
+                    // new Throwable("~~~ KitsTrackerImpl._reload took " + (tm2 - tm) + "msec").printStackTrace();
+                }
+
+                boolean kitClassFinal = (kitClass.getModifiers() & Modifier.FINAL) != 0;
                 for(String mimeType : mimeType2kitClass.keySet()) {
                     FileObject f = mimeType2kitClass.get(mimeType);
-                    if (isInstanceOf(f, kitClass, true)) {
+                    if (isInstanceOf(f, kitClass, !kitClassFinal)) {
                         list.add(mimeType);
                     }
                 }
+
+                TIMER.log(Level.FINE, "[M] " + kitClass.getSimpleName() + " used", new Object [] { this, list.size() }); //NOI18N
             } else {
                 set.addAll(knownMimeTypes);
+                TIMER.log(Level.FINE, "[M] Mime types", new Object [] { this, set.size() }); //NOI18N
             }
+            
+            return kitClass != null ? list : set;
         }
-        
-        return kitClass != null ? list : set;
     }
 }

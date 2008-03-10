@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -40,40 +40,14 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE editor-preferences PUBLIC "-//NetBeans//DTD Editor Preferences 1.0//EN" "http://www.netbeans.org/dtds/EditorPreferences-1_0.dtd">
 
-<filesystem>
-
-    <folder name="Editors">
-        <folder name="text">
-            <folder name="plain">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.plain.resources.Bundle"/>
-
-                <folder name="FontsColors">
-                    <folder name="NetBeans">
-                        <folder name="Defaults">
-                            <file name="org-netbeans-modules-editor-plain-token-colorings.xml" url="fontsColors.xml">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.plain.resources.Bundle"/>
-                            </file>
-                        </folder>
-                    </folder>
-                </folder>
-                    
-                <file name="Settings.settings" url="PlainOptions.settings"/>
-                <file name="EditorKit.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.plain.PlainKit"/>
-                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.editor.plain.PlainKit"/>
-                    <attr name="beaninfo" boolvalue="false"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-    <folder name="OptionsDialog">
-        <folder name="PreviewExamples">
-            <folder name="text">
-                <file name="plain" url="PlainTextExample"/>
-            </folder>
-        </folder>
-    </folder>
-
-</filesystem>
+<editor-preferences>
+    <entry name="spaces-per-tab" value="2" javaType="java.lang.Integer" />
+    <entry name="indent-shift-width" value="2" javaType="java.lang.Integer" />
+    <entry name="word-match-match-case" value="true" javaType="java.lang.Boolean" />
+    <entry name="reindent-with-text-before" value="false" javaType="java.lang.Boolean" />
+    <entry name="completion-auto-popup" value="true" javaType="java.lang.Boolean" />
+    <entry name="pair-characters-completion" value="true" javaType="java.lang.Boolean" />
+    <entry name="abbrev-reset-acceptor" value="org.netbeans.modules.ruby.rhtml.RhtmlEditorSettings.getAbbrevResetAcceptor" javaType="methodvalue" />
+</editor-preferences>
