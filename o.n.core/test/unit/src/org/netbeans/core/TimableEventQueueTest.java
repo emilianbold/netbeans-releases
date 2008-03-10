@@ -56,16 +56,16 @@ import org.openide.util.Exceptions;
  *
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-public class TimeableEventQueueTest extends NbTestCase {
+public class TimableEventQueueTest extends NbTestCase {
     static {
         System.setProperty("org.netbeans.core.TimeableEventQueue.quantum", "300");
         System.setProperty("org.netbeans.core.TimeableEventQueue.pause", "3000");
-        TimeableEventQueue.initialize();
+        TimableEventQueue.initialize();
     }
     private static CountingHandler handler = new CountingHandler();
     
     
-    public TimeableEventQueueTest(String testName) {
+    public TimableEventQueueTest(String testName) {
         super(testName);
     }
 
