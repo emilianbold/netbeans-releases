@@ -100,7 +100,7 @@ public class HtmlGSFParser implements Parser, PositionManager {
                 //highlight unpaired tags
                 AstNode root = result.root();
 
-                final DTD[] dtds = new DTD[1];
+                final DTD[] dtds = new DTD[]{org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null)};
                 //find document type declaration
                 AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
@@ -108,16 +108,12 @@ public class HtmlGSFParser implements Parser, PositionManager {
                         if (node.type() == AstNode.NodeType.DECLARATION) {
                             SyntaxElement.Declaration declaration = (SyntaxElement.Declaration) node.element();
                             String publicID = declaration.getPublicIdentifier();
-                            if (publicID == null) {
-                                //fallback
-                                publicID = FALLBACK_DOCTYPE;
+                            if (publicID != null) {
+                                DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(publicID, null);
+                                if (dtd != null) {
+                                    dtds[0] = dtd;
+                                }
                             }
-                            dtds[0] = org.netbeans.editor.ext.html.dtd.Registry.getDTD(publicID, null);
-                            if (dtds[0] == null) {
-                                //use default for unknown doctypes
-                                dtds[0] = org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null);
-                            }
-
                         }
                     }
                 });
