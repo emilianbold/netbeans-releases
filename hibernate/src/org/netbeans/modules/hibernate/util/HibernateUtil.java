@@ -86,26 +86,27 @@ public class HibernateUtil {
     throws java.sql.SQLException{
         ArrayList<String> allTables = new ArrayList<String>();
         for(HibernateConfiguration configuration : configurations) {
-            DatabaseConnection dbConnection = getDBConnection(configuration); 
-            java.sql.Connection jdbcConnection = dbConnection.getJDBCConnection();
-            java.sql.DatabaseMetaData dbMetadata = jdbcConnection.getMetaData();
-            java.sql.ResultSet rsSchema = dbMetadata.getSchemas();
-            if(rsSchema.next()) {
-                do {
-                    java.sql.ResultSet rs = dbMetadata.getTables(null,
-                            rsSchema.getString("TABLE_SCHEM"), //NOI18N
-                            null, new String[]{"TABLE"}); //NOI18N
-                    while(rs.next()) {
+            try {
+                DatabaseConnection dbConnection = getDBConnection(configuration);
+                java.sql.Connection jdbcConnection = dbConnection.getJDBCConnection();
+                java.sql.DatabaseMetaData dbMetadata = jdbcConnection.getMetaData();
+                java.sql.ResultSet rsSchema = dbMetadata.getSchemas();
+                if (rsSchema.next()) {
+                    do {
+                        java.sql.ResultSet rs = dbMetadata.getTables(null, rsSchema.getString("TABLE_SCHEM"), null, new String[]{"TABLE"}); //NOI18N
+                        while (rs.next()) {
+                            allTables.add(rs.getString("TABLE_NAME")); 
+                        }
+                    } while (rsSchema.next());
+                } else {
+                    // Getting tables from default schema.
+                    java.sql.ResultSet rs = dbMetadata.getTables(null, dbConnection.getSchema(), null, new String[]{"TABLE"}); //NOI18N
+                    while (rs.next()) {
                         allTables.add(rs.getString("TABLE_NAME")); //NOI18N
                     }
-                } while(rsSchema.next());
-            } else { // Getting tables from default schema.
-                java.sql.ResultSet rs = dbMetadata.getTables(null,
-                            dbConnection.getSchema(),
-                            null, new String[]{"TABLE"}); //NOI18N
-                    while(rs.next()) {
-                        allTables.add(rs.getString("TABLE_NAME")); //NOI18N
-                    }
+                }
+            } catch (DatabaseException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         return allTables;
@@ -244,6 +245,8 @@ public class HibernateUtil {
                 columnNames.add(tableColumn);
             }
 
+        } catch (DatabaseException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (SQLException sQLException) {
             Exceptions.printStackTrace(sQLException);
         }
@@ -267,7 +270,8 @@ public class HibernateUtil {
         return ""; //NOI18N
     }
 
-    private static DatabaseConnection getDBConnection(HibernateConfiguration configuration) {
+    private static DatabaseConnection getDBConnection(HibernateConfiguration configuration)
+        throws DatabaseException {
         try {
 
             String driverClassName = getDbConnectionDetails(configuration, "hibernate.connection.driver_class"); //NOI18N
@@ -317,8 +321,8 @@ public class HibernateUtil {
             return dbConnection;
         } catch (DatabaseException ex) {
             Exceptions.printStackTrace(ex);
+            throw ex;
         }
-        return null;
     }
      
     public static String getRelativeSourcePath(FileObject file, FileObject sourceRoot) {
@@ -334,7 +338,7 @@ public class HibernateUtil {
         return relativePath;
     }
 
-    private static Connection getJDBCConnection(HibernateConfiguration hibernateConfiguration) {
+    private static Connection getJDBCConnection(HibernateConfiguration hibernateConfiguration) throws DatabaseException {
         return getDBConnection(hibernateConfiguration).getJDBCConnection();
     }
 
