@@ -629,19 +629,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private void changeCompilerSet(CompilerSet cs) {
 //        boolean fortran = CppSettings.getDefault().isFortranEnabled();
 //        Tool fortranSelection = null;
-        if (currentCompilerSet != null) {
-            Tool tool;
-            tool = currentCompilerSet.findTool(Tool.CCompiler);
-            tool.setPath(tfCPath.getText());
-            tool = currentCompilerSet.findTool(Tool.CCCompiler);
-            tool.setPath(tfCppPath.getText());
-            tool = currentCompilerSet.findTool(Tool.FortranCompiler);
-            tool.setPath(tfFortranPath.getText());
-            tool = currentCompilerSet.findTool(Tool.MakeTool);
-            tool.setPath(tfMakePath.getText());
-            tool = currentCompilerSet.findTool(Tool.DebuggerTool);
-            tool.setPath(tfGdbPath.getText());
-        }
         if (cs != null) {
             tfBaseDirectory.setText(cs.getDirectory());
             cbFamily.removeAllItems();
@@ -654,6 +641,19 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             tfBaseDirectory.setText(""); // NOI18N
             cbFamily.removeAllItems();
             return;
+        }
+        if (currentCompilerSet != null && currentCompilerSet != cs) {
+            Tool tool;
+            tool = currentCompilerSet.findTool(Tool.CCompiler);
+            tool.setPath(tfCPath.getText());
+            tool = currentCompilerSet.findTool(Tool.CCCompiler);
+            tool.setPath(tfCppPath.getText());
+            tool = currentCompilerSet.findTool(Tool.FortranCompiler);
+            tool.setPath(tfFortranPath.getText());
+            tool = currentCompilerSet.findTool(Tool.MakeTool);
+            tool.setPath(tfMakePath.getText());
+            tool = currentCompilerSet.findTool(Tool.DebuggerTool);
+            tool.setPath(tfGdbPath.getText());
         }
         
         
@@ -1957,7 +1957,15 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             newCsm.add(cs);
         }
     }
+    String defaultName = null;
+    CompilerSet defaultCS = csm.getDefaultCompilerSet();
+    if (defaultCS != null)
+        defaultName = defaultCS.getName();
     csm = newCsm;
+    CompilerSet defaultCompilerSet = csm.getCompilerSet(defaultName);
+    if (defaultCompilerSet != null) {
+        csm.setDefault(defaultCompilerSet);
+    }
     update(false);
 }//GEN-LAST:event_btRestoreActionPerformed
     
