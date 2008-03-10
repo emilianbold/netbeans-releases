@@ -233,24 +233,29 @@ public class HibernateUtil {
         
         try {
             java.sql.Connection connection = getJDBCConnection(hibernateConfiguration);
-            java.sql.Statement stmt = connection.createStatement();
-            java.sql.ResultSet rs = stmt.executeQuery("SELECT * FROM " + tableName); //NOI18N
-            java.sql.ResultSetMetaData rsMetadata = rs.getMetaData();
-            java.sql.DatabaseMetaData dbMetadata = connection.getMetaData();
-            java.sql.ResultSet rsDBMetadata = dbMetadata.getPrimaryKeys(null, null, tableName);
-            ArrayList<String> primaryColumns = new ArrayList<String>();
-            while(rsDBMetadata.next()) {
-               primaryColumns.add(rsDBMetadata.getString("COLUMN_NAME")); //NOI18N
-            }
-            for (int i = 1; i <= rsMetadata.getColumnCount(); i++) {
-                TableColumn tableColumn = new TableColumn();
-                tableColumn.setColumnName(rsMetadata.getColumnName(i));
-                if(primaryColumns.contains(tableColumn.getColumnName())) {
-                    tableColumn.setPrimaryKey(true);
+            if(connection != null) {
+                java.sql.Statement stmt = connection.createStatement();
+                java.sql.ResultSet rs = stmt.executeQuery("SELECT * FROM " + tableName); //NOI18N
+                java.sql.ResultSetMetaData rsMetadata = rs.getMetaData();
+                java.sql.DatabaseMetaData dbMetadata = connection.getMetaData();
+                java.sql.ResultSet rsDBMetadata = dbMetadata.getPrimaryKeys(null, null, tableName);
+                ArrayList<String> primaryColumns = new ArrayList<String>();
+                while(rsDBMetadata.next()) {
+                   primaryColumns.add(rsDBMetadata.getString("COLUMN_NAME")); //NOI18N
                 }
-                columnNames.add(tableColumn);
+                for (int i = 1; i <= rsMetadata.getColumnCount(); i++) {
+                    TableColumn tableColumn = new TableColumn();
+                    tableColumn.setColumnName(rsMetadata.getColumnName(i));
+                    if(primaryColumns.contains(tableColumn.getColumnName())) {
+                        tableColumn.setPrimaryKey(true);
+                    }
+                    columnNames.add(tableColumn);
+                }
+            } else {
+                //TODO Cannot connect to the database. 
+                // Need to handle this gracefully and display the error message.
+                // throw new DatabaseException("Cannot connect to the database");
             }
-
         } catch (DatabaseException ex) {
             Exceptions.printStackTrace(ex);
         } catch (SQLException sQLException) {
