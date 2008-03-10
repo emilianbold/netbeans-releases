@@ -20,6 +20,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumnModel;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.iep.editor.designer.JTextFieldFilter;
 import org.netbeans.modules.iep.editor.ps.SelectPanelTableCellRenderer;
 import org.netbeans.modules.iep.editor.share.SharedConstants;
@@ -44,10 +45,17 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
     
     private static JComboBox mComboBoxSqlType;
     
+    private Project mProject;
+    
     /** Creates new form IEPAttributeConfigurationPanel */
     public IEPAttributeConfigurationPanel() {
         initComponents();
         initGUI();
+    }
+    
+    public IEPAttributeConfigurationPanel(Project project) {
+        this();
+        this.mProject = project;
     }
     
     public void addDefaultIEPAttributes(List<XSDToIEPAttributeNameVisitor.AttributeNameToType> nameToTypeList) {
@@ -172,7 +180,9 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         // TODO add your handling code here:
-        mTableModel.addNewRow();
+        //mTableModel.addNewRow();
+        
+        SchemaArtifactSelectionDialog.showDialog(this.mProject);
 }//GEN-LAST:event_addButtonActionPerformed
 
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
