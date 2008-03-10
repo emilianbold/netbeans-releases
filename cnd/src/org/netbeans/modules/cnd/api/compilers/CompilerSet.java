@@ -75,12 +75,12 @@ public class CompilerSet {
 
     /** Recognized (and prioritized) types of compiler sets */
     public enum CompilerFlavor {
-            Sun12("Sun12"), // NOI18N
-            Sun11("Sun11"), // NOI18N
-            Sun10("Sun10"), // NOI18N
-            Sun9("Sun9"), // NOI18N
-            Sun8("Sun8"), // NOI18N
-            Sun("Sun"), // NOI18N
+            Sun12("SunStudio_12"), // NOI18N
+            Sun11("SunStudio_11"), // NOI18N
+            Sun10("SunStudio_10"), // NOI18N
+            Sun9("SunStudio_9"), // NOI18N
+            Sun8("SunStudio_8"), // NOI18N
+            Sun("SunStudio"), // NOI18N
             SunUCB("SunUCB"), // NOI18N
             GNU("GNU"), // NOI18N
             Cygwin("Cygwin"), // NOI18N
@@ -119,17 +119,17 @@ public class CompilerSet {
         
         public static CompilerFlavor toFlavor(String name) {
             if (name != null) {
-                if (name.equals("Sun")) { // NOI18N
+                if (name.equals("SunStudio")) { // NOI18N
                     return Sun;
-                } else if (name.equals("Sun12")) { // NOI18N
+                } else if (name.equals("SunStudio_12")) { // NOI18N
                     return Sun12;
-                } else if (name.equals("Sun11")) { // NOI18N
+                } else if (name.equals("SunStudio_11")) { // NOI18N
                     return Sun11;
-                } else if (name.equals("Sun10")) { // NOI18N
+                } else if (name.equals("SunStudio_10")) { // NOI18N
                     return Sun10;
-                } else if (name.equals("Sun9")) { // NOI18N
+                } else if (name.equals("SunStudio_9")) { // NOI18N
                     return Sun9;
-                } else if (name.equals("Sun8")) { // NOI18N
+                } else if (name.equals("SunStudio_8")) { // NOI18N
                     return Sun8;
                 } else if (name.equals("SunUCB")) { // NOI18N
                     return SunUCB;
@@ -149,36 +149,37 @@ public class CompilerSet {
             return GNU;
         }
         
-        public static CompilerFlavor getFlavor(String name) {
-            if (name == null) {
-                return null;
+        public static String mapOldToNew(String flavor, int version) {
+            if (version <=43) {
+                if (flavor.equals("Sun")) { // NOI18N
+                    return "SunStudio"; // NOI18N
+                }
+                else if (flavor.equals("Sun12")) { // NOI18N
+                    return "SunStudio_12"; // NOI18N
+                }
+                else if (flavor.equals("Sun11")) { // NOI18N
+                    return "SunStudio_11"; // NOI18N
+                }
+                else if (flavor.equals("Sun10")) { // NOI18N
+                    return "SunStudio_10"; // NOI18N
+                }
+                else if (flavor.equals("Sun9")) { // NOI18N
+                    return "SunStudio_9"; // NOI18N
+                }
+                else if (flavor.equals("Sun8")) { // NOI18N
+                    return "SunStudio_8"; // NOI18N
+                }
+                else if (flavor.equals("DJGPP")) { // NOI18N
+                    return "GNU"; // NOI18N
+                }
+                else if (flavor.equals("Interix")) { // NOI18N
+                    return "GNU"; // NOI18N
+                }
+                else if (flavor.equals("Unknown")) { // NOI18N
+                    return "GNU"; // NOI18N
+                }
             }
-            if (name.equals("Sun")) { // NOI18N
-                return Sun;
-            } else if (name.equals("Sun12")) { // NOI18N
-                return Sun12;
-            } else if (name.equals("Sun11")) { // NOI18N
-                return Sun11;
-            } else if (name.equals("Sun10")) { // NOI18N
-                return Sun10;
-            } else if (name.equals("Sun9")) { // NOI18N
-                return Sun9;
-            } else if (name.equals("Sun8")) { // NOI18N
-                return Sun8;
-            } else if (name.equals("SunUCB")) { // NOI18N
-                return SunUCB;
-            } else if (name.equals("Cygwin")) { // NOI18N
-                return Cygwin;
-            } else if (name.equals("MinGW")) { // NOI18N
-                return MinGW;
-            } else if (name.equals("DJGPP")) { // NOI18N
-                return DJGPP;
-            } else if (name.equals("Interix")) { // NOI18N
-                return Interix;
-            } else if (name.equals("Unknown")) { // NOI18N
-                return Unknown;
-            }
-            return null;
+            return flavor;
         }
         
         public static List getFlavors() {
@@ -191,10 +192,11 @@ public class CompilerSet {
             list.add(Sun10);
             list.add(Sun9);
             list.add(Sun8);
+            list.add(Sun);
             list.add(SunUCB);
-            list.add(DJGPP);
-            list.add(Interix);
-            list.add(Unknown);
+//            list.add(DJGPP);
+//            list.add(Interix);
+//            list.add(Unknown);
             return list;
         }
     
