@@ -379,7 +379,7 @@ public class Utilities {
                                 int i = 0;
                                 while (! runnableTask.isFinished ()) {
                                     try {
-                                        handle.progress (progressDisplayName, i++);
+                                        handle.progress (progressDisplayName, (int) (estimatedTime * 10 > i++ ? i : estimatedTime * 10));
                                         Thread.sleep (100);
                                     } catch (InterruptedException ex) {
                                         // no worries
