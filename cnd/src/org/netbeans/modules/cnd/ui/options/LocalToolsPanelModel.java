@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 public class LocalToolsPanelModel extends ToolsPanelModel {
     
     private String compilerSetName;
+    private String selectedCompilerSetName;
 //    private String cCompilerName;
 //    private String cppCompilerName;
 //    private String fortranCompilerName;
@@ -60,9 +61,11 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     private boolean fortranRequired;
     private boolean showBuildTools;
     private boolean showDebugTools;
+    private boolean enableRequiredCompilersCB;
     
     public LocalToolsPanelModel() {
         compilerSetName = null;
+        selectedCompilerSetName = null;
 //        cCompilerName = null;
 //        cppCompilerName = null;
 //        fortranCompilerName = null;
@@ -75,6 +78,7 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
         fortranRequired = false;
         showBuildTools = false;
         showDebugTools = false;
+        enableRequiredCompilersCB = true;
     }
     
 //    @Override
@@ -95,6 +99,16 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
             compilerSetName = CppSettings.getDefault().getCompilerSetName();
         }
         return compilerSetName;
+    }
+    
+    @Override
+    public void setSelectedCompilerSetName(String name) {
+        selectedCompilerSetName = name;
+    }
+    
+    @Override
+    public String getSelectedCompilerSetName() {
+        return selectedCompilerSetName;
     }
     
 //    protected void setCompilerSetDirectories(String directories) {
@@ -202,5 +216,15 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     
     public boolean showRequiredDebugTools() {
         return showDebugTools;
+    }
+    
+    @Override
+    public void SetEnableRequiredCompilerCB(boolean enabled) {
+        enableRequiredCompilersCB = enabled;
+    }
+    
+    @Override
+    public boolean enableRequiredCompilerCB() {
+        return enableRequiredCompilersCB;
     }
 }

@@ -89,14 +89,8 @@ public class PanelSharability implements WizardDescriptor.Panel, WizardDescripto
         return finish;
     }
 
-    public synchronized Component getComponent() {
-        if (panel == null) {
-            assert SwingUtilities.isEventDispatchThread() : "Not called in EDT api bug 122184"; //NOI18N
-            panel = new PanelSharabilityVisual(this);
-
-            panel.addChangeListener(new PanelListener());
-        }
-        return panel;
+    public Component getComponent() {
+        return getPanel();
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -114,18 +108,10 @@ public class PanelSharability implements WizardDescriptor.Panel, WizardDescripto
     public boolean isValid() {
         descriptor.putProperty(PROP_ERROR_MESSAGE, "");
 
-        if (panel != null && panel.getLibraryRadioButton().isSelected()
-                && panel.getLibraryRadioButton().isEnabled()) {
-
-            Object name = panel.getLibraryNameComboBox().getEditor().getItem();
-            if (!PropertyUtils.isUsablePropertyName((name == null) ? "" : name.toString())) { // NOI18N
-                descriptor.putProperty(PROP_ERROR_MESSAGE, decorateMessage(
-                        NbBundle.getMessage(PanelSharability.class, "PanelSharability.libraryNameError.text")));
-                return false;
-            }
-
-            if (panel.getSharableProject().isSelected()) {
-                String location = panel.getSharedLibarariesLocation();
+        final PanelSharabilityVisual currentPanel = getPanel();
+        if (currentPanel != null) {
+            if (currentPanel.getSharableProject().isSelected()) {
+                String location = currentPanel.getSharedLibarariesLocation();
                 if (new File(location).isAbsolute()) {
                     descriptor.putProperty(PROP_ERROR_MESSAGE, decorateMessage(
                             NbBundle.getMessage(PanelSharability.class, "PanelSharability.absolutePathWarning.text")));
@@ -141,8 +127,12 @@ public class PanelSharability implements WizardDescriptor.Panel, WizardDescripto
                     }
                 }
             }
-            descriptor.putProperty(PROP_ERROR_MESSAGE, decorateMessage(
-                    NbBundle.getMessage(PanelSharability.class, "PanelSharability.licenseWarning.text")));
+            if (currentPanel.getSharableProject().isSelected() && currentPanel.getServerLibraryCheckbox().isEnabled()
+                && currentPanel.getServerLibraryCheckbox().isSelected()) {
+
+                    descriptor.putProperty(PROP_ERROR_MESSAGE, decorateMessage(
+                        NbBundle.getMessage(PanelSharability.class, "PanelSharability.licenseWarning.text")));
+            }
         }
 
         return true;
@@ -161,6 +151,16 @@ public class PanelSharability implements WizardDescriptor.Panel, WizardDescripto
 
         d.putProperty(WIZARD_SHARED_LIBRARIES, panel.getSharedLibarariesLocation());
         d.putProperty(WIZARD_SERVER_LIBRARY, panel.getServerLibraryName());
+    }
+
+    private synchronized PanelSharabilityVisual getPanel() {
+        if (panel == null) {
+            assert SwingUtilities.isEventDispatchThread() : "Not called in EDT api bug 122184"; //NOI18N
+            panel = new PanelSharabilityVisual(this);
+
+            panel.addChangeListener(new PanelListener());
+        }
+        return panel;
     }
 
     private String decorateMessage(String message) {

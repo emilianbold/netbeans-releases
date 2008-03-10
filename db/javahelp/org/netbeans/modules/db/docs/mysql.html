@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<html>
+
+    <head>
+
+        <title>MySQL Support in NetBeans IDE</title>
+
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+
+    <body>
+
+        <h2>MySQL Support in NetBeans IDE </h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>The NetBeans IDE comes with MySQL database support. In the Services window, a MySQL node appears under the Databases node when the IDE detects a running MySQL server on the local machine at the default port. </p>
+        <p>When you right-click the MySQL node, you see the following options:</p> 
+        
+        
+        <ul>
+            <li><strong>Create a  database.</strong> This action brings up a dialog for creating a database, including sample databases.</li>
+            <li><strong>Start.</strong> This action starts the database server. If the user chooses this action and no start or stop command is set, then they are prompted to set the command:</li>
+            <li><strong>Stop.</strong> This action stops the database server. If the user chooses this action and no start or stop command is set, then they are prompted to set the command:</li>
+            <li><strong>Connect.</strong></li>
+            <li><strong>Refresh.</strong> This action refreshes the list of databases based on what's currently on the server.</li>
+            <li><strong>Delete.</strong> This action removes the MySQL node. It also marks the node as removed, so that next time the user starts up NetBeans we will not auto-register the node again. The user will need to manually register the node using Databases &gt; Register MySQL Server.</li>
+            <li><strong>Administer.</strong> This action brings up the administration tool that is registered with the runtime. The provider either invokes the admin tool as a separate system process, or if it is a web-based tool, brings up the provided URL in the default browser. If the administer command has not been set, then when the user picks the action, they are prompted to set the path to the command. </li>
+            <li><strong>Properties.</strong>  his action brings up a dialog that allows the user to configure important settings for the server. There are two tabs, one for basic settings and one for setting command paths to administrative commands (start, stop, administer) </li>
+           
+            </ol>
+
+        <p>When you expand the MySQL node, MySQL databases detected by the IDE appear as subnodes. By right-clicking a database subnode, you can either connect to  or delete the database.</p>
+  
+        
+        <p>
+        If the IDE does not auto-detect and register the MySQL node, you can manually register it. In this case, the Databases node has a new subnode designed to register the server. When you right-click the Databases node, you see the following options:</p>
+        <ul>
+          <li><strong>New Connection.</strong> When you choose New Connection, the New Database Connection dialog box appears. </li>
+          <li>Register MySQL Database. If the IDE does not auto-detect and register the MySQL node, the user can manually register it. There will be a new action under Databases to register the server</li>
+          <li>Enable Debug. </li>
+          <li>Disable Debug   </li>
+        </ul>
+        
+        <dl>
+            <dt>
+            <a name="seealso">See Also</a></dt>
+            <dd>      <a href="connectdb.html">Connecting to a Database</a></dd>
+        </dl>
+        <hr>
+
+        <small><a href="credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+    </body>
+
+</html>
+

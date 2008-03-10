@@ -58,6 +58,9 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -106,6 +109,10 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_EXTEND = "extend"; //NOI18N
     static final String FIELD_CLASS = "clz"; //NOI18N
     
+    
+    public PHPIndexer(){
+        System.err.println("PHP Indexer");
+    }
     public boolean isIndexable(ParserFile file) {
         if (file.getExtension().equals("php")) { // NOI18N
 
@@ -193,6 +200,24 @@ public class PHPIndexer implements Indexer {
         }
 
         public void analyze() throws IOException {
+            
+            IndexDocument document = factory.createDocument(40); // TODO - measure!
+            documents.add(document);
+            
+            Program program = result.getProgram();
+            
+            for (Statement statement : program.getStatements()){
+                if (statement instanceof FunctionDeclaration){
+                    FunctionDeclaration functionDeclaration = (FunctionDeclaration)statement;
+                    
+                    String name = functionDeclaration.getFunctionName().getName();
+                    
+                    document.addPair(FIELD_FQN, name, true);
+                    System.err.println("PHP Indexer: indexed function " + name);
+                }
+            }
+            
+            
 //            AnalysisResult ar = result.getStructure();
 //            List<?extends AstElement> children = ar.getElements();
 //

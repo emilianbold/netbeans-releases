@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright (c) 2008 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Sharing Libraries in a Java Project</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Sharing Libraries in a Java Project</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+        
+        <p>You can configure most standard Java SE, Web, and Enterprise 
+            projects in a way that makes it easy to share libraries 
+            with other users. You can specify a location for libraries 
+            on which the project relies. You can also specify how the libraries are 
+        referenced from your project. </p>
+        <p>These options make it easy for you to handle the 
+        following situations:</p>
+        <ul>
+            <li>You create a project and need to make it available and buildable to 
+                other users, whether they use the IDE or not. They need to be able to 
+                access the project through a version control checkout or by unpacking 
+                a zip file that you have provided them. Then they should be able build 
+            the application without extra configuration.</li>
+            <li>You must start working on an existing project and adhere to 
+                a strict set of conventions concerning where project libraries 
+                are stored (and whether your build script accesses them with a 
+                relative reference or absolute reference). Other users on the 
+            team are not using NetBeans and have no plans to switch.</li>
+        </ul>
+        <p>You can make a project's libraries sharable 
+            when you create the project in the New Project wizard. You can  
+            convert an existing project to be sharable in the Libraries tab of the Project Properties 
+        dialog box.</p>
+        <p><b>To make a general Java project's libraries sharable upon project creation:</b></p>
+        <ol>
+            <li>Choose File &gt; New Project.</li>
+            <li>In the Java category of the wizard, select one of the standard templates. 
+            Then click Next.</li>
+            <li>In the Name and Location page of the wizard, select the 
+            Project Libraries Shared With Other Users checkbox.</li>
+            <li>In the Shared Libraries Location field, select the location for the 
+                libraries to be stored.
+                <p>If the libraries are already included in the IDE, those libraries will be 
+                copied to the folder that you have designated.</p>
+            <!-- note: what about other types of libraries? --></li>
+        </ol>
+        
+        <p><b>To make a web or Java EE project's libraries sharable upon project creation:</b></p>
+        <ol>
+            <li>Choose File &gt; New Project.</li>
+            <li>In the Web category of the wizard, select one of the standard templates. 
+            Then click Next.</li>
+            <li>In the Sharability page of the wizard, select the 
+            Project Libraries Shared With Other Users checkbox.</li>
+            <li>In the Shared Libraries Location field, select the location for the 
+                libraries to be stored.
+                <p>If the libraries are already included in the IDE, those libraries will be 
+                copied to the folder that you have designated.</p>
+            <!-- note: what about other types of libraries? --></li>
+            <li>Optionally, select the Copy JARs to Shareable Libraries Location radio 
+            button.</li>
+        </ol>        
+        <p><b>To make an existing project's libraries sharable:</b></p>
+        <ol>
+            <li>Right-click the project's node and choose Properties.</li>
+            <li>In the Project Properties dialog box, select the Libraries node.</li>
+            <li>In the Libraries panel, Click Make Sharable.</li>
+            <li>In the Library Definitions Location panel of the wizard, enter a location 
+                for the libraries and click Next.
+            <p>You can enter the location as a relative reference or an absolute reference. </li>
+            <li>In the Actions panel of the wizard, verify the selected action for each 
+            listed library. In most cases, the IDE detects the most appropriate action for 
+            that library.
+            <p>The  following actions are available:</p>
+            <ul>
+                <li><b>Use Existing Library in New Location.</b> 
+                    Use this option if there is already a copy of the library in 
+                    the shared libraries folder and you want to use that copy of the 
+                library.</li>
+                <li><b>Copy Library JARs to New Location.</b>  
+                    Use this option if the library is not in the shared libraries 
+                    folder and you want to have the library JAR files placed there. Selecting 
+                this option adds an entry into the nb</li>
+                <li><b>Use Relative Path to Library JARs.</b>   
+                    Use this option if the library is not in the shared libraries 
+                    folder and you need to access the library in its existing location using 
+                    a relative path. An entry with a relative reference is added 
+                for the library in the shared libraries folder's nblibraries.properties file.</li>
+                <li><b>Use Absolute Path to Library JARs.</b>    
+                    Use this option if the library is not in the shared libraries 
+                    folder and you need to access the library in its existing location using 
+                    an absolute path. An entry with an absolute reference is added 
+                for the library in the shared libraries folder's nblibraries.properties file.</li>
+            </ul>
+            <li>Click Finish to exit the Make Project Sharable wizard.</li>
+            <li>Click OK to exit the Project Properties dialog box.</li>
+            
+        </ol>
+        <p><b>Notes:</b></p>
+        <ul class="note">
+            <li>Free-form project libraries can not be sharable in the ways described in 
+            this topic. </li>
+            <li>The New Project wizard does not include the sharable libraries option for some standard 
+                project templates, such as the Java Desktop Application. However, you can make such 
+            projects sharable in the Project Properties dialog box.</li>
+        </ul>
+        
+        
+        
+        <dl> 
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="proj_templates.html">Java Project Templates</a></dd>
+            <dd><a href="proj_stand_about.html">About Standard Projects</a></dd>
+            <dd><a href="proj_free_about.html">About Free-Form Projects</a></dd>
+            <dd><a href="proj_process.html">Working with Projects</a></dd>
+            <dd><a href="proj_quickref.html">Project Tasks: Quick Reference</a>
+        </dd></dl>
+        
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+    </table></body>
+</html>

@@ -43,8 +43,7 @@ package org.netbeans.modules.db.mysql;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.logging.Level;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 import org.openide.util.NbPreferences;
 
@@ -79,18 +78,37 @@ public class MySQLOptions {
     static final String PROP_STOP_ARGS = "stop-args"; // NOI18N
     static final String PROP_COMMANDS_CONFIRMED = "commands-confirmed"; // NOI18N
     
+    // These options are not currently visible in the properties dialog, but
+    // can be set by users through direct editing of the preferences file
+    
+    // How long to wait on the network before giving up on an attempt to
+    // connect, in milliseconds
+    static final String PROP_CONNECT_TIMEOUT = "connect-timeout"; // NOII18N
+    static final String PROP_REFRESH_THREAD_SLEEP_INTERVAL = 
+            "refresh-thread-sleep-interval"; // NOI18N
+    
     // Currently not modifiable...
     private static final String DRIVER_CLASS = "com.mysql.jdbc.Driver";
     private static final String DEFAULT_PORT = "3306";
     private static final String DEFAULT_HOST = "localhost";
     private static final String DEFAULT_ADMIN_USER = "root";
     private static final String DEFAULT_ADMIN_PASSWORD = "";
+    // In milliseconds
+    private static final String DEFAULT_CONNECT_TIMEOUT = "15000";
+    // In milliseconds
+    private static final long DEFAULT_REFRESH_THREAD_SLEEP_INTERVAL = 3000;
     
-    private ArrayList<PropertyChangeListener> listeners = 
-            new ArrayList<PropertyChangeListener>();
+    private CopyOnWriteArrayList<PropertyChangeListener> listeners = 
+            new CopyOnWriteArrayList<PropertyChangeListener>();
     
-    public static synchronized MySQLOptions getDefault() {
+    public static MySQLOptions getDefault() {
         return DEFAULT;
+    }
+    
+    private MySQLOptions() {
+        if ( Utils.isEmpty(getConnectTimeout()) ) {
+            setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
+        }
     }
     
     protected final void putProperty(String key, String value) {
@@ -113,7 +131,17 @@ public class MySQLOptions {
             NbPreferences.forModule(MySQLOptions.class).putBoolean(key, value);
         }
         
-        notifyPropertyChange(key, new Boolean(oldval), new Boolean(value)   );
+        notifyPropertyChange(key, oldval, value);
+    }
+    
+    protected final void putProperty(String key, long value, long def) {
+        long oldval;
+        synchronized(this) {
+            oldval = getLongProperty(key, def);
+            NbPreferences.forModule(MySQLOptions.class).putLong(key, value);
+        }
+        
+        notifyPropertyChange(key, oldval, value);
     }
     
     protected final void clearProperty(String key) {
@@ -125,12 +153,16 @@ public class MySQLOptions {
         notifyPropertyChange(key, oldval, null);
     }
     
-    protected synchronized final String getProperty(String key) {
+    protected final String getProperty(String key) {
         return NbPreferences.forModule(MySQLOptions.class).get(key, "");
     }
     
-    protected synchronized final boolean getBooleanProperty(String key) {
+    protected final boolean getBooleanProperty(String key) {
         return NbPreferences.forModule(MySQLOptions.class).getBoolean(key, false); 
+    }
+    
+    protected final long getLongProperty(String key, long def) {
+        return NbPreferences.forModule(MySQLOptions.class).getLong(key, def);
     }
     
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -306,16 +338,23 @@ public class MySQLOptions {
         putProperty(PROP_COMMANDS_CONFIRMED, confirmed);
     }
 
-    /* TODO - Implement support for database directory 
-    public String getDatabaseDirectory() {
-        return getProperty(PROP_PORT);
+    public String getConnectTimeout() {
+        return getProperty(PROP_CONNECT_TIMEOUT);
     }
-
-    public void setDatabaseDirectory(String dbdir) {
-        putProperty(PROP_DBDIR, dbdir);
-    }
-    */
     
+    public void setConnectTimeout(String timeout) {
+        putProperty(PROP_CONNECT_TIMEOUT, timeout);
+    }
+    
+    public long getRefreshThreadSleepInterval() {
+        return getLongProperty(PROP_REFRESH_THREAD_SLEEP_INTERVAL,
+                DEFAULT_REFRESH_THREAD_SLEEP_INTERVAL);
+    }
+    
+    public void setRefreshThreadSleepInterval(long interval) {
+        putProperty(PROP_REFRESH_THREAD_SLEEP_INTERVAL, interval,
+                DEFAULT_REFRESH_THREAD_SLEEP_INTERVAL);
+    }
 
     public static String getDriverClass() {
         return DRIVER_CLASS;
