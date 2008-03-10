@@ -56,7 +56,7 @@ public class GdbSessionProvider extends SessionProvider {
 
     public GdbSessionProvider(ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
-        projectActionEvent = contextProvider.lookupFirst(null, ProjectActionEvent.class);
+        projectActionEvent = (ProjectActionEvent) contextProvider.lookupFirst(null, ProjectActionEvent.class);
     };
 
     public String getSessionName () {

@@ -78,6 +78,10 @@ public class EditorOptions {
      */
     public static final String statementContinuationIndent = "statementContinuationIndent"; // NOI18N 
     public static final int statementContinuationIndentDefault = 8;
+
+    public static final String indentSize = "indentSize"; // NOI18N 
+    public static final int indentSizeDefault = 4;
+
     /**
      * Whether to indent preprocessors positioned at start of line.
      * Those not starting at column 0 of the line will automatically be indented.
@@ -92,6 +96,9 @@ public class EditorOptions {
     public static final String indentCasesFromSwitch = "indentCasesFromSwitch"; //NOI18N
     public static final boolean indentCasesFromSwitchDefault = true;
 
+    public static final String indentNamespace = "indentNamespace"; //NOI18N
+    public static final boolean indentNamespaceDefault = true;
+    
     //BracesPlacement
     public static final String newLineBeforeBraceNamespace = "newLineBeforeBraceNamespace"; //NOI18N
     public static final String newLineBeforeBraceNamespaceDefault = BracePlacement.NEW_LINE.name();
@@ -221,8 +228,6 @@ public class EditorOptions {
     public static final boolean spaceWithinTypeCastParensDefault = false;
     public static final String spaceWithinBraces = "spaceWithinBraces"; //NOI18N
     public static final boolean spaceWithinBracesDefault = false;
-    public static final String spaceWithinArrayInitBrackets = "spaceWithinArrayInitBrackets"; //NOI18N
-    public static final boolean spaceWithinArrayInitBracketsDefault = false;
     
     //SpacesOther
     public static final String spaceBeforeComma = "spaceBeforeComma"; //NOI18N
@@ -262,11 +267,10 @@ public class EditorOptions {
     public static final Boolean addLeadingStarInCommentDefault = true;
     
     private static final String APACHE_PROFILE = "Apache"; // NOI18N
-    private static final String CUSTOM_PROFILE = "Custom"; // NOI18N
     private static final String DEFAULT_PROFILE = "Default"; // NOI18N
 
     public static final String[] PREDEFINED_STYLES = new String[]
-                              {DEFAULT_PROFILE, APACHE_PROFILE, CUSTOM_PROFILE};
+                              {DEFAULT_PROFILE, APACHE_PROFILE};
 
     private static Map<String,Object> defaults;
     private static Map<String,Map<String,Object>> namedDefaults;
@@ -278,10 +282,13 @@ public class EditorOptions {
     private static void createDefaults() {
         defaults = new HashMap<String,Object>();
         // Indents
+        defaults.put(indentSize, indentSizeDefault);
         defaults.put(statementContinuationIndent,statementContinuationIndentDefault);
         defaults.put(indentPreprocessorDirectives,indentPreprocessorDirectivesDefault);
         defaults.put(sharpAtStartLine, sharpAtStartLineDefault);
+        defaults.put(indentNamespace, indentNamespaceDefault);
         defaults.put(indentCasesFromSwitch, indentCasesFromSwitchDefault);
+
         //BracesPlacement
         defaults.put(newLineBeforeBraceNamespace,newLineBeforeBraceNamespaceDefault);
         defaults.put(newLineBeforeBraceClass,newLineBeforeBraceClassDefault);
@@ -335,7 +342,6 @@ public class EditorOptions {
         defaults.put(spaceWithinCatchParens,spaceWithinCatchParensDefault);
         defaults.put(spaceWithinTypeCastParens,spaceWithinTypeCastParensDefault);
         defaults.put(spaceWithinBraces,spaceWithinBracesDefault);
-        defaults.put(spaceWithinArrayInitBrackets,spaceWithinArrayInitBracketsDefault);
         //SpacesOther
         defaults.put(spaceBeforeComma,spaceBeforeCommaDefault);
         defaults.put(spaceAfterComma,spaceAfterCommaDefault);
@@ -379,9 +385,12 @@ public class EditorOptions {
         Map<String,Object> apache = new HashMap<String,Object>();
         namedDefaults.put(APACHE_PROFILE, apache);
         apache.put(indentCasesFromSwitch, false);
-// Placeholder for custom style        
-        Map<String,Object> custom = new HashMap<String,Object>();
-        namedDefaults.put(CUSTOM_PROFILE, custom);
+        apache.put(alignMultilineCallArgs, true);
+        apache.put(alignMultilineMethodParams, true);
+        apache.put(newLineCatch, true);
+        apache.put(newLineElse, true);
+        apache.put(newLineWhile, true);
+        
     }
 
     public static Object getDefault(CodeStyle.Language language, String styleId, String id){
@@ -484,13 +493,13 @@ public class EditorOptions {
         }
     }
 
-    public static int getGlobalIndentSize(CodeStyle.Language language) {
-        Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter"); // NOI18N
-        if (f != null) {
-            return f.getShiftWidth();
-        }
-        return 4;
-    }
+//    public static int getGlobalIndentSize(CodeStyle.Language language) {
+//        Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter"); // NOI18N
+//        if (f != null) {
+//            return f.getShiftWidth();
+//        }
+//        return 4;
+//    }
 
     public static int getGlobalTabSize(CodeStyle.Language language) {
         Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter"); // NOI18N

@@ -58,6 +58,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.GenericResourceBean;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
@@ -113,21 +114,21 @@ public class GenericResourceGenerator extends AbstractGenerator {
         JavaSource source = JavaSourceHelper.createJavaSource(
                 getTemplate(), getDestDir(), bean.getPackageName(), bean.getName());
       
-        if (bean.getInputParameters().size() > 0) {
-            addInputParamFields(source);
-            addConstructorWithInputParams(source);
+        List<ParameterInfo> params = bean.filterParametersByAuth(
+                    bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
+        if (params.size() > 0) {
+            addInputParamFields(source, params);
+            addConstructorWithInputParams(source, params);
         }
         
         modifyResourceClass(source);
         return new HashSet<FileObject>(source.getFileObjects());
     }
   
-    private void addInputParamFields(JavaSource source) throws IOException {
+    private void addInputParamFields(JavaSource source, final List<ParameterInfo> params) throws IOException {
         ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy copy) throws IOException {
                 copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                List<ParameterInfo> params = bean.getInputParameters();
-                
                 JavaSourceHelper.addFields(copy, getParamNames(params),
                         getParamTypeNames(params), getParamValues(params));
             }
@@ -135,12 +136,11 @@ public class GenericResourceGenerator extends AbstractGenerator {
         result.commit();
     }
     
-     private void addConstructorWithInputParams(JavaSource source) throws IOException {
+     private void addConstructorWithInputParams(JavaSource source, final List<ParameterInfo> params) throws IOException {
         ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy copy) throws IOException {
                 copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
-                List<ParameterInfo> params = bean.getInputParameters();
                 String body = "{";      //NOI18N
                 
                 for (ParameterInfo param : params) {
@@ -253,7 +253,8 @@ public class GenericResourceGenerator extends AbstractGenerator {
         String bodyText = "{ //"+COMMENT_END_OF_GET+"\n";
         bodyText += "throw new UnsupportedOperationException(); }";
         
-        List<ParameterInfo> queryParams = bean.getQueryParameters();
+        List<ParameterInfo> queryParams = bean.filterParametersByAuth(
+                    bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));//bean.getQueryParameters();
         String[] parameters = getGetParamNames(queryParams);
         Object[] paramTypes = getGetParamTypes(queryParams);
         String[][] paramAnnotations = getGetParamAnnotations(queryParams);

@@ -56,14 +56,14 @@ public class ClassMemberPanel implements NavigatorPanel {
 
     private ClassMemberPanelUI component;
 
-    private static ClassMemberPanel INSTANCE;
+    private static ClassMemberPanel INSTANCE;   //Always accessed in event dispatch thread
     
     public ClassMemberPanel() {
-        this.INSTANCE = this;
     }
 
     public void panelActivated(Lookup context) {
         assert context != null;
+        INSTANCE = this;
         // System.out.println("Panel Activated");
         ClassMemberNavigatorJavaSourceFactory.getInstance().setLookup(context, getClassMemberPanelUI());
         getClassMemberPanelUI().showWaitNode();
@@ -72,6 +72,7 @@ public class ClassMemberPanel implements NavigatorPanel {
     public void panelDeactivated() {
         getClassMemberPanelUI().showWaitNode(); // To clear the ui
         ClassMemberNavigatorJavaSourceFactory.getInstance().setLookup(Lookup.EMPTY, null);
+        INSTANCE = null;
     }
 
     public Lookup getLookup() {

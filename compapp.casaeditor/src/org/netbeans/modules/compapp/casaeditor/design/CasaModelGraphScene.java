@@ -42,6 +42,7 @@ package org.netbeans.modules.compapp.casaeditor.design;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
@@ -99,6 +100,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.validation.CasaValidat
 import org.netbeans.modules.compapp.casaeditor.multiview.CasaGraphMultiViewElement;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNodeFactory;
+import org.netbeans.modules.compapp.casaeditor.nodes.ServiceUnitProcessNode;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Port;
@@ -549,8 +551,10 @@ implements PropertyChangeListener, CasaValidationListener {
     @Override
     protected Widget attachProcessWidget (CasaComponent node, CasaComponent endpoint) {
         
+        Image image = ServiceUnitProcessNode.getFileIconImage((CasaEndpoint) endpoint);
+                
         CasaProcessTitleWidget widget = new CasaProcessTitleWidget(
-                this, ((CasaEndpoint)endpoint).getProcessName());
+                this, ((CasaEndpoint)endpoint).getProcessName(), image);
         
         ((CasaNodeWidgetEngine) findWidget(node)).attachProcessWidget(widget);
         

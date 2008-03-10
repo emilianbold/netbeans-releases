@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.errors;
@@ -55,10 +55,22 @@ public class OrigSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
         super(testName);
     }
 
+    private boolean origUseLogger;
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MagicSurroundWithTryCatchFix.DISABLE_JAVA_UTIL_LOGGER = true;
+        
+        origUseLogger = ErrorFixesFakeHint.isUseLogger();
+
+        ErrorFixesFakeHint.setUseLogger(false);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        ErrorFixesFakeHint.setUseLogger(origUseLogger);
+        
+        super.tearDown();
     }
     
     public void testTryWrapper1() throws Exception {

@@ -416,4 +416,12 @@ public class JsIndexerTest extends JsTestBase {
     public void testDomNode() throws Exception {
         checkIndexer("testfiles/stub_dom2_Node.js");
     }
+
+    public void testEvents() throws Exception {
+        checkIndexer("testfiles/events.js");
+    }
+
+    public void testYahoo() throws Exception {
+        checkIndexer("testfiles/yui.js");
+    }
 }

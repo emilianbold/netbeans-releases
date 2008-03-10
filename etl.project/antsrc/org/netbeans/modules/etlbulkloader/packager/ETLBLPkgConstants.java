@@ -18,10 +18,16 @@ public class ETLBLPkgConstants {
 
     // File System Constants
     public static final String USER_DIR = System.getProperty("user.dir");
-    public static final String fs = System.getProperty("file.separator"); //File Separator
+    public static final String fs = File.separator;
     //eTL Bulk Loader Source Constants
-    public static final String srclibs = getCWD() + fs + "../etl.editor" + fs + "external";//+fs+"modules"+fs+"ext"+fs+"etlpro";    
-    public static final String srctriggertempl = srclibs + fs + "triggertemplates";
+    public static final String sourcePath1 = getCWD() + fs + "netbeans" + fs +"extra"+fs + "modules"+fs+"ext";    
+    public static final String sourcePath = getCWD() +fs+".."+ fs+"extra"+fs + "modules"+fs+"ext";  
+    public static final String srclibs1 = sourcePath1+fs+"bulkloader";    
+    public static final String srclibs = sourcePath+fs+"bulkloader";    
+    public static final String etlEnginePath1 = sourcePath1+fs+"etl";    
+    public static final String etlEnginePath = sourcePath+fs+"etl";    
+    public static final String srctriggertempl = srclibs;// + fs + "bulkloader";
+    public static final String srctriggertempl1 = srclibs1;// + fs + "bulkloader";
     //eTL Bulk Loader Package Construction Constants
     public static final String toplevelrt = "ETLProcess";
     public static final String toplevelpkg = "ETLLoader";

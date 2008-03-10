@@ -225,7 +225,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 cp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
                     projectDirectory, evaluator, new String[] {DIST_JAR})); // NOI18N
-            }
+            } 
             cache[4+type] = cp;
         }
         return cp;
@@ -247,7 +247,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                     cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots, helper, evaluator));
                     break;
                 case 1:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots));
+                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots, helper, evaluator));
                     break;
             }
         }

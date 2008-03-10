@@ -69,7 +69,7 @@ public class ThreadsNodeModel implements NodeModel {
     private Vector listeners = new Vector();
     
     public ThreadsNodeModel(ContextProvider lookupProvider) {
-        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
         new Listener(this, debugger);
     }
     
