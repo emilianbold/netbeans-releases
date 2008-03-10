@@ -44,6 +44,7 @@ package org.openide.text;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Date;
+import java.util.logging.Level;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -68,7 +69,7 @@ import org.openide.util.lookup.InstanceContent;
 public class ExternalDeleteOfModifiedContentTest extends NbTestCase 
 implements CloneableEditorSupport.Env  {
     static {
-        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+       System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
     /** the support to work with */
     private CloneableEditorSupport support;
@@ -91,6 +92,16 @@ implements CloneableEditorSupport.Env  {
         super(testName);
     }
     
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+
+    @Override
+    protected int timeOut() {
+        return 20000;
+    }
     @Override
     protected void setUp () throws Exception {
         System.setProperty ("org.openide.util.Lookup", "org.openide.text.ExternalDeleteOfModifiedContentTest$Lkp");
@@ -140,6 +151,9 @@ implements CloneableEditorSupport.Env  {
                 ByteArrayOutputStream os = new ByteArrayOutputStream();
                 for (int i = 0; i < 1024 * 1024 + 50000; i++) {
                     os.write('A');
+                    if (i % 80 == 0) {
+                        os.write('\n');
+                    }
                 }
                 os.close();
                 content = os.toString();

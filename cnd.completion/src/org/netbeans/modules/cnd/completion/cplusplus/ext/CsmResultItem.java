@@ -803,8 +803,8 @@ public abstract class CsmResultItem
                                 } catch (BadLocationException e) {
                                 }
                                 if (text == null) {
-                                    text = ")";
-                                } // NOI18N
+                                    text = ")";  // NOI18N
+                                }
                             }
 
                         } else { // one or more parameters
@@ -882,8 +882,8 @@ public abstract class CsmResultItem
                                     completion.showToolTip();
                                 }
                                 if (addClosingParen) {
-                                    text += ")";
-                                } // NOI18N
+                                    text += ")";  // NOI18N
+                                }
                             } else {
                                 try {
                                     int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);

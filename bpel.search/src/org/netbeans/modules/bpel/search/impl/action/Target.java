@@ -51,7 +51,7 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
 final class Target implements SearchTarget {
 
   static final SearchTarget [] BPEL = new SearchTarget [] {
-    new Target(Component.class),
+    new Target(org.netbeans.modules.bpel.model.api.BpelEntity.class),
     new Target(org.netbeans.modules.bpel.model.api.Assign.class),
     new Target(org.netbeans.modules.bpel.model.api.Branches.class),
     new Target(org.netbeans.modules.bpel.model.api.Catch.class),
@@ -93,8 +93,7 @@ final class Target implements SearchTarget {
     new Target(org.netbeans.modules.bpel.model.api.PartnerLink.class),
     new Target(org.netbeans.modules.bpel.model.api.PartnerLinkContainer.class),
     new Target(org.netbeans.modules.bpel.model.api.PatternedCorrelation.class),
-    new Target(
-      org.netbeans.modules.bpel.model.api.PatternedCorrelationContainer.class),
+    new Target(org.netbeans.modules.bpel.model.api.PatternedCorrelationContainer.class),
     new Target(org.netbeans.modules.bpel.model.api.Pick.class),
     new Target(org.netbeans.modules.bpel.model.api.Process.class),
     new Target(org.netbeans.modules.bpel.model.api.Receive.class),
@@ -119,14 +118,13 @@ final class Target implements SearchTarget {
   };
   
   static final SearchTarget [] WSDL = new SearchTarget [] {
-    new Target(Component.class),
+    new Target(org.netbeans.modules.xml.wsdl.model.WSDLComponent.class),
     new Target(org.netbeans.modules.xml.wsdl.model.Binding.class),
     new Target(org.netbeans.modules.xml.wsdl.model.BindingFault.class),
     new Target(org.netbeans.modules.xml.wsdl.model.BindingInput.class),
     new Target(org.netbeans.modules.xml.wsdl.model.BindingOperation.class),
     new Target(org.netbeans.modules.xml.wsdl.model.BindingOutput.class),
-    new Target(
-      org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty.class),
+    new Target(org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty.class),
     new Target(org.netbeans.modules.xml.wsdl.model.Definitions.class),
     new Target(org.netbeans.modules.xml.wsdl.model.Documentation.class),
     new Target(org.netbeans.modules.xml.wsdl.model.ExtensibilityElement.class),
@@ -140,12 +138,10 @@ final class Target implements SearchTarget {
     new Target(org.netbeans.modules.xml.wsdl.model.OperationParameter.class),
     new Target(org.netbeans.modules.xml.wsdl.model.Output.class),
     new Target(org.netbeans.modules.xml.wsdl.model.Part.class),
-    new Target(
-      org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType.class),
+    new Target(org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType.class),
     new Target(org.netbeans.modules.xml.wsdl.model.Port.class),
     new Target(org.netbeans.modules.xml.wsdl.model.PortType.class),
-    new Target(
-      org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias.class),
+    new Target(org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias.class),
     new Target(org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query.class),
     new Target(org.netbeans.modules.xml.wsdl.model.RequestResponseOperation.class),
     new Target(org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role.class),
@@ -155,7 +151,7 @@ final class Target implements SearchTarget {
   };
 
   static final SearchTarget [] SCHEMA = new SearchTarget [] {
-    new Target(Component.class),
+    new Target(org.netbeans.modules.xml.schema.model.SchemaComponent.class),
     new Target(org.netbeans.modules.xml.schema.model.Annotation.class),
     new Target(org.netbeans.modules.xml.schema.model.AppInfo.class),
     new Target(org.netbeans.modules.xml.schema.model.Attribute.class),
@@ -163,11 +159,9 @@ final class Target implements SearchTarget {
     new Target(org.netbeans.modules.xml.schema.model.Choice.class),
     new Target(org.netbeans.modules.xml.schema.model.ComplexContent.class),
     new Target(org.netbeans.modules.xml.schema.model.ComplexContentDefinition.class),
-    new Target(
-      org.netbeans.modules.xml.schema.model.ComplexContentRestriction.class),
+    new Target(org.netbeans.modules.xml.schema.model.ComplexContentRestriction.class),
     new Target(org.netbeans.modules.xml.schema.model.ComplexExtension.class),
-    new Target(
-      org.netbeans.modules.xml.schema.model.ComplexExtensionDefinition.class),
+    new Target(org.netbeans.modules.xml.schema.model.ComplexExtensionDefinition.class),
     new Target(org.netbeans.modules.xml.schema.model.ComplexType.class),
     new Target(org.netbeans.modules.xml.schema.model.ComplexTypeDefinition.class),
     new Target(org.netbeans.modules.xml.schema.model.Constraint.class),

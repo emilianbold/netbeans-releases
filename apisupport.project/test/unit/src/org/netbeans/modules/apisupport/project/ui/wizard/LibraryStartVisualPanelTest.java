@@ -65,7 +65,7 @@ public class LibraryStartVisualPanelTest extends NbTestCase {
         contents.put("org/apache/commons/logging/impl/NoOpLog.class", "");
         File libraryPath = new File(getWorkDir(), "test-library-0.1_01.jar");
         TestBase.createJar(libraryPath, contents, new Manifest());
-        NewModuleProjectData data = new NewModuleProjectData(NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE);
+        NewModuleProjectData data = new NewModuleProjectData(NewNbModuleWizardIterator.Type.LIBRARY_MODULE);
         LibraryStartVisualPanel.populateProjectData(data, libraryPath.getAbsolutePath(), true);
         assertEquals("test-library", data.getProjectName());
         assertEquals("org.apache.commons.logging", data.getCodeNameBase());

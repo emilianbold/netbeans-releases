@@ -44,6 +44,7 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
@@ -53,6 +54,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -92,11 +94,9 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
     private static final String COMPONENT_CARD = "componentCard"; // NOI18N
     private static final String USER_CODE_CARD = "userCodeCard"; // NOI18N
     private static long componentIDCounter = -10000L;
-
     private PropertyEditorResourceElement element;
     private Map<String, DesignComponentWrapper> wrappersMap;
     private Set<String> changedComponents;
-
     private String noneComponentAsText;
     private JList componentsList;
     private JRadioButton radioButton;
@@ -113,6 +113,9 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
             throw new IllegalArgumentException("PropertyEditorResourceElement shouls not be null"); // NOI18N
         }
 
+        if (radioButton == null) {
+            throw new IllegalArgumentException("Null radioButton value"); // NOI18N
+        } 
         this.element = element;
         this.noneComponentAsText = noneComponentAsText;
         this.radioButton = radioButton;
@@ -144,7 +147,7 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
         add(scrollPane, constraints);
 
         JButton addButton = new JButton();
-        Mnemonics.setLocalizedText(addButton, 
+        Mnemonics.setLocalizedText(addButton,
                 NbBundle.getMessage(ResourceEditorPanel.class, "LBL_ADD_COMPONENT")); // NOI18N
         addButton.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(ResourceEditorPanel.class, "ACSN_ADD_COMPONENT")); // NOI18N
@@ -163,7 +166,7 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
         add(addButton, constraints);
 
         JButton removeButton = new JButton();
-        Mnemonics.setLocalizedText(removeButton, 
+        Mnemonics.setLocalizedText(removeButton,
                 NbBundle.getMessage(ResourceEditorPanel.class, "LBL_REMOVE_COMPONENT")); // NOI18N
         removeButton.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(ResourceEditorPanel.class, "ACSN_REMOVE_COMPONENT")); // NOI18N
@@ -190,6 +193,16 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
         add(createUCAwarePanel(component), constraints);
 
         icon = new ImageIcon(Utilities.loadImage(element.getIconPath()));
+        componentsList.addFocusListener(new FocusListener() {
+
+            public void focusGained(FocusEvent e) {
+                radioButton.setSelected(true);
+            }
+
+            public void focusLost(FocusEvent e) {
+
+            }
+        });
     }
 
     private JComponent createUCAwarePanel(JComponent component) {
@@ -255,7 +268,7 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
         for (String str : set) {
             listModel.addElement(str);
         }
-        
+
         selectComponent(selectedComponentName);
     }
 
@@ -281,7 +294,6 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
             element.setDesignComponentWrapper(wrapper);
             setUserCode(isUserCodeInside(wrapper));
         }
-        radioButton.setSelected(true);
     }
 
     public void elementChanged(PropertyEditorResourceElementEvent event) {

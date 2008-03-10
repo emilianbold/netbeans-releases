@@ -51,7 +51,6 @@ import org.netbeans.modules.xml.refactoring.ui.ModelProvider;
 import org.netbeans.modules.xml.schema.actions.SchemaViewOpenAction;
 import org.netbeans.modules.xml.schema.multiview.SchemaMultiViewSupport;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.TransformableSupport;
@@ -106,6 +105,7 @@ public final class SchemaDataObject extends MultiDataObject {
         set.add(new SchemaMultiViewSupport(this));
     }
 
+    @Override
     public final Lookup getLookup() {
         return Lookups.fixed(new Object[]{
             super.getLookup(),
@@ -140,6 +140,7 @@ public final class SchemaDataObject extends MultiDataObject {
 	super.handleDelete();
     }
     
+    @Override
     protected Node createNodeDelegate() {
 	SchemaNode n = new SchemaNode(this);
 	n.setIconBaseWithExtension(SCHEMA_ICON_BASE_WITH_EXT);
@@ -155,10 +156,12 @@ public final class SchemaDataObject extends MultiDataObject {
             getCookieSet().add(this);
         }
 
+        @Override
         public Action getPreferredAction() {
             return SystemAction.get(SchemaViewOpenAction.class);
         }
 
+        @Override
         public void setName(String name, boolean rename) {
             if (! rename || name != null && name.equals(this.getDataObject().getName())) {
                 return;
@@ -226,6 +229,7 @@ public final class SchemaDataObject extends MultiDataObject {
 	return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected FileObject handleMove(DataFolder df) throws IOException {
         // TODO: Launch refactor file dialog
         if(isModified()) {

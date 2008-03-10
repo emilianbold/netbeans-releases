@@ -265,6 +265,15 @@ public class JsfProjectUtils {
                     }
                 }
 
+                final FileObject projMaven = fo.getFileObject("nb-configuration.xml"); // NOI18N
+                // Found the project root directory and got the Maven nb-configuration.xml file
+                if (projMaven != null) {
+                    if (fileContains(projMaven, RAVE_AUX_NAMESPACE)) {
+                        setJsfProjectDir(dirs, Boolean.TRUE);
+                        return true;
+                    }
+                }
+
                 final FileObject propFile = fo.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 // Found the project root directory and got the project.properties file
                 if (propFile != null) {

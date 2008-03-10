@@ -42,6 +42,9 @@ package org.netbeans.modules.websvc.saas.model;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.util.SetupUtil;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import java.io.OutputStream;
 
 /**
  *
@@ -63,16 +66,15 @@ public class SaasServicesModelTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        super.setUp();
+        SetupUtil.commonSetUp(super.getWorkDir());
     }
 
     @Override
     protected void tearDown() throws Exception {
-        super.tearDown();
+        SetupUtil.commonTearDown();
     }
 
     public void testLoading() throws Exception {
-        SetupUtil.commonSetUp(super.getWorkDir());
 
         SaasServicesModel instance = SaasServicesModel.getInstance();
         assertEquals("YouTube", instance.getGroups().get(1).getName());
@@ -87,8 +89,8 @@ public class SaasServicesModelTest extends NbTestCase {
         SetupUtil.commonTearDown();
     }
     
-    public void testAddGroup() {
-        System.out.println("addGroup");
+    public void testAddGroup() throws Exception {
+
         SaasServicesModel instance = SaasServicesModel.getInstance();
         instance.createGroup(instance.getRootGroup(), "groupA");
         SaasGroup added = instance.getRootGroup().getChildGroup("groupA");
@@ -105,37 +107,76 @@ public class SaasServicesModelTest extends NbTestCase {
         assertEquals(2, reloaded.getChildrenGroups().size());
         assertEquals("child1", reloaded.getChildGroup("child1").getName());
         assertEquals("grandChild", reloaded.getChildGroup("child2").getChildGroup("grandChild").getName());
+
+        SetupUtil.commonTearDown();
     }
 
-    /*public void testRemoveGroup() {
-        System.out.println("removeGroup");
-        SaasGroup child = null;
-        SaasServicesModel instance = new SaasServicesModel();
-        instance.removeGroup(child);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    public void testAddToPrePackagedGroup() throws Exception {
+
+        System.out.println(getWorkDirPath());
+        SaasServicesModel instance = SaasServicesModel.getInstance();
+        SaasGroup delicious = instance.getTopGroup("Delicious");
+        assertFalse(delicious.isUserDefined());
+        assertNotNull(delicious.getChildService("Bookmarking Service"));
+        instance.createGroup(delicious, "myDelicious");
+        assertTrue(delicious.getChildGroup("myDelicious").isUserDefined());
+        assertNotNull(delicious.getChildService("Bookmarking Service"));
+        
+        instance.reset();
+        instance.initRootGroup();
+        
+        delicious = instance.getTopGroup("Delicious");
+        assertFalse(delicious.isUserDefined());
+        assertNotNull(delicious.getChildGroup("myDelicious"));
+        assertTrue(delicious.getChildGroup("myDelicious").isUserDefined());
+        assertNotNull(delicious.getChildService("Bookmarking Service"));
+
     }
 
-    public void testAddWsdlService() {
-        System.out.println("addWsdlService");
-        SaasGroup parent = null;
-        String displayName = "";
-        String url = "";
-        String packageName = "";
-        SaasServicesModel instance = new SaasServicesModel();
-        instance.addWsdlService(parent, displayName, url, packageName);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    private FileObject setupLocalWadl() throws Exception {
+        FileObject workDir = FileUtil.toFileObject(getWorkDir());
+        FileObject wadl = workDir.getFileObject("application.wadl.xml");
+        if (wadl == null) {
+            wadl = workDir.createData("application.wadl.xml");
+        }
+        OutputStream out = wadl.getOutputStream();
+        try {
+            FileUtil.copy(getClass().getResourceAsStream("application.wadl.xml"), out);
+        } finally {
+            out.close();
+        }
+        return wadl;
     }
 
-    public void testRemoveWsdlService() {
-        System.out.println("removeSaasService");
-        SaasGroup parent = null;
-        Saas service = null;
-        SaasServicesModel instance = new SaasServicesModel();
-        instance.removeSaasService(parent, service);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    public void testAddWadlService() throws Exception {
+        FileObject wadl = setupLocalWadl();
+        
+        String url = wadl.getURL().toExternalForm();
+        SaasServicesModel instance = SaasServicesModel.getInstance();
+        SaasGroup delicious = instance.getTopGroup("Delicious");
+        SaasGroup myDelicious = instance.createGroup(delicious, "myDelicious");
+        WadlSaas saas = instance.createWadlService(myDelicious, url, null);
+        assertEquals(1, saas.getResources().size());
     }
-    */
+
+    public void testRemoveGroupWithWadlService() throws Exception {
+        FileObject wadl = setupLocalWadl();
+        
+        String url = wadl.getURL().toExternalForm();
+        SaasServicesModel instance = SaasServicesModel.getInstance();
+        SaasGroup delicious = instance.getTopGroup("Delicious");
+        SaasGroup myDelicious = instance.createGroup(delicious, "myDelicious");
+        instance.createWadlService(myDelicious, url, null);
+        
+        instance.reset();
+        
+        SaasGroup g = instance.getTopGroup("Delicious").getChildGroup("myDelicious");
+        WadlSaas saas = (WadlSaas)g.getServices().get(0);
+        assertEquals(1, saas.getResources().get(0).getMethods().size());
+        assertNotNull(instance.getWebServiceHome().getFileObject(saas.getDisplayName()));
+        
+        instance.removeGroup(g);
+        assertNull(instance.getWebServiceHome().getFileObject(saas.getDisplayName()));
+        assertNull(instance.getTopGroup("Delicious").getChildGroup("myDelicious"));
+    }
 }
