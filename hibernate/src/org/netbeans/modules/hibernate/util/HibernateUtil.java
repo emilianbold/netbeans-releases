@@ -89,21 +89,27 @@ public class HibernateUtil {
             try {
                 DatabaseConnection dbConnection = getDBConnection(configuration);
                 java.sql.Connection jdbcConnection = dbConnection.getJDBCConnection();
-                java.sql.DatabaseMetaData dbMetadata = jdbcConnection.getMetaData();
-                java.sql.ResultSet rsSchema = dbMetadata.getSchemas();
-                if (rsSchema.next()) {
-                    do {
-                        java.sql.ResultSet rs = dbMetadata.getTables(null, rsSchema.getString("TABLE_SCHEM"), null, new String[]{"TABLE"}); //NOI18N
+                if(jdbcConnection != null) {
+                    java.sql.DatabaseMetaData dbMetadata = jdbcConnection.getMetaData();
+                    java.sql.ResultSet rsSchema = dbMetadata.getSchemas();
+                    if (rsSchema.next()) {
+                        do {
+                            java.sql.ResultSet rs = dbMetadata.getTables(null, rsSchema.getString("TABLE_SCHEM"), null, new String[]{"TABLE"}); //NOI18N
+                            while (rs.next()) {
+                                allTables.add(rs.getString("TABLE_NAME")); 
+                            }
+                        } while (rsSchema.next());
+                    } else {
+                        // Getting tables from default schema.
+                        java.sql.ResultSet rs = dbMetadata.getTables(null, dbConnection.getSchema(), null, new String[]{"TABLE"}); //NOI18N
                         while (rs.next()) {
-                            allTables.add(rs.getString("TABLE_NAME")); 
+                            allTables.add(rs.getString("TABLE_NAME")); //NOI18N
                         }
-                    } while (rsSchema.next());
-                } else {
-                    // Getting tables from default schema.
-                    java.sql.ResultSet rs = dbMetadata.getTables(null, dbConnection.getSchema(), null, new String[]{"TABLE"}); //NOI18N
-                    while (rs.next()) {
-                        allTables.add(rs.getString("TABLE_NAME")); //NOI18N
                     }
+                }else {
+                   // JDBC Connection could not be established.
+                    //TODO Handle this situation gracefully, probably by displaying message to user.
+                    //throw new DatabaseException("JDBC Connection cannot be established.");
                 }
             } catch (DatabaseException ex) {
                 Exceptions.printStackTrace(ex);
@@ -294,18 +300,19 @@ public class HibernateUtil {
 
             JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers(driverClassName);
             //TODO check the driver here... it might not be loaded and driver[0] might result in AIOOB exception
-//            while(drivers.length == 0) {
-//                // Unable to load the driver. 
-//                Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
-//
-//                    public Object run() {
-//                        JDBCDriverManager.getDefault().showAddDriverDialog();
-//                        return new Object();
-//                    }
-//                    
-//                });
-//                drivers = JDBCDriverManager.getDefault().getDrivers(driverClassName);
-//            }
+            // The following is an annoying work around till #129633 is fixed.
+            while(drivers.length == 0) {
+                // Unable to load the driver. 
+                Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
+
+                    public Object run() {
+                        JDBCDriverManager.getDefault().showAddDriverDialog();
+                        return new Object();
+                    }
+                    
+                });
+                drivers = JDBCDriverManager.getDefault().getDrivers(driverClassName);
+            }
             final DatabaseConnection dbConnection = DatabaseConnection.create(drivers[0], driverURL, username, null, password, true);
             ConnectionManager.getDefault().addConnection(dbConnection);
             if(dbConnection.getJDBCConnection() == null ) {
