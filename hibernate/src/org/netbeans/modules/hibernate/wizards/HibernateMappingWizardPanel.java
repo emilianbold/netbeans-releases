@@ -22,9 +22,6 @@ import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
-
-import org.netbeans.modules.hibernate.loaders.cfg.multiview.Util;
-import org.netbeans.modules.hibernate.loaders.cfg.multiview.BrowseFolders;
 import org.openide.filesystems.FileObject;
 
 /**
