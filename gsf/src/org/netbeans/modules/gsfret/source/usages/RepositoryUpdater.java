@@ -1224,7 +1224,7 @@ Set added = null;
                         //final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompile",rootFile.getAbsolutePath());
                         String path = rootFile.getAbsolutePath();
                         // Shorten path by prefix to ruby location if possible
-                        int rubyIndex = path.indexOf("jruby-1.1RC1");
+                        int rubyIndex = path.indexOf("jruby-1.1RC2");
                         if (rubyIndex != -1) {
                             path = path.substring(rubyIndex);
                         }

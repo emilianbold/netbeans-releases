@@ -108,6 +108,7 @@
         ${test.cvs.path}/JavaEEIntegration/JavaEEToBP/FaultTest/bplGreetService
         ${test.cvs.path}/JavaEEIntegration/JavaEEToBP/JavaEEToBPProj
         ${test.cvs.path}/MessageExchange/MessageExchangeBpel
+        ${test.cvs.path}/misc/MiscBpel
         ${test.cvs.path}/PartnerLinks/DuplicateProject1
         ${test.cvs.path}/PartnerLinks/DuplicateProject2
         ${test.cvs.path}/PartnerLinks/OneBP

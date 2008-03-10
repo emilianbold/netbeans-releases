@@ -11,6 +11,19 @@ parser code {:
 	protected final static Integer FINAL = new Integer(BodyDeclaration.Modifier.FINAL);
 	protected final static Integer STATIC = new Integer(BodyDeclaration.Modifier.STATIC);
 	
+        private ErrorStrategy defaultStrategy = new DefaultErrorStrategy();;
+        private ErrorStrategy errorStrategy = defaultStrategy;
+        
+        private ParserErrorHandler errorHandler = null;
+
+        public void setErrorHandler (ParserErrorHandler handler) {
+            this.errorHandler = handler;
+        }
+
+        public ParserErrorHandler getErrorHandler () {
+            return this.errorHandler;
+        }
+
 	/*AST ast;
   
 	public final void setAST (AST ast) {
@@ -29,6 +42,26 @@ parser code {:
 		return dispatch;
 	}
 
+    interface ErrorStrategy {
+        public boolean errorRecovery(boolean debug) throws Exception;
+    }
+
+    class DefaultErrorStrategy implements ErrorStrategy {
+
+        public boolean errorRecovery(boolean debug) throws Exception {
+            return ASTPHP5Parser.super.error_recovery(debug);
+        }
+    }
+
+    /**
+     * Attempt to recover from a syntax error.  This returns false if recovery fails,
+     * true if it succeeds.
+     * @param debug should we produce debugging messages as we parse.
+     */
+    protected boolean error_recovery(boolean debug) throws java.lang.Exception {
+        return errorStrategy.errorRecovery(debug);
+    }
+
     /**
      * Report a non fatal error (or warning).  This method takes a message
      * string and an additional object (to be used by specializations implemented in subclasses).
@@ -37,7 +70,7 @@ parser code {:
      * @param info    an extra object reserved for use by specialized subclasses.
      */
     public void report_error(String message, Object info) {
-		 System.err.print(message);
+		 System.out.print("report_eror"  + message);
   		/* if (info instanceof Symbol)
 			if (((Symbol)info).left != -1)
 				System.err.println(" at character " + ((Symbol)info).left + " of input");
@@ -45,7 +78,44 @@ parser code {:
 	     else 
 	   		System.err.println("");*/
     }	
-	
+
+    /**
+     * This method is called when a syntax error has been detected and recovery is about to be invoked.
+     * The super class just emit a "Syntax error" error message.
+     * @param cur_token the current lookahead Symbol.
+     */
+    public void syntax_error(java_cup.runtime.Symbol cur_token) {
+        //System.out.println("syntax_error:"+cur_token);
+        //super.syntax_error(cur_token,info);
+        //int state = ((ASTPHP5Symbols) stack.peek()).parse_state;
+        //short[] rowOfProbe = action_tab[state];
+        //getParserClient().handleSyntaxError(cur_token.sym, (String)cur_token.value, rowOfProbe, cur_token.left, cur_token.right, getCurrentLine());    
+        System.out.println ("syntax_error ......... [" + cur_token.left + ", " + cur_token.right + "]-" + cur_token.value );
+        if (errorHandler != null) {
+            errorHandler.handleError(ParserErrorHandler.Type.SYNTAX_ERROR, "Syntax Error", cur_token.left, cur_token.right, cur_token);
+        }
+     }
+
+     /**
+     * Report a fatal error.  This method takes a message string and an additional object
+     * (to be used by specializations implemented in subclasses).
+     * The super class reports the error then throws an exception.
+     * @param message an error message.
+     * @param info    an extra object reserved for use by specialized subclasses.
+     */
+
+    public void report_fatal_error(String message, Object info) throws Exception {
+        System.out.println("report_fatal_error:"+cur_token);
+        //super.report_fatal_error(message,info);
+        if (errorHandler != null) {
+            errorHandler.handleError(ParserErrorHandler.Type.FATAL_PARSER_ERROR, "Syntax Error", cur_token.left, cur_token.right, info);
+        }
+    }
+
+    protected int error_sync_size() {
+        return 1;
+    }
+
 :}
 
 /* terminals */
@@ -378,7 +448,8 @@ statement:statement
 | T_HALT_COMPILER:halt T_OPEN_PARENTHESE T_CLOSE_PARENTHESE:close T_SEMICOLON 
 {: 
 	// Note: we never generate K_HALT_COMPILER
-	RESULT = null;
+        RESULT = null;
+        System.out.println("Syntax error ??????");
 :}
 ;
 

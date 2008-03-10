@@ -111,6 +111,9 @@ public class BytecodeTest extends NbTestCase {
      * Likely to fail for custom CVS unless they used -Dbuild.compiler.debuglevel=source,lines
      */
     public void testBytecode() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         JavaClass clz = 
                 new ClassParser(Main.class.getResourceAsStream("Main.class"), "Main.class").parse();
         assertNotNull("classfile of Main parsed", clz);

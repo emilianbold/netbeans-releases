@@ -68,7 +68,7 @@ public class WadlSaasMethodTest extends NbTestCase {
         SaasServicesModel instance = SaasServicesModel.getInstance();
         SaasGroup group = instance.getRootGroup().getChildGroup("Delicious");
         WadlSaas saas = (WadlSaas) group.getServices().get(0);
-        assertEquals("Bookmarking", saas.getDisplayName());
+        assertEquals("Bookmarking Service", saas.getDisplayName());
         WadlSaasMethod m = saas.getResources().get(0).getChildResources().get(0).getMethods().get(0);
         assertEquals("delicious.posts_get", m.getName());
         Resource[] path = m.getResourcePath();

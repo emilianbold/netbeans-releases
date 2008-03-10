@@ -380,11 +380,11 @@ public class InstallSupportImpl {
                                 th.join();
                                 for (ModuleUpdateElementImpl impl : affectedModuleImpls) {
                                     int rerunWaitCount = 0;
-                                    Module module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ().toString ());
+                                    Module module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ());
                                     // XXX: consider again this
                                     for (; rerunWaitCount < 100 && (module == null || !module.isEnabled()); rerunWaitCount++) {
                                         Thread.sleep(100);
-                                        module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ().toString ());
+                                        module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ());
                                     }
                                     if (rerunWaitCount == 100) {
                                         err.log (Level.INFO, "Overflow checks of installed module " + module);

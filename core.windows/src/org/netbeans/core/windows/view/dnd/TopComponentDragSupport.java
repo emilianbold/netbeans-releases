@@ -387,7 +387,8 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
         
         int tabIndex = -1;
         Image img = createDragImage();
-        if (tabbed != null ) {//&& Constants.SWITCH_USE_DRAG_IMAGES) {
+        if (tabbed != null 
+                && Utilities.getOperatingSystem() != Utilities.OS_SOLARIS ) {
             tabIndex = tabbed.indexOf(firstTC);
 
             visualizer = new DragAndDropFeedbackVisualizer( tabbed, tabIndex );

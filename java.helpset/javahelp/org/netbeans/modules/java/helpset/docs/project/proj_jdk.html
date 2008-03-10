@@ -52,7 +52,7 @@
     <param name="textFontWeight" value="bold">
     <param name="textColor" value="blue">
   </object>, you have to set the target JDK in the Ant script itself, then specify 
-  the source level in the Project Properties dialog box. 
+  the source/binary format in the Project Properties dialog box. 
 <p><b>To register a new Java platform:</b> 
 <ol>
   <li>Choose Tools &gt; Java Platforms from the main window.</li>
@@ -82,13 +82,13 @@
     		Platform button and navigate to  the desired platform.</li>
 </ol>
 <p><b>To set the target Java platform for a free-form project:</b></p>
-<!--todo : clarify difference between source level and jdk platform (perhaps rename freeform source level combobox + mention source level usage for standard projects)-->
+<!--todo : clarify difference between source/binary format and jdk platform (perhaps rename freeform source level combobox + mention source level usage for standard projects)-->
 <ol>
   <li>In your Ant script, set the target JDK as desired in the <tt>javac</tt>, 
     <tt>java</tt>, and <tt>javadoc</tt> tasks.</li>
   <li>Right-click the project's root node in the Projects window and choose Properties.</li>
   <li>In the Sources panel, set the level of JDK  you want your application to
-  	be run on in the Source Level combo box. 
+  	be run on in the Source/Binary Format combo box. 
     <p> When you access Javadoc or source code for JDK classes, the IDE searches 
       the Java platforms registered in the Java Platform Manager for a platform 
       with a matching version number. If no matching platform is found, the IDE's 
