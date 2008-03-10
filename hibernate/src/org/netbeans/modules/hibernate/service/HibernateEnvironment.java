@@ -196,14 +196,13 @@ public class HibernateEnvironment {
      * @return true if the library is registered, false if the library is already registered or 
      * registration fails for some reason.
      */
-    @SuppressWarnings("static-access")  //NOI18N
     public boolean addHibernateLibraryToProject(FileObject fileInProject) {
         boolean addLibraryResult = false;
         try {
             LibraryManager libraryManager = LibraryManager.getDefault();
             Library hibernateLibrary = libraryManager.getLibrary("hibernate-support");  //NOI18N
             ProjectClassPathModifier projectClassPathModifier = project.getLookup().lookup(ProjectClassPathModifier.class);
-            addLibraryResult = projectClassPathModifier.addLibraries(new Library[]{hibernateLibrary}, fileInProject, ClassPath.COMPILE);  
+            addLibraryResult = ProjectClassPathModifier.addLibraries(new Library[]{hibernateLibrary}, fileInProject, ClassPath.COMPILE);  
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             addLibraryResult = false;
@@ -226,8 +225,7 @@ public class HibernateEnvironment {
         SessionFactory fact = hibernateConfiguration.getSessionFactory();
         int count = 0;
         for(boolean val : fact.getMapping()) {
-            @SuppressWarnings("static-access") //NOI18N
-            String propName = fact.getAttributeValue(fact.MAPPING,
+            String propName = fact.getAttributeValue(SessionFactory.MAPPING,
                     count++, "resource"); //NOI18N
             mappingsFromConfiguration.add(propName);
         }
