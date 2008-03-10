@@ -888,6 +888,7 @@ public class JavaSourceHelper {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
 
                 public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement classElement = getTopLevelClassElement(controller);
                     List<ExecutableElement> methods = ElementFilter.methodsIn(classElement.getEnclosedElements());
 
@@ -985,5 +986,15 @@ public class JavaSourceHelper {
             }
         }
         return current;
+    }
+    
+    public static boolean isContainsMethod(JavaSource source, final String methodName, 
+            final String[] paramNames, final Object[] paramTypes) {
+        List<MethodTree> methods = getAllMethods(source);
+        for(MethodTree m: methods) {
+            if(m.getName().toString().equals(methodName))
+                return true;
+        }
+        return false;
     }
 }

@@ -89,7 +89,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
     private static String previousDirectory = null;
     private static JFileChooser wsdlFileChooser;
     
-    private  final FileFilter WSDL_FILE_FILTER = new WsdlFileFilter();
+    private  final FileFilter WSDL_FILE_FILTER = new ServiceFileFilter();
  
     private JButton cancelButton = new JButton();
     private JButton addButton = new JButton();
@@ -236,7 +236,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
     private void myInitComponents() {
         
         wsdlFileChooser = new JFileChooser();
-        WsdlFileFilter myFilter = new WsdlFileFilter();
+        ServiceFileFilter myFilter = new ServiceFileFilter();
         wsdlFileChooser.setFileFilter(myFilter);
         addButton.setText(NbBundle.getMessage(this.getClass(), "Add"));
         addButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.addButton.ACC_name"));
@@ -602,10 +602,13 @@ private void jTxtpackageNameMouseClicked(java.awt.event.MouseEvent evt) {//GEN-F
     
     
     
-    private static class WsdlFileFilter extends  javax.swing.filechooser.FileFilter {
+    private static class ServiceFileFilter extends  javax.swing.filechooser.FileFilter {
         public boolean accept(File f) {
             boolean result;
-            if(f.isDirectory() || "wsdl".equalsIgnoreCase(FileUtil.getExtension(f.getName()))) { // NOI18N
+            if(f.isDirectory() || 
+               "wsdl".equalsIgnoreCase(FileUtil.getExtension(f.getName())) ||
+               "wadl".equalsIgnoreCase(FileUtil.getExtension(f.getName()))
+               ) { // NOI18N
                 result = true;
             } else {
                 result = false;

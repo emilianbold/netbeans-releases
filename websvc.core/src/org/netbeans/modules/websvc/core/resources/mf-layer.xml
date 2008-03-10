@@ -179,6 +179,11 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
+        <folder name="org-netbeans-modules-j2ee-clientproject">
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.websvc.core.jaxws.projects.JavaEEWSSupportLookupProvider.instance"/>
+            </folder>
+        </folder>
     </folder>
     
     <folder name="Plugins">

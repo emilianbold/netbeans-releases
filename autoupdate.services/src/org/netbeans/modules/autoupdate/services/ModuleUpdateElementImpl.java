@@ -82,7 +82,7 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         this.item = item;
         this.providerName = providerName;
         codeName = item.getCodeName ();
-        specVersion = new SpecificationVersion (item.getSpecificationVersion ());
+        specVersion = item.getSpecificationVersion () == null ? null : new SpecificationVersion (item.getSpecificationVersion ());
         installInfo = new InstallInfo (item);
         String dn = moduleInfo.getDisplayName ();
         assert dn != null : "Module " + codeName + " doesn't provider display name. Value of \"OpenIDE-Module-Name\" cannot be null.";

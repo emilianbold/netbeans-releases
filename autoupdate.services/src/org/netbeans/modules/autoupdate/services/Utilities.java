@@ -426,12 +426,12 @@ public class Utilities {
         return getModuleInstance(uUnit.getCodeName(), null); // XXX
     }
     
-    public static Module toModule(String codeNameBase, String specificationVersion) {
+    public static Module toModule(String codeNameBase, SpecificationVersion specificationVersion) {
         return getModuleInstance(codeNameBase, specificationVersion);
     }
     
     public static Module toModule (ModuleInfo info) {
-        return getModuleInstance (info.getCodeNameBase(), info.getSpecificationVersion ().toString ());
+        return getModuleInstance (info.getCodeNameBase(), info.getSpecificationVersion ());
     }
     
     public static boolean isFixed (ModuleInfo info) {
@@ -837,7 +837,7 @@ public class Utilities {
         return infos;
     }
     
-    private static Module getModuleInstance(String codeNameBase, String specificationVersion) {
+    private static Module getModuleInstance(String codeNameBase, SpecificationVersion specificationVersion) {
         if (mgr == null) {
             mgr = Main.getModuleSystem().getManager();
         }
@@ -849,7 +849,10 @@ public class Utilities {
             if (m == null) {
                 return null;
             } else {
-                return m.getSpecificationVersion ().compareTo (new SpecificationVersion (specificationVersion)) >= 0 ? m : null;
+                if (m.getSpecificationVersion () == null) {
+                    return null;
+                }
+                return m.getSpecificationVersion ().compareTo (specificationVersion) >= 0 ? m : null;
             }
         }
     }
