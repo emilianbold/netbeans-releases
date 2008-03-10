@@ -266,8 +266,7 @@ public class HibernateUtil {
         SessionFactory fact = configuration.getSessionFactory();
         int count = 0;
         for (String val : fact.getProperty2()) { 
-            @SuppressWarnings("static-access") //NOI18N
-            String propName = fact.getAttributeValue(fact.PROPERTY2, count++, "name");  //NOI18N
+            String propName = fact.getAttributeValue(SessionFactory.PROPERTY2, count++, "name");  //NOI18N
             if(propName.equals(property)) {
                 return val;
             }
