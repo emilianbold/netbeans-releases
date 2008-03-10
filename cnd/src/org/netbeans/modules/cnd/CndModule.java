@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.editor.makefile.MakefileSettingsInitializer;
 import org.netbeans.modules.cnd.editor.shell.ShellKit;
 import org.netbeans.modules.cnd.editor.shell.ShellSettingsInitializer;
 import org.openide.ErrorManager;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
@@ -90,6 +89,17 @@ public class CndModule extends ModuleInstall {
         if (Utilities.isUnix()) {
             setExecutionPermission("bin/dorun.sh"); // NOI18N
             setExecutionPermission("bin/stdouterr.sh"); // NOI18N
+            if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+                if (System.getProperty("os.arch").equals("sparc")) {
+                    setExecutionPermission("bin/GdbHelper-SunOS-sparc.so"); // NOI18N
+                } else {
+                    setExecutionPermission("bin/GdbHelper-SunOS-x86.so"); // NOI18N
+                }
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
+                setExecutionPermission("bin/GdbHelper-Linux-x86.so"); // NOI18N
+            } else if (Utilities.isMac()) {
+                setExecutionPermission("bin/GdbHelper-Mac_OS_X-x86.dylib");
+            }
         }
     }
     
