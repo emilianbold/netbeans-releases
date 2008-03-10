@@ -794,14 +794,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 cb.append(msg.substring(13, msg.length() - 1));
                 cb.done();
             }
-        } else if (msg.startsWith("^done,thread-id=") && // NOI18N
-                Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+        } else if (msg.startsWith("^done,thread-id=") && Utilities.isMac()) { // NOI18N
             cb = CommandBuffer.getCommandBuffer(itok);
             if (cb != null) {
                 cb.done();
             }
-        } else if (msg.startsWith("^done,shlib-info=") && // NOI18N
-                Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+        } else if (msg.startsWith("^done,shlib-info=") && Utilities.isMac()) { // NOI18N
             lastShare = msg.substring(17);
             if (lastShare.contains("GdbHelper")) { // NOI18N
                 ProjectActionEvent pae;
