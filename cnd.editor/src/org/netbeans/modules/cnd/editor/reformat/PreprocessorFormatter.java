@@ -206,7 +206,6 @@ public class PreprocessorFormatter {
         }
     }
 
-
     private void indentByCode(Token<CppTokenId> previous, TokenSequence<CppTokenId> prep, Token<CppTokenId> next) {
         if (codeStyle.sharpAtStartLine()) {
             indentBefore(previous, 0); // NOI18N
@@ -229,7 +228,7 @@ public class PreprocessorFormatter {
 
     private int getPreprocessorIndent(int shift) {
         if (shift > 0) {
-            return shift * codeStyle.getGlobalIndentSize();
+            return shift * codeStyle.indentSize();
         } else {
             return 0;
         }

@@ -2403,6 +2403,8 @@ public class LayoutDesigner implements LayoutConstants {
      * (canBeChangedToTrailing ? 2 : 0) as the second item.
      */
     public int[] getAdjustableComponentAlignment(LayoutComponent comp, int dimension) {
+        // Desperate workaround for issue 121243 - do not throw exception if something went wrong
+        if (comp == null) return new int[] {-1, 0};
         LayoutInterval interval = comp.getLayoutInterval(dimension);
         boolean leadingFixed = true;
         boolean trailingFixed = true;

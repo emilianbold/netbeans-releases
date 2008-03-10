@@ -101,15 +101,12 @@ public class XMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     }
     
     /** Create new instance of syntax coloring parser */
+    @Override
     public Syntax createSyntax(Document doc) {
         return new XMLDefaultSyntax();
-//        return new JJEditorSyntax(
-//            new XMLSyntaxTokenManager(null).new Bridge(),
-//            new XMLSyntaxTokenMapper(),
-//            XMLTokenContext.contextPath
-//        );
     }
 
+    @Override
     public Document createDefaultDocument() {
         if(J2EE_LEXER_COLORING) {
             Document doc = new XMLEditorDocument(this.getClass());
@@ -126,11 +123,13 @@ public class XMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
 
 
     /** Create syntax support */
+    @Override
     public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
         return new XMLSyntaxSupport(doc);
     }
     
 
+    @Override
     public Completion createCompletion(ExtEditorUI extEditorUI) {
         //return new org.netbeans.modules.xml.text.completion.XMLCompletion(extEditorUI);
         return null;
@@ -140,6 +139,7 @@ public class XMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         return new XMLCompletion(extEditorUI);
     }
     
+    @Override
     public void install(JEditorPane c) {
         super.install(c);
         if (Boolean.getBoolean("netbeans.experimental.xml.nodeselectors")) {  // NOI18N

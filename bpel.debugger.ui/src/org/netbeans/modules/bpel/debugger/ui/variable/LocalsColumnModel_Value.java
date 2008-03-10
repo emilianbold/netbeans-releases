@@ -85,6 +85,12 @@ public final class LocalsColumnModel_Value extends AbstractColumn {
                 return "";
             }
             
+            // Sometimes it's "Evaluating..." by the good will of the 
+            // debuggercore.
+            if (getValue() instanceof String) {
+                return (String) getValue();
+            }
+            
             return ((LocalsTableModel.Pair) getValue()).getValue();
         }
         

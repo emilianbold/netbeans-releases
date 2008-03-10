@@ -81,7 +81,10 @@ import junit.framework.TestResult;
  * @since 1.46
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-public final class NbModuleSuite extends Object {
+public class NbModuleSuite {
+
+    private NbModuleSuite() {}
+
     /** Factory method to create wrapper test that knows how to setup proper
      * NetBeans Runtime Container environment. 
      * Wraps the provided class into a test that set ups properly the
