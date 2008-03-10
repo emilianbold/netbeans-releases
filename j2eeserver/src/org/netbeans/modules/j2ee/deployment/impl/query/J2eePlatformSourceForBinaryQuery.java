@@ -91,8 +91,13 @@ public class J2eePlatformSourceForBinaryQuery implements SourceForBinaryQueryImp
         ServerRegistry servReg = ServerRegistry.getInstance();
         for (int i=0; i < serverInstanceIDs.length; i++) {
             ServerInstance serInst = servReg.getServerInstance(serverInstanceIDs[i]);
+            if (serInst == null) {
+                continue;
+            }
             J2eePlatformImpl platformImpl = serInst.getJ2eePlatformImpl();
-            if (platformImpl == null) continue; // TODO this will be removed, when AppServPlg will be ready
+            if (platformImpl == null) {
+                continue; // TODO this will be removed, when AppServPlg will be ready
+            }
             LibraryImplementation[] libs = platformImpl.getLibraries();
             for (int j=0; j< libs.length; j++) {
                 String type = libs[j].getType ();

@@ -366,16 +366,12 @@ public class CasaModelGraphUtilities {
 
     public static void updateNodeProperties(
             CasaWrapperModel model,
-            CasaServiceEngineServiceUnit su,
+            CasaServiceEngineServiceUnit sesu,
             CasaNodeWidget widget)
     {
-        String name = su.getUnitName();
-        String type = su.getComponentName();
-        type = JbiDefaultComponentInfo.getDisplayName(type).toUpperCase();
-        if (type.endsWith("SERVICEENGINE")) {  // NOI18N
-            type = type.substring(0, type.length() - 13);
-        }
-        widget.setNodeProperties(name, type);
+        String unitName = sesu.getUnitName();
+        String compName = sesu.getComponentName();
+        widget.setNodeProperties(unitName, compName);
     }
 
     private static String getShortNameInUpperCase(String str) {

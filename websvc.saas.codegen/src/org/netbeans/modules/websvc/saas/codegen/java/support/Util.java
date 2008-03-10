@@ -62,6 +62,7 @@ import org.openide.util.Utilities;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -77,8 +78,15 @@ import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.AbstractGenerator;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.GenericResourceBean;
 import org.netbeans.modules.websvc.saas.codegen.java.model.JaxwsOperationInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.ApiKeyAuthentication;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SignedUrlAuthentication;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -612,7 +620,8 @@ public class Util {
     }
  
     public static String deriveResourceName(final String name) {
-        return Inflector.getInstance().camelize(normailizeName(name) + GenericResourceBean.RESOURCE_SUFFIX);
+        String resourceName = Inflector.getInstance().camelize(normailizeName(name) + GenericResourceBean.RESOURCE_SUFFIX);
+        return resourceName.substring(0, 1).toUpperCase() + resourceName.substring(1);
     }
 
     public static String deriveMethodName(final String name) {
@@ -665,5 +674,49 @@ public class Util {
         if(Util.isScanningInProgress(showMessage)) {
             throw new IOException(SCANNING_IN_PROGRESS);
         }
+    }
+    
+    public static List<ParameterInfo> filterParametersByAuth(SaasAuthenticationType authType,
+            SaasAuthentication auth, List<ParameterInfo> params) {
+        List<ParameterInfo> filterParams = new ArrayList<ParameterInfo>();
+        if(params != null) {
+            for (ParameterInfo param : params) {
+                if(authType == SaasAuthenticationType.API_KEY) {
+                    ApiKeyAuthentication apiKey = (ApiKeyAuthentication)auth;
+                    if(param.getName().equals(apiKey.getApiKeyName())) {
+                        continue;
+                    }
+                } else if(authType == SaasAuthenticationType.SESSION_KEY) {
+                    SessionKeyAuthentication sessionKey = (SessionKeyAuthentication)auth;
+                    if(param.getName().equals(sessionKey.getApiKeyName()) || 
+                            param.getName().equals(sessionKey.getSessionKeyName()) ||
+                                param.getName().equals(sessionKey.getSigKeyName())) {
+                        continue;
+                    }
+                } else if(authType == SaasAuthenticationType.SIGNED_URL) {
+                    SignedUrlAuthentication signedUrl = (SignedUrlAuthentication)auth;
+                    if(param.getName().equals(signedUrl.getSigKeyName())) {
+                        continue;
+                    }
+                }
+                filterParams.add(param);
+            }
+        }
+        return filterParams;
+    }
+    
+    public static List<ParameterInfo> filterParameters(List<ParameterInfo> params, ParamFilter[] filters) {
+        List<ParameterInfo> filterParams = new ArrayList<ParameterInfo>();
+        if(params != null) {
+            for (ParameterInfo param : params) {
+                for (ParamFilter filter : filters) {
+                    if (filter == ParamFilter.FIXED && param.getFixed() != null) {
+                        continue;
+                    }
+                    filterParams.add(param);
+                }
+            }
+        }
+        return filterParams;
     }
 }

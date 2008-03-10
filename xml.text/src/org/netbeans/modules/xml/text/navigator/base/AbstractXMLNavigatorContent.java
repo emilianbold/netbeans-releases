@@ -76,6 +76,11 @@ public abstract class AbstractXMLNavigatorContent extends javax.swing.JPanel
     private JLabel msgLabel;
     private Icon waitIcon;
     
+    //Error messages that can be used in showError() call.
+    public static String ERROR_NO_DATA_AVAILABLE    = "LBL_NotAvailable";       //NOI18N
+    public static String ERROR_TOO_LARGE_DOCUMENT   = "LBL_TooLarge";           //NOI18N
+    public static String ERROR_CANNOT_NAVIGATE      = "LBL_CannotNavigate";     //NOI18N
+    
     /**
      * 
      */
@@ -125,26 +130,18 @@ public abstract class AbstractXMLNavigatorContent extends javax.swing.JPanel
         });
     }
     
-    public void showDocumentTooLarge() {
-        removeAll();
-        msgLabel.setForeground(Color.GRAY);
-        msgLabel.setText(NbBundle.getMessage(AbstractXMLNavigatorContent.class, "LBL_TooLarge"));
-        msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        add(emptyPanel, BorderLayout.CENTER);
-        repaint();
-    }
-    
-    public void showCannotNavigate() {
+    public void showError(String message) {
         removeAll();
         msgLabel.setIcon(null);
         msgLabel.setForeground(Color.GRAY);
-        msgLabel.setText(NbBundle.getMessage(AbstractXMLNavigatorContent.class, "LBL_CannotNavigate"));
+        msgLabel.setText(NbBundle.getMessage(AbstractXMLNavigatorContent.class, message));
         msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
         add(emptyPanel, BorderLayout.CENTER);
+        revalidate();
         repaint();
     }
     
-    public void showScanningPanel() {
+    public void showWaitPanel() {
         removeAll();
         if (waitIcon == null) {
             waitIcon = new ImageIcon( Utilities.loadImage(
@@ -153,22 +150,12 @@ public abstract class AbstractXMLNavigatorContent extends javax.swing.JPanel
         msgLabel.setIcon(waitIcon);
         msgLabel.setHorizontalAlignment(SwingConstants.LEFT);
         msgLabel.setForeground(Color.BLACK);
-        msgLabel.setText(NbBundle.getMessage(AbstractXMLNavigatorContent.class, "LBL_Scan"));
-        add(emptyPanel, BorderLayout.NORTH);
-        repaint();
-    }
-    
-    
-    public void showWaitPanel() {
-        removeAll();
-        msgLabel.setIcon(null);
-        msgLabel.setForeground(Color.GRAY);
-        msgLabel.setHorizontalAlignment(SwingConstants.LEFT);
         msgLabel.setText(NbBundle.getMessage(AbstractXMLNavigatorContent.class, "LBL_Wait"));
         add(emptyPanel, BorderLayout.NORTH);
+        revalidate();
         repaint();
     }
-    
+       
     private static class WaitNode extends AbstractNode {
         
         private Image waitIcon = Utilities.loadImage("org/netbeans/modules/xml/text/navigator/resources/wait.gif"); // NOI18N

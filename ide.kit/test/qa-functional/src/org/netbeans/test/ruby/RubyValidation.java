@@ -81,7 +81,13 @@ public class RubyValidation extends JellyTestCase {
         suite.addTest(new RubyValidation("testRunRubyFile"));
         suite.addTest(new RubyValidation("testCreateRailsProject"));
         suite.addTest(new RubyValidation("testRailsGenerate"));
-        suite.addTest(new RubyValidation("testIrbShell"));
+
+        // Disabled: As of integration 
+        //   http://hg.netbeans.org/main/rev/87ddcc7d8407
+        // we no longer create an IRB top component; it's a normal
+        // IRB output window.
+        //suite.addTest(new RubyValidation("testIrbShell"));
+
         return suite;
     }
     

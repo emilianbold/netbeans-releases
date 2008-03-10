@@ -61,7 +61,6 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.DiffStreamSource;
-import org.netbeans.modules.mercurial.util.HgUtils;
 
 /**
  * Shows Search History results in a table with Diff pane below it.

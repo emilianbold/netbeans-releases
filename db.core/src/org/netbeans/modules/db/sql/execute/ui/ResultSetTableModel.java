@@ -115,7 +115,7 @@ public class ResultSetTableModel extends AbstractTableModel {
     }
 
     public String getColumnName(int column) {
-        return getColumnDef(column).getName();
+        return getColumnDef(column).getLabel();
     }
 
     public Class getColumnClass(int column) {

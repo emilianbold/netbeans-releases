@@ -878,7 +878,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 "__RESOURCE_NAME__",
                 "__STUB_METHODS__"
             };
-            if(r.isContainer() && root != null) {
+            if(r.isContainer() && root != null && root.getChildren().size() > 0) {
                 String containerName = r.getName();
                 String containerRepName = root.getName();
                 //TODO
