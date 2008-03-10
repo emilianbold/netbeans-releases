@@ -703,7 +703,7 @@ public class CompilerSet {
         Tool t;
 //        if (kind == Tool.MakeTool || kind == Tool.DebuggerTool) {
             // Fixup: all tools should go here ....
-            t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
+            t = compilerProvider.createCompiler(getCompilerFlavor(), kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
 //        }
 //        else {
 //            t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], ""); // NOI18N

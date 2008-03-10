@@ -879,6 +879,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             currentCompilerSet = cs;
             fireCompilerSetChange();
             fireCompilerSetModified();
+            
+            csm.saveToDisk();
         }
         
         if (model != null) { // model is null for Tools->Options if we don't look at C/C++ panel
