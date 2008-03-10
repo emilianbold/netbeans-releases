@@ -122,7 +122,6 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         }
         PreviewPreferences clone = new PreviewPreferences(
                                    EditorOptions.getPreferences(language, styleId), language, styleId);
-        clone.addPreferenceChangeListener(this);
         map.put(styleId, clone);
     }
     
@@ -177,15 +176,22 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         actionPerformed(new ActionEvent(styleComboBox, 0, null));
     }
     
+    private PreviewPreferences lastSheetPreferences = null;
+    
     private void initSheets(PreviewPreferences preferences){
+        if (lastSheetPreferences != null){
+            lastSheetPreferences.removePreferenceChangeListener(this);
+        }
 	Sheet sheet = new Sheet();
 	Sheet.Set set = new Sheet.Set();
 	set.setName("Indents"); // NOI18N
 	set.setDisplayName(getString("LBL_TabsAndIndents")); // NOI18N
         set.setShortDescription(getString("HINT_TabsAndIndents")); // NOI18N
+	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.indentSize));
 	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.statementContinuationIndent));
 	set.put(new PreprocessorIndentProperty(currentLanguage, preferences, EditorOptions.indentPreprocessorDirectives));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.sharpAtStartLine));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.indentNamespace));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.indentCasesFromSwitch));
         sheet.put(set);
         
@@ -272,7 +278,6 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.setShortDescription(getString("HINT_WithinParentheses")); // NOI18N
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinMethodDeclParens));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinMethodCallParens));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinArrayInitBrackets));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinBraces));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinParens));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinCatchParens));
@@ -332,6 +337,9 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         categoryPanel.validate();
         categoryPanel.repaint();
         categoryPanel.setVisible(true);
+    
+        preferences.addPreferenceChangeListener(this);
+        lastSheetPreferences = preferences;
     }
 
     void load() {
@@ -356,6 +364,9 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
                 buf.append(style);
                 PreviewPreferences preferences = prefEntry.getValue();
                 Preferences toSave = EditorOptions.getPreferences(language, style);
+                if (style.equals(defaultStyles.get(language))){
+                    EditorOptions.setPreferences(CodeStyle.getDefault(language), toSave);
+                }
                 for(String key : EditorOptions.keys()){
                     Object o = EditorOptions.getDefault(language, style, key);
                     if (o instanceof Boolean) {
@@ -656,7 +667,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(jSplitPane1, gridBagConstraints);
 
-        jSeparator1.setForeground(javax.swing.UIManager.getDefaults().getColor("Button.disabledText"));
+        jSeparator1.setForeground(java.awt.SystemColor.activeCaptionBorder);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
