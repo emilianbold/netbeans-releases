@@ -333,7 +333,7 @@ private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//G
     else {
         seed = System.getProperty("user.home"); // NOI18N
     }
-    FileChooser fileChooser = new FileChooser(getString("BASE_DIRECTORY"), getString("SELECT"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+    FileChooser fileChooser = new FileChooser(getString("SELECT_BASE_DIRECTORY_TITLE"), null, JFileChooser.DIRECTORIES_ONLY, null, seed, true);
     int ret = fileChooser.showOpenDialog(this);
     if (ret == JFileChooser.CANCEL_OPTION) {
         return;
