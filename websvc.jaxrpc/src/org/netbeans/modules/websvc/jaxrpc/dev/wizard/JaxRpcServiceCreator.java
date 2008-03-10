@@ -45,6 +45,7 @@ import com.sun.source.tree.ClassTree;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -78,6 +79,7 @@ import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
@@ -211,8 +213,8 @@ public class JaxRpcServiceCreator implements ServiceCreator {
     
     private void generateWsFromWsdl(ProgressHandle handle) throws Exception {
         FileObject pkg = Templates.getTargetFolder(wiz);
-        wsName = Templates.getTargetName(wiz);
         WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(pkg);
+        wsName = getUniqueJaxrpcName(wsSupport, Templates.getTargetName(wiz));
         assert wsSupport != null;
         WebServiceGenerator generator = new WebServiceGenerator(wsSupport, wsName, pkg, project);
         
@@ -226,7 +228,7 @@ public class JaxRpcServiceCreator implements ServiceCreator {
         
         handle.progress(NbBundle.getMessage(JaxRpcServiceCreator.class, "MSG_PARSING_WSDL"), 30); //NOI18N
         String wsdlFilePath = (String)wiz.getProperty(WSDL_FILE_PATH);
-        File normalizedWsdlFilePath = FileUtil.normalizeFile(new File(wsdlFilePath));
+            File normalizedWsdlFilePath = FileUtil.normalizeFile(new File(wsdlFilePath));
         final FileObject sourceWsdlFile = FileUtil.toFileObject(normalizedWsdlFilePath);
         if(sourceWsdlFile == null) {
             String mes = NbBundle.getMessage(JaxRpcServiceCreator.class, "MSG_CANNOT_GET_FILE_OBJECT", normalizedWsdlFilePath.getAbsolutePath()); //NOI18N
