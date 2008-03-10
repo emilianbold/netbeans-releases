@@ -36,18 +36,28 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JComboBox;
+import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
+import org.netbeans.modules.db.mysql.ServerInstance;
+import org.netbeans.modules.db.mysql.Utils;
+import org.netbeans.modules.db.mysql.ui.CreateDatabasePanel;
+import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.ruby.railsprojects.database.RailsAdapterFactory;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
 import org.netbeans.modules.ruby.railsprojects.database.RailsJdbcAsAdapterConnection;
 import org.netbeans.modules.ruby.railsprojects.database.RailsJdbcConnection;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * A panel for JDBC connections.
@@ -56,13 +66,50 @@ import org.openide.WizardValidationException;
  */
 public class JdbcConnectionsPanel extends SettingsPanel {
 
+    private static final Logger LOGGER = Logger.getLogger(JdbcConnectionsPanel.class.getName());
+    
+    /**
+     * The DB connection manager for this panel.
+     */
+    private final ConnectionManager connectionManager;
+    /**
+     * The number of db connections the connection manager has.
+     */
+    private int connectionCount;
+
     /** Creates new form JdbcConnectionsPanel */
     public JdbcConnectionsPanel() {
+        this.connectionManager = ConnectionManager.getDefault();
+        this.connectionCount = connectionManager.getConnections().length;
         initComponents();
-        ConnectionManager connectionManager = ConnectionManager.getDefault();
         DatabaseExplorerUIs.connect(developmentComboBox, connectionManager);
         DatabaseExplorerUIs.connect(productionComboBox, connectionManager);
         DatabaseExplorerUIs.connect(testComboBox, connectionManager);
+    }
+
+    /**
+     * Refreshes all three connection combos, needed after creating databases.
+     */
+    void updateConnectionCombos() {
+        int newConnectionCount = connectionManager.getConnections().length;
+        if (newConnectionCount == connectionCount) {
+            return;
+        }
+        this.connectionCount = newConnectionCount;
+        developmentComboBox = replaceCombo(developmentComboBox);
+        testComboBox = replaceCombo(testComboBox);
+        productionComboBox = replaceCombo(productionComboBox);
+    }
+
+    private JComboBox replaceCombo(JComboBox comboBox) {
+        // this is ugly, but needed for keeping the connection combos
+        // up to date after creating a database
+        Object selectedItem = comboBox.getSelectedItem();
+        JComboBox newComboBox = new JComboBox();
+        DatabaseExplorerUIs.connect(newComboBox, connectionManager);
+        ((GroupLayout) this.getLayout()).replace(comboBox, newComboBox);
+        newComboBox.setSelectedItem(selectedItem);
+        return newComboBox;
     }
 
     /** This method is called from within the constructor to
@@ -80,6 +127,9 @@ public class JdbcConnectionsPanel extends SettingsPanel {
         developmentComboBox = new javax.swing.JComboBox();
         productionComboBox = new javax.swing.JComboBox();
         testComboBox = new javax.swing.JComboBox();
+        createDevelopmentDb = new javax.swing.JButton();
+        createTestDb = new javax.swing.JButton();
+        createProductionDb = new javax.swing.JButton();
 
         developmentLabel.setLabelFor(developmentComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(developmentLabel, org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "LBL_DevelopmentConnection")); // NOI18N
@@ -89,6 +139,27 @@ public class JdbcConnectionsPanel extends SettingsPanel {
 
         testLabel.setLabelFor(testComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(testLabel, org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "LBL_TestConnection")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(createDevelopmentDb, org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "LBL_CreateMySqlDb_Devel")); // NOI18N
+        createDevelopmentDb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createDevelopmentDbActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(createTestDb, org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "LBL_CreateMySqlDb_Test")); // NOI18N
+        createTestDb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createTestDbActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(createProductionDb, org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "LBL_CreateMySqlDb_Production")); // NOI18N
+        createProductionDb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createProductionDbActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -102,9 +173,14 @@ public class JdbcConnectionsPanel extends SettingsPanel {
                     .add(developmentLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(productionComboBox, 0, 384, Short.MAX_VALUE)
-                    .add(testComboBox, 0, 384, Short.MAX_VALUE)
-                    .add(developmentComboBox, 0, 384, Short.MAX_VALUE))
+                    .add(testComboBox, 0, 340, Short.MAX_VALUE)
+                    .add(developmentComboBox, 0, 340, Short.MAX_VALUE)
+                    .add(productionComboBox, 0, 340, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(createProductionDb, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(createTestDb, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(createDevelopmentDb, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -112,15 +188,18 @@ public class JdbcConnectionsPanel extends SettingsPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(developmentLabel)
                     .add(developmentComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(developmentLabel))
+                    .add(createDevelopmentDb))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(testLabel)
-                    .add(testComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(testComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(createTestDb))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(productionLabel)
+                    .add(createProductionDb)
                     .add(productionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -128,14 +207,74 @@ public class JdbcConnectionsPanel extends SettingsPanel {
         developmentLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "ACSD_DevelopmentConnection")); // NOI18N
         productionLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "ACSD_ProductionConnection")); // NOI18N
         testLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "ACSD_TestConnection")); // NOI18N
+        createDevelopmentDb.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "ASCN_CreateMySqlDb")); // NOI18N
+        createDevelopmentDb.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "ASCD_CreateMySqlDb")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "ASCN_JdbcPanel")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "ASCD_JdbcPanel")); // NOI18N
         getAccessibleContext().setAccessibleParent(this);
     }// </editor-fold>//GEN-END:initComponents
 
+private void createDevelopmentDbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createDevelopmentDbActionPerformed
+    DatabaseConnection created = createMySqlDb();
+    if (created != null) {
+        developmentComboBox.setSelectedItem(created);
+    }
+}//GEN-LAST:event_createDevelopmentDbActionPerformed
+
+private void createTestDbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createTestDbActionPerformed
+    DatabaseConnection created = createMySqlDb();
+    if (created != null) {
+        testComboBox.setSelectedItem(created);
+    }
+}//GEN-LAST:event_createTestDbActionPerformed
+
+private void createProductionDbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createProductionDbActionPerformed
+    DatabaseConnection created = createMySqlDb();
+    if (created != null) {
+        productionComboBox.setSelectedItem(created);
+    }
+}//GEN-LAST:event_createProductionDbActionPerformed
+
+    private DatabaseConnection createMySqlDb() {
+        ServerInstance mysql = ServerInstance.getDefault();
+        if (!mysql.isConnected()) {
+            tryToConnect(mysql);
+        }
+        DatabaseConnection result = null;
+        if (mysql.isConnected()) {
+            result = CreateDatabasePanel.showCreateDatabaseDialog(mysql);
+            updateConnectionCombos();
+        }
+        return result;
+    }
+
+    private void tryToConnect(ServerInstance mysql) {
+        doConnect(mysql, true);
+        if (!mysql.isConnected()) {
+            if (new PropertiesDialog(mysql).displayDialog()) {
+                doConnect(mysql, false);
+            }
+        }
+    }
+    
+    private void doConnect(ServerInstance mysql, boolean quiet) {
+        try {
+            mysql.connect();
+        } catch (DatabaseException ex) {
+            if (quiet) {
+                LOGGER.log(Level.FINE, "Could not connect to the MySQL server instance", ex);
+            } else {
+                String message = NbBundle.getMessage(JdbcConnectionsPanel.class, "MSG_UnableToConnect");
+                Utils.displayError(message, ex);
+            }
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton createDevelopmentDb;
+    private javax.swing.JButton createProductionDb;
+    private javax.swing.JButton createTestDb;
     private javax.swing.JComboBox developmentComboBox;
     private javax.swing.JLabel developmentLabel;
     private javax.swing.JComboBox productionComboBox;
@@ -145,17 +284,17 @@ public class JdbcConnectionsPanel extends SettingsPanel {
     // End of variables declaration//GEN-END:variables
 
     @Override
-    void store(WizardDescriptor settings) {
+    void store( WizardDescriptor settings) {
         DatabaseConnection devel = (DatabaseConnection) developmentComboBox.getSelectedItem();
         DatabaseConnection production = (DatabaseConnection) productionComboBox.getSelectedItem();
         DatabaseConnection test = (DatabaseConnection) testComboBox.getSelectedItem();
-        
+
         RailsDatabaseConfiguration databaseConfiguration = null;
         Boolean jdbc = (Boolean) settings.getProperty(NewRailsProjectWizardIterator.JDBC_WN);
         boolean useJdbc = jdbc != null ? jdbc.booleanValue() : false;
         // see #129332 - if nothing is specified, use the default adapter
         boolean useDefault = !jdbc && devel == null && production == null && test == null;
-        
+
         if (useDefault) {
             databaseConfiguration = RailsAdapterFactory.getDefaultAdapter();
         } else if (useJdbc) {
@@ -167,16 +306,15 @@ public class JdbcConnectionsPanel extends SettingsPanel {
     }
 
     @Override
-    void read(WizardDescriptor settings) {
+    void read( WizardDescriptor settings) {
     }
 
     @Override
-    boolean valid(WizardDescriptor settings) {
+    boolean valid( WizardDescriptor settings) {
         return true;
     }
 
     @Override
-    void validate(WizardDescriptor settings) throws WizardValidationException {
+    void validate( WizardDescriptor settings) throws WizardValidationException {
     }
-
 }
