@@ -90,6 +90,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuListener;
@@ -112,6 +113,9 @@ public final class SearchBar extends JPanel {
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
     private static final Color NOT_FOUND = Color.RED.darker();
     private static final Color INVALID_REGEXP = Color.red;
+    
+    private static final int defaultIncremantalSearchComboWidth = 200;
+    private static final int maxIncremantalSearchComboWidth = 350;
     
     /** Shared mouse listener used for setting the border painting property
      * of the toolbar buttons and for invoking the popup menu.
@@ -281,7 +285,21 @@ public final class SearchBar extends JPanel {
             public @Override Dimension getMaximumSize() {
                 return getPreferredSize();
             }
+
+            @Override
+            public Dimension getPreferredSize() {
+                int width;
+                int editsize = this.getEditor().getEditorComponent().getPreferredSize().width + 10;
+                if (editsize > defaultIncremantalSearchComboWidth && editsize <  maxIncremantalSearchComboWidth)
+                    width = editsize;
+                else if (editsize >= maxIncremantalSearchComboWidth)
+                    width = maxIncremantalSearchComboWidth;
+                else width = defaultIncremantalSearchComboWidth;
+                return new Dimension(width,
+                        super.getPreferredSize().height);
+            }
         };
+        
         incrementalSearchComboBox.setEditable(true);
         incrementalSearchTextField = (JTextField) incrementalSearchComboBox.getEditor().getEditorComponent();
         incrementalSearchTextField.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); // NOI18N
@@ -293,11 +311,13 @@ public final class SearchBar extends JPanel {
 
             public void insertUpdate(DocumentEvent e) {
                 // text changed - attempt incremental search
+                computeLayout();
                 incrementalSearch();
             }
 
             public void removeUpdate(DocumentEvent e) {
                 // text changed - attempt incremental search
+                computeLayout();
                 incrementalSearch();
             }
         };
@@ -437,10 +457,18 @@ public final class SearchBar extends JPanel {
         
         add(findLabel);
         add(incrementalSearchComboBox);
-        add(new JToolBar.Separator());
+        
+        JToolBar.Separator leftSeparator = new JToolBar.Separator();
+        leftSeparator.setOrientation(SwingConstants.VERTICAL);
+        add(leftSeparator);
+        
         add(findPreviousButton);
         add(findNextButton);
-        add(new JToolBar.Separator());
+        
+        JToolBar.Separator rightSeparator = new JToolBar.Separator();
+        rightSeparator.setOrientation(SwingConstants.VERTICAL);
+        add(rightSeparator);
+        
         add(matchCaseCheckBox);
         add(wholeWordsCheckBox);
         add(regexpCheckBox);
