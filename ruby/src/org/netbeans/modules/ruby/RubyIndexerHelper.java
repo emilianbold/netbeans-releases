@@ -36,7 +36,7 @@ import javax.swing.text.BadLocationException;
 import org.jruby.ast.FCallNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.elements.AstElement;
@@ -109,7 +109,7 @@ public class RubyIndexerHelper {
 
             // See if the method takes blocks
             //List<Node> yields = new ArrayList<Node>();
-            //AstUtilities.addNodesByType(child.getNode(), new int[]{NodeTypes.YIELDNODE}, yields);
+            //AstUtilities.addNodesByType(child.getNode(), new int[]{NodeType.YIELDNODE}, yields);
             //if (yields.size() > 0) {
             //    // Yes, this method appears to have a yield... compute its args
             //    // See if it's optional...
@@ -127,7 +127,7 @@ public class RubyIndexerHelper {
 
             // Is the block optional?
             List<Node> calls = new ArrayList<Node>();
-            AstUtilities.addNodesByType(child.getNode(), new int[]{NodeTypes.FCALLNODE}, calls);
+            AstUtilities.addNodesByType(child.getNode(), new NodeType[]{NodeType.FCALLNODE}, calls);
             boolean optionalBlock = false;
             for (Node call : calls) {
                 if ("block_given?".equals(((FCallNode)call).getName())) { // NOI18N

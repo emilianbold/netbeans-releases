@@ -91,56 +91,6 @@ public class Page1 extends AbstractPageBean {
         yearRangeValidator.setMaximum(2010);
         yearRangeValidator.setMinimum(1895);
     }
-
-    private Page page1 = new Page();
-    
-    public Page getPage1() {
-        return page1;
-    }
-    
-    public void setPage1(Page p) {
-        this.page1 = p;
-    }
-    
-    private Html html1 = new Html();
-    
-    public Html getHtml1() {
-        return html1;
-    }
-    
-    public void setHtml1(Html h) {
-        this.html1 = h;
-    }
-    
-    private Head head1 = new Head();
-    
-    public Head getHead1() {
-        return head1;
-    }
-    
-    public void setHead1(Head h) {
-        this.head1 = h;
-    }
-    
-    private Link link1 = new Link();
-    
-    public Link getLink1() {
-        return link1;
-    }
-    
-    public void setLink1(Link l) {
-        this.link1 = l;
-    }
-    
-    private Body body1 = new Body();
-    
-    public Body getBody1() {
-        return body1;
-    }
-    
-    public void setBody1(Body b) {
-        this.body1 = b;
-    }
     
     private Form form1 = new Form();
     
@@ -151,51 +101,6 @@ public class Page1 extends AbstractPageBean {
     public void setForm1(Form f) {
         this.form1 = f;
     }
-    private HtmlPanelGrid mainPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getMainPanel() {
-        return mainPanel;
-    }
-
-    public void setMainPanel(HtmlPanelGrid hpg) {
-        this.mainPanel = hpg;
-    }
-    private HtmlPanelGrid currentViewPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getCurrentViewPanel() {
-        return currentViewPanel;
-    }
-
-    public void setCurrentViewPanel(HtmlPanelGrid hpg) {
-        this.currentViewPanel = hpg;
-    }
-    private HtmlPanelGrid addMoviePanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getAddMoviePanel() {
-        return addMoviePanel;
-    }
-
-    public void setAddMoviePanel(HtmlPanelGrid hpg) {
-        this.addMoviePanel = hpg;
-    }
-    private HtmlPanelGrid moviesTablePanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getMoviesTablePanel() {
-        return moviesTablePanel;
-    }
-
-    public void setMoviesTablePanel(HtmlPanelGrid hpg) {
-        this.moviesTablePanel = hpg;
-    }
-    private Label label1 = new Label();
-
-    public Label getLabel1() {
-        return label1;
-    }
-
-    public void setLabel1(Label l) {
-        this.label1 = l;
-    }
     private DropDown currentGenre = new DropDown();
 
     public DropDown getCurrentGenre() {
@@ -204,15 +109,6 @@ public class Page1 extends AbstractPageBean {
 
     public void setCurrentGenre(DropDown dd) {
         this.currentGenre = dd;
-    }
-    private Table movies = new Table();
-
-    public Table getMovies() {
-        return movies;
-    }
-
-    public void setMovies(Table t) {
-        this.movies = t;
     }
     private TableRowGroup tableRowGroup1 = new TableRowGroup();
 
@@ -223,78 +119,6 @@ public class Page1 extends AbstractPageBean {
     public void setTableRowGroup1(TableRowGroup trg) {
         this.tableRowGroup1 = trg;
     }
-    private Button update = new Button();
-
-    public Button getUpdate() {
-        return update;
-    }
-
-    public void setUpdate(Button b) {
-        this.update = b;
-    }
-    private Label label2 = new Label();
-
-    public Label getLabel2() {
-        return label2;
-    }
-
-    public void setLabel2(Label l) {
-        this.label2 = l;
-    }
-    private Label label3 = new Label();
-
-    public Label getLabel3() {
-        return label3;
-    }
-
-    public void setLabel3(Label l) {
-        this.label3 = l;
-    }
-    private Label label4 = new Label();
-
-    public Label getLabel4() {
-        return label4;
-    }
-
-    public void setLabel4(Label l) {
-        this.label4 = l;
-    }
-    private Label label5 = new Label();
-
-    public Label getLabel5() {
-        return label5;
-    }
-
-    public void setLabel5(Label l) {
-        this.label5 = l;
-    }
-    private Label label6 = new Label();
-
-    public Label getLabel6() {
-        return label6;
-    }
-
-    public void setLabel6(Label l) {
-        this.label6 = l;
-    }
-    private Label label7 = new Label();
-
-    public Label getLabel7() {
-        return label7;
-    }
-
-    public void setLabel7(Label l) {
-        this.label7 = l;
-    }
-    private Label label8 = new Label();
-
-    public Label getLabel8() {
-        return label8;
-    }
-
-    public void setLabel8(Label l) {
-        this.label8 = l;
-    }
     private DropDown addGenre = new DropDown();
 
     public DropDown getAddGenre() {
@@ -303,15 +127,6 @@ public class Page1 extends AbstractPageBean {
 
     public void setAddGenre(DropDown dd) {
         this.addGenre = dd;
-    }
-    private Message message1 = new Message();
-
-    public Message getMessage1() {
-        return message1;
-    }
-
-    public void setMessage1(Message m) {
-        this.message1 = m;
     }
     private TextField addTitle = new TextField();
 
@@ -322,15 +137,6 @@ public class Page1 extends AbstractPageBean {
     public void setAddTitle(TextField tf) {
         this.addTitle = tf;
     }
-    private Message message2 = new Message();
-
-    public Message getMessage2() {
-        return message2;
-    }
-
-    public void setMessage2(Message m) {
-        this.message2 = m;
-    }
     private TextField addYear = new TextField();
 
     public TextField getAddYear() {
@@ -339,15 +145,6 @@ public class Page1 extends AbstractPageBean {
 
     public void setAddYear(TextField tf) {
         this.addYear = tf;
-    }
-    private Message message3 = new Message();
-
-    public Message getMessage3() {
-        return message3;
-    }
-
-    public void setMessage3(Message m) {
-        this.message3 = m;
     }
     private TextField addLength = new TextField();
 
@@ -358,15 +155,6 @@ public class Page1 extends AbstractPageBean {
     public void setAddLength(TextField tf) {
         this.addLength = tf;
     }
-    private Message message4 = new Message();
-
-    public Message getMessage4() {
-        return message4;
-    }
-
-    public void setMessage4(Message m) {
-        this.message4 = m;
-    }
     private DropDown addRating = new DropDown();
 
     public DropDown getAddRating() {
@@ -376,24 +164,6 @@ public class Page1 extends AbstractPageBean {
     public void setAddRating(DropDown dd) {
         this.addRating = dd;
     }
-    private Message message5 = new Message();
-
-    public Message getMessage5() {
-        return message5;
-    }
-
-    public void setMessage5(Message m) {
-        this.message5 = m;
-    }
-    private Message message6 = new Message();
-
-    public Message getMessage6() {
-        return message6;
-    }
-
-    public void setMessage6(Message m) {
-        this.message6 = m;
-    }
     private TextArea addDescription = new TextArea();
 
     public TextArea getAddDescription() {
@@ -402,51 +172,6 @@ public class Page1 extends AbstractPageBean {
 
     public void setAddDescription(TextArea ta) {
         this.addDescription = ta;
-    }
-    private Message message7 = new Message();
-
-    public Message getMessage7() {
-        return message7;
-    }
-
-    public void setMessage7(Message m) {
-        this.message7 = m;
-    }
-    private StaticText staticText4 = new StaticText();
-
-    public StaticText getStaticText4() {
-        return staticText4;
-    }
-
-    public void setStaticText4(StaticText st) {
-        this.staticText4 = st;
-    }
-    private StaticText staticText5 = new StaticText();
-
-    public StaticText getStaticText5() {
-        return staticText5;
-    }
-
-    public void setStaticText5(StaticText st) {
-        this.staticText5 = st;
-    }
-    private Button add = new Button();
-
-    public Button getAdd() {
-        return add;
-    }
-
-    public void setAdd(Button b) {
-        this.add = b;
-    }
-    private StaticText staticText6 = new StaticText();
-
-    public StaticText getStaticText6() {
-        return staticText6;
-    }
-
-    public void setStaticText6(StaticText st) {
-        this.staticText6 = st;
     }
     private LongRangeValidator yearRangeValidator = new LongRangeValidator();
 
@@ -466,141 +191,6 @@ public class Page1 extends AbstractPageBean {
     public void setLengthRangeValidator(LongRangeValidator lrv) {
         this.lengthRangeValidator = lrv;
     }
-    private TableColumn tableColumn1 = new TableColumn();
-
-    public TableColumn getTableColumn1() {
-        return tableColumn1;
-    }
-
-    public void setTableColumn1(TableColumn tc) {
-        this.tableColumn1 = tc;
-    }
-    private TextField textField1 = new TextField();
-
-    public TextField getTextField1() {
-        return textField1;
-    }
-
-    public void setTextField1(TextField tf) {
-        this.textField1 = tf;
-    }
-    private TableColumn tableColumn2 = new TableColumn();
-
-    public TableColumn getTableColumn2() {
-        return tableColumn2;
-    }
-
-    public void setTableColumn2(TableColumn tc) {
-        this.tableColumn2 = tc;
-    }
-    private DropDown dropDown1 = new DropDown();
-
-    public DropDown getDropDown1() {
-        return dropDown1;
-    }
-
-    public void setDropDown1(DropDown dd) {
-        this.dropDown1 = dd;
-    }
-    private TableColumn tableColumn3 = new TableColumn();
-
-    public TableColumn getTableColumn3() {
-        return tableColumn3;
-    }
-
-    public void setTableColumn3(TableColumn tc) {
-        this.tableColumn3 = tc;
-    }
-    private TextField textField2 = new TextField();
-
-    public TextField getTextField2() {
-        return textField2;
-    }
-
-    public void setTextField2(TextField tf) {
-        this.textField2 = tf;
-    }
-    private TableColumn tableColumn4 = new TableColumn();
-
-    public TableColumn getTableColumn4() {
-        return tableColumn4;
-    }
-
-    public void setTableColumn4(TableColumn tc) {
-        this.tableColumn4 = tc;
-    }
-    private TextField textField3 = new TextField();
-
-    public TextField getTextField3() {
-        return textField3;
-    }
-
-    public void setTextField3(TextField tf) {
-        this.textField3 = tf;
-    }
-    private TableColumn tableColumn5 = new TableColumn();
-
-    public TableColumn getTableColumn5() {
-        return tableColumn5;
-    }
-
-    public void setTableColumn5(TableColumn tc) {
-        this.tableColumn5 = tc;
-    }
-    private TextField textField4 = new TextField();
-
-    public TextField getTextField4() {
-        return textField4;
-    }
-
-    public void setTextField4(TextField tf) {
-        this.textField4 = tf;
-    }
-    private TableColumn tableColumn6 = new TableColumn();
-
-    public TableColumn getTableColumn6() {
-        return tableColumn6;
-    }
-
-    public void setTableColumn6(TableColumn tc) {
-        this.tableColumn6 = tc;
-    }
-    private TextArea textArea1 = new TextArea();
-
-    public TextArea getTextArea1() {
-        return textArea1;
-    }
-
-    public void setTextArea1(TextArea ta) {
-        this.textArea1 = ta;
-    }
-    private TableColumn tableColumn7 = new TableColumn();
-
-    public TableColumn getTableColumn7() {
-        return tableColumn7;
-    }
-
-    public void setTableColumn7(TableColumn tc) {
-        this.tableColumn7 = tc;
-    }
-    private Button preview = new Button();
-
-    public Button getPreview() {
-        return preview;
-    }
-
-    public void setPreview(Button b) {
-        this.preview = b;
-    }
-    private Button remove = new Button();
-
-    public Button getRemove() {
-        return remove;
-    }
-
-    public void setRemove(Button b) {
-        this.remove = b;
-    }
     private Upload uploadIImage = new Upload();
 
     public Upload getUploadIImage() {
@@ -610,42 +200,6 @@ public class Page1 extends AbstractPageBean {
     public void setUploadIImage(Upload u) {
         this.uploadIImage = u;
     }
-    private StaticText imagePad1 = new StaticText();
-
-    public StaticText getImagePad1() {
-        return imagePad1;
-    }
-
-    public void setImagePad1(StaticText st) {
-        this.imagePad1 = st;
-    }
-    private StaticText imagePad2 = new StaticText();
-
-    public StaticText getImagePad2() {
-        return imagePad2;
-    }
-
-    public void setImagePad2(StaticText st) {
-        this.imagePad2 = st;
-    }
-    private Button uploadImage = new Button();
-
-    public Button getUploadImage() {
-        return uploadImage;
-    }
-
-    public void setUploadImage(Button b) {
-        this.uploadImage = b;
-    }
-    private Label label9 = new Label();
-
-    public Label getLabel9() {
-        return label9;
-    }
-
-    public void setLabel9(Label l) {
-        this.label9 = l;
-    }
     private TextField addImage = new TextField();
 
     public TextField getAddImage() {
@@ -654,15 +208,6 @@ public class Page1 extends AbstractPageBean {
 
     public void setAddImage(TextField tf) {
         this.addImage = tf;
-    }
-    private Message message8 = new Message();
-
-    public Message getMessage8() {
-        return message8;
-    }
-
-    public void setMessage8(Message m) {
-        this.message8 = m;
     }
     private IntegerConverter yearIntegerConverter = new IntegerConverter();
 

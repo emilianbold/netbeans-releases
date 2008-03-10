@@ -86,129 +86,6 @@ public class AddVehicle extends AbstractPageBean {
     private void _init() throws Exception {
         stateDataProvider.setCachedRowSet((javax.sql.rowset.CachedRowSet) getValue("#{SessionBean1.stateRowSet}"));
     }
-
-    private Page page1 = new Page();
-    
-    public Page getPage1() {
-        return page1;
-    }
-    
-    public void setPage1(Page p) {
-        this.page1 = p;
-    }
-    
-    private Html html1 = new Html();
-    
-    public Html getHtml1() {
-        return html1;
-    }
-    
-    public void setHtml1(Html h) {
-        this.html1 = h;
-    }
-    
-    private Head head1 = new Head();
-    
-    public Head getHead1() {
-        return head1;
-    }
-    
-    public void setHead1(Head h) {
-        this.head1 = h;
-    }
-    
-    private Link link1 = new Link();
-    
-    public Link getLink1() {
-        return link1;
-    }
-    
-    public void setLink1(Link l) {
-        this.link1 = l;
-    }
-    
-    private Body body1 = new Body();
-    
-    public Body getBody1() {
-        return body1;
-    }
-    
-    public void setBody1(Body b) {
-        this.body1 = b;
-    }
-    
-    private Form form1 = new Form();
-    
-    public Form getForm1() {
-        return form1;
-    }
-    
-    public void setForm1(Form f) {
-        this.form1 = f;
-    }
-    private HtmlPanelGrid content = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getContent() {
-        return content;
-    }
-
-    public void setContent(HtmlPanelGrid hpg) {
-        this.content = hpg;
-    }
-    private HtmlPanelGrid contentGrid = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getContentGrid() {
-        return contentGrid;
-    }
-
-    public void setContentGrid(HtmlPanelGrid hpg) {
-        this.contentGrid = hpg;
-    }
-    private HtmlPanelGrid messagePanel1 = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getMessagePanel1() {
-        return messagePanel1;
-    }
-
-    public void setMessagePanel1(HtmlPanelGrid hpg) {
-        this.messagePanel1 = hpg;
-    }
-    private MessageGroup messageGroup1 = new MessageGroup();
-
-    public MessageGroup getMessageGroup1() {
-        return messageGroup1;
-    }
-
-    public void setMessageGroup1(MessageGroup mg) {
-        this.messageGroup1 = mg;
-    }
-    private HtmlPanelGrid paddingPanel1 = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getPaddingPanel1() {
-        return paddingPanel1;
-    }
-
-    public void setPaddingPanel1(HtmlPanelGrid hpg) {
-        this.paddingPanel1 = hpg;
-    }
-    private HtmlPanelGrid dataGrid = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getDataGrid() {
-        return dataGrid;
-    }
-
-    public void setDataGrid(HtmlPanelGrid hpg) {
-        this.dataGrid = hpg;
-    }
-    private Label label1 = new Label();
-
-    public Label getLabel1() {
-        return label1;
-    }
-
-    public void setLabel1(Label l) {
-        this.label1 = l;
-    }
     private DropDown state = new DropDown();
 
     public DropDown getState() {
@@ -217,24 +94,6 @@ public class AddVehicle extends AbstractPageBean {
 
     public void setState(DropDown dd) {
         this.state = dd;
-    }
-    private Message message1 = new Message();
-
-    public Message getMessage1() {
-        return message1;
-    }
-
-    public void setMessage1(Message m) {
-        this.message1 = m;
-    }
-    private Label label2 = new Label();
-
-    public Label getLabel2() {
-        return label2;
-    }
-
-    public void setLabel2(Label l) {
-        this.label2 = l;
     }
     private TextField licensePlate = new TextField();
 
@@ -245,24 +104,6 @@ public class AddVehicle extends AbstractPageBean {
     public void setLicensePlate(TextField tf) {
         this.licensePlate = tf;
     }
-    private Message message2 = new Message();
-
-    public Message getMessage2() {
-        return message2;
-    }
-
-    public void setMessage2(Message m) {
-        this.message2 = m;
-    }
-    private Label label3 = new Label();
-
-    public Label getLabel3() {
-        return label3;
-    }
-
-    public void setLabel3(Label l) {
-        this.label3 = l;
-    }
     private TextField make = new TextField();
 
     public TextField getMake() {
@@ -271,24 +112,6 @@ public class AddVehicle extends AbstractPageBean {
 
     public void setMake(TextField tf) {
         this.make = tf;
-    }
-    private Message message3 = new Message();
-
-    public Message getMessage3() {
-        return message3;
-    }
-
-    public void setMessage3(Message m) {
-        this.message3 = m;
-    }
-    private Label label4 = new Label();
-
-    public Label getLabel4() {
-        return label4;
-    }
-
-    public void setLabel4(Label l) {
-        this.label4 = l;
     }
     private TextField model = new TextField();
 
@@ -299,24 +122,6 @@ public class AddVehicle extends AbstractPageBean {
     public void setModel(TextField tf) {
         this.model = tf;
     }
-    private Message message4 = new Message();
-
-    public Message getMessage4() {
-        return message4;
-    }
-
-    public void setMessage4(Message m) {
-        this.message4 = m;
-    }
-    private Label label5 = new Label();
-
-    public Label getLabel5() {
-        return label5;
-    }
-
-    public void setLabel5(Label l) {
-        this.label5 = l;
-    }
     private TextField color = new TextField();
 
     public TextField getColor() {
@@ -325,24 +130,6 @@ public class AddVehicle extends AbstractPageBean {
 
     public void setColor(TextField tf) {
         this.color = tf;
-    }
-    private Message message5 = new Message();
-
-    public Message getMessage5() {
-        return message5;
-    }
-
-    public void setMessage5(Message m) {
-        this.message5 = m;
-    }
-    private Button addButton = new Button();
-
-    public Button getAddButton() {
-        return addButton;
-    }
-
-    public void setAddButton(Button b) {
-        this.addButton = b;
     }
     private CachedRowSetDataProvider stateDataProvider = new CachedRowSetDataProvider();
 

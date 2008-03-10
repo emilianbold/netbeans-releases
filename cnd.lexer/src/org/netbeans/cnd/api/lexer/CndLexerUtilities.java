@@ -160,6 +160,7 @@ public final class CndLexerUtilities {
     private static Filter<CppTokenId> FILTER_STD_C;
     private static Filter<CppTokenId> FILTER_GCC_C;
     private static Filter<CppTokenId> FILTER_STD_CPP;
+    private static Filter<CppTokenId> FILTER_GCC_CPP;
     private static Filter<CppTokenId> FILTER_PREPRPOCESSOR;
 
     public static Filter<CppTokenId> getDefatultFilter(boolean cpp) {
@@ -188,7 +189,8 @@ public final class CndLexerUtilities {
             FILTER_GCC_C = new Filter<CppTokenId>();
             addCommonCCKeywords(FILTER_GCC_C);
             addCOnlyKeywords(FILTER_GCC_C);
-            addGccOnlyKeywords(FILTER_GCC_C);
+            addGccOnlyCommonCCKeywords(FILTER_GCC_C);
+            //addGccOnlyCOnlyKeywords(FILTER_GCC_C);
         }
         return FILTER_GCC_C;
     }
@@ -202,6 +204,17 @@ public final class CndLexerUtilities {
         return FILTER_STD_CPP;
     }
 
+    public synchronized static Filter<CppTokenId> getGccCppFilter() {
+        if (FILTER_GCC_CPP == null) {
+            FILTER_GCC_CPP = new Filter<CppTokenId>();
+            addCommonCCKeywords(FILTER_GCC_CPP);
+            addCppOnlyKeywords(FILTER_GCC_CPP);
+            addGccOnlyCommonCCKeywords(FILTER_GCC_CPP);
+            addGccOnlyCppOnlyKeywords(FILTER_GCC_CPP);
+        }
+        return FILTER_GCC_CPP;
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // help methods
     
@@ -249,7 +262,7 @@ public final class CndLexerUtilities {
             CppTokenId.REGISTER,
             CppTokenId.RETURN,
             CppTokenId.SHORT,
-            CppTokenId.SIZNED,
+            CppTokenId.SIGNED,
             CppTokenId.SIZEOF,
             CppTokenId.STATIC,
             CppTokenId.STRUCT,
@@ -316,11 +329,62 @@ public final class CndLexerUtilities {
         addToFilter(ids, filterToModify);
     }
     
-    private static void addGccOnlyKeywords(Filter<CppTokenId> filterToModify) {
+    private static void addGccOnlyCommonCCKeywords(Filter<CppTokenId> filterToModify) {
         CppTokenId[] ids = new CppTokenId[] {
-            CppTokenId.ASM, // gcc and C++
-            CppTokenId.INLINE, // gcc, C++, now in C also
-            CppTokenId.TYPEOF, // gcc, C++
+            CppTokenId.ASM,
+            CppTokenId.__ALIGNOF__,
+            CppTokenId.__ASM,
+            CppTokenId.__ASM__,
+            CppTokenId.__ATTRIBUTE__,
+            CppTokenId.__COMPLEX__,
+            CppTokenId.__CONST,
+            CppTokenId.__CONST__,
+            CppTokenId.__IMAG__,
+            CppTokenId.INLINE,
+            CppTokenId.__INLINE,
+            CppTokenId.__REAL__,
+            CppTokenId.__SIGNED,
+            CppTokenId.__SIGNED__,
+            CppTokenId.TYPEOF,
+            CppTokenId.__TYPEOF,
+            CppTokenId.__TYPEOF__,
+            CppTokenId.__VOLATILE,
+            CppTokenId.__VOLATILE__,
+        };
+        addToFilter(ids, filterToModify);        
+    }
+
+    /*
+    private static void addGccOnlyCOnlyKeywords(Filter<CppTokenId> filterToModify) {
+        // no C only tokens in gnu c
+    }
+    */
+    
+    private static void addGccOnlyCppOnlyKeywords(Filter<CppTokenId> filterToModify) {
+        CppTokenId[] ids = new CppTokenId[] {
+            CppTokenId.ALIGNOF,
+            CppTokenId._ASM,
+            CppTokenId._INLINE,
+            CppTokenId.PASCAL,
+            CppTokenId._PASCAL,
+            CppTokenId.__PASCAL,
+            CppTokenId.__UNSIGNED__,
+            CppTokenId._CDECL,
+            CppTokenId.__CDECL,
+            CppTokenId._DECLSPEC,
+            CppTokenId.__DECLSPEC,
+            CppTokenId.__EXTENSION__,
+            CppTokenId._FAR,
+            CppTokenId.__FAR,
+            CppTokenId._INT64,
+            CppTokenId.__INT64,
+            CppTokenId.__INTERRUPT,
+            CppTokenId._NEAR,
+            CppTokenId.__NEAR,
+            CppTokenId.__RESTRICT,
+            CppTokenId._STDCALL,
+            CppTokenId.__STDCALL,
+            CppTokenId.__W64,
         };
         addToFilter(ids, filterToModify);        
     }
