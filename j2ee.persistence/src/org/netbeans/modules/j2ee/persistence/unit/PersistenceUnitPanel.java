@@ -293,7 +293,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
                 Provider provider = ProviderUtil.getProvider(persistenceUnit);
                 for (int i = 0; i < properties.length; i++) {
                     String key = properties[i].getName();
-                    if (key.equals(provider.getJdbcUrl())) {
+                    if (provider.getJdbcUrl().equals(key)) {
                         url = properties[i].getValue();
                         break;
                     }
