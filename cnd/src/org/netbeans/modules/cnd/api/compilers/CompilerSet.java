@@ -602,6 +602,10 @@ public class CompilerSet {
         return name;
     }
     
+    public void setName(String name) {
+        this.name = name;
+    }
+    
     public String getDisplayName() {
         return displayName;
     }
