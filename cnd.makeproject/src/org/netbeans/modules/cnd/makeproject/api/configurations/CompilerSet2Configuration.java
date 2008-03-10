@@ -42,19 +42,21 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class CompilerSet2Configuration {
-    private MakeConfiguration makeConfiguration;
+//    private MakeConfiguration makeConfiguration;
     private StringConfiguration compilerSetName;
+    private String flavor;
     private boolean dirty = false;
     
     // Constructors
-    public CompilerSet2Configuration(MakeConfiguration makeConfiguration) {
-        this.makeConfiguration = makeConfiguration;
+    public CompilerSet2Configuration() {
+//        this.makeConfiguration = makeConfiguration;
         String csName = CppSettings.getDefault().getCompilerSetName();
         if (csName == null || csName.length() == 0) {
             // This can happen on Unix!!!!
@@ -68,15 +70,16 @@ public class CompilerSet2Configuration {
             }
         }
         compilerSetName = new StringConfiguration(null, csName);
+        flavor = null;
     }
-    
-    // MakeConfiguration
-    public void setMakeConfiguration(MakeConfiguration makeConfiguration) {
-        this.makeConfiguration = makeConfiguration;
-    }
-    public MakeConfiguration getMakeConfiguration() {
-        return makeConfiguration;
-    }
+//    
+//    // MakeConfiguration
+//    public void setMakeConfiguration(MakeConfiguration makeConfiguration) {
+//        this.makeConfiguration = makeConfiguration;
+//    }
+//    public MakeConfiguration getMakeConfiguration() {
+//        return makeConfiguration;
+//    }
     
     // compilerSetName
     public StringConfiguration getCompilerSetName() {
@@ -90,7 +93,29 @@ public class CompilerSet2Configuration {
     // ----------------------------------------------------------------------------------------------------
     
     public void setValue(String name) {
+        if (!getOption().equals(name)) {
+            setValue(name, null);
+        }
+    }
+    
+    public void setNameAndFlavor(String name, int version) {
+        String nm;
+        String fl;
+        int index = name.indexOf("|"); // NOI18N
+        if (index > 0) {
+            nm = name.substring(0, index);
+            fl = name.substring(index+1);
+        }
+        else {
+            nm = name;
+            fl = name;
+        }
+        setValue(CompilerFlavor.mapOldToNew(nm, version), CompilerFlavor.mapOldToNew(fl, version));
+    }
+    
+    public void setValue(String name, String flavor) {
         getCompilerSetName().setValue(name);
+        setFlavor(flavor);
     }
     
     /*
@@ -144,13 +169,13 @@ public class CompilerSet2Configuration {
     // Clone and assign
     public void assign(CompilerSet2Configuration conf) {
         setDirty(getValue() != conf.getValue());
-        setMakeConfiguration(conf.getMakeConfiguration());
-        getCompilerSetName().assign(conf.getCompilerSetName());
+//        setMakeConfiguration(conf.getMakeConfiguration());
+        setValue(conf.getCompilerSetName().getValue());
     }
     
     @Override
     public Object clone() {
-        CompilerSet2Configuration clone = new CompilerSet2Configuration(getMakeConfiguration());
+        CompilerSet2Configuration clone = new CompilerSet2Configuration();
         clone.setCompilerSetName((StringConfiguration)getCompilerSetName().clone());
         return clone;
     }
@@ -186,5 +211,29 @@ public class CompilerSet2Configuration {
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(CompilerSet2Configuration.class, s);
+    }
+
+    public String getNameAndFlavor() {
+        StringBuilder ret = new StringBuilder();
+        ret.append(getOption());
+        if (getFlavor() != null) {
+            ret.append("|");
+            ret.append(getFlavor());
+        }
+        return ret.toString();
+    }
+    
+    public String getFlavor() {
+        if (flavor == null) {
+            CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(getOption());
+            if (cs != null)
+                this.flavor = cs.getCompilerFlavor().toString();
+            
+        }
+        return flavor;
+    }
+
+    public void setFlavor(String flavor) {
+        this.flavor = flavor;
     }
 }

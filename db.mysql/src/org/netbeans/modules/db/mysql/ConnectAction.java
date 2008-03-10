@@ -91,6 +91,9 @@ public class ConnectAction extends CookieAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
+        if ( activatedNodes == null || activatedNodes.length == 0 ) {
+            return;
+        }
         DatabaseModel model = activatedNodes[0].getCookie(DatabaseModel.class);        
         ServerInstance server = model.getServer();
         String dbname = model.getDbName();

@@ -71,6 +71,7 @@ import org.openide.util.Exceptions;
  */
 public class JsAnalyzer implements StructureScanner {
     public static final String NETBEANS_IMPORT_FILE = "__netbeans_import__"; // NOI18N
+    private static final String DOT_CALL = ".call"; // NOI18N
     
     public List<? extends StructureItem> scan(CompilationInfo info, HtmlFormatter formatter) {
         JsParseResult result = AstUtilities.getParseResult(info);
@@ -82,7 +83,6 @@ public class JsAnalyzer implements StructureScanner {
         Map<String,List<AstElement>> classes = new HashMap<String,List<AstElement>>();
         List<AstElement> outside = new ArrayList<AstElement>();
         List<String> classNames = new ArrayList<String>(); // Preserves source order for the map
-        Map<String,AstElement> realClass = new HashMap<String,AstElement>();
         for (AstElement e : elements) {
             String in = e.getIn();
             if (e.getKind() == ElementKind.CLASS) {
@@ -91,7 +91,14 @@ public class JsAnalyzer implements StructureScanner {
                 } else {
                     in = e.getName();
                 }
+            } else if (e.getKind() == ElementKind.CONSTRUCTOR) {
+                if (e.getIn() != null && e.getIn().length() > 0) {
+                    in = e.getIn() + "." + e.getName();
+                } else {
+                    in = e.getName();
+                }
             }
+
             if (in != null && in.length() > 0) {
                 List<AstElement> list = classes.get(in);
                 if (list == null) {
@@ -106,8 +113,19 @@ public class JsAnalyzer implements StructureScanner {
         }
         
         for (AstElement e : outside) {
-            JsAnalyzer.JsStructureItem item = new JsStructureItem(e, info, formatter);
-            itemList.add(item);
+            if (e.getKind() == ElementKind.CONSTRUCTOR) {
+                String in = e.getName();
+                List<AstElement> list = classes.get(in);
+                if (list == null) {
+                    list = new ArrayList<AstElement>();
+                    classes.put(in, list);
+                    classNames.add(in);
+                }
+                list.add(e);
+            } else {
+                JsAnalyzer.JsStructureItem item = new JsStructureItem(e, info, formatter);
+                itemList.add(item);
+            }
         }
         
         for (String clz : classNames) {
@@ -171,9 +189,12 @@ public class JsAnalyzer implements StructureScanner {
                     OffsetRange range = AstUtilities.getRange(node);
                     
                     if(source != null) {
-                        //recalculate the range if we parsed the virtual source
-                        range = new OffsetRange(source.getLexicalOffset(range.getStart()), 
-                                source.getLexicalOffset(range.getEnd()));
+                        int lexStart = source.getLexicalOffset(range.getStart());
+                        int lexEnd = source.getLexicalOffset(range.getEnd());
+                        if (lexStart < lexEnd) {
+                            //recalculate the range if we parsed the virtual source
+                            range = new OffsetRange(lexStart,lexEnd);
+                        }
                     }
 
                     if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR ||
@@ -218,6 +239,8 @@ public class JsAnalyzer implements StructureScanner {
         private List<String> imports;
         private CompilationInfo info;
         private Map<String,String> classExtends;
+        private Set<String> fields;
+        private Node inConstructor;
         
         private AnalysisResult(CompilationInfo info) {
             this.info = info;
@@ -238,11 +261,35 @@ public class JsAnalyzer implements StructureScanner {
             switch (node.getType()) {
             case Token.CALL: {
                 if (node.hasChildren()) {
+                    // Handle imports
                     Node child = node.getFirstChild();
                     if (child.getType() == Token.NAME) {
                         String s = child.getString();
                         if (s.equals(NETBEANS_IMPORT_FILE)) {
                             processImports(child.getNext());
+                        }
+                    } else if (child.getType() == Token.GETPROP) {
+                        // Handle YAHOO.extend(YAHOO.widget.Calendar2up, YAHOO.widget.CalendarGroup);
+                        // This is CALL, GETPROP, NAME=YAHOO+STRING=extend
+                        Node nameNode = child.getFirstChild();
+                        if (nameNode != null && nameNode.getType() == Token.NAME &&
+                                "YAHOO".equals(nameNode.getString())) { // NOI18N
+                            Node stringNode = nameNode.getNext();
+                            if (stringNode != null && stringNode.getType() == Token.STRING &&
+                                    "extend".equals(stringNode.getString())) { // NOI18N
+                                Node first = child.getNext();
+                                if (first != null) {
+                                    Node second = first.getNext();
+                                    StringBuilder className = new StringBuilder();
+                                    StringBuilder superName = new StringBuilder();
+                                    if (AstUtilities.addName(className, first) && AstUtilities.addName(superName, second)) {
+                                        if (classExtends == null) {
+                                            classExtends = new HashMap<String, String>();
+                                        }
+                                        classExtends.put(className.toString(), superName.toString());
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -279,12 +326,10 @@ public class JsAnalyzer implements StructureScanner {
                             classExtends = new HashMap<String, String>();
                         }
                         classExtends.put(className, superName.toString());
-                        
                     }
-                    
+
                     // TODO - only do this for capitalized names??
-                    int index = 0;
-                    for (Node child = node.getFirstChild(); child != null; child = child.getNext(), index++) {
+                    for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
                         if (child.getType() == Token.OBJLITNAME) {
                             Node f = AstUtilities.getLabelledNode(child);
                             if (f != null) {
@@ -293,31 +338,50 @@ public class JsAnalyzer implements StructureScanner {
                                     js.setName(child.getString(), className);
                                     if (f.getType() != Token.FUNCTION) {
                                         js.setKind(ElementKind.PROPERTY);
+                                    } else if (js.getKind() == ElementKind.CONSTRUCTOR) {
+                                        inConstructor = f;
                                     }
                                     elements.add(js);
                                 }
                             }
                         }
                     }
+                    
+                    // TODO - now that I've processed the OBJLIT - can I just
+                    // skip processing its middle? But what about the constructor?
                 }
                 
                 break;
             }
+            
             case Token.FUNCTION: {
                 FunctionNode func = (FunctionNode) node;
-                String name = AstUtilities.getFunctionFqn(node);
+                boolean[] isInstanceHolder = new boolean[1];
+                String name = AstUtilities.getFunctionFqn(node, isInstanceHolder);
                     
-                if (name != null) {
+                if (name != null && name.length() > 0) {
                     String in = "";
-                    boolean isInstance = true;
+                    boolean isInstance = isInstanceHolder[0];
                     int lastDotIndex = name.lastIndexOf('.');
                     if (lastDotIndex != -1) {
                         in = name.substring(0, lastDotIndex);
+
+                        // Don't look at things like "window.onload=function(){}" -- we only
+                        // care about "Window.onload=function(){}" etc
+                        //if (!Character.isUpperCase(in.charAt(0))) {
+                        //    break;
+                        //}
+                        //... that didn't work well... Dojo is defined in that way (dojo.foo=function())
+                        //Just hack this for now
+                        if (in.equals("window") || in.equals("document")) { // NOI18N
+                            break;
+                        } else if (!Character.isUpperCase(in.charAt(0))) {
+                            isInstance = true;
+                        }
+                        
                         name = name.substring(lastDotIndex+1);
                         if (in.endsWith(AstUtilities.DOT_PROTOTYPE)) {
                             in = in.substring(0, in.length()-AstUtilities.DOT_PROTOTYPE.length()); // NOI18N
-                        } else {
-                            isInstance = false;
                         }
                     }
                     
@@ -327,6 +391,10 @@ public class JsAnalyzer implements StructureScanner {
                         js.setModifiers(AstElement.STATIC);
                     }
                     elements.add(js);
+                    
+                    if (Character.isUpperCase(name.charAt(0))) {
+                        inConstructor = func;
+                    }
                 } else {
                     // Some other dynamic function, like this:
                     //   this.timer = setInterval(function() { self.drawEffect(); }, this.interval);
@@ -334,6 +402,98 @@ public class JsAnalyzer implements StructureScanner {
                 }
 
                 break;
+            }
+            
+            case Token.THIS: {
+                // Handle (1) inheritance, (2) properties
+                // (1) inheritance:
+                //   From the constructor function Spry.Data.XMLDataSet, we have
+                //    Spry.Data.DataSet.call(this);
+                //   This means that Spry.Data.XMLDataSet "extends" Spry.Data.DataSet.
+                // (2) instance properties:
+                //    this.name = whatever();
+                //   Here we have a property named "name" on this class.
+                Node parentNode = node.getParentNode();
+                if (inConstructor != null && parentNode.getType() == Token.SETPROP) {
+                    Node setProp = parentNode;
+                    if (setProp.getParentNode() != null && 
+                            setProp.getParentNode().getType() == Token.EXPR_VOID) {
+                        // Only bother with this in constructors...
+                        Node func = parentNode;
+                        for (; func != null; func = func.getParentNode()) {
+                            if (func.getType() == Token.FUNCTION) {
+                                break;
+                            }
+                        }
+                        if (func != inConstructor) {
+                            break;
+                        }
+                        
+                        Node propertyNode = node.getNext();
+                        if (propertyNode != null && propertyNode.getType() == Token.STRING) {
+                            String property = propertyNode.getString();
+                            Node rhs = propertyNode.getNext();
+                            if (rhs != null && rhs.getType() == Token.FUNCTION) {
+                                // Functions are handled separately - when we see a function we walk outwards
+                                // and compute the name, handling "this" appropriately
+                                break;
+                            }
+                            if (Character.isLowerCase(property.charAt(0))) {
+                                //String[] method = new String[1];
+                                String fqn = AstUtilities.getFqn(node, null, null);
+                                //boolean validMethod = method[0] == null || Character.isUpperCase(method[0].charAt(0)) ||
+                                //        method[0].startsWith("init");
+                                if (fqn != null/* && validMethod*/) {
+                                    String propFqn = fqn + "." + property;
+                                    if (fields == null || !fields.contains(propFqn)) {
+                                        int clzIndex = fqn.lastIndexOf('.')+1;
+                                        if (clzIndex < fqn.length() && Character.isUpperCase(fqn.charAt(clzIndex))) {
+                                            // Looks like a class
+                                            String name = property;
+                                            String in = fqn;
+
+                                            if (fields == null) {
+                                                fields = new HashSet<String>();
+                                            }
+                                            fields.add(propFqn);
+                                            AstElement js = AstElement.getElement(info, propertyNode); 
+                                            js.setKind(ElementKind.PROPERTY);
+                                            js.setName(name, in);
+                                            elements.add(js);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (inConstructor != null && parentNode.getType() == Token.CALL) {
+                    // Handle inheritance:
+                    //   From the constructor function Spry.Data.XMLDataSet, we have
+                    //    Spry.Data.DataSet.call(this);
+                    // This ends up as a
+                    //   CALL
+                    //     GETPROP
+                    //       NAME, or GETPROP (possibly nested for Foo.Bar.Baz)
+                    //       STRING=call
+                    //     THIS
+                    Node getProp = parentNode.getFirstChild();
+                    if (getProp.getType() == Token.GETPROP) {
+                        StringBuilder sb = new StringBuilder();
+                        if (AstUtilities.addName(sb, getProp)) {
+                            String callExp = sb.toString();
+                            if (callExp.endsWith(DOT_CALL)) { // NOI18N
+                                String className = AstUtilities.getFqn(parentNode, null, null);
+                                if (className != null) {
+                                    String superClass = callExp.substring(0, callExp.length()-DOT_CALL.length()); // NOI18N
+                                    if (classExtends == null) {
+                                        classExtends = new HashMap<String, String>();
+                                    }
+                                    classExtends.put(className, superClass.toString());
+                                }
+                            }
+                        }
+                    }
+                }
             }
             }
             
