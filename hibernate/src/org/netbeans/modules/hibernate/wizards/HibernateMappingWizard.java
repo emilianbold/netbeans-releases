@@ -143,9 +143,7 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
         DataObject newOne = templateDataObject.createFromTemplate(targetDataFolder, targetName);
         FileObject confFile = null;
         MyClass myClass = new MyClass();
-        if (descriptor.getClassName() != null && !"".equals(descriptor.getClassName())) {
-            myClass.setAttributeValue("name", descriptor.getClassName());
-        }
+        
         // Adding mapping entry in the selected config file.
         if (descriptor.getConfigurationFile() != null && !"".equals(descriptor.getConfigurationFile())) {
             confFile = (FileObject) descriptor.getConfigurationFile();
@@ -160,7 +158,10 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
 
         try {
             HibernateMappingDataObject hmo = (HibernateMappingDataObject) newOne;
-            hmo.addMyClass(myClass);
+            if (descriptor.getClassName() != null && !"".equals(descriptor.getClassName())) {
+                myClass.setAttributeValue("name", descriptor.getClassName());
+                hmo.addMyClass(myClass);
+            }            
             hmo.save();
             return Collections.singleton(hmo.getPrimaryFile());
         } catch (Exception e) {
