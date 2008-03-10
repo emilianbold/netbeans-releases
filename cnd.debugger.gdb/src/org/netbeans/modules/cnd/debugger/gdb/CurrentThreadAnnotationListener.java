@@ -109,7 +109,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         if (currentEngine == null) {
             return null;
         }
-        return currentEngine.lookupFirst(null, GdbDebugger.class);
+        return (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
     }
 
     /**

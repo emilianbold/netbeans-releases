@@ -508,12 +508,11 @@ public class ExtendedTokenSequence {
                            ts.token().id() == DOXYGEN_COMMENT){
                     if (hasDoc) {
                         // second block comment?
+                        res[2] = 1;
                         return res;
                     }
-                    //if (res[0] == res[1]) {
-                        res[0] = -1;
-                        res[1] = -1;
-                    //}
+                    res[0] = -1;
+                    res[1] = -1;
                     hasDoc = true;
                 } else if (ts.token().id() == PREPROCESSOR_DIRECTIVE){
                     if (res[0] == -1) {
