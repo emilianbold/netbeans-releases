@@ -123,10 +123,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public static final String          STATE_SILENT_STOP = "state_silent_stop"; // NOI18N
     public static final String          STATE_EXITED  = "state_exited"; // NOI18N
     
-    public static final Object          LAST_GO_WAS_CONTINUE = "lastGoWasContinue";
-    public static final Object          LAST_GO_WAS_FINISH = "lastGoWasFinish";
-    public static final Object          LAST_GO_WAS_STEP = "lastGoWasStep";
-    public static final Object          LAST_GO_WAS_NEXT = "lastGoWasNext";
+    public static final Object          LAST_GO_WAS_CONTINUE = "lastGoWasContinue"; // NOI18N
+    public static final Object          LAST_GO_WAS_FINISH = "lastGoWasFinish"; // NOI18N
+    public static final Object          LAST_GO_WAS_STEP = "lastGoWasStep"; // NOI18N
+    public static final Object          LAST_GO_WAS_NEXT = "lastGoWasNext"; // NOI18N
     
     private Object                      lastGo;
     
@@ -408,7 +408,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         if (isCygwin() && path.charAt(1) == ':') {
             return "/cygdrive/" + path.charAt(0) + path.substring(2).replace("\\", "/"); // NOI18N
         } else if (isMinGW() && path.charAt(1) == ':') {
-            return "/" + path.charAt(0) + path.substring(2).replace("\\", "/");
+            return "/" + path.charAt(0) + path.substring(2).replace("\\", "/"); // NOI18N
         } else {
             return path;
         }
@@ -1400,11 +1400,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         String msg = cb.waitForCompletion();
         int i = 0;
         for (String frame : GdbUtils.createListFromString(msg)) {
-            if (frame.contains("func=\"dlopen\"")) {
+            if (frame.contains("func=\"dlopen\"")) { // NOI18N
                 gdb.stack_select_frame(i);
-                gdb.gdb_set("stop-on-solib-event"  , "0");
+                gdb.gdb_set("stop-on-solib-event"  , "0"); // NOI18N
                 gdb.exec_finish();
-                gdb.gdb_set("stop-on-solib-event"  , "1");
+                gdb.gdb_set("stop-on-solib-event"  , "1"); // NOI18N
                 gdb.exec_next();
                 break;
             }
