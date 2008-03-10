@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.groovy.editor;
 
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
+import groovy.lang.MetaMethod;
 import groovy.util.Node;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,7 +70,15 @@ import org.netbeans.modules.groovy.editor.elements.KeywordElement;
 import org.netbeans.modules.groovy.editor.parser.GroovyParser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import org.codehaus.groovy.ast.AnnotatedNode;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
+import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 
 public class CodeCompleter implements Completable {
  
@@ -75,6 +86,7 @@ public class CodeCompleter implements Completable {
     boolean showSymbols = false;
     private boolean caseSensitive;
     private int anchor;
+    private  final Logger LOG = Logger.getLogger(CodeCompleter.class.getName());
     
     public CodeCompleter() {
     
@@ -109,14 +121,96 @@ public class CodeCompleter implements Completable {
 
         return false;
     }
+    
+    private boolean completeMethods(List<CompletionProposal> proposals, CompletionRequest request, boolean isSymbol) {
+        
+        // figure out which class we are dealing with:
+        ASTNode root = AstUtilities.getRoot(request.info);
+        AstPath path = new AstPath(root ,request.astOffset, request.doc);
+        ASTNode closest = path.leaf();
+        
+        LOG.log(Level.FINEST, "completeMethods(...), closest: " + closest.getText());
+        LOG.log(Level.FINEST, "completeMethods(...), closest(toString): " + closest.toString());
+        LOG.log(Level.FINEST, "completeMethods(...), closest(getClass): " + closest.getClass());
+        
+        Class clz = null;
+        ClassNode declClass = null;
+        
+        if (closest instanceof AnnotatedNode) {
+            declClass = ((AnnotatedNode) closest).getDeclaringClass();
+        } else if (closest instanceof Expression) {
+            declClass = ((Expression) closest).getType();
+        } else {
+            return false;
+        }
+            
+        if (declClass != null) {
+            try {
+                LOG.log(Level.FINEST, "completeMethods(...), closest(Name): " + declClass.getName());
+                clz = Class.forName(declClass.getName());
+
+            } catch (Exception e) {
+            }
+
+        }
+
+      
+        if (clz != null) {
+            MetaClass metaClz = GroovySystem.getMetaClassRegistry().getMetaClass(clz);
+
+            if (metaClz != null) {
+                for (Object method : metaClz.getMetaMethods()) {
+                    if (method != null) {
+                        LOG.log(Level.FINEST, "completeMethods(...), MetaMethods: " + ((MetaMethod) method).toString());
+
+                    }
+
+                }
+
+                for (Object method : metaClz.getMethods()) {
+                    if (method != null) {
+                        MetaMethod mm = (MetaMethod) method;
+                        LOG.log(Level.FINEST, "completeMethods(...), Methods: " + mm.toString());
+                        MethodItem item = new MethodItem(mm.getName(), mm.toString(), anchor, request);
+                        proposals.add(item);
+                    }
+                }
+            }
+
+        }
+
+
+
+
+
+            // FIXME: we need a decent stragegy to find enclosing class
+//        TokenSequence<?> ts = request.th.tokenSequence();
+//
+//        if (ts != null) {
+//            Token tok = LexUtilities.getToken(request.doc, request.lexOffset);
+//            ts.movePrevious();
+//            Token t = ts.token();
+//
+//            if (t != null) {
+//                LOG.log(Level.FINEST, "completeMethods(...), prev. token: " + t.toString());
+//
+//            }
+//
+//
+//        }
+        
+        return true;
+    }
+    
 
     public List<CompletionProposal> complete(CompilationInfo info, int lexOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
         this.caseSensitive = caseSensitive;
 
-//        final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
-//        if (astOffset == -1) {
-//            return null;
-//        }
+        final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
+        
+        // LOG.setLevel(Level.FINEST);
+        LOG.log(Level.FINEST, "complete(...), prefix: " + prefix);
+        
         
         // Avoid all those annoying null checks
         if (prefix == null) {
@@ -144,7 +238,7 @@ public class CodeCompleter implements Completable {
         final TokenHierarchy<Document> th = TokenHierarchy.get(document);
         final BaseDocument doc = (BaseDocument)document;
         final FileObject fileObject = info.getFileObject();
-
+        
         boolean showLower = true;
         boolean showUpper = true;
         boolean showSymbols = false;
@@ -159,7 +253,7 @@ public class CodeCompleter implements Completable {
             CompletionRequest request = new CompletionRequest();
             request.formatter = formatter;
             request.lexOffset = lexOffset;
-//            request.astOffset = astOffset;
+            request.astOffset = astOffset;
 //            request.index = index;
             request.doc = doc;
             request.info = info;
@@ -172,10 +266,16 @@ public class CodeCompleter implements Completable {
             // This is a bit stupid at the moment, not looking at the current typing context etc.
             ASTNode root = AstUtilities.getRoot(info);
 
-            //if (root == null) {
-                completeKeywords(proposals, request, showSymbols);
-                return proposals;
-            //}
+            // No - we don't complete keywords, since one can get'em by hitting
+            // ctrl-k or use an abbrevation. Displaying them without a documentation
+            // makes no sense as well, see:
+            // http://www.netbeans.org/issues/show_bug.cgi?id=126500
+            // completeKeywords(proposals, request, showSymbols);
+            
+            // complte methods
+            // completeMethods(proposals, request, showSymbols);
+            
+            return proposals;
         } finally {
             doc.readUnlock();
         }
@@ -219,7 +319,6 @@ public class CodeCompleter implements Completable {
         private int astOffset;
         private BaseDocument doc;
         private String prefix = "";
-        //private RubyIndex index;
         private NameKind kind;
         private QueryType queryType;
         private FileObject fileObject;
@@ -321,6 +420,62 @@ public class CodeCompleter implements Completable {
         public String getCustomInsertTemplate() {
             return null;
         }
+    }
+
+    private class MethodItem extends GroovyCompletionItem {
+        private static final String GROOVY_METHOD = "org/netbeans/modules/groovy/editor/resources/groovydoc.png"; //NOI18N
+        private final String name;
+        private final String description;
+
+        MethodItem(String name, String description, int anchorOffset, CompletionRequest request) {
+            super(null, anchorOffset, request);
+            this.name = name;
+            this.description = description;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.METHOD;
+        }
+
+        @Override
+        public String getRhsHtml() {
+            if (description != null) {
+                HtmlFormatter formatter = request.formatter;
+                formatter.reset();
+                //formatter.appendText(description);
+                formatter.appendHtml(description);
+
+                return formatter.getText();
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            if (keywordIcon == null) {
+                keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_METHOD));
+            }
+
+            return keywordIcon;
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+        
+//        @Override
+//        public ElementHandle getElement() {
+//            // For completion documentation
+//            return GroovyParser.createHandle(request.info, new AstMethodElement());
+//        }
     }
     
     private class KeywordItem extends GroovyCompletionItem {
