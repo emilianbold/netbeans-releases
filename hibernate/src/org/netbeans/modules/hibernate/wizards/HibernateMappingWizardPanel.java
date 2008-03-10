@@ -58,9 +58,6 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
                             }
 
                             public boolean accept(ElementHandle<TypeElement> typeHandle) {
-                                //XXX not all types are supported as identifiers by the jpa spec, but 
-                                // leaving unrestricted for now since different persistence providers 
-                                // might support more types
                                 return true;
                             }
                         });
