@@ -187,17 +187,16 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                     dbname),
                 NbBundle.getMessage(CreateDatabasePanel.class,
                     "CreateDatabasePanel.STR_DatabaseExistsTitle"),
-                NotifyDescriptor.YES_NO_CANCEL_OPTION);
+                NotifyDescriptor.YES_NO_OPTION);
         
         Object response =  DialogDisplayer.getDefault().notify(ndesc);
         
-        if ( response == NotifyDescriptor.CANCEL_OPTION ) {
+        if ( response == NotifyDescriptor.NO_OPTION ) {
             return false;
-        } else if ( response == NotifyDescriptor.YES_OPTION) {
+        } else {
             server.dropDatabase(dbname);
+            return true;
         }
-        
-        return true;        
     }
     
     private static DatabaseConnection createConnection(

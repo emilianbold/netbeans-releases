@@ -49,6 +49,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -138,7 +139,7 @@ public class ServerInstance implements Node.Cookie {
     // Cache list of databases, refresh only if connection is changed
     // or an explicit refresh is requested
     // Synchronized on the instance (this)
-    ArrayList<DatabaseModel> databases = new ArrayList<DatabaseModel>();
+    HashMap<String, DatabaseModel> databases = new HashMap<String, DatabaseModel>();
 
     public static synchronized ServerInstance getDefault() {
         if ( DEFAULT == null ) {
@@ -437,14 +438,15 @@ public class ServerInstance implements Node.Cookie {
     public void refreshDatabaseList() throws DatabaseException {        
         try {
             synchronized(this) {
-                databases = new ArrayList<DatabaseModel>();
+                databases = new HashMap<String, DatabaseModel>();
                 if ( isConnected() ) {        
                     ResultSet rs = adminConn.getConnection()
                             .prepareStatement(GET_DATABASES_SQL)
                             .executeQuery();
 
                     while ( rs.next() ) {
-                        databases.add(new DatabaseModel(this, rs.getString(1)));
+                        String dbname = rs.getString(1);
+                        databases.put(dbname, new DatabaseModel(this, dbname));
                     }
                 }
             }
@@ -470,7 +472,7 @@ public class ServerInstance implements Node.Cookie {
             refreshDatabaseList();
         }
         
-        return databases;
+        return databases.values();
     }
         
     /**
@@ -597,8 +599,8 @@ public class ServerInstance implements Node.Cookie {
     
     public boolean databaseExists(String dbname)  throws DatabaseException {
         refreshDatabaseList();
-        
-        return getDatabases().contains(dbname);
+
+        return databases.containsKey(dbname);
     }
     
     public void createDatabase(String dbname) throws DatabaseException {
