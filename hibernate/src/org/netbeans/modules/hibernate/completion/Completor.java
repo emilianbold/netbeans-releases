@@ -155,7 +155,7 @@ public abstract class Completor {
     }
 
     /**
-     * For Java class items
+     * A completor for completing the Java class attributes
      */
     public static class JavaClassCompletor extends Completor {
 
@@ -269,6 +269,9 @@ public abstract class Completor {
         }
     }
 
+    /**
+     * A completor for completing Java properties/fields attributes
+     */
     public static class PropertyCompletor extends Completor {
 
         public PropertyCompletor() {
@@ -321,6 +324,9 @@ public abstract class Completor {
         }
     }
 
+    /**
+     * A completor for completing database table names
+     */
     public static class DatabaseTableCompletor extends Completor {
 
         public DatabaseTableCompletor() {
@@ -335,9 +341,11 @@ public abstract class Completor {
             List<String> tableNames = getDatabaseTableNamesForThisMappingFile(context);
 
             for (String tableName : tableNames) {
-                HibernateCompletionItem item = HibernateCompletionItem.createDatabaseTableItem(
-                        caretOffset - typedChars.length(), tableName);
-                results.add(item);
+                if(tableName.startsWith(typedChars.trim())){
+                    HibernateCompletionItem item = HibernateCompletionItem.createDatabaseTableItem(
+                            caretOffset - typedChars.length(), tableName);
+                    results.add(item);
+                }
             }
 
             setAnchorOffset(context.getCurrentToken().getOffset() + 1);
@@ -356,6 +364,9 @@ public abstract class Completor {
         }
     }
 
+    /**
+     * A completor for completing database table column names
+     */
     public static class DatabaseTableColumnCompletor extends Completor {
 
         public DatabaseTableColumnCompletor() {
@@ -376,12 +387,12 @@ public abstract class Completor {
             List<TableColumn> tableColumns = getColumnsForTable(context, tableName);
 
             for (TableColumn tableColumn : tableColumns) {
-                HibernateCompletionItem item = HibernateCompletionItem.createDatabaseColumnItem(
-                        caretOffset - typedChars.length(), tableColumn.getColumnName(), tableColumn.isPrimaryKey());
-                results.add(item);
+                if(tableColumn.getColumnName().startsWith(typedChars.trim())) {
+                    HibernateCompletionItem item = HibernateCompletionItem.createDatabaseColumnItem(
+                            caretOffset - typedChars.length(), tableColumn.getColumnName(), tableColumn.isPrimaryKey());
+                    results.add(item);
+                }
             }
-
-
             setAnchorOffset(context.getCurrentToken().getOffset() + 1);
 
             return results;
@@ -398,11 +409,8 @@ public abstract class Completor {
         }
     }
     
-        /**
-     * A simple completor for general attribute value items
-     * 
-     * Takes an array of strings, the even elements being the display text of the items
-     * and the odd ones being the corresponding documentation of the items
+    /**
+     * A completor for completing the Hibernate property names in Hibernate configuration file
      * 
      */
     public static class HbPropertyNameCompletor extends Completor {
@@ -432,6 +440,9 @@ public abstract class Completor {
         }
     }
 
+    /**
+     * A completor for completing Hibernate mapping files
+     */
     public static class HbMappingFileCompletor extends Completor {
 
         public HbMappingFileCompletor() {
