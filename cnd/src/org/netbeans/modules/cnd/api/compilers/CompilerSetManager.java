@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
@@ -134,6 +133,8 @@ public class CompilerSetManager {
     
     /** Search $PATH for all desired compiler sets and initialize cbCompilerSet and spCompilerSets */
     public void initCompilerSets(ArrayList<String> dirlist) {
+        HashSet flavors = new HashSet();
+        
         for (String path : dirlist) {
             File dir = new File(path);
             if (dir.isDirectory()&& isACompilerSetFolder(dir)) {
@@ -143,6 +144,10 @@ public class CompilerSetManager {
                 if (new File(dir, "gcc").exists()) // NOI18N
                     list.add("gcc"); // NOI18N
                 CompilerSet.CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), (String[])list.toArray(new String[list.size()]));
+                if (flavors.contains(flavor)) {
+                    // Skip ...
+                    continue;
+                }
                 CompilerSet cs = null;
                 if (path.contains("msys")) { // NOI18N)
                     cs = getCompilerSet(CompilerFlavor.MinGW);
