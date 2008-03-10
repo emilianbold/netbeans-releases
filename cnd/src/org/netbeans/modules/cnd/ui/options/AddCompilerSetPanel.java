@@ -44,12 +44,14 @@ import java.awt.Dimension;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.DialogDescriptor;
@@ -73,7 +75,7 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         for (CompilerFlavor cf : list) {
             cbFamily.addItem(cf);
         }
-        tfName.setText("");
+        tfName.setText(""); // NOI18N
         taInfo.setBackground(getBackground());
         validateData();
         
@@ -112,7 +114,7 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         int n = 0;
         String suggestedName = null;
         while (true) {
-            suggestedName = flavor.toString() + (n > 0 ? ("_" + n) : "");
+            suggestedName = flavor.toString() + (n > 0 ? ("_" + n) : ""); // NOI18N
             if (csm.getCompilerSet(suggestedName) != null) {
                 n++;
             }
@@ -136,7 +138,7 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         File dirFile = new File(tfBaseDirectory.getText());
         if (valid && !dirFile.exists() || !dirFile.isDirectory() || !IpeUtils.isPathAbsolute(dirFile.getPath())) {
             valid = false;
-            lbError.setText("Base Directory is not set or invalid");
+            lbError.setText(getString("BASE_INVALID"));
             cbFamily.setEnabled(false);
             tfName.setEnabled(false);
         }
@@ -146,14 +148,14 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         }
         
         String compilerSetName = IpeUtils.replaceOddCharacters(tfName.getText().trim(), '_');
-        if (valid && compilerSetName.length() == 0 || compilerSetName.contains("|")) {
+        if (valid && compilerSetName.length() == 0 || compilerSetName.contains("|")) { // NOI18N
             valid = false;
-            lbError.setText("Name is not set or is invalid");
+            lbError.setText(getString("NAME_INVALID"));
         }
         
         if (valid && csm.getCompilerSet(compilerSetName.trim()) != null) {
             valid = false;
-            lbError.setText("Already a tool set with this name");
+            lbError.setText(getString("TOOLNAME_ALREADY_EXISTS"));
         }
         
         if (dialogDescriptor != null)

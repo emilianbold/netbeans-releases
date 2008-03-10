@@ -237,7 +237,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     
     private void addDirectory() {
         AddCompilerSetPanel panel = new AddCompilerSetPanel(csm);
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, "Add New Tool Set");
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, getString("NEW_TOOL_SET_TITLE"));
         panel.setDialogDescriptor(dialogDescriptor);
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION)
