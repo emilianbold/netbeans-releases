@@ -146,14 +146,14 @@ public abstract class BasicWizardPanel implements WizardDescriptor.Panel<WizardD
         protected String getWizardTypeString() {
             String helpId = null;
             switch (data.getWizardType()) {
-                case NewNbModuleWizardIterator.TYPE_SUITE:
+                case SUITE:
                     helpId = "suite"; // NOI18N
                     break;
-                case NewNbModuleWizardIterator.TYPE_MODULE:
-                case NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT:
+                case MODULE:
+                case SUITE_COMPONENT:
                     helpId = "module"; // NOI18N
                     break;
-                case NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE:
+                case LIBRARY_MODULE:
                     helpId = "library"; // NOI18N
                     break;
                 default:

@@ -492,6 +492,8 @@ public class JsParser implements Parser {
             } else {
                 root = parser.parse(source, context.file.getNameExt(), lineno);
             }
+        } catch (IllegalStateException ise) {
+            // See issue #128983 for a way to get the compiler to assert for example
         } catch (RuntimeException re) {
             //notifyError(context, message, sourceName, line, lineSource, lineOffset, sanitizing, Severity.WARNING, "", null);
             // XXX TODO - record this somehow

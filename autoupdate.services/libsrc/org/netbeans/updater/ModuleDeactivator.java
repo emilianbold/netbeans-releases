@@ -64,8 +64,8 @@ public final class ModuleDeactivator extends Object {
         Collection<File> allFiles = new HashSet<File> ();
         for (File cluster : UpdateTracking.clusters (true)) {
             boolean modified = allFiles.addAll (readFilesMarkedForDeleteInCluster (cluster));
-            modified = modified || allFiles.add (getControlFileForMarkedForDelete (cluster));
-            modified = modified || allFiles.add (getDeactivateLater (cluster));
+            modified = allFiles.add (getControlFileForMarkedForDelete (cluster)) || modified;
+            modified = allFiles.add (getDeactivateLater (cluster)) || modified;
             if (modified) {
                 UpdaterDispatcher.touchLastModified (cluster);
             }

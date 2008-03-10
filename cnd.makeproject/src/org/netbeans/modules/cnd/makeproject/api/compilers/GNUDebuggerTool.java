@@ -48,4 +48,11 @@ public class GNUDebuggerTool extends Tool {
     public GNUDebuggerTool(CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
         super(flavor, DebuggerTool, name, displayName, path); // NOI18N
     }
+    
+    @Override
+    public GNUDebuggerTool createCopy() {
+        GNUDebuggerTool copy = new GNUDebuggerTool(getFlavor(), "", getDisplayName(), getPath());
+        copy.setName(getName());
+        return copy;
+    }
 }

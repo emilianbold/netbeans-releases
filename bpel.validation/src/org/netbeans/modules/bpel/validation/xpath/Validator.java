@@ -90,6 +90,7 @@ import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import org.netbeans.modules.bpel.model.api.support.ValidationVisitor;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -117,14 +118,16 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     if (fromName != null && fromName.equals(toName)) {
       return;
     }
+    /*todo r
     if (fromName.equals("anyURI") || toName.equals("anyURI")) {
       return;
     }
     if (fromType instanceof GlobalSimpleType && toType instanceof GlobalSimpleType) {
       return;
     }
-    if (fromType != toType) {
-      addError("FIX_TYPE_IN_COPY", copy, getTypeName(fromType), getTypeName(toType));
+    */
+    if (ValidationUtil.getBasedSimpleType(fromType) != ValidationUtil.getBasedSimpleType(toType)) {
+      addWarning("FIX_TYPE_IN_COPY", copy, getTypeName(fromType), getTypeName(toType)); // NOI18N
     }
   }
 
