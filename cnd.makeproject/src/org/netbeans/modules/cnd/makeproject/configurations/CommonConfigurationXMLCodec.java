@@ -70,6 +70,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
 
 /**
  * Change History:
+ * V43 - 3.06.08 - NB 6.1
+ *   Storing compiler flavor as name|flavor
  * V42 - 2.26.08 - NB 6.1
  *   Now storing required tools (c, cpp, ...) only if different from default vaue 
  * V41:
@@ -106,7 +108,7 @@ public abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 42;
+    public final static int CURRENT_VERSION = 44;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -298,7 +300,7 @@ public abstract class CommonConfigurationXMLCodec
     
     private void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
 	xes.elementOpen(TOOLS_SET_ELEMENT);
-        xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getOption());
+        xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getNameAndFlavor());
         if (makeConfiguration.getCRequired().getValue() != makeConfiguration.getCRequired().getDefault())
             xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());
         if (makeConfiguration.getCppRequired().getValue() != makeConfiguration.getCppRequired().getDefault())

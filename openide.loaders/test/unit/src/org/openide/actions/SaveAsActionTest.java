@@ -121,14 +121,6 @@ public class SaveAsActionTest extends NbTestCase {
     public void testSaveAsActionDisabledForNonEditorWindows() throws Exception {
         ContextAwareAction action = SaveAsAction.create();
         
-        PropertyChangeListener l = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                //action needs at least one listener, otherwise it won't refresh its enabled state
-            }
-        };
-        action.addPropertyChangeListener( l );
-        
-        viewWithSaveAs.requestActive();
         viewWithoutSaveAs.requestActive();
         assertTrue( TopComponent.getRegistry().getActivated() == viewWithoutSaveAs );
         
@@ -138,14 +130,6 @@ public class SaveAsActionTest extends NbTestCase {
     public void testSaveAsActionDisabledForViewsWithSaveAsCapable() throws Exception {
         ContextAwareAction action = SaveAsAction.create();
         
-        PropertyChangeListener l = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                //action needs at least one listener, otherwise it won't refresh its enabled state
-            }
-        };
-        action.addPropertyChangeListener( l );
-        
-        viewWithoutSaveAs.requestActive();
         viewWithSaveAs.requestActive();
         assertTrue( TopComponent.getRegistry().getActivated() == viewWithSaveAs );
         
@@ -155,24 +139,14 @@ public class SaveAsActionTest extends NbTestCase {
     public void testSaveAsActionEnabledForEditorsOnly() throws Exception {
         ContextAwareAction action = SaveAsAction.create();
         
-        PropertyChangeListener l = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                //action needs at least one listener, otherwise it won't refresh its enabled state
-            }
-        };
-        action.addPropertyChangeListener( l );
-
-        viewWithoutSaveAs.requestActive();
         editorWithSaveAs.requestActive();
         assertTrue( TopComponent.getRegistry().getActivated() == editorWithSaveAs );
         
         assertTrue( "action is enabled for editor windows with SaveAsCapable in their Lookup", action.isEnabled() );
-        action.removePropertyChangeListener(l);
     }
     
     public void testSaveAsActionDoesNotRefreshWithoutListeners() throws Exception {
         SaveAsAction action = (SaveAsAction)SaveAsAction.create();
-        assertFalse( "action will not refresh its state when it has no registered listener", action.isEnabled() );
         
         PropertyChangeListener l = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -182,9 +156,10 @@ public class SaveAsActionTest extends NbTestCase {
         action.addPropertyChangeListener( l );
         assertTrue( "action will not refresh its state when it has no registered listener", action.isEnabled() );
         
-        viewWithoutSaveAs.requestActive();
         editorWithSaveAs.requestActive();
         assertTrue( TopComponent.getRegistry().getActivated() == editorWithSaveAs );
+        
+        assertTrue( "action will not refresh its state when it has no registered listener", action.isEnabled() );
         
         editorWithoutSaveAs.requestActive();
         assertTrue( TopComponent.getRegistry().getActivated() == editorWithoutSaveAs );
@@ -193,24 +168,15 @@ public class SaveAsActionTest extends NbTestCase {
         
         editorWithSaveAs.requestActive();
         assertTrue( TopComponent.getRegistry().getActivated() == editorWithSaveAs );
-        assertFalse( "action will not refresh its state when it has no registered listener", action.isEnabled() );
+        assertFalse( "action will not refresh its state when it has no registered listener", action._isEnabled() );
     }
     
     public void testSaveAsActionDisabledForEditorsWithoutSaveAsCapable() throws Exception {
         ContextAwareAction action = SaveAsAction.create();
-        PropertyChangeListener l = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-            }
-        };
         
-        action.addPropertyChangeListener( l );
-        
-        viewWithoutSaveAs.requestActive();
         editorWithoutSaveAs.requestActive();
         assertTrue( TopComponent.getRegistry().getActivated() == editorWithoutSaveAs );
         assertFalse( "action is disabled for editor windows without SaveAsCapable in their Lookup", action.isEnabled() );
-        
-        action.removePropertyChangeListener(l);
     }
     
     public void testActionStatusUpdatedOnLookupChange() throws Exception {
@@ -228,23 +194,13 @@ public class SaveAsActionTest extends NbTestCase {
         assertTrue( editorMode.getOpenedTopComponents().contains( tc ) );
         
         ContextAwareAction action = SaveAsAction.create();
-        PropertyChangeListener l = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                //action needs at least one listener, otherwise it won't refresh its enabled state
-            }
-        };
-        action.addPropertyChangeListener( l );
         assertFalse( "action is disabled for editor windows without SaveAsCapable in their Lookup", action.isEnabled() );
         
         Action a = action.createContextAwareInstance( tc.getLookup() );
-        a.addPropertyChangeListener(l);
         
         content.add( saveAsImpl );
         assertTrue( "action is enabled for editor windows with SaveAsCapable in their Lookup", a.isEnabled() );
         content.remove( saveAsImpl );
         assertFalse( "action is disabled for editor windows without SaveAsCapable in their Lookup", a.isEnabled() );
-        
-        action.removePropertyChangeListener( l );
-        a.removePropertyChangeListener(l);
     }
 }

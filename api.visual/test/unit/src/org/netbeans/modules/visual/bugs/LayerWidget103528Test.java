@@ -38,65 +38,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package apichanges;
+package org.netbeans.modules.visual.bugs;
 
-import framework.VisualTestCase;
-import org.netbeans.api.visual.border.BorderFactory;
-import org.netbeans.api.visual.widget.LabelWidget;
-import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.visual.framework.VisualTestCase;
 import org.netbeans.api.visual.widget.LayerWidget;
+import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
 /**
  * @author David Kaspar
  */
-public class OffscreenRenderingTest extends VisualTestCase {
+public class LayerWidget103528Test extends VisualTestCase {
 
-    public OffscreenRenderingTest (String testName) {
+    public LayerWidget103528Test (String testName) {
         super (testName);
     }
 
-    public void testOffscreenRendering () {
+    public void testLayerPreferredLocation () {
         Scene scene = new Scene ();
 
+        scene.addChild (new LayerWidget (scene));
+
         LayerWidget layer = new LayerWidget (scene);
-        layer.setPreferredBounds (new Rectangle (0, 0, 80, 80));
+        layer.setPreferredLocation (new Point (100, 100));
         scene.addChild (layer);
 
-        LabelWidget widget = new LabelWidget (scene, "Hi");
-        widget.setVerticalAlignment (LabelWidget.VerticalAlignment.CENTER);
-        widget.setAlignment (LabelWidget.Alignment.CENTER);
-        widget.setBorder (BorderFactory.createLineBorder ());
-        widget.setPreferredLocation (new Point (20, 20));
-        widget.setPreferredBounds (new Rectangle (0, 0, 40, 40));
+        Widget widget = new Widget (scene);
+        widget.setPreferredBounds (new Rectangle (-20, -10, 100, 50));
+        widget.setOpaque (true);
+        widget.setBackground (Color.RED);
         layer.addChild (widget);
 
-        BufferedImage image = dumpSceneOffscreenRendering (scene);
-        assertCleaness (testCleaness (image, Color.WHITE, Color.BLACK), image, null);
-
-        assertScene (scene, Color.WHITE, new Rectangle (19, 19, 42, 42));
-    }
-
-    private BufferedImage dumpSceneOffscreenRendering (Scene scene) {
-        // validate the scene with a off-screen graphics
-        BufferedImage emptyImage = new BufferedImage (1, 1, BufferedImage.TYPE_4BYTE_ABGR);
-        Graphics2D emptyGraphics = emptyImage.createGraphics ();
-        scene.validate (emptyGraphics);
-        emptyGraphics.dispose ();
-
-        // now the scene is calculated using the emptyGraphics, all widgets should be layout and scene has its size resolved
-        // paint the scene with a off-screen graphics
-        Rectangle viewBounds = scene.convertSceneToView (scene.getBounds ());
-        BufferedImage image = new BufferedImage (viewBounds.width, viewBounds.height, BufferedImage.TYPE_4BYTE_ABGR);
-        Graphics2D graphics = image.createGraphics ();
-        double zoomFactor = scene.getZoomFactor ();
-        graphics.scale (zoomFactor, zoomFactor);
-        scene.paint (graphics);
-        graphics.dispose ();
-
-        return image;
+        assertScene (scene, Color.WHITE, new Rectangle (80, 90, 100, 50));
     }
 
 }

@@ -49,6 +49,9 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 
 /**
@@ -238,5 +241,21 @@ public class GenericResourceBean {
     
     public static String getGetMethodName(MimeType mime) {
         return "get"+mime.suffix(); //NOI18N
+    }
+
+    public SaasAuthenticationType getAuthenticationType() {
+        return SaasAuthenticationType.PLAIN;
+    }
+    
+    public SaasAuthentication getAuthentication() {
+        return null;
+    }
+    
+    public List<ParameterInfo> filterParametersByAuth(List<ParameterInfo> params) {
+        return Util.filterParametersByAuth(getAuthenticationType(), getAuthentication(), params);
+    }
+    
+    public List<ParameterInfo> filterParameters(ParamFilter[] filters) {
+        return Util.filterParameters(getInputParameters(), filters);
     }
 }

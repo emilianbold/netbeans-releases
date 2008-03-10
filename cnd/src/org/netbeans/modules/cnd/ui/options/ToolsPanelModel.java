@@ -136,4 +136,8 @@ public abstract class ToolsPanelModel {
     public abstract void setShowRequiredDebugTools(boolean value);
     
     public abstract boolean showRequiredDebugTools();
+    
+    public void SetEnableRequiredCompilerCB(boolean enabled) {}
+    
+    public boolean enableRequiredCompilerCB() {return true;}
 }

@@ -43,18 +43,15 @@ package org.netbeans.modules.java.j2seplatform.libraries;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.event.MouseEvent;
 import java.beans.Customizer;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -67,11 +64,8 @@ import org.netbeans.api.project.ant.FileChooser;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
@@ -540,7 +534,14 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 LibraryStorageArea area = model.getArea();
                 FileObject fo = LibrariesSupport.resolveLibraryEntryFileObject(area != null ? area.getLocation() : null, url);
                 if (fo == null) {
-                    broken = true;
+                    String path = LibrariesSupport.convertURLToFilePath(url);
+                    if (path.startsWith("${")) { // NOI18N
+                        // if URL starts with an Ant property name assume it is OK.
+                        // url cannot be resolved because customizer does not have necessary context.
+                        // for example in case of hand written library entry ${MAVEN_REPO}/struts/struts.jar
+                    } else {
+                        broken = true;
+                    }
                     if ("file".equals(url.getProtocol())) { //NOI18N
                         displayName = LibrariesSupport.convertURLToFilePath(url);
                     } else {

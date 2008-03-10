@@ -49,7 +49,9 @@ import org.netbeans.modules.websvc.saas.codegen.java.AbstractGenerator;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Login;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Logout;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Token;
@@ -143,29 +145,6 @@ public abstract class SaasBean extends GenericResourceBean {
             }
         }
         return queryParams;
-    }
-    
-    public List<ParameterInfo> filterParametersByAuth(List<ParameterInfo> params) {
-        List<ParameterInfo> filterParams = new ArrayList<ParameterInfo>();
-        if(params != null) {
-            for (ParameterInfo param : params) {
-                if(authType == SaasAuthenticationType.SESSION_KEY) {
-                    SessionKeyAuthentication sessionKey = (SessionKeyAuthentication)getAuthentication();
-                    if(param.getName().equals(sessionKey.getApiKeyName()) || 
-                            param.getName().equals(sessionKey.getSessionKeyName()) ||
-                                param.getName().equals(sessionKey.getSigKeyName())) {
-                        continue;
-                    }
-                } else if(authType == SaasAuthenticationType.SIGNED_URL) {
-                    SignedUrlAuthentication signedUrl = (SignedUrlAuthentication)getAuthentication();
-                    if(param.getName().equals(signedUrl.getSigKeyName())) {
-                        continue;
-                    }
-                }
-                filterParams.add(param);
-            }
-        }
-        return filterParams;
     }
     
     public String getOutputWrapperName() {

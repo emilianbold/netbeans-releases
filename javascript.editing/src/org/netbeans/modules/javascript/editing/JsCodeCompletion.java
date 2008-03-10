@@ -323,7 +323,7 @@ public class JsCodeCompletion implements Completable {
             if (root != null) {
                 final AstPath path = new AstPath(root, astOffset);
                 request.path = path;
-                request.fqn = AstUtilities.getFqn(path);
+                request.fqn = AstUtilities.getFqn(path, null, null);
 
                 final Node closest = path.leaf();
                 request.root = root;

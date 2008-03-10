@@ -43,15 +43,11 @@ package org.netbeans.modules.cnd.debugger.gdb.actions;
 
 import java.util.Collections;
 import java.util.Set;
-
 import org.openide.util.RequestProcessor;
-
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
 import org.netbeans.spi.debugger.ContextProvider;
-
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 
@@ -71,7 +67,7 @@ public class StartActionProvider extends ActionsProvider {
      */
     public StartActionProvider(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
-        debuggerImpl = lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debuggerImpl = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
         
     }
     
