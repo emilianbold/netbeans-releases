@@ -92,6 +92,13 @@ public class Tool {
         this.name = name;
         this.displayName = displayName;
         this.path = name.length() > 0 ? path + File.separator + name : path;
+        includeFilePrefix = null;
+    }
+    
+    public Tool createCopy() {
+        Tool copy = new Tool(flavor, kind, "", displayName, path);
+        copy.setName(getName());
+        return copy;
     }
     
     public CompilerFlavor getFlavor() {
@@ -100,6 +107,10 @@ public class Tool {
     
     public int getKind() {
         return kind;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
     }
     
     public String getName() {
@@ -186,6 +197,10 @@ public class Tool {
             }
         }
         return includeFilePrefix;
+    }
+    
+    public void setIncludeFilePathPrefix(String includeFilePrefix) {
+        this.includeFilePrefix = includeFilePrefix;
     }
     
     public boolean exists() {

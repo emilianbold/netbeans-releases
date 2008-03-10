@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.util.NbBundle;
@@ -97,7 +98,7 @@ public class CompilerSet2Configuration {
         }
     }
     
-    public void setNameAndFlavor(String name) {
+    public void setNameAndFlavor(String name, int version) {
         String nm;
         String fl;
         int index = name.indexOf("|"); // NOI18N
@@ -109,7 +110,7 @@ public class CompilerSet2Configuration {
             nm = name;
             fl = name;
         }
-        setValue(nm, fl);
+        setValue(CompilerFlavor.mapOldToNew(nm, version), CompilerFlavor.mapOldToNew(fl, version));
     }
     
     public void setValue(String name, String flavor) {
