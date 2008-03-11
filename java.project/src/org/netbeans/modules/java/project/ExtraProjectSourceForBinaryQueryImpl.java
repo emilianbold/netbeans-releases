@@ -56,9 +56,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -72,7 +71,7 @@ import org.openide.util.Exceptions;
  *
  * @author mkleint
  */
-public final class ExtraProjectSourceForBinaryQueryImpl extends ProjectOpenedHook implements SourceForBinaryQueryImplementation {
+public final class ExtraProjectSourceForBinaryQueryImpl extends ProjectOpenedHook implements SourceForBinaryQueryImplementation2 {
 
     private static final String REF_START = "file.reference."; //NOI18N
     private static final String SOURCE_START = "source.reference."; //NOI18N
@@ -113,7 +112,7 @@ public final class ExtraProjectSourceForBinaryQueryImpl extends ProjectOpenedHoo
      * @param binaryRoot
      * @return
      */
-    public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
+    public SourceForBinaryQueryImplementation2.Result findSourceRoots2 (URL binaryRoot) {
         synchronized (cache) {
             ExtraResult res = cache.get(binaryRoot);
             if (res != null) {
@@ -126,6 +125,10 @@ public final class ExtraProjectSourceForBinaryQueryImpl extends ProjectOpenedHoo
             }
         }
         return null;
+    }
+    
+    public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
+        return this.findSourceRoots2(binaryRoot);
     }
     
     @Override
@@ -213,7 +216,7 @@ public final class ExtraProjectSourceForBinaryQueryImpl extends ProjectOpenedHoo
         
     }
     
-    private class ExtraResult implements SourceForBinaryQuery.Result {
+    private class ExtraResult implements SourceForBinaryQueryImplementation2.Result {
         private URL binaryroot;
         private ChangeSupport chs = new ChangeSupport(this);
         
@@ -254,7 +257,10 @@ public final class ExtraProjectSourceForBinaryQueryImpl extends ProjectOpenedHoo
         public void removeChangeListener(ChangeListener l) {
             chs.removeChangeListener(l);
         }
-        
+
+        public boolean preferSources() {
+            return false;
+        }        
     }
 
 
