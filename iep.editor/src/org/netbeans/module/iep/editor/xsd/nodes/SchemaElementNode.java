@@ -42,6 +42,7 @@ public class SchemaElementNode extends AbstractSchemaArtifactNode implements Sel
                 this.mIcon = NodeIcons.ELEMENT_OPTIONAL_REPEATING.getIcon();
             }
             
+            
         }
     }
 
