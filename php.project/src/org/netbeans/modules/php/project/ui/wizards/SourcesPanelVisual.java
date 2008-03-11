@@ -197,6 +197,10 @@ public class SourcesPanelVisual extends JPanel {
     private javax.swing.JLabel sourcesLabel;
     // End of variables declaration//GEN-END:variables
 
+    static boolean isProjectFolder(LocalServer localServer) {
+        return defaultLocalServer == localServer;
+    }
+
     LocalServer getSourcesLocation() {
         return (LocalServer) localServerComboBox.getSelectedItem();
     }
