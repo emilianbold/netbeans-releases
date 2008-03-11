@@ -384,23 +384,32 @@ public class ServerInstance implements Node.Cookie {
     }
     
     private synchronized void updateDisplayName() {
-        State state = getState();
+        String label;
         if ( state == State.CONNECTED ) {
-            setDisplayName(NbBundle.getMessage(ServerInstance.class,
-                    "LBL_ServerDisplayName"));
+            label = "LBL_ServerDisplayName";
         } else if ( state == State.DISCONNECTED ) {
-            setDisplayName(NbBundle.getMessage(ServerInstance.class,
-                    "LBL_ServerNotConnectedDisplayName"));
+            label = "LBL_ServerNotConnectedDisplayName";
         } else {
-            setDisplayName(NbBundle.getMessage(ServerInstance.class, 
-                    "LBL_ServerConnectingDisplayName"));
+            label = "LBL_ServerConnectingDisplayName";
         }
+        setDisplayName(NbBundle.getMessage(ServerInstance.class,
+                label, getHostPort(), getUser()));
     }
     
     public String getShortDescription() {
         return NbBundle.getMessage(ServerInstance.class,
-                "LBL_ServerDisplayName");
+                "LBL_ServerShortDescription", getHostPort(), getUser());
     }
+    
+    private String getHostPort() {
+        String port = getPort();
+        if ( Utils.isEmpty(port)) {
+            port = "";
+        } else {
+            port = ":" + port;
+        }
+        return getHost() + port;
+   }
     
     public String getURL() {
         return DatabaseUtils.getURL(getHost(), getPort());
