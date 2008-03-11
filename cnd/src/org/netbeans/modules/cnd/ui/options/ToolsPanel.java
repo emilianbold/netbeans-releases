@@ -1974,8 +1974,8 @@ private void btGdbVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
 private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRestoreActionPerformed
     NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-            "This will rescan your environment and re-create the default tool sets.\nChanges you may have made to these sets will be lost. Your custom tool sets will not be affected.\n\nDo you want to continue?", // NOI18N
-            "Restore Default Tool Sets", // NOI18N
+            getString("RESTORE_TXT"),
+            getString("RESTORE_TITLE"),
             NotifyDescriptor.OK_CANCEL_OPTION);
     Object ret = DialogDisplayer.getDefault().notify(nd);
     if (ret != NotifyDescriptor.OK_OPTION) {
