@@ -113,13 +113,18 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     if (pname.equals(Watch.PROP_EXPRESSION)) {
-                        resetTypeInfo();
+                        resetVariable();
                     }
                     type = getDebugger().requestWhatis(watch.getExpression());
-                    value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
-                    String rt = getTypeInfo().getResolvedType(gwv);
-                    if (GdbUtils.isPointer(rt)) {
-                        derefValue = getDebugger().requestValue('*' + watch.getExpression());
+                    if (type != null && type.length() > 0) {
+                        value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
+                        String rt = getTypeInfo().getResolvedType(gwv);
+                        if (GdbUtils.isPointer(rt)) {
+                            derefValue = getDebugger().requestValue('*' + watch.getExpression());
+                        }
+                    } else {
+                        type = "";
+                        value = "";
                     }
                     setModifiedValue(value);
                     model.fireTableValueChanged(ev.getSource(), null);
@@ -153,7 +158,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         if (value == null || value.length() == 0) {
             value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
         }
-        return value;
+        return super.getValue();
     }
     
     @Override
@@ -163,16 +168,5 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     
     public void setValueAt(String value) {
         super.setValue(value);
-    }
-    
-    public void setValueToError(String msg) {
-        msg = msg.replace("\\\"", "\""); // NOI18N
-        if (msg.charAt(msg.length() - 1) == '.') {
-            msg = msg.substring(0, msg.length() - 1);
-        }
-        setValue('>' + msg + '<');
-        log.fine("GWV.setValueToError[" + GdbUtils.threadId() + "]: " + getName()); // NOI18N
-        fields = new Field[0];
-        derefValue = null;
     }
 }

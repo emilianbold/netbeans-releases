@@ -48,13 +48,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.xml.XMLConstants;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
 import org.xml.sax.Attributes;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIDocument;
 import org.netbeans.modules.xml.axi.AXIModel;
@@ -554,5 +558,16 @@ public class CompletionUtil {
         }
     }
     
-        
+    public static boolean isDTDBasedDocument(Document document) {
+        TokenHierarchy th = TokenHierarchy.get(document);
+        TokenSequence ts = th.tokenSequence();
+        while(ts.moveNext()) {
+            Token token = ts.token();
+            if(token.id() == XMLTokenId.DECLARATION) {                
+                return true;
+            }
+        }
+        return false;
+    }
+    
 }

@@ -16,10 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/**
- *
- */
 package org.netbeans.modules.bpel.model.api.events;
 
 import java.util.Set;
@@ -31,9 +27,6 @@ import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.openide.ErrorManager;
 
 /**
- * This is class similar to PropertyChangeEventSupport, but oriented to
- * propogating Bpel Events.
- *
  * @author ads
  */
 public class ChangeEventSupport {
@@ -158,9 +151,6 @@ public class ChangeEventSupport {
                 ErrorManager.getDefault().notify(e);
             }
         }
-        /*
-         * } finally { isReadLockAcquired.set( false ); readLock.unlock(); }
-         */
     }
 
     private void notifyChangeEvent( ChangeEventListener listener,
@@ -188,28 +178,11 @@ public class ChangeEventSupport {
             listener.notifyArrayUpdated((ArrayUpdateEvent) event);
         }
     }
-    
-//    private class ReadLockCheck extends ThreadLocal<Boolean> {
-//
-//        /* (non-Javadoc)
-//         * @see java.lang.ThreadLocal#initialValue()
-//         */
-//        @Override
-//        protected Boolean initialValue()
-//        {
-//            return false;
-//        }
-//    }
 
     private final ReentrantReadWriteLock myLock = new ReentrantReadWriteLock();
-
-    //private final Lock readLock = myLock.readLock();
-
     private final Lock writeLock = myLock.writeLock();
 
     private WeakHashMap<ChangeEventListener, Class<? extends BpelEntity>> 
         myListeners = new WeakHashMap<ChangeEventListener, 
             Class<? extends BpelEntity>>();
-    
-    //private ReadLockCheck isReadLockAcquired = new ReadLockCheck(); 
 }

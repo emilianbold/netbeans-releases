@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.earproject.EarProject;
@@ -88,6 +89,7 @@ public final class ModuleNode extends AbstractNode implements Node.Cookie {
     public ModuleNode(final ClassPathSupport.Item key, final FileObject projectDirectory, 
             EarProject project, UpdateHelper updateHelper, ClassPathSupport cs) {
         super(Children.LEAF);
+        assert key.getType() == ClassPathSupport.Item.TYPE_ARTIFACT;
         this.key = key;
         this.projectDirectory = projectDirectory;
         setName(ModuleNode.MODULE_NODE_NAME);
@@ -142,9 +144,7 @@ public final class ModuleNode extends AbstractNode implements Node.Cookie {
     }
     
     void removeFromJarContent() {
-        EarProjectProperties epp = project.getProjectProperties();
-        epp.removeAdditionalContentItem(key);
-        epp.store();
+        EarProjectProperties.removeJ2eeSubprojects(project, new Project[]{key.getArtifact().getProject()});
     }
     
     public ClassPathSupport.Item getVCPI() {

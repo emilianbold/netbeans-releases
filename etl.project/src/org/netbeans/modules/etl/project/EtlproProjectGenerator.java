@@ -63,20 +63,24 @@ public class EtlproProjectGenerator {
     private static final String nbBundle7 = mLoc.t("PRSR001: databases");
     private static final String nbBundle8 = mLoc.t("PRSR001: nbproject");
     private static final String nbBundle9 = mLoc.t("PRSR001: jdbc:axiondb:");
+    private static final String nbBundle11 = mLoc.t("PRSR001: Default");
     //Trimming the initial spaces
     private static final String DEFAULT_DOC_BASE_FOLDER = Localizer.parse(nbBundle2).trim(); //NOI18N
-    private static final String DEFAULT_SRC_FOLDER = Localizer.parse(nbBundle1).trim(); //NOI18N
+    public static final String DEFAULT_SRC_FOLDER = Localizer.parse(nbBundle1).trim(); //NOI18N
     private static final String DEFAULT_RESOURCE_FOLDER = Localizer.parse(nbBundle3).trim(); //NOI18N
     private static final String DEFAULT_BPELASA_FOLDER = Localizer.parse(nbBundle4).trim(); //NOI18N
     private static final String DEFAULT_BUILD_DIR = Localizer.parse(nbBundle5).trim(); //NOI18N
-    private static final String DEFAULT_DATA_DIR = Localizer.parse(nbBundle6).trim(); //NOI18N
-    private static final String DEFAULT_DATABASES_DIR = Localizer.parse(nbBundle7).trim(); //NOI18N
+    public static final String DEFAULT_DATA_DIR = Localizer.parse(nbBundle6).trim(); //NOI18N
+    private static final String DEFAULT_DB_DIR = Localizer.parse(nbBundle11).trim(); //NOI18N
+    public static final String DEFAULT_DATABASES_DIR = Localizer.parse(nbBundle7).trim(); //NOI18N
     private static final String DEFAULT_NBPROJECT_DIR = Localizer.parse(nbBundle8).trim(); //NOI18N
     private static final String DEFAULT_FLATFILE_JDBC_URL_PREFIX = Localizer.parse(nbBundle9).trim();
     private static FileObject dbObj = null;
     private static File databases = null;
     private static FileObject data = null;
     public static String PRJ_LOCATION_DIR = "";
+    private static String prjName = null;
+    private static String fs = File.separator;
 
     private EtlproProjectGenerator() {
     }
@@ -88,8 +92,9 @@ public class EtlproProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(File dir, String name, String j2eeLevel) throws IOException {
+    public static AntProjectHelper createProject(File dir, String name, String j2eeLevel) throws IOException {        
         dir.mkdirs();
+        prjName = name;
         // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
         File rootF = dir;
         PRJ_LOCATION_DIR = rootF.getPath();
@@ -110,15 +115,16 @@ public class EtlproProjectGenerator {
         assert fo.getChildren().length == 0 : "Dir must have been empty: " + dir;
         AntProjectHelper h = setupProject(fo, name, j2eeLevel);
         fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
-        data = fo.createFolder(DEFAULT_DATA_DIR); // NOI18N   
-
-        databases = new File(PRJ_LOCATION_DIR + "\\" + DEFAULT_NBPROJECT_DIR + "\\" + "private" + "\\" + DEFAULT_DATABASES_DIR);
-        dbObj = FileUtil.createFolder(databases);
+        data = fo.createFolder(DEFAULT_DATA_DIR); // NOI18N         
+                
+        databases = new File(PRJ_LOCATION_DIR + fs + DEFAULT_NBPROJECT_DIR + fs + "private" + fs + DEFAULT_DATABASES_DIR);
+        dbObj = FileUtil.createFolder(databases); 
+        FileObject defaultFileObj = dbObj.createFolder(DEFAULT_DB_DIR);
         //dbObj.lock();  
         MashupTableWizardIterator.setProjectInfo(name, PRJ_LOCATION_DIR, true);
 
 
-        String dbName = databases.getPath();
+        String dbName = FileUtil.toFile(defaultFileObj).getAbsolutePath();
         createDefaultDatabase(dbName);
 
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -199,21 +205,27 @@ public class EtlproProjectGenerator {
         return h;
     }
 
-    private static void createDefaultDatabase(String name) {
-        String url = DEFAULT_FLATFILE_JDBC_URL_PREFIX + "Default" + ":" + name + "\\" + "Default";
-        File f = new File(name + "\\" + "Default");
+    private static void createDefaultDatabase(String name) {   
+        // Modified for Other OS - Solaris
+        /*File f = new File(name + fs + DEFAULT_DB_DIR);
+        try {
+            FileUtil.createFolder(f);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }*/
+        String url = DEFAULT_FLATFILE_JDBC_URL_PREFIX + DEFAULT_DB_DIR + ":" + name;          
         char[] ch = name.toCharArray();
-        if (ch == null) {
+        if (ch == null) {            
             String nbBundle10 = mLoc.t("PRSR001: No Database name specified.");
             NotifyDescriptor d =
                     new NotifyDescriptor.Message(Localizer.parse(nbBundle10), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
-        } else if (f.exists()) {
+        } /*else if (f.exists()) {
             String nbBundle11 = mLoc.t("PRSR001: Database {0} already exists.", name);
             NotifyDescriptor d =
                     new NotifyDescriptor.Message(Localizer.parse(nbBundle11), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
-        } else {
+        }*/ else {
             Connection conn = null;
             try {
                 conn = DBExplorerUtil.createConnection("org.axiondb.jdbc.AxionDriver", url, "sa", "sa");
@@ -242,6 +254,7 @@ public class EtlproProjectGenerator {
     public static String getDatabasesFolderPath() {
         //return databases.getPath();
         String path = FileUtil.toFile(dbObj).getAbsolutePath();
+        java.util.logging.Logger.getLogger(EtlproProjectGenerator.class.getName()).info("*********** in project system "+path);
         /*if (Utilities.isWindows()) {
             path = path.replace("\\", "/"); // NOI18N
         }*/

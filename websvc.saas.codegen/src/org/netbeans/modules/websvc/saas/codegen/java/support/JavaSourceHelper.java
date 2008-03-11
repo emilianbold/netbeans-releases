@@ -525,6 +525,10 @@ public class JavaSourceHelper {
     }
 
     public static ClassTree addMethod(WorkingCopy copy, ClassTree tree, Modifier[] modifiers, String[] annotations, Object[] annotationAttrs, String name, Object returnType, String[] parameters, Object[] paramTypes, Object[] paramAnnotationsArray, Object[] paramAnnotationAttrsArray, String bodyText, String comment) {
+        return addMethod(copy, tree, modifiers, annotations, annotationAttrs, name, returnType, parameters, paramTypes, paramAnnotationsArray, paramAnnotationAttrsArray, null, bodyText, comment);
+    }
+        
+    public static ClassTree addMethod(WorkingCopy copy, ClassTree tree, Modifier[] modifiers, String[] annotations, Object[] annotationAttrs, String name, Object returnType, String[] parameters, Object[] paramTypes, Object[] paramAnnotationsArray, Object[] paramAnnotationAttrsArray, Object[] throwList, String bodyText, String comment) {
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree modifiersTree = createModifiersTree(copy, modifiers, annotations, annotationAttrs);
 
@@ -557,8 +561,9 @@ public class JavaSourceHelper {
             }
         }
 
-
-        MethodTree methodTree = maker.Method(modifiersTree, name, returnTypeTree, Collections.<TypeParameterTree>emptyList(), paramTrees, Collections.<ExpressionTree>emptyList(), bodyText, null);
+        List<ExpressionTree> throwsExpressions = createThrowTrees(copy, throwList);
+            
+        MethodTree methodTree = maker.Method(modifiersTree, name, returnTypeTree, Collections.<TypeParameterTree>emptyList(), paramTrees, throwsExpressions, bodyText, null);
 
         if (comment != null) {
             maker.addComment(methodTree, createJavaDocComment(comment), true);
@@ -648,6 +653,21 @@ public class JavaSourceHelper {
         }
 
         return annotationTrees;
+    }
+    
+    private static List<ExpressionTree> createThrowTrees(WorkingCopy copy, Object[] throwList) {
+        TreeMaker maker = copy.getTreeMaker();
+        List<ExpressionTree> throwTrees = Collections.<ExpressionTree>emptyList();
+        if (throwList != null) {
+            throwTrees = new ArrayList<ExpressionTree>();
+            for (int i = 0; i < throwList.length; i++) {
+                Object throwType = throwList[i];
+                //throwTrees.add(maker.Throw(maker.Literal(throwClass)).getExpression());
+                TypeElement element = copy.getElements().getTypeElement((String) throwType);
+                throwTrees.add(maker.QualIdent(element));
+            }
+        }
+        return throwTrees;
     }
 
     private static Comment createJavaDocComment(String text) {
@@ -868,6 +888,7 @@ public class JavaSourceHelper {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
 
                 public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement classElement = getTopLevelClassElement(controller);
                     List<ExecutableElement> methods = ElementFilter.methodsIn(classElement.getEnclosedElements());
 
@@ -965,5 +986,15 @@ public class JavaSourceHelper {
             }
         }
         return current;
+    }
+    
+    public static boolean isContainsMethod(JavaSource source, final String methodName, 
+            final String[] paramNames, final Object[] paramTypes) {
+        List<MethodTree> methods = getAllMethods(source);
+        for(MethodTree m: methods) {
+            if(m.getName().toString().equals(methodName))
+                return true;
+        }
+        return false;
     }
 }

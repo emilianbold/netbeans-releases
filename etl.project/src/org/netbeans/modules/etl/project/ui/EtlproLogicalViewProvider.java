@@ -1,3 +1,4 @@
+
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
@@ -53,9 +54,9 @@ import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectPr
 import org.netbeans.modules.compapp.projects.base.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.base.IcanproConstants;
 import org.netbeans.modules.etl.project.EtlproProject;
-import org.netbeans.modules.etl.project.EtlproProjectGenerator;
 import org.netbeans.modules.etl.project.Localizer;
 import org.netbeans.modules.etl.project.LogUtil;
+import org.netbeans.modules.etl.project.MasterIndexAction;
 import org.netbeans.modules.mashup.db.wizard.NewFlatfileDatabaseWizardAction;
 import org.netbeans.modules.mashup.db.wizard.NewFlatfileTableAction;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
@@ -205,7 +206,7 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
             try {
                 prj_locn = pro.getProjectDirectory().getFileSystem().getRoot().toString() + prj_locn;
             } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
+               // Exceptions.printStackTrace(ex);
             }
             MashupTableWizardIterator.setProjectInfo(pro.getName(), prj_locn, true);
             if (context) {
@@ -263,7 +264,7 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
             String nbBundle5 = mLoc.t("PRSR001: Generate Schema");
             String nbBundle6 = mLoc.t("PRSR001: Redeploy Project");
             String nbBundle7 = mLoc.t("PRSR001: Deploy Project");
-            String nbBundle10 = mLoc.t("PRSR001: Bulk Loader");
+            String nbBundle10 = mLoc.t("PRSR001: Generate Bulk Loader");
 
 
             return new Action[]{
@@ -274,7 +275,8 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
                         ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, Localizer.parse(nbBundle3), null), // NOI18N
                         null,
                         ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_GENWSDL, Localizer.parse(nbBundle4), null), // NOI18N
-                        ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_SCHEMA, Localizer.parse(nbBundle5), null), // NOI18N
+                        //ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_SCHEMA, Localizer.parse(nbBundle5), null), // NOI18N
+                        SystemAction.get(MasterIndexAction.class), 
                         ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_BULK_LOADER, Localizer.parse(nbBundle10), null), // NOI18N
                         null,
                         SystemAction.get(NewFlatfileDatabaseWizardAction.class),

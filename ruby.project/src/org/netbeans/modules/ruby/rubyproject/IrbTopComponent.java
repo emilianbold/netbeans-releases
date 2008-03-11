@@ -21,6 +21,7 @@ import java.io.Serializable;
 import javax.swing.UIManager;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
+import org.jruby.internal.runtime.ValueAccessor;
 import org.jruby.demo.TextAreaReadline;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.openide.ErrorManager;
@@ -312,17 +313,19 @@ final class IrbTopComponent extends TopComponent {
             setOutput(new PrintStream(tar));
             setError(new PrintStream(tar));
             setObjectSpaceEnabled(false);
+            //setArgv(args);
         }};
         final Ruby runtime = Ruby.newInstance(config);
 
-        runtime.getLoadService().init(new ArrayList(0));
+        runtime.getGlobalVariables().defineReadonly("$$", new ValueAccessor(runtime.newFixnum(System.identityHashCode(runtime))));
+        runtime.getLoadService().init(new ArrayList());
 
         tar.hookIntoRuntime(runtime);
         return runtime;
     }
     
     private static void startIRB(final Ruby runtime) {
-        runtime.evalScript("require 'irb'; require 'irb/completion'; IRB.start"); // NOI18N
+        runtime.evalScriptlet("require 'irb'; require 'irb/completion'; IRB.start"); // NOI18N
     }
 
     @Override

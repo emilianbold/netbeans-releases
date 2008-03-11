@@ -167,6 +167,11 @@ public class DirectoryNode extends DefaultMutableTreeNode {
         //fixed bug #97124
         ArrayList list = new ArrayList();
         
+        // Fix for IZ#116859 [60cat] Node update bug in the "open project" panel while deleting directories
+        if ( directory == null || !directory.exists() ){
+            return list;
+        }
+        
         File[] files = chooser.getFileSystemView().getFiles(directory, chooser.isFileHidingEnabled());
         int mode = chooser.getFileSelectionMode();
         if(mode == JFileChooser.DIRECTORIES_ONLY) {

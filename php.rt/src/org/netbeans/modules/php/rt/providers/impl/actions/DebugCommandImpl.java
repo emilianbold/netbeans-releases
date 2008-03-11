@@ -49,7 +49,6 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.dbgp.api.DebuggerFactory;
 import org.netbeans.modules.php.dbgp.api.SessionId;
-import org.netbeans.modules.php.lexer.PhpTokenId;
 import org.netbeans.modules.php.rt.spi.providers.Command;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
 import org.openide.DialogDisplayer;
@@ -65,7 +64,8 @@ import org.openide.util.RequestProcessor;
  */
 public class DebugCommandImpl extends AbstractCommand implements Command {
     
-
+    private static final String MIME_TYPE = "text/x-php5";
+    
     private static final String ERR_DEBUG_SESSION 
                                             = "MSG_ErrDebugSession"; // NOI18N
     
@@ -166,7 +166,7 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
                 startFO = project;
                 break;
             }
-            if ( !PhpTokenId.MIME_TYPE.equals(file.getMIMEType()) )
+            if ( !MIME_TYPE.equals(file.getMIMEType()) )
             {
                 continue;
             }

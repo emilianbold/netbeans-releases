@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.netbeans.modules.bpel.model.api.support.ExNamespaceContext;
-import org.netbeans.modules.bpel.model.api.support.InvalidNamespaceException;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
 
 /**
  * @author ads

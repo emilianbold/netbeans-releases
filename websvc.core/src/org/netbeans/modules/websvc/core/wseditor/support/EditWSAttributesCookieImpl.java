@@ -117,6 +117,7 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie {
         DialogDescriptor dialogDesc = new DialogDescriptor(tc, node.getName());
         dialogDesc.setHelpCtx(new HelpCtx(EditWSAttributesCookieImpl.class));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
+        dialog.getAccessibleContext().setAccessibleDescription(dialog.getTitle());
         dialog.setVisible(true);
 
         mainWin.getGlassPane().setCursor(origCursor);

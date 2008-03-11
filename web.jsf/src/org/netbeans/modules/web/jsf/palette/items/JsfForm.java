@@ -43,7 +43,6 @@ package org.netbeans.modules.web.jsf.palette.items;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -85,6 +84,7 @@ import org.openide.util.Exceptions;
  *
  * @author Pavel Buzek
  * @author Po-Ting Wu
+ * @author mbohm
  */
 public final class JsfForm implements ActiveEditorDrop {
         
@@ -108,50 +108,6 @@ public final class JsfForm implements ActiveEditorDrop {
         "</h:panelGrid>\n </h:form>\n",
         "</h:panelGrid>\n </h:form>\n",
         "</h:panelGrid>\n </h:form>\n",
-    };
-    private static String [] ITEM = {
-        "",
-        "<h:outputText value=\"{0}:\"/>\n <h:outputText value=\"#'{'{1}.{2}}\" title=\"{0}\" />\n",
-        "<h:outputText value=\"{0}:\"/>\n <h:inputText id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" />\n",
-        "<h:outputText value=\"{0}:\"/>\n <h:inputText id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" />\n",
-        //relationship *ToOne - use combo box
-//        "<h:outputText value=\"{0}:\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\">\n <f:selectItems value=\"#'{'{3}.{2}s'}'\"/>\n </h:selectOneMenu>\n",
-        "<h:outputText value=\"{0}:\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\">\n <f:selectItems value=\"#'{'{4}.{4}sAvailableSelectOne'}'\"/>\n </h:selectOneMenu>\n",
-        //use date time converter
-        "<h:outputText value=\"{0} ({4}):\"/>\n <h:inputText id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" >\n <f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:inputText>\n",
-        //relationship *ToOne - use combo box, in FORM_TYPE_NEW display only if not pre set
-        "<h:outputText value=\"{0}:\" rendered=\"#'{'{1}.{2} == null}\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" rendered=\"#'{'{1}.{2} == null}\">\n <f:selectItems value=\"#'{'{4}.{4}sAvailableSelectOne'}'\"/>\n </h:selectOneMenu>\n",
-//        "<h:outputText value=\"{0}:\"/>\n <h:commandLink action=\"#'{'{2}.detailSetupFrom{3}Detail}\" value=\"#'{'{1}.{2}}\" />\n",
-        "<h:outputText value=\"{0}:\"/>\n" +
-                "<h:panelGroup>\n" + 
-                "<h:outputText value=\"#'{'{1}.{2}'}'\"/>\n" +
-                "<h:panelGroup rendered=\"#'{'{1}.{2} != null'}'\">\n" +
-                "<h:outputText value=\" (\"/>\n" +
-                "<h:commandLink value=\"Show\" action=\"#'{'{4}.detailSetup'}'\">\n" +
-                "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
-                "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
-                "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
-                "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}Controller\"/>\n" +
-                "</h:commandLink>\n" +
-                "<h:outputText value=\" \"/>\n" +
-                "<h:commandLink value=\"Edit\" action=\"#'{'{4}.editSetup'}'\">\n" +
-                "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
-                "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
-                "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
-                "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}Controller\"/>\n" +
-                "</h:commandLink>\n" +
-                "<h:outputText value=\" \"/>\n" +
-                "<h:commandLink value=\"Destroy\" action=\"#'{'{4}.destroy'}'\">\n" +
-                "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
-                "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
-                "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
-                "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}Controller\"/>\n" +
-                "</h:commandLink>\n" +
-                "<h:outputText value=\" )\"/>\n" +
-                "</h:panelGroup>\n" +
-                "</h:panelGroup>\n",
-        //relationship *ToMany - use listbox
-        "<h:outputText value=\"{0}:\"/>\n <h:selectManyListbox id=\"{2}\" value=\"#'{'{3}.{2}Of{1}'}'\" title=\"{0}\" size=\"6\">\n <f:selectItems value=\"#'{'{4}.{4}sAvailableSelectMany'}'\"/>\n </h:selectManyListbox>\n"
     };
     
     private String variable = "";
@@ -254,17 +210,7 @@ public final class JsfForm implements ActiveEditorDrop {
             persistenceAnnotation = findAnnotation(possiblyAnnotatedElement, "javax.persistence.ManyToMany");  //NOI18N"
         }
         if (persistenceAnnotation != null) {
-            Map<? extends ExecutableElement,? extends AnnotationValue> persistenceAnnotationMap = persistenceAnnotation.getElementValues();
-            for (ExecutableElement key : persistenceAnnotationMap.keySet()) {
-                if ("mappedBy".equals(key.getSimpleName().toString())) {
-                    AnnotationValue mappedByValue = persistenceAnnotationMap.get(key);
-                    mappedBy = mappedByValue.toString();
-                    if (mappedBy.startsWith("\"") && mappedBy.endsWith("\"")) {
-                        mappedBy = mappedBy.substring(1, mappedBy.length() - 1);
-                    }
-                    break;
-                }
-            }
+            mappedBy = findAnnotationValueAsString(persistenceAnnotation, "mappedBy");  //NOI18N
         }
         for (ExecutableElement method : getEntityMethods(passedReturnTypeStrippedElement)) {
             if (mappedBy != null && mappedBy.length() > 0) {
@@ -284,6 +230,22 @@ public final class JsfForm implements ActiveEditorDrop {
             }
         }
         return null;
+    }
+    
+    public static String findAnnotationValueAsString(AnnotationMirror annotation, String annotationKey) {
+        String value = null;
+        Map<? extends ExecutableElement,? extends AnnotationValue> annotationMap = annotation.getElementValues();
+        for (ExecutableElement key : annotationMap.keySet()) {
+            if (annotationKey.equals(key.getSimpleName().toString())) {
+                AnnotationValue annotationValue = annotationMap.get(key);
+                value = annotationValue.toString();
+                if (value.startsWith("\"") && value.endsWith("\"")) {
+                    value = value.substring(1, value.length() - 1);
+                }
+                break;
+            }
+        }
+        return value;
     }
     
     public static TypeMirror stripCollection(TypeMirror passedType, Types types) {
@@ -357,8 +319,7 @@ public final class JsfForm implements ActiveEditorDrop {
                 if (attributes.iterator().hasNext()) {
                     AnnotationValue annotationValue = attributes.iterator().next();
                     if (annotationValue != null) {
-                        //TODO: RETOUCHE annotation attribute value
-                        return null;//annotationValue.getValue();
+                        return annotationValue.getValue().toString();
                     }
                 }
             }
@@ -493,33 +454,84 @@ public final class JsfForm implements ActiveEditorDrop {
                 }
                 String simpleRelType = JSFClientGenerator.simpleClassName(relType); //just "Pavilion"
                 String relatedController = JSFClientGenerator.fieldFromClassName(simpleRelType);
-                if (formType == FORM_TYPE_NEW && 
-                        ((isId(controller, method, fieldAccess) && isGenerated(controller, method, fieldAccess)) || 
-                        isReadOnly(controller.getTypes(), method))) {
-                    //skip if in create form if it is generated
-                } else if (formType == FORM_TYPE_EDIT && (isId(controller, method, fieldAccess) || isReadOnly(controller.getTypes(), method))) {
-                    //make id non editable
-                    stringBuffer.append(MessageFormat.format(ITEM [FORM_TYPE_DETAIL], new Object [] {name, variable, propName}));
-                } else if ((formType == FORM_TYPE_NEW || formType == FORM_TYPE_EDIT) && controller.getTypes().isSameType(dateTypeMirror, method.getReturnType())) {
-                    String temporal = getTemporal(controller, method, fieldAccess);
-                    if (temporal == null) {
-                        stringBuffer.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName}));
-                    } else {
-                        //param 3 - temporal, param 4 - date/time format
-                        stringBuffer.append(MessageFormat.format(ITEM [5], new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal)}));
-                    }
+                
+                boolean joinColumnNullable = true;
+                Element joinColumnElement = fieldAccess ? guessField(controller, method) : method;
+                AnnotationMirror joinColumnAnnotation = findAnnotation(joinColumnElement, "javax.persistence.JoinColumn"); //NOI18N
+                if (joinColumnAnnotation != null) {
+                    String joinColumnNullableValue = findAnnotationValueAsString(joinColumnAnnotation, "nullable"); //NOI18N
+                    joinColumnNullable = Boolean.parseBoolean(joinColumnNullableValue);
+                }
+                String requiredMessage = joinColumnNullable ? null : "The " + propName + " field is required.";
+                
+                if ( (formType == FORM_TYPE_NEW && 
+                        ( isId(controller, method, fieldAccess) && 
+                                isGenerated(controller, method, fieldAccess) ) ) || 
+                        formType == FORM_TYPE_EMPTY ) {
+                    //skip if formType is new and field is generated (or if formType is "empty")
                 } else if (formType == FORM_TYPE_DETAIL && isRelationship == REL_TO_ONE) {
-                    stringBuffer.append(MessageFormat.format(ITEM [7], new Object [] {name, variable, propName, simpleEntityName, relatedController, simpleRelType, variable.substring(0, variable.lastIndexOf('.')), entityClass}));
-                } else if (isRelationship == REL_NONE) {
-                    //normal field (input or output text)
-                    stringBuffer.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName}));
-                } else if (isRelationship == REL_TO_ONE) {
+                    String template = "<h:outputText value=\"{0}:\"/>\n" +
+                        "<h:panelGroup>\n" + 
+                        "<h:outputText value=\"#'{'{1}.{2}'}'\"/>\n" +
+                        "<h:panelGroup rendered=\"#'{'{1}.{2} != null'}'\">\n" +
+                        "<h:outputText value=\" (\"/>\n" +
+                        "<h:commandLink value=\"Show\" action=\"#'{'{4}.detailSetup'}'\">\n" +
+                        "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
+                        "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
+                        "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
+                        "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}Controller\"/>\n" +
+                        "</h:commandLink>\n" +
+                        "<h:outputText value=\" \"/>\n" +
+                        "<h:commandLink value=\"Edit\" action=\"#'{'{4}.editSetup'}'\">\n" +
+                        "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
+                        "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
+                        "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
+                        "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}Controller\"/>\n" +
+                        "</h:commandLink>\n" +
+                        "<h:outputText value=\" \"/>\n" +
+                        "<h:commandLink value=\"Destroy\" action=\"#'{'{4}.destroy'}'\">\n" +
+                        "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
+                        "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
+                        "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
+                        "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}Controller\"/>\n" +
+                        "</h:commandLink>\n" +
+                        "<h:outputText value=\" )\"/>\n" +
+                        "</h:panelGroup>\n" +
+                        "</h:panelGroup>\n";
+                    Object[] args = new Object [] {name, variable, propName, simpleEntityName, relatedController, simpleRelType, variable.substring(0, variable.lastIndexOf('.')), entityClass};
+                    stringBuffer.append(MessageFormat.format(template, args));
+                } else if ( (formType == FORM_TYPE_DETAIL && isRelationship == REL_NONE) || 
+                        ( formType == FORM_TYPE_EDIT && (isId(controller, method, fieldAccess) || isReadOnly(controller.getTypes(), method)) ) || 
+                        (formType == FORM_TYPE_NEW && isReadOnly(controller.getTypes(), method)) ) {
+                    //non editable
+                    String temporal = ( isRelationship == REL_NONE && controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ) ? getTemporal(controller, method, fieldAccess) : null;
+                    String template = "<h:outputText value=\"{0}:\"/>\n <h:outputText value=\"#'{'{1}.{2}}\" title=\"{0}\" ";
+                    template += temporal == null ? "/>\n" : ">\n<f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:outputText>\n";
+                    Object[] args = temporal == null ? new Object [] {name, variable, propName} : new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal)};
+                    stringBuffer.append(MessageFormat.format(template, args));
+                } else if ( isRelationship == REL_NONE && (formType == FORM_TYPE_NEW || formType == FORM_TYPE_EDIT) ) {
+                    //editable
+                    String temporal = controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ? getTemporal(controller, method, fieldAccess) : null;
+                    String template = temporal == null ? "<h:outputText value=\"{0}:\"/>\n" : "<h:outputText value=\"{0} ({4}):\"/>\n";
+                    template += "<h:inputText id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" ";
+                    template += requiredMessage == null ? "" : "required=\"true\" requiredMessage=\"{5}\" ";
+                    template += temporal == null ? "/>\n" : ">\n<f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:inputText>\n";
+                    Object[] args = temporal == null ? new Object [] {name, variable, propName, null, null, requiredMessage} : new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal), requiredMessage};
+                    stringBuffer.append(MessageFormat.format(template, args));
+                } else if ( isRelationship == REL_TO_ONE && (formType == FORM_TYPE_EDIT || formType == FORM_TYPE_NEW) ) {
                     //combo box for editing toOne relationships
-//                    stringBuffer.append(MessageFormat.format(formType == FORM_TYPE_EDIT ? ITEM [4] : ITEM[6]/* FORM_TYPE_NEW */, new Object [] {name, variable, propName, variable.substring(0, variable.lastIndexOf('.')), relatedController}));
-                    stringBuffer.append(MessageFormat.format(ITEM [4], new Object [] {name, variable, propName, variable.substring(0, variable.lastIndexOf('.')), relatedController}));
-                } else if (formType != FORM_TYPE_DETAIL && isRelationship == REL_TO_MANY) {
+                    String template = "<h:outputText value=\"{0}:\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" ";
+                    template += requiredMessage == null ? "" : "required=\"true\" requiredMessage=\"{3}\" ";
+                    template += ">\n <f:selectItems value=\"#'{'{4}.{4}sAvailableSelectOne'}'\"/>\n </h:selectOneMenu>\n";
+                    Object[] args = new Object [] {name, variable, propName, requiredMessage, relatedController};
+                    stringBuffer.append(MessageFormat.format(template, args));
+                } else if ( isRelationship == REL_TO_MANY && (formType == FORM_TYPE_EDIT || formType == FORM_TYPE_NEW) ) {
                     //listbox for editing toMany relationships
-                    stringBuffer.append(MessageFormat.format(ITEM [8], new Object [] {name, simpleEntityName, propName, variable.substring(0, variable.lastIndexOf('.')), relatedController}));
+                    String template = "<h:outputText value=\"{0}:\"/>\n <h:selectManyListbox id=\"{2}\" value=\"#'{'{3}.{2}Of{1}'}'\" title=\"{0}\" size=\"6\" ";
+                    template += requiredMessage == null ? "" : "required=\"true\" requiredMessage=\"{5}\" ";
+                    template += ">\n <f:selectItems value=\"#'{'{4}.{4}sAvailableSelectMany'}'\"/>\n </h:selectManyListbox>\n";
+                    Object[] args = new Object [] {name, simpleEntityName, propName, variable.substring(0, variable.lastIndexOf('.')), relatedController, requiredMessage};
+                    stringBuffer.append(MessageFormat.format(template, args));
                 }
             }
         }
@@ -595,22 +607,6 @@ public final class JsfForm implements ActiveEditorDrop {
                             JsfTable.createTable(controller, typeElement, variable + "." + propName, stringBuffer, commands, "detailSetup");
                             stringBuffer.append("</h:dataTable>\n");
                             stringBuffer.append("</h:panelGroup>\n");
-
-//                            String availableItems = JSFClientGenerator.getPropNameFromMethod(methodName + "Available");
-//                            stringBuffer.append("<h:panelGroup rendered=\"#{not empty " + managedBean + "." + availableItems + "}\">");
-//                            stringBuffer.append("<br />\n<b>Add " + relatedClass + "s:</b>\n<br />\n");
-//                            String itemsToAdd = JSFClientGenerator.getPropNameFromMethod(methodName + "ToAdd");
-//                            stringBuffer.append("<h:selectManyListbox id=\"add" + relatedClass + "s\" value=\"#{" 
-//                                    + managedBean + "." + itemsToAdd + "}\" title=\"Add " + name + ":\">\n");
-//                            stringBuffer.append("<f:selectItems value=\"#{" + managedBean + "." + availableItems + "}\"/>\n");
-//                            stringBuffer.append("</h:selectManyListbox>\n");
-//                            String addItems = "add" + methodName.substring(3);
-//                            stringBuffer.append("<h:commandButton value=\"Add\" action=\"#{" + managedBean + "." + addItems + "}\"/>\n <br>\n");
-//                            stringBuffer.append("</h:panelGroup>\n");
-
-//                            stringBuffer.append("<br />\n<h:commandLink value=\"Add New " + typeElement.getSimpleName() + "\" action=\"#{" + relatedManagedBean + ".createFrom" + detailManagedBean + "Setup}\">\n");
-//                            stringBuffer.append("<f:param name=\"relatedId\" value=\"#{" + variable + "." + idProperty + "}\"/>\n");
-//                            stringBuffer.append("</h:commandLink>\n<br />\n");
                         } else {
                             Logger.getLogger("global").log(Level.INFO, "cannot find referenced class: " + method.getReturnType()); // NOI18N
                         }
@@ -665,7 +661,7 @@ public final class JsfForm implements ActiveEditorDrop {
         return findAnnotation(element, annotationFqn) != null;
     }
     
-    private static AnnotationMirror findAnnotation(Element element, String annotationFqn) {
+    public static AnnotationMirror findAnnotation(Element element, String annotationFqn) {
         for (AnnotationMirror annotationMirror : element.getAnnotationMirrors()) {
             DeclaredType annotationDeclaredType = annotationMirror.getAnnotationType();
             TypeElement annotationTypeElement = (TypeElement) annotationDeclaredType.asElement();

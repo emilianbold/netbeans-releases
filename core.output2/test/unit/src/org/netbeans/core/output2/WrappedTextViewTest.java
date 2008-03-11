@@ -57,6 +57,7 @@ import javax.swing.text.View;
 import junit.framework.TestCase;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
 import org.netbeans.core.output2.ui.AbstractOutputTab;
+import org.openide.util.Utilities;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -133,9 +134,9 @@ public class WrappedTextViewTest extends TestCase {
     }
     
     /**
-     * tests if caret position is computed correctly correctly (see issue #122492)
+     * tests if caret position is computed correctly (see issue #122492)
      */
-    public void testViewToModel() throws InterruptedException {
+    public void testViewToModel() {
         Graphics g = win.getSelectedTab().getOutputPane().getGraphics();
         FontMetrics fm = g.getFontMetrics(win.getSelectedTab().getOutputPane().getTextView().getFont());
         int charWidth = fm.charWidth('m');
@@ -144,7 +145,8 @@ public class WrappedTextViewTest extends TestCase {
         float x = charWidth * 50;
         float y = charHeight * 1 + fontDescent;
         int charPos = win.getSelectedTab().getOutputPane().getTextView().getUI().getRootView(null).viewToModel(x, y, new Rectangle(), new Position.Bias[]{});
-        assertTrue("viewToModel returned wrong value (it would result in bad caret position)!", charPos == 45);
+        int expCharPos = (Utilities.getOperatingSystem() & Utilities.OS_WINDOWS_MASK) != 0 ? 45 : 43;
+        assertTrue("viewToModel returned wrong value (it would result in bad caret position)!", charPos == expCharPos);
     }
     
     public void testModelToView() throws Exception {

@@ -43,11 +43,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
-import org.netbeans.modules.websvc.saas.model.jaxb.Method.Input;
-import org.netbeans.modules.websvc.saas.model.jaxb.Method.Output;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
-import org.netbeans.modules.websvc.saas.model.wadl.Resources;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.util.Exceptions;
 
@@ -73,7 +70,12 @@ public class WadlSaasMethod extends SaasMethod {
     @Override
     public String getName() {
         if (getMethod() == null) {
-            return wadlMethod.getId();
+            if (wadlMethod.getId() != null) {
+                return wadlMethod.getId();
+            } else {
+                String mimes = wadlMethod.getResponse().getParam().toString();
+                return wadlMethod.getName() + " : " + mimes;
+            }
         }
         return super.getName();
     }
@@ -88,21 +90,30 @@ public class WadlSaasMethod extends SaasMethod {
     }
     
     public Resource[] getResourcePath() {
+        Application wadl = null;
+        try {
+            wadl = getSaas().getWadlModel();
+        } catch(IOException e) {
+            Exceptions.printStackTrace(e);
+            return new Resource[0];
+        }
+        
         if (path == null || path.length == 0) {
-            ArrayList<Resource> result = new ArrayList<Resource>();
-            try {
-                Application app = this.getSaas().getWadlModel();
-                Resources rs = app.getResources();
-                for (Resource r : rs.getResource()) {
-                    findPathToMethod(r, result);
+            List<Resource> result = new ArrayList<Resource>();
+            if (super.getMethod() == null) {
+                WadlSaasResource current = getParentResource();
+                while (current != null) {
+                    result.add(0, current.getResource());
+                    current = current.getParent();
                 }
-            } catch (IOException ex) {
+            } else {
+                for (Resource r : wadl.getResources().getResource()) {
+                    findPathToMethod(r, result);
+                    if (r.getMethodOrResource().contains(getWadlMethod())) {
+                        break;
+                    }
+                }
             }
-//            WadlSaasResource current = getParentResource();
-//            while (current != null) {
-//                result.add(0, current.getResource());
-//                current = current.getParent();
-//            }
             path = result.toArray(new Resource[result.size()]);
         }
         return path;

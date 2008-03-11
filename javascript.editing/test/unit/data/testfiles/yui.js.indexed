@@ -1,0 +1,25 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/yui.js
+
+
+
+Document 1
+Indexed:
+  base : calendar2up;YAHOO.widget;Calendar2up|DOCUMENTED|CONSTRUCTOR|STATIC|;id,containerId,config;0;3a;;;
+  base : calendarnavigator;YAHOO.widget;CalendarNavigator|CONSTRUCTOR|STATIC|;cal;0;;;;
+  base : event;YAHOO.util;Event|DOCUMENTED|CONSTRUCTOR|STATIC|;;0;217;;;
+  base : onavailable;YAHOO.util.Event;onAvailable|FUNCTION|p_id,p_fn,p_obj,p_override,checkContent;0;;;;
+  base : poll_retrys;YAHOO.util.Event;POLL_RETRYS|PROPERTY|;0;;;;
+  clz : Calendar2up;99;id,containerId,config;0;3a;;;
+  clz : CalendarNavigator;98;cal;0;;;;
+  clz : Event;99;;0;217;;;
+  extend : yahoo.widget.calendar2up;YAHOO.widget.Calendar2up;YAHOO.widget.CalendarGroup
+  fqn : yahoo.util.event.onavailable;;YAHOO.util.Event.onAvailable|FUNCTION|p_id,p_fn,p_obj,p_override,checkContent;0;;;;
+  fqn : yahoo.util.event.poll_retrys;;YAHOO.util.Event.POLL_RETRYS|PROPERTY|;0;;;;
+  fqn : yahoo.util.event;;YAHOO.util.Event|DOCUMENTED|CONSTRUCTOR|STATIC|;;0;217;;;
+  fqn : yahoo.widget.calendar2up;;YAHOO.widget.Calendar2up|DOCUMENTED|CONSTRUCTOR|STATIC|;id,containerId,config;0;3a;;;
+  fqn : yahoo.widget.calendarnavigator;;YAHOO.widget.CalendarNavigator|CONSTRUCTOR|STATIC|;cal;0;;;;
+
+Not Indexed:

@@ -100,16 +100,43 @@ public final class CodeStyle {
     }
     
 
-    public int getGlobalIndentSize() {
-        return EditorOptions.getGlobalIndentSize(language);
+    // General indents ------------------------------------------------
+    
+    public int indentSize() {
+        return getOption(EditorOptions.indentSize,
+                         EditorOptions.indentSizeDefault);
+    }
+
+    public int getFormatStatementContinuationIndent() {
+        return getOption(EditorOptions.statementContinuationIndent,
+                         EditorOptions.statementContinuationIndentDefault);
+    }
+
+    public PreprocessorIndent indentPreprocessorDirectives(){
+        return PreprocessorIndent.valueOf(getOption(EditorOptions.indentPreprocessorDirectives,
+                                      EditorOptions.indentPreprocessorDirectivesDefault));
+    }
+    
+    public boolean indentNamespace() {
+        return getOption(EditorOptions.indentNamespace,
+                         EditorOptions.indentNamespaceDefault);
+    }
+
+    public boolean indentCasesFromSwitch() {
+        return getOption(EditorOptions.indentCasesFromSwitch,
+                         EditorOptions.indentCasesFromSwitchDefault);
+    }
+
+    public boolean sharpAtStartLine(){
+        return getOption(EditorOptions.sharpAtStartLine,
+                         EditorOptions.sharpAtStartLineDefault);
     }
 
     public int getGlobalTabSize() {
         return EditorOptions.getGlobalTabSize(language);
     }
 
-    
-    // General tabs and indents ------------------------------------------------
+    // indents ------------------------------------------------
     public boolean spaceBeforeMethodDeclParen() {
         return getOption(EditorOptions.spaceBeforeMethodDeclParen,
                          EditorOptions.spaceBeforeMethodDeclParenDefault);
@@ -159,21 +186,6 @@ public final class CodeStyle {
                                       EditorOptions.newLineBeforeBraceDefault));
     }
 
-
-    public PreprocessorIndent indentPreprocessorDirectives(){
-        return PreprocessorIndent.valueOf(getOption(EditorOptions.indentPreprocessorDirectives,
-                                      EditorOptions.indentPreprocessorDirectivesDefault));
-    }
-    
-    public boolean indentCasesFromSwitch() {
-        return getOption(EditorOptions.indentCasesFromSwitch,
-                         EditorOptions.indentCasesFromSwitchDefault);
-    }
-
-    public boolean sharpAtStartLine(){
-        return getOption(EditorOptions.sharpAtStartLine,
-                         EditorOptions.sharpAtStartLineDefault);
-    }
        //NewLine
     public boolean newLineCatch(){
         return getOption(EditorOptions.newLineCatch,
@@ -191,11 +203,6 @@ public final class CodeStyle {
     public boolean getFormatLeadingStarInComment() {
         return getOption(EditorOptions.addLeadingStarInComment,
                          EditorOptions.addLeadingStarInCommentDefault);
-    }
-
-    public int getFormatStatementContinuationIndent() {
-        return getOption(EditorOptions.statementContinuationIndent,
-                         EditorOptions.statementContinuationIndentDefault);
     }
 
     public boolean alignMultilineCallArgs() {
@@ -360,20 +367,48 @@ public final class CodeStyle {
         return getOption(EditorOptions.spaceWithinBraces,
                          EditorOptions.spaceWithinBracesDefault);
     }
-    public boolean spaceWithinArrayInitBrackets(){
-        return getOption(EditorOptions.spaceWithinArrayInitBrackets,
-                         EditorOptions.spaceWithinArrayInitBracketsDefault);
+
+    public int blankLinesBeforeClass(){
+        return getOption(EditorOptions.blankLinesBeforeClass,
+                         EditorOptions.blankLinesBeforeClassDefault);
     }
-    
+//    public int blankLinesAfterClass(){
+//        return getOption(EditorOptions.blankLinesAfterClass,
+//                         EditorOptions.blankLinesAfterClassDefault);
+//    }
+    public int blankLinesAfterClassHeader(){
+        return getOption(EditorOptions.blankLinesAfterClassHeader,
+                         EditorOptions.blankLinesAfterClassHeaderDefault);
+    }
+//    public int blankLinesBeforeFields(){
+//        return getOption(EditorOptions.blankLinesBeforeFields,
+//                         EditorOptions.blankLinesBeforeFieldsDefault);
+//    }
+//    public int blankLinesAfterFields(){
+//        return getOption(EditorOptions.blankLinesAfterFields,
+//                         EditorOptions.blankLinesAfterFieldsDefault);
+//    }
+    public int blankLinesBeforeMethods(){
+        return getOption(EditorOptions.blankLinesBeforeMethods,
+                         EditorOptions.blankLinesBeforeMethodsDefault);
+    }
+//    public int blankLinesAfterMethods(){
+//        return getOption(EditorOptions.blankLinesAfterMethods,
+//                         EditorOptions.blankLinesAfterMethodsDefault);
+//    }
+
     private boolean getOption(String key, boolean defaultValue) {
+        defaultValue = (Boolean)EditorOptions.getDefault(language, EditorOptions.getCurrentProfileId(language), key);
         return getPreferences().getBoolean(key, defaultValue);
     }
 
     private int getOption(String key, int defaultValue) {
+        defaultValue = (Integer)EditorOptions.getDefault(language, EditorOptions.getCurrentProfileId(language), key);
         return getPreferences().getInt(key, defaultValue);
     }
 
     private String getOption(String key, String defaultValue) {
+        defaultValue = (String)EditorOptions.getDefault(language, EditorOptions.getCurrentProfileId(language), key);
         return getPreferences().get(key, defaultValue);
     }
 

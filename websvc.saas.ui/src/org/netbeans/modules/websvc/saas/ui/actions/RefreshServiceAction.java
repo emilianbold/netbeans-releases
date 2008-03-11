@@ -49,7 +49,7 @@ public class RefreshServiceAction extends NodeAction {
         if (nodes == null || nodes.length != 1) {
             return false;
         }
-        WsdlSaas saas = nodes[0].getLookup().lookup(WsdlSaas.class);
+        Saas saas = nodes[0].getLookup().lookup(Saas.class);
         return saas != null && saas.getState() != Saas.State.INITIALIZING;
     }
 
@@ -71,7 +71,7 @@ public class RefreshServiceAction extends NodeAction {
             return;
         }
         
-        final WsdlSaas saas = nodes[0].getLookup().lookup(WsdlSaas.class);
+        final Saas saas = nodes[0].getLookup().lookup(Saas.class);
         if (saas == null || saas.getUrl() == null) {
             throw new IllegalArgumentException("Node has no aasociated good Saas");
         }

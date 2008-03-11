@@ -111,6 +111,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -633,6 +634,7 @@ public class Installer extends ModuleInstall implements Runnable {
         conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=--------konec<>bloku");
         conn.setRequestProperty("Pragma", "no-cache");
         conn.setRequestProperty("Cache-control", "no-cache");
+        conn.setRequestProperty("User-Agent", "NetBeans");
         
         h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadSending"), 60);
         LOG.log(Level.FINE, "uploadLogs, header sent"); // NOI18N
@@ -841,7 +843,7 @@ public class Installer extends ModuleInstall implements Runnable {
             }
             
             LOG.log(Level.FINE, "doShow, dialog has been created"); // NOI18N
-
+            boolean firstRound = true;
             for (;;) {
                 try {
                     if (url == null) {
@@ -850,6 +852,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     
                     LOG.log(Level.FINE, "doShow, reading from = {0}", url);
                     URLConnection conn = url.openConnection();
+                    conn.setRequestProperty("User-Agent", "NetBeans");
                     conn.setConnectTimeout(5000);
                     File tmp = File.createTempFile("uigesture", ".html");
                     tmp.deleteOnExit();
@@ -881,7 +884,13 @@ public class Installer extends ModuleInstall implements Runnable {
                     catchConnectionProblem(ex);
                     continue;
                 } catch (IOException ex) {
-                    LOG.log(Level.WARNING, url.toExternalForm(), ex);
+                    if (firstRound){
+                        catchConnectionProblem(ex);
+                        firstRound = false;
+                        continue;
+                    }else{// preventing from deadlock while reading error page
+                        LOG.log(Level.WARNING, url.toExternalForm(), ex);
+                    }
                 }
                 LOG.log(Level.FINE, "doShow, assignInternalURL = {0}", url);
                 assignInternalURL(url);
@@ -1075,6 +1084,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     char[] array = new char[100];
                     URL url = new URL(NbBundle.getMessage(Installer.class, "CHECKING_SERVER_URL", login, passwd));
                     URLConnection connection = url.openConnection();
+                    connection.setRequestProperty("User-Agent", "NetBeans");
                     Reader reader = new InputStreamReader(connection.getInputStream());
                     int length = reader.read(array);
                     checkingResult = new Boolean(new String(array, 0, length));
@@ -1122,6 +1132,10 @@ public class Installer extends ModuleInstall implements Runnable {
             saveUserName();
             params.add(settings.getUserName());
             addMoreLogs(params, openPasswd);
+            List<String> buildInfo = BuildInfo.logBuildInfo();
+                if (buildInfo != null) {
+                    params.addAll(buildInfo);
+                }
             userData = new LogRecord(Level.CONFIG, USER_CONFIGURATION);
             userData.setResourceBundle(NbBundle.getBundle(Installer.class));
             userData.setResourceBundleName(Installer.class.getPackage().getName()+".Bundle");

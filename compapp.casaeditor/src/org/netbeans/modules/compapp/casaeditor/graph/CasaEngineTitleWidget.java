@@ -62,6 +62,7 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.EditablePropertiesAction;
+import org.netbeans.modules.compapp.casaeditor.nodes.ServiceUnitNode;
 import org.openide.util.Utilities;
 
 /**
@@ -69,6 +70,9 @@ import org.openide.util.Utilities;
  * @author Josh Sandusky
  */
 public class CasaEngineTitleWidget extends Widget implements CasaMinimizable {
+    
+    private static final Image DEFAULT_ICON = Utilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/nodes/resources/ServiceUnitNode.png");     // NOI18N
     
     private static final int   TITLE_GAP          = 3;
     
@@ -90,6 +94,7 @@ public class CasaEngineTitleWidget extends Widget implements CasaMinimizable {
     
     private ImageWidget configureWidget;
     private ImageWidget minimizeWidget;
+    private ImageWidget mProjectIconImageWidget;
     private LabelWidget mNameWidget;
     private LabelWidget typeWidget;
     
@@ -126,6 +131,10 @@ public class CasaEngineTitleWidget extends Widget implements CasaMinimizable {
 
         configureWidget = new ImageWidget(scene);
         mTitleWidget.addChild(configureWidget);
+        
+        mProjectIconImageWidget = new ImageWidget(scene);
+        mProjectIconImageWidget.setImage(DEFAULT_ICON);
+        mTitleWidget.addChild(mProjectIconImageWidget);
         
         mNameWidget = new LabelWidget(scene);
         mNameWidget.setFont(scene.getDefaultFont().deriveFont(Font.BOLD));
@@ -173,6 +182,15 @@ public class CasaEngineTitleWidget extends Widget implements CasaMinimizable {
             
     public void setLabel(String label) {
         mNameWidget.setLabel(label);
+    }
+    
+    public void setComponentName(String compName) {
+        Image image = ServiceUnitNode.getProjectIconImage(compName);
+        mProjectIconImageWidget.setImage(image);
+    }
+        
+    public void setIcon(Image image) {
+        mProjectIconImageWidget.setImage(image);
     }
     
     public boolean getConfigurationStatus(){

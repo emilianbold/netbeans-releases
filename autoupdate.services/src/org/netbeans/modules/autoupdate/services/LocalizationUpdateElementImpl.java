@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -69,7 +69,7 @@ public class LocalizationUpdateElementImpl extends UpdateElementImpl {
     public LocalizationUpdateElementImpl (LocalizationItem item, String providerName) {
         super (item, providerName);
         codeName = item.getCodeName ();
-        specVersion = new SpecificationVersion (item.getSpecificationVersion ());
+        specVersion = item.getSpecificationVersion () == null ? null : new SpecificationVersion (item.getSpecificationVersion ());
         source = providerName;
         installInfo = new InstallInfo (item);
         displayName = item.getLocalizedModuleName ();
@@ -159,6 +159,7 @@ public class LocalizationUpdateElementImpl extends UpdateElementImpl {
         return false;
     }
     
+    @Override
     public boolean equals(Object obj) {
         if (obj == null)
             return false;
@@ -176,6 +177,7 @@ public class LocalizationUpdateElementImpl extends UpdateElementImpl {
         return true;
     }
 
+    @Override
     public int hashCode() {
         int hash = 5;
 

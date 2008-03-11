@@ -138,24 +138,19 @@ final class Tree extends JTree {
     addElement(node, element, parents);
   }
 
-  void finished(String text, int count) {
-    myText = i18n(Tree.class, "LBL_Search_Tab", text); // NOI18N
-
-    String title = i18n(
-      Tree.class, "LBL_Found_Occurrences", text, "" + count); // NOI18N
+  void finished(String target, String text, int count) {
+    myText = i18n(Tree.class, "LBL_Search_Tab", target, text); // NOI18N
+    String title = i18n(Tree.class, "LBL_Found", target, text, "" + count); // NOI18N
+    String catchword = i18n(Tree.class, "LBL_Catchword", target, text, "" + count); // NOI18N
 
     myRoot.setUserObject(new SearchElement.Adapter(
       title, title, icon(Util.class, "find"), null)); // NOI18N
 
+    // vlv: print
+    putClientProperty(java.awt.print.Printable.class, catchword);
+
     createOccurences();
     updateRoot();
-
-    // vlv: print
-    putClientProperty(java.awt.print.Printable.class, getRootName());
-  }
-
-  private String getRootName() {
-    return i18n(Tree.class, "LBL_Tree_Name", myRoot.toString()); // NOI18N
   }
 
   @Override

@@ -56,6 +56,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Type;
@@ -85,6 +86,7 @@ import javax.swing.text.Document;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
@@ -136,14 +138,17 @@ public final class GeneratorUtilities {
                 sp = copy.getTrees().getSourcePositions();
             }
         } catch (IOException ioe) {}
+        TreeUtilities utils = copy.getTreeUtilities();
+        CompilationUnitTree compilationUnit = copy.getCompilationUnit();
         Tree lastMember = null;
         for (Tree tree : clazz.getMembers()) {
-            if (ClassMemberComparator.compare(member, tree) < 0) {
+            TreePath path = TreePath.getPath(compilationUnit, tree);
+            if ((path == null || !utils.isSynthetic(path)) && ClassMemberComparator.compare(member, tree) < 0) {
                 if (gdoc == null)
                     break;
-                int pos = (int)(lastMember != null ? sp.getEndPosition(copy.getCompilationUnit(), lastMember) : sp.getStartPosition(copy.getCompilationUnit(), clazz));
+                int pos = (int)(lastMember != null ? sp.getEndPosition(compilationUnit, lastMember) : sp.getStartPosition( compilationUnit,clazz));
                 pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
-                if (pos <= sp.getStartPosition(copy.getCompilationUnit(), tree))
+                if (pos <= sp.getStartPosition(compilationUnit, tree))
                     break;
             }
             idx++;

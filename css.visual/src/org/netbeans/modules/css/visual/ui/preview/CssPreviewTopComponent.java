@@ -45,6 +45,7 @@ import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.logging.Level;
@@ -305,12 +306,9 @@ public final class CssPreviewTopComponent extends TopComponent {
         try {
             //resolve relative URL base for the preview component
             String relativeURL = null;
-            FileObject source = content.fileObject();
+            File source = content.base();
             if (source != null) {
-                if (!source.isFolder()) {
-                    source = source.getParent();
-                }
-                relativeURL = source.getURL().toExternalForm();
+                relativeURL = source.toURL().toExternalForm();
             }
 
             LOGGER.log(Level.FINE, "preview - setting content " + htmlCode); //NOI18N
