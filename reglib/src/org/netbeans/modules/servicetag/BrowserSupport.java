@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package com.sun.servicetag;
+package org.netbeans.modules.servicetag;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
