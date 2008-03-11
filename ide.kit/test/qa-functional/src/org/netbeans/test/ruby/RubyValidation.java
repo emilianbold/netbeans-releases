@@ -80,7 +80,8 @@ public class RubyValidation extends JellyTestCase {
         suite.addTest(new RubyValidation("testRunRubyFile"));
         suite.addTest(new RubyValidation("testCreateRailsProject"));
         suite.addTest(new RubyValidation("testRailsGenerate"));
-        suite.addTest(new RubyValidation("testIrbShell"));
+        // disabled until 129751 is fixed
+        //suite.addTest(new RubyValidation("testIrbShell"));
         return suite;
     }
     
