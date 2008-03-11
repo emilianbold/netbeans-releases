@@ -60,7 +60,8 @@ import org.openide.util.Utilities;
 /**
  * @author Tomas Mysik
  */
-public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel,
+        SourcesPanelVisual.WebFolderNameProvider {
 
     static final String PROJECT_NAME = "projectName"; // NOI18N
     static final String PROJECT_DIR = "projectDir"; // NOI18N
@@ -189,6 +190,11 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
 
     public boolean isFinishPanel() {
         return true;
+    }
+
+    public String getWebFolderName() {
+        getComponent();
+        return locationPanelVisual.getProjectName();
     }
 
     final void fireChangeEvent() {

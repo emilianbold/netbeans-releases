@@ -72,7 +72,7 @@ class ConfigureProjectPanelVisual extends JPanel {
         locationContainer.add(BorderLayout.NORTH, locationPanelVisual);
 
         // sources
-        sourcesPanelVisual = new SourcesPanelVisual();
+        sourcesPanelVisual = new SourcesPanelVisual(wizardPanel);
         sourcesContainer.add(BorderLayout.NORTH, sourcesPanelVisual);
 
         // options
