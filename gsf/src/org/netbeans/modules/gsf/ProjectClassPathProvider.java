@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.ruby.rubyproject;
+package org.netbeans.modules.gsf;
 
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
