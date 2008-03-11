@@ -156,7 +156,7 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
         Project project = FileOwnerQuery.getOwner(dir);
         panel2 = new IEPWizardPanel2(project);
         panel2EmptyIEPFile = new IEPWizardPanel2EmptyIEPFile(wizard);
-        panel3 = new IEPWizardPanel3();
+        panel3 = new IEPWizardPanel3(project);
         
         Object prop = wizard.getProperty("WizardPanel_contentData");
         if (prop != null && prop instanceof String[]) {

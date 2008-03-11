@@ -101,6 +101,11 @@ public class SaasGroup {
         return Collections.unmodifiableList(new ArrayList<Saas>(services.values()));
     }
 
+    public Saas getChildService(String name) {
+        getServices();
+        return services.get(name);
+    }
+
     /**
      * Not a mutation
      * 

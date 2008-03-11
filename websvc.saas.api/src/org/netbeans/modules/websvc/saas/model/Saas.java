@@ -40,6 +40,7 @@
 package org.netbeans.modules.websvc.saas.model;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -273,7 +274,12 @@ public class Saas {
     private Properties getProperties() throws IOException {
         if (props == null) {
             props = new Properties();
-            props.load(getPropFile().getInputStream());
+            InputStream in = getPropFile().getInputStream();
+            try {
+                props.load(in);
+            } finally {
+                in.close();
+            }
         }
         return props;
     }

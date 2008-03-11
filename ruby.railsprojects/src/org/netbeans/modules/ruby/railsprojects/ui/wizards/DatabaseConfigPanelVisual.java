@@ -162,17 +162,18 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, adapterConfigurationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
-                    .add(ideConnectionsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
-                    .add(useIDEConnections)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 632, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, adapterConfigurationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 632, Short.MAX_VALUE)
+                    .add(ideConnectionsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 632, Short.MAX_VALUE)
                     .add(useRailsAdapter)
-                    .add(useJdbc))
+                    .add(useJdbc)
+                    .add(useIDEConnections))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(useIDEConnections)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(ideConnectionsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 122, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -184,7 +185,7 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(9, 9, 9)
                 .add(useJdbc)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         useIDEConnections.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "ACSD_ConfigureUsingIDEConnections")); // NOI18N

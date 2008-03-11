@@ -193,7 +193,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
             result.add(RestConstants.PATH);
         }
         if (rbean.getUriParams().length > 0) {
-            result.add(RestConstants.URI_PARAM);
+            result.add(RestConstants.PATH_PARAM);
         }
         for (HttpMethodType m : rbean.getMethodTypes()) {
             result.add(m.getAnnotationType());
@@ -448,7 +448,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         }
         String[] annos = new String [allParamCount];
         for (int i=0; i<uriParamCount; i++) {
-            annos[i] = RestConstants.URI_PARAM_ANNOTATION;
+            annos[i] = RestConstants.PATH_PARAM_ANNOTATION;
         }
         for (int i=uriParamCount; i<allParamCount; i++) {
             annos[i] = null;
@@ -460,7 +460,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         ArrayList<String[]> annos = new ArrayList<String[]>();
      
         for (String uriParam : bean.getUriParams()) {
-            annos.add(new String[] {RestConstants.URI_PARAM_ANNOTATION});
+            annos.add(new String[] {RestConstants.PATH_PARAM_ANNOTATION});
         }
         
         String[] annotations = null;
