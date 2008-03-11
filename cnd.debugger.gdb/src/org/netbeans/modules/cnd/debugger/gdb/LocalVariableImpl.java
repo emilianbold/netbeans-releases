@@ -94,7 +94,7 @@ public class LocalVariableImpl implements LocalVariable, Field {
         if (debugger == null) {
 	    // Don't set it unless its needed...
 	    DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-	    debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
+	    debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
 	}
         
         debugger.getGdbProxy().data_evaluate_expression(name + "=" + expression); // NOI18N

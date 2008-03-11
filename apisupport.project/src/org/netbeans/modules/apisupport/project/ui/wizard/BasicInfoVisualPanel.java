@@ -100,18 +100,18 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         initPlatformCombos();
         setComponentsVisibility();
         switch (data.getWizardType()) {
-            case NewNbModuleWizardIterator.TYPE_SUITE:
+            case SUITE:
                 detachModuleTypeGroup();
                 break;
-            case NewNbModuleWizardIterator.TYPE_MODULE:
-            case NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT:
+            case MODULE:
+            case SUITE_COMPONENT:
                 if (moduleSuiteValue.getItemCount() > 0) {
                     restoreSelectedSuite();
                     suiteComponent.setSelected(true);
                     mainProject.setSelected(false);
                 }
                 break;
-            case NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE:
+            case LIBRARY_MODULE:
                 moduleSuite.setText(getMessage("LBL_Add_to_Suite")); // NOI18N
                 suiteComponent.setSelected(true);
                 if (moduleSuiteValue.getItemCount() > 0) {
@@ -344,18 +344,18 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         String bundlekey = null;
         int counter = 0;
         switch (getData().getWizardType()) {
-            case NewNbModuleWizardIterator.TYPE_SUITE:
+            case SUITE:
                 counter = ModuleUISettings.getDefault().getNewSuiteCounter() + 1;
                 bundlekey = "TXT_Suite"; //NOI18N
                 getData().setSuiteCounter(counter);
                 break;
-            case NewNbModuleWizardIterator.TYPE_MODULE:
-            case NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT:
+            case MODULE:
+            case SUITE_COMPONENT:
                 counter = ModuleUISettings.getDefault().getNewModuleCounter() + 1;
                 bundlekey = "TXT_Module"; //NOI18N
                 getData().setModuleCounter(counter);
                 break;
-            case NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE:
+            case LIBRARY_MODULE:
                 counter = ModuleUISettings.getDefault().getNewModuleCounter() + 1;
                 bundlekey = "TXT_Library"; //NOI18N
                 getData().setModuleCounter(counter);

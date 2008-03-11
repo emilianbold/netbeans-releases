@@ -96,7 +96,7 @@ public class EjbWsValidation extends WsValidation {
 
     @Override
     protected String getWsClientPackage() {
-        return "o.n.m.ws.qaf.client.ejb"; //NOI18N
+        return getWsPackage(); //NOI18N
     }
 
     /** Creates suite from particular test cases. You can define order of testcases here. */
@@ -105,16 +105,17 @@ public class EjbWsValidation extends WsValidation {
         suite.addTest(new EjbWsValidation("testCreateNewWs")); //NOI18N
         suite.addTest(new EjbWsValidation("testAddOperation")); //NOI18N
         suite.addTest(new EjbWsValidation("testStartServer")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testWsHandlers")); //NOI18N
+        suite.addTest(new EjbWsValidation("testWsHandlers")); //NOI18N
         suite.addTest(new EjbWsValidation("testDeployWsProject")); //NOI18N
         suite.addTest(new EjbWsValidation("testCreateWsClient")); //NOI18N
+        suite.addTest(new EjbWsValidation("testRefreshClientAndReplaceWSDL")); //NOI18N
         suite.addTest(new EjbWsValidation("testCallWsOperationInSessionEJB")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testCallWsOperationInJavaClass")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testWsFromEJBinClientProject")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testWsClientHandlers")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testDeployWsClientProject")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testUndeployProjects")); //NOI18N
-//        suite.addTest(new EjbWsValidation("testStopServer")); //NOI18N
+        suite.addTest(new EjbWsValidation("testCallWsOperationInJavaClass")); //NOI18N
+        suite.addTest(new EjbWsValidation("testWsFromEJBinClientProject")); //NOI18N
+        suite.addTest(new EjbWsValidation("testWsClientHandlers")); //NOI18N
+        suite.addTest(new EjbWsValidation("testDeployWsClientProject")); //NOI18N
+        suite.addTest(new EjbWsValidation("testUndeployProjects")); //NOI18N
+        suite.addTest(new EjbWsValidation("testStopServer")); //NOI18N
         return suite;
     }
 

@@ -240,20 +240,13 @@ made subject to such option by the copyright holder.
                 <file name="Settings.settings" url="HTMLOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.html.HTMLKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.editor.html.HTMLKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 
-                <!--<folder name="FoldManager">
-                    <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
-                </folder>
-                <folder name="SideBar">
-                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
-                </folder>
                 <folder name="UpToDateStatusProvider">
-                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"/>
+                    <file name="org-netbeans-modules-gsfret-hints-GsfUpToDateStateProviderFactory.instance"/>
                 </folder>
-                -->
                 
                 <folder name="Popup">
                     <file name="ViewAction.instance">

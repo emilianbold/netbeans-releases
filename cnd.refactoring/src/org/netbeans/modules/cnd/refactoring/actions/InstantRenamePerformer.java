@@ -98,7 +98,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     private final PositionsBag bag;
     
     /** Creates a new instance of InstantRenamePerformer */
-    private InstantRenamePerformer(JTextComponent target,  Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
+    /*package*/ InstantRenamePerformer(JTextComponent target,  Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
 	this.target = target;
 	this.doc = target.getDocument();
 	
@@ -182,7 +182,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         }
     }
     
-    private static boolean allowInstantRename(CsmReference ref) {
+    /*package*/ static boolean allowInstantRename(CsmReference ref) {
         CsmReferenceResolver.Scope scope = CsmReferenceResolver.getDefault().fastCheckScope(ref);
         if (scope == CsmReferenceResolver.Scope.LOCAL) {
             return true;

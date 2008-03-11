@@ -51,8 +51,8 @@ public class SyntaxTree {
     public static AstNode makeTree(List<SyntaxElement> elements) {
         SyntaxElement last = elements.size() > 0 ? elements.get(elements.size() - 1) : null;
         int lastEndOffset = last == null ? 0 : last.offset() + last.length();
-
-        AstNode root = new AstNode("root", null, 0, lastEndOffset);
+        
+        AstNode root = new AstNode("root", null, 0, lastEndOffset, null);
         LinkedList<AstNode> nodeStack = new  LinkedList<AstNode>();
         nodeStack.add(root);
         
@@ -66,7 +66,7 @@ public class SyntaxTree {
                 int openingTagEndOffset = element.offset() + element.length();
                 
                 AstNode newTagNode = new AstNode(tagName, AstNode.NodeType.TAG,
-                        element.offset(), openingTagEndOffset);
+                        element.offset(), openingTagEndOffset, element);
                 
                 nodeStack.getLast().addChild(newTagNode);
                 assert element instanceof SyntaxElement.Tag;
@@ -76,7 +76,7 @@ public class SyntaxTree {
                 }
                 
                 AstNode openingTagNode = new AstNode(tagName, AstNode.NodeType.OPEN_TAG,
-                        element.offset(), openingTagEndOffset);
+                        element.offset(), openingTagEndOffset, element);
                 
                 newTagNode.addChild(openingTagNode);
             } else if (element.type() == SyntaxElement.TYPE_ENDTAG) {
@@ -95,24 +95,11 @@ public class SyntaxTree {
                 int closingTagEndOffset = element.offset() + element.length();
                             
                 AstNode closingTag = new AstNode(tagName, AstNode.NodeType.ENDTAG,
-                       element.offset(), closingTagEndOffset);
+                       element.offset(), closingTagEndOffset, element);
                 
                 if (tagName.equals(nodeStack.get(lastMatchedTag).name())){
                     int nodesToDelete = nodeStack.size() - lastMatchedTag - 1;
-                    LinkedList<AstNode> orphans = new LinkedList<AstNode>();
-                    
-                    for (int i = 0; i < nodesToDelete; i ++){
-                        nodeStack.getLast().markUnmatched();
-                        
-                        orphans.addAll(nodeStack.getLast().children());
-                        nodeStack.getLast().removeAllChildren();
-                        
-                        nodeStack.removeLast();
-                    }
-                    
-                    for (AstNode orphan : orphans){
-                        nodeStack.getLast().addChild(orphan);
-                    }
+                    removeNLastNodes(nodesToDelete, nodeStack);
                     
                     nodeStack.getLast().addChild(closingTag);
                     nodeStack.getLast().setEndOffset(closingTagEndOffset);
@@ -120,7 +107,7 @@ public class SyntaxTree {
                 } else {
                     // unmatched closing tag
                     AstNode newTagNode = new AstNode(tagName, AstNode.NodeType.TAG,
-                        element.offset(), closingTagEndOffset);
+                        element.offset(), closingTagEndOffset, null);
                 
                     newTagNode.markUnmatched();
                     nodeStack.getLast().addChild(newTagNode);
@@ -133,13 +120,40 @@ public class SyntaxTree {
                 AstNode.NodeType nodeType = intToNodeType(element.type());
                 
                 AstNode node = new AstNode(null, nodeType, element.offset(),
-                        element.offset() + element.length());
+                        element.offset() + element.length(), element);
                 
                 nodeStack.getLast().addChild(node);
             }
         }
         
+        removeNLastNodes(nodeStack.size() - 1, nodeStack);
         return root;
+    }
+    
+    private static void removeNLastNodes(int nodesToDelete, LinkedList<AstNode> nodeStack) {
+        LinkedList<LinkedList<AstNode>> orphanMatrix = new LinkedList<LinkedList<AstNode>>();
+
+        for (int i = 0; i < nodesToDelete; i++) {
+            LinkedList<AstNode> orphans = new LinkedList<AstNode>();
+            nodeStack.getLast().markUnmatched();
+
+            for (AstNode child : nodeStack.getLast().children()) {
+                if (child.type() == AstNode.NodeType.TAG || child.type() == AstNode.NodeType.UNMATCHED_TAG) {
+                    orphans.add(child);
+                }
+            }
+
+            nodeStack.getLast().removeTagChildren();
+
+            nodeStack.removeLast();
+            orphanMatrix.addFirst(orphans);
+        }
+        
+        for (LinkedList<AstNode> orphans : orphanMatrix) {
+            for (AstNode orphan : orphans) {
+                nodeStack.getLast().addChild(orphan);
+            }
+        }
     }
 
     private static String extractTagName(String text) {
@@ -180,6 +194,5 @@ public class SyntaxTree {
         }
         
         return null;
-    }
-    
+    }    
 }

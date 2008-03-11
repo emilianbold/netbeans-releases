@@ -72,8 +72,7 @@ public class ServerNodeProvider implements NodeProvider {
 
     public List<Node> getNodes() {
          if ( options.isProviderRegistered() ) {
-            DatabaseUtils.connectToServerAsync(ServerInstance.getDefault(), 
-                    true /* quiet */);
+            ServerInstance.getDefault().connectAsync(true /* quiet */);
             return nodes;
         } else {
             return emptyNodeList;
@@ -89,7 +88,7 @@ public class ServerNodeProvider implements NodeProvider {
             if ( ! registered ) {
                 instance.disconnect();
             } else {
-                DatabaseUtils.connectToServerAsync(instance, true);
+                instance.connectAsync(true /* quiet */);
             }
             notifyChange();
         }

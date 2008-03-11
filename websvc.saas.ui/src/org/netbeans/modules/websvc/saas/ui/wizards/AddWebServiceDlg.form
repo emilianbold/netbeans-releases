@@ -39,7 +39,7 @@
                       <EmptySpace min="-2" pref="29" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jTxtpackageName" pref="503" max="32767" attributes="1"/>
-                          <Component id="jTxtWsdlURL" alignment="0" pref="503" max="32767" attributes="1"/>
+                          <Component id="jTxServiceURL" alignment="0" pref="503" max="32767" attributes="1"/>
                           <Component id="jTxtLocalFilename" alignment="1" pref="503" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
@@ -76,7 +76,7 @@
                       <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jRbnUrl" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jTxtWsdlURL" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jTxServiceURL" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jBtnProxy" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -181,7 +181,7 @@
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JTextField" name="jTxtWsdlURL">
+    <Component class="javax.swing.JTextField" name="jTxServiceURL">
       <Properties>
         <Property name="columns" type="int" value="20"/>
       </Properties>

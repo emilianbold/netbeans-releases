@@ -73,18 +73,33 @@ public class PlatformValidator {
                 }
             }
             if (retVal) {
-                File versionDescriminator = new File(loc, "lib/shoal-gms.jar"); //NOI18N
-                if (serverVersion.equals(GLASSFISH_V1)) {
-                    if (versionDescriminator.exists() || versionDescriminator.isFile()) {
+                if (ServerLocationManager.isGlassFish(loc)) {
+                    File versionDescriminator = new File(loc, "lib/shoal-gms.jar"); //NOI18N
+                    if (serverVersion.equals(GLASSFISH_V1)) {
+                        if (versionDescriminator.exists() || versionDescriminator.isFile()) {
+                            retVal = false;
+                        }
+                    } else if (serverVersion.equals(GLASSFISH_V2)) {
+                        if (!versionDescriminator.exists() || !versionDescriminator.isFile()) {
+                            retVal = false;
+                        }
+                    } else {
+                        //GlassFish match but no descriminator match
+                        //should not come here
                         retVal = false;
                     }
-                } else if (serverVersion.equals(GLASSFISH_V2)) {
-                    if (!versionDescriminator.exists() || !versionDescriminator.isFile()) {
+                }else{
+                    File versionDescriminator = new File(loc, "lib/dtds/sun-domain_1_1.dtd"); // NOI18N
+                    if (serverVersion.equals(APPSERVERSJS)) {
+                        if (! versionDescriminator.exists() || ! versionDescriminator.isFile()) {
+                            retVal = false;
+                        }
+                    }else{
+                        //All Server types checked but no descriminator match
+                        //should not come here
                         retVal = false;
                     }
-                } else if (!serverVersion.equals(APPSERVERSJS)) {
-                    retVal = false;
-                }
+                }    
             }
         }
         return retVal;

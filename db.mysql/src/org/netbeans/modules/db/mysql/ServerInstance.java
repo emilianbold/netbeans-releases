@@ -57,8 +57,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.api.sql.execute.SQLExecuteCookie;
-import org.netbeans.modules.db.mysql.DatabaseUtils.ConnectStatus;
+import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
@@ -68,8 +70,10 @@ import org.openide.filesystems.JarFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.nodes.Node;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 
 /**
@@ -80,7 +84,19 @@ import org.openide.util.Utilities;
  * @author David Van Couvering
  */
 public class ServerInstance implements Node.Cookie {
-
+    public enum State {
+        CONNECTED, CONNECTING, DISCONNECTED
+    };
+    
+    // synchronized on this
+    private State state = State.DISCONNECTED;
+    
+        // Synchronized on this
+    private String displayName;
+    
+    // Synchronized on this
+    private Task refreshTask;
+    
     /**
      *  Enumeration of valid sample database names
      */
@@ -123,7 +139,7 @@ public class ServerInstance implements Node.Cookie {
     // or an explicit refresh is requested
     // Synchronized on the instance (this)
     ArrayList<DatabaseModel> databases = new ArrayList<DatabaseModel>();
-    
+
     public static synchronized ServerInstance getDefault() {
         if ( DEFAULT == null ) {
             DEFAULT = new ServerInstance();
@@ -131,11 +147,42 @@ public class ServerInstance implements Node.Cookie {
         
         return DEFAULT;
     }
-    private String displayName;
     
     private ServerInstance() {  
         updateDisplayName();
     }
+    
+    private synchronized void startRefreshTask() {        
+        // Start a background task that keeps the list of databases
+        // up-to-date
+        final long sleepInterval = OPTIONS.getRefreshThreadSleepInterval();
+        
+        refreshTask = RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                Thread.currentThread().setName("MySQL Server Refresh Thread");
+                
+                for ( ; ; ) {
+                    try {
+                        Thread.sleep(sleepInterval);
+                        
+                        if ( OPTIONS.isProviderRegistered() && isConnected() ) {
+                            refreshDatabaseList();
+                        }
+                    } catch ( InterruptedException ie ) {
+                        return;
+                    } catch ( DatabaseException dbe ) {
+                        LOGGER.log(Level.INFO, null, dbe);
+                    }
+                }
+            }
+        });
+    }
+    
+    private synchronized void stopRefreshTask() {
+        if ( refreshTask != null ) {
+            refreshTask.cancel();
+        }
+    } 
     
     public static boolean isSampleName(String name) {
         SampleName[] samples = SampleName.values();
@@ -324,24 +371,28 @@ public class ServerInstance implements Node.Cookie {
     }
     
     public boolean isConnected() {
-        return adminConn.conn != null;
+        return getState().equals(State.CONNECTED);
     }
 
-    public String getDisplayName() {
+    public synchronized String getDisplayName() {
         return displayName;
     }
     
-    private void setDisplayName(String displayName) {
+    private synchronized void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
     
-    private void updateDisplayName() {
-        if ( isConnected() ) {
+    private synchronized void updateDisplayName() {
+        State state = getState();
+        if ( state == State.CONNECTED ) {
             setDisplayName(NbBundle.getMessage(ServerInstance.class,
                     "LBL_ServerDisplayName"));
-        } else {
+        } else if ( state == State.DISCONNECTED ) {
             setDisplayName(NbBundle.getMessage(ServerInstance.class,
                     "LBL_ServerNotConnectedDisplayName"));
+        } else {
+            setDisplayName(NbBundle.getMessage(ServerInstance.class, 
+                    "LBL_ServerConnectingDisplayName"));
         }
     }
     
@@ -357,8 +408,24 @@ public class ServerInstance implements Node.Cookie {
     public String getURL(String databaseName) {
         return DatabaseUtils.getURL(getHost(), getPort(), databaseName);
     }
-
     
+    private synchronized void setState(State state) {
+        this.state = state;
+        updateDisplayName();
+        
+        if ( state == State.CONNECTED ) {
+            startRefreshTask();
+        } else if ( state == State.DISCONNECTED ) {
+            stopRefreshTask();
+        }
+        
+        notifyChange();
+    }
+    
+    public synchronized State getState() {
+        return state;
+    }
+        
     private void notifyChange() {
         ChangeEvent evt = new ChangeEvent(this);
         
@@ -410,23 +477,28 @@ public class ServerInstance implements Node.Cookie {
      * Connect to the server.  If we already have a connection, close
      * it and open a new one
      */
-    public void connect() throws DatabaseException {
+    public synchronized void connect() throws DatabaseException {
+        setState(State.CONNECTING);
         try {
             adminConn.reconnect();
+            setState(State.CONNECTED);
+        } catch ( DatabaseException dbe ) {
+            setState(State.DISCONNECTED);
+            throw dbe;
         } finally {
-            updateDisplayName();
             refreshDatabaseList();
         }
     }
     
-    public void disconnect() {
+    public synchronized void disconnect() {
         adminConn.disconnect();
-        updateDisplayName();
+        
         try {
             this.refreshDatabaseList();
         } catch ( DatabaseException dbe ) {
             LOGGER.log(Level.FINE, null, dbe);
         }
+        setState(State.DISCONNECTED);
     }
     
     /**
@@ -434,10 +506,93 @@ public class ServerInstance implements Node.Cookie {
      * 
      * @throws DatabaseException if disconnect had an error
      */
-    public void reconnect() throws DatabaseException {
+    public synchronized void reconnect() throws DatabaseException {
         disconnect();
         connect();
     }
+    /**
+     * Connect to the MySQL server on a task thread, showing a progress bar
+     * and displaying a dialog if an error occurred
+     * 
+     * @param instance the server instance to connect with
+     */
+    public void connectAsync() {
+         connectAsync(false);
+    }
+     
+    /**
+     * Connect to the server asynchronously, with the option not to display
+     * a dialog but just write to the log if an error occurs
+     * @param instance the instance to connect to
+     * @param quiet true if you don't want this to happen without any dialogs
+     *   being displayed in case of error or to get more information.
+     */
+    public synchronized void connectAsync(final boolean quiet) {        
+         final ProgressHandle progress = ProgressHandleFactory.createHandle(
+            NbBundle.getMessage(DatabaseUtils.class, "MSG_ConnectingToServer"));
+         progress.start();
+         progress.switchToIndeterminate();
+         
+         postConnect(progress, quiet);
+    }
+    
+    /**
+     * Post a thread to connect to the server.  On failure if quiet
+     * is set to false, we will dispatch an event to the AWT thread to
+     * notify the user that the connect failed and allow them to modify
+     * the server properties, and then we'll post another attempt to
+     * connect.  If quiet is set to true we'll just log the error and
+     * finish.
+     */
+    private void postConnect(final ProgressHandle progress, 
+            final boolean quiet) {
+         RequestProcessor.getDefault().post(new Runnable() {
+             public void run() {
+                 try { 
+                     connect();
+                     progress.finish();
+                 } catch ( DatabaseException dbe ) {
+                    String message = NbBundle.getMessage(DatabaseUtils.class,
+                            "MSG_UnableToConnect");
+                    if ( ! quiet ) {         
+                        // Try again
+                        postPropertiesDialog(progress, message, dbe);
+                    } else {
+                        LOGGER.log(Level.INFO, message);
+                        progress.finish();
+                    }
+                 }
+             };
+         });
+        
+    }
+    
+    /**
+     * Post a request to raise the properties dialog on the event thread.
+     * If the user doesn't cancel when they close the dialog, then we 
+     * post another asynchronous task to connect to the server.
+     * 
+     * @param instance
+     * @param progress
+     */
+    private void postPropertiesDialog(final ProgressHandle progress, 
+            final String message, final DatabaseException dbe) {
+        final ServerInstance instance = this;
+        Mutex.EVENT.postReadRequest(new Runnable() {
+            public void run() {
+                Utils.displayError(message, dbe);
+                
+                PropertiesDialog dlg = new PropertiesDialog(instance);
+                if ( dlg.displayDialog()) {
+                    postConnect(progress, false /* quiet */);
+                } else {
+                    progress.finish();
+                }
+            }
+            
+        });
+    }
+
 
     
     public boolean databaseExists(String dbname)  throws DatabaseException {
@@ -724,6 +879,5 @@ public class ServerInstance implements Node.Cookie {
             conn = DatabaseUtils.connect(getURL(), getUser(), 
                     getPassword());
         }
-    } 
-    
+    }     
 }

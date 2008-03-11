@@ -523,8 +523,10 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         if (formEditor != null) {
             formEditor.closeForm();
             formEditor = null;
-            multiviewTC = null;
         }
+        multiviewTC = null;
+        guardedProvider = null;
+        guardedEditor = null;
         elementToOpen = JAVA_ELEMENT_INDEX;
     }
     

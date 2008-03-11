@@ -183,6 +183,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
 		switch( token.getType() ) {
 		    case CPPTokenTypes.LITERAL_const:
                     case CPPTokenTypes.LITERAL___const:
+                    case CPPTokenTypes.LITERAL___const__:
 			return true;
 		    case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
 		    case CPPTokenTypes.CSM_QUALIFIED_ID:

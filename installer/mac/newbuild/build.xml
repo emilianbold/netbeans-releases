@@ -128,7 +128,7 @@ Microsystems, Inc. All Rights Reserved.
         </exec>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="${basedir}/pack200.sh ${basedir}/netBeans/${module.name}/build"/>
+            <arg value="sh ${basedir}/pack200.sh ${basedir}/netBeans/${module.name}/build"/>
         </exec>         
     </target>
         
@@ -180,7 +180,7 @@ Microsystems, Inc. All Rights Reserved.
             </filterset>
         </copy>        
         
-        <echo message="Building ${module.name} into ${basedir}/../build/${module.name}.pkg"/>
+        <echo message="Building ${module.name} into ${basedir}/build/${module.name}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value=" /Developer/Tools/packagemaker -build -v -p ${basedir}/build/${module.name}.pkg -f ${basedir}/netBeans/${module.name}/build/netbeans -i ${basedir}/netBeans/${module.name}/build/Info.plist -r ${basedir}/netBeans/${module.name}/pkg/scripts -d ${basedir}/netBeans/${module.name}/pkg/scripts/Description.plist"/>
@@ -231,7 +231,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cp -rf ${packages} ./dist_dmg/'${appname}'.mpkg/Contents/Packages"/>
+            <arg value="cp -RPf ${packages} ./dist_dmg/'${appname}'.mpkg/Contents/Packages"/>
         </exec>           
                                            
         <exec executable="sh" failonerror="yes">

@@ -47,8 +47,8 @@ import java.util.List;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
-//import org.netbeans.modules.php.dbgp.api.DebuggerFactory;
-//import org.netbeans.modules.php.dbgp.api.SessionId;
+import org.netbeans.modules.php.dbgp.api.DebuggerFactory;
+import org.netbeans.modules.php.dbgp.api.SessionId;
 import org.netbeans.modules.php.rt.spi.providers.Command;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
 import org.openide.DialogDisplayer;
@@ -101,13 +101,13 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
      * @see java.lang.Runnable#run()
      */
     public void run() {
-//        final SessionId sessionId = getSessionId();
-//        if ( sessionId != null ) {
-//            runFilesInExistedSession(sessionId);
-//        }
-//        else {
-//            runFilesInFreshSession( null );
-//        }
+        final SessionId sessionId = getSessionId();
+        if ( sessionId != null ) {
+            runFilesInExistedSession(sessionId);
+        }
+        else {
+            runFilesInFreshSession( null );
+        }
     }
 
     /* (non-Javadoc)
@@ -220,118 +220,118 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
         // proceed with found session and current set of action files 
     }
     
-//    private SessionId getSessionId() {
-//        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-//        for (Session session : sessions) {
-//            SessionId sessionId = 
-//                (SessionId)session.lookupFirst( null , SessionId.class );
-//            if ( sessionId == null ) {
-//                continue;
-//            }
-//            Project project = sessionId.getProject();
-//            if ( getProject().equals(project) ) {
-//                return sessionId;
-//            }
-//        }
-//        return null;
-//    }
+    private SessionId getSessionId() {
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        for (Session session : sessions) {
+            SessionId sessionId = 
+                (SessionId)session.lookupFirst( null , SessionId.class );
+            if ( sessionId == null ) {
+                continue;
+            }
+            Project project = sessionId.getProject();
+            if ( getProject().equals(project) ) {
+                return sessionId;
+            }
+        }
+        return null;
+    }
     
 
-//    private void runFilesInExistedSession( final SessionId sessionId ) {
-//        Runnable runnable = new Runnable() {
-//
-//            public void run() {
-//                if (sessionId.waitServerFile(WAIT_INIT_SESSION) == null) {
-//                    /*
-//                     * This could happen as result of previous error:
-//                     * no php files was called as result of starting debugging
-//                     * session ( f.e. action was called on project and 
-//                     * index.html was opened ). 
-//                     * 
-//                     * Notify user about existing session.
-//                     */
-//                    notifyWarning();
-//                    /*
-//                     *  Run the same process as before but using existed session,
-//                     *  without starting debugger.
-//                     */ 
-//                    runFilesInFreshSession( sessionId );
-//                    return;
-//                }
-//                try {
-//                    RunCommand command = getRunCommand();
-//                    if ( command == null ){
-//                        return;
-//                    }
-//                    RunCommand clonedCommand = (RunCommand) command.clone();
-//                    clonedCommand
-//                            .addParameter(XDEBUG_COOKIE, sessionId.getId());
-//                    clonedCommand.run();
-//                }
-//                catch (CloneNotSupportedException e) {
-//                    assert false;
-//                }
-//            }
-//        };
-//        RequestProcessor.getDefault().post(runnable);
-//    }
-    
-//    private void runFilesInFreshSession( SessionId id ) {
-//        final FileObject startFO = getFirstFile();
-//        if ( startFO == null ) {
-//            return;
-//        }
-//        
-//        SessionId sessionId = id;
-//        if ( sessionId == null ) {
-//            sessionId = new SessionId( startFO );
-//            DebuggerFactory.getDebugger().debug(  sessionId );
-//        }
-//        
-//        final RunCommand command = getRunCommand();
-//        if ( command == null ){
-//            return ;
-//        }
-//        if ( id != null) {
-//            runFiles( command , startFO, sessionId);
-//        }
-//        else {
-//            final SessionId sessId = sessionId;
-//            Runnable runnable = new Runnable() {
-//                public void run() {
-//                    runFiles( command , startFO, sessId );                    
-//                }
-//            };
-//            RequestProcessor.getDefault().post(runnable);    
-//        }
-//        
-//    }
+    private void runFilesInExistedSession( final SessionId sessionId ) {
+        Runnable runnable = new Runnable() {
 
-//    private void runFiles( RunCommand command, FileObject startFO, 
-//            SessionId sessionId ) 
-//    {
-//        try {
-//            RunCommand clonedCommand = (RunCommand) command.clone();
-//            clonedCommand.addParameter(XDEBUG_COOKIE, sessionId.getId());
-//            clonedCommand.setActionFiles(new FileObject[] { startFO });
-//            clonedCommand.run();
-//
-//            String serverFileUri = sessionId.waitServerFile(WAIT_INIT_SESSION);
-//            if (serverFileUri == null) {
-//                notifyError( startFO , WAIT_INIT_SESSION/1000 );
-//                return;
-//            }
-//
-//            FileObject[] others = getOtherFiles(startFO);
-//            if (others.length > 0) {
-//                clonedCommand = (RunCommand) command.clone();
-//                clonedCommand.addParameter(XDEBUG_COOKIE, sessionId.getId());
-//                clonedCommand.setActionFiles(getOtherFiles(startFO));
-//                clonedCommand.run();
-//            }
-//        }
-//        catch (CloneNotSupportedException e) {
-//            assert false;
-//        }
-//    }
+            public void run() {
+                if (sessionId.waitServerFile(WAIT_INIT_SESSION) == null) {
+                    /*
+                     * This could happen as result of previous error:
+                     * no php files was called as result of starting debugging
+                     * session ( f.e. action was called on project and 
+                     * index.html was opened ). 
+                     * 
+                     * Notify user about existing session.
+                     */
+                    notifyWarning();
+                    /*
+                     *  Run the same process as before but using existed session,
+                     *  without starting debugger.
+                     */ 
+                    runFilesInFreshSession( sessionId );
+                    return;
+                }
+                try {
+                    RunCommand command = getRunCommand();
+                    if ( command == null ){
+                        return;
+                    }
+                    RunCommand clonedCommand = (RunCommand) command.clone();
+                    clonedCommand
+                            .addParameter(XDEBUG_COOKIE, sessionId.getId());
+                    clonedCommand.run();
+                }
+                catch (CloneNotSupportedException e) {
+                    assert false;
+                }
+            }
+        };
+        RequestProcessor.getDefault().post(runnable);
+    }
+    
+    private void runFilesInFreshSession( SessionId id ) {
+        final FileObject startFO = getFirstFile();
+        if ( startFO == null ) {
+            return;
+        }
+        
+        SessionId sessionId = id;
+        if ( sessionId == null ) {
+            sessionId = new SessionId( startFO );
+            DebuggerFactory.getDebugger().debug(  sessionId );
+        }
+        
+        final RunCommand command = getRunCommand();
+        if ( command == null ){
+            return ;
+        }
+        if ( id != null) {
+            runFiles( command , startFO, sessionId);
+        }
+        else {
+            final SessionId sessId = sessionId;
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    runFiles( command , startFO, sessId );                    
+                }
+            };
+            RequestProcessor.getDefault().post(runnable);    
+        }
+        
+    }
+
+    private void runFiles( RunCommand command, FileObject startFO, 
+            SessionId sessionId ) 
+    {
+        try {
+            RunCommand clonedCommand = (RunCommand) command.clone();
+            clonedCommand.addParameter(XDEBUG_COOKIE, sessionId.getId());
+            clonedCommand.setActionFiles(new FileObject[] { startFO });
+            clonedCommand.run();
+
+            String serverFileUri = sessionId.waitServerFile(WAIT_INIT_SESSION);
+            if (serverFileUri == null) {
+                notifyError( startFO , WAIT_INIT_SESSION/1000 );
+                return;
+            }
+
+            FileObject[] others = getOtherFiles(startFO);
+            if (others.length > 0) {
+                clonedCommand = (RunCommand) command.clone();
+                clonedCommand.addParameter(XDEBUG_COOKIE, sessionId.getId());
+                clonedCommand.setActionFiles(getOtherFiles(startFO));
+                clonedCommand.run();
+            }
+        }
+        catch (CloneNotSupportedException e) {
+            assert false;
+        }
+    }
 }
