@@ -77,7 +77,7 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         WAIT_AFTER_PREPARE = 3000;
         WAIT_AFTER_OPEN = 100;
 
-//        HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations
+        HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations
     }
     
     /** Creates a new instance of TypingInEditor */
@@ -86,7 +86,7 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         WAIT_AFTER_PREPARE = 3000;
         WAIT_AFTER_OPEN = 100;
 
-//        HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations
+        HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations
     }
     
     public static NbTestSuite suite() {
