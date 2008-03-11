@@ -265,13 +265,25 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                         return null;
                     resolvedTypeArguments.add(resolved);
                 }
-                return outer != null ? (T)info.getTypes().getDeclaredType((DeclaredType)outer, te, resolvedTypeArguments.toArray(new TypeMirror[resolvedTypeArguments.size()]))
-                        : (T)info.getTypes().getDeclaredType(te, resolvedTypeArguments.toArray(new TypeMirror[resolvedTypeArguments.size()]));
+                DeclaredType dt = outer != null ? info.getTypes().getDeclaredType((DeclaredType)outer, te, resolvedTypeArguments.toArray(new TypeMirror[resolvedTypeArguments.size()]))
+                        : info.getTypes().getDeclaredType(te, resolvedTypeArguments.toArray(new TypeMirror[resolvedTypeArguments.size()]));
+                PlaceholderType pt = map.get(this);
+                if (pt != null) {
+                    pt.delegate = (Type)dt;
+                    new Visitor().visitClassType((ClassType)dt, null);
+                }
+                return (T)dt;
             case ARRAY:
                 TypeMirror resolved = typeMirrors.get(0).resolve(info, map);
                 if (resolved == null)
                     return null;
-                return (T)info.getTypes().getArrayType(resolved);
+                ArrayType at = info.getTypes().getArrayType(resolved);
+                pt = map.get(this);
+                if (pt != null) {
+                    pt.delegate = (Type)at;
+                    new Visitor().visitArrayType((Type.ArrayType)at, null);
+                }
+                return (T)at;
             case TYPEVAR:
                 Element e = element.resolve(info);
                 if (!(e instanceof TypeSymbol))
@@ -280,8 +292,8 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                 TypeMirror lowerBound = lBound != null ? lBound.resolve(info, map) : null;
                 TypeMirrorHandle<? extends TypeMirror> uBound = typeMirrors.get(1);
                 TypeMirror upperBound = uBound != null ? uBound.resolve(info, map) : null;
-                TypeVar tv = new TypeVar((TypeSymbol)e, (Type)lowerBound, (Type)upperBound);
-                PlaceholderType pt = map.get(this);
+                TypeVar tv = new TypeVar((TypeSymbol)e, (Type)upperBound, (Type)lowerBound);
+                pt = map.get(this);
                 if (pt != null) {
                     pt.delegate = tv;
                     new Visitor().visitTypeVar(tv, null);
@@ -292,7 +304,13 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                 TypeMirror extendsBound = eBound != null ? eBound.resolve(info, map) : null;
                 TypeMirrorHandle<? extends TypeMirror> sBound = typeMirrors.get(1);
                 TypeMirror superBound = sBound != null ? sBound.resolve(info, map) : null;
-                return (T)info.getTypes().getWildcardType(extendsBound, superBound);
+                WildcardType wt = info.getTypes().getWildcardType(extendsBound, superBound);
+                pt = map.get(this);
+                if (pt != null) {
+                    pt.delegate = (Type)wt;
+                    new Visitor().visitWildcardType((Type.WildcardType)wt, null);
+                }
+                return (T)wt;
             case ERROR:
                 e = element.resolve(info);
                 if (e == null) {
@@ -355,15 +373,18 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
         public Void visitTypeVar(TypeVar t, Void s) {
             if (t.bound instanceof PlaceholderType)
                 t.bound = ((PlaceholderType)t.bound).delegate;
-            t.bound.accept(this, s);
+            else
+                t.bound.accept(this, s);
             if (t.lower instanceof PlaceholderType)
                 t.lower = ((PlaceholderType)t.lower).delegate;
-            t.lower.accept(this, s);
+            else
+                t.lower.accept(this, s);
             return null;
         }
 
         @Override
         public Void visitWildcardType(Type.WildcardType t, Void s) {
+            t.type.accept(this, s);
             t.bound.accept(this, s);
             return null;
         }
