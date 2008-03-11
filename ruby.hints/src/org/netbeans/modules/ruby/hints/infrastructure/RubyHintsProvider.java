@@ -38,7 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
+import org.jruby.common.IRubyWarnings.ID;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.HintsProvider;
@@ -48,6 +49,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyMimeResolver;
+import org.netbeans.modules.ruby.RubyParser.RubyError;
 import org.netbeans.modules.ruby.hints.options.HintsSettings;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
@@ -74,10 +76,10 @@ import org.openide.util.Exceptions;
  */
 public class RubyHintsProvider implements HintsProvider {
     private boolean cancelled;
-    private Map<Integer,List<AstRule>> testHints;
-    private Map<Integer,List<AstRule>> testSuggestions;
+    private Map<NodeType,List<AstRule>> testHints;
+    private Map<NodeType,List<AstRule>> testSuggestions;
     private List<SelectionRule> testSelectionHints;
-    private Map<String,List<ErrorRule>> testErrors;
+    private Map<ID,List<ErrorRule>> testErrors;
     
     public RubyHintsProvider() {
     }
@@ -112,7 +114,7 @@ public class RubyHintsProvider implements HintsProvider {
 
         cancelled = false;
         
-        Map<String,List<ErrorRule>> hints = testErrors;
+        Map<ID,List<ErrorRule>> hints = testErrors;
         if (hints == null) {
             hints = RulesManager.getInstance().getErrors();
         }
@@ -126,8 +128,10 @@ public class RubyHintsProvider implements HintsProvider {
         List<Error> unhandled = new ArrayList<Error>();
         
         for (Error error : errors) {
-            if (!applyRules(error, info, hints, descriptions)) {
-                unhandled.add(error);
+            if (error instanceof RubyError) {
+                if (!applyRules((RubyError)error, info, hints, descriptions)) {
+                    unhandled.add(error);
+                }
             }
         }
         
@@ -200,7 +204,7 @@ public class RubyHintsProvider implements HintsProvider {
         if (root == null) {
             return;
         }
-        Map<Integer,List<AstRule>> hints = testHints;
+        Map<NodeType,List<AstRule>> hints = testHints;
         if (hints == null) {
             hints = RulesManager.getInstance().getHints(false, info);
         }
@@ -218,7 +222,7 @@ public class RubyHintsProvider implements HintsProvider {
         AstPath path = new AstPath();
         path.descend(root);
         
-        applyRules(NodeTypes.ROOTNODE, root, path, info, hints, -1, descriptions);
+        applyRules(NodeType.ROOTNODE, root, path, info, hints, -1, descriptions);
         
         scan(root, path, info, hints, -1, descriptions);
         path.ascend();
@@ -290,13 +294,13 @@ public class RubyHintsProvider implements HintsProvider {
             return;
         }
 
-        Map<Integer, List<AstRule>> suggestions = testSuggestions;
+        Map<NodeType, List<AstRule>> suggestions = testSuggestions;
         if (suggestions == null) {
-            suggestions = new HashMap<Integer, List<AstRule>>();
+            suggestions = new HashMap<NodeType, List<AstRule>>();
    
             suggestions.putAll(RulesManager.getInstance().getHints(true, info));
 
-            for (Entry<Integer, List<AstRule>> e : RulesManager.getInstance().getSuggestions().entrySet()) {
+            for (Entry<NodeType, List<AstRule>> e : RulesManager.getInstance().getSuggestions().entrySet()) {
                 List<AstRule> rules = suggestions.get(e.getKey());
 
                 if (rules != null) {
@@ -336,7 +340,7 @@ public class RubyHintsProvider implements HintsProvider {
             applyRules(node.nodeId, node, path, info, suggestions, caretOffset, descriptions);
         }
         
-        //applyRules(NodeTypes.ROOTNODE, path, info, suggestions, caretOffset, result);
+        //applyRules(NodeType.ROOTNODE, path, info, suggestions, caretOffset, result);
 
         if (descriptions.size() > 0) {
             for (Description desc : descriptions) {
@@ -346,7 +350,7 @@ public class RubyHintsProvider implements HintsProvider {
         }
     }
 
-    private void applyRules(int nodeType, Node node, AstPath path, CompilationInfo info, Map<Integer,List<AstRule>> hints,
+    private void applyRules(NodeType nodeType, Node node, AstPath path, CompilationInfo info, Map<NodeType,List<AstRule>> hints,
             int caretOffset, List<Description> result) {
         List<AstRule> rules = hints.get(nodeType);
 
@@ -375,9 +379,9 @@ public class RubyHintsProvider implements HintsProvider {
     }
 
     /** Apply error rules and return true iff somebody added an error description for it */
-    private boolean applyRules(Error error, CompilationInfo info, Map<String,List<ErrorRule>> hints,
+    private boolean applyRules(RubyError error, CompilationInfo info, Map<ID,List<ErrorRule>> hints,
             List<Description> result) {
-        String code = error.getKey();
+        ID code = error.getId();
         if (code != null) {
             List<ErrorRule> rules = hints.get(code);
 
@@ -441,7 +445,7 @@ public class RubyHintsProvider implements HintsProvider {
         }
     }
     
-    private void scan(Node node, AstPath path, CompilationInfo info, Map<Integer,List<AstRule>> hints, int caretOffset, 
+    private void scan(Node node, AstPath path, CompilationInfo info, Map<NodeType,List<AstRule>> hints, int caretOffset, 
             List<Description> result) {
         applyRules(node.nodeId, node, path, info, hints, caretOffset, result);
         
@@ -468,7 +472,7 @@ public class RubyHintsProvider implements HintsProvider {
     }
     
     /** For testing purposes only! */
-    public void setTestingHints(Map<Integer,List<AstRule>> testHints, Map<Integer,List<AstRule>> testSuggestions, Map<String,List<ErrorRule>> testErrors,
+    public void setTestingHints(Map<NodeType,List<AstRule>> testHints, Map<NodeType,List<AstRule>> testSuggestions, Map<ID,List<ErrorRule>> testErrors,
             List<SelectionRule> testSelectionHints) {
         this.testHints = testHints;
         this.testSuggestions = testSuggestions;

@@ -54,17 +54,28 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.openide.*;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.util.*;
 import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
 
 import org.netbeans.modules.web.core.QueryStringCookie;
 import org.netbeans.modules.web.core.WebExecSupport;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataLoader;
+import org.openide.loaders.DataLoaderPool;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.UniFileLoader;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -85,7 +96,9 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     static final String ATTR_FILE_ENCODING = "Content-Encoding"; // NOI18N
     
     private static final String DEFAULT_ENCODING = "ISO-8559-1"; // NOI18N
-    
+
+    private static final Logger LOGGER = Logger.getLogger(JspDataObject.class.getName());
+
     transient private EditorCookie servletEdit;
     transient protected JspServletDataObject servletDataObject;
     // it is guaranteed that if servletDataObject != null, then this is its
@@ -195,8 +208,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         }
         String retrievedEncoding = (String)getPrimaryFile().getAttribute(ATTR_FILE_ENCODING);
         retrievedEncoding = retrievedEncoding != null ? retrievedEncoding : DEFAULT_ENCODING;
-        
-        return retrievedEncoding ;
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "Retrieved encoding for " + getPrimaryFile().getNameExt()
+                    + " is " + retrievedEncoding);
+        }
+        return retrievedEncoding;
     }
     
     void updateFileEncoding(boolean fromEditor) {
@@ -206,7 +223,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             try {
                 getPrimaryFile().setAttribute(ATTR_FILE_ENCODING, encoding);
             } catch (IOException e) {
-                Logger.getLogger("global").log(Level.WARNING, null, e);
+                LOGGER.log(Level.WARNING, null, e);
             }
         }
         

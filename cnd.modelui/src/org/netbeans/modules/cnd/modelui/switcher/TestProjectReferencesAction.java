@@ -240,6 +240,6 @@ public class TestProjectReferencesAction extends NodeAction {
             }
         });
         handle.finish();
-        out.println("Analyzing " + p.getProjectDisplayName() + " took " + (time[1]-time[0]) + "ms");
+        out.println("Analyzing " + p.getProjectDisplayName() + " took " + (time[1]-time[0]) + "ms"); // NOI18N
     }
 }

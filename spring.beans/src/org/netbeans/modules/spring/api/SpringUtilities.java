@@ -58,14 +58,22 @@ public class SpringUtilities {
 
     private static final String SPRING_CLASS_NAME = "org.springframework.core.SpringVersion"; // NOI18N
     private static final String JSTL_CLASS_NAME = "javax.servlet.jsp.jstl.core.Config"; // NOI18N
+    private static final String SPRING_WEBMVC_CLASS_NAME = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N
 
     public static Library findSpringLibrary() {
         return getLibrary(SPRING_CLASS_NAME);
     }
 
-    // This doesn't really belong here, but since the Web MVC module needs it...
     public static Library findJSTLibrary() {
         return getLibrary(JSTL_CLASS_NAME);
+    }
+
+    public static Library findSpringWebMVCLibrary() {
+        return getLibrary(SPRING_WEBMVC_CLASS_NAME);
+    }
+
+    public static boolean isSpringLibrary(Library library) {
+        return containsClass(library, SPRING_CLASS_NAME);
     }
 
     public static boolean containsSpring(ClassPath cp) {
@@ -73,16 +81,17 @@ public class SpringUtilities {
     }
 
     private static Library getLibrary(String className) {
-        for (Library eachLibrary : LibraryManager.getDefault().getLibraries()) {
-            if (containsClass(eachLibrary.getContent("classpath"), className)) { // NOI18N
-                return eachLibrary;
+        for (Library library : LibraryManager.getDefault().getLibraries()) {
+            if (containsClass(library, className)) {
+                return library;
             }
         }
         return null;
     }
 
-    private static boolean containsClass(List<URL> libraryContent, String className) {
-        return containsClass(createClassPath(libraryContent), className);
+    private static boolean containsClass(Library library, String className) {
+        List<URL> urls = library.getContent("classpath"); // NOI18N
+        return containsClass(createClassPath(urls), className);
     }
 
     private static boolean containsClass(ClassPath classPath, String className) {

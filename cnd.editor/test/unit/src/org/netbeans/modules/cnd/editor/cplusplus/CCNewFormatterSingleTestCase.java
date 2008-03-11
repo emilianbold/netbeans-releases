@@ -72,32 +72,55 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
     }
 
-//    public void testIdentMultyConstructor3() {
+//    public void testIdentMultyConstructor5() {
 //        setDefaultsOptions();
 //        setLoadDocumentText(
-//            "class IndexReader : LUCENE_BASE\n" +
-//            "{\n" +
-//            "public:\n" +
-//            "class IndexReaderCommitLockWith : \n" +
-//            "public CL_NS(store)::LuceneLockWith\n" +
-//            "{\n" +
-//            "private:\n" +
-//            "IndexReader* reader;\n" +
-//            "};\n" +
-//            "};\n"
+//            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" +
+//            "        ulong query_length, bool using_trans,\n" +
+//            "        bool suppress_use)\n" +
+//            ":Log_event(thd_arg,\n" +
+//            "        ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
+//            "        & (suppress_use          ? LOG_EVENT_SUPPRESS_USE_F    : 0)),\n" +
+//            "                using_trans),\n" +
+//            "                data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
+//            "                db(thd_arg->db), q_len((uint32) query_length),\n" +
+//            "                error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
+//            "                    ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
+//            "                        0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
+//            "                                thread_id(thd_arg->thread_id),\n" +
+//            "                                /* save the original thread id; we already know the server id */\n" +
+//            "                                slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
+//            "                                flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
+//            "                                sql_mode(thd_arg->variables.sql_mode),\n" +
+//            "                                auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
+//            "                                auto_increment_offset(thd_arg->variables.auto_increment_offset)\n" +
+//            "                        {\n" +
+//            "                            time_t end_time;\n" +
+//            "                        }\n"
 //            );
 //        reformat();
 //        assertDocumentText("Incorrect identing multyline constructor",
-//            "class IndexReader : LUCENE_BASE\n" +
-//            "{\n" +
-//            "public:\n" +
-//            "    class IndexReaderCommitLockWith :\n" +
-//            "    public CL_NS(store)::LuceneLockWith\n" +
-//            "    {\n" +
-//            "    private:\n" +
-//            "        IndexReader* reader;\n" +
-//            "    };\n" +
-//            "};\n"
+//            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" +
+//            "        ulong query_length, bool using_trans,\n" +
+//            "        bool suppress_use)\n" +
+//            ": Log_event(thd_arg,\n" +
+//            "        ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
+//            "        & (suppress_use ? LOG_EVENT_SUPPRESS_USE_F : 0)),\n" +
+//            "        using_trans),\n" +
+//            "        data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
+//            "        db(thd_arg->db), q_len((uint32) query_length),\n" +
+//            "        error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
+//            "            ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
+//            "                 0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
+//            "        thread_id(thd_arg->thread_id),\n" +
+//            "        /* save the original thread id; we already know the server id */\n" +
+//            "        slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
+//            "        flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
+//            "        sql_mode(thd_arg->variables.sql_mode),\n" +
+//            "        auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
+//            "        auto_increment_offset(thd_arg->variables.auto_increment_offset) {\n" +
+//            "    time_t end_time;\n" +
+//            "}\n"
 //        );
 //    }
 
@@ -138,5 +161,46 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        );
 //    }
 //
-    
+
+
+//What about []:
+//        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
+//
+
+    public void testBlankLineAfterEndLineComment() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentNamespace, false);
+        setLoadDocumentText(
+                "namespace AC\n" +
+                "{\n" +
+                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
+                "{\n" +
+                "public:\n" +
+                "    int number;\n" +
+                "    char** cc;\n" +
+                "ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
+                "    {\n" +
+                "    }\n" +
+                "} FAR ct_data;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect blak line after end line comment",
+                "namespace AC\n" +
+                "{\n" +
+                "\n" +
+                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
+                "{\n" +
+                "public:\n" +
+                "    int number;\n" +
+                "    char** cc;\n" +
+                "\n" +
+                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
+                "    {\n" +
+                "    }\n" +
+                "} FAR ct_data;\n" +
+                "}\n"
+                );
+    }
 }

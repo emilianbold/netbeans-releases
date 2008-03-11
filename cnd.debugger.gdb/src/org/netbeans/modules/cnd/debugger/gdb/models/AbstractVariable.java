@@ -125,8 +125,11 @@ public class AbstractVariable implements LocalVariable, Customizer {
         return tinfo;
     }
     
-    protected void resetTypeInfo() {
+    protected void resetVariable() {
         tinfo = null;
+        type = "";
+        value = "";
+        fields = new Field[0];
     }
     
     /**
@@ -167,22 +170,17 @@ public class AbstractVariable implements LocalVariable, Customizer {
         this.type = type;
     }
     
-    public void setTypeToError(String msg) {
-        msg = msg.replace("\\\"", "\""); // NOI18N
-        if (msg.charAt(msg.length() - 1) == '.') {
-            msg = msg.substring(0, msg.length() - 1);
-        }
-        setType('>' + msg + '<');
-        log.fine("AV.setTypeToError[" + GdbUtils.threadId() + "]: " + getName()); // NOI18N
-    }
-    
     /**
      * Returns string representation of type of this variable.
      *
      * @return string representation of type of this variable.
      */
     public String getValue() {
-        return value;
+        if (value.startsWith(">") && value.endsWith(".\"<")) { // NOI18N
+            return '>' + value.substring(2, value.length() - 3).replace("\\\"", "\"") + '<'; // NOI18N
+        } else {
+            return value.replace("\\\"", "\""); // NOI18N
+        }
     }
 
     /**
@@ -265,7 +263,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         }
         if (msg != null) {
             NotifyDescriptor nd = new NotifyDescriptor.Message(msg);
-            nd.setTitle("TITLE_SetValue_Warning"); // NOI18N
+            nd.setTitle(NbBundle.getMessage(AbstractVariable.class, "TITLE_SetValue_Warning")); // NOI18N
             DialogDisplayer.getDefault().notify(nd);
         }
     }
@@ -279,7 +277,9 @@ public class AbstractVariable implements LocalVariable, Customizer {
         if (fields.length > 0) {
             fields = new Field[0];
             derefValue = null;
-            expandChildren();
+            if (value.length() > 0) {
+                expandChildren();
+            }
         }
     }
     

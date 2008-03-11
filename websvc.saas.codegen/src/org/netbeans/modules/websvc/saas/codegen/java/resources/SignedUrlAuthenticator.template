@@ -33,7 +33,7 @@ public class __NAME__ {
         try {
             Properties props = new Properties();
             props.load(__NAME__.class.getResourceAsStream(
-                    "/org/netbeans/saas/amazon/amazon.properties"));
+                    "profile.properties"));
             accessKey = props.getProperty("access_key");
             secret = props.getProperty("secret");
         } catch (IOException ex) {

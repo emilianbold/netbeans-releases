@@ -74,6 +74,13 @@ public class GNUCCompiler extends GNUCCCCompiler {
     }
     
     @Override
+    public GNUCCompiler createCopy() {
+        GNUCCompiler copy = new GNUCCompiler(getFlavor(), getKind(), "", getDisplayName(), getPath());
+        copy.setName(getName());
+        return copy;
+    }
+    
+    @Override
     public String getWarningLevelOptions(int value) {
         if (value < WARNING_LEVEL_OPTIONS.length)
             return WARNING_LEVEL_OPTIONS[value];

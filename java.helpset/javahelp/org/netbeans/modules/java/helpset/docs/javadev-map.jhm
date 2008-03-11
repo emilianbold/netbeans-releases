@@ -67,6 +67,7 @@
 <mapID target="proj_process_top" url="project/proj_process.html#top" /> <!--ID added to provide better TOC tracking when the topic is selected in the Getting Started bucket-->
 <mapID target="proj_quickref" url="project/proj_quickref.html" />
 <mapID target="proj_sources_multi" url="project/proj_sources_multi.html" />
+<mapID target="proj_sharing" url="project/proj_sharing.html" />
 <mapID target="proj_templates" url="project/proj_templates.html" />
 <mapID target="proj_stand_about" url="project/proj_stand_about.html" />
 <mapID target="proj_stand_ant_structure" url="project/proj_stand_ant_structure.html" />

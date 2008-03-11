@@ -489,7 +489,7 @@ public abstract class Properties {
         private static final Collection BAD_COLLECTION = new ArrayList ();
         private static final Object[] BAD_ARRAY = new Object [0];
         
-        private List<Reader> readersList;
+        private List<? extends Reader> readersList;
         private HashMap<String, Reader> register;
         
         
@@ -795,6 +795,10 @@ public abstract class Properties {
         public Object[] getArray (String propertyName, Object[] defaultValue) {
             synchronized(impl) {
                 String arrayType = impl.getProperty (propertyName + ".array_type", null);
+                if (arrayType == null) {
+                    ErrorManager.getDefault().log("Unknown array type for "+propertyName);
+                    return defaultValue;
+                }
                 Properties p = getProperties (propertyName);
                 int l = p.getInt ("length", -1);
                 if (l < 0) return defaultValue;

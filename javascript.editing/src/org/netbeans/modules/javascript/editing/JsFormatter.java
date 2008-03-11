@@ -41,9 +41,9 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.Stack;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -63,8 +63,8 @@ import org.openide.util.Exceptions;
 /**
  * Formatting and indentation for JavaScript
  * 
+ * @todo dojo.js.uncompressed.js:5786 indentation
  * @todo Handle JSP
- * @todo Handle if-blocks that don't have an associated block - just indents the next statement
  * @todo Handle block comments - similar to multiline literals but should be indented by a relative amount
  * @todo Handle XML/E4X content
  * @todo Use the Context.modifyIndent() method to change line indents instead of
@@ -73,6 +73,7 @@ import org.openide.util.Exceptions;
  *   char somehow such that it lines up with the * in /*
  *
  * @author Tor Norbye
+ * @author Martin Adamek
  */
 public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     private boolean embeddedJavaScript;
@@ -112,7 +113,6 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
 
     public void reformat(Document document, int startOffset, int endOffset, CompilationInfo info) {
-
         reindent(document, startOffset, endOffset, info, false);
     }
     public void reindent(Document document, int startOffset, int endOffset) {
@@ -198,11 +198,42 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return 0;
     }
     
-    private int getTokenBalanceDelta(TokenId id, BaseDocument doc, TokenSequence<? extends JsTokenId> ts) {
+    private int getTokenBalanceDelta(TokenId id, BaseDocument doc, TokenSequence<? extends JsTokenId> ts, boolean indentOnly) {
         try {
+            OffsetRange range = OffsetRange.NONE;
             if (id == JsTokenId.LBRACKET || id == JsTokenId.LBRACE) {
                 // block with braces, just record it to stack and return 1
                 stack.push(new StackItem(false, new OffsetRange(ts.offset(), ts.offset())));
+                return 1;
+            } else if (id == JsTokenId.CASE || id == JsTokenId.DEFAULT) {
+                
+                int index = ts.index();
+                
+                // find colon ':'
+                LexUtilities.findNextIncluding(ts, Collections.singletonList(JsTokenId.COLON));
+
+                // skip whitespaces, comments and newlines
+                Token<? extends JsTokenId> token = LexUtilities.findNext(ts, 
+                        Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                JsTokenId tokenId = token.id();
+                
+                if (tokenId == JsTokenId.CASE || tokenId == JsTokenId.DEFAULT) {
+                    return 0;
+                } else if (tokenId == JsTokenId.RBRACE) {
+                    return -1;
+                } else {
+                    // look at the beginning of next line if there is case or default
+                    LexUtilities.findNextIncluding(ts, Collections.singletonList(JsTokenId.EOL));
+                    LexUtilities.findNext(ts, 
+                            Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                    if (ts.token().id() == JsTokenId.CASE || ts.token().id() == JsTokenId.DEFAULT) {
+                        return 0;
+                    }
+                }
+
+                ts.moveIndex(index);
+                ts.moveNext();
+                
                 return 1;
             } else if (id == JsTokenId.RBRACKET || id == JsTokenId.RBRACE) {
                 /*
@@ -232,10 +263,50 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     delta -= blocks;
                 }
                 return delta;
-            } else if (LexUtilities.getMultilineRange(doc, ts.offset()) != OffsetRange.NONE) {
+            } else if ((range = LexUtilities.getMultilineRange(doc, ts)) != OffsetRange.NONE) {
                 // we found braceless block, let's record it in the stack
-                stack.push(new StackItem(true, LexUtilities.getMultilineRange(doc, ts.offset())));
+                stack.push(new StackItem(true, range));
             } else if (id == JsTokenId.EOL) {
+
+                if (!indentOnly) {
+                    TokenSequence<? extends JsTokenId> ts2 = LexUtilities.getPositionedSequence(doc, ts.offset());
+                    // skip whitespaces and newlines
+                    Token<? extends JsTokenId> nextToken = LexUtilities.findNext(ts2, 
+                            Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                    TokenId tokenId = nextToken == null ? null : nextToken.id();
+                    if (tokenId == JsTokenId.RBRACE) {
+                        // if it is end of 'switch'
+                        OffsetRange offsetRange = LexUtilities.findBwd(doc, ts2, JsTokenId.LBRACE, JsTokenId.RBRACE);
+                        if (offsetRange != OffsetRange.NONE) {
+                            ts2.movePrevious();
+                            if (LexUtilities.skipParenthesis(ts2, true)) {
+                                Token<? extends JsTokenId> token = ts2.token();
+                                token = LexUtilities.findPrevious(ts2,
+                                        Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                                if (token.id() == JsTokenId.SWITCH) {
+                                    return -1;
+                                }
+                            }
+                        }
+                    } else if (tokenId == JsTokenId.CASE || tokenId == JsTokenId.DEFAULT) {
+                        ts2 = LexUtilities.getPositionedSequence(doc, ts.offset());
+                        Token<? extends JsTokenId> prevToken = LexUtilities.findPrevious(ts2, 
+                                Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                        if (prevToken.id() != JsTokenId.LBRACE) {
+                            // it must be case or default
+                            ts2 = LexUtilities.getPositionedSequence(doc, ts.offset());
+                            prevToken = LexUtilities.findPreviousIncluding(ts2, 
+                                    Arrays.asList(JsTokenId.CASE, JsTokenId.DEFAULT));
+                            int beginLine = Utilities.getLineOffset(doc, ts2.offset());
+                            int eolLine = Utilities.getLineOffset(doc, ts.offset());
+                            if (beginLine != eolLine) {
+                                return -1;
+                            }
+                        }
+                    }
+                }
+                
+                // other
                 if (!stack.empty()) {
                     if (stack.peek().braceless) {
                         // end of line after braceless block start
@@ -269,7 +340,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
     
     // TODO RHTML - there can be many discontiguous sections, I've gotta process all of them on the given line
-    private int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords, Set<OffsetRange> ranges) {
+    private int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords, boolean indentOnly) {
         int balance = 0;
 
         if (embeddedJavaScript) {
@@ -314,7 +385,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                                 TokenId jsId = jsToken.id();
 
                                 if (includeKeywords) {
-                                    balance += getTokenBalanceDelta(jsId, doc, ts);
+                                    balance += getTokenBalanceDelta(jsId, doc, ts, indentOnly);
                                 } else {
                                     balance += getBracketBalanceDelta(jsId);
                                 }
@@ -334,7 +405,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                         TokenId jsId = jsToken.id();
 
                         if (includeKeywords) {
-                            balance += getTokenBalanceDelta(jsId, doc, ts);
+                            balance += getTokenBalanceDelta(jsId, doc, ts, indentOnly);
                         } else {
                             balance += getBracketBalanceDelta(jsId);
                         }
@@ -359,7 +430,8 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 TokenId id = token.id();
                 
                 if (includeKeywords) {
-                    balance += getTokenBalanceDelta(id, doc, ts);
+                    int delta = getTokenBalanceDelta(id, doc, ts, indentOnly);
+                    balance += delta;
                 } else {
                     balance += getBracketBalanceDelta(id);
                 }
@@ -586,10 +658,8 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
             // http://www.netbeans.org/issues/show_bug.cgi?id=115279
             boolean isContinuationOperator = (id == JsTokenId.NONUNARY_OP || id == JsTokenId.DOT);
             
-            // TODO martin: remove this condition completely
             if (ts.offset() == offset && token.length() > 1 && token.text().toString().startsWith("\\")) {
                 // Continued lines have different token types
-                assert false : "I didn't expect this in JavaScript: " + token.text();
                 isContinuationOperator = true;
             }
             
@@ -618,6 +688,17 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 //      secondarg,  # indented both by ( and hanging indent ,
                 //      thirdarg)
                 isContinuationOperator = (bracketBalance == 0);
+            }
+            
+            if (id == JsTokenId.COLON) {
+                TokenSequence<? extends JsTokenId> ts2 = LexUtilities.getPositionedSequence(doc, ts.offset());
+                Token<? extends JsTokenId> foundToken = LexUtilities.findPreviousIncluding(ts2,
+                        Arrays.asList(JsTokenId.CASE, JsTokenId.DEFAULT, JsTokenId.COLON));
+                if (foundToken != null && (foundToken.id() == JsTokenId.CASE || foundToken.id() == JsTokenId.DEFAULT)) {
+                    isContinuationOperator = false;
+                } else {
+                    isContinuationOperator = true;
+                }
             }
             
 //            if (isContinuationOperator) {
@@ -813,8 +894,6 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
             int originallockCommentIndention = 0;
             int adjustedBlockCommentIndention = 0;
 
-            Set<OffsetRange> ranges = new HashSet<OffsetRange>();
-            
             int endIndents;
             while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {
                 int indent; // The indentation to be used for the current line
@@ -897,6 +976,9 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 } else {
                     assert lineType == IN_CODE || lineType == IN_BLOCK_COMMENT_START;
                     indent = balance * indentSize + hangingIndent + initialIndent;
+                    
+//                    System.out.println("### indent " + indent + " = " + balance + " * " + indentSize + " + " + hangingIndent + " + " + initialIndent);
+                    
                     if (lineType == IN_BLOCK_COMMENT_START) {
                         adjustedBlockCommentIndention = indent;
                     }
@@ -919,8 +1001,8 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 int endOfLine = Utilities.getRowEnd(doc, offset) + 1;
 
                 if (lineBegin != -1) {
-                    balance += getTokenBalance(doc, lineBegin, endOfLine, true, ranges);
-                    int bracketDelta = getTokenBalance(doc, lineBegin, endOfLine, false, ranges);
+                    balance += getTokenBalance(doc, lineBegin, endOfLine, true, indentOnly);
+                    int bracketDelta = getTokenBalance(doc, lineBegin, endOfLine, false, indentOnly);
                     bracketBalance += bracketDelta;
                     continued = isLineContinued(doc, offset, bracketBalance);
                 }

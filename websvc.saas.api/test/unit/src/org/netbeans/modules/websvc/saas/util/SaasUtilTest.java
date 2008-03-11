@@ -47,6 +47,7 @@ import javax.xml.bind.JAXBElement;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
@@ -140,7 +141,7 @@ public class SaasUtilTest extends NbTestCase {
         assertEquals("YouTube", metadata.getGroup().getName());
         assertEquals("Videos", metadata.getGroup().getGroup().get(0).getName());
         assertEquals("org.netbeans.modules.websvc.saas.services.youtube.Bundle", metadata.getLocalizingBundle());
-        assertEquals("Templates/WebServices/profile.properties", metadata.getAuthentication().getProfile());
+        assertEquals("SaaSServices/YouTube/profile.properties", metadata.getAuthentication().getProfile());
         assertEquals("dev_id", metadata.getAuthentication().getApiKey().getId());
 
         SetupUtil.commonTearDown();
@@ -157,6 +158,34 @@ public class SaasUtilTest extends NbTestCase {
         assertNotNull(ss.getSaasMetadata());
         //No Sub-group for now
         //assertEquals("Videos", ss.getSaasMetadata().getGroup().getGroup().get(0).getName());
+
+        SetupUtil.commonTearDown();
+    }
+    
+    public void testGetSaasDirName() throws Exception {
+        SetupUtil.commonSetUp(super.getWorkDir());
+
+        String [] urls = {
+            "http://localhost:8080/WebApplication8/resources/application.wadl",
+            "file://home/export/nam/mpProjectA/src/resources/BestApplication.wadl",
+            "file://c:\\ProjectB\\WorstApplication.wadl",
+        };
+        
+        assertEquals("WebApplication8", SaasUtil.getWadlServiceDirName(urls[0]));
+        assertEquals("BestApplication", SaasUtil.getWadlServiceDirName(urls[1]));
+        assertEquals("WorstApplication", SaasUtil.getWadlServiceDirName(urls[2]));
+    
+        SetupUtil.commonTearDown();
+    }
+    
+    public void testEnsureUniqueServiceDirName() throws Exception {
+        SetupUtil.commonSetUp(super.getWorkDir());
+
+        assertEquals("application", SaasUtil.ensureUniqueServiceDirName("application"));
+        assertNotNull(SaasServicesModel.getWebServiceHome().getFileObject("application"));
+        assertEquals("application1", SaasUtil.ensureUniqueServiceDirName("application"));
+        assertEquals("application2", SaasUtil.ensureUniqueServiceDirName("application"));
+        assertEquals("application3", SaasUtil.ensureUniqueServiceDirName("application"));
 
         SetupUtil.commonTearDown();
     }

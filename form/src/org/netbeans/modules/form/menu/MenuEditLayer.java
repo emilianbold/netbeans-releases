@@ -432,13 +432,13 @@ public class MenuEditLayer extends JPanel {
                 }
                 
             };
-            formDesigner.addPropertyChangeListener("activatedNodes",selectionListener);
+            formDesigner.addPropertyChangeListener("activatedNodes", selectionListener); // NOI18N
         }
     }
     
     private void unconfigureSelectionListener() {
         if(selectionListener != null) {
-            formDesigner.removePropertyChangeListener(selectionListener);
+            formDesigner.removePropertyChangeListener("activatedNodes", selectionListener); // NOI18N
             selectionListener = null;
         }
     }

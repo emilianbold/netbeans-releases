@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.api.compilers;
 import java.io.File;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -54,11 +56,25 @@ public class Tool {
     public static int CCCompiler = 1;
     public static int FortranCompiler = 2;
     public static int CustomTool = 3;
+    public static int Assembler = 4;
+    public static int MakeTool = 5;
+    public static int DebuggerTool = 6;
 
     private static final String[] TOOL_NAMES = {
         getString("CCompiler"), // NOI18N
         getString("CCCompiler"), // NOI18N
         getString("FortranCompiler"), // NOI18N
+        getString("CustomBuildTool"), // NOI18N
+        getString("Assembler"), // NOI18N
+        getString("MakeTool"), // NOI18N
+        getString("DebuggerTool"), // NOI18N
+    };
+    
+    private static final String[] COMPILER_TOOL_NAMES = {
+        getString("CCompiler"), // NOI18N
+        getString("CCCompiler"), // NOI18N
+        getString("FortranCompiler"), // NOI18N
+        getString("Assembler"), // NOI18N
         getString("CustomBuildTool"), // NOI18N
     };
     
@@ -76,6 +92,13 @@ public class Tool {
         this.name = name;
         this.displayName = displayName;
         this.path = name.length() > 0 ? path + File.separator + name : path;
+        includeFilePrefix = null;
+    }
+    
+    public Tool createCopy() {
+        Tool copy = new Tool(flavor, kind, "", displayName, path);
+        copy.setName(getName());
+        return copy;
     }
     
     public CompilerFlavor getFlavor() {
@@ -86,6 +109,10 @@ public class Tool {
         return kind;
     }
     
+    public void setName(String name) {
+        this.name = name;
+    }
+    
     public String getName() {
         return name;
     }
@@ -94,18 +121,50 @@ public class Tool {
         return path;
     }
     
+    public void setPath(String p) {
+        if (p == null) {
+            
+        }
+        else {
+            path = p;
+            name = IpeUtils.getBaseName(path);
+        }
+    }
+    
+    public static String[] getCompilerToolNames() {
+        return COMPILER_TOOL_NAMES;
+    }
+    
+    public static int getTool(String name) {
+        for (int i = 0; i < TOOL_NAMES.length; i++) {
+            if (TOOL_NAMES[i].equals(name)) {
+                return i;
+            }
+        }
+        return 0; // ????
+    }
+    
+    public static String getName(int kind) {
+        if (kind >= 0 && kind <= TOOL_NAMES.length) {
+            return TOOL_NAMES[kind];
+        }
+        else {
+            return null;
+        }
+    }
+    
     public String getDisplayName() {
         return displayName;
     }
     
-    public String getGenericName() {
-        String name = getName();
-        if (name.length() > 0) {
-            return TOOL_NAMES[getKind()] + " - " + getName(); // NOI18N
-        } else {
-           return TOOL_NAMES[getKind()]; 
-        }
-    }
+//    public String getGenericName() {
+//        String name = getName();
+//        if (name.length() > 0) {
+//            return TOOL_NAMES[getKind()] + " - " + getName(); // NOI18N
+//        } else {
+//           return TOOL_NAMES[getKind()]; 
+//        }
+//    }
     
     public static String getToolDisplayName(int kind) {
         return TOOL_NAMES[kind];
@@ -140,10 +199,14 @@ public class Tool {
         return includeFilePrefix;
     }
     
+    public void setIncludeFilePathPrefix(String includeFilePrefix) {
+        this.includeFilePrefix = includeFilePrefix;
+    }
+    
     public boolean exists() {
         if (getPath() == null || getPath().length() == 0)
             return false;
-        return new File(getPath()).exists();
+        return new File(getPath()).exists() || Path.findCommand(getPath()) != null;
     }
     
     private static ResourceBundle bundle = null;

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.JTextComponent;
@@ -48,6 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
@@ -111,36 +113,44 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
         generatorTask = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
                 try {
-                    JaxRsCodeGenerator codegen = codegen = 
+                    JaxRsCodeGenerator codegen = 
                         JaxRsCodeGeneratorFactory.create(targetComponent, targetFO, method);
                 
                     WadlSaasBean bean = codegen.getBean();
                     boolean showParams = codegen.canShowParam();
-                    List<ParameterInfo> allParams = new ArrayList<ParameterInfo>(bean.getHeaderParameters());
-                    if (showParams && bean.getInputParameters() != null) {
-                        allParams.addAll(bean.getInputParameters());
-                    }
-                    JaxRsCodeSetupPanel panel = new JaxRsCodeSetupPanel(
-                            codegen.getSubresourceLocatorUriTemplate(),
-                            bean.getQualifiedClassName(), 
-                            allParams,
-                            codegen.canShowResourceInfo(), showParams);
+                    List<ParameterInfo> allParams = bean.filterParametersByAuth(
+                            bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
+                    if(codegen.canShowResourceInfo() || (showParams && !allParams.isEmpty())) {
+                        JaxRsCodeSetupPanel panel = new JaxRsCodeSetupPanel(
+                                codegen.getSubresourceLocatorUriTemplate(),
+                                bean.getQualifiedClassName(), 
+                                allParams,
+                                codegen.canShowResourceInfo(), showParams);
 
-                    DialogDescriptor desc = new DialogDescriptor(panel, 
-                            NbBundle.getMessage(JaxRsEditorDrop.class,
-                            "LBL_CustomizeSaasService", displayName));
-                    Object response = DialogDisplayer.getDefault().notify(desc);
-                    
-                    if (response.equals(NotifyDescriptor.YES_OPTION)) {
-                        codegen.setSubresourceLocatorUriTemplate(panel.getUriTemplate());
-                        codegen.setSubresourceLocatorName(panel.getMethodName());
-                    } else {
-                        // cancel
-                        return;
+                        DialogDescriptor desc = new DialogDescriptor(panel, 
+                                NbBundle.getMessage(JaxRsEditorDrop.class,
+                                "LBL_CustomizeSaasService", displayName));
+                        Object response = DialogDisplayer.getDefault().notify(desc);
+
+                        if (response.equals(NotifyDescriptor.YES_OPTION)) {
+                            codegen.setSubresourceLocatorUriTemplate(panel.getUriTemplate());
+                            codegen.setSubresourceLocatorName(panel.getMethodName());
+                        } else {
+                            // cancel
+                            return;
+                        }
                     }
 
-                    codegen.generate(dialog.getProgressHandle());
-                    Util.showMethod(targetFO, codegen.getSubresourceLocatorName());
+                    try {
+                        codegen.generate(dialog.getProgressHandle());
+                    } catch(IOException ex) {
+                        if(!ex.getMessage().equals(Util.SCANNING_IN_PROGRESS))
+                            errors.add(ex);
+                    }
+                    try {
+                        Util.showMethod(targetFO, codegen.getSubresourceLocatorName());
+                    } catch(IOException ex) {//ignore
+                    }
                 } catch (Exception ioe) {
                     errors.add(ioe);
                 } finally {

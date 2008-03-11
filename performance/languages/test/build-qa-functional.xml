@@ -84,7 +84,7 @@ made subject to such option by the copyright holder.
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes tests inside IDE -->
-    <target name="runidesetup" depends="init-cp, copy_unzip_lp_projects">
+    <target name="runidesetup" depends="init-cp, copy_unzip_lp_projects,check-appserver">
         <antcall target="copy_released_ide_cfg_file"/>
 
         <executeTests pluginName="ide">
@@ -94,7 +94,7 @@ made subject to such option by the copyright holder.
             </classpath>
             
             <property name="xtest.timeout" value="2400000" />
-            
+            <property name="xtest.ide.commandline.suffix" value="-J-Dperf.refactoring.test=true -J-Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot;"/>            
         </executeTests>
 
         <!-- save copy of current Userdir -->
@@ -106,7 +106,7 @@ made subject to such option by the copyright holder.
     </target>
 
     
-    <target name="runidetest" depends="init-cp, ide_command_line_suffix">
+    <target name="runidetest" depends="check-appserver, init-cp, ide_command_line_suffix">
         <delete dir="${xtest.workdir}/sys/ide"/>
         <copy todir="${xtest.workdir}/sys/ide">
             <fileset dir="${xtest.workdir}/sys/ide_backup"/>
@@ -128,6 +128,7 @@ made subject to such option by the copyright holder.
             <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.ide.reuse.userdir" value="true" />
             <property name="xtest.timeout" value="3600000" />
+            <property name="xtest.userdata|com.sun.aas.installRoot" value="${j2ee.appserver.path}"/>
         </executeTests>
         
         <delete dir="${xtest.tmpdir.createproject}"/>
@@ -136,7 +137,7 @@ made subject to such option by the copyright holder.
     </target>
     
     
-    <target name="runidetest_scan" depends="init-cp, copy_unzip_lp_projects">
+    <target name="runidetest_scan" depends="init-cp, copy_unzip_lp_projects, check-appserver">
         <antcall target="copy_released_ide_cfg_file"/>
        
         <executeTests pluginName="ide">
@@ -145,7 +146,7 @@ made subject to such option by the copyright holder.
                 <path location="${test.qa-functional.run.cp.extra}"/>
             </classpath>
             
-            <property name="xtest.ide.commandline.suffix" value="-J-Dperf.refactoring.test=true"/>
+            <property name="xtest.ide.commandline.suffix" value="-J-Dperf.refactoring.test=true -J-Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot;"/>
 
             <property name="xtest.enable.assertions" value="false" />
             <property name="xtest.timeout" value="1200000" />
@@ -155,7 +156,7 @@ made subject to such option by the copyright holder.
     </target>
     
     
-    <target name="runidetest_footprint" depends="init-cp, prepare_measure_footprint, copy_unzip_lp_projects, ide_command_line_suffix">
+    <target name="runidetest_footprint" depends="init-cp, prepare_measure_footprint, copy_unzip_lp_projects, ide_command_line_suffix, check-appserver">
         <antcall target="copy_released_ide_cfg_file"/>
         
         <!-- Opens project at specified location -->
@@ -171,6 +172,7 @@ made subject to such option by the copyright holder.
             <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.memory.repeat=1 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
             <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.timeout" value="2400000" />
+	    <property name="xtest.userdata|com.sun.aas.installRoot" value="${j2ee.appserver.path}" />
         </executeTests>
         
         <antcall target="copy_original_ide_cfg_file"/>
@@ -186,6 +188,19 @@ made subject to such option by the copyright holder.
         <unzip src="${nbextra.dir}/qa/projectized/RubyPerfTest.zip" dest="${xtest.tmpdir}/"/>
         <unzip src="${nbextra.dir}/qa/projectized/ScriptingPerfTest.zip" dest="${xtest.tmpdir}/"/>
     </target>
+
+    <target name="set-appserver-path" unless="j2ee.appserver.path">
+        <condition property="j2ee.appserver.path" value="e:\\space\\appserver">
+            <os family="windows"/>
+        </condition>
+        <condition property="j2ee.appserver.path" value="/space/appserver">
+            <os family="unix"/>
+        </condition>
+    </target>
     
+    <target name="check-appserver" depends="set-appserver-path">
+        <available file="${j2ee.appserver.path}/domains/domain1" property="j2ee.appserver.present"/>
+        <fail unless="j2ee.appserver.present" message="AppServer was not found in ${j2ee.appserver.path}. Set property j2ee.appserver.path to point to AppServer installation directory."/>
+    </target>    
     
 </project>

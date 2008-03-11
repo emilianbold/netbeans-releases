@@ -54,6 +54,7 @@ import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -383,38 +384,42 @@ private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent e
         return new HelpCtx(CustomizerRun.class);
     }
     
-    public static ApplicationUrisComboBoxModel createApplicationUrisComboBoxModel(EarProject project, EarProjectProperties uiProperties) {
-        return new ApplicationUrisComboBoxModel(project, uiProperties);
+    public static ApplicationUrisComboBoxModel createApplicationUrisComboBoxModel(EarProject project) {
+        return new ApplicationUrisComboBoxModel(project);
     }
     
     public static final class ApplicationUrisComboBoxModel extends AbstractListModel implements ComboBoxModel {
         
         private List<ClientModuleItem> values;
         private EarProject project;
-        private EarProjectProperties uiProperties;
         private ClientModuleItem selected;
         
-        public ApplicationUrisComboBoxModel(EarProject project, EarProjectProperties uiProperties) {
+        public ApplicationUrisComboBoxModel(EarProject project) {
             this.project = project;
-            this.uiProperties = uiProperties;
-            initValues();
+            initValues(EarProjectProperties.getJarContentAdditional(project));
         }
         
         public Object getElementAt(int index) {
             return values.get(index);
         }
 
-        private void setSelectedItem(String clientModuleURI, String appClient) {
-            if (values.contains(new ClientModuleItem(clientModuleURI, false))) {
+        private boolean setSelectedItem(String clientModuleURI, String appClient) {
+            if (clientModuleURI != null && values.contains(new ClientModuleItem(clientModuleURI, false))) {
                 setSelectedItem(new ClientModuleItem(clientModuleURI, false));
+                return true;
             } else if (appClient != null && values.contains(new ClientModuleItem(appClient, true))) {
                 setSelectedItem(new ClientModuleItem(appClient, true));
+                return true;
             }
+            return false;
         }
         
         public void storeSelectedItem(EditableProperties ep) {
             ClientModuleItem sel = (ClientModuleItem)getSelectedItem();
-            if (sel.isAppClient()) {
+            if (sel == null) {
+                ep.remove(EarProjectProperties.APPLICATION_CLIENT);
+                ep.remove(EarProjectProperties.CLIENT_MODULE_URI);
+            } else if (sel.isAppClient()) {
                 ep.setProperty(EarProjectProperties.APPLICATION_CLIENT, sel.getUri());
                 ep.setProperty(EarProjectProperties.CLIENT_MODULE_URI, getClientModuleUriForAppClient(project));
             } else {
@@ -435,12 +440,17 @@ private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent e
             selected = (ClientModuleItem)obj;
         }
         
-        private void initValues() {
+        void refresh(List<ClassPathSupport.Item> list) {
+            initValues(list);
+            fireContentsChanged(this, 0, values.size());
+        }
+        
+        private void initValues(List<ClassPathSupport.Item> list) {
             Set<ClientModuleItem> items = new TreeSet<ClientModuleItem>();
-            for (Project p : EarProjectProperties.getApplicationSubprojects(project, J2eeModule.WAR)) {
+            for (Project p : EarProjectProperties.getApplicationSubprojects(list, J2eeModule.WAR)) {
                 items.add(new ClientModuleItem(ProjectUtils.getInformation(p).getName(), false));
             }
-            for (Project p : EarProjectProperties.getApplicationSubprojects(project, J2eeModule.CLIENT)) {
+            for (Project p : EarProjectProperties.getApplicationSubprojects(list, J2eeModule.CLIENT)) {
                 items.add(new ClientModuleItem(ProjectUtils.getInformation(p).getName(), true));
             }
             values = new ArrayList<ClientModuleItem>(items);
@@ -448,7 +458,9 @@ private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent e
                     AntProjectHelper.PROJECT_PROPERTIES_PATH);
             String clientModuleURI = ep.getProperty(EarProjectProperties.CLIENT_MODULE_URI);
             String appClient = ep.getProperty(EarProjectProperties.APPLICATION_CLIENT);
-            setSelectedItem(clientModuleURI, appClient);
+            if (!setSelectedItem(clientModuleURI, appClient)) {
+                setSelectedItem(values.size() > 0 ? values.get(0) : null);
+            }
         }
 
         private static String getClientModuleUriForAppClient(EarProject project) {
@@ -498,6 +510,7 @@ private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent e
         private boolean appClient;
 
         public ClientModuleItem(String uri, boolean appClient) {
+            assert uri != null;
             this.uri = uri;
             this.appClient = appClient;
         }

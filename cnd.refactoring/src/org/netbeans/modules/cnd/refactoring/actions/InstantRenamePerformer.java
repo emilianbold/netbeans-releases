@@ -65,6 +65,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
@@ -97,7 +98,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     private final PositionsBag bag;
     
     /** Creates a new instance of InstantRenamePerformer */
-    private InstantRenamePerformer(JTextComponent target,  Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
+    /*package*/ InstantRenamePerformer(JTextComponent target,  Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
 	this.target = target;
 	this.doc = target.getDocument();
 	
@@ -181,10 +182,13 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         }
     }
     
-    private static boolean allowInstantRename(CsmReference ref) {
+    /*package*/ static boolean allowInstantRename(CsmReference ref) {
         CsmReferenceResolver.Scope scope = CsmReferenceResolver.getDefault().fastCheckScope(ref);
         if (scope == CsmReferenceResolver.Scope.LOCAL) {
             return true;
+        } else if (scope == CsmReferenceResolver.Scope.FILE_LOCAL) {
+            // allow if file is not included anywhere
+            return CsmIncludeHierarchyResolver.getDefault().getFiles(ref.getContainingFile()).isEmpty();
         } else {
             return false;
         }
@@ -222,44 +226,6 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         return out;
     }
     
-//    private static boolean allowInstantRename(Element e) {
-//        if (org.netbeans.modules.java.editor.semantic.Utilities.isPrivateElement(e)) {
-//            return true;
-//        }
-//        
-//        //#92160: check for local classes:
-//        if (e.getKind() == ElementKind.CLASS) {//only classes can be local
-//            Element enclosing = e.getEnclosingElement();
-//            
-//            return LOCAL_CLASS_PARENTS.contains(enclosing.getKind());
-//        }
-//        
-//        return false;
-//    }
-//    
-//    private static boolean overlapsWithGuardedBlocks(Document doc, Set<Token<JavaTokenId>> highlights) {
-//        if (!(doc instanceof GuardedDocument))
-//            return false;
-//        
-//        GuardedDocument gd = (GuardedDocument) doc;
-//        MarkBlock current = gd.getGuardedBlockChain().getChain();
-//        
-//        while (current != null) {
-//            for (Token<JavaTokenId> h : highlights) {
-//                if ((current.compare(h.offset(null), h.offset(null) + h.length()) & MarkBlock.OVERLAP) != 0) {
-//                    return true;
-//                }
-//            }
-//            
-//            current = current.getNext();
-//        }
-//        
-//        return false;
-//    }
-//    
-//    private static final Set<ElementKind> LOCAL_CLASS_PARENTS = EnumSet.of(ElementKind.CONSTRUCTOR, ElementKind.INSTANCE_INIT, ElementKind.METHOD, ElementKind.STATIC_INIT);
-//    
-//    
     public static void performInstantRename(JTextComponent target, Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
 	new InstantRenamePerformer(target, highlights, caretOffset);
     }
