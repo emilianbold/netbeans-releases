@@ -39,53 +39,23 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.modules.properties.syntax;
 
-
-import java.awt.Color;
-import java.awt.SystemColor;
-import java.util.*;
-
+import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.TokenContext;
-
 
 /** 
  * Initializes properties editor kit settings. 
  * 
  * @author  Mila Metelka
  */
-public class PropertiesSettingsInitializer extends Settings.AbstractInitializer {
-
-    /** Name assigned to initializer */
-    public static final String NAME = "properties-settings-initializer";
-
-
-    /** Construct <code>PropertiesSettingsInitializer</code>. */
-    public PropertiesSettingsInitializer() {
-        super(NAME);
+public final class PropertiesSettingsInitializer {
+    public static TokenContext[] getTokenContext() {
+        return new TokenContext[] { PropertiesTokenContext.context };
     }
 
-
-    /** Updates settings map for editor kit class. */
-    public void updateSettingsMap(Class kitClass, Map settingsMap) {
-        if (kitClass == PropertiesKit.class) {
-            // initialize color for shadowing cells in table view
-            settingsMap.put(PropertiesOptions.SHADOW_TABLE_CELL_PROP, new Color(SystemColor.controlHighlight.getRGB()));
-
-            settingsMap.put(SettingsNames.ABBREV_MAP, new TreeMap());
-            
-            settingsMap.put(SettingsNames.IDENTIFIER_ACCEPTOR, AcceptorFactory.JAVA_IDENTIFIER);
-
-            SettingsUtil.updateListSetting(settingsMap, SettingsNames.TOKEN_CONTEXT_LIST,
-                new TokenContext[] {
-                    PropertiesTokenContext.context
-                }
-            );
-        }
+    public static Acceptor getIdentifierAcceptor() {
+        return AcceptorFactory.JAVA_IDENTIFIER;
     }
 }
