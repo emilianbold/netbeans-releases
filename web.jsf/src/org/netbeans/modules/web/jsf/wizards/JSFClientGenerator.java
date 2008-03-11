@@ -68,6 +68,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -123,7 +124,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -387,7 +387,7 @@ public class JSFClientGenerator {
                 + "<title>New " + simpleEntityName + "</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
         newSb.append("<h1>New " + simpleEntityName + "</h1>\n");
-        newSb.append("<h:form>\n  <h:inputHidden id=\"entityCreationValidatorField\" validator=\"#{" + managedBean + ".entityCreationValidator}\"/>\n <h:panelGrid columns=\"2\">\n");
+        newSb.append("<h:form>\n  <h:inputHidden id=\"validateCreateField\" validator=\"#{" + managedBean + ".validateCreate}\" value=\"value\"/>\n <h:panelGrid columns=\"2\">\n");
         
         TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
         JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_NEW, managedBean + "." + fieldName, newSb, true, entityClass);
@@ -796,6 +796,9 @@ public class JSFClientGenerator {
                 + entityReferenceName + " o = (" + entityReferenceName +") object;\n");
         if (embeddable[0]) {
             getAsStringBody.append(idPropertyType[0] + " id  = o." + idGetterName[0] + "();\n" +
+                    "if (id == null) {\n" +
+                    "return \"\";\n" +
+                    "}\n" +
                     "String delim = \"#\";\n" +
                     "String escape = \"~\";\n\n"               
                     );
@@ -803,16 +806,21 @@ public class JSFClientGenerator {
                 MethodModel setter = paramSetters.get(i);
                 String propName = getPropNameFromMethod(setter.getName());
                 String type = setter.getParameters().get(0).getType();
-                String toString = ("String".equals(type) || "java.lang.String".equals(type))? "" : ".toString()";
-                getAsStringBody.append("String " + propName + " = id.g" + setter.getName().substring(1) + "()" + toString + ";\n" +
-                        "if (" + propName + " == null) {\n" +
-                        propName + " = \"\";\n" +
-                        "}\n" +
-                        "else {\n" +
-                        propName + " = " + propName + ".replace(escape, escape + escape);\n" +
-                        propName + " = " + propName + ".replace(delim, escape + delim);\n" +
-                        "}\n"
-                        );
+                boolean isString = "String".equals(type) || "java.lang.String".equals(type);
+                boolean isPrimitive = "boolean".equals(type) || "char".equals(type) ||
+                        "double".equals(type) || "float".equals(type) || "int".equals(type) || "long".equals(type);
+                if (isString) {
+                    getAsStringBody.append("String " + propName + " = id.g" + setter.getName().substring(1) + "();\n");
+                }
+                else if (isPrimitive) {
+                    getAsStringBody.append("String " + propName + " = String.valueOf(id.g" + setter.getName().substring(1) + "());\n");
+                }
+                else {
+                    getAsStringBody.append("Object " + propName + "Obj = id.g" + setter.getName().substring(1) + "();\n" +
+                            "String " + propName + " = " + propName + "Obj == null ? \"\" : String.valueOf(" + propName + "Obj);\n");
+                }
+                getAsStringBody.append(propName + " = " + propName + ".replace(escape, escape + escape);\n" +
+                        propName + " = " + propName + ".replace(delim, escape + delim);\n");
             }
             getAsStringBody.append("return ");
             for(int i = 0; i < paramSetters.size(); i++) {
@@ -1143,6 +1151,9 @@ public class JSFClientGenerator {
                     StringBuffer updateRelatedInEditPost = new StringBuffer();
                     StringBuffer updateRelatedInDestroy = new StringBuffer();
                     StringBuffer initRelatedInCreate = new StringBuffer();
+                    StringBuffer illegalOrphansInCreate = new StringBuffer();
+                    StringBuffer illegalOrphansInEdit = new StringBuffer();
+                    StringBuffer illegalOrphansInDestroy = new StringBuffer();
 
                     List<ElementHandle<ExecutableElement>> allRelMethods = new ArrayList<ElementHandle<ExecutableElement>>(toOneRelMethods);
                     allRelMethods.addAll(toManyRelMethods);
@@ -1157,13 +1168,11 @@ public class JSFClientGenerator {
                     
                     String[] importFqs = {"javax.persistence.Query",
                                 "javax.faces.application.FacesMessage",
-                                "javax.faces.context.FacesContext",
                                 "java.lang.reflect.InvocationTargetException",
                                 "java.lang.reflect.Method",
                                 "javax.faces.FacesException",
                                 "java.util.HashMap",
-                                "javax.faces.validator.ValidatorException",
-                                "javax.faces.component.UIComponent"
+                                "javax.faces.validator.ValidatorException"
                     };
                     CompilationUnitTree modifiedImportCut = null;
                     for (String importFq : importFqs) {
@@ -1223,6 +1232,23 @@ public class JSFClientGenerator {
                             String mName = m.getSimpleName().toString();
                             String otherName = otherSide.getSimpleName().toString();
                             String relFieldName = getPropNameFromMethod(mName);
+                            String otherFieldName = getPropNameFromMethod(otherName);
+                            
+                            boolean joinColumnNullable = true;
+                            Element joinColumnElement = isFieldAccess ? JsfForm.guessField(workingCopy, m) : m;
+                            AnnotationMirror joinColumnAnnotation = JsfForm.findAnnotation(joinColumnElement, "javax.persistence.JoinColumn"); //NOI18N
+                            if (joinColumnAnnotation != null) {
+                                String joinColumnNullableValue = JsfForm.findAnnotationValueAsString(joinColumnAnnotation, "nullable"); //NOI18N
+                                joinColumnNullable = Boolean.parseBoolean(joinColumnNullableValue);
+                            }
+                            
+                            boolean relJoinColumnNullable = true;
+                            Element relJoinColumnElement = isFieldAccess ? JsfForm.guessField(workingCopy, otherSide) : otherSide;
+                            AnnotationMirror relJoinColumnAnnotation = JsfForm.findAnnotation(relJoinColumnElement, "javax.persistence.JoinColumn"); //NOI18N
+                            if (relJoinColumnAnnotation != null) {
+                                String relJoinColumnNullableValue = JsfForm.findAnnotationValueAsString(relJoinColumnAnnotation, "nullable"); //NOI18N
+                                relJoinColumnNullable = Boolean.parseBoolean(relJoinColumnNullableValue);
+                            }
                             
 //                    updateRelatedInCreate.append("\n//update property " + relFieldName + " of entity " + simpleRelType + "\n" +
 //                            (isCollection ? "for(" + relTypeReference + " " + relFieldName + " : " + fieldName + "." + m.getName() + "()){\n" :
@@ -1241,35 +1267,58 @@ public class JSFClientGenerator {
                             String relTypeInstanceName = relTypeReference.substring(0,1).toLowerCase() + relTypeReference.substring(1);
                             
                             if (isCollection) {
-                                initRelatedInCreate.append("List<" + relTypeReference + "> merged" + mName.substring(3) + " = new ArrayList<" + relTypeReference + ">();\n" +
+                                String refOrMergeString = "em.merge(" + relTypeInstanceName + ");\n";
+                                ExecutableElement relIdGetterElement = JsfForm.getIdGetter(workingCopy, isFieldAccess, relClass);
+                                if (relIdGetterElement != null) {
+                                    String relIdGetter = relIdGetterElement.getSimpleName().toString();
+                                    refOrMergeString = "em.getReference(" + relTypeInstanceName + ".getClass(), " + relTypeInstanceName + "." + relIdGetter + "());\n";
+                                }
+                                initRelatedInCreate.append("List<" + relTypeReference + "> attached" + mName.substring(3) + " = new ArrayList<" + relTypeReference + ">();\n" +
                                         "for (" + relTypeReference + " " + relTypeInstanceName + " : " + fieldName + "." + mName + "()) {\n" +
-                                        relTypeInstanceName + " = em.merge(" + relTypeInstanceName + ");\n" +
-                                        "merged" + mName.substring(3) + ".add(" + relTypeInstanceName + ");\n" +
+                                        relTypeInstanceName + " = " + refOrMergeString +
+                                        "attached" + mName.substring(3) + ".add(" + relTypeInstanceName + ");\n" +
                                         "}\n" +
-                                        fieldName + ".s" + mName.substring(1) + "(merged" + mName.substring(3) + ");\n"
+                                        fieldName + ".s" + mName.substring(1) + "(attached" + mName.substring(3) + ");\n"
                                         );
+                            }
+                            
+                            String relrelInstanceName = "old" + simpleEntityName;
+                            String relrelGetterName = otherName;
+                            
+                            if (!joinColumnNullable && otherSideMultiplicity == JsfForm.REL_TO_ONE && multiplicity == JsfForm.REL_TO_ONE) {
+                                illegalOrphansInCreate.append(
+                                        relTypeReference + " " + relTypeInstanceName + "OrphanCheck = " + fieldName + "." + mName +"();\n" +
+                                                            "if (" + relTypeInstanceName + "OrphanCheck != null) {\n");
+                                illegalOrphansInCreate.append(simpleEntityName + " " + relrelInstanceName + " = " + relTypeInstanceName + "OrphanCheck." + relrelGetterName + "();\n");
+                                illegalOrphansInCreate.append("if (" + relrelInstanceName + " != null) {\n" + 
+                                        "addErrorMessage(\"The " + relTypeReference + " \" + " + relTypeInstanceName + "OrphanCheck + \" already has a " + simpleEntityName + " whose " + relFieldName + " column cannot be null. Please select another " + relTypeReference + ".\");\n" +
+                                                "illegalOrphans = true;\n" +
+                                        "}\n");
+                                illegalOrphansInCreate.append("}\n");
                             }
                             
                             if (multiplicity == JsfForm.REL_TO_MANY && otherSideMultiplicity == JsfForm.REL_TO_ONE){
                                 modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "java.util.ArrayList");
                                 updateRelatedInCreate.append("Map<" + simpleEntityName + ",List<" + relTypeReference + ">> " + relTypeInstanceName + "sToRemove = new HashMap<" + simpleEntityName + ",List<" + relTypeReference + ">>();\n");
                             }
+
                             updateRelatedInCreate.append("\n//update property " + relFieldName + " of entity " + fieldName + "\n" + //mbohm: why doesn't this show
                                                         (isCollection ? "for(" + relTypeReference + " " + relTypeInstanceName + " : " + fieldName + "." + mName + "()){\n" :
-                                                            relTypeReference + " " + relTypeInstanceName + "=" + fieldName + "." + mName +"();\n" +
+                                                            relTypeReference + " " + relTypeInstanceName + " = " + fieldName + "." + mName +"();\n" +
                                                             "if (" + relTypeInstanceName + " != null) {\n"));
                                                             //if 1:1, be sure to orphan the related entity's current related entity
-                            String relrelInstanceName = "old" + simpleEntityName;
-                            String relrelGetterName = otherName;
                             if (otherSideMultiplicity == JsfForm.REL_TO_ONE){
                                 updateRelatedInCreate.append(simpleEntityName + " " + relrelInstanceName + " = " + relTypeInstanceName + "." + relrelGetterName + "();\n");
                                 if (multiplicity == JsfForm.REL_TO_ONE) {
+                                    if (joinColumnNullable) {
                                         updateRelatedInCreate.append("if (" + relrelInstanceName + " != null) {\n" + 
                                         relrelInstanceName + ".s" + mName.substring(1) + "(null);\n" + 
                                         relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" + 
                                         "}\n");    
+                                    }
                                 }
                             }
+                            
                             updateRelatedInCreate.append( ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + ".s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
                                                             relTypeInstanceName + "." + otherName + "().add(" + fieldName +");\n") +
                                                         relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n");
@@ -1324,52 +1373,84 @@ public class JSFClientGenerator {
                             if (isCollection) {
                                 updateRelatedInEditPre.append("\n Collection<" + relTypeReference + "> " + relTypeInstanceName + "sOld = em.find(" +
                                     simpleEntityName + ".class, " + fieldName + "." + idGetterName[0] + "())." + mName + "();\n");
-                                updateRelatedInEditPost.append("\n//update property " + relTypeInstanceName + " of entity " + fieldName + "\n" + //mbohm: why doesn't this show up
-                                    "Collection <" + relTypeReference + "> " + relTypeInstanceName + "sNew = " + fieldName + "." + mName + "();\n" +
-                                    "for(" + relTypeReference + " " + relTypeInstanceName + "Old : " + relTypeInstanceName + "sOld) {\n" +
-                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + "Old.s" + otherName.substring(1) + "(null);\n" :
-                                        relTypeInstanceName + "Old." + otherName + "().remove(" + fieldName +");\n") +
-                                    relTypeInstanceName + "Old = em.merge(" + relTypeInstanceName +"Old);\n}\n");
-                                    if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
-                                       updateRelatedInEditPost.append("Map<" + simpleEntityName + ",List<" + relTypeReference + ">> " + relTypeInstanceName + "sToRemove = new HashMap<" + simpleEntityName + ",List<" + relTypeReference + ">>();\n"); 
-                                    }
-                                    updateRelatedInEditPost.append("for(" + relTypeReference + " " + relTypeInstanceName + "New : " + relTypeInstanceName + "sNew) {\n" +
-                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? simpleEntityName + " " + relrelInstanceName + " = " + relTypeInstanceName + "New." + relrelGetterName + "();\n" +
-                                        relTypeInstanceName + "New.s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
-                                        relTypeInstanceName + "New." + otherName + "().add(" + fieldName +");\n") +
-                                    relTypeInstanceName + "New=em.merge(" + relTypeInstanceName +"New);\n");
-                                    String relTypeListName = relTypeInstanceName + "List";
-                                    if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
-                                        updateRelatedInEditPost.append("if " + relrelInstanceName + " != null) {\n" +
-                                            "List<" + relTypeReference + "> " + relTypeListName + " = " + relTypeInstanceName + "sToRemove.get(" + relrelInstanceName + ");\n" +
-                                            "if " + relTypeListName + " == null) {\n" +
-                                            relTypeListName + " = new ArrayList<" + relTypeReference + ">();\n" +
-                                            relTypeInstanceName + "sToRemove.put(" + relrelInstanceName + ", " + relTypeListName + ");\n" +
+                                updateRelatedInEditPre.append("\n//update property " + relTypeInstanceName + " of entity " + fieldName + "\n" + //mbohm: why doesn't this show up
+                                    "Collection <" + relTypeReference + "> " + relTypeInstanceName + "sNew = " + fieldName + "." + mName + "();\n");
+                                if (!relJoinColumnNullable && otherSideMultiplicity == JsfForm.REL_TO_ONE) {
+                                    illegalOrphansInEdit.append(
+                                            "for(" + relTypeReference + " " + relTypeInstanceName + "Old : " + relTypeInstanceName + "sOld) {\n" +
+                                            "if (!" + relTypeInstanceName + "sNew.contains(" + relTypeInstanceName + "Old)) {\n" +
+                                            "addErrorMessage(\"You must retain " + relTypeReference + " \" + " + relTypeInstanceName + "Old + \" since its " + simpleEntityName + " field is not nullable.\");\n" +
+                                            "illegalOrphans = true;\n" +
                                             "}\n" +
-                                            relTypeListName + ".add(" + relTypeInstanceName + "New);\n" +
                                             "}\n");
-                                    }
-                                    updateRelatedInEditPost.append("}\n");
-                                    if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
-                                            updateRelatedInEditPost.append("for (" + simpleEntityName + " " + relrelInstanceName + " : " + relTypeInstanceName + "sToRemove.keySet()) {\n" +
-                                            "List<" + relTypeReference + "> " + relTypeListName + " = " + relTypeInstanceName + "sToRemove.get(" + relrelInstanceName + ");\n" +
-                                            "for (" + relTypeReference + " " + relTypeInstanceName + " : " + relTypeListName + ") {\n" +
-                                            relrelInstanceName + "." + mName + "().remove(" + relTypeInstanceName + ");\n" +
-                                            "}\n" +
-                                            relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n}\n");
-                                    }
+                                }
+                                if (otherSideMultiplicity == JsfForm.REL_TO_MANY || relJoinColumnNullable) {
+                                    updateRelatedInEditPost.append(
+                                        "for(" + relTypeReference + " " + relTypeInstanceName + "Old : " + relTypeInstanceName + "sOld) {\n" +
+                                        ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + "Old.s" + otherName.substring(1) + "(null);\n" :
+                                            relTypeInstanceName + "Old." + otherName + "().remove(" + fieldName +");\n") +
+                                        relTypeInstanceName + "Old = em.merge(" + relTypeInstanceName +"Old);\n}\n");
+                                }
+                                if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
+                                   updateRelatedInEditPost.append("Map<" + simpleEntityName + ",List<" + relTypeReference + ">> " + relTypeInstanceName + "sToRemove = new HashMap<" + simpleEntityName + ",List<" + relTypeReference + ">>();\n"); 
+                                }
+                                updateRelatedInEditPost.append("for(" + relTypeReference + " " + relTypeInstanceName + "New : " + relTypeInstanceName + "sNew) {\n" +
+                                ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? simpleEntityName + " " + relrelInstanceName + " = " + relTypeInstanceName + "New." + relrelGetterName + "();\n" +
+                                    relTypeInstanceName + "New.s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
+                                    relTypeInstanceName + "New." + otherName + "().add(" + fieldName +");\n") +
+                                relTypeInstanceName + "New = em.merge(" + relTypeInstanceName +"New);\n");
+                                String relTypeListName = relTypeInstanceName + "List";
+                                if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
+                                    updateRelatedInEditPost.append("if " + relrelInstanceName + " != null && !" + relrelInstanceName + ".equals(" + fieldName + ")) {\n" +
+                                        "List<" + relTypeReference + "> " + relTypeListName + " = " + relTypeInstanceName + "sToRemove.get(" + relrelInstanceName + ");\n" +
+                                        "if " + relTypeListName + " == null) {\n" +
+                                        relTypeListName + " = new ArrayList<" + relTypeReference + ">();\n" +
+                                        relTypeInstanceName + "sToRemove.put(" + relrelInstanceName + ", " + relTypeListName + ");\n" +
+                                        "}\n" +
+                                        relTypeListName + ".add(" + relTypeInstanceName + "New);\n" +
+                                        "}\n");
+                                }
+                                updateRelatedInEditPost.append("}\n");
+                                if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
+                                        updateRelatedInEditPost.append("for (" + simpleEntityName + " " + relrelInstanceName + " : " + relTypeInstanceName + "sToRemove.keySet()) {\n" +
+                                        "List<" + relTypeReference + "> " + relTypeListName + " = " + relTypeInstanceName + "sToRemove.get(" + relrelInstanceName + ");\n" +
+                                        "for (" + relTypeReference + " " + relTypeInstanceName + " : " + relTypeListName + ") {\n" +
+                                        relrelInstanceName + "." + mName + "().remove(" + relTypeInstanceName + ");\n" +
+                                        "}\n" +
+                                        relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n}\n");
+                                }
                             } else {
                                 updateRelatedInEditPre.append("\n" + relTypeReference + " " + relFieldName + "Old = em.find("
                                     + entityReferenceName +".class, " + fieldName + "." + idGetterName[0] + "())." + mName + "();\n");
-                                updateRelatedInEditPost.append("\n//update property " + relFieldName + " of entity " + simpleRelType + "\n" +
-                                    relTypeReference + " " + relFieldName + "New = " + fieldName + "." + mName +"();\n" +
-                                    
-                                    "if(" + relFieldName + "Old != null && !" + relFieldName + "Old.equals(" + relFieldName + "New)) {\n" +
-                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relFieldName + "Old.s" + otherName.substring(1) + "(null);\n" :
-                                        relFieldName + "Old." + otherName + "().remove(" + fieldName +");\n") +
-                                    relFieldName + "Old = em.merge(" + relFieldName +"Old);\n}\n" +
+                                updateRelatedInEditPre.append("\n//update property " + relFieldName + " of entity " + simpleRelType + "\n" +
+                                    relTypeReference + " " + relFieldName + "New = " + fieldName + "." + mName +"();\n");
+                                if (!relJoinColumnNullable && otherSideMultiplicity == JsfForm.REL_TO_ONE) {
+                                    illegalOrphansInEdit.append(
+                                        "if(" + relFieldName + "Old != null && !" + relFieldName + "Old.equals(" + relFieldName + "New)) {\n" +
+                                        "addErrorMessage(\"You must retain " + relTypeReference + " \" + " + relTypeInstanceName + "Old + \" since its " + otherFieldName + " field is not nullable.\");\n" +
+                                        "illegalOrphans = true;\n" +
+                                        "}\n");
+                                }
+                                if (otherSideMultiplicity == JsfForm.REL_TO_MANY || relJoinColumnNullable) {
+                                     updateRelatedInEditPost.append(   
+                                        "if(" + relFieldName + "Old != null && !" + relFieldName + "Old.equals(" + relFieldName + "New)) {\n" +
+                                        ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relFieldName + "Old.s" + otherName.substring(1) + "(null);\n" :
+                                            relFieldName + "Old." + otherName + "().remove(" + fieldName +");\n") +
+                                        relFieldName + "Old = em.merge(" + relFieldName +"Old);\n}\n");
+                                }
+                                if (multiplicity == JsfForm.REL_TO_ONE && otherSideMultiplicity == JsfForm.REL_TO_ONE && !joinColumnNullable) {
+                                    illegalOrphansInEdit.append(
+                                        "if(" + relFieldName + "New != null && !" + relFieldName + "New.equals(" + relFieldName + "Old)) {\n");
+                                    illegalOrphansInEdit.append(simpleEntityName + " " + relrelInstanceName + " = " + relFieldName + "New." + relrelGetterName + "();\n" + 
+                                                "if (" + relrelInstanceName + " != null) {\n" + 
+                                                "addErrorMessage(\"The " + relTypeReference + " \" + " + relFieldName + "New + \" already has a " + simpleEntityName + " whose " + relFieldName + " column cannot be null. Please select another " + relTypeReference + ".\");\n" +
+                                                "illegalOrphans = true;\n" +
+                                                "}\n");
+                                    illegalOrphansInEdit.append("}\n");
+                                }
+                                updateRelatedInEditPost.append(
                                     "if(" + relFieldName + "New != null && !" + relFieldName + "New.equals(" + relFieldName + "Old)) {\n");
-                                if (multiplicity == JsfForm.REL_TO_ONE && otherSideMultiplicity == JsfForm.REL_TO_ONE){
+                                if (multiplicity == JsfForm.REL_TO_ONE && otherSideMultiplicity == JsfForm.REL_TO_ONE && joinColumnNullable) {
                                     updateRelatedInEditPost.append(simpleEntityName + " " + relrelInstanceName + " = " + relFieldName + "New." + relrelGetterName + "();\n" + 
                                             "if (" + relrelInstanceName + " != null) {\n" + 
                                             relrelInstanceName + ".s" + mName.substring(1) + "(null);\n" + 
@@ -1379,7 +1460,7 @@ public class JSFClientGenerator {
                                 updateRelatedInEditPost.append(
                                     ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relFieldName + "New.s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
                                         relFieldName + "New." + otherName + "().add(" + fieldName +");\n") +
-                                    relFieldName + "New=em.merge(" + relFieldName +"New);\n}\n"
+                                    relFieldName + "New = em.merge(" + relFieldName +"New);\n}\n"
                                     );
                             } 
                             
@@ -1391,12 +1472,22 @@ public class JSFClientGenerator {
 //                                relFieldName + "." + otherSide.getName() + "().remove(" + fieldName +");\n") +
 //                            relFieldName + "=em.merge(" + relFieldName +");\n}\n\n");
 
-                            updateRelatedInDestroy.append("\n//update property " + relFieldName + " of entity " + fieldName + "\n" +    //mbohm: why doesn't this show up
-                                    (isCollection ? "Collection<" + relTypeReference + "> " + relTypeInstanceName + "s" : relTypeReference + " " + relTypeInstanceName) + " = " + fieldName + "." + mName +"();\n" +
-                                    (isCollection ? "for(" + relTypeReference + " " + relTypeInstanceName + " : " + relTypeInstanceName + "s" : "if (" + relTypeInstanceName + " != null") + ") {\n" +
-                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + ".s" + otherName.substring(1) + "(null);\n" :
-                                        relTypeInstanceName + "." + otherName + "().remove(" + fieldName +");\n") +
-                                    relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n}\n\n");
+                            if (otherSideMultiplicity == JsfForm.REL_TO_ONE && !relJoinColumnNullable) {
+                                illegalOrphansInDestroy.append(
+                                        (isCollection ? "Collection<" + relTypeReference + "> " + relTypeInstanceName + "sOrphanCheck" : relTypeReference + " " + relTypeInstanceName + "OrphanCheck") + " = " + fieldName + "." + mName +"();\n" +
+                                        (isCollection ? "for(" + relTypeReference + " " + relTypeInstanceName + "OrphanCheck : " + relTypeInstanceName + "sOrphanCheck" : "if (" + relTypeInstanceName + "OrphanCheck != null") + ") {\n" +
+                                        "addErrorMessage(\"This " + simpleEntityName + " (\" + " +  fieldName + " + \") cannot be destroyed since its " + relTypeReference + " \" + " + relTypeInstanceName + "OrphanCheck + \" has a non-nullable " + otherFieldName + " field.\");\n" +
+                                        "illegalOrphans = true;\n" +
+                                        "}\n");
+                            }
+                            if (otherSideMultiplicity == JsfForm.REL_TO_MANY || relJoinColumnNullable) {
+                                updateRelatedInDestroy.append("\n//update property " + relFieldName + " of entity " + fieldName + "\n" +    //mbohm: why doesn't this show up
+                                        (isCollection ? "Collection<" + relTypeReference + "> " + relTypeInstanceName + "s" : relTypeReference + " " + relTypeInstanceName) + " = " + fieldName + "." + mName +"();\n" +
+                                        (isCollection ? "for(" + relTypeReference + " " + relTypeInstanceName + " : " + relTypeInstanceName + "s" : "if (" + relTypeInstanceName + " != null") + ") {\n" +
+                                        ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + ".s" + otherName.substring(1) + "(null);\n" :
+                                            relTypeInstanceName + "." + otherName + "().remove(" + fieldName +");\n") +
+                                        relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n}\n\n");
+                            }
                             
 //                    Method destroyFromDetail = JMIGenerationUtil.createMethod(javaClass, "destroyFrom" + simpleRelType, Modifier.PUBLIC, "String"); //NOI18N
 //                    String relIdGetter = JsfForm.getIdGetter(isRelFieldAccess, relClass).getName();
@@ -1726,8 +1817,16 @@ public class JSFClientGenerator {
                     
                     String newEntityStringVar = "new" + simpleEntityName + "String";
                     String entityStringVar = fieldName + "String";
+                    
+                    if (illegalOrphansInCreate.length() > 0) {
+                        illegalOrphansInCreate.insert(0, "boolean illegalOrphans = false;\n");
+                        illegalOrphansInCreate.append("if (illegalOrphans) {\n" +
+                                "return null;\n" +
+                                "}\n");
+                    }
 
-                    bodyText = "EntityManager em = getEntityManager();\n" + 
+                    bodyText = illegalOrphansInCreate.toString() + 
+                            "EntityManager em = getEntityManager();\n" + 
                             "try {\n " + BEGIN + "\n " + initRelatedInCreate.toString() + "em.persist(" + fieldName + ");\n" + updateRelatedInCreate.toString() + COMMIT + "\n" +   //NOI18N
                             "addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
                             "} catch (Exception ex) {\n try {\n ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" + ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
@@ -1802,6 +1901,15 @@ public class JSFClientGenerator {
           
                     entityStringVar = fieldName + "String";
                     String currentEntityStringVar = "current" + simpleEntityName + "String";
+                    
+                    if (illegalOrphansInEdit.length() > 0) {
+                        illegalOrphansInEdit.insert(0, "boolean illegalOrphans = false;\n");
+                        illegalOrphansInEdit.append("if (illegalOrphans) {\n" +
+                                "utx.rollback();\n" +
+                                "return null;\n" +
+                                "}\n");
+                    }                    
+                    
                     bodyText = simpleEntityName + "Converter converter = new " + simpleEntityName + "Converter();\n" +
                             "String " + entityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
                             "String " + currentEntityStringVar + " = getRequestParameter(\"jsfcrud.current" + simpleEntityName + "\");\n" +
@@ -1813,7 +1921,7 @@ public class JSFClientGenerator {
                             "return outcome;\n" +
                             "}\n";
                     bodyText += "EntityManager em = getEntityManager();\n" + 
-                        "try {\n " + BEGIN + "\n" + updateRelatedInEditPre.toString() + 
+                        "try {\n " + BEGIN + "\n" + updateRelatedInEditPre.toString() + illegalOrphansInEdit.toString() + 
                         fieldName + " = em.merge(" + fieldName + ");\n " + 
                         updateRelatedInEditPost.toString() + COMMIT + "\n" +   //NOI18N
                         "addSuccessMessage(\"" + simpleEntityName + " was successfully updated.\");\n" +   //NOI18N
@@ -1834,7 +1942,14 @@ public class JSFClientGenerator {
                         "finally {\n em.close();\n }\n" +  //NOI18N
                         "return detailSetup();";
                     methodInfo = new MethodInfo("edit", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
-                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  
+                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+                    
+                    if (illegalOrphansInDestroy.length() > 0) {
+                        illegalOrphansInDestroy.insert(0, "boolean illegalOrphans = false;\n");
+                        illegalOrphansInDestroy.append("if (illegalOrphans) {\n" +
+                                "return null;\n" +
+                                "}\n");
+                    }
                     
                     bodyText = fieldName + " = " + getFromReqParamMethod + "();\n" +
                             "if (" + fieldName + " == null) {\n" +
@@ -1843,7 +1958,8 @@ public class JSFClientGenerator {
                             relatedControllerOutcomeSwath + 
                             "return listSetup();\n" +
                             "}\n";                    
-                    bodyText += "EntityManager em = getEntityManager();\n" + 
+                    bodyText += illegalOrphansInDestroy.toString() + 
+                        "EntityManager em = getEntityManager();\n" + 
                         "try {\n " + BEGIN + "\n" + 
                         fieldName + " = em.merge(" + fieldName + ");\n" + updateRelatedInDestroy.toString() + 
                         "em.remove(" + fieldName + ");\n " + COMMIT + "\n" +   //NOI18N
@@ -2182,23 +2298,14 @@ public class JSFClientGenerator {
                 methodInfo = new MethodInfo("getAsString", publicModifier, asStringType, null, null, null, bodyText, null, null);
                 modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);    
                 
-                modifiedClassTree = TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "entityCreationValidator", "javax.faces.validator.Validator", privateModifier, null, null);
-                
-                bodyText = "if entityCreationValidator == null) {\n" +
-                        "entityCreationValidator = new Validator() {\n" +
-                        "public void validate(FacesContext facesContext, UIComponent component, Object value) {\n" +
-                        simpleEntityName + "Converter converter = new " + simpleEntityName + "Converter();\n" +
+                bodyText = simpleEntityName + "Converter converter = new " + simpleEntityName + "Converter();\n" +
                         "String " + newEntityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, new " + simpleEntityName + "());\n" +
                         "String " + entityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
                         "if (!" + newEntityStringVar + ".equals(" + entityStringVar + ")) {\n" +
                         "createSetup();\n" +
                         "throw new ValidatorException(new FacesMessage(\"Could not create " + fieldName + ". Try again.\"));\n" +
-                        "}\n" +
-                        "}\n" +
-                        "};\n" +
-                        "}\n" +
-                        "return entityCreationValidator;";
-                methodInfo = new MethodInfo("getEntityCreationValidator", publicModifier, "javax.faces.validator.Validator", null, null, null, bodyText, null, null);
+                        "}\n";
+                methodInfo = new MethodInfo("validateCreate", publicModifier, "void", null, new String[]{"javax.faces.context.FacesContext", "javax.faces.component.UIComponent", "java.lang.Object"}, new String[]{"facesContext", "component", "value"}, bodyText, null, null);
                 modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);    
                 
                 workingCopy.rewrite(classTree, modifiedClassTree);
