@@ -254,9 +254,10 @@ public class KeystorePanel extends JPanel {
 //        }
 
         String selector = getSelector();
-        if (selector != null) {
+        // IZ#129480, failed to clear selector textfield
+        //if (selector != null) {
             ProprietarySecurityPolicyModelHelper.setAliasSelector(comp, selector, false);
-        }
+        //}
         
     }
     
