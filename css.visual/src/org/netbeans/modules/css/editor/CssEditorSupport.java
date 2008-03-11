@@ -314,8 +314,10 @@ public class CssEditorSupport {
         //cancel scheduled rule update task if scheduled
         RULE_UPDATE_TASK.cancel();
 
-        this.model.removePropertyChangeListener(MODEL_LISTENER);
-        this.model = null;
+        if(model != null) { //null may happen if source broken
+            this.model.removePropertyChangeListener(MODEL_LISTENER);
+            this.model = null;
+        }
 
         if (selected != null) {
             selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);

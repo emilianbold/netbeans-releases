@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.editor.reformat;
 import java.util.Stack;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
@@ -54,6 +55,7 @@ class BracesStack {
     private static final boolean TRACE_STATEMENT = false;
     
     private Stack<StackEntry> stack = new Stack<StackEntry>();
+    private CodeStyle codeStyle;
     private StatementContinuation statementContinuation = StatementContinuation.STOP;
     int lastStatementStart = -1;
     int parenDepth = 0;
@@ -61,13 +63,13 @@ class BracesStack {
     boolean isDoWhile = false;
     boolean isLabel = false;
 
-    BracesStack() {
-        super();
+    BracesStack(CodeStyle codeStyle) {
+        this.codeStyle = codeStyle;
     }
 
     @Override
     public BracesStack clone(){
-        BracesStack clone = new BracesStack();
+        BracesStack clone = new BracesStack(codeStyle);
         clone.statementContinuation = statementContinuation;
         clone.lastStatementStart = lastStatementStart;
         clone.lastKRstart = lastKRstart;
@@ -106,10 +108,18 @@ class BracesStack {
             if (peek() != null && peek().isLikeToArrayInitialization()){
                 // this is two dimensiomal arry initialization
                 entry.setLikeToArrayInitialization(true);
+                if (parenDepth > 0) {
+                    entry.setLikeToArrayInitialization(true);
+                }
             }
         }
         if (entry.getKind() == LBRACE){
-            if(!entry.isLikeToArrayInitialization()) {
+            if(entry.isLikeToArrayInitialization()) {
+                if (parenDepth > 0) {
+                    // This is array in paraneter
+                    entry.setLikeToArrayInitialization(true);
+                }
+            } else {
                 clearLastStatementStart();
             }
         } else if (lastStatementStart != entry.getIndex()) {
@@ -121,7 +131,9 @@ class BracesStack {
     }
 
     public int pop(ExtendedTokenSequence ts) {
-        clearLastStatementStart();
+        if (parenDepth <= 0) {
+            clearLastStatementStart();
+        }
         statementContinuation = StatementContinuation.STOP;
         int res = popImpl(ts);
         if (TRACE_STACK) System.out.println("pop "+ts.token().id().name()+": "+toString()); // NOI18N
@@ -268,6 +280,12 @@ class BracesStack {
                         if (kind != SWITCH) {
                             res++;
                         }
+                    }
+                }
+                CppTokenId current = entry.getImportantKind();
+                if (current == NAMESPACE) {
+                    if (!codeStyle.indentNamespace()) {
+                        res--;
                     }
                 }
             } else if (entry.getKind() == IF){

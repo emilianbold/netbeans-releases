@@ -63,25 +63,38 @@ Draggables:CLASS:[]:ESCAPED{Draggables}:
   removeObserver:METHOD:[]:ESCAPED{removeObserver}(PARAMETERS{ESCAPED{element}}):
   unregister:METHOD:[]:ESCAPED{unregister}(PARAMETERS{ESCAPED{draggable}}):
   updateDrag:METHOD:[]:ESCAPED{updateDrag}(PARAMETERS{ESCAPED{event}}):
-Draggable:CLASS:[]:ESCAPED{Draggable}:
+Draggable.Draggable:CLASS:[]:ESCAPED{Draggable.Draggable}:
   Draggable:CONSTRUCTOR:[]:ESCAPED{Draggable}:
+Draggable.initialize:CLASS:[]:ESCAPED{Draggable.initialize}:
+  initialize:CONSTRUCTOR:[]:ESCAPED{initialize}(PARAMETERS{ESCAPED{element}}):
+Draggable:CLASS:[]:ESCAPED{Draggable}:
   _getWindowScroll:METHOD:[]:ESCAPED{_getWindowScroll}(PARAMETERS{ESCAPED{w}}):
   currentDelta:METHOD:[]:ESCAPED{currentDelta}:
+  delta:PROPERTY:[]:ESCAPED{delta}:
   destroy:METHOD:[]:ESCAPED{destroy}:
+  dragging:PROPERTY:[]:ESCAPED{dragging}:
   draw:METHOD:[]:ESCAPED{draw}(PARAMETERS{ESCAPED{point}}):
+  element:PROPERTY:[]:ESCAPED{element}:
   endDrag:METHOD:[]:ESCAPED{endDrag}(PARAMETERS{ESCAPED{event}}):
+  eventMouseDown:PROPERTY:[]:ESCAPED{eventMouseDown}:
   finishDrag:METHOD:[]:ESCAPED{finishDrag}(PARAMETERS{ESCAPED{event}, ESCAPED{success}}):
+  handle:PROPERTY:[]:ESCAPED{handle}:
   initDrag:METHOD:[]:ESCAPED{initDrag}(PARAMETERS{ESCAPED{event}}):
-  initialize:CONSTRUCTOR:[]:ESCAPED{initialize}(PARAMETERS{ESCAPED{element}}):
   keyPress:METHOD:[]:ESCAPED{keyPress}(PARAMETERS{ESCAPED{event}}):
+  options:PROPERTY:[]:ESCAPED{options}:
   scroll:METHOD:[]:ESCAPED{scroll}:
   startDrag:METHOD:[]:ESCAPED{startDrag}(PARAMETERS{ESCAPED{event}}):
   startScrolling:METHOD:[]:ESCAPED{startScrolling}(PARAMETERS{ESCAPED{speed}}):
   stopScrolling:METHOD:[]:ESCAPED{stopScrolling}:
   updateDrag:METHOD:[]:ESCAPED{updateDrag}(PARAMETERS{ESCAPED{event}, ESCAPED{pointer}}):
-SortableObserver:CLASS:[]:ESCAPED{SortableObserver}:
+SortableObserver.SortableObserver:CLASS:[]:ESCAPED{SortableObserver.SortableObserver}:
   SortableObserver:CONSTRUCTOR:[]:ESCAPED{SortableObserver}:
+SortableObserver.initialize:CLASS:[]:ESCAPED{SortableObserver.initialize}:
   initialize:CONSTRUCTOR:[]:ESCAPED{initialize}(PARAMETERS{ESCAPED{element}, ESCAPED{observer}}):
+SortableObserver:CLASS:[]:ESCAPED{SortableObserver}:
+  element:PROPERTY:[]:ESCAPED{element}:
+  lastValue:PROPERTY:[]:ESCAPED{lastValue}:
+  observer:PROPERTY:[]:ESCAPED{observer}:
   onEnd:METHOD:[]:ESCAPED{onEnd}:
   onStart:METHOD:[]:ESCAPED{onStart}:
 Sortable:CLASS:[]:ESCAPED{Sortable}:
@@ -137,6 +150,6 @@ root:CLASS:[]:ESCAPED{root}:
   parent:PROPERTY:[]:ESCAPED{parent}:
   position:PROPERTY:[]:ESCAPED{position}:
 Element:CLASS:[]:ESCAPED{Element}:
-  findChildren:METHOD:[]:ESCAPED{findChildren}(PARAMETERS{ESCAPED{element}, ESCAPED{only}, ESCAPED{recursive}, ESCAPED{tagName}}):
-  isParent:METHOD:[]:ESCAPED{isParent}(PARAMETERS{ESCAPED{child}, ESCAPED{element}}):
-  offsetSize:METHOD:[]:ESCAPED{offsetSize}(PARAMETERS{ESCAPED{element}, ESCAPED{type}}):
+  findChildren:METHOD:[STATIC]:ESCAPED{findChildren}(PARAMETERS{ESCAPED{element}, ESCAPED{only}, ESCAPED{recursive}, ESCAPED{tagName}}):
+  isParent:METHOD:[STATIC]:ESCAPED{isParent}(PARAMETERS{ESCAPED{child}, ESCAPED{element}}):
+  offsetSize:METHOD:[STATIC]:ESCAPED{offsetSize}(PARAMETERS{ESCAPED{element}, ESCAPED{type}}):

@@ -271,20 +271,32 @@ public final class SyntaxParser {
                 Token key = attr_keys.get(i);
                 List<Token> values = attr_values.get(i);
                 StringBuffer joinedValue = new StringBuffer();
-                for(Token t: values) {
-                    joinedValue.append(t.text());
+                
+                if(values == null) {
+                    //attribute has no value
+                    SyntaxElement.TagAttribute ta = new SyntaxElement.TagAttribute(
+                            key.text().toString(), 
+                            joinedValue.toString(), 
+                            key.offset(hi), 
+                            key.offset(hi) + key.length(),
+                            0);
+                    attributes.add(ta);
+                } else {
+                    for(Token t: values) {
+                        joinedValue.append(t.text());
+                    }
+
+                    Token firstValuePart = values.get(0);
+                    Token lastValuePart = values.get(values.size() - 1);
+
+                    SyntaxElement.TagAttribute ta = new SyntaxElement.TagAttribute(
+                            key.text().toString(), 
+                            joinedValue.toString(), 
+                            key.offset(hi), 
+                            firstValuePart.offset(hi),
+                            lastValuePart.offset(hi) + lastValuePart.length() - firstValuePart.offset(hi));
+                    attributes.add(ta);
                 }
-                
-                Token firstValuePart = values.get(0);
-                Token lastValuePart = values.get(values.size() - 1);
-                
-                SyntaxElement.TagAttribute ta = new SyntaxElement.TagAttribute(
-                        key.text().toString(), 
-                        joinedValue.toString(), 
-                        key.offset(hi), 
-                        firstValuePart.offset(hi),
-                        lastValuePart.offset(hi) + lastValuePart.length() - firstValuePart.offset(hi));
-                attributes.add(ta);
             }
         
         elements.add(new SyntaxElement.Tag(parserSource, 
@@ -435,6 +447,14 @@ public final class SyntaxParser {
                             case VALUE:
                                 backup(1); //backup the value
                                 state = S_TAG_VALUE;
+                                break;
+                            case ARGUMENT:
+                            case TAG_CLOSE_SYMBOL:
+                                //attribute without value
+                                attr_keys.add(attrib);
+                                attr_values.add(null);
+                                state = S_TAG;
+                                backup(1);
                                 break;
                             default:
                                 reset(); //error

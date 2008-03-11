@@ -318,7 +318,7 @@ public abstract class SimpleItem {
         public UpdateItem toUpdateItem (Map<String, String> licenses, String installTime) {
             UpdateItemImpl impl = new InstalledModuleItem (
                     info.getCodeNameBase (),
-                    info.getSpecificationVersion ().toString (),
+                    info.getSpecificationVersion () == null ? null : info.getSpecificationVersion ().toString (),
                     info,
                     null, // XXX author
                     null, // installed cluster

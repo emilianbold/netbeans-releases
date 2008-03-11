@@ -10,7 +10,10 @@ Indexed:
   base : guy;;guy|GLOBAL|;;0;;;Person;
   base : initialize;Person;initialize|CONSTRUCTOR|;name;0;;;;
   base : john;;john|GLOBAL|;;0;;;Pirate;
+  base : name;Person;name|PROPERTY|;0;;;;
+  base : person;;Person|DOCUMENTED|PROPERTY|;0;44;;;
   base : person;Person;Person|CONSTRUCTOR|;;0;;;;
+  base : pirate;;Pirate|DOCUMENTED|PROPERTY|;0;140;;;
   base : pirate;Pirate;Pirate|DOCUMENTED|CONSTRUCTOR|;;0;16f;;;
   base : say;Person;say|FUNCTION|message;0;;;;
   base : say;Pirate;say|DOCUMENTED|FUNCTION|message;0;1c0;;;
@@ -20,9 +23,12 @@ Indexed:
   fqn : guy;;guy|GLOBAL|;;0;;;Person;
   fqn : john;;john|GLOBAL|;;0;;;Pirate;
   fqn : person.initialize;;Person.initialize|CONSTRUCTOR|;name;0;;;;
+  fqn : person.name;;Person.name|PROPERTY|;0;;;;
   fqn : person.person;;Person.Person|CONSTRUCTOR|;;0;;;;
   fqn : person.say;;Person.say|FUNCTION|message;0;;;;
+  fqn : person;;Person|DOCUMENTED|PROPERTY|;0;44;;;
   fqn : pirate.pirate;;Pirate.Pirate|DOCUMENTED|CONSTRUCTOR|;;0;16f;;;
   fqn : pirate.say;;Pirate.say|DOCUMENTED|FUNCTION|message;0;1c0;;;
+  fqn : pirate;;Pirate|DOCUMENTED|PROPERTY|;0;140;;;
 
 Not Indexed:
