@@ -66,7 +66,7 @@ import org.jruby.ast.ListNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.StrNode;
 import org.jruby.ast.SymbolNode;
@@ -360,7 +360,7 @@ public class StructureAnalyzer implements StructureScanner {
     private void scan(Node node, AstPath path, String in, Set<String> includes, AstElement parent) {
         // Recursively search for methods or method calls that match the name and arity
         switch (node.nodeId) {
-        case NodeTypes.CLASSNODE: {
+        case CLASSNODE: {
             AstClassElement co = new AstClassElement(info, node);
             co.setIn(in);
 
@@ -380,7 +380,7 @@ public class StructureAnalyzer implements StructureScanner {
             parent = co;
             break;
         }
-        case NodeTypes.MODULENODE: {
+        case MODULENODE: {
             AstModuleElement co = new AstModuleElement(info, node);
             co.setIn(in);
             co.setFqn(AstUtilities.getFqnName(path));
@@ -398,7 +398,7 @@ public class StructureAnalyzer implements StructureScanner {
             
             break;
         }
-        case NodeTypes.SCLASSNODE: {
+        case SCLASSNODE: {
             // Singleton class, e.g.   class << self, or class << File, etc.
             AstClassElement co = new AstClassElement(info, node);
             co.setIn(in);
@@ -426,8 +426,8 @@ public class StructureAnalyzer implements StructureScanner {
             
             break;
         }
-        case NodeTypes.DEFNNODE:
-        case NodeTypes.DEFSNODE: {
+        case DEFNNODE:
+        case DEFSNODE: {
             AstMethodElement co = new AstMethodElement(info, node);
             methods.add(co);
             co.setIn(in);
@@ -466,7 +466,7 @@ public class StructureAnalyzer implements StructureScanner {
             
             break;
         }
-        case NodeTypes.CONSTDECLNODE: {
+        case CONSTDECLNODE: {
             AstConstantElement co = new AstConstantElement(info, (ConstDeclNode)node);
             co.setIn(in);
 
@@ -478,7 +478,7 @@ public class StructureAnalyzer implements StructureScanner {
             
             break;
         }
-        case NodeTypes.CLASSVARDECLNODE: {
+        case CLASSVARDECLNODE: {
             AstFieldElement co = new AstFieldElement(info, node);
             co.setIn(in);
 
@@ -490,7 +490,7 @@ public class StructureAnalyzer implements StructureScanner {
             
             break;
         }
-        case NodeTypes.INSTASGNNODE: {
+        case INSTASGNNODE: {
             if (parent instanceof AstClassElement) {
                 // We don't have unique declarations, only assignments (possibly many)
                 // so stash these in a map and extract unique fields when we're done
@@ -507,7 +507,7 @@ public class StructureAnalyzer implements StructureScanner {
 
             break;
         }
-        case NodeTypes.VCALLNODE: {
+        case VCALLNODE: {
             String name = ((INameNode)node).getName();
 
             if (("private".equals(name) || "protected".equals(name)) &&
@@ -517,7 +517,7 @@ public class StructureAnalyzer implements StructureScanner {
             
             break;
         }
-        case NodeTypes.FCALLNODE: {
+        case FCALLNODE: {
             String name = ((INameNode)node).getName();
 
             if (name.equals("require")) { // XXX Load too?

@@ -46,6 +46,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext.SchemaCompPair;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathModelTracerVisitor;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
 
 /**
  * This visitor is intended to validate semantics of single XPath.
@@ -114,7 +115,7 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
 //System.out.println("1: " + getBasedSimpleType(propType));
 //System.out.println("2: " + getBasedSimpleType(gType));
                 if (ValidationUtil.getBasedSimpleType(propType) != ValidationUtil.getBasedSimpleType(gType)) {
-                    myContext.addResultItem(ResultType.ERROR, "QUERY_INCONSISTENT_TYPE", ValidationUtil.getTypeName(gType), ValidationUtil.getTypeName(propType)); // NOI18N
+                    myContext.addResultItem(ResultType.WARNING, "QUERY_INCONSISTENT_TYPE", ValidationUtil.getTypeName(gType), ValidationUtil.getTypeName(propType)); // NOI18N
                 }
                 else {
                 // # 83335 vlv

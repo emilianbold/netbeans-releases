@@ -661,7 +661,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             // "web-types",         // NOI18N
             "junit",                // NOI18N
             // "MIDP",              // NOI18N
-            "simple-files"          // NOI18N
+            "simple-files"          // NOI18N        
         };
         
         private static final String[] LIBRARY_TYPES = new String[] { 

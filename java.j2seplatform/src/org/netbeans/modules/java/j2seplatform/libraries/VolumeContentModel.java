@@ -45,12 +45,9 @@ import javax.swing.AbstractListModel;
 import java.util.List;
 import java.util.ArrayList;
 import java.net.URL;
-import java.net.MalformedURLException;
 
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
-import org.openide.filesystems.FileUtil;
-import org.openide.ErrorManager;
 
 class VolumeContentModel extends AbstractListModel/*<String>*/ {
 

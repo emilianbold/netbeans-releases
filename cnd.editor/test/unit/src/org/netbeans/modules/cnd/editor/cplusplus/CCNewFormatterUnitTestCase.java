@@ -2399,4 +2399,280 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 );
     }
 
+    public void testSpaceBinaryOperator() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int foo()\n" +
+            "{\n" +
+            "    bmove_upp(dst + rest+new_length, dst+tot_length, rest);\n" +
+            "    if (len <= 0 ||| len >= (int)sizeof(buf) || buf[sizeof(buf)-1] != 0) return 0;\n" +
+            "    lmask = (1U << state->lenbits)-1;\n" +
+            "    len = BITS(4)+8;\n" +
+            "    s->depth[node] = (uch)((s->depth[n] >= s->depth[m] ? s->depth[n] : s->depth[m])+1);\n" +
+            "    for (i = 0; i<n; i++) return;\n" +
+            "    match[1].end = match[0].end+s_length;\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect spaces in binary operators",
+            "int foo()\n" +
+            "{\n" +
+            "    bmove_upp(dst + rest + new_length, dst + tot_length, rest);\n" +
+            "    if (len <= 0 || len >= (int) sizeof(buf) || buf[sizeof(buf) - 1] != 0) return 0;\n" +
+            "    lmask = (1U << state->lenbits) - 1;\n" +
+            "    len = BITS(4) + 8;\n" +
+            "    s->depth[node] = (uch) ((s->depth[n] >= s->depth[m] ? s->depth[n] : s->depth[m]) + 1);\n" +
+            "    for (i = 0; i < n; i++) return;\n" +
+            "    match[1].end = match[0].end + s_length;\n" +
+            "}\n"
+        );
+    }
+
+    public void testSpaceBinaryOperator2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int foo()\n" +
+            "{\n" +
+            "    BOOST_CHECK(\n" +
+            "            ((nc_result.begin()-str1.begin()) == 3) &&\n" +
+            "            ((nc_result.end()-str1.begin()) == 6));\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect spaces in binary operators",
+            "int foo()\n" +
+            "{\n" +
+            "    BOOST_CHECK(\n" +
+            "            ((nc_result.begin() - str1.begin()) == 3) &&\n" +
+            "            ((nc_result.end() - str1.begin()) == 6));\n" +
+            "}\n"
+        );
+    }
+
+    public void testSpaceTemplateSeparator() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int foo()\n" +
+            "{\n" +
+            "    vector<string> tokens1;\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect spaces before template separator",
+            "int foo()\n" +
+            "{\n" +
+            "    vector<string> tokens1;\n" +
+            "}\n"
+        );
+    }
+
+    public void testSpaceCastOperator() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceWithinTypeCastParens, true);
+        setLoadDocumentText(
+            "int foo()\n" +
+            "{\n" +
+            "    if (m == NULL ||| *m == \'\\0\') m = (char*)ERR_MSG(s->z_err);\n" +
+            "    hold += (unsigned long)(PUP(in)) << bits;\n" +
+            "    state = (struct inflate_state FAR *)strm->state;\n" +
+            "    if (strm->zalloc == (alloc_func)0) return;\n" +
+            "    stream.zalloc = (alloc_func)0;\n" +
+            "    put_short(s, (ush)len);\n" +
+            "    put_short(s, (ush)~len);\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect spaces in cast operators",
+            "int foo()\n" +
+            "{\n" +
+            "    if (m == NULL || *m == \'\\0\') m = ( char* ) ERR_MSG(s->z_err);\n" +
+            "    hold += ( unsigned long ) (PUP(in)) << bits;\n" +
+            "    state = ( struct inflate_state FAR * ) strm->state;\n" +
+            "    if (strm->zalloc == ( alloc_func ) 0) return;\n" +
+            "    stream.zalloc = ( alloc_func ) 0;\n" +
+            "    put_short(s, ( ush ) len);\n" +
+            "    put_short(s, ( ush )~len);\n" +
+            "}\n"
+        );
+    }
+
+    public void testNoSpaceBeforeUnaryOperator() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int foo()\n" +
+            "{\n" +
+            "    if (s == NULL ||| s->mode != 'r') return - 1;\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect no space before unary operator",
+            "int foo()\n" +
+            "{\n" +
+            "    if (s == NULL || s->mode != 'r') return -1;\n" +
+            "}\n"
+        );
+    }
+
+    public void testNoEscapedSpaceSupport() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "static const char* _dbname = \"TEST_DB\";\n" +
+                "static void usage()\n" +
+                "{\n" +
+                "  char desc[] = \n" +
+                "    \"[<table> <index>]+\\n\"\\\n" +
+                "    \"This program will drop index(es) in Ndb\\n\";\n" +
+                "    ndb_std_print_version();\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect escaped space",
+                "static const char* _dbname = \"TEST_DB\";\n" +
+                "\n" +
+                "static void usage()\n" +
+                "{\n" +
+                "    char desc[] =\n" +
+                "            \"[<table> <index>]+\\n\"\\\n" +
+                "    \"This program will drop index(es) in Ndb\\n\";\n" +
+                "    ndb_std_print_version();\n" +
+                "}\n"
+                );
+    }
+ 
+    public void testIfDoWhile() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "void foo()\n" +
+                "{\n" +
+                "    if (len) do {\n" +
+                "            DO1;\n" +
+                "    } while (--len);\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect if-do-while indent",
+                "void foo()\n" +
+                "{\n" +
+                "    if (len) do {\n" +
+                "            DO1;\n" +
+                "        } while (--len);\n" +
+                "}\n"
+                );
+    }
+
+    public void testIfIfDoWhile() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "void foo()\n" +
+                "{\n" +
+                "    if (len) if (true) do {\n" +
+                "        DO1;\n" +
+                "        } while (--len);\n" +
+                "    else return;\n" +
+                "    else return;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect if-if-do-while indent",
+                "void foo()\n" +
+                "{\n" +
+                "    if (len) if (true) do {\n" +
+                "                DO1;\n" +
+                "            } while (--len);\n" +
+                "        else return;\n" +
+                "    else return;\n" +
+                "}\n"
+                );
+    }
+
+    public void testDoubleFunctionComment() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "void foo();\n" +
+                "/* Stream status */\n" +
+                "/* Data structure describing a single value and its code string. */\n" +
+                "typedef struct ct_data_s\n" +
+                "{\n" +
+                "    ush code;\n" +
+                "} FAR ct_data;\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect blank lines between block comments",
+                "void foo();\n" +
+                "/* Stream status */\n" +
+                "\n" +
+                "/* Data structure describing a single value and its code string. */\n" +
+                "typedef struct ct_data_s\n" +
+                "{\n" +
+                "    ush code;\n" +
+                "} FAR ct_data;\n"
+                );
+    }
+
+    public void testArrayAsParameter() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
+                "{\n" +
+                "public:\n" +
+                "    int number;\n" +
+                "    char** cc;\n" +
+                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\"}), number(2)\n" +
+                "    {\n" +
+                "    }\n" +
+                "} FAR ct_data;\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting of array as parameter",
+                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
+                "{\n" +
+                "public:\n" +
+                "    int number;\n" +
+                "    char** cc;\n" +
+                "\n" +
+                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\"}), number(2)\n" +
+                "    {\n" +
+                "    }\n" +
+                "} FAR ct_data;\n"
+                );
+    }
+
+    public void testArrayAsParameter2() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentNamespace, false);
+        setLoadDocumentText(
+                "namespace AC\n" +
+                "{\n" +
+                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
+                "{\n" +
+                "public:\n" +
+                "    int number;\n" +
+                "    char** cc;\n" +
+                "ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
+                "    {\n" +
+                "    }\n" +
+                "} FAR ct_data;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting of array as parameter",
+                "namespace AC\n" +
+                "{\n" +
+                "\n" +
+                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
+                "{\n" +
+                "public:\n" +
+                "    int number;\n" +
+                "    char** cc;\n" +
+                "\n" +
+                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
+                "    {\n" +
+                "    }\n" +
+                "} FAR ct_data;\n" +
+                "}\n"
+                );
+    }
+
 }
