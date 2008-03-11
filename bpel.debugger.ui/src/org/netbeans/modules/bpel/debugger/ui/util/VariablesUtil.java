@@ -171,7 +171,15 @@ public class VariablesUtil {
             
             final int length = attrs.getLength();
             for (int i = 0; i < length; i++) {
-                result.add(attrs.item(i));
+                final Node item = attrs.item(i);
+                if (((item.getPrefix() != null) && 
+                        item.getPrefix().equals("xmlns")) ||
+                        item.getLocalName().equals("xmlns")) { // NOI18N
+                    
+                    continue;
+                }
+                
+                result.add(item);
             }
         }
         
@@ -896,7 +904,7 @@ public class VariablesUtil {
         }
         
         final SourcePath sourcePath = 
-                (SourcePath) engine.lookupFirst(null, SourcePath.class);
+                engine.lookupFirst(null, SourcePath.class);
         final ProcessInstance instance = myDebugger.getCurrentProcessInstance();
         
         if ((sourcePath == null) || (instance == null)) {

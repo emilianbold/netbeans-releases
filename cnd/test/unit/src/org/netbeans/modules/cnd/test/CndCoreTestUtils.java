@@ -55,6 +55,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.junit.Manager;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
+import org.openide.util.UserQuestionException;
 
 /**
  * utils to help work with CND editor and other core objects
@@ -96,11 +97,17 @@ public class CndCoreTestUtils {
         EditorCookie  cookie = dob.getCookie(EditorCookie.class);
         
         if (cookie == null) {
-            throw new IllegalStateException("Given file (\"" + dob.getName() + "\") does not have EditorCookie.");
+            throw new IllegalStateException("Given file (\"" + dob.getName() + "\") does not have EditorCookie."); // NOI18N
         }
         
-        StyledDocument doc = cookie.openDocument();
-
+        StyledDocument doc = null;
+        try {
+            doc = cookie.openDocument();
+        } catch (UserQuestionException ex) {
+            ex.confirmed();
+            doc = cookie.openDocument();
+        }
+        
         return doc instanceof BaseDocument ? (BaseDocument)doc : null;
     }
     
@@ -111,7 +118,7 @@ public class CndCoreTestUtils {
         EditorCookie  cookie = dob.getCookie(EditorCookie.class);
         
         if (cookie == null) {
-            throw new IllegalStateException("Given file (\"" + dob.getName() + "\") does not have EditorCookie.");
+            throw new IllegalStateException("Given file (\"" + dob.getName() + "\") does not have EditorCookie."); // NOI18N
         }
         
         JEditorPane[] panes = cookie.getOpenedPanes();
@@ -141,12 +148,12 @@ public class CndCoreTestUtils {
         }
         
         if (panes == null)
-            throw new IllegalStateException("The editor was not opened. The timeout was: " + OPENING_TIMEOUT + "ms.");
+            throw new IllegalStateException("The editor was not opened. The timeout was: " + OPENING_TIMEOUT + "ms."); // NOI18N
         
         return panes[0];
     }      
-    
-    public static void copyToWorkDir(File resource, File toFile) throws IOException {
+
+    public static void copyToFile(File resource, File toFile) throws IOException {
         InputStream is = new FileInputStream(resource);
         OutputStream outs = new FileOutputStream(toFile);
         int read;
@@ -155,6 +162,10 @@ public class CndCoreTestUtils {
         }
         outs.close();
         is.close();
+    }  
+    
+    public static void copyToWorkDir(File resource, File toFile) throws IOException {
+        copyToFile(resource, toFile);
     }         
     
     public static void copyDirToWorkDir(File sourceDir, File toDir) throws IOException {

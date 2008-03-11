@@ -300,6 +300,7 @@ public class Graph implements TargetPin {
         
         vertex.setGraph(this); 
         invalidateBounds();
+        fireGraphContentChanged();
     }
     
     
@@ -343,6 +344,7 @@ public class Graph implements TargetPin {
         
         vertex.setGraph(null);
         invalidateBounds();
+        fireGraphContentChanged();
     }
     
     
@@ -392,6 +394,7 @@ public class Graph implements TargetPin {
         
         link.setGraph(this);
         invalidateLinks();
+        fireGraphContentChanged();
     }
     
     
@@ -407,6 +410,7 @@ public class Graph implements TargetPin {
         
         link.setGraph(null);
         invalidateLinks();
+        fireGraphContentChanged();
     }
     
     

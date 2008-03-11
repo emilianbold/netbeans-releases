@@ -152,6 +152,8 @@ public final class BiAnalyser {
     private int defaultEventIndex = -1;
     private boolean useSuperClass = false;
     private boolean isModified = false;
+    private boolean isUpdateMode;
+    private boolean isBeanBroken;
     
     private int getIndexOfMethod(List<BiFeature.Method> al, ElementHandle<ExecutableElement> method) {
         if (method == null) return -1;
@@ -170,6 +172,8 @@ public final class BiAnalyser {
     */
     BiAnalyser ( PatternAnalyser pa, CompilationInfo javac ) throws GenerateBeanException {
         int index;
+        
+        this.isBeanBroken = !javac.getDiagnostics().isEmpty();
 
         // Try to find and analyse existing bean info
         bis = new BeanInfoSource( pa.getFileObject() );
@@ -181,13 +185,13 @@ public final class BiAnalyser {
         
         // Fill Descriptor list (only in case we have new templates)
         descriptor = new ArrayList<BiFeature.Descriptor>();
-        descriptor.add(new BiFeature.Descriptor(classElement));
+        descriptor.add(new BiFeature.Descriptor(classElement, this));
 
         // Fill methods list (only in case we have new templates)
         methods = new  ArrayList<BiFeature.Method>();
         if (!olderVersion) {
             for (ExecutableElement method : ElementFilter.methodsIn(classElement.getEnclosedElements())) {
-                methods.add(new BiFeature.Method(method, pa, javac));
+                methods.add(new BiFeature.Method(method, pa, javac, this));
             }
         }
 
@@ -195,7 +199,7 @@ public final class BiAnalyser {
         List<PropertyPattern> propertyPatterns = pa.getPropertyPatterns();
         properties = new  ArrayList<BiFeature.Property>(propertyPatterns.size());
         for (PropertyPattern pp : propertyPatterns) {
-            properties.add(new BiFeature.Property(pp, javac));
+            properties.add(new BiFeature.Property(pp, javac, this));
             for (int i = 0; i < methods.size(); i ++) {
                 if ((index = getIndexOfMethod(methods, pp.getGetterMethod())) != -1) methods.remove(index);
                 if ((index = getIndexOfMethod(methods, pp.getSetterMethod())) != -1) methods.remove(index);
@@ -212,7 +216,7 @@ public final class BiAnalyser {
                 continue;
             }
 
-            idxProperties.add(new BiFeature.IdxProperty(ipp, javac));
+            idxProperties.add(new BiFeature.IdxProperty(ipp, javac, this));
             if ((index = getIndexOfMethod(methods, ipp.getGetterMethod())) != -1) methods.remove(index);
             if ((index = getIndexOfMethod(methods, ipp.getSetterMethod())) != -1) methods.remove(index);
             if ((index = getIndexOfMethod(methods, ipp.getIndexedGetterMethod())) != -1) methods.remove(index);
@@ -223,12 +227,17 @@ public final class BiAnalyser {
         List<EventSetPattern> eventSetPatterns = pa.getEventSetPatterns();
         eventSets = new  ArrayList<BiFeature.EventSet>(eventSetPatterns.size());
         for (EventSetPattern esp : eventSetPatterns) {
-            eventSets.add(new BiFeature.EventSet(esp, javac));
+            eventSets.add(new BiFeature.EventSet(esp, javac, this));
             if ((index = getIndexOfMethod(methods, esp.getRemoveListenerMethod())) != -1) methods.remove(index);
             if ((index = getIndexOfMethod(methods, esp.getAddListenerMethod())) != -1) methods.remove(index);
         }
 
-        analyzeBeanInfoSource( );
+        try {
+            isUpdateMode = false;
+            analyzeBeanInfoSource();
+        } finally {
+            isUpdateMode = true;
+        }
 
     }
     
@@ -406,10 +415,13 @@ public final class BiAnalyser {
             throw new IllegalStateException();
         }
         
+        DataObject dataObject = bis.getDataObject();
+        EditorCookie editor = dataObject.getLookup().lookup(EditorCookie.class);
+        final StyledDocument doc = editor.getDocument();
         Runnable task = new Runnable() {
 
                 public void run() {
-                    regenerateSourceImpl();
+                    regenerateSourceImpl(doc);
                 }
             };
             
@@ -426,10 +438,7 @@ public final class BiAnalyser {
         }
     }
     
-    void regenerateSourceImpl() {
-        DataObject dataObject = bis.getDataObject();
-        EditorCookie editor = dataObject.getLookup().lookup(EditorCookie.class);
-        StyledDocument doc = editor.getDocument();
+    void regenerateSourceImpl(StyledDocument doc) {
         NbDocument.runAtomic(doc, new Runnable() {
                 public void run()  {
                     regenerateBeanDescriptor();
@@ -447,13 +456,20 @@ public final class BiAnalyser {
     }
     
     void openSource() {
+        String mssg;
+        NotifyDescriptor nd;
 
         if ( bis.exists() ) {
 
             if ( !bis.isNbBeanInfo() ) {
-                
-                String mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoExists" );  // NOI18N
-                NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
+                if (isBeanBroken) {
+                    mssg = NbBundle.getMessage(BiAnalyser.class, "MSG_BrokenBean", this.bis.getSourceDataObject().getPrimaryFile().getNameExt());
+                    nd = new NotifyDescriptor.Message(mssg, NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(nd);
+                    return;
+                }
+                mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoExists" );  // NOI18N
+                nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
                 DialogDisplayer.getDefault().notify( nd );
                 if ( !nd.getValue().equals ( NotifyDescriptor.YES_OPTION ) ) {
                     return;
@@ -468,20 +484,40 @@ public final class BiAnalyser {
                     DialogDisplayer.getDefault().notify( nd );
                     return;
                 }
-                bis.createFromTemplate(iconBlockRequired());
+                // XXX later the icon section may be autogenerated via Java Source API
+//                bis.createFromTemplate(iconBlockRequired());
+                bis.createFromTemplate(true);
                 regenerateSource();
+                BIEditorSupport editor = bis.getDataObject().getLookup().lookup(BIEditorSupport.class);
+                try {
+                    editor.saveDocument();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
         else {
+            if (isBeanBroken) {
+                mssg = NbBundle.getMessage(BiAnalyser.class, "MSG_BrokenBean", this.bis.getSourceDataObject().getPrimaryFile().getNameExt());
+                nd = new NotifyDescriptor.Message(mssg, NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(nd);
+                return;
+            }
             // notify user about missing beaninfo and ask if generate new one.
-            String mssg = NbBundle.getMessage(BiAnalyser.class, "MSG_BeanInfoNotExists");
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
+            mssg = NbBundle.getMessage(BiAnalyser.class, "MSG_BeanInfoNotExists");
+            nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
             DialogDisplayer.getDefault().notify( nd );
             if ( !nd.getValue().equals ( NotifyDescriptor.YES_OPTION ) ) {
                 return;
             }
-            bis.createFromTemplate(iconBlockRequired());
+            bis.createFromTemplate(true);
             regenerateSource();
+            BIEditorSupport editor = bis.getDataObject().getLookup().lookup(BIEditorSupport.class);
+            try {
+                editor.saveDocument();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
 
             if ( !bis.isNbBeanInfo() ) {
                 // XXX notify user about wrong template
@@ -951,7 +987,9 @@ public final class BiAnalyser {
                     if( guarded )
                         sb.append( ch );
                     else{
-                        eo_javaid = Character.isJavaIdentifierPart ( code.charAt( i - 1 ) );
+                        char prevch = code.charAt( i - 1 );
+                        eo_javaid = Character.isJavaIdentifierPart ( prevch )
+                                || prevch == ']';
                         mode = IN_WHITE;
                     }
                 }
@@ -1136,11 +1174,20 @@ public final class BiAnalyser {
         sb.append(NOI18N_COMMENT);
     }
     
-    private void setModified() {
-        this.isModified = true;
+    void setModified() {
+        if (isUpdateMode) {
+            this.isModified = true;
+            BIEditorSupport editor = this.bis.getDataObject().getLookup().lookup(BIEditorSupport.class);
+            editor.notifyModified();
+        }
     }
     
     public boolean isModified() {
         return this.isModified;
     }
+
+    public boolean isBeanBroken() {
+        return isBeanBroken;
+    }
+    
 }

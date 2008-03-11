@@ -49,16 +49,17 @@ import org.openide.util.NbBundle;
  * @author John Baker
  */
 public class SpringWebFrameworkUtils {
-    private static final String DISPATCHER_MAPPING = ".htm"; // NOI18N
+    private static final String DISPATCHER_MAPPING = ".htm"; // NOI18N        
+    private static final char[] INVALID_CHARS = {'<', '>', '*', '\\',  ':', '\"',  '/', '%', '|', '?'}; // NOI18N
     
-    public static boolean isDispatcherNameValid(String name) {
-        boolean isNameValid = (name.length() > 0); // an empty string for the dispatcher name is not considered invalid
-        for (int charPosition = 0; charPosition < name.length(); charPosition++) {
-            if (!Character.isUnicodeIdentifierPart(name.toCharArray()[charPosition])) {
+    public static boolean isDispatcherServletConfigFilenameValid(String name) {
+        boolean isNameValid = true;
+        for (char c : INVALID_CHARS) {
+            if (name.indexOf(c) != -1) {
                 isNameValid = false;
                 break;
             }
-        }                
+        }
         return isNameValid;
     }
     
@@ -66,10 +67,7 @@ public class SpringWebFrameworkUtils {
         // mapping validation based on the Servlet 2.4 specification,section SRV.11.2
         if (pattern.startsWith("*.")){ // NOI18N
             String p = pattern.substring(2);
-            if (p.indexOf('.') == -1 && p.indexOf('*') == -1  
-                    && p.indexOf('/') == -1 && !p.trim().equals("") && !p.contains(" ") && Pattern.matches("\\w+",p)) { // NOI18N
-                return true;
-            }
+            return Pattern.matches("\\w+",p); // NOI18N
         }
         
         if ((pattern.length() > 3) && pattern.endsWith("/*") && pattern.startsWith("/") && !pattern.contains(" ")) // NOI18N

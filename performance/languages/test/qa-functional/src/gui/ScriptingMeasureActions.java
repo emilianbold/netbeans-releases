@@ -48,8 +48,6 @@ import gui.action.PageUpPageDownScriptingEditor;
 import gui.action.SaveModifiedScriptingFiles;
 import gui.action.ScriptingExpandFolder;
 import gui.action.TypingInScriptingEditor;
-import gui.menu.ScriptingNodePopup;
-import gui.menu.ScriptingProjectNodePopup;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -63,37 +61,24 @@ public class ScriptingMeasureActions {
         suite.addTest(new CreateRubyProject("testCreateRubyProject","Create Ruby project"));
         suite.addTest(new CreateRubyProject("testCreateRubyOnRailsProject","Create Ruby on Rails project"));
         
-        suite.addTest(new ScriptingProjectNodePopup("testRubyProjectNodePopupMenu","Ruby Project node popup test"));
-        suite.addTest(new ScriptingProjectNodePopup("testRubyProjectNodePopupMenu","Rails Project node popup test"));
         
         suite.addTest(new ScriptingExpandFolder("testExpandRubyProjectNode","testExpandRubyProjectNode"));
         suite.addTest(new ScriptingExpandFolder("testExpandFolderWith100RubyFiles","testExpandFolderWith100RubyFiles"));        
         suite.addTest(new ScriptingExpandFolder("testExpandRailsProjectNode","testExpandRailsProjectNode"));
         suite.addTest(new ScriptingExpandFolder("testExpandFolderWith100RailsFiles","testExpandFolderWith100RailsFiles"));
         suite.addTest(new ScriptingExpandFolder("testExpandFolderWith100JSFiles","testExpandFolderWith100JSFiles"));
-        suite.addTest(new ScriptingExpandFolder("testExpandFolderWith100CssFiles","testExpandFolderWith100CssFiles"));
-        
-        suite.addTest(new ScriptingNodePopup("test_RB_NodePopup"," Ruby file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_RHTML_NodePopup","RHTML file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_YML_NodePopup","YML file node popup test"));        
-        suite.addTest(new ScriptingNodePopup("test_JS_NodePopup","Java Script file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_JSON_NodePopup","JSON file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_CSS_NodePopup","CSS file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_BAT_NodePopup","Batch script file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_DIFF_NodePopup","Diff file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_MANIFEST_NodePopup","Manifest file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_SH_NodePopup","Shell Script file node popup test"));
+        suite.addTest(new ScriptingExpandFolder("testExpandFolderWith100CssFiles","testExpandFolderWith100CssFiles"));        
         
         suite.addTest(new EditorMenuPopup("test_RB_EditorPopup"," Ruby editor node popup test"));
         suite.addTest(new EditorMenuPopup("test_RHTML_EditorPopup","RHTML editor node popup test"));
         suite.addTest(new EditorMenuPopup("test_JS_EditorPopup","Java Script editor node popup test"));
-        suite.addTest(new EditorMenuPopup("test_JSON_EditorPopup","JSON editor node popup test"));
-        suite.addTest(new EditorMenuPopup("test_CSS_EditorPopup","CSS editor node popup test"));
-        suite.addTest(new EditorMenuPopup("test_YML_EditorPopup","YML editor node popup test"));
-        suite.addTest(new EditorMenuPopup("test_BAT_EditorPopup","BAT editor node popup test"));
-        suite.addTest(new EditorMenuPopup("test_DIFF_EditorPopup"," editor node popup test"));
-        suite.addTest(new EditorMenuPopup("test_MANIFEST_EditorPopup","MANIFEST editor node popup test"));
-        suite.addTest(new EditorMenuPopup("test_SH_EditorPopup","Shell Script editor node popup test"));
+//        suite.addTest(new EditorMenuPopup("test_JSON_EditorPopup","JSON editor node popup test"));
+//        suite.addTest(new EditorMenuPopup("test_CSS_EditorPopup","CSS editor node popup test"));
+//        suite.addTest(new EditorMenuPopup("test_YML_EditorPopup","YML editor node popup test"));
+//        suite.addTest(new EditorMenuPopup("test_BAT_EditorPopup","BAT editor node popup test"));
+//        suite.addTest(new EditorMenuPopup("test_DIFF_EditorPopup"," editor node popup test"));
+//        suite.addTest(new EditorMenuPopup("test_MANIFEST_EditorPopup","MANIFEST editor node popup test"));
+//        suite.addTest(new EditorMenuPopup("test_SH_EditorPopup","Shell Script editor node popup test"));
         
         suite.addTest(new TypingInScriptingEditor("test_RB_EditorTyping","test_RB_EditorTyping"));
         suite.addTest(new TypingInScriptingEditor("test_RHTML_EditorTyping","test_RHTML_EditorTyping"));

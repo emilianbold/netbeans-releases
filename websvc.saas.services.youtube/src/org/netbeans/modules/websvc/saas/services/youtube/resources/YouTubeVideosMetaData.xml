@@ -53,7 +53,7 @@
         <group name="Videos"/>
     </group>
     
-    <authentication profile="Templates/WebServices/profile.properties">
+    <authentication profile="SaaSServices/YouTube/profile.properties">
         <api-key id="dev_id"/>
     </authentication>
     

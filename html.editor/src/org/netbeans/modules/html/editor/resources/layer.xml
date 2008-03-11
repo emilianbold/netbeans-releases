@@ -71,6 +71,7 @@ made subject to such option by the copyright holder.
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlSemanticAnalyzer"/>
                 </file>
                 
+                
                 <!--<file name="completion.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Completable"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlCompleter"/>
@@ -80,16 +81,18 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.InstantRenamer"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RenameHandler"/>
                 </file>
+
+                <file name="bracket.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.BracketCompletion"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlBracketCompleter"/>
+                </file>
                 
                 <file name="declarationfinder.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.DeclarationFinder"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlFinder"/>
                 </file>
                 
-                <file name="bracket.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.BracketCompletion"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.BracketCompleter"/>
-                </file>
+                
                 -->
                 
                 <!--
@@ -237,20 +240,13 @@ made subject to such option by the copyright holder.
                 <file name="Settings.settings" url="HTMLOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.html.HTMLKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.editor.html.HTMLKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 
-                <!--<folder name="FoldManager">
-                    <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
-                </folder>
-                <folder name="SideBar">
-                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
-                </folder>
                 <folder name="UpToDateStatusProvider">
-                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"/>
+                    <file name="org-netbeans-modules-gsfret-hints-GsfUpToDateStateProviderFactory.instance"/>
                 </folder>
-                -->
                 
                 <folder name="Popup">
                     <file name="ViewAction.instance">

@@ -241,13 +241,15 @@ implements DocumentListener, KeyListener {
     }
 
     public int getInsertOffset() {
-        return positionRegion.getStartOffset();
+        if (allParameters.isEmpty())
+            return positionRegion.getStartOffset();
+        return Math.min(paramImpl(allParameters.get(0)).getPositionRegion().getStartOffset(), positionRegion.getStartOffset());
     }
 
     public String getInsertText() {
         if (inserted) {
             try {
-                int startOffset = positionRegion.getStartOffset();
+                int startOffset = getInsertOffset();
                 return doc.getText(startOffset, positionRegion.getEndOffset() - startOffset);
             } catch (BadLocationException e) {
                 ErrorManager.getDefault().notify(e);
@@ -787,7 +789,8 @@ implements DocumentListener, KeyListener {
                 if (doc.getProperty(BaseKit.DOC_REPLACE_SELECTION_PROPERTY) == null)
                     notifyParameterUpdate(activeMasterImpl.getParameter(), true);
             } else { // the insert is not managed => release
-                if (DocumentUtilities.isTypingModification(evt))
+                if (DocumentUtilities.isTypingModification(evt) || 
+                        evt.getLength() >= evt.getDocument().getLength()) //HACK! - see issue #128600
                     release();
             }
         }

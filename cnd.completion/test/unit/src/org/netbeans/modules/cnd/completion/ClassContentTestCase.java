@@ -65,5 +65,16 @@ public class ClassContentTestCase extends CompletionBaseTestCase {
     public void testDestructorTilda() throws Exception {
         super.performTest("file.cc", 6, 5, "pD->~");
     }  
+
+    public void testUnnamedDefinitions() throws Exception {
+        super.performTest("file.cc", 6, 5, "f.");
+    }
     
+    public void testUnnamedEnums() throws Exception {
+        super.performTest("file.cc", 6, 5, "F::");
+    }
+   
+    public void testStaticUnnamedUnions() throws Exception {
+        super.performTest("file2.cc", 15, 4);
+    }
 }

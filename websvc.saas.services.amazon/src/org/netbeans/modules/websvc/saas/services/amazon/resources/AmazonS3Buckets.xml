@@ -42,49 +42,44 @@
 -->
 
 <saas-services xmlns="http://xml.netbeans.org/websvc/saas/services/1.0"
-           xmlns:tns="http://xml.netbeans.org/websvc/rest/component/1.0/amazon/amazon-map"
-           xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
-           xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
-           ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
-           type="custom"
-           api-doc="http://developer.amazonwebservices.com/connect/kbcategory.jspa?categoryID=46"
-           >
+               xmlns:tns="http://xml.netbeans.org/websvc/saas/services/1.0/amazon"
+               xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
+               xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
+               type="http://research.sun.com/wadl/2006/10"
+               api-doc="http://developer.amazonwebservices.com/connect/kbcategory.jspa?categoryID=46"
+               url="org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3BucketsWadl.xml">
+
+    <description>AmazonS3 Buckets Service</description>
     
-    <description>AmazonS3Buckets Service</description>
-    <display-name>AmazonS3Buckets</display-name>
-    
+    <display-name>S3 Buckets Service</display-name>
+
     <saas-metadata>
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
 
         <group name="Amazon">
-            <group name="AmazonS3"/>
+            <group name="Simple Storage Service"/>
         </group>
-        <code-gen packageName="org.netbeans.saas.services.amazon">
-            <artifacts targets="java">
-                <artifact id="AmazonS3Buckets" type="template"
-                    url="Templates/SaaSServices/AmazonS3BucketsResource.java"/>
-            </artifacts>
-        </code-gen>
+
         <authentication profile="SaaSServices/AmazonS3/profile.properties">
-            <http-basic/>
+            <signed-url sig-id="Authorization">
+                <sign>
+                    <params>
+                        <param name="HTTP-Verb" type="string" required="true" default="GET" />
+                        <param name="Date" type="date" required="true"/>
+                        <param name="HTTP-Request-URI" type="string"/>
+                        <param name="Bucket" type="string" required="true" default=""/>
+                    </params>
+                </sign>
+            </signed-url>
         </authentication>
 
     </saas-metadata>
-    
-    
-    <methods>
-        <method name="getS3Buckets" href="AmazonS3Buckets">
-            <documentation>
-                Allows a developer to generate code to access Amazon S3 Buckets.
-            </documentation>
-            <input>
-                <params/>
-            </input>
-            <output>
-                <media type="text/html"/>
-            </output>
-        </method>
-    </methods>
 
+    <!--
+    <methods>
+        <method name="getBuckets" href="#amazons3.getBuckets"/>
+    </methods>
+    -->
 </saas-services>

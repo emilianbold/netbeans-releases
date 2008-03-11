@@ -43,6 +43,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import org.mozilla.javascript.Context;
+import org.netbeans.modules.javascript.editing.options.JsOptionsController;
 import org.openide.util.NbPreferences;
 
 /**
@@ -53,6 +54,22 @@ import org.openide.util.NbPreferences;
  * @author Tor Norbye
  */
 public class SupportedBrowsers {
+
+    static {
+        JsOptionsController.Accessor.DEFAULT = new JsOptionsController.Accessor() {
+
+            @Override
+            public void setLanguageVersion(SupportedBrowsers supported, int version) {
+                supported.setLanguageVersion(version);
+            }
+
+            @Override
+            public void setSupported(SupportedBrowsers supported, EnumSet<BrowserVersion> versions) {
+                supported.setSupported(versions);
+            }
+        };
+    }
+
     private static final String SUPPORTED_KEY = "supported";
     private static final String LANGUAGE_KEY = "language";
     private static final String BROWSERS = "browsers";
@@ -105,7 +122,7 @@ public class SupportedBrowsers {
         return NbPreferences.forModule(SupportedBrowsers.class).node(BROWSERS);
     }
     
-    boolean isSupported(BrowserVersion version) {
+    public boolean isSupported(BrowserVersion version) {
         return supported.contains(version);
     }
     

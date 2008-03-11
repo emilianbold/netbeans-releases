@@ -63,7 +63,8 @@ public class GlobalAstElement extends AstElement {
  
     @Override
     public ElementKind getKind() {
-        return ElementKind.GLOBAL;
+        return Character.isUpperCase(getName().charAt(0)) ? 
+            ElementKind.CLASS : ElementKind.GLOBAL;
     }
     
     public String getType() {

@@ -50,7 +50,6 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -61,6 +60,7 @@ import org.netbeans.modules.bpel.search.api.SearchMatch;
 import org.netbeans.modules.bpel.search.api.SearchOption;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
+import org.netbeans.modules.bpel.search.impl.output.View;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -93,7 +93,9 @@ public final class Search extends Dialog {
   @Override
   protected void updated()
   {
+//out("UPDATED");
     setItems(myTarget, myTargets);
+    myTarget.init();
   }
 
   private JPanel createPanel() {
@@ -146,7 +148,7 @@ public final class Search extends Dialog {
     c.fill = GridBagConstraints.HORIZONTAL;
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     c.weightx = 1.0;
-    myTarget = new JComboBox(myTargets);
+    myTarget = createComboBox(myTargets);
     a11y(myTarget, i18n("ACS_Type")); // NOI18N
     label.setLabelFor(myTarget);
     panel.add(myTarget, c);
@@ -289,13 +291,13 @@ public final class Search extends Dialog {
     };
   }
 
-  private Object mySource;
   private Field myName;
+  private Object mySource;
   private JButton mySearchButton;
-  private JComboBox myTarget;
   private JCheckBox myMatchCase;
   private JCheckBox myPatternMatch;
   private JCheckBox myRegularExpression;
+  private MyComboBox myTarget;
   private SearchTarget [] myTargets;
   private SearchEngine mySearchEngine;
   private DialogDescriptor myDescriptor;

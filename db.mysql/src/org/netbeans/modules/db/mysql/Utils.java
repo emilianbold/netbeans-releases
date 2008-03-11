@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -59,7 +60,10 @@ public class Utils {
     public static void displayError(String msg, Exception ex) {
         LOGGER.log(Level.INFO, msg, ex);
         
-        msg = msg + ": " + ex.getMessage();
+        String reason = ex.getMessage() != null ? ex.getMessage() : 
+            NbBundle.getMessage(Utils.class, "MSG_SeeErrorLog");
+        
+        msg = msg + ": " + reason;
         
 	NotifyDescriptor d = new NotifyDescriptor.Message(msg, 
                 NotifyDescriptor.ERROR_MESSAGE);
@@ -87,7 +91,7 @@ public class Utils {
     }
 
     private static boolean isValidPath(String path, boolean isDirectory, boolean emptyOK) {
-        if ( path == null || path.length() == 0 ) {
+        if ( isEmpty(path) ) {
             return emptyOK;
         }
         File file = new File(path).getAbsoluteFile();
@@ -107,7 +111,7 @@ public class Utils {
      * @return
      */
     public static boolean isValidURL(String url, boolean emptyOK) {
-        if ( url == null || url.length() == 0 ) {
+        if ( isEmpty(url) ) {
             return emptyOK;
         }
 
@@ -118,6 +122,10 @@ public class Utils {
         }
         
         return true;
+    }
+    
+    public static boolean isEmpty(String val) {
+        return val == null || val.length() == 0;
     }
     
     /**
@@ -136,17 +144,25 @@ public class Utils {
 
         return ( result == NotifyDescriptor.OK_OPTION );
     }
+    
+    public static void displayErrorMessage(String message) {
+        NotifyDescriptor ndesc = new NotifyDescriptor(
+                message, 
+                NbBundle.getMessage(Utils.class, "MSG_ErrorDialogTitle"),
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.ERROR_MESSAGE, 
+                new Object[] { NotifyDescriptor.OK_OPTION },
+                NotifyDescriptor.OK_OPTION);
 
+        DialogDisplayer.getDefault().notify(ndesc);
+    }
+    
     /**
-     * Check to see if the admin command has been set and confirmed,
-     * raising the appropriate dialogs as needed.
-     * 
-     * @return true if the admin command is now set and confirmed,
-     *   false if the user cancelled.
+     * See if two strings are equal, taking into account possibility of
+     * null
      */
-    // TODO - implement this once we have auto-detection working...
-    
-    
-    
-
+    public static boolean stringEquals(String str1, String str2) {
+        return  (str1 == null && str2 == null) ||
+                (str2 != null && str1 != null && str1.equals(str2));
+    }
 }

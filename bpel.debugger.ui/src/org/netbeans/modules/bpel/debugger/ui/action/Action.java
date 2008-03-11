@@ -37,7 +37,7 @@ abstract class Action extends ActionsProviderSupport
 {
     Action(ContextProvider provider, Object action) {
         myAction = action;
-        myDebugger = (BpelDebugger) provider.lookupFirst (null, BpelDebugger.class);
+        myDebugger = provider.lookupFirst(null, BpelDebugger.class);
         myDebugger.addPropertyChangeListener(BpelDebugger.PROP_STATE, this);
     }
     

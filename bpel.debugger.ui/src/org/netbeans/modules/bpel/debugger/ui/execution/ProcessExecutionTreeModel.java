@@ -56,8 +56,7 @@ public class ProcessExecutionTreeModel implements TreeModel {
      */
     public ProcessExecutionTreeModel(
             final ContextProvider contextProvider) {
-        myDebugger = (BpelDebugger) contextProvider.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
     }
     
     /**{@inheritDoc}*/

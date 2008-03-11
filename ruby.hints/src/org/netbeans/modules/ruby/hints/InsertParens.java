@@ -31,13 +31,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.jruby.ast.Node;
+import org.jruby.common.IRubyWarnings.ID;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.RubyParser.RubyError;
 import org.netbeans.modules.ruby.hints.spi.Description;
 import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.ErrorRule;
@@ -61,16 +62,17 @@ import org.openide.util.NbBundle;
  */
 public class InsertParens implements ErrorRule {
 
-    public Set<String> getCodes() {
+    public Set<ID> getCodes() {
        //        Set<String> s = new HashSet<String>();
        //        s.add("`*' interpreted as argument prefix");
        //        s.add("`&' interpreted as argument prefix");
        //        s.add("parenthesize argument(s) for future version");
        //        return s;
-        return Collections.singleton("parenthesize argument(s) for future version");
+        //return Collections.singleton("parenthesize argument(s) for future version");
+        return Collections.singleton(ID.PARENTHISE_ARGUMENTS);
     }
 
-    public void run(RuleContext context, Error error,
+    public void run(RuleContext context, RubyError error,
              List<Description> result) {
         CompilationInfo info = context.compilationInfo;
 

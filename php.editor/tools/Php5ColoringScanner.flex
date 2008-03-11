@@ -692,7 +692,8 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 <ST_PHP_VAR_OFFSET>[ \n\r\t\\'#] {
 	yypushback(1);
 	popState();
-	return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
+        if (yylength() > 0)
+            return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
 }
 
 <ST_PHP_IN_SCRIPTING,ST_PHP_VAR_OFFSET>{LABEL} {
@@ -746,42 +747,42 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 
 <ST_PHP_DOC_COMMENT> {
-    "@access"        {return PHPTokenId.PHPDOC_ACCESS;}
-    "@abstract"      {return PHPTokenId.PHPDOC_ABSTRACT;}
-    "@author"        {return PHPTokenId.PHPDOC_AUTHOR;}
-    "@category"      {return PHPTokenId.PHPDOC_CATEGORY;}
-    "@copyright"     {return PHPTokenId.PHPDOC_COPYRIGHT;}
-    "@deprecated"    {return PHPTokenId.PHPDOC_DEPRECATED;}
-    "@desc"          {return PHPTokenId.PHPDOC_DESC;}
-    "@example"       {return PHPTokenId.PHPDOC_EXAMPLE;}
-    "@exception"     {return PHPTokenId.PHPDOC_EXCEPTION;}
-    "@final"         {return PHPTokenId.PHPDOC_FINAL;}
-    "@filesource"    {return PHPTokenId.PHPDOC_FILESOURCE;}
-    "@global"        {return PHPTokenId.PHPDOC_GLOBAL;}
-    "@ignore"        {return PHPTokenId.PHPDOC_IGNORE;}
-    "@internal"      {return PHPTokenId.PHPDOC_INTERNAL;}
-    "@license"       {return PHPTokenId.PHPDOC_LICENSE;}
-    "@link"          {return PHPTokenId.PHPDOC_LINK;}
-    "@magic"         {return PHPTokenId.PHPDOC_MAGIC;}
-    "@method"        {return PHPTokenId.PHPDOC_METHOD;}    
-    "@name"          {return PHPTokenId.PHPDOC_NAME;}
-    "@package"       {return PHPTokenId.PHPDOC_PACKAGE;}
-    "@param"         {return PHPTokenId.PHPDOC_PARAM;}
-    "@property"      {return PHPTokenId.PHPDOC_PROPERTY;}
-    "@return"        {return PHPTokenId.PHPDOC_RETURN;}
-    "@see"           {return PHPTokenId.PHPDOC_SEE;}
-    "@since"         {return PHPTokenId.PHPDOC_SINCE;}
-    "@static"        {return PHPTokenId.PHPDOC_STATIC;}
-    "@staticvar"     {return PHPTokenId.PHPDOC_STATICVAR;}
-    "@subpackage"    {return PHPTokenId.PHPDOC_SUBPACKAGE;}
-    "@throws"        {return PHPTokenId.PHPDOC_THROWS;}
-    "@todo"          {return PHPTokenId.PHPDOC_TODO;}
-    "@tutorial"      {return PHPTokenId.PHPDOC_TUTORIAL;}
-    "@uses"          {return PHPTokenId.PHPDOC_USES;}
-    "@var"           {return PHPTokenId.PHPDOC_VAR;}
-    "@version"       {return PHPTokenId.PHPDOC_VERSION;}
+//    "@access"        {return PHPTokenId.PHPDOC_ACCESS;}
+//    "@abstract"      {return PHPTokenId.PHPDOC_ABSTRACT;}
+//    "@author"        {return PHPTokenId.PHPDOC_AUTHOR;}
+//    "@category"      {return PHPTokenId.PHPDOC_CATEGORY;}
+//    "@copyright"     {return PHPTokenId.PHPDOC_COPYRIGHT;}
+//    "@deprecated"    {return PHPTokenId.PHPDOC_DEPRECATED;}
+//    "@desc"          {return PHPTokenId.PHPDOC_DESC;}
+//    "@example"       {return PHPTokenId.PHPDOC_EXAMPLE;}
+//    "@exception"     {return PHPTokenId.PHPDOC_EXCEPTION;}
+//    "@final"         {return PHPTokenId.PHPDOC_FINAL;}
+//    "@filesource"    {return PHPTokenId.PHPDOC_FILESOURCE;}
+//    "@global"        {return PHPTokenId.PHPDOC_GLOBAL;}
+//    "@ignore"        {return PHPTokenId.PHPDOC_IGNORE;}
+//    "@internal"      {return PHPTokenId.PHPDOC_INTERNAL;}
+//    "@license"       {return PHPTokenId.PHPDOC_LICENSE;}
+//    "@link"          {return PHPTokenId.PHPDOC_LINK;}
+//    "@magic"         {return PHPTokenId.PHPDOC_MAGIC;}
+//    "@method"        {return PHPTokenId.PHPDOC_METHOD;}    
+//    "@name"          {return PHPTokenId.PHPDOC_NAME;}
+//    "@package"       {return PHPTokenId.PHPDOC_PACKAGE;}
+//    "@param"         {return PHPTokenId.PHPDOC_PARAM;}
+//    "@property"      {return PHPTokenId.PHPDOC_PROPERTY;}
+//    "@return"        {return PHPTokenId.PHPDOC_RETURN;}
+//    "@see"           {return PHPTokenId.PHPDOC_SEE;}
+//    "@since"         {return PHPTokenId.PHPDOC_SINCE;}
+//    "@static"        {return PHPTokenId.PHPDOC_STATIC;}
+//    "@staticvar"     {return PHPTokenId.PHPDOC_STATICVAR;}
+//    "@subpackage"    {return PHPTokenId.PHPDOC_SUBPACKAGE;}
+//    "@throws"        {return PHPTokenId.PHPDOC_THROWS;}
+//    "@todo"          {return PHPTokenId.PHPDOC_TODO;}
+//    "@tutorial"      {return PHPTokenId.PHPDOC_TUTORIAL;}
+//    "@uses"          {return PHPTokenId.PHPDOC_USES;}
+//    "@var"           {return PHPTokenId.PHPDOC_VAR;}
+//    "@version"       {return PHPTokenId.PHPDOC_VERSION;}
     
-    [^/@]* {
+    ([^*/]|[*][^/]|[^*][/]|{NEWLINE})* {
     int len = yylength();
         if (len > 1 && (yycharat(len-1) == '*')) {
             yypushback(1); // go back to mark end of comment in the next token
@@ -801,26 +802,16 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHP_COMMENT_END;
 }
 
-<ST_PHP_COMMENT>(.|[\r\n])*?\*[/] {
-//<ST_PHP_COMMENT>((.|[\r\n])*\*[/])?? {
-//<ST_PHP_COMMENT>([^*]|[\r\n]|(\*([^/]|[\r\n])))*\*[/] {
-//<ST_PHP_COMMENT> ([/][*][.]*?[*][/])|([/][*][.]*) {
+<ST_PHP_COMMENT>([^*/]|[*][^/]|[^*][/]|{NEWLINE})* {
     int len = yylength();
     
-    if (len > 1 && (yycharat(len-2) == '*') && (yycharat(len-1) == '/')) {
-        yypushback(2);
+    // if there are two '*' as last two characters, it means that the last
+    // '*' belongs to "*/"
+    if (len > 1 && (yycharat(len-2) == '*') && (yycharat(len-1) == '*')) {
+        yypushback(1);
     }
     return PHPTokenId.PHP_COMMENT;
 }
-
-//<ST_PHP_COMMENT>[^/]* {
-//    int len = yylength();
-//    if (len > 1 && (yycharat(len-1) == '*')) {
-//        yypushback(1); // go back to mark end of comment in the next token
-//    }
-//    return PHPTokenId.PHP_COMMENT;
-//}
-
 
 <ST_PHP_IN_SCRIPTING,ST_PHP_LINE_COMMENT>"?>"{WHITESPACE}? {
         //popState();

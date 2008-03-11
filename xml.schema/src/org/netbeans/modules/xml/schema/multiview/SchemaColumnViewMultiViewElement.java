@@ -205,6 +205,9 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
         addPropertyChangeListener("activatedNodes", cpl);
         setLayout(new BorderLayout());
 //        initUI(true);
+        //accessibility
+        this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SchemaColumnViewMultiViewElement.class,"LBL_SchemaColumnView"));
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SchemaColumnViewMultiViewElement.class,"DSC_SchemaColumnView"));
     }
 
     public ExplorerManager getExplorerManager() {

@@ -16,13 +16,15 @@
 <ul>
   <li><b>Go to Source (Alt-O)</b>. Navigates  to the appropriate place in the code in the Source view. </li>
   <li><b>Go to Design (Alt-I)</b>. Navigates to the selected element in the Design view. </li>
+  <li><strong>Go to BPEL Mapper.</strong> Navigates to the Mapper tab (only for activities that require BPEL Mapper).</li>
+  <li><strong>Go to Logging.</strong> Navigates to the Logging tab. </li>
   <li><b>Wrap With</b>. Wraps the selected element with a container activity. </li>
   <li><b>Move Up</b> and <b>Move Down</b>. Moves the selected element up or down the diagram. </li>
   <li><b>Toggle Breakpoint (Ctrl-F8)</b>. Inserts or removes a breakpoint from an element, which is reflected on the diagram in the Design view. Breakpoints are used in <a href="../debug/breakpoints.html">debugging BPEL processes</a>. </li>
   <li><b>Edit.</b> Invokes the Property Editor for  the selected element. Note that Property Editor dialog boxes are available only for some elements. See <a href="../design/ww_diagram_element_props.html" title="Configuring Element Properties">Configuring Element Properties</a> for details. </li>
   <li><b>Delete</b>. Removes the selected element from the BPEL process. </li>
   <li><b>Properties</b>. Displays a property sheet for the selected element. The properties in this window duplicate those in the IDE's Properties window. </li>
-  </ul>
+</ul>
 <h3>Variables</h3>
 <p>Expand the Variables node to see the variables defined for the Process element. To see the variables defined for a Scope element, expand the node for this Scope. For information about variables in BPEL processes and their types, see <a href="../elements/about_variable.html" title="About Variables in the BPEL Designer">About Variables in the BPEL Designer</a>.</p>
 <p><b>To add a variable to Process:</b></p>
@@ -44,15 +46,7 @@
     </ol>
   
     <h3>Correlation Sets</h3>
-    <p>Expand the Correlation Sets node to see the correlation sets defined for the current BPEL process. For details about correlation sets, see <a href="../design/about_correlation.html" title="Understanding Correlation">Understanding Correlation</a>.</p>
-    <p><b>To add a correlation set:</b></p>
-    <ol>
-      <li>In the BPEL Logical View, expand  the BPEL Module project's node, right-click the Correlation Sets node and choose Add Correlation Set.<br>
-      The Add Correlation Set dialog box appears. </li>
-      <li>In this dialog box, change the name for the correlation set and click Add to add properties.</li>
-      <li>In the Property Chooser dialog box, select a property to add to the set and click OK.</li>
-      <li>Click OK to close the Add Correlation Set dialog box. </li>
-</ol>
+    <p>Expand the Correlation Sets node to see the correlation sets defined for the current BPEL process. For details about correlation sets, see <a href="../design/about_correlation_and_wizard.html" title="Understanding Correlation. Using Correlation Wizard">Understanding Correlation. Using the Correlation Wizard</a> and <a href="../design/create_correlation_manually.html">Defining Correlation Manually</a>. </p>
     <h3>BPEL Elements</h3>
     <p>To locate an element on the diagram, select the element in the Navigator window. Conversely, when you select an element on the diagram, that element becomes selected in the Navigator window. The properties of  selected elements are displayed in the Properties window (to open the Properties window, press Ctrl-Shift-7). For some elements, you can invoke  Property Editor dialog boxes by right-clicking them in the Navigator window and choosing Edit. </p>
     <p><b>To navigate to an element on the diagram:</b></p>
@@ -108,7 +102,7 @@
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd><a href="../elements/create_variable.html" title="Creating Variables">Creating Variables</a></dd>
-<dd><a href="../design/create_correlation_set.html" title="Adding Correlation Sets">Adding Correlation Sets</a></dd>
+<dt>&nbsp;</dt>
 <dd><a href="../design/import_wsdl_resources.html" title="Addding WSDL and XML Schema Imports">Adding WSDL and XML Schema Imports</a></dd>
 <dd><a href="nbdocs://org.netbeans.modules.xml.wsdlui/org/netbeans/modules/xml/wsdlui/docs/wsdl_editor_prop.html" title="Configuring Properties and Property Aliases Using the WSDL View">Configuring Properties and Property Aliases Using the WSDL View</a></dd>
 <dd><a href="nav.html" title="About the BPEL Designer Navigator">About the BPEL Designer Navigator</a></dd>

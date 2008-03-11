@@ -87,7 +87,7 @@ public class ToolTipAnnotation extends Annotation {
         if (dob == null) {
             return null;
         }
-        EditorCookie ec = (EditorCookie) dob.getCookie(EditorCookie.class);
+        EditorCookie ec = dob.getCookie(EditorCookie.class);
         if (ec == null) {
             return null;
         }

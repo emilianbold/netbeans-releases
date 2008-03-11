@@ -1272,6 +1272,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             if (getActive() != null)
                 type = ((MakeConfiguration)getActive()).getConfigurationType().getValue();
             Configuration newconf = projectDescriptor.defaultConf(newName, type);
+            ((MakeConfiguration)newconf).reCountLanguages((MakeConfigurationDescriptor)projectDescriptor);
             return newconf;
         }
         
