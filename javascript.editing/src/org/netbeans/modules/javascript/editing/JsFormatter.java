@@ -79,6 +79,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     private boolean embeddedJavaScript;
     private CodeStyle codeStyle;
     private int rightMarginOverride = -1;
+    private int embeddededIndent = 0;
     
     /**
      * <p>
@@ -356,6 +357,12 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         }
         
         if (ts == null) {
+            try {
+                // remember indent of previous html tag
+                embeddededIndent = Utilities.getRowIndent(doc, begin);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             return 0;
         }
 
@@ -840,12 +847,11 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
             while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {
                 int indent; // The indentation to be used for the current line
 
-// No compound indentation for JavaScript                
-//                if (embeddedJavaScript && !indentOnly) {
-//                    // Pick up the indentation level assigned by the HTML indenter; gets HTML structure
-//                    initialIndent = LexUtilities.getLineIndent(doc, offset);
-//                }
-                
+                if (embeddedJavaScript) {
+                    // now using JavaScript indent size to indent from <SCRIPT> tag; should it be HTML?
+                    initialIndent = embeddededIndent + indentSize;
+                }
+
                 
                 final int IN_CODE = 0;
                 final int IN_LITERAL = 1;
@@ -859,7 +865,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     // I can't look at the first position on the line, since
                     // for a string array that is indented, the indentation portion
                     // is recorded as a blank identifier
-                    ts = LexUtilities.getPositionedSequence(doc, pos);
+                    ts = LexUtilities.getPositionedSequence(doc, pos, false);
 
                     if (ts != null) {
                         TokenId id = ts.token().id();
@@ -894,7 +900,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     // Skip this line - leave formatting as it is prior to reformatting 
                     indent = LexUtilities.getLineIndent(doc, offset);
                     
-                    // No compound indent for JavaScript                    
+                    // No compound indent for JavaScript          
                     //                    if (embeddedJavaScript && indentHtml && balance > 0) {
                     //                        indent += balance * indentSize;
                     //                    }
