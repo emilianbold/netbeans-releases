@@ -173,9 +173,7 @@ public class AutoupdateCheckScheduler {
             if (Utilities.shouldCheckAvailableUpdates ()) {
                 Collection<UpdateElement> updates = checkUpdateElements (OperationType.UPDATE);
                 hasUpdates = updates != null && ! updates.isEmpty ();
-                if (hasUpdates) {
-                    LazyUnit.storeLazyUnits (OperationType.UPDATE, updates);
-                }
+                LazyUnit.storeLazyUnits (OperationType.UPDATE, updates);
             }
             if (! hasUpdates && Utilities.shouldCheckAvailableNewPlugins ()) {
                 LazyUnit.storeLazyUnits (OperationType.INSTALL, checkUpdateElements (OperationType.INSTALL));

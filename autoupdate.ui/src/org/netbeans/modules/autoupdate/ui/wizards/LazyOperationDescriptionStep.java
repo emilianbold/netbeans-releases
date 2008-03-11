@@ -43,7 +43,6 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.awt.Component;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -53,6 +52,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
 import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
@@ -116,7 +116,7 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
                     true);
             component = new PanelBodyContainer (head, content, body);
             component.setPreferredSize (OperationWizardModel.PREFFERED_DIMENSION);
-            component.setWaitingState (true);
+            component.setWaitingState (true, Utilities.getTimeOfInitialization ());
             checkRealUpdates ();
         }
         return component;

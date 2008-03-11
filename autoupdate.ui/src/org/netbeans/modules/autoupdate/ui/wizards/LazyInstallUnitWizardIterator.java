@@ -132,6 +132,9 @@ public final class LazyInstallUnitWizardIterator implements WizardDescriptor.Ite
             } catch (BackingStoreException ex) {
                 Logger.getLogger (LazyInstallUnitWizardIterator.class.getName ()).log (Level.WARNING, ex.getLocalizedMessage (), ex);
             }
+            if (elements == null) {
+                return ;
+            }
             for (UpdateElement el : elements) {
                 p.put (el.getCodeName (), toString (el));
             }
