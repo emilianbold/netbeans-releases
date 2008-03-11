@@ -62,10 +62,14 @@ public class DTDKit extends UniKit {
     /** Serial Version UID */
     private static final long serialVersionUID =-6140259975700590155L;
     
-    /** Default DTD MIME type. */
-    public static final String MIME_TYPE = "application/xml-dtd"; // http://www.ietf.org/rfc/rfc3023.txt // NOI18N
+    /**
+     * Default MIME type.
+     * Read http://www.ietf.org/rfc/rfc3023.txt
+     */
+    public static final String MIME_TYPE = "application/xml-dtd"; // NOI18N
     
     /** Create new instance of syntax coloring parser */
+    @Override
     public Syntax createSyntax(Document doc) {
         return new JJEditorSyntax( 
             new DTDSyntaxTokenManager(null).new Bridge(),
@@ -74,10 +78,12 @@ public class DTDKit extends UniKit {
         );
     }
 
+    @Override
     public Document createDefaultDocument() {
         return new NbEditorDocument (this.getClass());
     }
 
+    @Override
     public String getContentType() {
         return MIME_TYPE;
     }

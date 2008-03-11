@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.editor.reformat;
 
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
@@ -49,6 +50,7 @@ import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -149,9 +151,11 @@ public class Reformatter implements ReformatTask {
             }
             if (end - start > 0) {
                 if (!checkRemoved(doc.getText(start, end - start))){
-                    // Reformat
-                    System.out.println("Reformatting failed. Reformatter try to remove: "+doc.getText(start, end - start));
-                    System.out.println("    Changeset:"+diff);
+                    // Reformat failed
+                    Logger log = Logger.getLogger("org.netbeans.modules.cnd.editor"); // NOI18N
+                    String error = NbBundle.getMessage(Reformatter.class, "REFORMATTING_FAILED", // NOI18N
+                            doc.getText(start, end - start), diff.toString());
+                    log.severe(error);
                     break;
                 }
                 doc.remove(start, end - start);

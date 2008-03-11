@@ -77,14 +77,6 @@ public class CasaProcessTitleWidget extends Widget implements CasaMinimizable {
         leftEmptyWidget.setPreferredBounds(new Rectangle(CasaNodeWidgetEngine.ARROW_PIN_WIDTH, 2));
         
         imageWidget = new ImageWidget(scene);
-//        Image image = ServiceUnitProcessNode.DEFAULT_ICON;
-//        if (iconURL != null) {
-//            try {
-//                image = ImageIO.read(iconURL);
-//            } catch (Exception e) {
-//                System.err.println(e.getMessage());
-//            }
-//        }
         imageWidget.setImage(image);
         
         rightEmptyWidget = new Widget(getScene()); //Placeholder to place MinimizeIcon inside rounded rectangle

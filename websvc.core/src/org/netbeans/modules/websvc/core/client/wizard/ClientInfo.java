@@ -638,14 +638,6 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         else
             projectType = 0;
         
-        if (projectType > 0) {
-            
-            if (!Util.isJavaEE5orHigher(project)) {
-                jLblClientType.setVisible(true);
-                jCbxClientType.setVisible(true);
-            }
-        }
-        
         //test JAX-WS library
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         ClassPath classPath;
@@ -674,11 +666,14 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                 if ((!jsr109OldSupported && !jsr109Supported) || jaxWsInJ2ee14Supported ||
                         (!jsr109Supported && jsr109OldSupported && jwsdpSupported )){
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
+                    jLabelJaxVersion.setEnabled(false);
+                    jComboBoxJaxVersion.setEnabled(false);
                 } else{
                     jLabelJaxVersion.setEnabled(false);
                     jComboBoxJaxVersion.setEnabled(false);
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);  
-                    
+                    jLblClientType.setVisible(true);
+                    jCbxClientType.setVisible(true);
                 }
             }
         } else {
@@ -1200,6 +1195,14 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         return null;
     }
     
+    /**
+     * This api check if the target server for this project supports jsr 109.
+     * This means it supports JAX-WS as well.
+     * GlassFish and jBoss support this.
+     * Tomcat does not support this.
+     * @param project
+     * @return true if jsr109(and jaxws) supported, false otherwise.
+     */
     private boolean isJsr109Supported(Project project){
         J2eePlatform j2eePlatform = getJ2eePlatform(project);
         if(j2eePlatform != null){
@@ -1208,6 +1211,13 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         return false;
     }
     
+    /**
+     * This api check if the target server for this project supports WSCOMPILE (JAX-RPC).
+     * GlassFish support this.
+     * Tomcat and jBoss do not support this.
+     * @param project
+     * @return true if WSCOMPILE(JAX-RPC) supported, false otherwise
+     */
     private boolean isJsr109OldSupported(Project project){
         J2eePlatform j2eePlatform = getJ2eePlatform(project);
         if(j2eePlatform != null){
@@ -1216,6 +1226,12 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         return false;
     }
     
+    /**
+     * This api check if the target server for this project supports JWSDP.
+     * GlassFish, Tomcat and jBoss do not support this.
+     * @param project
+     * @return true if JWSDP supported, false otherwise
+     */
     private boolean isJwsdpSupported(Project project){
         J2eePlatform j2eePlatform = getJ2eePlatform(project);
         if(j2eePlatform != null){
@@ -1224,6 +1240,12 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         return false;
     }
     
+    /**
+     * This api check if the target server for this project supports JaxWs-in-j2ee14-supported.
+     * jBoss support this. Glassfish and Tomcat do not.
+     * @param project
+     * @return true if JaxWs-in-j2ee14-supported supported, false otherwise
+     */
     public boolean isJaxWsInJ2ee14Supported(Project project) {
         J2eePlatform j2eePlatform = getJ2eePlatform(project);
         if(j2eePlatform != null){

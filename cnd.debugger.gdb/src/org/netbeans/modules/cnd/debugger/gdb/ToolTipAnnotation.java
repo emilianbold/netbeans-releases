@@ -74,7 +74,7 @@ public class ToolTipAnnotation extends Annotation {
         if (currentEngine == null) {
             return null;
         }
-        GdbDebugger debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
+        GdbDebugger debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
         if (debugger == null) {
             return null;
         }

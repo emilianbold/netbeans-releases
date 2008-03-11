@@ -65,6 +65,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -75,21 +76,25 @@ import org.openide.windows.WindowManager;
  * @since 6.3
  * @author S. Aubrecht
  */
-final class SaveAsAction extends AbstractAction implements ContextAwareAction, LookupListener, PropertyChangeListener {
+final class SaveAsAction extends AbstractAction implements ContextAwareAction {
 
     private Lookup context;
     private Lookup.Result<SaveAsCapable> lkpInfo;
-    private boolean isEditorWindowActivated;
-    
+    private boolean isGlobal = false;
+    private boolean isDirty = true;
+    private PropertyChangeListener registryListener;
+    private LookupListener lookupListener;
+
     private SaveAsAction() {
-        this( Utilities.actionsGlobalContext() );
-        TopComponent.getRegistry().addPropertyChangeListener( this );
+        this( Utilities.actionsGlobalContext(), true );
     }
     
-    private SaveAsAction( Lookup context ) {
+    private SaveAsAction( Lookup context, boolean isGlobal ) {
         super( NbBundle.getMessage(DataObject.class, "CTL_SaveAsAction") ); //NOI18N
         this.context = context;
+        this.isGlobal = isGlobal;
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        setEnabled( false );
     }
     
     /**
@@ -99,30 +104,18 @@ final class SaveAsAction extends AbstractAction implements ContextAwareAction, L
     public static ContextAwareAction create() {
         return new SaveAsAction();
     }
-
-    void init() {
-        assert SwingUtilities.isEventDispatchThread() 
-               : "this shall be called just from AWT thread";
-
-        if (lkpInfo != null) {
-            return;
-        }
-
-        //The thing we want to listen for the presence or absence of
-        //on the global selection
-        Lookup.Template<SaveAsCapable> tpl = new Lookup.Template<SaveAsCapable>(SaveAsCapable.class);
-        lkpInfo = context.lookup (tpl);
-        lkpInfo.addLookupListener(this);
-        propertyChange(null);
-    }
-
+    
+    @Override
     public boolean isEnabled() {
-        init();
+        if (isDirty
+            || null == changeSupport || !changeSupport.hasListeners("enabled") ) { //NOI18N
+            refreshEnabled();
+        }
         return super.isEnabled();
     }
 
     public void actionPerformed(ActionEvent e) {
-        init();
+        refreshListeners();
         Collection<? extends SaveAsCapable> inst = lkpInfo.allInstances();
         if( inst.size() > 0 ) {
             SaveAsCapable saveAs = inst.iterator().next();
@@ -155,10 +148,6 @@ final class SaveAsAction extends AbstractAction implements ContextAwareAction, L
                 }
             }
         }
-    }
-    
-    public void resultChanged(LookupEvent ev) {
-        setEnabled (null != lkpInfo && lkpInfo.allItems().size() != 0 && isEditorWindowActivated );
     }
     
     /**
@@ -214,15 +203,88 @@ final class SaveAsAction extends AbstractAction implements ContextAwareAction, L
     }
 
     public Action createContextAwareInstance(Lookup actionContext) {
-        return new SaveAsAction( actionContext );
+        return new SaveAsAction( actionContext, false );
+    }
+    
+    @Override
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        super.addPropertyChangeListener(listener);
+        refreshListeners();
+    }
+    
+    @Override
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        super.removePropertyChangeListener(listener);
+        refreshListeners();
+    }
+    
+    private PropertyChangeListener createRegistryListener() {
+        return WeakListeners.propertyChange( new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    isDirty = true;
+                }
+            }, TopComponent.getRegistry() );
+    }
+    
+    private LookupListener createLookupListener() {
+        return WeakListeners.create(LookupListener.class, new LookupListener() {
+                public void resultChanged(LookupEvent ev) {
+                    isDirty = true;
+                }
+            }, lkpInfo);
     }
 
-    public void propertyChange(PropertyChangeEvent arg0) {
+    private void refreshEnabled() {
+        if (lkpInfo == null) {
+            //The thing we want to listen for the presence or absence of
+            //on the global selection
+            Lookup.Template<SaveAsCapable> tpl = new Lookup.Template<SaveAsCapable>(SaveAsCapable.class);
+            lkpInfo = context.lookup (tpl);
+        }
+        
         TopComponent tc = TopComponent.getRegistry().getActivated();
+        boolean isEditorWindowActivated = null != tc && WindowManager.getDefault().isEditorTopComponent(tc);
+        setEnabled(null != lkpInfo && lkpInfo.allItems().size() != 0 && isEditorWindowActivated);
+        isDirty = false;
+    }
+    
+    private void refreshListeners() {
+        assert SwingUtilities.isEventDispatchThread() 
+               : "this shall be called just from AWT thread";
+
+        if (lkpInfo == null) {
+            //The thing we want to listen for the presence or absence of
+            //on the global selection
+            Lookup.Template<SaveAsCapable> tpl = new Lookup.Template<SaveAsCapable>(SaveAsCapable.class);
+            lkpInfo = context.lookup (tpl);
+        }
         
-        isEditorWindowActivated = null != tc && WindowManager.getDefault().isEditorTopComponent( tc );
-        
-        resultChanged( null );
+        if( null == changeSupport || !changeSupport.hasListeners("enabled") ) { //NOI18N
+            if( isGlobal && null != registryListener ) {
+                TopComponent.getRegistry().removePropertyChangeListener( registryListener );
+                registryListener = null;
+            }
+            if( null != lookupListener ) {
+                lkpInfo.removeLookupListener(lookupListener);
+                lookupListener = null;
+            }
+        } else {
+            if( null == registryListener ) {
+                registryListener = createRegistryListener();
+                TopComponent.getRegistry().addPropertyChangeListener( registryListener );
+            }
+
+            if( null == lookupListener ) {
+                lookupListener = createLookupListener();
+                lkpInfo.addLookupListener( lookupListener );
+            }
+            refreshEnabled();
+        }
+    }
+    
+    //for unit testing
+    boolean _isEnabled() {
+        return super.isEnabled();
     }
 }
 

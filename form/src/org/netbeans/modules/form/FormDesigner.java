@@ -80,6 +80,8 @@ import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 
 
 /**
@@ -318,8 +320,14 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     void reset(FormEditor formEditor) {
+        if (menuEditLayer != null) {
+            menuEditLayer.hideMenuLayer();
+            menuEditLayer = null;
+        }
+                
         if (initialized) {
             clearSelection();
+            explorerManager.setRootContext(new AbstractNode(Children.LEAF));
         }
         initialized = false;
 
@@ -337,10 +345,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             textEditLayer=null;               
         }
         
-        if(menuEditLayer!=null) {
-            menuEditLayer = null;
-        }
-                
         if (formModel != null) {
             if (formModelListener != null) {
                 formModel.removeFormModelListener(formModelListener);                
@@ -1746,16 +1750,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     @Override
     public void componentClosed() {
         super.componentClosed();
-        if (formModel != null) {
-            if (formModelListener != null) {
-                formModel.removeFormModelListener(formModelListener);
-            }
-            if (settingsListener != null) {
-                FormLoaderSettings.getPreferences().removePreferenceChangeListener(settingsListener);
-            }
-            topDesignComponent = null;
-            formModel = null;
-        }
+        // Closed FormDesigner is not going to be reused.
+        // Clear all references to prevent memory leaks - even if FormDesigner
+        // is kept for some reason, make sure FormModel is not held from it.
+        reset(null);
     }
 
     @Override

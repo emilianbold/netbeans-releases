@@ -376,7 +376,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
             for (VariableElement ve : method.getParameters()) {
                 List<? extends AnnotationMirror> annotations = ve.getAnnotationMirrors();
                 for (AnnotationMirror m : annotations) {
-                    if (JavaSourceHelper.isOfAnnotationType(m, RestConstants.URI_PARAM_ANNOTATION)) {
+                    if (JavaSourceHelper.isOfAnnotationType(m, RestConstants.PATH_PARAM_ANNOTATION)) {
                         Collection<? extends AnnotationValue> values = m.getElementValues().values();
                         for (AnnotationValue av : values) {
                             if (av.getValue() instanceof String) {

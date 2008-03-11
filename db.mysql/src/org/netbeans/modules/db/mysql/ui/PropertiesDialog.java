@@ -51,7 +51,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -75,7 +74,7 @@ public class PropertiesDialog  {
         
         tabbedPane = createTabbedPane(basePanel, adminPanel);
     }
-     
+    
     /**
      * Display the properties dialog
      * 
@@ -102,8 +101,6 @@ public class PropertiesDialog  {
         
         if ( ok ) {
             updateServer();
-            server.disconnect();
-            DatabaseUtils.connectToServerAsync(server);
         }     
         
         return ok;

@@ -42,6 +42,7 @@
 package org.netbeans.core.startup.layers;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -103,6 +104,11 @@ public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
     }
     
     public void testOrderingAttributes() throws Exception {
+        // From time to time RecognizeInstanceObjectsTest.testOrderingAttributes fails, no idea why. -jglick
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
+
         LOG.info("creating instances");
         
         FileObject inst = FileUtil.createData(root, "inst/ordering/X.instance");
@@ -124,7 +130,9 @@ public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
         LOG.info("About to create lookup");
         Lookup l = Lookups.forPath("inst/ordering");
         LOG.info("querying lookup");
-        Iterator<? extends Long> lng = l.lookupAll(Long.class).iterator();
+        Collection<? extends Long> lngAll = l.lookupAll(Long.class);
+        assertEquals(4, lngAll.size());
+        Iterator<? extends Long> lng = lngAll.iterator();
         LOG.info("checking results");
         
         assertEquals(Long.valueOf(500), lng.next());
