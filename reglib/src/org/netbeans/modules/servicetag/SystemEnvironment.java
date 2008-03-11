@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package com.sun.servicetag;
+package org.netbeans.modules.servicetag;
 
 // This class is a copy of the com.sun.scn.servicetags.SystemEnvironment
 // class from the Sun Connection source.

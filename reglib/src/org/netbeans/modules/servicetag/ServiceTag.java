@@ -39,11 +39,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package com.sun.servicetag;
+package org.netbeans.modules.servicetag;
 
 import java.util.Date;
 import java.io.IOException;
-import static com.sun.servicetag.RegistrationDocument.*;
+import static org.netbeans.modules.servicetag.RegistrationDocument.*;
 
 /**
  * A service tag is an XML-based data structure that identifies a product or 
