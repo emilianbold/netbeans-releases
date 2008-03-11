@@ -1139,6 +1139,9 @@ public class IDEValidation extends JellyTestCase {
      * - wait until dtd is opened in editor and close it
      * - call "Check DTD" on dtd node
      * - find and close output tab
+     * - call "Generate DOM Tree Scanner" on dtd node
+     * - set name and confirm the dialog
+     * - wait until scanner is opened in editor and close it
      */
     public void testXML() {
         // check XML Entity Catalogs
@@ -1229,15 +1232,13 @@ public class IDEValidation extends JellyTestCase {
         new OutputTabOperator(xmlCheckTitle).close();
 
         // "Generate DOM Tree Scanner"
-        /* Not available because of http://www.netbeans.org/issues/show_bug.cgi?id=90174
         String generateScannerItem = Bundle.getStringTrimmed("org.netbeans.modules.xml.tools.generator.Bundle", "PROP_GenerateDOMScanner");
         new ActionNoBlock(null, generateScannerItem).perform(dtdNode);
         selectDialog = new NbDialogOperator(selectTitle);
         new JButtonOperator(selectDialog, oKLabel).push();
         // wait Scanner is open in editor
         new EditorOperator("DTDScanner.java").close();  // NOI18N
-        Node scannerNode = new Node(xmlNode, "DTDScanner.java"); // NOI18N
-        */
+        new Node(xmlNode, "DTDScanner.java"); // NOI18N
     }
 
     /** Test Window System 
