@@ -80,10 +80,12 @@ public abstract class UninstallAction extends NodeAction {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             for (Node parentNode : parentNodes) {
-                                final Refreshable refreshable =
-                                        parentNode.getLookup().lookup(Refreshable.class);
-                                if (refreshable != null){
-                                    refreshable.refresh();
+                                if (parentNode != null) {
+                                    final Refreshable refreshable =
+                                            parentNode.getLookup().lookup(Refreshable.class);
+                                    if (refreshable != null){
+                                        refreshable.refresh();
+                                    }
                                 }
                             }
                         }

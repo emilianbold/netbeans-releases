@@ -118,8 +118,9 @@ public class MethodCheckedTreeBeanView extends BeanTreeView implements Runnable 
 
     public void run() {
         TreePath tp = tree.getSelectionPath();
-        ((DefaultTreeModel)tree.getModel()).reload();
-        if (tp != null) tree.scrollPathToVisible(tp);
+        if (tp != null) tree.setSelectionPath(null);
+        //((DefaultTreeModel)tree.getModel()).reload();
+        //if (tp != null) tree.scrollPathToVisible(tp);
     }
     
     private void forceState(Children ch, MultiStateCheckBox.State state) {

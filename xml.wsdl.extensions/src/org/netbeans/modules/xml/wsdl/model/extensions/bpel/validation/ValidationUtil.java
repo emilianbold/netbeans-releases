@@ -40,21 +40,26 @@
  */
 package org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-
 import javax.xml.namespace.QName;
-import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.schema.model.ComplexType;
+import org.netbeans.modules.xml.schema.model.SimpleType;
 import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
+import org.netbeans.modules.xml.schema.model.TypeContainer;
+import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.netbeans.modules.xml.xam.dom.Attribute;
 
 public final class ValidationUtil {
-    public static final String SCHEMA_COMPONENT_ATTRIBUTE_BASE = "base"; // NOI18N
+    private static final String 
+        SCHEMA_COMPONENT_ATTRIBUTE_BASE = "base", // NOI18N
+        SCHEMA_COMPONENT_ATTRIBUTE_NAME = "name", // NOI18N
+        SCHEMA_COMPONENT_ATTRIBUTE_TYPE = "type"; // NOI18N
 
     public static Collection<GlobalSimpleType> BUILT_IN_SIMPLE_TYPES = 
         SchemaModelFactory.getDefault().getPrimitiveTypesModel().getSchema().getSimpleTypes();
@@ -84,43 +89,78 @@ public final class ValidationUtil {
       return component.toString();
     }
 
+    public static Attribute attributeName() {
+        return (new GenericExtensibilityElement.StringAttribute(SCHEMA_COMPONENT_ATTRIBUTE_NAME));
+    }
+    
+    public static Attribute attributeType() {
+        return (new GenericExtensibilityElement.StringAttribute(SCHEMA_COMPONENT_ATTRIBUTE_TYPE));
+    }
+    
     public static GlobalSimpleType getBuiltInSimpleType(SchemaComponent schemaComponent) {
         if (schemaComponent == null) return null;
-        Collection<GlobalSimpleType> 
-            schemaSimpleTypes = schemaComponent.getModel().getSchema().getSimpleTypes();
         
         String baseTypeName = schemaComponent.getAnyAttribute(new QName(
             SCHEMA_COMPONENT_ATTRIBUTE_BASE));
+        GlobalSimpleType globalSimpleType = null;
         if (baseTypeName != null) {
             baseTypeName = ignoreNamespace(baseTypeName);
-            GlobalSimpleType globalSimpleType = findGlobalSimpleType(baseTypeName, 
+            globalSimpleType = findGlobalSimpleType(baseTypeName, 
                 BUILT_IN_SIMPLE_TYPES);
             if (globalSimpleType != null) return globalSimpleType;
-            globalSimpleType = findGlobalSimpleType(baseTypeName, schemaSimpleTypes);
-            if (globalSimpleType != null) {
-                for (SchemaComponent childComponent : schemaComponent.getChildren()) {
-                    globalSimpleType = getBuiltInSimpleType(childComponent);
-                    if (globalSimpleType != null) return globalSimpleType;
-                }
-                return null;
-            } else {
-                return null;
+        }
+        Collection<GlobalSimpleType> 
+            schemaSimpleTypes = schemaComponent.getModel().getSchema().getSimpleTypes();
+        globalSimpleType = findGlobalSimpleType(getSchemaComponentTypeName(schemaComponent), 
+            schemaSimpleTypes);
+        if (globalSimpleType != null) {
+            for (SchemaComponent childComponent : globalSimpleType.getChildren()) {
+                globalSimpleType = getBuiltInSimpleType(childComponent);
+                if (globalSimpleType != null) return globalSimpleType;
             }
+            return null;
         }
         return null;
+    }
+
+    private static String getSchemaComponentTypeName(SchemaComponent schemaComponent) {
+        String typeName = null;
+        if ((schemaComponent instanceof SimpleType) || (schemaComponent instanceof ComplexType)) {
+            typeName = schemaComponent.getAttribute(attributeName());
+        } else {
+            NamedComponentReference<? extends GlobalType> typeRef = getSchemaComponentTypeRef(schemaComponent);
+            if (typeRef != null) {
+                typeName = typeRef.get().getName();
+            } else {
+                typeName = ((SchemaComponent) schemaComponent).getAttribute(attributeType());
+            }
+        }
+        return typeName;
+    }
+    
+    private static NamedComponentReference<? extends GlobalType> getSchemaComponentTypeRef(SchemaComponent schemaComponent) {
+        NamedComponentReference<? extends GlobalType> typeRef = null;
+        try {
+            typeRef = ((TypeContainer) schemaComponent).getType();
+        } catch (Exception e) {}
+        return typeRef;
     }
     
     public static GlobalSimpleType findGlobalSimpleType(String typeName,
         Collection<GlobalSimpleType> globalSimpleTypes) {
-        for (GlobalSimpleType globalSimpleType : globalSimpleTypes) {
-            if (globalSimpleType.toString().equals(typeName)) {
-                return globalSimpleType;
+        if ((typeName != null) && (globalSimpleTypes != null)) {
+            for (GlobalSimpleType globalSimpleType : globalSimpleTypes) {
+                if (ignoreNamespace(globalSimpleType.toString()).equals(
+                    ignoreNamespace(typeName))) {
+                    return globalSimpleType;
+                }
             }
         }
         return null;
     }
 
     public static String ignoreNamespace(String dataWithNamespace) {
+        if (dataWithNamespace == null) return null;
         int index = dataWithNamespace.indexOf(":");
         if ((index > -1) && (index < dataWithNamespace.length() - 1)) {
             return dataWithNamespace.substring(index + 1);
