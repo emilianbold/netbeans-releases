@@ -81,4 +81,8 @@ public class XSDTypeToIEPTypeConvertor {
         return iepType;
         
     }
+    
+    public static String getIEPCLOBType() {
+        return SharedConstants.SQL_TYPE_CLOB;
+    }
 }

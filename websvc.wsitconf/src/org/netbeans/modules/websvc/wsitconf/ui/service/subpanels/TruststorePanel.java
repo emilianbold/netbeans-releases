@@ -415,9 +415,10 @@ public class TruststorePanel extends JPanel {
 //        }
             
         String selector = getSelector();
-        if (selector != null) {
+        // IZ#129480, failed to clear selector textfield
+        //if (selector != null) {
             ProprietarySecurityPolicyModelHelper.setCertSelector(comp, selector, client);
-        }
+        //}
             
     }
     
