@@ -111,12 +111,14 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     public void update(String msg) {
         assert msg.startsWith(RESPONSE_HEADER) : "Invalid asm response message"; // NOI18N
+        boolean withSource = false;
+
         synchronized (lines) {
             lines.clear();
             int pos = RESPONSE_HEADER.length();
 
             OutputStreamWriter writer = null;
-
+            
             try {
                 DataObject dobj = DataObject.find(getFileObject());
                 dobj.getNodeDelegate().setDisplayName(getHeader());
@@ -134,6 +136,9 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
                 for (;;) {
                     int combinedPos = msg.indexOf(COMBINED_HEADER, pos);
+                    if (combinedPos != -1) {
+                        withSource = true;
+                    }
                     int addressPos = msg.indexOf(ADDRESS_HEADER, pos);
                     
                     if (addressPos == -1) {
@@ -176,7 +181,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             }
         }
         // If we got empty dis try to reload without source line info
-        if (lines.isEmpty()) {
+        if (lines.isEmpty() && withSource) {
             reloadDis(false, true);
         }
     }
