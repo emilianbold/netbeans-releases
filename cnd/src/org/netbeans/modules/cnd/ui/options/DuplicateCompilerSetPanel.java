@@ -41,16 +41,12 @@
 package org.netbeans.modules.cnd.ui.options;
 
 import java.awt.Dimension;
-import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
@@ -60,12 +56,12 @@ import org.openide.util.NbBundle;
  * @author  thp
  */
         
-public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentListener {
+public class DuplicateCompilerSetPanel extends javax.swing.JPanel implements DocumentListener {
     private DialogDescriptor dialogDescriptor = null;
     private CompilerSetManager csm;
     
     /** Creates new form AddCompilerSetPanel */
-    public AddCompilerSetPanel(CompilerSetManager csm) {
+    public DuplicateCompilerSetPanel(CompilerSetManager csm, CompilerSet cs) {
         initComponents();
         this.csm = csm;
         
@@ -73,38 +69,26 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         for (CompilerFlavor cf : list) {
             cbFamily.addItem(cf);
         }
-        tfName.setText(""); // NOI18N
+        tfBaseDirectory.setText(cs.getDirectory());
+        cbFamily.setSelectedItem(cs.getCompilerFlavor());
+        updateDataFamily();
+                
         taInfo.setBackground(getBackground());
         validateData();
         
         setPreferredSize(new Dimension(600, 300));
         
-        tfBaseDirectory.getDocument().addDocumentListener(this);
         tfName.getDocument().addDocumentListener(this);
     }
 
     private static String getString(String key) {
-        return NbBundle.getMessage(AddCompilerSetPanel.class, key);
+        return NbBundle.getMessage(DuplicateCompilerSetPanel.class, key);
     }
 
     public void setDialogDescriptor(DialogDescriptor dialogDescriptor) {
         this.dialogDescriptor = dialogDescriptor;
-        dialogDescriptor.setValid(false);
-    }
-    
-    private void updateDataBaseDir() {
-        File dirFile = new File(tfBaseDirectory.getText());
-        ArrayList<String> list = new ArrayList<String>();
-        if (new File(dirFile, "cc").exists()) // NOI18N
-            list.add("cc"); // NOI18N
-        if (new File(dirFile, "gcc").exists()) // NOI18N
-            list.add("gcc"); // NOI18N
-        CompilerSet.CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dirFile.getAbsolutePath(), (String[])list.toArray(new String[list.size()]));
-        cbFamily.setSelectedItem(flavor);
-        updateDataFamily();
-        if (!dialogDescriptor.isValid()) {
-            tfName.setText("");
-        }
+        //dialogDescriptor.setValid(false);
+        validateData();
     }
     
     private void updateDataFamily() {
@@ -133,18 +117,6 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         boolean valid = true;
         lbError.setText(""); // NOI18N
         
-        File dirFile = new File(tfBaseDirectory.getText());
-        if (valid && !dirFile.exists() || !dirFile.isDirectory() || !IpeUtils.isPathAbsolute(dirFile.getPath())) {
-            valid = false;
-            lbError.setText(getString("BASE_INVALID"));
-            cbFamily.setEnabled(false);
-            tfName.setEnabled(false);
-        }
-        else {
-            cbFamily.setEnabled(true);
-            tfName.setEnabled(true);
-        }
-        
         String compilerSetName = IpeUtils.replaceOddCharacters(tfName.getText().trim(), '_');
         if (valid && compilerSetName.length() == 0 || compilerSetName.contains("|")) { // NOI18N
             valid = false;
@@ -161,12 +133,7 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
     }
     
     private void handleUpdate(DocumentEvent e) {
-        if (e.getDocument() == tfBaseDirectory.getDocument()) {
-            updateDataBaseDir();
-        }
-        else {
-            updateDataName();
-        }
+        updateDataName();
     }
     
     public void insertUpdate(DocumentEvent e) {
@@ -205,7 +172,6 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
 
         lbBaseDirectory = new javax.swing.JLabel();
         tfName = new javax.swing.JTextField();
-        btBaseDirectory = new javax.swing.JButton();
         lbFamily = new javax.swing.JLabel();
         cbFamily = new javax.swing.JComboBox();
         lbName = new javax.swing.JLabel();
@@ -218,7 +184,7 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
 
         lbBaseDirectory.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("lbBaseDirectory_MN").charAt(0));
         lbBaseDirectory.setLabelFor(tfBaseDirectory);
-        lbBaseDirectory.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.lbBaseDirectory.text")); // NOI18N
+        lbBaseDirectory.setText(org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "AddCompilerSetPanel.lbBaseDirectory.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -236,23 +202,7 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 4, 16, 0);
         add(tfName, gridBagConstraints);
-        tfName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.tfName.AccessibleContext.accessibleDescription")); // NOI18N
-
-        btBaseDirectory.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("btBrowse").charAt(0));
-        btBaseDirectory.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.btBaseDirectory.text")); // NOI18N
-        btBaseDirectory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btBaseDirectoryActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(16, 4, 0, 16);
-        add(btBaseDirectory, gridBagConstraints);
-        btBaseDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.btBaseDirectory.AccessibleContext.accessibleDescription")); // NOI18N
+        tfName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "AddCompilerSetPanel.tfName.AccessibleContext.accessibleDescription")); // NOI18N
 
         lbFamily.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("lbFamily_MN").charAt(0));
         lbFamily.setLabelFor(cbFamily);
@@ -266,6 +216,7 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         gridBagConstraints.insets = new java.awt.Insets(6, 16, 0, 0);
         add(lbFamily, gridBagConstraints);
 
+        cbFamily.setEnabled(false);
         cbFamily.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbFamilyActionPerformed(evt);
@@ -280,7 +231,7 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
 
         lbName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("lbToolSetName_MN").charAt(0));
         lbName.setLabelFor(tfName);
-        lbName.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.lbName.text")); // NOI18N
+        lbName.setText(org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "AddCompilerSetPanel.lbName.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -290,6 +241,7 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         add(lbName, gridBagConstraints);
 
         tfBaseDirectory.setColumns(40);
+        tfBaseDirectory.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -298,7 +250,7 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(16, 4, 0, 0);
         add(tfBaseDirectory, gridBagConstraints);
-        tfBaseDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.tfBaseDirectory.AccessibleContext.accessibleDescription")); // NOI18N
+        tfBaseDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "AddCompilerSetPanel.tfBaseDirectory.AccessibleContext.accessibleDescription")); // NOI18N
 
         lbError.setForeground(new java.awt.Color(255, 51, 51));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -315,12 +267,12 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         taInfo.setColumns(20);
         taInfo.setEditable(false);
         taInfo.setLineWrap(true);
-        taInfo.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.taInfo.text")); // NOI18N
+        taInfo.setText(org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "CopyCompilerSetPanel.taInfo.text")); // NOI18N
         taInfo.setWrapStyleWord(true);
         taInfo.setBorder(null);
         jScrollPane1.setViewportView(taInfo);
-        taInfo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.taInfo.AccessibleContext.accessibleName")); // NOI18N
-        taInfo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.taInfo.AccessibleContext.accessibleDescription")); // NOI18N
+        taInfo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "AddCompilerSetPanel.taInfo.AccessibleContext.accessibleName")); // NOI18N
+        taInfo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "AddCompilerSetPanel.taInfo.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -330,37 +282,14 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         gridBagConstraints.insets = new java.awt.Insets(16, 16, 0, 16);
         add(jScrollPane1, gridBagConstraints);
 
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "AddCompilerSetPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
-    String seed = null;
-    if (tfBaseDirectory.getText().length() > 0) {
-        seed = tfBaseDirectory.getText();
-    }
-    else if (FileChooser.getCurrectChooserFile() != null) {
-        seed = FileChooser.getCurrectChooserFile().getPath();
-    }
-    else {
-        seed = System.getProperty("user.home"); // NOI18N
-    }
-    FileChooser fileChooser = new FileChooser(getString("SELECT_BASE_DIRECTORY_TITLE"), null, JFileChooser.DIRECTORIES_ONLY, null, seed, true);
-    int ret = fileChooser.showOpenDialog(this);
-    if (ret == JFileChooser.CANCEL_OPTION) {
-        return;
-    }
-    String dirPath = fileChooser.getSelectedFile().getPath();
-    tfBaseDirectory.setText(dirPath);
-    
-    updateDataBaseDir();
-}//GEN-LAST:event_btBaseDirectoryActionPerformed
 
 private void cbFamilyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbFamilyActionPerformed
     updateDataFamily();
 }//GEN-LAST:event_cbFamilyActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btBaseDirectory;
     private javax.swing.JComboBox cbFamily;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lbBaseDirectory;
