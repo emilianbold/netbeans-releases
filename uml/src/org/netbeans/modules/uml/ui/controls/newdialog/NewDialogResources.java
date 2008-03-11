@@ -90,7 +90,8 @@ public class NewDialogResources extends CommonResources
 		while (enumVal.hasMoreElements())
 		{
 			String tempKey = (String)enumVal.nextElement();
-			if (RESOURCE_BUNDLE.getString(tempKey).equals(value))
+			if (RESOURCE_BUNDLE.getString(tempKey).equals(value) 
+                            && !(tempKey.endsWith("_BASENAME")))
 			{
 				return tempKey;
 			}
