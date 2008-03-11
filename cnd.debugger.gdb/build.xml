@@ -44,6 +44,7 @@ made subject to such option by the copyright holder.
 
     <import file="../nbbuild/templates/projectized.xml"/>
 
+<<<<<<< /export/pucci2/nbtrunk/main/cnd.debugger.gdb/build.xml
     <target name="netbeans" depends="projectized-common.netbeans">
 	<chmod file="${cluster}/bin/GdbHelper-Linux-x86.so" perm="ugo+rx"/>
 	<chmod file="${cluster}/bin/GdbHelper-Mac_OS_X-x86.so" perm="ugo+rx"/>
@@ -51,6 +52,15 @@ made subject to such option by the copyright holder.
 	<chmod file="${cluster}/bin/GdbHelper-SunOS-sparc.so" perm="ugo+rx"/>
     </target>
 
+=======
+    <target name="netbeans" depends="projectized-common.netbeans">
+	<chmod file="${cluster}/bin/GdbHelper-Linux-x86.so" perm="ugo+rx"/>
+	<chmod file="${cluster}/bin/GdbHelper-Mac_OS_X-x86.dylib" perm="ugo+rx"/>
+	<chmod file="${cluster}/bin/GdbHelper-SunOS-x86.so" perm="ugo+rx"/>
+	<chmod file="${cluster}/bin/GdbHelper-SunOS-sparc.so" perm="ugo+rx"/>
+    </target>
+
+>>>>>>> /tmp/build.xml~other.CpQGn6
     <target name="netbeans-extra">
 	<mkdir dir="${cluster}/bin"/>
         <copy file="windows/GdbKillProc.exe" todir="${cluster}/bin"/>

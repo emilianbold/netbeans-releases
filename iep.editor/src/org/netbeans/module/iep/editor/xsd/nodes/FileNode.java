@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,18 +31,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ruby.rhtml;
 
-import org.netbeans.editor.Settings;
-import org.openide.modules.ModuleInstall;
+package org.netbeans.module.iep.editor.xsd.nodes;
 
+import java.beans.BeanInfo;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.xml.axi.AXIComponent;
+import org.netbeans.modules.xml.axi.AXIModel;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
+import org.openide.loaders.DataObject;
 
-public class RhtmlModuleInstaller extends ModuleInstall {
+/**
+ *
+ * @author radval
+ */
+public class FileNode extends AbstractSchemaArtifactNode {
 
-    @Override
-    public void restored() {
-        Settings.addInitializer(new RhtmlEditorSettings());
-        Settings.reset();
+    private Node mFileDelegateNode;
+    
+    private List<AXIComponent> mExistingArtificatNames = new ArrayList<AXIComponent>();
+    
+    public FileNode(Node fileDelegate, List<AXIComponent> existingArtificatNames) {
+        super(fileDelegate.getDisplayName());
+        this.mFileDelegateNode = fileDelegate;
+        //this.setUserObject(projectDelegate.getDisplayName());
+        
+        this.mIcon = new ImageIcon(this.mFileDelegateNode.getIcon(BeanInfo.ICON_COLOR_16x16)); 
+        this.mExistingArtificatNames = existingArtificatNames;
+        
+        populateSchemaFiles();
+    }
+    
+   
+    private void populateSchemaFiles() {
+        try {
+            DataObject dObject = this.mFileDelegateNode.getLookup().lookup(DataObject.class);
+            if(dObject != null) {
+                FileObject fileObject = dObject.getPrimaryFile();
+                AXIModel model = AxiModelHelper.getAXIModel(fileObject);
+                AxiTreeNodeVisitor mVisitor = new AxiTreeNodeVisitor(this, mExistingArtificatNames);
+                model.getRoot().accept(mVisitor);
+            }
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }
+
