@@ -53,55 +53,54 @@
 package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.refactoring.test.RefactoringBaseTestCase;
+import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.Lookups;
 
 /**
- *
+ * 
  * @author Vladimir Voskresensky
  */
-public class CsmWhereUsedQueryPluginTestCase extends RefactoringBaseTestCase {
-
-    public CsmWhereUsedQueryPluginTestCase(String testName) {
+public class WhereUsedInQuoteTestCase extends CsmWhereUsedQueryPluginTestCaseBase {
+    public WhereUsedInQuoteTestCase(String testName) {
         super(testName);
     }
-
+    
     @Override 
     protected File getTestCaseDataDir() {
         return getQuoteDataDir();
-    }    
+    } 
+    
+    public void testIncludeModuleH() throws Exception {
+        performWhereUsed("memory.h", 44, 15);
+    }
     
     public void testClassCustomer() throws Exception {
         performWhereUsed("customer.h", 49, 10);
     }
-    
-    protected void performWhereUsed(String source, int line, int column) throws Exception {
-        performWhereUsed(source, line, column, Collections.emptyMap());
+
+    public void testComputeSupportMetric() throws Exception {
+        Map props = new HashMap();
+        props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
+        props.put(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS, true);
+        props.put(WhereUsedQuery.FIND_REFERENCES, true);        
+        performWhereUsed("memory.cc", 46, 15, props);
+    }
+
+    public void testCustomerGetName() throws Exception {
+        Map props = new HashMap();
+        props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
+        props.put(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS, true);
+        props.put(WhereUsedQuery.FIND_REFERENCES, true); // NOW we have zero usages, but this should be fixed soon
+        performWhereUsed("customer.h", 52, 20, props);
     }
     
-    protected void performWhereUsed(String source, int line, int column, Map params) throws Exception {
-        CsmReference ref = super.getReference(source, line, column);
-        assertNotNull(ref);
-        CsmObject targetObject = ref.getReferencedObject();
-        assertNotNull(targetObject);
-        Lookup lkp = Lookups.singleton(ref);
-        WhereUsedQuery query = new WhereUsedQuery(lkp);
-        // set parameters
-        for (Map.Entry entry : (Set<Map.Entry>)params.entrySet()) {
-            query.putValue(entry.getKey(), entry.getValue());
-        }
-        CsmWhereUsedQueryPlugin whereUsedPlugin = new CsmWhereUsedQueryPlugin(query);        
-        Collection<RefactoringElementImplementation> elements = whereUsedPlugin.doPrepareElements(targetObject);
-        assertNotNull(elements);
+    public void testModuleAllSubtypes() throws Exception {
+        Map props = new HashMap();
+        props.put(WhereUsedQueryConstants.FIND_SUBCLASSES, true);
+        props.put(WhereUsedQuery.FIND_REFERENCES, false);
+        performWhereUsed("memory.h", 46, 25, props);
     }
+    
 }
