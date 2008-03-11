@@ -42,13 +42,17 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -75,6 +79,9 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         createSaasServiceClass();
         addSaasServiceMethod();
         addImportsToSaasService();
+                
+        //Modify Authenticator class
+        modifyAuthenticationClass(); 
         
         insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
         addImportsToTargetFile();
@@ -90,7 +97,7 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         String paramDecl = "";
         
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
-        List<ParameterInfo> filterParams = filterParameters();
+        List<ParameterInfo> filterParams = getBean().filterParametersByAuth(bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
         paramUse += getHeaderOrParameterUsage(filterParams);
         paramDecl += getHeaderOrParameterDeclaration(filterParams);
 

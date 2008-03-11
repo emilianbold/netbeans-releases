@@ -1,3 +1,13 @@
+void println() - parameters
+void println(Object arg0) - parameters
+void println(String arg0) - parameters
+void println(boolean arg0) - parameters
+void println(char arg0) - parameters
+void println(char[] arg0) - parameters
+void println(double arg0) - parameters
+void println(float arg0) - parameters
+void println(int arg0) - parameters
+void println(long arg0) - parameters
 int a
 boolean b
 public String field

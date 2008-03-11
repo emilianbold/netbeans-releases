@@ -58,9 +58,12 @@ import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.GenericResourceBean;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -111,21 +114,21 @@ public class GenericResourceGenerator extends AbstractGenerator {
         JavaSource source = JavaSourceHelper.createJavaSource(
                 getTemplate(), getDestDir(), bean.getPackageName(), bean.getName());
       
-        if (bean.getInputParameters().size() > 0) {
-            addInputParamFields(source);
-            addConstructorWithInputParams(source);
+        List<ParameterInfo> params = bean.filterParametersByAuth(
+                    bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
+        if (params.size() > 0) {
+            addInputParamFields(source, params);
+            addConstructorWithInputParams(source, params);
         }
         
         modifyResourceClass(source);
         return new HashSet<FileObject>(source.getFileObjects());
     }
   
-    private void addInputParamFields(JavaSource source) throws IOException {
+    private void addInputParamFields(JavaSource source, final List<ParameterInfo> params) throws IOException {
         ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy copy) throws IOException {
                 copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                List<ParameterInfo> params = bean.getInputParameters();
-                
                 JavaSourceHelper.addFields(copy, getParamNames(params),
                         getParamTypeNames(params), getParamValues(params));
             }
@@ -133,16 +136,15 @@ public class GenericResourceGenerator extends AbstractGenerator {
         result.commit();
     }
     
-     private void addConstructorWithInputParams(JavaSource source) throws IOException {
+     private void addConstructorWithInputParams(JavaSource source, final List<ParameterInfo> params) throws IOException {
         ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy copy) throws IOException {
                 copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
-                List<ParameterInfo> params = bean.getInputParameters();
                 String body = "{";      //NOI18N
                 
                 for (ParameterInfo param : params) {
-                    String name = param.getName();
+                    String name = getParameterName(param, true, true, true);
                     body += "if (" + name + " != null) {" +
                             "this." + name + " = " + name + ";" +
                             "}\n";    //NOI18N
@@ -251,7 +253,8 @@ public class GenericResourceGenerator extends AbstractGenerator {
         String bodyText = "{ //"+COMMENT_END_OF_GET+"\n";
         bodyText += "throw new UnsupportedOperationException(); }";
         
-        List<ParameterInfo> queryParams = bean.getQueryParameters();
+        List<ParameterInfo> queryParams = bean.filterParametersByAuth(
+                    bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));//bean.getQueryParameters();
         String[] parameters = getGetParamNames(queryParams);
         Object[] paramTypes = getGetParamTypes(queryParams);
         String[][] paramAnnotations = getGetParamAnnotations(queryParams);
@@ -490,10 +493,10 @@ public class GenericResourceGenerator extends AbstractGenerator {
         for (ParameterInfo param : queryParams) {
             if (param.getDefaultValue() != null) {
                 annotationAttrs = new Object[] {
-                    param.getName(), param.getDefaultValue().toString()
+                    getParameterName(param), param.getDefaultValue().toString()
                 };
             } else {
-                annotationAttrs = new Object[] {param.getName()};
+                annotationAttrs = new Object[] {getParameterName(param)};
             }
             attrs.add(annotationAttrs);
         }
@@ -533,7 +536,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         List<String> results = new ArrayList<String>();
         
         for (ParameterInfo param : params) {
-            results.add(param.getName());
+            results.add(getParameterName(param, true, true, true));
         }
         
         return results.toArray(new String[results.size()]);
@@ -563,6 +566,32 @@ public class GenericResourceGenerator extends AbstractGenerator {
         }
         
         return results.toArray(new Object[results.size()]);
+    }
+    
+    
+    protected String getParameterName(ParameterInfo param) {
+        return param.getName();
+    }
+    
+    protected String getParameterName(ParameterInfo param, 
+            boolean camelize, boolean normalize) {
+        return getParameterName(param, camelize, normalize, false);
+    }
+    
+    protected String getParameterName(ParameterInfo param, 
+            boolean camelize, boolean normalize, boolean trimBraces) {
+        String name = param.getName();
+        if(trimBraces && param.getStyle() == ParamStyle.TEMPLATE 
+                && name.startsWith("{") && name.endsWith("}")) {
+            name = name.substring(0, name.length()-1);
+        }
+        if(normalize) {
+            name = Util.normailizeName(name);
+        }
+        if(camelize) {
+            name = Inflector.getInstance().camelize(name, true);
+        }
+        return name;
     }
     
 }

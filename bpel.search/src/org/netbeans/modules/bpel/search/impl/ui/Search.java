@@ -50,7 +50,6 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -94,7 +93,9 @@ public final class Search extends Dialog {
   @Override
   protected void updated()
   {
+//out("UPDATED");
     setItems(myTarget, myTargets);
+    myTarget.init();
   }
 
   private JPanel createPanel() {
@@ -147,12 +148,7 @@ public final class Search extends Dialog {
     c.fill = GridBagConstraints.HORIZONTAL;
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     c.weightx = 1.0;
-    myTarget = new JComboBox(myTargets) {
-      public boolean selectWithKeyChar(char keyChar) {
-//out("select: " + keyChar); // todo
-return super.selectWithKeyChar(keyChar);
-      }
-    };
+    myTarget = createComboBox(myTargets);
     a11y(myTarget, i18n("ACS_Type")); // NOI18N
     label.setLabelFor(myTarget);
     panel.add(myTarget, c);
@@ -295,13 +291,13 @@ return super.selectWithKeyChar(keyChar);
     };
   }
 
-  private Object mySource;
   private Field myName;
+  private Object mySource;
   private JButton mySearchButton;
-  private JComboBox myTarget;
   private JCheckBox myMatchCase;
   private JCheckBox myPatternMatch;
   private JCheckBox myRegularExpression;
+  private MyComboBox myTarget;
   private SearchTarget [] myTargets;
   private SearchEngine mySearchEngine;
   private DialogDescriptor myDescriptor;

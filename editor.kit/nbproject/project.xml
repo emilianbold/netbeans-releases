@@ -25,10 +25,10 @@
                     <code-name-base>org.netbeans.modules.html</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.21</specification-version>
+                        <specification-version>1.23</specification-version>
                     </run-dependency>
                 </dependency>
-                <!-- commenting out module from gsf and j2ee clusters 
+               <!-- commenting out module from gsf and j2ee clusters 
                 <dependency>
                     <code-name-base>org.netbeans.modules.html.editor</code-name-base>
                     <run-dependency>

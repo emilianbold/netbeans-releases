@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.hints.spi;
 
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.modules.java.hints.options.HintsSettings;
@@ -70,6 +71,7 @@ public abstract class AbstractHint implements TreeRule {
     }
     
     
+    //XXX: make final
     /** Gets preferences node, which stores the options for given hint. It is not
      * necessary to override this method unless you want to create some special
      * behavior. The default implementation will create the the preferences node
@@ -77,7 +79,17 @@ public abstract class AbstractHint implements TreeRule {
      * @profile Profile to get the node for. May be null for current profile
      * @return Preferences node for given hint.
      */
-    public Preferences getPreferences( String profile ) { 
+    public Preferences getPreferences( String profile ) {
+        Map<String, Preferences> override = HintsSettings.getPreferencesOverride();
+        
+        if (override != null) {
+            Preferences p = override.get(getId());
+            
+            if (p != null) {
+                return p;
+            }
+        }
+        
         profile = profile == null ? HintsSettings.getCurrentProfileId() : profile;
         return NbPreferences.forModule(this.getClass()).node(profile).node(getId());
     }

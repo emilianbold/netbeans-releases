@@ -47,9 +47,11 @@ import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import junit.framework.Assert;
 import org.netbeans.junit.Log;
 import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -105,8 +107,10 @@ final class WatchProjects {
             f.set(null, null);
         }
         
+        tryCloseNavigator();
+        
         System.setProperty("assertgc.paths", "5");
-        // disabled due to issue 121855
+        // disabled due to issue 129435
         // Log.assertInstances("Checking if all projects are really garbage collected");
     }
     
@@ -122,4 +126,24 @@ final class WatchProjects {
             }
         }
     }
+
+    /** 
+     * #124061 workaround - close navigator before tests
+     */
+    private static void tryCloseNavigator() {
+        for (TopComponent c : TopComponent.getRegistry().getOpened()) {
+            LOG.fine("Processing TC " + c.getDisplayName() + "class " + c.getClass().getName());
+            if (c.getClass().getName().equals("org.netbeans.modules.navigator.NavigatorTC")) {
+                final TopComponent navigator = (TopComponent)c;
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        navigator.close();
+                    }
+                });
+                LOG.fine("tryCloseNavigator: Navigator closed, OK!");
+                break;
+            }
+        }
+    }
+    
 }

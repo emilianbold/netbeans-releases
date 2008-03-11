@@ -35,9 +35,15 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="productionComboBox" alignment="0" pref="384" max="32767" attributes="0"/>
-                  <Component id="testComboBox" alignment="0" pref="384" max="32767" attributes="0"/>
-                  <Component id="developmentComboBox" alignment="0" pref="384" max="32767" attributes="0"/>
+                  <Component id="testComboBox" alignment="0" pref="340" max="32767" attributes="1"/>
+                  <Component id="developmentComboBox" alignment="0" pref="340" max="32767" attributes="1"/>
+                  <Component id="productionComboBox" alignment="0" pref="340" max="32767" attributes="1"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                  <Component id="createProductionDb" max="32767" attributes="1"/>
+                  <Component id="createTestDb" alignment="1" max="32767" attributes="1"/>
+                  <Component id="createDevelopmentDb" alignment="1" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -48,17 +54,20 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="developmentComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="developmentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="developmentComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="createDevelopmentDb" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="testLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="testComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="createTestDb" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="productionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="createProductionDb" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="productionComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
@@ -117,6 +126,44 @@
     <Component class="javax.swing.JComboBox" name="productionComboBox">
     </Component>
     <Component class="javax.swing.JComboBox" name="testComboBox">
+    </Component>
+    <Component class="javax.swing.JButton" name="createDevelopmentDb">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="LBL_CreateMySqlDb_Devel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="ASCN_CreateMySqlDb" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="ASCD_CreateMySqlDb" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="createDevelopmentDbActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="createTestDb">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="LBL_CreateMySqlDb_Test" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="createTestDbActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="createProductionDb">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="LBL_CreateMySqlDb_Production" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="createProductionDbActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

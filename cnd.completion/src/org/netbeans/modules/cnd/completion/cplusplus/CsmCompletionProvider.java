@@ -120,11 +120,11 @@ public class CsmCompletionProvider implements CompletionProvider {
     }
 
     public static final CsmCompletionQuery getCompletionQuery() {
-        return new NbCsmCompletionQuery(null, false);
+        return new NbCsmCompletionQuery(null, CsmCompletionQuery.QueryScope.GLOBAL_QUERY);
     }
-
-    public static final CsmCompletionQuery getCompletionQuery(CsmFile csmFile, boolean localContext) {
-        return new NbCsmCompletionQuery(csmFile, localContext);
+    
+    public static final CsmCompletionQuery getCompletionQuery(CsmFile csmFile, CsmCompletionQuery.QueryScope queryScope) {
+        return new NbCsmCompletionQuery(csmFile, queryScope);
     }
 
     static final class Query extends AsyncCompletionQuery {
@@ -135,12 +135,16 @@ public class CsmCompletionProvider implements CompletionProvider {
         private int queryAnchorOffset;
         private String filterPrefix;
         private boolean caseSensitive = false;
-        private boolean localContext;
+        private CsmCompletionQuery.QueryScope queryScope;
 
         Query(int caretOffset, int queryType) {
             this.creationCaretOffset = caretOffset;
             this.queryAnchorOffset = -1;
-            this.localContext = ((queryType & COMPLETION_ALL_QUERY_TYPE) != COMPLETION_ALL_QUERY_TYPE);
+            if ((queryType & COMPLETION_ALL_QUERY_TYPE) != COMPLETION_ALL_QUERY_TYPE) {
+                this.queryScope = CsmCompletionQuery.QueryScope.SMART_QUERY;
+            } else {
+                this.queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
+            }
         }
 
         @Override
@@ -175,9 +179,9 @@ public class CsmCompletionProvider implements CompletionProvider {
         }
 
         private void addItems(CompletionResultSet resultSet, Collection<CompletionItem> items) {
-            boolean limit = !localContext && queryResult.isSimpleVariableExpression() && (items.size() > MAX_ITEMS_TO_DISPLAY);
+            boolean limit = (queryScope == CsmCompletionQuery.QueryScope.GLOBAL_QUERY) && queryResult.isSimpleVariableExpression() && (items.size() > MAX_ITEMS_TO_DISPLAY);
             if (!limit) {
-                CsmResultItem.setEnableInstantSubstitution(!localContext);
+                CsmResultItem.setEnableInstantSubstitution(queryScope == CsmCompletionQuery.QueryScope.GLOBAL_QUERY);
                 resultSet.estimateItems(items.size(), -1);
                 resultSet.addAllItems(items);
             } else {
@@ -206,27 +210,29 @@ public class CsmCompletionProvider implements CompletionProvider {
                 SyntaxSupport syntSupp = Utilities.getSyntaxSupport(component);
                 if (syntSupp != null) {
                     CsmSyntaxSupport sup = (CsmSyntaxSupport) syntSupp.get(CsmSyntaxSupport.class);
-                    NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery(null, localContext);
+                    NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope);
                     NbCsmCompletionQuery.CsmCompletionResult res = (NbCsmCompletionQuery.CsmCompletionResult) query.query(component, caretOffset, sup);
-                    if (res != null && res.getData().isEmpty() && localContext) {
+                    if (res == null || (res.getData().isEmpty() && (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY))) {
                         // switch to global context
-                        localContext = false;
-                        if (res.isSimpleVariableExpression()) {
+                        queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
+                        if (res == null || res.isSimpleVariableExpression()) {
                             // try once more for non dereferenced expressions
-                            query = (NbCsmCompletionQuery) getCompletionQuery(null, localContext);
+                            query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope);
                             res = (NbCsmCompletionQuery.CsmCompletionResult) query.query(component, caretOffset, sup);
                         }
                     }
                     if (res != null) {
-                        if (localContext) {
-                            localContext = res.isSimpleVariableExpression();
+                        if (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY && 
+                                !res.isSimpleVariableExpression()) {
+                            // change to global mode
+                            queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
                         }
                         queryAnchorOffset = res.getSubstituteOffset();
                         Collection items = res.getData();
                         // no more title in NB 6 in completion window
                         //resultSet.setTitle(res.getTitle());
                         resultSet.setAnchorOffset(queryAnchorOffset);
-                        resultSet.setHasAdditionalItems(localContext);
+                        resultSet.setHasAdditionalItems(queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY);
                         queryResult = res;
                         addItems(resultSet, items);
                     }
@@ -303,10 +309,9 @@ public class CsmCompletionProvider implements CompletionProvider {
         private String getFilteredTitle(String title, String prefix) {
             int lastIdx = title.lastIndexOf('.');
             String ret = lastIdx == -1 ? prefix : title.substring(0, lastIdx + 1) + prefix;
-            if (title.endsWith("*")) // NOI18N
-            {
-                ret += "*";
-            } // NOI18N
+            if (title.endsWith("*")) {// NOI18N
+                ret += "*"; // NOI18N
+            }
             return ret;
         }
     }

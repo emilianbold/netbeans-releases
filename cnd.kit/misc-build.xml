@@ -133,6 +133,7 @@ made subject to such option by the copyright holder.
         <subant target="test" buildpath="../cnd.folding" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.modelimpl" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.completion" inheritrefs="false" inheritall="false" failonerror="false"/>
+        <subant target="test" buildpath="../cnd.refactoring" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.classview" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.repository" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.navigation" inheritrefs="false" inheritall="false" failonerror="false"/>

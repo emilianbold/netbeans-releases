@@ -52,6 +52,7 @@ import org.netbeans.modules.websvc.saas.model.wadl.Option;
  */
 public class ParameterInfo {
 
+    private String id;
     private String name;
     private Class type;
     private String typeName;
@@ -63,6 +64,7 @@ public class ParameterInfo {
     private boolean repeating;
     private String fixed;
     private boolean isApiKey;
+    private boolean isSessionKey;
 
     public ParameterInfo(String name, Class type) {
         this(name, type, null);
@@ -88,6 +90,14 @@ public class ParameterInfo {
         return type.isPrimitive() || type.equals(String.class) ||
                Util.getValueOfMethod(type) != null || 
                Util.getConstructorWithStringParam(type) != null;
+    }
+
+    public String getId() {
+        return id;
+    }
+    
+    public void setId(String id) {
+        this.id = id;
     }
     
     public String getName() {
@@ -122,6 +132,14 @@ public class ParameterInfo {
     
     public void setIsApiKey(boolean isApiKey) {
         this.isApiKey = isApiKey;
+    }
+
+    public boolean isSessionKey() {
+        return isSessionKey;
+    }
+
+    public void setIsSessionKey(boolean isSessionKey) {
+        this.isSessionKey = isSessionKey;
     }
     
     public void setDefaultValue(Object value) {
@@ -211,6 +229,29 @@ public class ParameterInfo {
         private String value;
         
         ParamStyle(String value) {
+            this.value = value;
+        }
+        
+        public String value() {
+            return value;
+        }
+        
+        public static ParamStyle fromValue(String v) {
+            for (ParamStyle c: ParamStyle.values()) {
+                if (c.value.equals(v)) {
+                    return c;
+                }
+            }
+            throw new IllegalArgumentException(v);
+        }
+    }
+    
+    public enum ParamFilter {
+        FIXED("fixed");
+        
+        private String value;
+        
+        ParamFilter(String value) {
             this.value = value;
         }
         

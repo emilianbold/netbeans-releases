@@ -46,12 +46,9 @@ import junit.framework.TestSuite;
 
 import java.io.File;
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
-
 import org.netbeans.modules.visualweb.gravy.*;
 import org.netbeans.modules.visualweb.gravy.ProjectNavigatorOperator;
-import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
 import org.netbeans.modules.visualweb.gravy.toolbox.PaletteContainerOperator;
 import org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator;
 import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
@@ -212,7 +209,7 @@ public class AcceptanceTest extends RaveTestCase {
         JEditorPaneOperator editor = new JEditorPaneOperator(
                                         RaveWindowOperator.getDefaultRave(), "public class " + _page1);
         editor.requestFocus();
-        editor.setText("log(\"Button action performed\");\n");
+        editor.typeText("log(\"Button action performed\");\n");
         
         // Open context menuitem, Reformat code
         Util.wait(1000);

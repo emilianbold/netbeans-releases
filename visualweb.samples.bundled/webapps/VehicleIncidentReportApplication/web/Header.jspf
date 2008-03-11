@@ -30,42 +30,40 @@
 -->
 <div style="-rave-layout: grid" xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html" xmlns:webuijsf="http://www.sun.com/webui/webuijsf">
     <f:subview id="Header">
-        <h:panelGrid binding="#{Header.header}" id="header" style="left: 0px; top: 0px; position: absolute; width: 800px" styleClass="header" width="936">
-            <h:panelGrid binding="#{Header.headerGrid}" columns="2" id="headerGrid" style="">
-                <h:panelGrid binding="#{Header.logoGrid}" id="logoGrid" style="">
-                    <webuijsf:image binding="#{Header.logoImage}" id="logoImage" url="/resources/VehicleIncidentReportApplicationLogo.gif"/>
+        <h:panelGrid id="header" style="left: 0px; top: 0px; position: absolute; width: 800px" styleClass="header" width="936">
+            <h:panelGrid columns="2" id="headerGrid" style="">
+                <h:panelGrid id="logoGrid" style="">
+                    <webuijsf:image id="logoImage" url="/resources/VehicleIncidentReportApplicationLogo.gif"/>
                 </h:panelGrid>
-                <h:panelGrid binding="#{Header.appNameGrid}" cellpadding="0" cellspacing="0" columns="3" id="appNameGrid" style="">
-                    <webuijsf:staticText binding="#{Header.appNameDark}" id="appNameDark" styleClass="appname appnamedark" text="Vehicle Incident Report"/>
-                    <webuijsf:staticText binding="#{Header.appNameBar}" id="appNameBar" styleClass="appname appnamebar" text="|"/>
-                    <webuijsf:staticText binding="#{Header.appNameLight}" id="appNameLight" styleClass="appname appnamelight" text="Application"/>
+                <h:panelGrid cellpadding="0" cellspacing="0" columns="3" id="appNameGrid" style="">
+                    <webuijsf:staticText id="appNameDark" styleClass="appname appnamedark" text="Vehicle Incident Report"/>
+                    <webuijsf:staticText id="appNameBar" styleClass="appname appnamebar" text="|"/>
+                    <webuijsf:staticText id="appNameLight" styleClass="appname appnamelight" text="Application"/>
                 </h:panelGrid>
             </h:panelGrid>
         </h:panelGrid>
-        <h:panelGrid binding="#{Header.subHeader}" id="subHeader" style="left: 0px; top: 205px; position: absolute; width: 800px" styleClass="subheader">
-            <h:panelGrid binding="#{Header.subHeaderGrid}" columns="10" id="subHeaderGrid" style="width: 100%; height: 100%;" styleClass="subheader">
-                <h:panelGrid binding="#{Header.searchCell}" id="searchCell" style="width: 100%; height: 100%;" styleClass="subheaderbutton">
-                    <webuijsf:hyperlink actionExpression="#{Header.searchLink_action}" binding="#{Header.searchLink}" id="searchLink" styleClass="subheadertext" text="Search"/>
+        <h:panelGrid id="subHeader" style="left: 0px; top: 205px; position: absolute; width: 800px" styleClass="subheader">
+            <h:panelGrid columns="10" id="subHeaderGrid" style="width: 100%; height: 100%;" styleClass="subheader">
+                <h:panelGrid id="searchCell" style="width: 100%; height: 100%;" styleClass="subheaderbutton">
+                    <webuijsf:hyperlink actionExpression="#{Header.searchLink_action}" id="searchLink" styleClass="subheadertext" text="Search"/>
                 </h:panelGrid>
-                <h:panelGrid binding="#{Header.profileCell}" id="profileCell" rendered="#{SessionBean1.loggedIn}" style="width: 100%; height: 100%;" styleClass="subheaderbutton">
-                    <webuijsf:hyperlink actionExpression="#{Header.profileLink_action}" binding="#{Header.profileLink}" id="profileLink"
-                        styleClass="subheadertext" text="Profile"/>
+                <h:panelGrid id="profileCell" rendered="#{SessionBean1.loggedIn}" style="width: 100%; height: 100%;" styleClass="subheaderbutton">
+                    <webuijsf:hyperlink actionExpression="#{Header.profileLink_action}" id="profileLink" styleClass="subheadertext" text="Profile"/>
                 </h:panelGrid>
-                <h:panelGrid binding="#{Header.vehiclesCell}" id="vehiclesCell" rendered="#{SessionBean1.loggedIn}" style="width: 100%; height: 100%;" styleClass="subheaderbutton">
-                    <webuijsf:hyperlink actionExpression="#{Header.vehiclesLink_action}" binding="#{Header.vehiclesLink}" id="vehiclesLink"
-                        styleClass="subheadertext" text="Vehicles"/>
+                <h:panelGrid id="vehiclesCell" rendered="#{SessionBean1.loggedIn}" style="width: 100%; height: 100%;" styleClass="subheaderbutton">
+                    <webuijsf:hyperlink actionExpression="#{Header.vehiclesLink_action}" id="vehiclesLink" styleClass="subheadertext" text="Vehicles"/>
                 </h:panelGrid>
-                <h:panelGrid binding="#{Header.loginCell}" id="loginCell" rendered="#{SessionBean1.notLoggedIn}" style="width: 100%; height: 100%;" styleClass="subheaderbutton">
-                    <webuijsf:hyperlink actionExpression="#{Header.loginLink_action}" binding="#{Header.loginLink}" id="loginLink" styleClass="subheadertext" text="Login"/>
+                <h:panelGrid id="loginCell" rendered="#{SessionBean1.notLoggedIn}" style="width: 100%; height: 100%;" styleClass="subheaderbutton">
+                    <webuijsf:hyperlink actionExpression="#{Header.loginLink_action}" id="loginLink" styleClass="subheadertext" text="Login"/>
                 </h:panelGrid>
-                <h:panelGrid binding="#{Header.welcomeCell}" id="welcomeCell" rendered="#{SessionBean1.loggedIn}" style="width: 100%; height: 100%;" styleClass="subheaderbutton">
-                    <webuijsf:staticText binding="#{Header.welcome}" id="welcome" text="#{SessionBean1.welcomeMessage}"/>
+                <h:panelGrid id="welcomeCell" rendered="#{SessionBean1.loggedIn}" style="width: 100%; height: 100%;" styleClass="subheaderbutton">
+                    <webuijsf:staticText id="welcome" text="#{SessionBean1.welcomeMessage}"/>
                 </h:panelGrid>
-                <h:panelGrid binding="#{Header.logoutCell}" id="logoutCell" rendered="#{SessionBean1.loggedIn}" style="width: 100%; height: 100%;" styleClass="subheaderbutton">
-                    <webuijsf:hyperlink actionExpression="#{Header.logoutLink_action}" binding="#{Header.logoutLink}" id="logoutLink" styleClass="subheadertext" text="Logout"/>
+                <h:panelGrid id="logoutCell" rendered="#{SessionBean1.loggedIn}" style="width: 100%; height: 100%;" styleClass="subheaderbutton">
+                    <webuijsf:hyperlink actionExpression="#{Header.logoutLink_action}" id="logoutLink" styleClass="subheadertext" text="Logout"/>
                 </h:panelGrid>
-                <h:panelGrid binding="#{Header.helpCell}" id="helpCell" style="width: 100%; height: 100%;" styleClass="subheaderbutton">
-                    <webuijsf:hyperlink actionExpression="#{Header.helpLink_action}" binding="#{Header.helpLink}" id="helpLink" styleClass="subheadertext" text="Help"/>
+                <h:panelGrid id="helpCell" style="width: 100%; height: 100%;" styleClass="subheaderbutton">
+                    <webuijsf:hyperlink actionExpression="#{Header.helpLink_action}" id="helpLink" styleClass="subheadertext" text="Help"/>
                 </h:panelGrid>
             </h:panelGrid>
         </h:panelGrid>
