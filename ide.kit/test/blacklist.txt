@@ -138,3 +138,20 @@ org.netbeans.modules.gsf.api.ParserResult$AstTreeNode
 org.netbeans.modules.gsf.api.ParserResult
 org.netbeans.modules.gsf.api.PositionManager
 
+# Editor kits
+org.netbeans.modules.db.sql.editor.SQLEditorKit
+org.netbeans.modules.asm.core.editor.AsmEditorKit
+#org.netbeans.modules.cnd.editor.cplusplus.CCKit
+#org.netbeans.modules.cnd.editor.cplusplus.CKit
+org.netbeans.modules.cnd.editor.fortran.FKit
+org.netbeans.modules.cnd.editor.makefile.MakefileKit
+#org.netbeans.modules.editor.html.HTMLKit
+#org.netbeans.modules.editor.java.JavaKit
+org.netbeans.modules.editor.plain.PlainKit
+#org.netbeans.modules.gsf.GsfEditorKitFactory$GsfEditorKit
+#org.netbeans.modules.languages.dataobject.LanguagesEditorKit
+org.netbeans.modules.properties.syntax.PropertiesKit
+org.netbeans.modules.ruby.rhtml.editor.RhtmlKit
+#org.netbeans.modules.web.core.syntax.JSPKit
+#org.netbeans.modules.xml.text.syntax.DTDKit
+#org.netbeans.modules.xml.text.syntax.XMLKit
