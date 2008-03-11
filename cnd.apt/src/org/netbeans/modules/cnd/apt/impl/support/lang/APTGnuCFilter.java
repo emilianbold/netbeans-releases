@@ -56,22 +56,22 @@ public class APTGnuCFilter extends APTStdCFilter {
     
     private void initialize() {
         // GNU C extensions 
-        filter("__alignof__", APTTokenTypes.LITERAL_alignof); // NOI18N
-        filter("__asm", APTTokenTypes.LITERAL_asm); // NOI18N
-        filter("__asm__", APTTokenTypes.LITERAL_asm); // NOI18N
+        filter("__alignof__", APTTokenTypes.LITERAL___alignof__); // NOI18N
+        filter("__asm", APTTokenTypes.LITERAL___asm); // NOI18N
+        filter("__asm__", APTTokenTypes.LITERAL___asm__); // NOI18N
         filter("__attribute__", APTTokenTypes.LITERAL___attribute__); // NOI18N
         filter("__complex__", APTTokenTypes.LITERAL___complex); // NOI18N
-        filter("__const", APTTokenTypes.LITERAL_const); // NOI18N
-        filter("__const__", APTTokenTypes.LITERAL_const); // NOI18N
+        filter("__const", APTTokenTypes.LITERAL___const); // NOI18N
+        filter("__const__", APTTokenTypes.LITERAL___const__); // NOI18N
         filter("__imag__", APTTokenTypes.LITERAL___imag); // NOI18N
-        filter("__inline", APTTokenTypes.LITERAL_inline); // NOI18N
-        filter("__inline__", APTTokenTypes.LITERAL_inline); // NOI18N
+        filter("__inline", APTTokenTypes.LITERAL___inline); // NOI18N
+        filter("__inline__", APTTokenTypes.LITERAL___inline__); // NOI18N
         filter("__real__", APTTokenTypes.LITERAL___real); // NOI18N
-        filter("__signed", APTTokenTypes.LITERAL_signed); // NOI18N
-        filter("__signed__", APTTokenTypes.LITERAL_signed); // NOI18N
-        filter("__typeof", APTTokenTypes.LITERAL_typeof); // NOI18N
-        filter("__typeof__", APTTokenTypes.LITERAL_typeof); // NOI18N
-        filter("__volatile", APTTokenTypes.LITERAL_volatile); // NOI18N
-        filter("__volatile__", APTTokenTypes.LITERAL_volatile); // NOI18N        
+        filter("__signed", APTTokenTypes.LITERAL___signed); // NOI18N
+        filter("__signed__", APTTokenTypes.LITERAL___signed__); // NOI18N
+        filter("__typeof", APTTokenTypes.LITERAL___typeof); // NOI18N
+        filter("__typeof__", APTTokenTypes.LITERAL___typeof__); // NOI18N
+        filter("__volatile", APTTokenTypes.LITERAL___volatile); // NOI18N
+        filter("__volatile__", APTTokenTypes.LITERAL___volatile__); // NOI18N        
     }
 }

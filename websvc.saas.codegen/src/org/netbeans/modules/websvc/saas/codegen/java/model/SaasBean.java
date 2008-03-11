@@ -49,7 +49,9 @@ import org.netbeans.modules.websvc.saas.codegen.java.AbstractGenerator;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Login;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Logout;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Token;
@@ -124,6 +126,10 @@ public abstract class SaasBean extends GenericResourceBean {
         }
         return templateParams;
     }
+    
+    protected void setTemplateParameters(List<ParameterInfo> templateParams) {
+        this.templateParams = templateParams;
+    }
 
     protected abstract List<ParameterInfo> initInputParameters();
 
@@ -140,7 +146,7 @@ public abstract class SaasBean extends GenericResourceBean {
         }
         return queryParams;
     }
-
+    
     public String getOutputWrapperName() {
         if (outputWrapperName == null) {
             outputWrapperName = getName();
@@ -237,6 +243,10 @@ public abstract class SaasBean extends GenericResourceBean {
         this.authProfile = profile;
     }
     
+    protected Object getAuthUsingId(Authentication auth) {
+        return null;
+    }
+    
     public void findAuthentication(SaasMethod m) {
         Authentication auth2 = m.getSaas().getSaasMetadata().getAuthentication();
         if(auth2.getHttpBasic() != null) {
@@ -248,17 +258,24 @@ public abstract class SaasBean extends GenericResourceBean {
         } else if(auth2.getApiKey() != null) {
             setAuthenticationType(SaasAuthenticationType.API_KEY);
             setAuthentication(new ApiKeyAuthentication(auth2.getApiKey().getId()));
-        } else if(auth2.getSignedUrl() != null) {
+        } else if(auth2.getSignedUrl() != null && auth2.getSignedUrl().size() > 0) {
             setAuthenticationType(SaasAuthenticationType.SIGNED_URL);
-            SignedUrlAuthentication signedUrl = new SignedUrlAuthentication();
-            setAuthentication(signedUrl);
-            Sign sign = ((SignedUrl)auth2.getSignedUrl()).getSign();
+            List<SignedUrl> signedUrlList = auth2.getSignedUrl();
+            SignedUrl signedUrl = (SignedUrl) getAuthUsingId(auth2);
+            if(signedUrl == null)
+                signedUrl = signedUrlList.get(0);
+            SignedUrlAuthentication signedUrlAuth = new SignedUrlAuthentication();
+            if(signedUrl.getSigId() != null) {
+                signedUrlAuth.setSigKeyName(signedUrl.getSigId());
+            }
+            setAuthentication(signedUrlAuth);
+            Sign sign = signedUrl.getSign();
             if (sign != null) {
                 Params params = sign.getParams();
                 if(params != null && params.getParam() != null) {
                     List<ParameterInfo> signParams = new ArrayList<ParameterInfo>();
                     findSaasParams(signParams, params.getParam());
-                    signedUrl.setParameters(signParams);
+                    signedUrlAuth.setParameters(signParams);
                 }
             }
         } else if(auth2.getSessionKey() != null) {
@@ -395,8 +412,17 @@ public abstract class SaasBean extends GenericResourceBean {
     
     public class SignedUrlAuthentication extends SaasAuthentication {
         
+        private String sig;
         List<ParameterInfo> params = Collections.emptyList();
         public SignedUrlAuthentication() {
+        }
+        
+        public String getSigKeyName() {
+            return sig;
+        }
+        
+        public void setSigKeyName(String sig) {
+            this.sig = sig;
         }
         
         public List<ParameterInfo> getParameters() {

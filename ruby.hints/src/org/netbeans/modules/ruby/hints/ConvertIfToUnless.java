@@ -48,7 +48,7 @@ import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.jruby.ast.IfNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -82,8 +82,8 @@ import org.openide.util.NbBundle;
  */
 public class ConvertIfToUnless implements AstRule {
 
-    public Set<Integer> getKinds() {
-        return Collections.singleton(NodeTypes.IFNODE);
+    public Set<NodeType> getKinds() {
+        return Collections.singleton(NodeType.IFNODE);
     }
 
     public void run(RuleContext context, List<Description> result) {
@@ -103,14 +103,14 @@ public class ConvertIfToUnless implements AstRule {
         }
         
         // Can't convert if !x/elseif blocks
-        if (ifNode.getElseBody() != null && ifNode.getElseBody().nodeId == NodeTypes.IFNODE) {
+        if (ifNode.getElseBody() != null && ifNode.getElseBody().nodeId == NodeType.IFNODE) {
             return;
         }
         
-        if (condition.nodeId == NodeTypes.NOTNODE ||
-                (condition.nodeId == NodeTypes.NEWLINENODE &&
+        if (condition.nodeId == NodeType.NOTNODE ||
+                (condition.nodeId == NodeType.NEWLINENODE &&
                 condition.childNodes().size() == 1 &&
-                ((Node)condition.childNodes().get(0)).nodeId == NodeTypes.NOTNODE)) {
+                ((Node)condition.childNodes().get(0)).nodeId == NodeType.NOTNODE)) {
             try {
                 BaseDocument doc = (BaseDocument) info.getDocument();
                 int keywordOffset = findKeywordOffset(info, ifNode);
@@ -278,11 +278,11 @@ public class ConvertIfToUnless implements AstRule {
                 BaseDocument doc = (BaseDocument) info.getDocument();
 
                 Node notNode = ifNode.getCondition();
-                if (notNode.nodeId != NodeTypes.NOTNODE) {
-                    assert notNode.nodeId == NodeTypes.NEWLINENODE;
+                if (notNode.nodeId != NodeType.NOTNODE) {
+                    assert notNode.nodeId == NodeType.NEWLINENODE;
                     Node firstChild = notNode.childNodes().size() == 1 ?
                         ((Node)notNode.childNodes().get(0)) : null;
-                    if (firstChild != null && firstChild.nodeId == NodeTypes.NOTNODE) {
+                    if (firstChild != null && firstChild.nodeId == NodeType.NOTNODE) {
                         notNode = firstChild;
                     } else {
                         // Unexpected!

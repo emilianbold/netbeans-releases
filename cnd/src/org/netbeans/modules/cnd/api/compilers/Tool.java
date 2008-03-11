@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -91,6 +92,13 @@ public class Tool {
         this.name = name;
         this.displayName = displayName;
         this.path = name.length() > 0 ? path + File.separator + name : path;
+        includeFilePrefix = null;
+    }
+    
+    public Tool createCopy() {
+        Tool copy = new Tool(flavor, kind, "", displayName, path);
+        copy.setName(getName());
+        return copy;
     }
     
     public CompilerFlavor getFlavor() {
@@ -99,6 +107,10 @@ public class Tool {
     
     public int getKind() {
         return kind;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
     }
     
     public String getName() {
@@ -187,10 +199,14 @@ public class Tool {
         return includeFilePrefix;
     }
     
+    public void setIncludeFilePathPrefix(String includeFilePrefix) {
+        this.includeFilePrefix = includeFilePrefix;
+    }
+    
     public boolean exists() {
         if (getPath() == null || getPath().length() == 0)
             return false;
-        return new File(getPath()).exists();
+        return new File(getPath()).exists() || Path.findCommand(getPath()) != null;
     }
     
     private static ResourceBundle bundle = null;

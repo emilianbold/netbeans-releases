@@ -29,6 +29,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -41,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -564,6 +567,30 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         String description;
         Map<String,List<URL>> contents;
         final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        
+        static Field libraryImplField;
+        static {
+            try {
+                libraryImplField = Library.class.getDeclaredField("impl"); //NOI18N
+                libraryImplField.setAccessible(true);
+            } catch (Exception exc) {
+                Logger.getLogger(ProjectLibraryProvider.class.getName()).log(
+                        Level.FINE, "Cannot find field by reflection", exc);//NOI18N
+            }
+        }
+        private String getGlobalLibBundle(Library lib) {
+            if (libraryImplField != null) {
+                try {
+                    LibraryImplementation impl = (LibraryImplementation)libraryImplField.get(lib);
+                    String toRet = impl.getLocalizingBundle();
+                    return toRet;
+                } catch (Exception exc) {
+                    Logger.getLogger(ProjectLibraryProvider.class.getName()).log(
+                        Level.FINE, "Cannot access field by reflection", exc);//NOI18N
+                }
+            }
+            return null;
+        }
 
         ProjectLibraryImplementation(File mainPropertiesFile, File privatePropertiesFile, String type, String name, String description, Map<String,List<URL>> contents) {
             this.mainPropertiesFile = mainPropertiesFile;
@@ -587,6 +614,10 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         }
 
         public String getLocalizingBundle() {
+            Library lib = LibraryManager.getDefault().getLibrary(name);
+            if (lib != null) {
+                return getGlobalLibBundle(lib);
+            }
             return null;
         }
 
@@ -628,7 +659,12 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 File f = new File(p);
                 // store properties always separated by '/' for consistency
                 StringBuilder s = new StringBuilder();
-                if (f.isAbsolute()) {
+                if (p.startsWith("${")) { // NOI18N
+                    // if path start with an Ant property do not prefix it with "${base}".
+                    // supports hand written customizations of nblibrararies.properties.
+                    // for example libs.struts.classpath=${MAVEN_REPO}/struts/struts.jar
+                    s.append(p.replace('\\', '/')); // NOI18N
+                } else if (f.isAbsolute()) {
                     s.append(f.getAbsolutePath().replace('\\', '/')); //NOI18N
                 } else {
                     s.append("${base}/" + p.replace('\\', '/')); // NOI18N

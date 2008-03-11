@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,7 +50,6 @@ import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JTreeOperator;
-
 import org.netbeans.modules.visualweb.gravy.*;
 import org.netbeans.modules.visualweb.gravy.TestUtils;
 import org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator;
@@ -59,7 +58,6 @@ import org.netbeans.modules.visualweb.gravy.toolbox.PaletteContainerOperator;
 import org.netbeans.modules.visualweb.gravy.actions.ActionNoBlock;
 import org.netbeans.modules.visualweb.test.components.util.ComponentUtils;
 import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
-
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -70,9 +68,8 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-
 import javax.swing.JTextField;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import static org.netbeans.modules.visualweb.test.components.util.ComponentUtils.typeLines;
 
 /**
  * @author Lark Fitzgerald (lark.fitzgerald@sun.com)
@@ -357,7 +354,7 @@ public class AcceptanceTest extends RaveTestCase {
         JEditorPaneOperator editor = new JEditorPaneOperator(Util.getMainWindow(), "Page1");
         //For some reason, doing all of them at once doesn't work
         editor.pushKey(KeyEvent.VK_END);
-        editor.setText("\nlog(\"Upload action performed\");\n");
+        typeLines("\nlog(\"Upload action performed\");\n", editor);
         log("Editor Dump:");
         log(editor.getText());
         log("**Go back to designer");

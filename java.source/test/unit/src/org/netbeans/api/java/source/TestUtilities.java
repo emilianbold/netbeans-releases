@@ -51,16 +51,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.classpath.GlobalSourcePathTestUtil;
+import org.netbeans.modules.java.source.usages.BinaryAnalyser;
+import org.netbeans.modules.java.source.usages.ClassIndexImpl;
+import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -82,10 +87,10 @@ public final class TestUtilities {
     /**
      * Waits for the end of the background scan, this helper method 
      * is designed for tests which require to wait for the end of initial scan.
-     * The method can be used as a barrier but it is not garanted that the
-     * backgoud scan will not start again after return from this method, the
+     * The method can be used as a barrier but it is not guaranteed that the
+     * background scan will not start again after return from this method, the
      * test is responsible for it itself. In general it's safer to use {@link JavaSource#runWhenScanFinished}
-     * method and do the critical action inside the run methed.
+     * method and do the critical action inside the run method.
      * @param timeout the maximum time to wait
      * @param unit the time unit of the timeout argument
      * @return true if the scan finished, false when the timeout elapsed before the end of the scan.
@@ -220,7 +225,7 @@ public final class TestUtilities {
      * Creates boot {@link ClassPath} for platform the test is running on,
      * it uses the sun.boot.class.path property to find out the boot path roots.
      * @return ClassPath
-     * @throws java.io.IOException when boot path property conatins non valid path
+     * @throws java.io.IOException when boot path property contains non valid path
      */
     public static ClassPath createBootClassPath () throws IOException {
         String bootPath = System.getProperty ("sun.boot.class.path");
@@ -305,4 +310,33 @@ public final class TestUtilities {
             
         return f;
     }   
+
+    private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
+    
+    /**
+     * Prepare Java caches for given binary roots.
+     * 
+     * @param urls to analyze
+     */
+    public final static void analyzeBinaries(final Collection<URL> urls) throws IOException {
+        final ClasspathInfo cpInfo = ClasspathInfo.create(EMPTY, EMPTY, EMPTY);
+        final ClassIndexManager mgr  = ClassIndexManager.getDefault();
+        final JavaSource js = JavaSource.create(cpInfo);
+        js.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController parameter) throws Exception {                
+                for (final URL url : urls) {
+                    final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);            
+                    ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+                        public Void run() throws IOException, InterruptedException {
+                            BinaryAnalyser ba = cii.getBinaryAnalyser();            
+                            ba.start(url, null, new AtomicBoolean(false), new AtomicBoolean(false));
+                            ba.finish();
+                            return null;
+                        }
+                    });            
+                }
+            }
+        }, true);
+    }
+    
 }

@@ -107,6 +107,7 @@ public class Components2 extends HttpServlet {
                 "nb-platform",
                 //"nb-base",
                 "openesb",
+		"nb-php",
                 "sjsam");
         final Map<String, String> notes = new HashMap<String, String>();
         //notes.put("nb-javase", "for Java SE, includes GUI Builder, Profiler");

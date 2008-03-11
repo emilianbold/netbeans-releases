@@ -65,13 +65,13 @@ public class ATTIdentResolver implements IdentResolver {
     
     {
          String []dnames = new String[] {
-            ".align", ".ascii", ".bcd", ".bss", ".byte", ".2byte", ".4byte", 
-            ".8byte", ".comm", ".data", ".double", ".even", ".file", ".float", 
-            ".globl", ".global", ".group", ".hidden", ".ident", ".lcomm", ".local", ".long", 
-            ".popsection", ".previous", ".pushsection", ".quad", ".rel", 
-            ".section", ".set", ".skip", ".sleb128", ".string", ".symbolic", 
-            ".size", ".tbss", ".tcomm", ".tdata", ".text", ".type", ".uleb128", 
-            ".value", ".word", ".weak", ".zero", ".register"
+            ".align", ".ascii", ".bcd", ".bss", ".byte", ".2byte", ".4byte", // NOI18N
+            ".8byte", ".comm", ".data", ".double", ".even", ".file", ".float", // NOI18N
+            ".globl", ".global", ".group", ".hidden", ".ident", ".lcomm", ".local", ".long", // NOI18N
+            ".popsection", ".previous", ".pushsection", ".quad", ".rel", // NOI18N
+            ".section", ".set", ".skip", ".sleb128", ".string", ".symbolic", // NOI18N
+            ".size", ".tbss", ".tcomm", ".tdata", ".text", ".type", ".uleb128", // NOI18N
+            ".value", ".word", ".weak", ".zero", ".register"  // NOI18N
          };
          
          directives = new HashSet<String>();
@@ -111,7 +111,7 @@ public class ATTIdentResolver implements IdentResolver {
     }  
      
     public Register getRegister(String name) {
-        if (name.startsWith("%")) {
+        if (name.startsWith("%")) {  // NOI18N
             name = name.substring(1);
         }
         return model.getRegisterByName(name);

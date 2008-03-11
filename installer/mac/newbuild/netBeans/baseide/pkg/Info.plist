@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleGetInfoString</key>
+	<string>@BASEVERSION@</string>
+	<key>CFBundleIdentifier</key>
+	<string>org.netbeans.ide</string>
+	<key>CFBundleShortVersionString</key>
+	<string>@APPVERSION@</string>
+	<key>IFMajorVersion</key>
+	<integer>6</integer>
+	<key>IFMinorVersion</key>
+	<integer>1</integer>
+	<key>IFPkgFlagAllowBackRev</key>
+	<false/>
+	<key>IFPkgFlagAuthorizationAction</key>
+	<string>AdminAuthorization</string>
+	<key>IFPkgFlagBackgroundAlignment</key>
+	<string>topleft</string>
+	<key>IFPkgFlagBackgroundScaling</key>
+	<string>none</string>
+	<key>IFPkgFlagDefaultLocation</key>
+	<string>@INSTALLDIR@</string>
+	<key>IFPkgFlagFollowLinks</key>
+	<false/>
+	<key>IFPkgFlagInstallFat</key>
+	<false/>
+	<key>IFPkgFlagInstalledSize</key>
+	<integer>25688</integer>
+	<key>IFPkgFlagIsRequired</key>
+	<false/>
+	<key>IFPkgFlagOverwritePermissions</key>
+	<false/>
+	<key>IFPkgFlagRelocatable</key>
+	<false/>
+	<key>IFPkgFlagRestartAction</key>
+	<string>NoRestart</string>
+	<key>IFPkgFlagRootVolumeOnly</key>
+	<true/>
+	<key>IFPkgFlagUpdateInstalledLanguages</key>
+	<false/>
+	<key>IFPkgFormatVersion</key>
+	<real>0.10000000149011612</real>
+	<key>IFRequirementDicts</key>
+	<array>
+		<dict>
+			<key>Level</key>
+			<string>requires</string>
+			<key>SpecArgument</key>
+			<string>/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0</string>
+			<key>SpecType</key>
+			<string>file</string>
+			<key>TestObject</key>
+			<true/>
+			<key>TestOperator</key>
+			<string>eq</string>
+		</dict>
+	</array>
+</dict>
+</plist>

@@ -171,6 +171,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
              (!GdbBreakpoint.PROP_URL.equals(propertyName)) &&
              (!GdbBreakpoint.PROP_FUNCTION_NAME.equals(propertyName)) &&
              (!GdbBreakpoint.PROP_LINE_NUMBER.equals(propertyName)) &&
+             (!AddressBreakpoint.PROP_ADDRESS_VALUE.equals(propertyName)) &&
              (!AddressBreakpoint.PROP_REFRESH.equals(propertyName))) {
             return;
         }
@@ -248,9 +249,12 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             }
             return null;
         } else if (b instanceof AddressBreakpoint) {
-            AddressBreakpoint ab = (AddressBreakpoint) b;
+            if (fo != Disassembly.getFileObject()) {
+                return null;
+            }
             Disassembly dis = Disassembly.getCurrent();
             if (dis != null) {
+                AddressBreakpoint ab = (AddressBreakpoint) b;
                 return new int[] {dis.getAddressLine(ab.getAddress())};
             }
             return null;

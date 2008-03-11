@@ -51,7 +51,6 @@ import java.util.List;
 import java.awt.Component;
 import java.awt.Dialog;
 
-import java.io.FileOutputStream;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.URL;
@@ -63,13 +62,16 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.plaf.UIResource;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.ClientWizardProperties;
-import org.netbeans.modules.websvc.core.WsdlRetriever;
 import org.netbeans.modules.websvc.core.WsdlRetriever;
 import org.netbeans.modules.websvc.core.jaxws.JaxWsExplorerPanel;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
@@ -136,6 +138,8 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
     private boolean retrieverFailed = false;
     private Project project;
     private int projectType;
+    private ListCellRenderer packageBoxRenderer;
+    private ListCellRenderer disabledPackageBoxRenderer;
 
     public ClientInfo(WebServiceClientWizardDescriptor panel) {
         descriptorPanel = panel;
@@ -149,6 +153,8 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         jLblClientType.setVisible(false);
         jCbxClientType.setVisible(false);
         jComboBoxJaxVersion.setModel(new DefaultComboBoxModel(new String[]{ClientWizardProperties.JAX_WS, ClientWizardProperties.JAX_RPC}));
+        packageBoxRenderer = PackageView.listRenderer();
+        disabledPackageBoxRenderer = new ClientPackageListCellRenderer();
         initUserComponents();
     }
 
@@ -419,29 +425,29 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(35, 0, 0, 0);
         add(dispatchCB, gridBagConstraints);
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_WsdlSource")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
 private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jaxwsVersionHandler
-    // TODO add your handling code here:
     descriptorPanel.fireChangeEvent();
     String jaxwsVersion = (String)this.jComboBoxJaxVersion.getSelectedItem();
     
-     if(jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS)){
-            this.jLblPackageName.setVisible(false);
-            this.jCbxPackageName.setVisible(false);
-            dispatchCB.setVisible(true);
-            org.openide.awt.Mnemonics.setLocalizedText(jLblPackageDescription, NbBundle.getMessage(ClientInfo.class, "LBL_ClientStyleDescription")); // NOI18N
+     if(jaxwsVersion.equals(ClientWizardProperties.JAX_WS)){ 
+            jCbxPackageName.setEditable(false);
+            jCbxPackageName.setEnabled(false);
+            jCbxPackageName.setRenderer(disabledPackageBoxRenderer);
+            dispatchCB.setEnabled(true);
         }
         else{
-        this.jLblPackageName.setVisible(true);
-            this.jCbxPackageName.setVisible(true);
-            dispatchCB.setVisible(false);
-            org.openide.awt.Mnemonics.setLocalizedText(jLblPackageDescription, NbBundle.getMessage(ClientInfo.class, "LBL_PackageDescription")); // NOI18N
+            jCbxPackageName.setEditable(true);
+            jCbxPackageName.setEnabled(true);
+            jCbxPackageName.setRenderer(packageBoxRenderer);
+            dispatchCB.setEnabled(false);
         }
+    adjustPackageToolTip(getPackageName());
 }//GEN-LAST:event_jaxwsVersionHandler
 
     private void jBtnBrowse1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnBrowse1ActionPerformed
@@ -632,14 +638,6 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         else
             projectType = 0;
         
-        if (projectType > 0) {
-            
-            if (!Util.isJavaEE5orHigher(project)) {
-                jLblClientType.setVisible(true);
-                jCbxClientType.setVisible(true);
-            }
-        }
-        
         //test JAX-WS library
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         ClassPath classPath;
@@ -668,11 +666,14 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                 if ((!jsr109OldSupported && !jsr109Supported) || jaxWsInJ2ee14Supported ||
                         (!jsr109Supported && jsr109OldSupported && jwsdpSupported )){
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
+                    jLabelJaxVersion.setEnabled(false);
+                    jComboBoxJaxVersion.setEnabled(false);
                 } else{
                     jLabelJaxVersion.setEnabled(false);
                     jComboBoxJaxVersion.setEnabled(false);
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);  
-                    
+                    jLblClientType.setVisible(true);
+                    jCbxClientType.setVisible(true);
                 }
             }
         } else {
@@ -699,16 +700,17 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                 jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);
             }
         }
-        if(jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS)){
-            this.jLblPackageName.setVisible(false);
-            this.jCbxPackageName.setVisible(false);
-            org.openide.awt.Mnemonics.setLocalizedText(jLblPackageDescription, NbBundle.getMessage(ClientInfo.class, "LBL_ClientStyleDescription")); // NOI18N
+       if(jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS)){
+            jCbxPackageName.setEditable(false);
+            jCbxPackageName.setEnabled(false);
+            jCbxPackageName.setRenderer(disabledPackageBoxRenderer );
         }
         else{
-            dispatchCB.setVisible(false);
-            org.openide.awt.Mnemonics.setLocalizedText(jLblPackageDescription, NbBundle.getMessage(ClientInfo.class, "LBL_ClientLocationAndClientType")); // NOI18N
+            jCbxPackageName.setEditable(true);
+            jCbxPackageName.setEnabled(true);
+            dispatchCB.setEnabled(false);
+            jCbxPackageName.setRenderer(packageBoxRenderer );
         }
-        
         try {
             settingFields = true;
             
@@ -787,6 +789,19 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         }
     }
     
+     private void adjustPackageToolTip(String pName){
+        String jaxwsVersion = (String)this.jComboBoxJaxVersion.getSelectedItem();
+            if(jaxwsVersion.equals(ClientWizardProperties.JAX_WS)){                   
+                if(pName == null || pName.trim().equals("")){
+                    jCbxPackageName.setToolTipText(NbBundle.getMessage(ClientInfo.class, "TOOLTIP_DEFAULT_PACKAGE"));
+                } else{
+                    jCbxPackageName.setToolTipText("");
+                }
+            } else{
+                jCbxPackageName.setToolTipText("");
+            }
+    }
+    
     private ClientStubDescriptor getJAXRPCClientStub(List<ClientStubDescriptor> clientStubs){
         for(ClientStubDescriptor clientStub : clientStubs){
             if(clientStub.getName().equals(ClientStubDescriptor.JAXRPC_CLIENT_STUB)){
@@ -810,7 +825,12 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             
             if (retriever.getState() != WsdlRetriever.STATUS_COMPLETE) {
                 retrieverFailed = true;
-                throw new WizardValidationException(this, "", ""); //NOI18N
+                String errorMessage = NbBundle.getMessage(ClientInfo.class, "ERR_DownloadFailedUnknown");
+                if(downloadMsg != null) {
+                    errorMessage = NbBundle.getMessage(ClientInfo.class, "ERR_DownloadFailed", downloadMsg); // NOI18N
+                }
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, errorMessage); // NOI18N
+                throw new WizardValidationException(this, errorMessage, errorMessage); //NOI18N
             } else
                 wizardDescriptor.putProperty(ClientWizardProperties.WSDL_FILE_PATH, retriever == null ? "" : retriever.getWsdlFileName()); //NOI18N
         }
@@ -834,9 +854,9 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             if (tmpWsdl != null)
                 tmpWsdl.delete();
             if (rpcEncoded) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(ClientInfo.class, "ERR_RPCEncodedJaxrpcClientRequired")); // NOI18N
-                throw new WizardValidationException(this, "", ""); //NOI18N
+                String errorMessage = NbBundle.getMessage(ClientInfo.class, "ERR_RPCEncodedJaxrpcClientRequired");
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,errorMessage); // NOI18N
+                throw new WizardValidationException(this, errorMessage, errorMessage); //NOI18N
             }
         }
     }
@@ -1175,6 +1195,14 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         return null;
     }
     
+    /**
+     * This api check if the target server for this project supports jsr 109.
+     * This means it supports JAX-WS as well.
+     * GlassFish and jBoss support this.
+     * Tomcat does not support this.
+     * @param project
+     * @return true if jsr109(and jaxws) supported, false otherwise.
+     */
     private boolean isJsr109Supported(Project project){
         J2eePlatform j2eePlatform = getJ2eePlatform(project);
         if(j2eePlatform != null){
@@ -1183,6 +1211,13 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         return false;
     }
     
+    /**
+     * This api check if the target server for this project supports WSCOMPILE (JAX-RPC).
+     * GlassFish support this.
+     * Tomcat and jBoss do not support this.
+     * @param project
+     * @return true if WSCOMPILE(JAX-RPC) supported, false otherwise
+     */
     private boolean isJsr109OldSupported(Project project){
         J2eePlatform j2eePlatform = getJ2eePlatform(project);
         if(j2eePlatform != null){
@@ -1191,6 +1226,12 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         return false;
     }
     
+    /**
+     * This api check if the target server for this project supports JWSDP.
+     * GlassFish, Tomcat and jBoss do not support this.
+     * @param project
+     * @return true if JWSDP supported, false otherwise
+     */
     private boolean isJwsdpSupported(Project project){
         J2eePlatform j2eePlatform = getJ2eePlatform(project);
         if(j2eePlatform != null){
@@ -1199,6 +1240,12 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         return false;
     }
     
+    /**
+     * This api check if the target server for this project supports JaxWs-in-j2ee14-supported.
+     * jBoss support this. Glassfish and Tomcat do not.
+     * @param project
+     * @return true if JaxWs-in-j2ee14-supported supported, false otherwise
+     */
     public boolean isJaxWsInJ2ee14Supported(Project project) {
         J2eePlatform j2eePlatform = getJ2eePlatform(project);
         if(j2eePlatform != null){
@@ -1329,5 +1376,31 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         }
             
         return false;
+    }
+    
+     private class ClientPackageListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            setOpaque(true);
+            setName("ComboBox.listRenderer"); // NOI18N
+            setText(NbBundle.getMessage(ClientInfo.class, "LBL_DEFAULT_PACKAGE"));
+            setIcon(null);
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+
+            return this;
+        }
+
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
+        }
+        
     }
 }

@@ -55,6 +55,8 @@ import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SignedUrl;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
 
 /**
@@ -64,6 +66,8 @@ import org.netbeans.modules.websvc.saas.model.wadl.Method;
 public class WadlSaasBean extends SaasBean {
 
     public static final String SAAS_SERVICE_TEMPLATE = AbstractGenerator.TEMPLATES_SAAS+"SaasService.java"; //NOI18N
+    public static final String PROTOCOL_SEPERATOR = "://";
+    public static final String PROTOCOL_SEPERATOR_ALT = "  ";
     private String url;
     private WadlSaasMethod m;
     
@@ -88,24 +92,26 @@ public class WadlSaasBean extends SaasBean {
         getInputParameters();//init parameters
         initMimeTypes();
     }
-    
+
     private void initUrl() {
         List<MimeType> mimeTypes = new ArrayList<MimeType>();
         try {
             Resource[] rArray = m.getResourcePath();
             if(rArray == null || rArray.length == 0)
                 throw new IllegalArgumentException("Method do not belong to any resource in the WADL.");
-            Resource currResource = rArray[rArray.length-1];
             String url2 = m.getSaas().getWadlModel().getResources().getBase();
-            url2 = url2.replace("://", "  ");//replace now, add :// later
-            for(int i=0;i<rArray.length;i++){
-                String path = rArray[i].getPath();
+            
+            url2 = url2.replace(PROTOCOL_SEPERATOR, PROTOCOL_SEPERATOR_ALT);//replace now, add :// later
+            for(Resource r: rArray){
+                String path = r.getPath();
                 if(path != null && path.trim().length() > 0) {
-                    url2 += "/" + rArray[i].getPath();
+                    url2 += "/" + path;
                 }
             }
             url2 = url2.replace("//", "/");
-            url2 = url2.replace("  ", "://");//put back ://
+            url2 = url2.replace("/"+PROTOCOL_SEPERATOR_ALT, PROTOCOL_SEPERATOR_ALT);//special case 
+            url2 = url2.replace(PROTOCOL_SEPERATOR_ALT+"/", PROTOCOL_SEPERATOR_ALT);//special case 
+            url2 = url2.replace(PROTOCOL_SEPERATOR_ALT, PROTOCOL_SEPERATOR);//put back ://
             this.url = url2;
         } catch (Exception ex) {
         } 
@@ -151,17 +157,12 @@ public class WadlSaasBean extends SaasBean {
     public static ArrayList<ParameterInfo> findWadlParams(WadlSaasMethod wsm) {
         ArrayList<ParameterInfo> inputParams = new ArrayList<ParameterInfo>();
         inputParams.addAll(findWadlParams(wsm.getWadlMethod()));
-        WadlSaasResource wParentResource = wsm.getParentResource();
-        Resource parentResource = null;
-        if(wParentResource != null) {
-            parentResource = wParentResource.getResource();
-        } else {
-            Resource[] rPaths = wsm.getResourcePath();
-            if(rPaths != null && rPaths.length > 0)
-                parentResource = rPaths[rPaths.length-1];
+        Resource[] rArray = wsm.getResourcePath();
+        if(rArray != null && rArray.length > 0) {
+            for(Resource r: rArray){
+                findWadlParams(inputParams, r.getParam());
+            }
         }
-        if(parentResource != null)
-            findWadlParams(inputParams, parentResource.getParam());
         return inputParams;
     }
     
@@ -229,5 +230,23 @@ public class WadlSaasBean extends SaasBean {
 
     public String getSaasServiceTemplate() {
         return SAAS_SERVICE_TEMPLATE;
+    }
+    
+    @Override
+    protected Object getAuthUsingId(Authentication auth) {
+        if(auth.getSignedUrl() != null && auth.getSignedUrl().size() > 0) {
+            Resource[] rArray = m.getResourcePath();
+            if (rArray == null || rArray.length == 0) {
+                return null;
+            }
+            String id = rArray[rArray.length-1].getId();
+            if(id != null && !id.trim().equals("")) {
+                for(SignedUrl s: auth.getSignedUrl()) {
+                    if(id.equals(s.getId()))
+                        return s;
+                }
+            }
+        }
+        return null;
     }
 }

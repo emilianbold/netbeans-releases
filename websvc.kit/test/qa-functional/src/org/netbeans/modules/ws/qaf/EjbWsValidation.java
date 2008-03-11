@@ -47,6 +47,7 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -95,7 +96,7 @@ public class EjbWsValidation extends WsValidation {
 
     @Override
     protected String getWsClientPackage() {
-        return "o.n.m.ws.qaf.client.ejb"; //NOI18N
+        return getWsPackage(); //NOI18N
     }
 
     /** Creates suite from particular test cases. You can define order of testcases here. */
@@ -107,6 +108,7 @@ public class EjbWsValidation extends WsValidation {
         suite.addTest(new EjbWsValidation("testWsHandlers")); //NOI18N
         suite.addTest(new EjbWsValidation("testDeployWsProject")); //NOI18N
         suite.addTest(new EjbWsValidation("testCreateWsClient")); //NOI18N
+        suite.addTest(new EjbWsValidation("testRefreshClientAndReplaceWSDL")); //NOI18N
         suite.addTest(new EjbWsValidation("testCallWsOperationInSessionEJB")); //NOI18N
         suite.addTest(new EjbWsValidation("testCallWsOperationInJavaClass")); //NOI18N
         suite.addTest(new EjbWsValidation("testWsFromEJBinClientProject")); //NOI18N
@@ -177,6 +179,7 @@ public class EjbWsValidation extends WsValidation {
         op.cboPackage().clearText();
         op.cboPackage().typeText("org.mycompany.ejbs"); //NOI18N
         op.finish();
+        new EventTool().waitNoEvent(2000);
         //Add business method
         final EditorOperator eo = new EditorOperator(ejbName); //NOI18N
         addBusinessMethod(eo, "myBm", "String"); //NOI18N
@@ -185,7 +188,7 @@ public class EjbWsValidation extends WsValidation {
         eo.setCaretPosition("myBm() {", false); //NOI18N
         eo.insert("\n//xxx"); //NOI18N
         eo.select("//xxx"); //NOI18N
-        callWsOperation(eo, "myIntMethod", 16); //NOI18N
+        callWsOperation(eo, "myIntMethod", eo.getLineNumber()); //NOI18N
         assertTrue("@WebServiceRef has not been found", eo.contains("@WebServiceRef")); //NOI18N
         assertFalse("Lookup present", eo.contains(getWsClientLookupCall()));
         eo.close(true);

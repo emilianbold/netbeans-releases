@@ -75,6 +75,7 @@ final class DefaultSysProcess extends ExecutorTask {
     }
 
     /** terminates the process by killing all its thread (ThreadGroup) */
+    @SuppressWarnings("deprecation")
     public synchronized void stop() {
 
         if (destroyed) return;

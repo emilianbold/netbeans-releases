@@ -110,6 +110,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
@@ -134,6 +135,7 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -635,33 +637,21 @@ public class JaxWsUtils {
      */
     public static boolean isJavaPackage(String pkg) {
         boolean result = false;
-
-        if (pkg != null && pkg.length() > 0) {
-            int state = 0;
-            for (int i = 0, pkglength = pkg.length(); i < pkglength && state < 2; i++) {
-                switch (state) {
-                    case 0:
-                        if (Character.isJavaIdentifierStart(pkg.charAt(i))) {
-                            state = 1;
-                        } else {
-                            state = 2;
-                        }
-                        break;
-                    case 1:
-                        if (pkg.charAt(i) == '.') {
-                            state = 0;
-                        } else if (!Character.isJavaIdentifierPart(pkg.charAt(i))) {
-                            state = 2;
-                        }
-                        break;
-                }
-            }
-
-            if (state == 1) {
+        StringTokenizer tukac = new StringTokenizer(pkg, ".", true);
+        while (tukac.hasMoreTokens()) {
+            String token = tukac.nextToken();
+            if (".".equals(token)) {
+                if(result)
+                    result = false;
+                else
+                    return false;
+            } else {
+                if (!Utilities.isJavaIdentifier(token))
+                    return false;
                 result = true;
             }
         }
-
+        
         return result;
     }
 
