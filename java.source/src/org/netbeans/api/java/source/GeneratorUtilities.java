@@ -56,7 +56,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
-import com.sun.source.util.Trees;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Type;
@@ -139,12 +139,11 @@ public final class GeneratorUtilities {
             }
         } catch (IOException ioe) {}
         TreeUtilities utils = copy.getTreeUtilities();
-        Trees trees = copy.getTrees();
         CompilationUnitTree compilationUnit = copy.getCompilationUnit();
         Tree lastMember = null;
         for (Tree tree : clazz.getMembers()) {
-            if (!utils.isSynthetic(trees.getPath(compilationUnit, tree)) && 
-                    ClassMemberComparator.compare(member, tree) < 0) {
+            TreePath path = TreePath.getPath(compilationUnit, tree);
+            if ((path == null || !utils.isSynthetic(path)) && ClassMemberComparator.compare(member, tree) < 0) {
                 if (gdoc == null)
                     break;
                 int pos = (int)(lastMember != null ? sp.getEndPosition(compilationUnit, lastMember) : sp.getStartPosition( compilationUnit,clazz));
