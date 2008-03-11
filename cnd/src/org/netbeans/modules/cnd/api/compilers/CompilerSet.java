@@ -585,6 +585,10 @@ public class CompilerSet {
         return flavor;
     }
     
+    public void setFlavor(CompilerFlavor flavor) {
+        this.flavor = flavor;
+    }
+    
     public void addDirectory(String path) {
         if (directory.length() == 0) {
             directory.append(path);
