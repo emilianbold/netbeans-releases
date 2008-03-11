@@ -286,6 +286,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 update(false, csm.getCompilerSets().get(index-1));
             else
                 update(false);
+            changed = true;
         }
 //        int idx = lstDirlist.getSelectedIndex();
 //        assert idx != -1; // the button shouldn't be enabled
@@ -1151,7 +1152,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         Object o = e.getSource();
         
         if (o instanceof JButton) {
-            changed = true;
             if (o == btAdd) {
                 addCompilerSet();
             } else if (o == btRemove) {
@@ -1922,6 +1922,7 @@ private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//G
     CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
     CompilerFlavor cf = (CompilerFlavor)cbFamily.getSelectedItem();
     csm.reInitCompilerSet(cs, dirPath);
+    changed = true;
     update(false);
     
 }//GEN-LAST:event_btBaseDirectoryActionPerformed
@@ -1996,6 +1997,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     if (defaultCompilerSet != null) {
         csm.setDefault(defaultCompilerSet);
     }
+    changed = true;
     update(false);
 }//GEN-LAST:event_btRestoreActionPerformed
     
