@@ -62,9 +62,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     public PanelOptionsVisual(PanelConfigureProject panel, int type) {
         this.panel = panel;
         initComponents();
-        Util.preselectWizardPlatform(platforms);
-
-
+        
         PlatformComponentFactory.addPlatformChangeListener(platforms, new PlatformComponentFactory.PlatformChangeListener() {
             public void platformChanged() {
                 fireChangeEvent();
@@ -72,6 +70,10 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
                 initWarCheckBox();
             }
         });
+
+        Util.preselectWizardPlatform(platforms);
+
+
 
 
         fireChangeEvent();
