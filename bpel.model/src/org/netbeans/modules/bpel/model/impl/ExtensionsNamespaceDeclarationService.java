@@ -42,11 +42,12 @@ package org.netbeans.modules.bpel.model.impl;
 import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
 import org.netbeans.modules.bpel.model.api.events.EntityInsertEvent;
-import org.netbeans.modules.bpel.model.api.support.ExNamespaceContext;
-import org.netbeans.modules.bpel.model.api.support.InvalidNamespaceException;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
 import org.netbeans.modules.bpel.model.impl.services.InnerEventDispatcherAdapter;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
 
 /**
  *
