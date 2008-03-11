@@ -14,3 +14,7 @@ void method_name_with_underscore() {
 
 const int VALUE = 10;
 const int VALUE_2 = 10 + VALUE;
+
+void fun(char* aaa, char**bbb) {
+    
+}
