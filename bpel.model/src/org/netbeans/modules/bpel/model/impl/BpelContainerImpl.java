@@ -492,6 +492,17 @@ public abstract class BpelContainerImpl extends BpelEntityImpl
         writeLock();
         try {
             T old = getChild(classType);
+            //
+            if (newEl == old) {
+                // See issue #129274                
+                // If the old and the new values are the same objects: 
+                //  It prevents some problems. When the old child BPEL entity 
+                //  is replaced with a new one, it is also deleted from the BPEL model.
+                //  It the old is just the same as the new, then the new turned out 
+                //  deleted as well. 
+                return;
+            }
+            //
             EntityUpdateEvent<T> event = preEntityUpdate(old, newEl, -1);
 
             setChildBefore(classType, ((BpelEntityImpl) newEl).getEntityName(),
@@ -610,7 +621,7 @@ public abstract class BpelContainerImpl extends BpelEntityImpl
     class CopyKey {
     };
     
-    enum Multiplicity {
+    protected enum Multiplicity {
         SINGLE,
         UNBOUNDED
     }
