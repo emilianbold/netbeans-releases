@@ -75,13 +75,6 @@ public class HibernateEnvironment {
         this.project = project;
     }
 
-
-    /**
-     * Empty constructor used to create Hibernate Environments without NB projects.
-     */
-    public HibernateEnvironment() {
-    }
-
     /**
      * Returns all tables found in the configurations present in this project.
      * 
