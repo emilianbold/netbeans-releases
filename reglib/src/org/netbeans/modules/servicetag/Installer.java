@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package com.sun.servicetag;
+package org.netbeans.modules.servicetag;
 
 import java.io.*;
 import java.util.HashSet;
@@ -48,7 +48,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
-import static com.sun.servicetag.Util.*;
+import static org.netbeans.modules.servicetag.Util.*;
 
 /**
  * Service Tag Installer for Java SE.
@@ -489,7 +489,7 @@ public class Installer {
         // We just need the minor number in the version string
         int version = Util.getJdkVersion();
 
-        String filename = "/com/sun/servicetag/resources/javase_" +
+        String filename = "/org/netbeans/modules/servicetag/resources/javase_" +
                 version + "_swordfish.properties";
         InputStream in = Installer.class.getClass().getResourceAsStream(filename);
         if (in == null) {
@@ -804,7 +804,7 @@ public class Installer {
             reader.close();
         }
         
-        String resourceFilename = "/com/sun/servicetag/resources/register";
+        String resourceFilename = "/org/netbeans/modules/servicetag/resources/register";
         for (Locale locale : supportedLocales) {
             String name = REGISTRATION_HTML_NAME;
             String resource = resourceFilename;

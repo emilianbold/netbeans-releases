@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package com.sun.servicetag;
+package org.netbeans.modules.servicetag;
 
 import java.io.*;
 import java.net.URL;
@@ -201,7 +201,10 @@ class RegistrationDocument {
         try {
             // Use a Transformer for output
             TransformerFactory tFactory = TransformerFactory.newInstance();
-            tFactory.setAttribute("indent-number", new Integer(3));
+            try {
+                tFactory.setAttribute("indent-number", new Integer(3));
+            } catch (IllegalArgumentException iae) {
+            }
 
             Transformer transformer = tFactory.newTransformer();
 
