@@ -92,6 +92,16 @@ public class CodeCompleter implements Completable {
     
     }
 
+    private void printMethod(MetaMethod mm) {
+
+        LOG.log(Level.FINEST, "--------------------------------------------------");
+        LOG.log(Level.FINEST, "Methods.getName()       : " + mm.getName());
+        LOG.log(Level.FINEST, "Methods.toString()      : " + mm.toString());
+        LOG.log(Level.FINEST, "Methods.getDescriptor() : " + mm.getDescriptor());
+        LOG.log(Level.FINEST, "Methods.getSignature()  : " + mm.getSignature());
+        LOG.log(Level.FINEST, "Methods.getParamTypes() : " + mm.getParamTypes());
+    }
+
     private boolean startsWith(String theString, String prefix) {
         if (prefix.length() == 0) {
             return true;
@@ -161,8 +171,10 @@ public class CodeCompleter implements Completable {
             if (metaClz != null) {
                 for (Object method : metaClz.getMetaMethods()) {
                     if (method != null) {
-                        LOG.log(Level.FINEST, "completeMethods(...), MetaMethods: " + ((MetaMethod) method).toString());
-
+                        MetaMethod mm = (MetaMethod) method;
+                        MethodItem item = new MethodItem(mm, anchor, request, true);
+                        // printMethod(mm);
+                        proposals.add(item);
                     }
 
                 }
@@ -170,8 +182,8 @@ public class CodeCompleter implements Completable {
                 for (Object method : metaClz.getMethods()) {
                     if (method != null) {
                         MetaMethod mm = (MetaMethod) method;
-                        LOG.log(Level.FINEST, "completeMethods(...), Methods: " + mm.toString());
-                        MethodItem item = new MethodItem(mm.getName(), mm.toString(), anchor, request);
+                        MethodItem item = new MethodItem(mm, anchor, request, false);
+                        // printMethod(mm);
                         proposals.add(item);
                     }
                 }
@@ -273,7 +285,7 @@ public class CodeCompleter implements Completable {
             // completeKeywords(proposals, request, showSymbols);
             
             // complte methods
-            // completeMethods(proposals, request, showSymbols);
+            completeMethods(proposals, request, showSymbols);
             
             return proposals;
         } finally {
@@ -424,18 +436,22 @@ public class CodeCompleter implements Completable {
 
     private class MethodItem extends GroovyCompletionItem {
         private static final String GROOVY_METHOD = "org/netbeans/modules/groovy/editor/resources/groovydoc.png"; //NOI18N
-        private final String name;
-        private final String description;
-
-        MethodItem(String name, String description, int anchorOffset, CompletionRequest request) {
+        MetaMethod method;
+        HtmlFormatter formatter;
+        boolean isGDK;
+        
+        MethodItem(MetaMethod method, int anchorOffset, CompletionRequest request, boolean isGDK) {
             super(null, anchorOffset, request);
-            this.name = name;
-            this.description = description;
+            this.method = method;
+            this.formatter = request.formatter;
+            this.isGDK = isGDK;
         }
 
         @Override
         public String getName() {
-            return name;
+            formatter.reset();
+            formatter.appendHtml(method.getName().toString());
+            return formatter.getText();
         }
 
         @Override
@@ -444,21 +460,70 @@ public class CodeCompleter implements Completable {
         }
 
         @Override
-        public String getRhsHtml() {
-            if (description != null) {
-                HtmlFormatter formatter = request.formatter;
-                formatter.reset();
-                //formatter.appendText(description);
-                formatter.appendHtml(description);
-
-                return formatter.getText();
-            } else {
-                return null;
+        public String getLhsHtml() {
+            
+            ElementKind kind = getKind();
+            boolean emphasize = false;
+            
+            formatter.reset();
+            if(method.isStatic()){
+                emphasize = true;
+                formatter.emphasis(true);
             }
+            formatter.name(kind, true);
+            
+            // method name
+            formatter.appendText(method.getName().toString());
+            
+            // construct signature by removing package names.
+            
+            String signature = method.getSignature();
+            int start = signature.indexOf("(");
+            int end   = signature.indexOf(")");
+            
+            String sig = signature.substring(start + 1, end);
+            
+            String simpleSig = "";
+            
+            for (String param : sig.split(",")) {
+                if(!simpleSig.equals("")) {
+                    simpleSig = simpleSig + ", ";
+                }
+                simpleSig = simpleSig + stripPackage(param);
+            }
+            
+            formatter.appendText("(" + simpleSig + ")");
+            
+            formatter.name(kind, false);
+            
+            if (emphasize) {
+                formatter.emphasis(false);
+            }
+            return formatter.getText();
+        }
+        
+        
+        @Override
+        public String getRhsHtml() {
+            formatter.reset();
+            
+            // no FQN return types but only the classname, please:
+            
+            String retType = method.getReturnType().toString();
+            retType = stripPackage(retType);
+            
+            formatter.appendHtml(retType);       
+            
+            return formatter.getText();
         }
 
         @Override
         public ImageIcon getIcon() {
+            
+            if(!isGDK){
+                return null;
+            }
+            
             if (keywordIcon == null) {
                 keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_METHOD));
             }
@@ -469,6 +534,20 @@ public class CodeCompleter implements Completable {
         @Override
         public Set<Modifier> getModifiers() {
             return Collections.emptySet();
+        }
+
+        private String stripPackage(String retType) {
+
+            if (retType.contains(".")) {
+                int idx = retType.lastIndexOf(".");
+                retType = retType.substring(idx + 1);
+            }
+            
+            // every now and than groovy comes with tailing
+            // semicolons. We got to get rid of them.
+           
+            retType.replace(";", "");
+            return retType;
         }
         
 //        @Override
