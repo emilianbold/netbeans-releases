@@ -41,8 +41,7 @@
 
 package org.netbeans.modules.editor.impl;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.modules.editor.lib.KitsTracker;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -69,42 +69,16 @@ import org.openide.loaders.DataObject;
  *
  * @author vita
  */
-public final class KitsTracker {
+public final class KitsTrackerImpl extends KitsTracker {
         
-    private static final Logger LOG = Logger.getLogger(KitsTracker.class.getName());
+    private static final Logger LOG = Logger.getLogger(KitsTrackerImpl.class.getName());
     private static final Set<String> ALREADY_LOGGED = Collections.synchronizedSet(new HashSet<String>(10));
+    private static final Logger TIMER = Logger.getLogger("TIMER");
     
-    private static KitsTracker instance = null;
-    
-    /**
-     * Gets the <code>KitsTracker</code> singleton instance.
-     * @return The <code>KitsTracker</code> instance.
-     */
-    public static synchronized KitsTracker getInstance() {
-        if (instance == null) {
-            instance = new KitsTracker();
-        }
-        return instance;
+    public KitsTrackerImpl() {
+        super();
     }
-    
-    public static String getGenericPartOfCompoundMimeType(String mimeType) {
-        int plusIdx = mimeType.lastIndexOf('+'); //NOI18N
-        if (plusIdx != -1 && plusIdx < mimeType.length() - 1) {
-            int slashIdx = mimeType.indexOf('/'); //NOI18N
-            String prefix = mimeType.substring(0, slashIdx + 1);
-            String suffix = mimeType.substring(plusIdx + 1);
 
-            // fix for #61245
-            if (suffix.equals("xml")) { //NOI18N
-                prefix = "text/"; //NOI18N
-            }
-
-            return prefix + suffix;
-        } else {
-            return null;
-        }
-    }
-    
     /**
      * Gets the list of mime types (<code>String</code>s) that use the given
      * class as an editor kit implementation.
@@ -115,7 +89,12 @@ public final class KitsTracker {
     @SuppressWarnings("unchecked")
     public List<String> getMimeTypesForKitClass(Class kitClass) {
         if (kitClass != null) {
-            return (List<String>) updateAndGet(kitClass);
+            if (WELL_KNOWN_PARENTS.contains(kitClass.getName())) {
+                // these classes are not directly registered as a kit for any mime type
+                return Collections.<String>emptyList();
+            } else {
+                return (List<String>) updateAndGet(kitClass);
+            }
         } else {
             return Collections.singletonList(""); //NOI18N
         }
@@ -199,13 +178,9 @@ public final class KitsTracker {
         
         return previousMimeType;
     }
-    
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        PCS.addPropertyChangeListener(l);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        PCS.removePropertyChangeListener(l);
+
+    public @Override String toString() {
+        return "KitsTrackerImpl"; //NOI18N
     }
     
     // ------------------------------------------------------------------
@@ -217,7 +192,7 @@ public final class KitsTracker {
     private final Set<String> knownMimeTypes = new HashSet<String>();
     private List<FileObject> eventSources = null;
     private boolean needsReloading = true;
-    private final PropertyChangeSupport PCS = new PropertyChangeSupport(this);
+    private boolean mimeType2kitClassLoaded = false;
 
     private static final Set<String> WELL_KNOWN_PARENTS = new HashSet<String>(Arrays.asList(new String [] {
         "java.lang.Object", //NOI18N
@@ -251,10 +226,6 @@ public final class KitsTracker {
         }
     };
     
-    private KitsTracker() {
-
-    }
-
     private static final ThreadLocal<Boolean> inReload = new  ThreadLocal<Boolean>() {
         protected @Override Boolean initialValue() {
             return false;
@@ -269,18 +240,18 @@ public final class KitsTracker {
      * @param eventSources The list of folders with registered <code>EditorKits</code>.
      *   Changes in these folders mean that the map may need to be recalculated.
      */
-    private static void reload(Map<String, FileObject> map, Set<String> set, List<FileObject> eventSources) {
+    private static void reload(Set<String> set, List<FileObject> eventSources) {
         assert !inReload.get() : "Re-entering KitsTracker.reload() is prohibited. This situation usually indicates wrong initialization of some setting."; //NOI18N
         
         inReload.set(true);
         try {
-            _reload(map, set, eventSources);
+            _reload(set, eventSources);
         } finally {
             inReload.set(false);
         }
     }
     
-    private static void _reload(Map<String, FileObject> map, Set<String> set, List<FileObject> eventSources) {
+    private static void _reload(Set<String> set, List<FileObject> eventSources) {
         // Get the root of the MimeLookup registry
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Editors"); //NOI18N
 
@@ -301,16 +272,6 @@ public final class KitsTracker {
                     }
 
                     String mimeType = types[i].getNameExt() + "/" + subTypes[j].getNameExt(); //NOI18N
-                    FileObject kitInstanceFile = findKitRegistration(subTypes[j]);
-                    
-                    if (kitInstanceFile != null) {
-                        map.put(mimeType, kitInstanceFile);
-                    } else {
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("No kit for '" + mimeType + "'");
-                        }
-                    }
-                    
                     set.add(mimeType);
                 }
 
@@ -337,9 +298,15 @@ public final class KitsTracker {
             InstanceCookie ic = d.getLookup().lookup(InstanceCookie.class);
 
             if (ic != null) {
-                if (!exactMatch && (ic instanceof InstanceCookie.Of)) {
-                    if (((InstanceCookie.Of) ic).instanceOf(clazz)) {
-                        return true;
+                if (ic instanceof InstanceCookie.Of) {
+                    if (!exactMatch) {
+                        return ((InstanceCookie.Of) ic).instanceOf(clazz);
+                    } else {
+                        if (!((InstanceCookie.Of) ic).instanceOf(clazz)) {
+                            return false;
+                        } else {
+                            return ic.instanceClass() == clazz;
+                        }
                     }
                 } else {
                     Class instanceClass = ic.instanceClass();
@@ -365,7 +332,7 @@ public final class KitsTracker {
         synchronized (mimeType2kitClass) {
             needsReloading = true;
         }
-        PCS.firePropertyChange(null, null, null);
+        firePropertyChange(null, null, null);
     }
 
     private static boolean isValidType(FileObject typeFile) {
@@ -395,12 +362,8 @@ public final class KitsTracker {
 
     private Object updateAndGet(Class kitClass) {
         boolean reload;
-        Map<String, FileObject> reloadedMap = new HashMap<String, FileObject>();
         Set<String> reloadedSet = new HashSet<String>();
         List<FileObject> newEventSources = new ArrayList<FileObject>();
-        
-        ArrayList<String> list = new ArrayList<String>();
-        HashSet<String> set = new HashSet<String>();
         
         synchronized (mimeType2kitClass) {
             reload = needsReloading;
@@ -409,10 +372,13 @@ public final class KitsTracker {
         // This needs to be outside of the synchronized block to prevent deadlocks
         // See eg #107400
         if (reload) {
-            reload(reloadedMap, reloadedSet, newEventSources);
+            reload(reloadedSet, newEventSources);
         }
             
         synchronized (mimeType2kitClass) {
+            ArrayList<String> list = new ArrayList<String>();
+            HashSet<String> set = new HashSet<String>();
+
             if (reload) {
                 // Stop listening
                 if (eventSources != null) {
@@ -422,8 +388,6 @@ public final class KitsTracker {
                 }
 
                 // Update the cache
-                mimeType2kitClass.clear();
-                mimeType2kitClass.putAll(reloadedMap);
                 knownMimeTypes.clear();
                 knownMimeTypes.addAll(reloadedSet);
 
@@ -435,21 +399,54 @@ public final class KitsTracker {
 
                 // Set the flag
                 needsReloading = false;
+                mimeType2kitClassLoaded = false;
             }
             
             // Compute the list
             if (kitClass != null) {
+                if (!mimeType2kitClassLoaded) {
+                    long tm = System.currentTimeMillis();
+                    
+                    mimeType2kitClassLoaded = true;
+                    mimeType2kitClass.clear();
+
+                    // Get the root of the MimeLookup registry
+                    FileObject root = Repository.getDefault().getDefaultFileSystem().findResource("Editors"); //NOI18N
+                    for(String mimeType : knownMimeTypes) {
+                        FileObject mimeTypeFolder = root.getFileObject(mimeType);
+                        FileObject kitInstanceFile = findKitRegistration(mimeTypeFolder);
+                        if (kitInstanceFile != null) {
+                            mimeType2kitClass.put(mimeType, kitInstanceFile);
+                        } else {
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("No kit for '" + mimeType + "'"); //NOI18N
+                            }
+                        }
+                    }
+
+                    long tm2 = System.currentTimeMillis();
+                    TIMER.log(Level.FINE, "Kits scan", new Object [] { this, tm2 - tm }); //NOI18N
+                    TIMER.log(Level.FINE, "[M] Kits", new Object [] { this, mimeType2kitClass.size() }); //NOI18N
+                    
+                    // uncomment to see where this was called from
+                    // new Throwable("~~~ KitsTrackerImpl._reload took " + (tm2 - tm) + "msec").printStackTrace();
+                }
+
+                boolean kitClassFinal = (kitClass.getModifiers() & Modifier.FINAL) != 0;
                 for(String mimeType : mimeType2kitClass.keySet()) {
                     FileObject f = mimeType2kitClass.get(mimeType);
-                    if (isInstanceOf(f, kitClass, true)) {
+                    if (isInstanceOf(f, kitClass, !kitClassFinal)) {
                         list.add(mimeType);
                     }
                 }
+
+                TIMER.log(Level.FINE, "[M] " + kitClass.getSimpleName() + " used", new Object [] { this, list.size() }); //NOI18N
             } else {
                 set.addAll(knownMimeTypes);
+                TIMER.log(Level.FINE, "[M] Mime types", new Object [] { this, set.size() }); //NOI18N
             }
+            
+            return kitClass != null ? list : set;
         }
-        
-        return kitClass != null ? list : set;
     }
 }
