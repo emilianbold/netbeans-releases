@@ -64,6 +64,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.ApiKeyAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication;
@@ -101,6 +102,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     private JavaSource saasAuthJS;
     private HttpMethodType httpMethod;
     private HashMap<String, ParameterInfo> filterParamMap;
+    private String serviceMethodName = null;
     
     public JaxRsCodeGenerator(JTextComponent targetComponent, 
             FileObject targetFile, WadlSaasMethod m) throws IOException {
@@ -133,7 +135,11 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     }
     
     public String getSaasServiceMethodName() {
-        return "get" + getBean().getName();
+        if(serviceMethodName == null) {
+            serviceMethodName = getBean().getName();
+            serviceMethodName = serviceMethodName.substring(0, 1).toLowerCase() + serviceMethodName.substring(1);
+        }
+        return serviceMethodName;
     }
     
     public HttpMethodType getHttpMethodName() {
@@ -146,39 +152,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     }
     
     protected String getCustomMethodBody() throws IOException {
-        String converterName = getConverterName();
-        String paramStr = null;
-        StringBuffer sb1 = new StringBuffer();
-        List<ParameterInfo> params = filterParameters();
-
-        for (ParameterInfo param : params) {
-            String paramName = getParameterName(param);
-            if (param.getType() != String.class) {
-                sb1.append("{\"" + paramName + "\", \"" + paramName + "\"},");
-            } else {
-                sb1.append("{\"" + paramName + "\", " + paramName + "},");
-            }
-        }
-        paramStr = sb1.toString();
-        if (params.size() > 0) {
-            paramStr = paramStr.substring(0, paramStr.length() - 1);
-        }
-        
-        String methodBody = "String url = \"" + ((WadlSaasBean) bean).getUrl() + "\";\n";
-        methodBody += "        " + converterName + " converter = new " + converterName + "();\n";
-        methodBody += "        try {\n";
-        methodBody += "             String[][] params = new String[][]{\n";
-        methodBody += "                 " + paramStr + "\n";
-        methodBody += "             };\n";
-        methodBody += "             RestConnection cl = new RestConnection(url, params);\n";
-        methodBody += "             String result = cl.get();\n";
-        methodBody += "             converter.setString(result);\n";
-        methodBody += "             return converter;\n";
-        methodBody += "        } catch (java.io.IOException ex) {\n";
-        methodBody += "             throw new WebApplicationException(ex);\n";
-        methodBody += "        }\n }";
-       
-        return methodBody;
+        return "";
     }
     
     protected String getServiceMethodBody() throws IOException {
@@ -335,7 +309,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             SignedUrlAuthentication signedUrl = (SignedUrlAuthentication)getBean().getAuthentication();
             List<ParameterInfo> signParams = signedUrl.getParameters();
             if(signParams != null && signParams.size() > 0) {
-                String paramStr = getSignParamDeclaration(signParams, filterParameters());
+                String paramStr = getSignParamDeclaration(signParams, getBean().getInputParameters());
                 paramStr += "        String "+
                         getVariableName(signedUrl.getSigKeyName(), true, true, true)+" = "+
                         getGroupName()+"Authenticator.sign(\n";
@@ -375,6 +349,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
      *  Insert the Saas client call
      */
     public void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
+        Util.checkScanning();
         try {
             String code = "";
             if(isInBlock) {
@@ -486,6 +461,13 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
      *  Return target and generated file objects
      */
     protected void addSaasServiceMethod() throws IOException {
+        List<ParameterInfo> filterParams = getBean().filterParametersByAuth(bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
+        final String[] parameters = getGetParamNames(filterParams);
+        final Object[] paramTypes = getGetParamTypes(filterParams);
+                
+        if(JavaSourceHelper.isContainsMethod(saasServiceJS, getSaasServiceMethodName(), parameters, paramTypes))
+            return;
+        
         ModificationResult result = saasServiceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
 
             public void run(WorkingCopy copy) throws IOException {
@@ -496,10 +478,6 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 String type = String.class.getName();
                 String bodyText = "{ \n" + getServiceMethodBody() + "\n }";
 
-                //Further filter
-                List<ParameterInfo> filterParams = getBean().filterParametersByAuth(filterParameters());
-                String[] parameters = getGetParamNames(filterParams);
-                Object[] paramTypes = getGetParamTypes(filterParams);
 
                 String comment = "Retrieves representation of an instance of " + getBean().getQualifiedClassName() + "\n";
                 for (String param : parameters) {
@@ -556,7 +534,9 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     protected void modifyAuthenticationClass(final String comment, final Modifier[] modifiers, 
             final Object returnType, final String name, final String[] parameters, final Object[] paramTypes, 
             final Object[] throwList, final String bodyText) 
-                throws IOException {
+                throws IOException {             
+        if(JavaSourceHelper.isContainsMethod(saasServiceJS, getSaasServiceMethodName(), parameters, paramTypes))
+            return;
         ModificationResult result = saasAuthJS.runModificationTask(new AbstractTask<WorkingCopy>() {
 
             public void run(WorkingCopy copy) throws IOException {
@@ -856,19 +836,6 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             methodBody += "       return token;\n";
         }
         return methodBody;
-    }
-    
-    public List<ParameterInfo> filterParameters() {
-        List<ParameterInfo> filterParams = new ArrayList<ParameterInfo>();
-        if(getBean().getInputParameters() != null) {
-            for (ParameterInfo param : getBean().getInputParameters()) {
-                if(param.isApiKey() || param.isFixed()) {
-                        continue;
-                }
-                filterParams.add(param);
-            }
-        }
-        return filterParams;
     }
     
     public ParameterInfo findParameter(String name) {

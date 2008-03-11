@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.beans.beaninfo;
 
+import java.beans.PropertyVetoException;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.editor.guards.InteriorSection;
 import org.netbeans.api.editor.guards.SimpleSection;
@@ -50,6 +51,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 
 /**
  * Finds or creates BeanInfo source elemnet for the class.
@@ -193,6 +195,14 @@ public final class BeanInfoSource extends Object {
             DataObject doBiTemplate = DataObject.find ( foBiTemplate );
             DataFolder folder = this.javaDataObject.getFolder();
             biDataObject = doBiTemplate.createFromTemplate( folder, this.javaDataObject.getName() + BEANINFO_NAME_EXT );
+            if (!(biDataObject instanceof BIDataObject)) {
+                try {
+                    biDataObject.setValid(false);
+                } catch (PropertyVetoException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                biDataObject = DataObject.find(biDataObject.getPrimaryFile());
+            }
             javaEditor = biDataObject.getLookup().lookup(BIEditorSupport.class);
         }
         catch ( org.openide.loaders.DataObjectNotFoundException e ) {

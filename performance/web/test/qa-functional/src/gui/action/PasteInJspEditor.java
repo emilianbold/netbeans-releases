@@ -83,7 +83,7 @@ public class PasteInJspEditor extends WebPerformanceTestCase {
         WAIT_AFTER_PREPARE = 3000;
         // in case this time is longer than 1000ms we will catch events generated
         // by parser which starts with 1000ms delay
-        WAIT_AFTER_OPEN = 500;
+        WAIT_AFTER_OPEN = 100;
     }
     
     protected void initialize() {

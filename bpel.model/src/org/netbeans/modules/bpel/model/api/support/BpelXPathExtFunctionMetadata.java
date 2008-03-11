@@ -423,4 +423,157 @@ public interface BpelXPathExtFunctionMetadata {
         
     };
     
+    ExtFunctionMetadata GET_GUID_METADATA = new ExtFunctionMetadata() {
+
+        public boolean isContextItemRequired(XPathOperationOrFuntion func) {
+            return false;
+        }
+
+        public QName getName() {
+            return new QName(SUN_EXT_FUNC_NS, "getGUID"); // NOI18N
+        }
+
+        public Icon getIcon() {
+            return IconLoader.getIcon(getName().getLocalPart(), IMAGE_FOLDER_NAME);
+        }
+        
+        public String getDisplayName() {
+            return NbBundle.getMessage(BpelXPathExtFunctionMetadata.class, 
+                            "DN_GetGUID"); // NOI18N
+        }
+
+        public String getShortDescription() {
+            return "";
+        }
+
+        public String getLongDescription() {
+            return "";
+        }
+
+        public FunctionType getFunctionType() {
+            return FunctionType.EXT_FUNCTION;
+        }
+
+        public synchronized List<AbstractArgument> getArguments() {
+            return null;
+        }
+
+        public XPathType getResultType() {
+            return XPathType.STRING_TYPE;
+        }
+
+        public ResultTypeCalculator getResultTypeCalculator() {
+            return null;
+        }
+        
+        public String toStrign() {
+            return getName().toString();
+        }
+        
+    };
+    
+    ExtFunctionMetadata GET_BPID_METADATA = new ExtFunctionMetadata() {
+
+        public boolean isContextItemRequired(XPathOperationOrFuntion func) {
+            return false;
+        }
+
+        public QName getName() {
+            return new QName(SUN_EXT_FUNC_NS, "getBPId"); // NOI18N
+        }
+
+        public Icon getIcon() {
+            return IconLoader.getIcon(getName().getLocalPart(), IMAGE_FOLDER_NAME);
+        }
+        
+        public String getDisplayName() {
+            return NbBundle.getMessage(BpelXPathExtFunctionMetadata.class, 
+                            "DN_GetBPId"); // NOI18N
+        }
+
+        public String getShortDescription() {
+            return "";
+        }
+
+        public String getLongDescription() {
+            return "";
+        }
+
+        public FunctionType getFunctionType() {
+            return FunctionType.EXT_FUNCTION;
+        }
+
+        public synchronized List<AbstractArgument> getArguments() {
+            return null;
+        }
+
+        public XPathType getResultType() {
+            return XPathType.STRING_TYPE;
+        }
+
+        public ResultTypeCalculator getResultTypeCalculator() {
+            return null;
+        }
+        
+        public String toStrign() {
+            return getName().toString();
+        }
+        
+    };
+    
+    ExtFunctionMetadata EXIST_METADATA = new ExtFunctionMetadata() {
+
+        private List<AbstractArgument> mArguments;
+        
+        public boolean isContextItemRequired(XPathOperationOrFuntion func) {
+            return false;
+        }
+
+        public QName getName() {
+            return new QName(SUN_EXT_FUNC_NS, "exist"); // NOI18N
+        }
+
+        public Icon getIcon() {
+            return IconLoader.getIcon(getName().getLocalPart(), IMAGE_FOLDER_NAME);
+        }
+        
+        public String getDisplayName() {
+            return NbBundle.getMessage(BpelXPathExtFunctionMetadata.class, 
+                            "DN_Exist"); // NOI18N
+        }
+
+        public String getShortDescription() {
+            return "";
+        }
+
+        public String getLongDescription() {
+            return "";
+        }
+
+        public FunctionType getFunctionType() {
+            return FunctionType.EXT_FUNCTION;
+        }
+
+        public synchronized List<AbstractArgument> getArguments() {
+            if (mArguments == null) {
+                mArguments = new ArrayList<AbstractArgument>();
+                mArguments.add(ArgumentDescriptor.Predefined.SIMPLE_NODE_SET);
+            }
+            return mArguments;
+        }
+
+        public XPathType getResultType() {
+            return XPathType.BOOLEAN_TYPE;
+        }
+
+        public ResultTypeCalculator getResultTypeCalculator() {
+            return null;
+        }
+        
+        public String toStrign() {
+            return getName().toString();
+        }
+        
+    };
+    
 }

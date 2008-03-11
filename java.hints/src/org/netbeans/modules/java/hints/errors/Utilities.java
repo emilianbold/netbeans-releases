@@ -68,7 +68,6 @@ import javax.swing.text.Position;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
-import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.SourceUtils;

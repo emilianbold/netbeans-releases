@@ -92,7 +92,7 @@ public class AsmEditorKit extends NbEditorKit {
                     syntProv = res.getSyntaxProvider();
 
                     Logger.getLogger(AsmEditorKit.class.getName()).
-                        log(Level.INFO, "Asm Regognized " + modelProv + " " + syntProv);
+                        log(Level.INFO, "Asm Regognized " + modelProv + " " + syntProv); // NOI18N
                 }                                
             }
 

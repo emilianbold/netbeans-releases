@@ -42,14 +42,10 @@
 package org.netbeans.modules.cnd.settings;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -70,7 +66,7 @@ public class CppSettings extends SharedClassObject {
     static final long serialVersionUID = -2942467713237077336L;
 
     public static final int DEFAULT_PARSING_DELAY = 2000;
-    private static final boolean DEFAULT_FORTRAN_ENABLED = false;   // disable Fortran by default
+    private static final boolean DEFAULT_FORTRAN_ENABLED = true;   // disable Fortran by default
 
     // Properties
     public static final String PROP_PARSING_DELAY = "parsingDelay"; //NOI18N

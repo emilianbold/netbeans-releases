@@ -62,7 +62,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.logging.Level;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import net.java.hulp.i18n.Logger;
@@ -242,11 +241,12 @@ public class TargetDBSchemaGenerator {
             if (dbfile.isFile()) {
                 setEviewConfigFile(new File(filepath + PluginDTConstants.fs + filename));
                 createObjectDefModel();
-                if (overallstatus) {
+                /*if (overallstatus) {
                     ret = true;
                 } else {
                     ret = false;
-                }
+                }*/
+                ret = true;
             } else {
                 mLogger.infoNoloc(mLoc.t("PRSR007: File does not exist :{0}", filename));
             }
@@ -292,7 +292,7 @@ public class TargetDBSchemaGenerator {
                     objDef = new ObjectDefinitionBuilder().parse(bdis);
                     addExtraFieldsToParent(objDef);
                     lookup = Lookup.createLookup(objDef);
-                    validateEviewModel();
+                    //validateEviewModel();
                 } catch (AxionException ex) {
                     mLogger.infoNoloc(mLoc.t("PRSR018: Error Reading eview config file :{0}", ex.getMessage()));
                 } finally {
@@ -407,7 +407,7 @@ public class TargetDBSchemaGenerator {
         if (!overallstatus) {
             String errMsg = "Object.xml validation failed!.\nGenerate [ " + fkname + " ] field in all the child objects and re-run schema generator with the valid object.xml";
             mLogger.infoNoloc(mLoc.t(errMsg));            
-            JOptionPane.showMessageDialog(new JFrame(), errMsg, "Error", JOptionPane.ERROR_MESSAGE);
+            //JOptionPane.showMessageDialog(new JFrame(), errMsg, "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
     private boolean overallstatus = true;

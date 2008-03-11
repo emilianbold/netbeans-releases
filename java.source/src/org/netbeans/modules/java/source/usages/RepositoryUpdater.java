@@ -551,7 +551,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     public final void scheduleCompilation (final FileObject fo, final FileObject root) throws IOException {
         URL foURL = fo.getURL();
         URL rootURL = root.getURL();
-        if (!cpImpl.isLibrary(rootURL)) {
+        if (!cpImpl.isLibrary(root)) {
             assert "file".equals(foURL.getProtocol()) && "file".equals(rootURL.getProtocol());
             scheduleCompilation (foURL,rootURL,fo.isFolder());
         }        

@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="Mac Installer" basedir="." default="build-all-dmg">
+    
+    <import file="${basedir}/build.pro"/>
+            
+    <target name="build-glassfish-pkg" >
+        <echo message="Building ${glassfish.appname} into ${basedir}/glassfish"/>
+        <ant dir="glassfish"/>
+    </target>
+    
+    <target name="build-tomcat-pkg">
+        <echo message="Building ${tomcat.appname} into ${basedir}/tomcat"/>
+        <ant dir="tomcat" target="build-pkg"/>
+    </target>
+    
+    
+    <target name="build-openesb-pkg">
+        <echo message="Building ${openesb.appname} into ${basedir}/openesb"/>
+        <ant dir="openesb" target="build-pkg" >
+        </ant>
+    </target>
+    
+    <target name="clean">
+        <delete dir="build"/>
+        <delete dir="dist"/>             
+        <delete dir="netBeans/soa/build"/>
+        <delete dir="netBeans/ruby/build"/>
+        <delete dir="netBeans/cpp/build"/>
+        <delete dir="netBeans/javase/build"/>
+        <delete dir="netBeans/javaee/build"/>
+        <delete dir="netBeans/baseide/build"/>                                          
+    </target>
+
+
+    <target name="unzip-nb" description="Unzip, pack200 and divide full nb to modules" >
+        <mkdir dir="build"/> 
+        <ant target="unzip-cluster">            
+            <property name="cluster.name" value="cnd"/>
+            <property name="module.name" value="cpp"/>          
+        </ant> 
+        
+        <ant target="unzip-cluster">            
+            <property name="cluster.name" value="apisupport"/>
+            <property name="module.name" value="javase"/>          
+        </ant> 
+        <ant target="unzip-cluster">            
+            <property name="cluster.name" value="profiler"/>
+            <property name="module.name" value="javase"/>          
+        </ant> 
+        <ant target="unzip-cluster">            
+            <property name="cluster.name" value="java"/>
+            <property name="module.name" value="javase"/>          
+        </ant>         
+        <ant target="unzip-cluster">            
+            <property name="cluster.name" value="harness"/>
+            <property name="module.name" value="javase"/>          
+        </ant>
+        
+        <ant target="unzip-cluster">            
+            <property name="cluster.name" value="soa"/>
+            <property name="module.name" value="soa"/>          
+        </ant>          
+        <ant target="unzip-cluster">            
+            <property name="cluster.name" value="ruby"/>
+            <property name="module.name" value="ruby"/>          
+        </ant>
+        
+        <ant target="unzip-cluster">            
+            <property name="cluster.name" value="enterprise"/>
+            <property name="module.name" value="javaee"/>          
+        </ant>
+        <ant target="unzip-cluster">            
+            <property name="cluster.name" value="identity"/>
+            <property name="module.name" value="javaee"/>          
+        </ant>
+        <ant target="unzip-cluster">            
+            <property name="cluster.name" value="xml"/>
+            <property name="module.name" value="javaee"/>          
+        </ant>
+        <ant target="unzip-cluster">            
+            <property name="cluster.name" value="visualweb"/>
+            <property name="module.name" value="javaee"/>          
+        </ant>        
+        
+        <ant target="unzip-cluster">            
+            <property name="cluster.name" value="ide"/>
+            <property name="module.name" value="baseide"/>          
+        </ant>  
+        <ant target="unzip-cluster">            
+            <property name="cluster.name" value="nb6.0-etc"/>
+            <property name="module.name" value="baseide"/>          
+        </ant>
+        <ant target="unzip-cluster">            
+            <property name="cluster.name" value="platform"/>
+            <property name="module.name" value="baseide"/>          
+        </ant>  
+        <ant target="unzip-cluster">            
+            <property name="cluster.name" value="gsf"/>
+            <property name="module.name" value="baseide"/>          
+        </ant>        
+    </target>
+    
+    <target name="unzip-cluster">
+        <mkdir dir="${basedir}/netBeans/${module.name}/build/netbeans"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="unzip -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}-${cluster.name}${ml_postfix}.zip"/>
+        </exec>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="sh ${basedir}/pack200.sh ${basedir}/netBeans/${module.name}/build"/>
+        </exec>         
+    </target>
+        
+    
+    <target name="build-pkg" depends="unzip-nb" description="Builds NB and packs packages" >
+        <ant dir="netBeans/baseide"/>
+        <ant target="build-modules"/>       
+    </target>
+    
+    <target name="build-modules">
+        <ant target="build-module">
+            <property name="module.name" value="javase"/>
+            <property name="module.title" value="${javase.appname}"/>            
+        </ant>
+        
+        <ant target="build-module">
+            <property name="module.name" value="javaee"/>
+            <property name="module.title" value="${javaee.appname}"/>            
+        </ant>
+        
+        <ant target="build-module">
+            <property name="module.name" value="cpp"/>
+            <property name="module.title" value="${cpp.appname}"/>            
+        </ant>
+        
+        <ant target="build-module">
+            <property name="module.name" value="ruby"/>
+            <property name="module.title" value="${ruby.appname}"/>            
+        </ant>
+        
+        <ant target="build-module">
+            <property name="module.name" value="soa"/>
+            <property name="module.title" value="${soa.appname}"/>          
+        </ant>      
+        
+    </target>
+    
+    <target name="build-module">
+        <copy file="commonfiles/Info.plist" filtering="true" tofile="netBeans/${module.name}/build/Info.plist">
+            <filterset>
+                <filter token="INSTALLDIR" value="${app.name}/Contents/Resources/NetBeans"/>
+                <filter token="BUNDLE" value="netbeans.ide.${module.name}"/>
+            </filterset>
+        </copy>
+        
+        <copy file="commonfiles/Description.plist" filtering="true" overwrite="true" tofile="${basedir}/netBeans/${module.name}/pkg/scripts/Description.plist">
+            <filterset>
+                <filter token="TITLE" value="${module.title}"/>
+            </filterset>
+        </copy>        
+        
+        <echo message="Building ${module.name} into ${basedir}/build/${module.name}.pkg"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value=" /Developer/Tools/packagemaker -build -v -p ${basedir}/build/${module.name}.pkg -f ${basedir}/netBeans/${module.name}/build/netbeans -i ${basedir}/netBeans/${module.name}/build/Info.plist -r ${basedir}/netBeans/${module.name}/pkg/scripts -d ${basedir}/netBeans/${module.name}/pkg/scripts/Description.plist"/>
+        </exec>
+    </target>         
+
+    <target name="build-all-dmg" depends="clean,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg" >
+       <mkdir dir="dist"/>
+       <ant target="build-dmg"> 
+           <property name="bundle.type" value=""/>
+           <property name="packages" value="./build/*pkg"/>          
+       </ant>   
+       <ant target="build-dmg"> 
+           <property name="bundle.type" value="-javase"/>
+           <property name="packages" value="./build/baseide.pkg ./build/javase.pkg"/>          
+       </ant> 
+       <ant target="build-dmg"> 
+           <property name="bundle.type" value="-javaee"/>
+           <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/glassfish.pkg ./build/tomcat.pkg"/>          
+       </ant> 
+       <ant target="build-dmg"> 
+           <property name="bundle.type" value="-cpp"/>
+           <property name="packages" value="./build/baseide.pkg ./build/cpp.pkg"/>          
+       </ant> 
+       <ant target="build-dmg"> 
+           <property name="bundle.type" value="-ruby"/>
+           <property name="packages" value="./build/baseide.pkg ./build/ruby.pkg"/>          
+       </ant>       
+    </target>      
+    
+    <target name="build-dmg">              
+        <delete dir="dist_dmg"/>
+        <property name="mpkgfile" value="dist_dmg/${appname}.mpkg"/>
+        <mkdir dir="${mpkgfile}/Contents/Resources/English.lproj"/>
+        <mkdir dir="${mpkgfile}/Contents/Packages"/>
+        <copy file="dmg/license.txt" tofile="${mpkgfile}/Contents/Resources/English.lproj/License.txt"/>
+        <copy file="dmg/intro.txt" tofile="${mpkgfile}/Contents/Resources/English.lproj/Welcome.txt"/>
+        <copy file="dmg/bgimage.tif" tofile="${mpkgfile}/Contents/Resources/English.lproj/background.tif"/>        
+        <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkgfile}/Contents/distribution.dist">
+            <filterset>
+                <filter token="TITLE" value="${appname}"/>
+                <filter token="GF_TITLE" value="${glassfish.appname}"/>
+                <filter token="TC_TITLE" value="${tomcat.appname}"/>
+                <filter token="OESB_TITLE" value="${openesb.appname}"/>
+                <filter token="NB_TITLE" value="${baseide.install.name}"/>                
+            </filterset>
+        </copy>            
+        
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="cp -RPf ${packages} ./dist_dmg/'${appname}'.mpkg/Contents/Packages"/>
+        </exec>           
+                                           
+        <exec executable="sh" failonerror="yes">
+          <arg value="-c"/>
+          <arg value="sh dmg/createdmg.sh '${dmg.prefix.name}${bundle.type}'-macosx'${ml_postfix}'.dmg '${appname}'"/>
+        </exec>  
+        <delete dir="dist_dmg"/>
+    </target>       
+    
+</project>

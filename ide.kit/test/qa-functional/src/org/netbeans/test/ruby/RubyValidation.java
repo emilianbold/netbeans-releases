@@ -50,7 +50,6 @@ import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
@@ -113,13 +112,11 @@ public class RubyValidation extends JellyTestCase {
      * - open IRB shell window 
      * - close it
      */
-    public void testIrbShell() throws Exception{
-        String rubyproject_packagename = "org.netbeans.modules.ruby.rubyproject.Bundle";
-        String irb_action = Bundle.getStringTrimmed(rubyproject_packagename, "CTL_IrbAction");
-        String irb_TC = Bundle.getString(rubyproject_packagename, "CTL_IrbTopComponent");
-        new Action("Window|Other|" + irb_action, null).perform(); //NOI18N
-        TopComponentOperator tco = new TopComponentOperator(irb_TC);
-        tco.close();
+    public void testIrbShell() {
+        String irbItem = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.Bundle", "CTL_IrbAction");
+        String irbTitle = Bundle.getString("org.netbeans.modules.ruby.rubyproject.Bundle", "CTL_IrbTopComponent");
+        new Action("Window|Other|" + irbItem, null).perform();
+        new OutputTabOperator(irbTitle).close();
     }   
 
 

@@ -65,7 +65,6 @@ import javax.swing.text.ViewFactory;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import java.io.CharArrayWriter;
-import java.lang.reflect.Method;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,10 +73,10 @@ import javax.swing.text.Position;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -432,13 +431,11 @@ public class BaseKit extends DefaultEditorKit {
      */
     public static BaseKit getKit(Class kitClass) {
         if (kitClass != null && BaseKit.class.isAssignableFrom(kitClass) && BaseKit.class != kitClass) {
-            if (!noKitsTracker) {
-                String mimeType = kitsTracker_FindMimeType(kitClass);
-                if (mimeType != null) {
-                    EditorKit kit = MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(EditorKit.class);
-                    if (kit instanceof BaseKit) {
-                        return (BaseKit) kit;
-                    }
+            String mimeType = KitsTracker.getInstance().findMimeType(kitClass);
+            if (mimeType != null) {
+                EditorKit kit = MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(EditorKit.class);
+                if (kit instanceof BaseKit) {
+                    return (BaseKit) kit;
                 }
             }
         } else {
@@ -461,27 +458,6 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
-    private static volatile boolean noKitsTracker = false;
-    /* package */ static String kitsTracker_FindMimeType(Class kitClass) {
-        String mimeType = null;
-        
-        if (!noKitsTracker) {
-            try {
-                ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
-                Class clazz = cl.loadClass("org.netbeans.modules.editor.impl.KitsTracker"); //NOI18N
-                Method getInstanceMethod = clazz.getDeclaredMethod("getInstance"); //NOI18N
-                Method findMimeTypeMethod = clazz.getDeclaredMethod("findMimeType", Class.class); //NOI18N
-                Object kitsTracker = getInstanceMethod.invoke(null);
-                mimeType = (String) findMimeTypeMethod.invoke(kitsTracker, kitClass);
-            } catch (Exception e) {
-                // ignore
-                noKitsTracker = true;
-            }
-        }
-        
-        return mimeType;
-    }
-    
     /**
      * Creates a new instance of <code>BaseKit</code>.
      * 
@@ -597,27 +573,32 @@ public class BaseKit extends DefaultEditorKit {
     }
 
     public MultiKeymap getKeymap() {
-        synchronized (Settings.class) {
-            MultiKeymap km = (MultiKeymap)kitKeymaps.get(this.getClass());
-            if (km == null) { // keymap not yet constructed
-                // construct new keymap
-                km = new MultiKeymap("Keymap for " + this.getClass()); // NOI18N
-                // retrieve key bindings for this kit and super kits
-                Settings.KitAndValue kv[] = Settings.getValueHierarchy(
-                                                this.getClass(), SettingsNames.KEY_BINDING_LIST);
-                // go through all levels and collect key bindings
-                for (int i = kv.length - 1; i >= 0; i--) {
-                    List keyList = (List)kv[i].value;
-                    JTextComponent.KeyBinding[] keys = new JTextComponent.KeyBinding[keyList.size()];
-                    keyList.toArray(keys);
-                    km.load(keys, getActionMap());
-                }
-                
-                km.setDefaultAction((Action)getActionMap().get(defaultKeyTypedAction));
+        KitsTracker.getInstance().setContextMimeType(getContentType());
+        try {
+            synchronized (Settings.class) {
+                MultiKeymap km = (MultiKeymap)kitKeymaps.get(this.getClass());
+                if (km == null) { // keymap not yet constructed
+                    // construct new keymap
+                    km = new MultiKeymap("Keymap for " + this.getClass()); // NOI18N
+                    // retrieve key bindings for this kit and super kits
+                    Settings.KitAndValue kv[] = Settings.getValueHierarchy(
+                                                    this.getClass(), SettingsNames.KEY_BINDING_LIST);
+                    // go through all levels and collect key bindings
+                    for (int i = kv.length - 1; i >= 0; i--) {
+                        List keyList = (List)kv[i].value;
+                        JTextComponent.KeyBinding[] keys = new JTextComponent.KeyBinding[keyList.size()];
+                        keyList.toArray(keys);
+                        km.load(keys, getActionMap());
+                    }
 
-                kitKeymaps.put(this.getClass(), km);
+                    km.setDefaultAction((Action)getActionMap().get(defaultKeyTypedAction));
+
+                    kitKeymaps.put(this.getClass(), km);
+                }
+                return km;
             }
-            return km;
+        } finally {
+            KitsTracker.getInstance().setContextMimeType(null);
         }
     }
 

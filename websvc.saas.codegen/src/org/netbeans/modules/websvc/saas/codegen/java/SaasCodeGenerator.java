@@ -77,6 +77,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
@@ -284,6 +285,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     }
 
     protected void addSubresourceLocator() throws IOException {
+        Util.checkScanning();
         ModificationResult result = targetResourceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
 
             public void run(WorkingCopy copy) throws IOException {
@@ -403,7 +405,8 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         String statements = ""; //NOI18N
         boolean addGetEntityStatement = false;
 
-        for (ParameterInfo param : getBean().getInputParameters()) {
+        for (ParameterInfo param : bean.filterParametersByAuth(
+                bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}))) {
             String initValue = "null"; //NOI18N
             String access = match(JavaSourceHelper.getTopLevelClassElement(copy), getParameterName(param, true, true, true));
 
@@ -425,7 +428,8 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     }
 
     private String getParamList() {
-        List<ParameterInfo> inputParams = getBean().getInputParameters();
+        List<ParameterInfo> inputParams = bean.filterParametersByAuth
+                (bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
         String text = ""; //NOI18N
         for (int i = 0; i < inputParams.size(); i++) {
             ParameterInfo param = inputParams.get(i);
@@ -769,6 +773,10 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     protected String getParameterName(ParameterInfo param, 
             boolean camelize, boolean normalize, boolean trimBraces) {
         String name = param.getName();
+        if (Util.isKeyword(name)) {
+            return name + "Param";
+        }
+        
         if(trimBraces && param.getStyle() == ParamStyle.TEMPLATE 
                 && name.startsWith("{") && name.endsWith("}")) {
             name = name.substring(0, name.length()-1);

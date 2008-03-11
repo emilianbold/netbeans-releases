@@ -49,7 +49,9 @@ import org.netbeans.modules.websvc.saas.codegen.java.AbstractGenerator;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Login;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Logout;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Token;
@@ -143,29 +145,6 @@ public abstract class SaasBean extends GenericResourceBean {
             }
         }
         return queryParams;
-    }
-    
-    public List<ParameterInfo> filterParametersByAuth(List<ParameterInfo> params) {
-        List<ParameterInfo> filterParams = new ArrayList<ParameterInfo>();
-        if(params != null) {
-            for (ParameterInfo param : params) {
-                if(authType == SaasAuthenticationType.SESSION_KEY) {
-                    SessionKeyAuthentication sessionKey = (SessionKeyAuthentication)getAuthentication();
-                    if(param.getName().equals(sessionKey.getApiKeyName()) || 
-                            param.getName().equals(sessionKey.getSessionKeyName()) ||
-                                param.getName().equals(sessionKey.getSigKeyName())) {
-                        continue;
-                    }
-                } else if(authType == SaasAuthenticationType.SIGNED_URL) {
-                    SignedUrlAuthentication signedUrl = (SignedUrlAuthentication)getAuthentication();
-                    if(param.getName().equals(signedUrl.getSigKeyName())) {
-                        continue;
-                    }
-                }
-                filterParams.add(param);
-            }
-        }
-        return filterParams;
     }
     
     public String getOutputWrapperName() {
@@ -264,6 +243,10 @@ public abstract class SaasBean extends GenericResourceBean {
         this.authProfile = profile;
     }
     
+    protected Object getAuthUsingId(Authentication auth) {
+        return null;
+    }
+    
     public void findAuthentication(SaasMethod m) {
         Authentication auth2 = m.getSaas().getSaasMetadata().getAuthentication();
         if(auth2.getHttpBasic() != null) {
@@ -275,9 +258,12 @@ public abstract class SaasBean extends GenericResourceBean {
         } else if(auth2.getApiKey() != null) {
             setAuthenticationType(SaasAuthenticationType.API_KEY);
             setAuthentication(new ApiKeyAuthentication(auth2.getApiKey().getId()));
-        } else if(auth2.getSignedUrl() != null) {
-            SignedUrl signedUrl = auth2.getSignedUrl();
+        } else if(auth2.getSignedUrl() != null && auth2.getSignedUrl().size() > 0) {
             setAuthenticationType(SaasAuthenticationType.SIGNED_URL);
+            List<SignedUrl> signedUrlList = auth2.getSignedUrl();
+            SignedUrl signedUrl = (SignedUrl) getAuthUsingId(auth2);
+            if(signedUrl == null)
+                signedUrl = signedUrlList.get(0);
             SignedUrlAuthentication signedUrlAuth = new SignedUrlAuthentication();
             if(signedUrl.getSigId() != null) {
                 signedUrlAuth.setSigKeyName(signedUrl.getSigId());
