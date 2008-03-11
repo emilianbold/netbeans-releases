@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package com.sun.servicetag;
+package org.netbeans.modules.servicetag;
 
 import java.io.*;
 import java.net.UnknownHostException;
@@ -50,7 +50,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static com.sun.servicetag.RegistrationDocument.*;
+import static org.netbeans.modules.servicetag.RegistrationDocument.*;
 
 /**
  * A {@code RegistrationData} object is a container of one or more 

@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package com.sun.servicetag;
+package org.netbeans.modules.servicetag;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -49,8 +49,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.sun.servicetag.Util.*;
-import static com.sun.servicetag.RegistrationDocument.*;
+import static org.netbeans.modules.servicetag.Util.*;
+import static org.netbeans.modules.servicetag.RegistrationDocument.*;
 
 /**
  * A service tag registry is a XML-based registry containing 
