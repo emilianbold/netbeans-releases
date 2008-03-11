@@ -90,6 +90,8 @@ public class WSUtils {
             "lib" + File.separator + "dtds" + File.separator + "sun-domain_1_3.dtd";
     
     private static final String ENDORSED_DIR_PROPERTY="jaxws.endorsed.dir"; //NOI18N
+    private static final String JAX_WS_XML_PATH = "nbproject/jax-ws.xml"; // NOI18N
+    
     /** downloads XML resources from source URI to target folder
      * (USAGE : this method can download a wsdl file and all wsdl/XML schemas,
      * that are recursively imported by this wsdl)
@@ -339,7 +341,7 @@ public class WSUtils {
             if (lock!=null) lock.releaseLock();
         }
         retrieveJaxWsFromResource(projectDir);
-        return projectDir.getFileObject(GeneratedFilesHelper.JAX_WS_XML_PATH);
+        return projectDir.getFileObject(JAX_WS_XML_PATH);
     }
     
     /** Set jaxws.endorsed.dir property for wsimport, wsgen tasks
