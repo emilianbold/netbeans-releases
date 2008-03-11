@@ -1,5 +1,5 @@
 Name: TopLink Essentials
-Version: v2-build-58g
+Version: v2ur1-build-09d
 Description: Implementation of Java Persistence API in GlassFish
 License: CDDL-1.0
 OSR: 1304
