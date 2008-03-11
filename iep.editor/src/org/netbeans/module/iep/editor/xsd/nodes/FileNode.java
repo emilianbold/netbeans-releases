@@ -40,7 +40,10 @@
 package org.netbeans.module.iep.editor.xsd.nodes;
 
 import java.beans.BeanInfo;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIModel;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -54,12 +57,16 @@ public class FileNode extends AbstractSchemaArtifactNode {
 
     private Node mFileDelegateNode;
     
-    public FileNode(Node fileDelegate) {
+    private List<AXIComponent> mExistingArtificatNames = new ArrayList<AXIComponent>();
+    
+    public FileNode(Node fileDelegate, List<AXIComponent> existingArtificatNames) {
         super(fileDelegate.getDisplayName());
         this.mFileDelegateNode = fileDelegate;
         //this.setUserObject(projectDelegate.getDisplayName());
         
         this.mIcon = new ImageIcon(this.mFileDelegateNode.getIcon(BeanInfo.ICON_COLOR_16x16)); 
+        this.mExistingArtificatNames = existingArtificatNames;
+        
         populateSchemaFiles();
     }
     
@@ -70,7 +77,7 @@ public class FileNode extends AbstractSchemaArtifactNode {
             if(dObject != null) {
                 FileObject fileObject = dObject.getPrimaryFile();
                 AXIModel model = AxiModelHelper.getAXIModel(fileObject);
-                AxiTreeNodeVisitor mVisitor = new AxiTreeNodeVisitor(this);
+                AxiTreeNodeVisitor mVisitor = new AxiTreeNodeVisitor(this, mExistingArtificatNames);
                 model.getRoot().accept(mVisitor);
             }
         } catch(Exception ex) {
