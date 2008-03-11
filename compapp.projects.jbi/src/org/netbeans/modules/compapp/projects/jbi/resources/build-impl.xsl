@@ -582,7 +582,7 @@ made subject to such option by the copyright holder.
                 <xsl:attribute name="description">Clean build products.</xsl:attribute>
             </target>
             
-            <target name="jbi-clean-config" depends="init,clear-casa,jbi-clean-build" description="Clean application configuration."/>
+            <target name="jbi-clean-config" depends="init,clear-casa,jbi-clean-build" description="Clean service assembly."/>
             <target name="clear-casa">
                 <delete file="${{source.root}}/conf/${{jbi.service-assembly.id}}.casa"/>
                 <delete file="${{src.dir}}/${{jbi.service-assembly.id}}.wsdl"/>

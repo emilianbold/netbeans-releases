@@ -61,13 +61,14 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.InputLine;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Andrei Badea
  */
-public class SpringCustomizerPanel extends javax.swing.JPanel {
+public class SpringCustomizerPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
     private final Project project;
     private final List<File> files;
@@ -110,6 +111,10 @@ public class SpringCustomizerPanel extends javax.swing.JPanel {
                 groupFilesListSelectionChanged();
             }
         });
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(SpringCustomizerPanel.class);
     }
 
     public List<File> getConfigFiles() {

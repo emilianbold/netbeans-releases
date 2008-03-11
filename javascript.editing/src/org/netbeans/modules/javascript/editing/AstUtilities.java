@@ -559,7 +559,11 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         return labelledNode;
     }
     
-    public static String getFunctionFqn(Node node) {
+    public static String getFunctionFqn(Node node, boolean[] isInstance) {
+        if (isInstance != null) {
+            isInstance[0] = true;
+        }
+
         FunctionNode func = (FunctionNode) node;
         //AstElement js = AstElement.getElement(node);
         Node parent = node.getParentNode();
@@ -575,6 +579,24 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         String funcName = func.getFunctionName();
         if (funcName == null || funcName.length() == 0) {
             String name = null;
+            boolean wasThis = false;
+            if (parentType == Token.CALL && func.getNext() == null && 
+                    parent.getParentNode() != null && parent.getFirstChild() == func) {
+                Node grandParent = parent.getParentNode();
+                int grandParentType = grandParent.getType();
+                if (grandParentType == Token.SETPROP || grandParentType == Token.SETNAME) {
+                    // Looks like there's a call in the middle; for example, Yahoo.util.Event has
+                    // this weird definition:
+                    //    YAHOO.util.Event = function() {
+                    //       ...
+                    //    }();
+                    
+                    // We'll just bypass it
+                    parent = grandParent;
+                    parentType = parent.getType();
+                }
+            }
+            
             if (parentType == Token.OBJECTLIT) {
                 // Foo.Bar = { foo : function() }
                 // We handle object literals but skip the ones
@@ -584,6 +606,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             } else if (parentType == Token.SETPROP || parentType == Token.SETNAME) {
                 // this.foo = function() { }
                 if (parent.getFirstChild().getType() == Token.THIS) {
+                    wasThis = true;
                     Node method = parent.getFirstChild().getNext();
                     if (method.getType() == Token.STRING) {
                         String methodName = method.getString();
@@ -591,7 +614,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                         while (clzNode != null) {
                             if (clzNode.getType() == Token.FUNCTION) {
                                 // Determine function name
-                                String ancestorName = getFunctionFqn(clzNode);
+                                String ancestorName = getFunctionFqn(clzNode, null);
                                 if (ancestorName != null && Character.isUpperCase(ancestorName.charAt(0))) {
                                     return ancestorName + "." + methodName;
                                 }
@@ -607,7 +630,20 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                     name = sb.toString();
                 }
             }
-
+            
+            if (name != null) {
+                // Determine is instance
+                // function Foo() {} is an instance, Foo.Bar = function() is not.
+                boolean instance = wasThis || name.indexOf('.') == -1;
+                if (name.indexOf(DOT_PROTOTYPE) != -1) {
+                    name = name.replace(DOT_PROTOTYPE, ""); // NOI18N
+                    instance = true;
+                }
+                if (isInstance != null) {
+                    isInstance[0] = instance;
+                }
+            }
+            
             return name;
         }
 
@@ -624,6 +660,31 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         String className = null;
         String extendsName = null;
         int parentType = parent != null ? parent.getType() : 0;
+        
+        if (parentType == Token.RETURN) {
+            // The function is returning an object literal containing a function;
+            // this could be something like the syntax used in YAHOO.util.Event:
+            // Locate the surrounding function.
+            Node func = parent.getParentNode();
+            for (; func != null; func = func.getParentNode()) {
+                if (func.getType() == Token.FUNCTION) {
+                    String funcName = getFunctionFqn(func, null);
+                    if (funcName != null) {
+                        if (!Character.isUpperCase(funcName.charAt(0))) {
+                            // Don't treat something like
+                            //   dojo._foo = function() {  foo(); return { x: 50, y:60 }
+                            
+                            return new String[] { null, null};
+                        }
+                        return new String[] { funcName, null };
+                    }
+                    break;
+                } else if (func.getType() == Token.OBJLITNAME) {
+                    return getObjectLitFqn(func);
+                }
+            }
+        }
+        
         if (parentType == Token.NAME) {
             className = parent.getString();
         } else if (parentType == Token.SETPROP || parentType == Token.SETNAME) {
@@ -785,27 +846,58 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         return true;
     }
     
-    
-    public static String getFqn(AstPath path) {
+    public static String getFqn(AstPath path, boolean[] isInstance, String[] method) {
         Node clzNode = path.leaf();
-        while (clzNode != null) {
-            if (clzNode.getType() == Token.FUNCTION) {
+        return getFqn(clzNode, isInstance, method);
+    }
+    
+    public static String getFqn(Node node, boolean[] isInstance, String[] method) {
+        Node methodNode = null;
+        while (node != null) {
+            if (node.getType() == Token.FUNCTION) {
                 // Determine function name
-                String ancestorName = getFunctionFqn(clzNode);
-                if (ancestorName != null && Character.isUpperCase(ancestorName.charAt(0))) {
-                    return ancestorName;
+                String fqn = getFunctionFqn(node, isInstance);
+                if (fqn != null && methodNode == null) {
+                    methodNode = node;
                 }
-            } else if (clzNode.getType() == Token.OBJECTLIT) {
-                String className = getObjectLitFqn(clzNode)[0];
-                if (className != null) {
-                    if (className.endsWith(DOT_PROTOTYPE)) {
-                        className = className.substring(0, className.length()-DOT_PROTOTYPE.length());
+                if (fqn != null && Character.isUpperCase(fqn.charAt(0))) {
+                    
+                    int lastDot = fqn.lastIndexOf('.');
+                    if (lastDot != -1 && lastDot < fqn.length()-1) {
+                        if (!Character.isUpperCase(fqn.charAt(lastDot+1))) {
+                            if (method != null) {
+                                method[0] = fqn.substring(lastDot+1);
+                            }
+                            fqn = fqn.substring(0, lastDot);
+                        }
                     }
                     
-                    return className;
+                    return fqn;
+                }
+            } else if (node.getType() == Token.OBJECTLIT) {
+                String fqn = getObjectLitFqn(node)[0];
+                if (fqn != null) {
+                    if (fqn.endsWith(DOT_PROTOTYPE)) {
+                        fqn = fqn.substring(0, fqn.length()-DOT_PROTOTYPE.length());
+                    }
+                    
+                    if (method != null && methodNode != null) {
+                        // Find the method
+                        for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
+                            if (child.getType() == Token.OBJLITNAME) {
+                                Node f = AstUtilities.getLabelledNode(child);
+                                if (f == methodNode) {
+                                    method[0] = child.getString();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    return fqn;
                 }
             }
-            clzNode = clzNode.getParentNode();
+            node = node.getParentNode();
         }
         return null;
     }

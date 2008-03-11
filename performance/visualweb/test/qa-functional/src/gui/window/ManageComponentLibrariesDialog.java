@@ -73,6 +73,7 @@ public class ManageComponentLibrariesDialog  extends org.netbeans.performance.te
         WAIT_AFTER_OPEN=2000;        
     }
     
+    @Override
     protected void initialize() {
         log("::initialize");
         Node projectRoot = null;
@@ -98,19 +99,19 @@ public class ManageComponentLibrariesDialog  extends org.netbeans.performance.te
     public ComponentOperator open() {
         log(":: open");
         manageComponentLibsButton.pushNoBlock();
-        dialog = new NbDialogOperator("Component Library"); // NOI18N
-        return dialog;
+        dialog = new NbDialogOperator("Component Libraries"); // NOI18N
+        return null;
     }
 
     @Override
     public void close() {
         log("::close");
-        dialog.closeByButton();
+        dialog.close();
     }
 
+    @Override
     protected void shutdown() {
         log(":: shutdown");
-        parent.close();
     }
     
     public static void main(String[] args) {

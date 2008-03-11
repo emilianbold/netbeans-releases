@@ -10,7 +10,9 @@ import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.EventObject;
+import java.util.List;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JTree;
@@ -20,6 +22,8 @@ import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import org.netbeans.module.iep.editor.xsd.nodes.SelectableTreeNode;
+import org.netbeans.modules.xml.axi.AXIComponent;
+import org.netbeans.modules.xml.axi.AXIType;
 
 
 /**
@@ -34,9 +38,14 @@ public class SchemaArtifactTreeCellEditor extends AbstractCellEditor implements 
     
     private SelectableTreeNode mCellValue;
     
-    public SchemaArtifactTreeCellEditor(JTree tree,TreeCellRenderer renderer) { 
+    private List<AXIComponent> mExistingArtificatNames = new ArrayList<AXIComponent>();
+    
+    public SchemaArtifactTreeCellEditor(JTree tree,
+                                        TreeCellRenderer renderer,
+                                        List<AXIComponent> existingArtificatNames) { 
         this.mTree = tree;
         this.mRenderer = renderer;
+        this.mExistingArtificatNames = existingArtificatNames;
     }
 
     
@@ -47,11 +56,11 @@ public class SchemaArtifactTreeCellEditor extends AbstractCellEditor implements 
         if(value instanceof SelectableTreeNode) {
             mCellValue = (SelectableTreeNode) value;
             
-            if (editor instanceof JCheckBox) {
-                JCheckBox checkBox = (JCheckBox) editor;
+            if (editor instanceof CheckBoxPanel) {
+                CheckBoxPanel checkBox = (CheckBoxPanel) editor;
                 // editor always selected and focused
-                ItemListener itemListener = new CheckBoxItemListener(mCellValue, checkBox);
-                checkBox.addItemListener(itemListener);
+                ItemListener itemListener = new CheckBoxItemListener(mCellValue, checkBox.getCheckBox());
+                checkBox.getCheckBox().addItemListener(itemListener);
             }
         }
 
@@ -101,6 +110,21 @@ public class SchemaArtifactTreeCellEditor extends AbstractCellEditor implements 
             mNode.setSelected(itemEvent.getStateChange() == ItemEvent.SELECTED ? true : false );
             mCheckBox.removeItemListener(this);
             stopCellEditing();
+            
+            AXIComponent comp = (AXIComponent) mNode.getUserObject();
+            
+            if(comp instanceof AXIType) {
+                AXIType type = (AXIType) comp;
+                String name = type.getName();
+                if(mNode.isSelected()) {
+                    if(!mExistingArtificatNames.contains(comp)) {
+                        mExistingArtificatNames.add(comp);
+                    }
+                } else {
+                    mExistingArtificatNames.remove(comp);
+                }
+                
+            }
           }
         
     }
