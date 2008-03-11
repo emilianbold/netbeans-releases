@@ -105,6 +105,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         getComponent();
         descriptor = (WizardDescriptor) settings;
 
+        // wizard title
+        String title = NbBundle.getMessage(ConfigureProjectPanel.class, "TXT_PhpProject");
+        descriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
+
         // location
         String projectLocation = getProjectLocation().getAbsolutePath();
         String projectName = getProjectName();
