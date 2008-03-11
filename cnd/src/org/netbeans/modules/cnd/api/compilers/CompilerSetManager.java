@@ -229,7 +229,7 @@ public class CompilerSetManager {
             }
             for (String name : list) {
                 File file = new File(dir, name);
-                if (file.exists() && (name.equals(best) || name.equals(best + ".exe"))) { // NOI18N
+                if (file.exists() && !file.isDirectory() && (name.equals(best) || name.equals(best + ".exe"))) { // NOI18N
                     cs.addTool(name, path, kind);
                     break;
                 }
@@ -275,7 +275,7 @@ public class CompilerSetManager {
                 if (Utilities.isWindows()) {
                     name = name + ".exe"; // NOI18N
                 }
-                if (new File(dir, name).exists()) { // NOI18N
+                if (new File(dir, name).exists() && !new File(dir, name).isDirectory()) { // NOI18N
                     cs.addTool(name, path, kind);
                     return;
                 }
@@ -313,7 +313,7 @@ public class CompilerSetManager {
                 if (Utilities.isWindows()) {
                     name = name + ".exe"; // NOI18N
                 }
-                if (new File(dir, name).exists()) { // NOI18N
+                if (new File(dir, name).exists() && !new File(dir, name).isDirectory()) { // NOI18N
                     cs.addTool(name, path, kind);
                     return;
                 }
@@ -351,7 +351,7 @@ public class CompilerSetManager {
                 if (Utilities.isWindows()) {
                     name = name + ".exe"; // NOI18N
                 }
-                if (new File(dir, name).exists()) { // NOI18N
+                if (new File(dir, name).exists() && !new File(dir, name).isDirectory()) { // NOI18N
                     cs.addTool(name, path, kind);
                     return;
                 }

@@ -301,25 +301,27 @@ public class ElementJavadoc {
                         if (returnTags.length == 0) {
                             inheritedReturnTags = new ArrayList<Tag>();
                         } else {
+                            List<Tag> tags = new ArrayList<Tag>();
                             for(Tag tag : returnTags) {
                                 for(Tag t : tag.inlineTags()) {
                                     if (INHERIT_DOC_TAG.equals(t.kind())) {
                                         if (inheritedReturnTags == null)
                                             inheritedReturnTags = new ArrayList<Tag>();
                                     }
+                                    tags.add(t);
                                 }
                             }
+                            returnTags = tags.toArray(new Tag[tags.size()]);
                         }
                     }
                     Set<Integer> paramPos = new HashSet<Integer>();
                     List<ParamTag> paramTags = null;
-                    Map<Integer, List<Tag>> paramInlineTags = null;
+                    Map<Integer, List<Tag>> paramInlineTags = new HashMap<Integer, List<Tag>>();
                     Map<Integer, ParamTag> inheritedParamTags = null;
                     Map<Integer, List<Tag>> inheritedParamInlineTags = null;
                     Parameter[] parameters = mdoc.parameters();
                     if (parameters.length > 0) {
                         paramTags = new ArrayList<ParamTag>();
-                        paramInlineTags = new HashMap<Integer, List<Tag>>();
                         for (int i = 0; i < parameters.length; i++)
                             paramPos.add(i);
                     }
@@ -356,18 +358,20 @@ public class ElementJavadoc {
                     for (Type exc : mdoc.thrownExceptionTypes())
                         throwsTypes.add(exc.typeName());
                     for(ThrowsTag tag : mdoc.throwsTags()) {
-                        List<Tag> tags = new ArrayList<Tag>();
-                        throwsTags.add(tag);
-                        throwsInlineTags.put(tag.exceptionName(), tags);
-                        for(Tag t : tag.inlineTags()) {
-                            if (INHERIT_DOC_TAG.equals(t.kind())) {
-                                if (inheritedThrowsTags == null)
-                                    inheritedThrowsTags = new LinkedHashMap<String, ThrowsTag>();
-                                if (inheritedThrowsInlineTags == null)
-                                    inheritedThrowsInlineTags = new HashMap<String, List<Tag>>();
-                                throwsTypes.add(tag.exceptionName());
-                            } else {
-                                tags.add(t);
+                        if (throwsTypes.remove(tag.exceptionName())) {
+                            List<Tag> tags = new ArrayList<Tag>();
+                            throwsTags.add(tag);
+                            throwsInlineTags.put(tag.exceptionName(), tags);
+                            for(Tag t : tag.inlineTags()) {
+                                if (INHERIT_DOC_TAG.equals(t.kind())) {
+                                    if (inheritedThrowsTags == null)
+                                        inheritedThrowsTags = new LinkedHashMap<String, ThrowsTag>();
+                                    if (inheritedThrowsInlineTags == null)
+                                        inheritedThrowsInlineTags = new HashMap<String, List<Tag>>();
+                                    throwsTypes.add(tag.exceptionName());
+                                } else {
+                                    tags.add(t);
+                                }
                             }
                         }
                     }
@@ -380,7 +384,7 @@ public class ElementJavadoc {
                     if (inheritedTags != null && inheritedTags.isEmpty() ||
                             inheritedReturnTags != null && inheritedReturnTags.isEmpty() ||
                             paramPos != null && !paramPos.isEmpty() ||
-                            throwsTypes != null && !throwsTags.isEmpty())
+                            throwsTypes != null && !throwsTypes.isEmpty())
                         inheritedDocFor(mdoc, mdoc.containingClass(), inheritedTags, inheritedReturnTags,
                                 paramPos, inheritedParamTags, inheritedParamInlineTags,
                                 throwsTypes, inheritedThrowsTags, inheritedThrowsInlineTags);
@@ -727,7 +731,7 @@ public class ElementJavadoc {
         StringBuilder par = new StringBuilder();
         if (paramPos != null) {
             Parameter[] parameters = doc.parameters();
-            for (Integer pos : paramPos) {
+            for (Integer pos : paramInlineTags.keySet()) {
                 par.append("<code>").append(parameters[pos].name()).append("</code>"); //NOI18N
                 List<Tag> tags = paramInlineTags.get(pos);
                 Tag[] its = tags.toArray(new Tag[tags.size()]);                

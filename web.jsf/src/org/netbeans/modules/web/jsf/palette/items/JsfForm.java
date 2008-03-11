@@ -43,7 +43,6 @@ package org.netbeans.modules.web.jsf.palette.items;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -85,6 +84,7 @@ import org.openide.util.Exceptions;
  *
  * @author Pavel Buzek
  * @author Po-Ting Wu
+ * @author mbohm
  */
 public final class JsfForm implements ActiveEditorDrop {
         
@@ -109,50 +109,6 @@ public final class JsfForm implements ActiveEditorDrop {
         "</h:panelGrid>\n </h:form>\n",
         "</h:panelGrid>\n </h:form>\n",
     };
-//    private static String [] ITEM = {
-//        "",
-//        "<h:outputText value=\"{0}:\"/>\n <h:outputText value=\"#'{'{1}.{2}}\" title=\"{0}\" />\n",
-//        "<h:outputText value=\"{0}:\"/>\n <h:inputText id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" required=\"{3}\" requiredMessage=\"{4}\" />\n",
-//        "<h:outputText value=\"{0}:\"/>\n <h:inputText id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" required=\"{3}\" requiredMessage=\"{4}\" />\n",
-//        //relationship *ToOne - use combo box
-////        "<h:outputText value=\"{0}:\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\">\n <f:selectItems value=\"#'{'{3}.{2}s'}'\"/>\n </h:selectOneMenu>\n",
-//        "<h:outputText value=\"{0}:\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" required=\"{5}\" requiredMessage=\"{6}\" >\n <f:selectItems value=\"#'{'{4}.{4}sAvailableSelectOne'}'\"/>\n </h:selectOneMenu>\n",
-//        //use date time converter
-//        "<h:outputText value=\"{0} ({4}):\"/>\n <h:inputText id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" required=\"{5}\" requiredMessage=\"{6}\">\n <f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:inputText>\n",
-//        //relationship *ToOne - use combo box, in FORM_TYPE_NEW display only if not pre set
-//        "<h:outputText value=\"{0}:\" rendered=\"#'{'{1}.{2} == null}\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" rendered=\"#'{'{1}.{2} == null}\" required=\"{5}\" requiredMessage=\"{6}\">\n <f:selectItems value=\"#'{'{4}.{4}sAvailableSelectOne'}'\"/>\n </h:selectOneMenu>\n",
-////        "<h:outputText value=\"{0}:\"/>\n <h:commandLink action=\"#'{'{2}.detailSetupFrom{3}Detail}\" value=\"#'{'{1}.{2}}\" />\n",
-//        "<h:outputText value=\"{0}:\"/>\n" +
-//                "<h:panelGroup>\n" + 
-//                "<h:outputText value=\"#'{'{1}.{2}'}'\"/>\n" +
-//                "<h:panelGroup rendered=\"#'{'{1}.{2} != null'}'\">\n" +
-//                "<h:outputText value=\" (\"/>\n" +
-//                "<h:commandLink value=\"Show\" action=\"#'{'{4}.detailSetup'}'\">\n" +
-//                "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
-//                "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
-//                "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
-//                "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}Controller\"/>\n" +
-//                "</h:commandLink>\n" +
-//                "<h:outputText value=\" \"/>\n" +
-//                "<h:commandLink value=\"Edit\" action=\"#'{'{4}.editSetup'}'\">\n" +
-//                "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
-//                "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
-//                "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
-//                "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}Controller\"/>\n" +
-//                "</h:commandLink>\n" +
-//                "<h:outputText value=\" \"/>\n" +
-//                "<h:commandLink value=\"Destroy\" action=\"#'{'{4}.destroy'}'\">\n" +
-//                "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
-//                "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
-//                "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
-//                "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}Controller\"/>\n" +
-//                "</h:commandLink>\n" +
-//                "<h:outputText value=\" )\"/>\n" +
-//                "</h:panelGroup>\n" +
-//                "</h:panelGroup>\n",
-//        //relationship *ToMany - use listbox
-//        "<h:outputText value=\"{0}:\"/>\n <h:selectManyListbox id=\"{2}\" value=\"#'{'{3}.{2}Of{1}'}'\" title=\"{0}\" size=\"6\" required=\"{5}\" requiredMessage=\"{6}\">\n <f:selectItems value=\"#'{'{4}.{4}sAvailableSelectMany'}'\"/>\n </h:selectManyListbox>\n"
-//    };
     
     private String variable = "";
     private String bean = "";
@@ -651,22 +607,6 @@ public final class JsfForm implements ActiveEditorDrop {
                             JsfTable.createTable(controller, typeElement, variable + "." + propName, stringBuffer, commands, "detailSetup");
                             stringBuffer.append("</h:dataTable>\n");
                             stringBuffer.append("</h:panelGroup>\n");
-
-//                            String availableItems = JSFClientGenerator.getPropNameFromMethod(methodName + "Available");
-//                            stringBuffer.append("<h:panelGroup rendered=\"#{not empty " + managedBean + "." + availableItems + "}\">");
-//                            stringBuffer.append("<br />\n<b>Add " + relatedClass + "s:</b>\n<br />\n");
-//                            String itemsToAdd = JSFClientGenerator.getPropNameFromMethod(methodName + "ToAdd");
-//                            stringBuffer.append("<h:selectManyListbox id=\"add" + relatedClass + "s\" value=\"#{" 
-//                                    + managedBean + "." + itemsToAdd + "}\" title=\"Add " + name + ":\">\n");
-//                            stringBuffer.append("<f:selectItems value=\"#{" + managedBean + "." + availableItems + "}\"/>\n");
-//                            stringBuffer.append("</h:selectManyListbox>\n");
-//                            String addItems = "add" + methodName.substring(3);
-//                            stringBuffer.append("<h:commandButton value=\"Add\" action=\"#{" + managedBean + "." + addItems + "}\"/>\n <br>\n");
-//                            stringBuffer.append("</h:panelGroup>\n");
-
-//                            stringBuffer.append("<br />\n<h:commandLink value=\"Add New " + typeElement.getSimpleName() + "\" action=\"#{" + relatedManagedBean + ".createFrom" + detailManagedBean + "Setup}\">\n");
-//                            stringBuffer.append("<f:param name=\"relatedId\" value=\"#{" + variable + "." + idProperty + "}\"/>\n");
-//                            stringBuffer.append("</h:commandLink>\n<br />\n");
                         } else {
                             Logger.getLogger("global").log(Level.INFO, "cannot find referenced class: " + method.getReturnType()); // NOI18N
                         }

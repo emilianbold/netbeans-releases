@@ -496,9 +496,14 @@ public class EditorContextImpl extends EditorContext {
      */
     public String getCurrentURL () {
         synchronized (currentLock) {
+            if (currentURL != null) {
+                return currentURL;
+            }
+        }
+        DataObject[] nodes = (DataObject[])resDataObject.allInstances().toArray(new DataObject[0]);
+        // Lookup, as a side-effect, can call lookup listeners and do whatever it wants. Do not call under a lock.
+        synchronized (currentLock) {
             if (currentURL == null) {
-                DataObject[] nodes = (DataObject[])resDataObject.allInstances().toArray(new DataObject[0]);
-
                 currentURL = "";
                 if (nodes.length != 1)
                     return currentURL;

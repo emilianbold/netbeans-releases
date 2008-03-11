@@ -286,6 +286,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 update(false, csm.getCompilerSets().get(index-1));
             else
                 update(false);
+            changed = true;
         }
 //        int idx = lstDirlist.getSelectedIndex();
 //        assert idx != -1; // the button shouldn't be enabled
@@ -1151,7 +1152,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         Object o = e.getSource();
         
         if (o instanceof JButton) {
-            changed = true;
             if (o == btAdd) {
                 addCompilerSet();
             } else if (o == btRemove) {
@@ -1922,6 +1922,7 @@ private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//G
     CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
     CompilerFlavor cf = (CompilerFlavor)cbFamily.getSelectedItem();
     csm.reInitCompilerSet(cs, dirPath);
+    changed = true;
     update(false);
     
 }//GEN-LAST:event_btBaseDirectoryActionPerformed
@@ -1973,8 +1974,8 @@ private void btGdbVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
 private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRestoreActionPerformed
     NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-            "This will rescan your environment and re-create the default tool sets.\nChanges you may have made to these sets will be lost. Your custom tool sets will not be affected.\n\nDo you want to continue?", // NOI18N
-            "Restore Default Tool Sets", // NOI18N
+            getString("RESTORE_TXT"),
+            getString("RESTORE_TITLE"),
             NotifyDescriptor.OK_CANCEL_OPTION);
     Object ret = DialogDisplayer.getDefault().notify(nd);
     if (ret != NotifyDescriptor.OK_OPTION) {
@@ -1996,6 +1997,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     if (defaultCompilerSet != null) {
         csm.setDefault(defaultCompilerSet);
     }
+    changed = true;
     update(false);
 }//GEN-LAST:event_btRestoreActionPerformed
     

@@ -47,8 +47,8 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.reglib</code-name-base>
             <module-dependencies/>
             <public-packages>
-                <package>com.sun.servicetag</package>
                 <package>org.netbeans.modules.reglib</package>
+                <package>org.netbeans.modules.servicetag</package>
             </public-packages>
         </data>
     </configuration>

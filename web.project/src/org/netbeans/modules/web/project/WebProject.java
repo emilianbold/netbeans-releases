@@ -740,7 +740,7 @@ public final class WebProject implements Project, AntProjectListener {
                     }
                 });
             } else {
-                genFilesHelper.refreshBuildScript(org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                genFilesHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                                                   org.netbeans.modules.web.project.WebProject.class.getResource("resources/build-impl.xsl"),
                                                   false);
             }
