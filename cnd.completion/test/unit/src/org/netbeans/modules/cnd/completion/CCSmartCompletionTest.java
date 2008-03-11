@@ -37,37 +37,26 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor;
+package org.netbeans.modules.cnd.completion;
 
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.gsf.api.GsfLanguage;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.openide.filesystems.FileObject;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.test.BaseTestSuite;
 
 /**
  *
- * @author Petr Pisl
+ * @author vv159170
  */
-public class PHPLanguage implements GsfLanguage {
-
-    public static final String PHP_MIME_TYPE = "text/x-php5";
+public class CCSmartCompletionTest extends BaseTestSuite {
     
-    public String getLineCommentPrefix() {
-        return "//";    //NOI18N
+    public CCSmartCompletionTest() {
+        super("C/C++ Smart Completion");
+        
+        this.addTestSuite(SmartCompletionInQuoteTestCase.class);
     }
 
-    public boolean isIdentifierChar(char c) {
-        return Character.isJavaIdentifierPart(c) || (c == '$') ;
+    public static Test suite() {
+        TestSuite suite = new CCSmartCompletionTest();
+        return suite;
     }
-
-    public Language getLexerLanguage() {
-        return PHPTokenId.language();
-    }
-
-    public Collection<FileObject> getCoreLibraries() {
-        return Collections.EMPTY_LIST;
-    }
-
 }
