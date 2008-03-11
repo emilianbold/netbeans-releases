@@ -40,7 +40,6 @@
 package org.netbeans.editor.ext.html.parser;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -60,13 +59,23 @@ public class AstNode {
     private boolean closed;
     private List<AstNode> children = new ArrayList<AstNode>();
     private AstNode parent = null;
+    
+    //XXX Storing the SyntaxElement instance is a hack - the SyntaxElement-s should
+    //implement or extend the AstNode itself and the tree-maker should use those
+    //instances instead of duplicating the nodes.
+    private SyntaxElement element = null;
 
-    public AstNode(String name, NodeType nodeType, int startOffset, int endOffset) {
+    AstNode(String name, NodeType nodeType, int startOffset, int endOffset, SyntaxElement element) {
         this.name = name;
         this.nodeType = nodeType;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         this.closed = false;
+        this.element = element;
+    }
+    
+    public SyntaxElement element() {
+        return element;
     }
     
     public String name() {

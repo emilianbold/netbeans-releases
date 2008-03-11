@@ -8,6 +8,7 @@ import java.awt.Component;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.iep.editor.share.SharedConstants;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
@@ -26,13 +27,19 @@ public class IEPWizardPanel3 implements WizardDescriptor.Panel {
 
     private WizardDescriptor mDescriptor;
     
+    private Project mProject;
+    
+    public IEPWizardPanel3(Project project) {
+        this.mProject = project;
+        
+    }
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
     public Component getComponent() {
         if (component == null) {
-            component = new IEPVisualPanel3();
+            component = new IEPVisualPanel3(this.mProject);
         }
         return component;
     }
