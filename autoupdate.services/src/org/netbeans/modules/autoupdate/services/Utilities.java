@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.io.BufferedInputStream;
 import java.text.ParseException;
 import java.util.jar.JarEntry;
 import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
@@ -425,12 +426,12 @@ public class Utilities {
         return getModuleInstance(uUnit.getCodeName(), null); // XXX
     }
     
-    public static Module toModule(String codeNameBase, String specificationVersion) {
+    public static Module toModule(String codeNameBase, SpecificationVersion specificationVersion) {
         return getModuleInstance(codeNameBase, specificationVersion);
     }
     
     public static Module toModule (ModuleInfo info) {
-        return getModuleInstance (info.getCodeNameBase(), info.getSpecificationVersion ().toString ());
+        return getModuleInstance (info.getCodeNameBase(), info.getSpecificationVersion ());
     }
     
     public static boolean isFixed (ModuleInfo info) {
@@ -836,7 +837,7 @@ public class Utilities {
         return infos;
     }
     
-    private static Module getModuleInstance(String codeNameBase, String specificationVersion) {
+    private static Module getModuleInstance(String codeNameBase, SpecificationVersion specificationVersion) {
         if (mgr == null) {
             mgr = Main.getModuleSystem().getManager();
         }
@@ -848,7 +849,10 @@ public class Utilities {
             if (m == null) {
                 return null;
             } else {
-                return m.getSpecificationVersion ().compareTo (new SpecificationVersion (specificationVersion)) >= 0 ? m : null;
+                if (m.getSpecificationVersion () == null) {
+                    return null;
+                }
+                return m.getSpecificationVersion ().compareTo (specificationVersion) >= 0 ? m : null;
             }
         }
     }
@@ -878,7 +882,7 @@ public class Utilities {
         Document document = null;
         InputStream is;
         try {
-            is = new FileInputStream (moduleUpdateTracking);
+            is = new BufferedInputStream (new FileInputStream (moduleUpdateTracking));
             InputSource xmlInputSource = new InputSource (is);
             document = XMLUtil.parse (xmlInputSource, false, false, null, org.openide.xml.EntityCatalog.getDefault ());
             if (is != null) {

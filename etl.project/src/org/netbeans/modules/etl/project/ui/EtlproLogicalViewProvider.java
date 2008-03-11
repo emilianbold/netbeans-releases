@@ -264,7 +264,7 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
             String nbBundle5 = mLoc.t("PRSR001: Generate Schema");
             String nbBundle6 = mLoc.t("PRSR001: Redeploy Project");
             String nbBundle7 = mLoc.t("PRSR001: Deploy Project");
-            String nbBundle10 = mLoc.t("PRSR001: Bulk Loader");
+            String nbBundle10 = mLoc.t("PRSR001: Generate Bulk Loader");
 
 
             return new Action[]{

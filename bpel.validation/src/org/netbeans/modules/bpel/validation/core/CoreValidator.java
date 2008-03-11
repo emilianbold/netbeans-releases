@@ -135,6 +135,10 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
     addMessage(i18n(getClass(), key, param), ResultType.WARNING, component);
   }
 
+  protected final void addWarning(String key, Component component, String param1, String param2) {
+    addMessage(i18n(getClass(), key, param1, param2), ResultType.WARNING, component);
+  }
+
   protected final void addMessage(String message, ResultType type, Component component) {
     addQuickFixable(component, type, message, null);
   }

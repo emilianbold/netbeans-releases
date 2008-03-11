@@ -127,23 +127,25 @@ public class CustomEditorDrop implements ActiveEditorDrop {
                     if (showParams && bean.getInputParameters() != null) {
                         allParams.addAll(bean.getInputParameters());
                     }
-                    CustomCodeSetupPanel panel = new CustomCodeSetupPanel(
-                            codegen.getSubresourceLocatorUriTemplate(),
-                            bean.getQualifiedClassName(), 
-                            allParams,
-                            codegen.canShowResourceInfo(), showParams);
+                    if(codegen.canShowResourceInfo() || (showParams && !allParams.isEmpty())) {
+                        CustomCodeSetupPanel panel = new CustomCodeSetupPanel(
+                                codegen.getSubresourceLocatorUriTemplate(),
+                                bean.getQualifiedClassName(), 
+                                allParams,
+                                codegen.canShowResourceInfo(), showParams);
 
-                    DialogDescriptor desc = new DialogDescriptor(panel, 
-                            NbBundle.getMessage(CustomEditorDrop.class,
-                            "LBL_CustomizeSaasService", displayName));
-                    Object response = DialogDisplayer.getDefault().notify(desc);
-                    
-                    if (response.equals(NotifyDescriptor.YES_OPTION)) {
-                        codegen.setSubresourceLocatorUriTemplate(panel.getUriTemplate());
-                        codegen.setSubresourceLocatorName(panel.getMethodName());
-                    } else {
-                        // cancel
-                        return;
+                        DialogDescriptor desc = new DialogDescriptor(panel, 
+                                NbBundle.getMessage(CustomEditorDrop.class,
+                                "LBL_CustomizeSaasService", displayName));
+                        Object response = DialogDisplayer.getDefault().notify(desc);
+
+                        if (response.equals(NotifyDescriptor.YES_OPTION)) {
+                            codegen.setSubresourceLocatorUriTemplate(panel.getUriTemplate());
+                            codegen.setSubresourceLocatorName(panel.getMethodName());
+                        } else {
+                            // cancel
+                            return;
+                        }
                     }
 
                     try {
