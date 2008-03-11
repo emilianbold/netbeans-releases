@@ -70,6 +70,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeModelEvent;
@@ -94,6 +95,7 @@ import org.netbeans.modules.bpel.model.api.Correlation;
 import org.netbeans.modules.bpel.model.api.CorrelationContainer;
 import org.netbeans.modules.bpel.model.api.CorrelationSet;
 import org.netbeans.modules.bpel.model.api.CorrelationSetContainer;
+import org.netbeans.modules.bpel.model.api.CorrelationsHolder;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.Invoke;
 import org.netbeans.modules.bpel.model.api.OnAlarmPick;
@@ -114,10 +116,6 @@ import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
 import org.netbeans.modules.bpel.model.api.support.Pattern;
-import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl;
-import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
-import org.netbeans.modules.bpel.model.impl.InvokeReceiveReplyCommonImpl;
-import org.netbeans.modules.bpel.model.impl.OnMessageCommonImpl;
 import org.netbeans.modules.bpel.model.xam.BpelAttributes;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.properties.ImportRegistrationHelper;
@@ -136,6 +134,7 @@ import org.netbeans.modules.soa.mappercore.model.SourcePin;
 import org.netbeans.modules.soa.mappercore.model.TargetPin;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
+import org.netbeans.modules.soa.ui.UserNotification;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.ComplexType;
@@ -1128,23 +1127,8 @@ public class DefineCorrelationWizard implements WizardProperties {
                     new TypesCompatibilityValidatorImpl(source.getSchemaComponent(),
                     target.getSchemaComponent());
                 typesCompatibilityValidator.checkSchemaComponentTypesCompatibility();
-                String propertyTypeName = typesCompatibilityValidator.getResolvedTypeName();
-                assert (propertyTypeName != null);
-                
-                Collection<GlobalSimpleType> globalSimpleTypes = 
-                    source.getSchemaComponent().getModel().getSchema().getSimpleTypes();
-                GlobalSimpleType globalSimpleType = ValidationUtil.findGlobalSimpleType(
-                    propertyTypeName, globalSimpleTypes);
-                if (globalSimpleType != null) return globalSimpleType;
-                
-                globalSimpleType = ValidationUtil.findGlobalSimpleType(
-                    propertyTypeName, ValidationUtil.BUILT_IN_SIMPLE_TYPES);
-                if (globalSimpleType != null) return globalSimpleType;
-                
-                globalSimpleTypes = 
-                    target.getSchemaComponent().getModel().getSchema().getSimpleTypes();
-                globalSimpleType = ValidationUtil.findGlobalSimpleType(
-                    propertyTypeName, globalSimpleTypes);
+                GlobalSimpleType globalSimpleType = typesCompatibilityValidator.getResolvedType();
+                assert (globalSimpleType != null);
                 return globalSimpleType;
             }
             
@@ -1167,8 +1151,8 @@ public class DefineCorrelationWizard implements WizardProperties {
             @Override
             public int hashCode() {
                 int hash = 3;
-                hash = 71 * hash + (this.source != null ? this.source.hashCode() : 0);
-                hash = 71 * hash + (this.target != null ? this.target.hashCode() : 0);
+                hash = 71 * hash + (source != null ? source.hashCode() : 0);
+                hash = 71 * hash + (target != null ? target.hashCode() : 0);
                 return hash;
             }
         }
@@ -1191,10 +1175,9 @@ public class DefineCorrelationWizard implements WizardProperties {
                 BpelContainer container = null;
                 if (activity instanceof Invoke) {
                     container = ((Invoke) activity).getPatternedCorrelationContainer();
-                } else if ((activity instanceof Receive) || (activity instanceof Reply)) {
-                    container = ((InvokeReceiveReplyCommonImpl) activity).getCorrelationContainer();
-                } else if ((activity instanceof OnMessage) || (activity instanceof OnEvent)) {
-                    container = ((OnMessageCommonImpl) activity).getCorrelationContainer();
+                } else if ((activity instanceof Receive) || (activity instanceof Reply) ||
+                           (activity instanceof OnMessage) || (activity instanceof OnEvent)) {
+                    container = ((CorrelationsHolder) activity).getCorrelationContainer();
                 }
                 addActivityCorrelation(bpelModel, container, correlation);
             }
@@ -1213,12 +1196,10 @@ public class DefineCorrelationWizard implements WizardProperties {
                                 if (activity instanceof Invoke) {
                                     ((Invoke) activity).setPatternedCorrelationContainer((PatternedCorrelationContainer) container);
                                     container = ((Invoke) activity).getPatternedCorrelationContainer();
-                                } else if ((activity instanceof Receive) || (activity instanceof Reply)) {
-                                    ((InvokeReceiveReplyCommonImpl) activity).setCorrelationContainer((CorrelationContainer) container);
-                                    container = ((InvokeReceiveReplyCommonImpl) activity).getCorrelationContainer();
-                                } else if ((activity instanceof OnMessage) || (activity instanceof OnEvent)) {
-                                    ((OnMessageCommonImpl) activity).setCorrelationContainer((CorrelationContainer) container);
-                                    container = ((OnMessageCommonImpl) activity).getCorrelationContainer();
+                                } else if ((activity instanceof Receive) || (activity instanceof Reply) ||
+                                           (activity instanceof OnMessage) || (activity instanceof OnEvent)) {
+                                    ((CorrelationsHolder) activity).setCorrelationContainer((CorrelationContainer) container);
+                                    container = ((CorrelationsHolder) activity).getCorrelationContainer();
                                 }
                             }
                             if (activity instanceof Invoke) {
@@ -1372,12 +1353,22 @@ public class DefineCorrelationWizard implements WizardProperties {
             @Override
             public int hashCode() {
                 int hash = 7;
-                hash = 97 * hash + (this.activity != null ? this.activity.hashCode() : 0);
-                hash = 97 * hash + (this.message != null ? this.message.hashCode() : 0);
-                hash = 97 * hash + (this.part != null ? this.part.hashCode() : 0);
+                hash = 97 * hash + (activity != null ? activity.hashCode() : 0);
+                hash = 97 * hash + (message != null ? message.hashCode() : 0);
+                hash = 97 * hash + (part != null ? part.hashCode() : 0);
+                hash = 97 * hash + (mapperTreeNode != null ? mapperTreeNode.hashCode() : 0);
                 return hash;
             }
-
+            /*
+            public int hashCode() {
+                int hash = 7;
+                hash = 97 * hash + (activity != null ? activity.hashCode() : 0);
+                hash = 97 * hash + (message != null ? message.hashCode() : 0);
+                hash = 97 * hash + (part != null ? part.hashCode() : 0);
+                return hash;
+            }
+            */
+            
             public void extractDataFromTreePath(TreePath treePath) {
                 mapperTreeNode = (CorrelationMapperTreeNode) treePath.getLastPathComponent();
                 getPartAndMessage(mapperTreeNode);
@@ -1427,20 +1418,10 @@ public class DefineCorrelationWizard implements WizardProperties {
             public void actionPerformed(ActionEvent e) {
                 List<Link> selectedLinks =  correlationMapper.getSelectionModel().getSelectedLinks();
                 if ((selectedLinks != null) && (! selectedLinks.isEmpty())) {
+                    CorrelationMapperModel mapperModel = 
+                        (CorrelationMapperModel) correlationMapper.getModel();
                     for (Link link : selectedLinks) {
-                        SourcePin sourcePin = link.getSource();
-                        if ((sourcePin == null) || (! (sourcePin instanceof TreeSourcePin))) break;
-
-                        Graph targetGraph = link.getGraph();
-                        if (targetGraph == null) break;
-                        targetGraph.removeLink(link);
-
-                        CorrelationMapperModel mapperModel = (CorrelationMapperModel) correlationMapper.getModel();
-                        TreePath targetTreePath = mapperModel.getTreePathByGraph(targetGraph);                        
-                        if (targetTreePath == null) break;
-                        CorrelationMapperTreeModel rightTreeModel = 
-                            (CorrelationMapperTreeModel) mapperModel.getRightTreeModel();
-                        rightTreeModel.fireTreeChanged(this, targetTreePath);
+                        mapperModel.deleteLink(link);
                     }
                 }
             }
@@ -1454,7 +1435,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             public void buildCorrelationMapperTree(CorrelationMapperTreeNode topTreeNode) {
                 BpelEntity topBpelEntity = (BpelEntity) (topTreeNode).getUserObject();
                 CorrelationMapperTreeNode fakeRootTreeNode = new CorrelationMapperTreeNode(
-                    new BpelBuilderImpl((BpelModelImpl) topBpelEntity.getBpelModel()).createEmpty());
+                    topBpelEntity.getBpelModel().getBuilder().createEmpty());
                 fakeRootTreeNode.add(topTreeNode);
                 setRoot(fakeRootTreeNode);
             }
@@ -1652,7 +1633,6 @@ public class DefineCorrelationWizard implements WizardProperties {
                         result = false; // the target tree node already has a connected link
                     }
                 }
-//*******???????? check compatibility of 2 linked shema components                
                 return result;
             }
 
@@ -1666,6 +1646,8 @@ public class DefineCorrelationWizard implements WizardProperties {
                 Link newLink = new Link(source, target);
                 graph.addLink(newLink);
                 ((CorrelationMapperTreeModel) rightTreeModel).fireTreeChanged(this, treePath);
+                
+                postConnectLinkValidation(source, treePath);
             }
 
             public Map<TreePath, Graph> getMapTreePathGraphs() {
@@ -1677,6 +1659,64 @@ public class DefineCorrelationWizard implements WizardProperties {
                 mapTreePathGraphs.put(treePath, treePathGraph);
                 ((CorrelationMapperTreeModel) rightTreeModel).fireTreeChanged(this, treePath);
                 return treePathGraph;
+            }
+
+            protected void deleteLink(Link link) {
+                if (link == null) return;
+                SourcePin sourcePin = link.getSource();
+                if ((sourcePin == null) || (! (sourcePin instanceof TreeSourcePin))) return;
+
+                Graph targetGraph = link.getGraph();
+                if (targetGraph == null) return;
+                targetGraph.removeLink(link);
+
+                TreePath targetTreePath = getTreePathByGraph(targetGraph);                        
+                if (targetTreePath == null) return;
+                mapTreePathGraphs.remove(targetTreePath);
+                ((CorrelationMapperTreeModel) rightTreeModel).fireTreeChanged(
+                    this, targetTreePath);
+            }
+            
+            protected void postConnectLinkValidation(SourcePin sourcePin, final TreePath targetTreePath) {
+                // check types compatibility of 2 linked shema components                
+                if ((sourcePin == null) || (! (sourcePin instanceof TreeSourcePin)) ||
+                    (targetTreePath == null)) return;
+                
+                TreePath sourceTreePath = ((TreeSourcePin) sourcePin).getTreePath();
+                CorrelationMapperTreeNode 
+                    sourceTreeNode = (CorrelationMapperTreeNode) sourceTreePath.getLastPathComponent(),
+                    targetTreeNode = (CorrelationMapperTreeNode) targetTreePath.getLastPathComponent();
+                if ((sourceTreeNode == null) || (targetTreeNode == null)) return;
+                
+                SchemaComponent 
+                    sourceSchemaComponent = (SchemaComponent) sourceTreeNode.getUserObject(),
+                    targetSchemaComponent = (SchemaComponent) targetTreeNode.getUserObject();
+                TypesCompatibilityValidator typesValidator = 
+                    new TypesCompatibilityValidatorImpl(sourceSchemaComponent, targetSchemaComponent);
+                typesValidator.checkSchemaComponentTypesCompatibility();
+                TypesCompatibilityValidator.TypesCompatibilityResult result = 
+                    typesValidator.getTypesCompatibilityResult();
+                
+                if (result != TypesCompatibilityValidator.TypesCompatibilityResult.TYPES_EQUAL) {
+                    String warningMsg = typesValidator.getWarningMessage();
+                    boolean isLinkInvalid = (result == TypesCompatibilityValidator.TypesCompatibilityResult.BASE_TYPES_UNEQUAL) || 
+                        (result == TypesCompatibilityValidator.TypesCompatibilityResult.SOURCE_BASE_TYPE_UNKNOWN) || 
+                        (result == TypesCompatibilityValidator.TypesCompatibilityResult.TARGET_BASE_TYPE_UNKNOWN);
+                    if (isLinkInvalid) {
+                        warningMsg += " " + NbBundle.getMessage(DefineCorrelationWizard.class, 
+                            "LBL_ErrMsg_Created_Mapper_Link_Deleted");
+                    }
+                    UserNotification.showMessage(warningMsg);
+                    if (isLinkInvalid) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                Link newCreatedLink = CorrelationMapperModel.this.getGraph(
+                                    targetTreePath).getLinks().get(0);
+                                deleteLink(newCreatedLink);
+                            }
+                        });
+                    }
+                }
             }
             
             public TreePath getTreePathByGraph(Graph graph) {
@@ -2192,23 +2232,30 @@ class WizardUtils implements WizardConstants {
 }
 //============================================================================//
 interface TypesCompatibilityValidator {
+    enum TypesCompatibilityResult {SOURCE_BASE_TYPE_UNKNOWN, TARGET_BASE_TYPE_UNKNOWN,
+        BASE_TYPES_UNEQUAL, BASE_TYPES_EQUAL, TYPES_EQUAL};
+
     String 
         MSG_PATTERN_DIFFERENT_TYPES = NbBundle.getMessage(DefineCorrelationWizard.class, 
-            "LBL_ErrMsg_Different_Schema_Component_Types"),
-        MSG_PATTERN_UNKNOWN_TYPE = NbBundle.getMessage(DefineCorrelationWizard.class, 
-            "LBL_ErrMsg_Unknown_Schema_Component_Type"),
-        MSG_PATTERN_ONLY_BASE_TYPE_EQUAL = NbBundle.getMessage(DefineCorrelationWizard.class, 
+            "LBL_ErrMsg_Different_Types"),
+        MSG_PATTERN_UNKNOWN_BASE_TYPE = NbBundle.getMessage(DefineCorrelationWizard.class, 
+            "LBL_ErrMsg_Unknown_Base_Type"),
+        MSG_PATTERN_ONLY_BASE_TYPES_EQUAL = NbBundle.getMessage(DefineCorrelationWizard.class, 
             "LBL_ErrMsg_Only_Base_Types_Equal");
         
     String getResolvedTypeName();
-    String getWarningMessage();
+    GlobalSimpleType getResolvedType();
+    TypesCompatibilityResult getTypesCompatibilityResult();
     void checkSchemaComponentTypesCompatibility();
+    String getWarningMessage();
 }
 
 class TypesCompatibilityValidatorImpl implements TypesCompatibilityValidator {
     private SchemaComponent sourceSchemaComponent, targetSchemaComponent;
     private boolean isSourceBuiltInType, isTargetBuiltInType;
-    private String resolvedTypeName, warningMsg;
+    private String resolvedTypeName;
+    private TypesCompatibilityResult 
+        resultTypesCompatibility = TypesCompatibilityResult.BASE_TYPES_UNEQUAL;
 
     public TypesCompatibilityValidatorImpl(SchemaComponent sourceSchemaComponent,
         SchemaComponent targetSchemaComponent) {
@@ -2219,9 +2266,40 @@ class TypesCompatibilityValidatorImpl implements TypesCompatibilityValidator {
     }
     
     public String getResolvedTypeName() {return resolvedTypeName;}
-    public String getWarningMessage() {return warningMsg;}
+    public GlobalSimpleType getResolvedType() {
+        if (resolvedTypeName == null) return null;
+        
+        // find GlobalSimpleType with the name "resolvedTypeName" in the schema, 
+        // which the "sourceSchemaComponent" belongs to
+        Collection<GlobalSimpleType> globalSimpleTypes = 
+            sourceSchemaComponent.getModel().getSchema().getSimpleTypes();
+        GlobalSimpleType globalSimpleType = ValidationUtil.findGlobalSimpleType(
+            resolvedTypeName, globalSimpleTypes);
+        if (globalSimpleType != null) return globalSimpleType;
 
+        // find GlobalSimpleType with the name "resolvedTypeName" inside 
+        // the collection of the built-in types, 
+        globalSimpleType = ValidationUtil.findGlobalSimpleType(
+            resolvedTypeName, ValidationUtil.BUILT_IN_SIMPLE_TYPES);
+        if (globalSimpleType != null) return globalSimpleType;
+
+        // find GlobalSimpleType with the name "resolvedTypeName" in the schema, 
+        // which the "targetSchemaComponent" belongs to
+        globalSimpleTypes = 
+            targetSchemaComponent.getModel().getSchema().getSimpleTypes();
+        globalSimpleType = ValidationUtil.findGlobalSimpleType(
+            resolvedTypeName, globalSimpleTypes);
+        return globalSimpleType;
+    }
+    public TypesCompatibilityResult getTypesCompatibilityResult() {
+        return resultTypesCompatibility;
+    }
+    
     public void checkSchemaComponentTypesCompatibility() {
+        resolvedTypeName = null;
+        if (! builtInTypesExist()) return;
+        
+        resultTypesCompatibility = TypesCompatibilityResult.BASE_TYPES_UNEQUAL;
         resolvedTypeName = checkBuiltInSimpleTypeCompatibility();
         if ((resolvedTypeName != null) || (isSourceBuiltInType && isTargetBuiltInType)) {
             return;
@@ -2232,40 +2310,70 @@ class TypesCompatibilityValidatorImpl implements TypesCompatibilityValidator {
         } else if ((! isSourceBuiltInType) && (isTargetBuiltInType)) {
             checkBuiltInTypeAndSchemaComponentType(targetSchemaComponent, sourceSchemaComponent);
         } else { // (! isSourceBuiltInType) && (! isTargetBuiltInType)
-            String 
-                sourceTypeName = getSchemaComponentTypeName(sourceSchemaComponent),
-                targetTypeName = getSchemaComponentTypeName(targetSchemaComponent);
-            if (sourceTypeName.equals(targetTypeName)) {
-                warningMsg = null;
-                resolvedTypeName = sourceTypeName;
-            } else {
-                GlobalSimpleType sourceBuiltInType = ValidationUtil.getBuiltInSimpleType(
-                    sourceSchemaComponent);
-                checkBuiltInTypeAndSchemaComponentType(sourceBuiltInType, targetSchemaComponent);
-            }
+            checkSchemaComponentTypeAndSchemaComponentType();
         }
     }
     
+    private boolean builtInTypesExist() {
+        if ((! isSourceBuiltInType) && 
+            (ValidationUtil.getBuiltInSimpleType(sourceSchemaComponent) == null)) {
+            resultTypesCompatibility = TypesCompatibilityResult.SOURCE_BASE_TYPE_UNKNOWN;
+            return false;
+        }            
+        if ((! isTargetBuiltInType) && 
+            (ValidationUtil.getBuiltInSimpleType(targetSchemaComponent) == null)) {
+            resultTypesCompatibility = TypesCompatibilityResult.TARGET_BASE_TYPE_UNKNOWN;
+            return false;
+        }
+        return true;
+    }
+    
     private String checkBuiltInSimpleTypeCompatibility() {
-        warningMsg = null; 
+        resultTypesCompatibility = TypesCompatibilityResult.BASE_TYPES_UNEQUAL;
         if (! (isSourceBuiltInType && isTargetBuiltInType)) return null;
         return checkBuiltInSimpleTypeCompatibility(sourceSchemaComponent, targetSchemaComponent);
     }
 
     private String checkBuiltInSimpleTypeCompatibility(SchemaComponent srcBuiltInType,
         SchemaComponent trgBuiltInType) {
-        warningMsg = null; 
+        resultTypesCompatibility = TypesCompatibilityResult.BASE_TYPES_UNEQUAL;
         String 
             sourceTypeName = getSchemaComponentTypeName(srcBuiltInType),
             targetTypeName = getSchemaComponentTypeName(trgBuiltInType);
         if (sourceTypeName.equals(targetTypeName)) {
+            resultTypesCompatibility = TypesCompatibilityResult.TYPES_EQUAL;
             return sourceTypeName;
         }
         else {
-            String sourceComponentName = WizardUtils.getSchemaComponentName(sourceSchemaComponent),
-                   targetComponentName = WizardUtils.getSchemaComponentName(targetSchemaComponent);
-            setWarningMsgDifferentTypes(new Object[] {sourceComponentName, targetComponentName});
             return null;
+        }
+    }
+
+    private void checkBuiltInTypeAndSchemaComponentType(SchemaComponent builtInType,
+        SchemaComponent schemaComponent) {
+        GlobalSimpleType trgBuiltInType = ValidationUtil.getBuiltInSimpleType(schemaComponent);
+        if (trgBuiltInType == null) {
+            resolvedTypeName = null;
+            resultTypesCompatibility = TypesCompatibilityResult.BASE_TYPES_UNEQUAL;
+            return;
+        }
+        resolvedTypeName = checkBuiltInSimpleTypeCompatibility(builtInType, trgBuiltInType);
+        resultTypesCompatibility = (resolvedTypeName != null) ? 
+            TypesCompatibilityResult.BASE_TYPES_EQUAL : TypesCompatibilityResult.BASE_TYPES_UNEQUAL;
+    }
+    
+    private void checkSchemaComponentTypeAndSchemaComponentType() {
+        resultTypesCompatibility = TypesCompatibilityResult.BASE_TYPES_UNEQUAL;
+        String 
+            sourceTypeName = getSchemaComponentTypeName(sourceSchemaComponent),
+            targetTypeName = getSchemaComponentTypeName(targetSchemaComponent);
+        if (sourceTypeName.equals(targetTypeName)) {
+            resultTypesCompatibility = TypesCompatibilityResult.TYPES_EQUAL;
+            resolvedTypeName = sourceTypeName;
+        } else {
+            GlobalSimpleType 
+                sourceBuiltInType = ValidationUtil.getBuiltInSimpleType(sourceSchemaComponent);
+            checkBuiltInTypeAndSchemaComponentType(sourceBuiltInType, targetSchemaComponent);
         }
     }
     
@@ -2273,43 +2381,45 @@ class TypesCompatibilityValidatorImpl implements TypesCompatibilityValidator {
         return ValidationUtil.ignoreNamespace(WizardUtils.getSchemaComponentTypeName(
             schemaComponent));
     }
-
-    private void checkBuiltInTypeAndSchemaComponentType(SchemaComponent builtInType,
-        SchemaComponent schemaComponent) {
-        GlobalSimpleType targetBuiltInType = ValidationUtil.getBuiltInSimpleType(schemaComponent);
-        if (targetBuiltInType == null) {
-            String
-                schemaComponentName = WizardUtils.getSchemaComponentName(schemaComponent),
-                schemaComponentTypeName = WizardUtils.getSchemaComponentTypeName(schemaComponent);
-            setWarningMsgUnknownType(new Object[] {schemaComponentTypeName, schemaComponentName});
-            resolvedTypeName = null;
-            return;
+    
+    private String getWarningMsgDifferentTypes() {
+        String sourceComponentName = WizardUtils.getSchemaComponentName(sourceSchemaComponent),
+               targetComponentName = WizardUtils.getSchemaComponentName(targetSchemaComponent);
+        return MessageFormat.format(MSG_PATTERN_DIFFERENT_TYPES, 
+            new Object[] {sourceComponentName, targetComponentName});
+    }
+    
+    private String getWarningMsgUnknownType() {
+        String
+            schemaComponentName = WizardUtils.getSchemaComponentName(
+                resultTypesCompatibility == TypesCompatibilityResult.SOURCE_BASE_TYPE_UNKNOWN ?
+                sourceSchemaComponent : targetSchemaComponent),
+            schemaComponentTypeName = WizardUtils.getSchemaComponentTypeName(
+                resultTypesCompatibility == TypesCompatibilityResult.SOURCE_BASE_TYPE_UNKNOWN ?
+                sourceSchemaComponent : targetSchemaComponent);
+        return MessageFormat.format(MSG_PATTERN_UNKNOWN_BASE_TYPE, 
+            new Object[] {schemaComponentName, schemaComponentTypeName});
+        
+    }
+    
+    private String getWarningMsgOnlyBaseTypeEqual() {
+        String
+            srcSchemaComponentName = WizardUtils.getSchemaComponentName(sourceSchemaComponent),
+            trgSchemaComponentName = WizardUtils.getSchemaComponentName(targetSchemaComponent);
+        return MessageFormat.format(MSG_PATTERN_ONLY_BASE_TYPES_EQUAL, 
+            new Object[] {resolvedTypeName, srcSchemaComponentName, trgSchemaComponentName});
+    }
+    
+    public String getWarningMessage() {
+        if ((resultTypesCompatibility == TypesCompatibilityResult.SOURCE_BASE_TYPE_UNKNOWN) ||
+            (resultTypesCompatibility == TypesCompatibilityResult.TARGET_BASE_TYPE_UNKNOWN)) {
+            return getWarningMsgUnknownType();
+        } else if (resultTypesCompatibility == TypesCompatibilityResult.BASE_TYPES_UNEQUAL) {
+            return getWarningMsgDifferentTypes();
+        } else if (resultTypesCompatibility == TypesCompatibilityResult.BASE_TYPES_EQUAL) {
+            return getWarningMsgOnlyBaseTypeEqual();
         }
-        resolvedTypeName = checkBuiltInSimpleTypeCompatibility(builtInType, targetBuiltInType);
-        if (warningMsg == null) {
-            String
-                builtInTypeName = WizardUtils.getSchemaComponentTypeName(builtInType),
-                srcSchemaComponentName = WizardUtils.getSchemaComponentName(sourceSchemaComponent),
-                trgSchemaComponentName = WizardUtils.getSchemaComponentName(targetSchemaComponent);
-             setWarningMsgOnluBaseTypeEqual(new Object[] {builtInTypeName,
-                srcSchemaComponentName, trgSchemaComponentName});
-        }
-    }
-    
-    private void setWarningMsgDifferentTypes(Object[] msgValues) {
-        setWarningMsg(MSG_PATTERN_DIFFERENT_TYPES, msgValues);
-    }
-    
-    private void setWarningMsgUnknownType(Object[] msgValues) {
-        setWarningMsg(MSG_PATTERN_UNKNOWN_TYPE, msgValues);
-    }
-    
-    private void setWarningMsgOnluBaseTypeEqual(Object[] msgValues) {
-        setWarningMsg(MSG_PATTERN_ONLY_BASE_TYPE_EQUAL, msgValues);
-    }
-    
-    private void setWarningMsg(String msgPattern, Object[] msgValues) {
-        warningMsg = MessageFormat.format(msgPattern, msgValues);
+        return null;
     }
 }
 //============================================================================//
