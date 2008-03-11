@@ -554,6 +554,10 @@ public class JsCodeCompletionTest extends JsTestBase {
         checkCompletion("testfiles/completion/lib/test2.js", "^alert('foo2");
     }
     
+    public void test129036() throws Exception {
+        checkCompletion("testfiles/completion/lib/test129036.js", "my^ //Foo");
+    }
+    
     public void testCompletionStringCompletion1() throws Exception {
         checkCompletion("testfiles/completion/lib/test1.js", "Hell^o World");
     }

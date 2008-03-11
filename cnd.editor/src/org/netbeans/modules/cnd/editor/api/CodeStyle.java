@@ -398,14 +398,17 @@ public final class CodeStyle {
 //    }
 
     private boolean getOption(String key, boolean defaultValue) {
+        defaultValue = (Boolean)EditorOptions.getDefault(language, EditorOptions.getCurrentProfileId(language), key);
         return getPreferences().getBoolean(key, defaultValue);
     }
 
     private int getOption(String key, int defaultValue) {
+        defaultValue = (Integer)EditorOptions.getDefault(language, EditorOptions.getCurrentProfileId(language), key);
         return getPreferences().getInt(key, defaultValue);
     }
 
     private String getOption(String key, String defaultValue) {
+        defaultValue = (String)EditorOptions.getDefault(language, EditorOptions.getCurrentProfileId(language), key);
         return getPreferences().get(key, defaultValue);
     }
 
