@@ -240,9 +240,7 @@ public class WsdlSupport {
             options.setSaveSyntheticDocumentElement(
                     new QName("http://www.w3.org/2001/XMLSchema", "schema")); // NOI18N
             
-            XmlObject xmlObject = //XmlObject.Factory.
-                    org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument.Factory.
-                    parse(new URL(wsdlUrl), options);
+            XmlObject xmlObject = XmlObject.Factory.parse(new URL(wsdlUrl), options);
             
             Document dom = (Document) xmlObject.getDomNode();
             Node domNode = dom.getDocumentElement();
