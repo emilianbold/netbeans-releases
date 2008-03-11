@@ -10,11 +10,14 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.JPanel;
 
+import org.netbeans.api.project.Project;
 import org.openide.util.NbBundle;
 
 public final class IEPVisualPanel3 extends JPanel {
 
     private IEPAttributeConfigurationPanel mPanel;
+    
+    private Project mProject;
     
     /** Creates new form IEPVisualPanel3 */
     public IEPVisualPanel3() {
@@ -22,6 +25,12 @@ public final class IEPVisualPanel3 extends JPanel {
         initGUI();
     }
 
+    public IEPVisualPanel3(Project project) {
+        this.mProject = project;
+        initComponents();
+        initGUI();
+    }
+    
     @Override
     public String getName() {
     	return NbBundle.getMessage(IEPVisualPanel1.class, "IEPVisualPanel3_title");
@@ -30,7 +39,7 @@ public final class IEPVisualPanel3 extends JPanel {
     private void initGUI() {
         this.setLayout(new BorderLayout());
         
-        mPanel = new IEPAttributeConfigurationPanel();
+        mPanel = new IEPAttributeConfigurationPanel(this.mProject);
         this.add(mPanel, BorderLayout.CENTER);
     }
     

@@ -254,7 +254,7 @@ TestSupport.prototype = {
             paramRep = '<tr><td valign="top"><span id="j_id14"><label for="dummy" class="LblLev2Txt_sun4">'+
                             '<span>Click \'Test\' to continue:</span></label></span></td>'+
                             '<td><span id="j_id14"></span></td></tr>' + paramRep;
-            ts.updatepage('paramHook', "<table border=0><tbody><tr>"+paramRep+"</tr></tbody></table>");
+            ts.updatepage('pathParamHook', "<table border=0><tbody><tr>"+paramRep+"</tr></tbody></table>");
         }
         var req = uri;
         var disp = this.getDisplayUri(req);
@@ -292,6 +292,7 @@ TestSupport.prototype = {
         //ts.debug(req + uri + mName + mediaType);
         var str = "<div id='formSubmittal'>";
         str += "<form action='javascript:ts.dummyMethod()' method="+mName+" id='form1' name='form1'>";
+        str += "<div id='pathParamHook'></div>";
         str += "<div id='paramHook'></div>";
         str += "<input name='path' value='"+uri+"' type='hidden'>";
         str += "<input id='methodName' name='methodName' value='"+mName+"' type='hidden'>";
