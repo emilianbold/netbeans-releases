@@ -317,7 +317,8 @@ public class HgUtils {
         // We assume that the Project should not be ignored.
         if(file.isDirectory()){
             ProjectManager projectManager = ProjectManager.getDefault();
-            if (projectManager.isProject(FileUtil.toFileObject(file))) {
+            FileObject fileObj =  FileUtil.toFileObject(file);
+            if (fileObj != null && projectManager.isProject(fileObj)) {
                 return false;
             }
         }
