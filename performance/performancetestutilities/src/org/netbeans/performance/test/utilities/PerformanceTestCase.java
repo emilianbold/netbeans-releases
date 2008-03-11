@@ -290,7 +290,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                 ", Wait_after_open="+WAIT_AFTER_OPEN+
                 ", Wait_after_close="+WAIT_AFTER_CLOSE+
                 ", Wait_paint="+WAIT_PAINT+
-                ", Max_iteration="+MAX_ITERATION);
+                ", Max_iteration="+MAX_ITERATION+
+                ", logMemory="+logMemory);
 
         checkScanFinished(); // just to be sure, that during measurement we will not wait for scanning dialog
 

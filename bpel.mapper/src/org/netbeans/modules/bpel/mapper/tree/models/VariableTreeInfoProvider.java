@@ -35,7 +35,6 @@ import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
-import org.netbeans.modules.bpel.mapper.tree.MapperTreeNode;
 import org.netbeans.modules.bpel.mapper.tree.actions.AddPredicateAction;
 import org.netbeans.modules.bpel.mapper.tree.actions.AddSpecialStepAction;
 import org.netbeans.modules.bpel.mapper.tree.actions.DeletePredicateAction;
@@ -63,6 +62,7 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xpath.ext.StepNodeTestType;
+import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 
 /**
  * The implementation of the TreeItemInfoProvider for the variables' tree.
@@ -241,8 +241,9 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
                     mapperTcContext, inLeftTree, treePath, dataObjectPathItr);
             result.add(action);
             //
-            // For Elements only!
-            if (!(treeItem instanceof Attribute)) {
+            // Only for components which have any children!
+            boolean notLeaf = XPathUtils.hasSubcomponents((SchemaComponent)treeItem);
+            if (notLeaf) {
                 addSpecialStepActions(result, mapperTcContext, inLeftTree, 
                         treePath, dataObjectPathItr);
             }
@@ -275,8 +276,9 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             } 
             if (sComp != null) {
                 //
-                // For Elements only!
-                if (!(sComp instanceof Attribute)) {
+                // Only for components which have any children!
+                boolean notLeaf = XPathUtils.hasSubcomponents((SchemaComponent)sComp);
+                if (notLeaf) {
                     addSpecialStepActions(result, mapperTcContext, inLeftTree, 
                             treePath, dataObjectPathItr);
                 }

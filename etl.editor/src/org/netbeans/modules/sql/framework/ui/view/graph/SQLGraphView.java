@@ -108,6 +108,8 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
     public SQLGraphView() {
         super();
         setDropEnabled(true);
+        // vlv: print
+        putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
     }
 
     /**
