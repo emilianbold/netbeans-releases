@@ -36,6 +36,8 @@
                 
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 
                 <folder name="FontsColors">
@@ -117,6 +119,8 @@
                 
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 
                 <folder name="FontsColors">
