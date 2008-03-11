@@ -48,24 +48,16 @@ import gui.actions.*;
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author  mmirilovic@netbeans.org, rashid@netbeans.org, mrkam@netbeans.org
+ * @author  mrkam@netbeans.org
  */
-public class EPMeasureActions3  {
+public class EPMeasureActions4  {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
             
         suite.addTest(new WatchProjects("testInitGCProjects"));
-        suite.addTest(new SchemaNavigatorSchemaView("measureTime", "Schema Navigator Schema View"));
-        suite.addTest(new NavigatorSchemaViewMode("measureTime","Schema Navigator Schema View mode"));
-        
-
-//TODO there is an password dialog solve before enable to run again        suite.addTest(new DeployProject("measureTime","Deploy Project"));
-        suite.addTest(new OpenComplexDiagram("measureTime","Open Complex Diagram"));         
-//        suite.addTest(new OpenComplexDiagram("testGC","Open Complex Diagram - Test GC"));         
-        suite.addTest(new OpenBPELproject("measureTime","OpenBPELproject"));
-
-        suite.addTest(new OpenSchemaView("testOpenComplexSchemaView", "Open Complex Schema View"));
+        suite.addTest(new OpenSchemaView("testOpenSchemaView", "Open Schema View")); 
+        suite.addTest(new StartAppserver("measureTime","Start Appserver"));
         suite.addTest(new WatchProjects("testGCProjects"));
         return suite;
     }
