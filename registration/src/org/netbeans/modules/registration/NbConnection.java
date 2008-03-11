@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.registration;
 
-import com.sun.servicetag.RegistrationData;
-import com.sun.servicetag.ServiceTag;
+import org.netbeans.modules.servicetag.RegistrationData;
+import org.netbeans.modules.servicetag.ServiceTag;
 import java.awt.Frame;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
