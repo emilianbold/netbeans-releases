@@ -35,7 +35,7 @@
  * Contributor(s):
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,58 +50,57 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.refactoring.plugins;
+package org.netbeans.modules.cnd.completion;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.refactoring.test.RefactoringBaseTestCase;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.junit.Manager;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionTestPerformer;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class CsmWhereUsedQueryPluginTestCase extends RefactoringBaseTestCase {
+public class SmartCompletionInQuoteTestCase extends CompletionBaseTestCase {
 
-    public CsmWhereUsedQueryPluginTestCase(String testName) {
-        super(testName);
+    public SmartCompletionInQuoteTestCase(String name) {
+        super(name, false); // we do not plan to modify or insert something in this test case
     }
 
     @Override 
     protected File getTestCaseDataDir() {
         return getQuoteDataDir();
-    }    
+    } 
     
-    public void testClassCustomer() throws Exception {
-        performWhereUsed("customer.h", 49, 10);
+    protected final File getQuoteDataDir() {
+        String dataPath = getDataDir().getAbsolutePath().replaceAll("cnd.completion", "cnd.modelimpl"); //NOI18N
+        String filePath = "common/quote_nosyshdr";
+        return Manager.normalizeFile(new File(dataPath, filePath));
     }
     
-    protected void performWhereUsed(String source, int line, int column) throws Exception {
-        performWhereUsed(source, line, column, Collections.emptyMap());
+    @Override
+    protected CompletionTestPerformer createTestPerformer() {
+        return new CompletionTestPerformer(CsmCompletionQuery.QueryScope.SMART_QUERY);
     }
     
-    protected void performWhereUsed(String source, int line, int column, Map params) throws Exception {
-        CsmReference ref = super.getReference(source, line, column);
-        assertNotNull(ref);
-        CsmObject targetObject = ref.getReferencedObject();
-        assertNotNull(targetObject);
-        Lookup lkp = Lookups.singleton(ref);
-        WhereUsedQuery query = new WhereUsedQuery(lkp);
-        // set parameters
-        for (Map.Entry entry : (Set<Map.Entry>)params.entrySet()) {
-            query.putValue(entry.getKey(), entry.getValue());
-        }
-        CsmWhereUsedQueryPlugin whereUsedPlugin = new CsmWhereUsedQueryPlugin(query);        
-        Collection<RefactoringElementImplementation> elements = whereUsedPlugin.doPrepareElements(targetObject);
-        assertNotNull(elements);
+    public void testInCpuConstructorImpl() throws Exception {
+        super.performTest("cpu.cc", 48, 9);
+    }
+    
+    public void testInCpuComputeSupportMetricImplInExpr() throws Exception {
+        super.performTest("cpu.cc", 58, 27);
+    }
+    public void testInCpuComputeSupportMetricImplInSwitch() throws Exception {
+        super.performTest("cpu.cc", 60, 14);
+    }
+    public void testInCpuComputeSupportMetricImplInCase() throws Exception {
+        super.performTest("cpu.cc", 61, 16);
+    }
+    public void testInCpuComputeSupportMetricImplInMethodCall() throws Exception {
+        super.performTest("cpu.cc", 70, 7);
+    }
+    public void testInCpuComputeSupportMetricImplInMethodCallParam() throws Exception {
+        super.performTest("cpu.cc", 70, 23);
     }
 }
