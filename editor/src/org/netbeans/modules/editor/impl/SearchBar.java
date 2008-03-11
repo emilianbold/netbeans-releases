@@ -70,6 +70,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.swing.Timer;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -113,6 +114,10 @@ public final class SearchBar extends JPanel {
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
     private static final Color NOT_FOUND = Color.RED.darker();
     private static final Color INVALID_REGEXP = Color.red;
+    
+    // Delay times for incremental search [ms]
+    private static final int SEARCH_DELAY_TIME_LONG = 300; // < 3 chars
+    private static final int SEARCH_DELAY_TIME_SHORT = 20; // >= 3 chars
     
     private static final int defaultIncremantalSearchComboWidth = 200;
     private static final int maxIncremantalSearchComboWidth = 350;
@@ -304,6 +309,15 @@ public final class SearchBar extends JPanel {
         incrementalSearchTextField = (JTextField) incrementalSearchComboBox.getEditor().getEditorComponent();
         incrementalSearchTextField.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); // NOI18N
 
+        ActionListener al = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                incrementalSearch();
+            }
+        };
+
+        final Timer searchDelayTimer = new Timer(SEARCH_DELAY_TIME_LONG, al);
+        searchDelayTimer.setRepeats(false);
+        
         // listen on text change
         incrementalSearchTextFieldListener = new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
@@ -312,13 +326,15 @@ public final class SearchBar extends JPanel {
             public void insertUpdate(DocumentEvent e) {
                 // text changed - attempt incremental search
                 computeLayout();
-                incrementalSearch();
+                if(incrementalSearchTextField.getText().length() > 3) searchDelayTimer.setInitialDelay(SEARCH_DELAY_TIME_SHORT);
+                searchDelayTimer.restart();
             }
 
             public void removeUpdate(DocumentEvent e) {
                 // text changed - attempt incremental search
                 computeLayout();
-                incrementalSearch();
+                if(incrementalSearchTextField.getText().length() <= 3) searchDelayTimer.setInitialDelay(SEARCH_DELAY_TIME_LONG);
+                searchDelayTimer.restart();
             }
         };
         incrementalSearchTextField.getDocument().addDocumentListener(incrementalSearchTextFieldListener);

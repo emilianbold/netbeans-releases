@@ -496,10 +496,21 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
     }
     
     private void writefile(final File file) throws ConfigurationException {
+        boolean assertEnabled = false;
+        assert assertEnabled = true;
+
+        assert file != null : "File to write can't be null"; // NOI18N
+
         try {
             FileObject cfolder = FileUtil.toFileObject(file.getParentFile());
             if (cfolder == null) {
                 File parentFile = file.getParentFile();
+                if (assertEnabled) {
+                    LOGGER.log(Level.INFO, "Absolute " + file.isAbsolute()); // NOI18N
+                    LOGGER.log(Level.INFO, "Path " + file.getAbsolutePath()); // NOI18N
+                    LOGGER.log(Level.INFO, "Parent " + parentFile); // NOI18N
+                    LOGGER.log(Level.INFO, "Grand Parent " + ((parentFile != null) ? parentFile.getParent() : null)); // NOI18N
+                }
                 try {
                     cfolder = FileUtil.toFileObject(parentFile.getParentFile()).createFolder(parentFile.getName());
                 } catch (IOException ioe) {

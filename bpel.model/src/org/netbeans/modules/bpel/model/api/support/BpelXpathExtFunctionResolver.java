@@ -64,12 +64,10 @@ public class BpelXpathExtFunctionResolver implements ExtensionFunctionResolver,
                 DO_UNMARSHAL_METADATA);
         //
         // Another runtime specific extensions
-        mValidFunctions.put(GET_GUID_METADATA.getName(), 
-                GET_GUID_METADATA);
-        mValidFunctions.put(GET_BPID_METADATA.getName(), 
-                GET_BPID_METADATA);
-        mValidFunctions.put(EXIST_METADATA.getName(), 
-                EXIST_METADATA);
+        // These functions are not going to be supported by the runtime
+        // mValidFunctions.put(GET_GUID_METADATA.getName(), GET_GUID_METADATA);
+        // mValidFunctions.put(GET_BPID_METADATA.getName(), GET_BPID_METADATA);
+        // mValidFunctions.put(EXIST_METADATA.getName(), EXIST_METADATA);
         //
     }
     
