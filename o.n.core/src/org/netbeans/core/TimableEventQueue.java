@@ -58,9 +58,9 @@ import org.openide.util.RequestProcessor;
  * 
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-final class TimeableEventQueue extends EventQueue 
+final class TimableEventQueue extends EventQueue 
 implements Runnable {
-    private static final Logger LOG = Logger.getLogger(TimeableEventQueue.class.getName());
+    private static final Logger LOG = Logger.getLogger(TimableEventQueue.class.getName());
     private static final RequestProcessor RP = new RequestProcessor("Timeable Event Queue Watch Dog", 1, true); // NOI18N
     private static final int QUANTUM = Integer.getInteger("org.netbeans.core.TimeableEventQueue.quantum", 5000); // NOI18N
     private static final int PAUSE = Integer.getInteger("org.netbeans.core.TimeableEventQueue.pause", 60000); // NOI18N
@@ -72,7 +72,7 @@ implements Runnable {
     private volatile long start;
     
 
-    public TimeableEventQueue() {
+    public TimableEventQueue() {
         TIMEOUT = RP.create(this);
         TIMEOUT.setPriority(Thread.MIN_PRIORITY);
     }
@@ -88,7 +88,7 @@ implements Runnable {
             Mutex.EVENT.writeAccess (new Mutex.Action<Void>() {
                 public Void run() {
                     Thread.currentThread().setContextClassLoader(Main.getModuleSystem().getManager().getClassLoader());
-                    Toolkit.getDefaultToolkit().getSystemEventQueue().push(new TimeableEventQueue());
+                    Toolkit.getDefaultToolkit().getSystemEventQueue().push(new TimableEventQueue());
                     LOG.fine("Initialization done");
                     return null;
                 }

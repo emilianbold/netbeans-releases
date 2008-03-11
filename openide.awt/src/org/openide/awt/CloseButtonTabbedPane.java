@@ -394,10 +394,7 @@ final class CloseButtonTabbedPane extends JTabbedPane {
             super.fireStateChanged();
         } catch( ArrayIndexOutOfBoundsException e ) {
             if( Utilities.isMac() ) {
-                //JTabbedPane is buggy on Mac OS
-                Exceptions.attachLocalizedMessage(e,
-                    "Suppressed AIOOBE bug in Apple's implementation of JTabbedPane"); //NOI18N
-                Logger.getAnonymousLogger().log(Level.INFO, null, e);
+                //#126651 - JTabbedPane is buggy on Mac OS
             } else {
                 throw e;
             }
