@@ -69,11 +69,13 @@ public class JMakiTest extends CStubsTSuite {
 
     @Override
     public void setUp() throws Exception {
-        super.setUp();
-        try {
-            Class.forName("org.netbeans.modules.sun.jmaki.Installer");
-        } catch (ClassNotFoundException ex) {
-            fail("jMaki is not installed.");
+        if (!Boolean.getBoolean("plugins.jmaki.skip")) {
+            super.setUp();
+            try {
+                Class.forName("org.netbeans.modules.sun.jmaki.Installer");
+            } catch (ClassNotFoundException ex) {
+                fail("jMaki is not installed.");
+            }
         }
     }
 
@@ -94,11 +96,11 @@ public class JMakiTest extends CStubsTSuite {
         addJMakiFrameWork();
         createStubs("FromEntities"); //NOI18N
     }
-    
+
     public void testJMakiTestsSkipped() {
         //nothing to do
     }
-    
+
     private void addJMakiFrameWork() {
         // open project properties
         getProjectRootNode().properties();
