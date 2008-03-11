@@ -12,11 +12,20 @@ import org.netbeans.modules.xml.axi.ContentModel;
  *
  * @author radval
  */
-public class SchemaComplexTypeNode extends AbstractSchemaArtifactNode {
+public class SchemaComplexTypeNode extends AbstractSchemaArtifactNode implements SelectableTreeNode  {
 
+   private boolean mSelected;
+ 
     public SchemaComplexTypeNode(ContentModel cModel) {
         super(cModel);
-        
-        
+    }
+    
+    
+    public boolean isSelected() {
+        return mSelected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.mSelected = selected;
     }
 }

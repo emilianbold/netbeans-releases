@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,38 +39,38 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.makefile;
+package org.netbeans.modules.gsf;
 
-import org.netbeans.editor.*;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
+import org.openide.filesystems.FileObject;
 
 /**
-* Default settings values for Make.
-*
-*/
+ * Supplies classpath information according to project file owner.
+ * This is already available in j2seproject, but when the java support
+ * is not present it causes user source paths not to be indexed etc.
+ * 
+ * @author Jesse Glick
+ */
+public class ProjectClassPathProvider implements ClassPathProvider {
 
-public class MakefileSettingsDefaults extends ExtSettingsDefaults {
-
-  public static final Boolean defaultMakeWordMatchMatchCase = Boolean.TRUE;
-
-
-  public static final Acceptor defaultIndentHotCharsAcceptor
-    = new Acceptor() {
-        public boolean accept(char ch) {
-          switch (ch) {
-            case '}':
-            return true;
-          }
-
-          return false;
+    /** Default constructor for lookup. */
+    public ProjectClassPathProvider() {}
+    
+    public ClassPath findClassPath(FileObject file, String type) {
+        Project p = FileOwnerQuery.getOwner(file);
+        if (p != null) {
+            ClassPathProvider cpp = p.getLookup().lookup(ClassPathProvider.class);
+            if (cpp != null) {
+                return cpp.findClassPath(file, type);
+            } else {
+                return null;
+            }
+        } else {
+            return null;
         }
-      };
-
-  // DO WE NEED IT?
-  public static final String defaultWordMatchStaticWords
-  = "Exception IntrospectionException FileNotFoundException IOException" //NOI18N
-    + " ArrayIndexOutOfBoundsException ClassCastException ClassNotFoundException" //NOI18N
-    + " CloneNotSupportedException NullPointerException NumberFormatException" //NOI18N
-    + " SQLException IllegalAccessException IllegalArgumentException"; //NOI18N
-
-}//MakefileSettingsDefaults
+    }
+    
+}

@@ -35,17 +35,16 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="testComboBox" alignment="0" pref="340" max="32767" attributes="1"/>
-                  <Component id="developmentComboBox" alignment="0" pref="340" max="32767" attributes="1"/>
-                  <Component id="productionComboBox" alignment="0" pref="340" max="32767" attributes="1"/>
+                  <Component id="testComboBox" alignment="0" pref="313" max="32767" attributes="1"/>
+                  <Component id="productionComboBox" alignment="0" pref="313" max="32767" attributes="1"/>
+                  <Component id="developmentComboBox" alignment="0" pref="313" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                  <Component id="createProductionDb" max="32767" attributes="1"/>
                   <Component id="createTestDb" alignment="1" max="32767" attributes="1"/>
+                  <Component id="createProductionDb" alignment="1" max="32767" attributes="1"/>
                   <Component id="createDevelopmentDb" alignment="1" max="32767" attributes="1"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -55,8 +54,8 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="developmentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="developmentComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="createDevelopmentDb" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="developmentComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -67,8 +66,8 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="productionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="createProductionDb" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="productionComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="createProductionDb" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>

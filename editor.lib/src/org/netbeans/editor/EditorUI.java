@@ -73,6 +73,7 @@ import javax.swing.plaf.TextUI;
 import org.netbeans.editor.ext.Completion;
 import org.netbeans.editor.ext.ExtUtilities;
 import org.netbeans.modules.editor.lib.ColoringMap;
+import org.netbeans.modules.editor.lib.KitsTracker;
 import org.openide.util.WeakListeners;
 
 /**
@@ -317,7 +318,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
      * @deprecated Use Editor Settings API instead.
      */
     protected static Map<String, Coloring> getSharedColoringMap(Class kitClass) {
-        String mimeType = BaseKit.kitsTracker_FindMimeType(kitClass);
+        String mimeType = KitsTracker.getInstance().findMimeType(kitClass);
         return ColoringMap.get(mimeType).getMap();
     }
 

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -28,12 +29,15 @@ public class ProjectNode extends AbstractSchemaArtifactNode {
 
     private Node mProjectDelegateNode;
     
-    public ProjectNode(Node projectDelegate) {
+    private List<AXIComponent> mExistingArtificatNames = new ArrayList<AXIComponent>();
+    
+    public ProjectNode(Node projectDelegate, List<AXIComponent> existingArtificatNames) {
         super(projectDelegate.getDisplayName());
         this.mProjectDelegateNode = projectDelegate;
         //this.setUserObject(projectDelegate.getDisplayName());
         
         this.mIcon = new ImageIcon(this.mProjectDelegateNode.getIcon(BeanInfo.ICON_COLOR_16x16)); 
+        this.mExistingArtificatNames = existingArtificatNames;
         
         populateSchemaFiles();
     }
@@ -50,7 +54,7 @@ public class ProjectNode extends AbstractSchemaArtifactNode {
                         try {
                             FileObject fo = FileUtil.toFileObject(file);
                             DataObject fileDataObject = DataObject.find(fo);
-                            FileNode fileNode = new FileNode(fileDataObject.getNodeDelegate());
+                            FileNode fileNode = new FileNode(fileDataObject.getNodeDelegate(), mExistingArtificatNames);
                             this.add(fileNode);
                         } catch(Exception ex) {
                             ex.printStackTrace();
