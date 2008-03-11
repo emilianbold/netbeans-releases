@@ -248,23 +248,8 @@ public class MercurialInterceptor extends VCSInterceptor {
             public void run() {
                 OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
                 try {
-                    if (dstFile.isDirectory() && root.equals(dstRoot)) {
+                    if (root.equals(dstRoot)) {
                         HgCommand.doRenameAfter(root, srcFile, dstFile, logger);
-                        return;
-                    }
-                    int status = HgCommand.getSingleStatus(root, srcFile.getParent(), srcFile.getName()).getStatus();
-                    Mercurial.LOG.log(Level.FINE, "hgMoveImplementation(): Status: {0} {1}", new Object[] {srcFile, status}); // NOI18N
-                    if (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY ||
-                        status == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
-                    } else if (status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
-                        HgCommand.doRemove(root, srcFile, logger);
-                        if (dstRoot != null) {
-                            HgCommand.doAdd(dstRoot, dstFile, logger);
-                        }
-                    } else {
-                        if (root.equals(dstRoot)) {
-                            HgCommand.doRenameAfter(root, srcFile, dstFile, logger);
-                        }
                     }
                 } catch (HgException e) {
                     Mercurial.LOG.log(Level.FINE, "Mercurial failed to rename: File: {0} {1}", new Object[] {srcFile.getAbsolutePath(), dstFile.getAbsolutePath()}); // NOI18N
@@ -288,21 +273,8 @@ public class MercurialInterceptor extends VCSInterceptor {
     private void fileMovedImpl(final File from, final File to) {
         if (from == null || to == null || !to.exists()) return;
         if (to.isDirectory()) return;
-        Mercurial hg = Mercurial.getInstance();        
-        final File root = hg.getTopmostManagedParent(from);
-        if (root == null) return;
         
-        RequestProcessor rp = hg.getRequestProcessor(root.getAbsolutePath());
-
-        HgProgressSupport supportCreate = new HgProgressSupport() {
-            public void perform() {
-                cache.refresh(from, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                cache.refresh(to, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-            }
-        };
-
-        supportCreate.start(rp, root.getAbsolutePath(), 
-                org.openide.util.NbBundle.getMessage(MercurialInterceptor.class, "MSG_Move_Progress")); // NOI18N
+        reScheduleRefresh(1000, from.getParentFile());
     }
     
     public boolean beforeCreate(File file, boolean isDirectory) {
@@ -323,23 +295,12 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     private void fileCreatedImpl(final File file) {
         if (file.isDirectory()) return;
-        Mercurial hg = Mercurial.getInstance();        
-        final File root = hg.getTopmostManagedParent(file);
-        if (root == null) return;
-        
-        RequestProcessor rp = hg.getRequestProcessor(root.getAbsolutePath());
+        Mercurial.LOG.log(Level.FINE, "fileCreatedImpl {0}", file);
 
-        HgProgressSupport supportCreate = new HgProgressSupport() {
-            public void perform() {
-                // There is no point in refreshing the cache for ignored files.
-                if (!HgUtils.isIgnored(file, false)) {
-                    reScheduleRefresh(1000, file);
-                }
-            }
-        };
-
-        supportCreate.start(rp, root.getAbsolutePath(), 
-                org.openide.util.NbBundle.getMessage(MercurialInterceptor.class, "MSG_Create_Progress")); // NOI18N
+       // There is no point in refreshing the cache for ignored files.
+       if (!HgUtils.isIgnored(file, false)) {
+          reScheduleRefresh(1000, file.getParentFile());
+       }
     }
     
     public void afterChange(final File file) {
@@ -352,24 +313,11 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     private void fileChangedImpl(final File file) {
         if (file.isDirectory()) return;
-        Mercurial hg = Mercurial.getInstance();        
-        final File root = hg.getTopmostManagedParent(file);
-        if (root == null) return;
-        
-        RequestProcessor rp = hg.getRequestProcessor(root.getAbsolutePath());
-
-        HgProgressSupport supportCreate = new HgProgressSupport() {
-            public void perform() {
-                Mercurial.LOG.log(Level.FINE, "fileChangedImpl(): File: {0}", file); // NOI18N
-                // There is no point in refreshing the cache for ignored files.
-                if (!HgUtils.isIgnored(file, false)) {
-                    reScheduleRefresh(1000, file);
-                }
-            }
-        };
-
-        supportCreate.start(rp, root.getAbsolutePath(), 
-                org.openide.util.NbBundle.getMessage(MercurialInterceptor.class, "MSG_Change_Progress")); // NOI18N
+        Mercurial.LOG.log(Level.FINE, "fileChangedImpl(): File: {0}", file); // NOI18N
+        // There is no point in refreshing the cache for ignored files.
+        if (!HgUtils.isIgnored(file, false)) {
+            reScheduleRefresh(1000, file.getParentFile());
+        }
     }
 
     private void reScheduleRefresh(int delayMillis, File fileToRefresh) {
@@ -386,7 +334,8 @@ public class MercurialInterceptor extends VCSInterceptor {
             Thread.interrupted();
             File fileToRefresh = filesToRefresh.poll();
             if (fileToRefresh != null) {
-                cache.refresh(fileToRefresh, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                Mercurial.LOG.log(Level.FINE, "RefreshTask called refreshAll {0}", fileToRefresh);
+                cache.refreshAll(fileToRefresh);
                 fileToRefresh = filesToRefresh.peek();
                 if (fileToRefresh != null) {
                     refreshTask.schedule(0);
@@ -394,7 +343,4 @@ public class MercurialInterceptor extends VCSInterceptor {
             }
         }
     }
-
-        
-
 }

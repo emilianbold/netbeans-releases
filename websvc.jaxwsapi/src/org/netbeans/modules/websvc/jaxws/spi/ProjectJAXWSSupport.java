@@ -56,7 +56,6 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -64,6 +63,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.ServiceAlreadyExists
 import org.netbeans.modules.websvc.jaxws.api.WsdlWrapperGenerator;
 import org.netbeans.modules.websvc.jaxws.api.WsdlWrapperHandler;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
