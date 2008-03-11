@@ -68,6 +68,7 @@ import org.openide.filesystems.FileUtil;
 public class UpdateAction extends ContextAction {
     
     private final VCSContext context;
+    private static String HG_TIP = "tip"; // NOI18N
 
     public UpdateAction(String name, VCSContext context) {
         this.context = context;
@@ -89,6 +90,7 @@ public class UpdateAction extends ContextAction {
             return;
         }
         rev = update.getSelectionRevision();
+        if(rev == null) rev = HG_TIP;
         final boolean doForcedUpdate = update.isForcedUpdateRequested();
         final String revStr = rev;
         
