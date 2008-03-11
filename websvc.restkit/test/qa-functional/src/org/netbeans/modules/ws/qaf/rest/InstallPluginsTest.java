@@ -61,12 +61,9 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class InstallPluginsTest extends JellyTestCase {
 
-    static final String REST_FLAG = ".rest.plugin.installed"; //NOI18N
-    static final String REST_KIT_LABEL = "RESTful Web Services"; //NOI18N
     static final String JMAKI_FLAG = ".jmaki.plugin.installed"; //NOI18N
     static final String JMAKI_KIT_LABEL = "jMaki Ajax support"; //NOI18N
-    private File flagF;
-    private File flagF2;
+    private File flag;
     
     public InstallPluginsTest(String name) {
         super(name);
@@ -77,28 +74,10 @@ public class InstallPluginsTest extends JellyTestCase {
         super.setUp();
         if (System.getProperty("xtest.tmpdir") != null) { //NOI18N
             //XTest execution
-            flagF = new File(System.getProperty("xtest.tmpdir"), REST_FLAG); //NOI18N
-            flagF2 = new File(System.getProperty("xtest.tmpdir"), JMAKI_FLAG); //NOI18N
+            flag = new File(System.getProperty("xtest.tmpdir"), JMAKI_FLAG); //NOI18N
         } else {
             //Internal-execution
-            flagF = new File(System.getProperty("java.io.tmpdir"), REST_FLAG); //NOI18N
-            flagF2 = new File(System.getProperty("java.io.tmpdir"), JMAKI_FLAG); //NOI18N
-        }
-    }
-
-    /**
-     * Install RESTful plugin iff it is not already installed
-     * 
-     * @throws java.io.IOException
-     */
-    public void testInstallRest() throws IOException {
-        try {
-            Class.forName("org.netbeans.modules.websvc.rest.spi.RestSupport");
-            fail(REST_KIT_LABEL + " is already installed.");
-        } catch (ClassNotFoundException cnfe) {
-            flagF.createNewFile();
-            PluginsOperator po = PluginsOperator.invoke();
-            po.install(REST_KIT_LABEL);
+            flag = new File(System.getProperty("java.io.tmpdir"), JMAKI_FLAG); //NOI18N
         }
     }
 
@@ -117,7 +96,7 @@ public class InstallPluginsTest extends JellyTestCase {
             Class.forName("org.netbeans.modules.sun.jmaki.Installer"); //NOI18N
             fail(JMAKI_KIT_LABEL + " is already installed.");
         } catch (ClassNotFoundException cnfe) {
-            flagF2.createNewFile();
+            flag.createNewFile();
             installPlugin();
         }
     }
@@ -171,9 +150,10 @@ public class InstallPluginsTest extends JellyTestCase {
 
     public TestSuite suite() {
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new InstallPluginsTest("testInstallRest")); //NOI18N
         if (!Boolean.getBoolean("plugins.jmaki.skip")) { //NOI18N
             suite.addTest(new InstallPluginsTest("testInstallJMaki")); //NOI18N
+        } else {
+            suite.addTest(new JMakiTest("testJMakiTestsSkipped")); //NOI18N
         }
         return suite;
     }

@@ -58,8 +58,6 @@ import org.netbeans.junit.ide.ProjectSupport;
  * "plugins.jmaki.nbm=/path/to/jmaki.nbm"
  *    - where to find jmaki.nbm (default is to download nbm from:
  *      https://ajax.dev.java.net/files/documents/3115/86078/org-netbeans-modules-sun-jmaki.nbm)
- * "plugins.rest.forceUninstall=true"
- *    - unistall jMaki plugin even if it has not been installed by tests
  * 
  * @author lukas
  */
