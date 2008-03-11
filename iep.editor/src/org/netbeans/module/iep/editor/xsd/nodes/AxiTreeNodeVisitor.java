@@ -43,6 +43,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
+import javax.swing.JTree;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIDocument;
 import org.netbeans.modules.xml.axi.Attribute;
@@ -62,12 +65,19 @@ public class AxiTreeNodeVisitor extends DeepAXITreeVisitor {
     
     private FolderNode mComplexTypesFolderNode;
     
+    private JTree mTree;
+    
     Stack<AbstractSchemaArtifactNode> mCurrentStack = new Stack<AbstractSchemaArtifactNode>();
     
     private List<AXIComponent> mExistingArtificatNames = new ArrayList<AXIComponent>();
     
-    public AxiTreeNodeVisitor(FileNode fileNode, List<AXIComponent> existingArtificatNames) {
+    private List<AbstractSchemaArtifactNode> mNodesToBeExpanded = new ArrayList<AbstractSchemaArtifactNode>();
+    
+    public AxiTreeNodeVisitor(FileNode fileNode, 
+                              List<AXIComponent> existingArtificatNames,
+                              JTree tree) {
         this.mFileNode = fileNode;
+        this.mTree = tree;
         mElementFolderNode = new FolderNode("Elements");
         mElementFolderNode.setBadge("org/netbeans/module/iep/editor/xsd/nodes/images/element_badge.png");
         this.mFileNode.add(mElementFolderNode);
@@ -79,6 +89,10 @@ public class AxiTreeNodeVisitor extends DeepAXITreeVisitor {
         
         this.mExistingArtificatNames = existingArtificatNames;
         
+    }
+    
+    public List<AbstractSchemaArtifactNode> getNodesToBeExpanded() {
+    	return this.mNodesToBeExpanded;
     }
     
     @Override
@@ -113,6 +127,10 @@ public class AxiTreeNodeVisitor extends DeepAXITreeVisitor {
         
         AbstractSchemaArtifactNode currentNode = mCurrentStack.peek();
         currentNode.add(eNode);
+        
+        if(eNode.isSelected()) {
+        	mNodesToBeExpanded.add(eNode);
+        }
         mCurrentStack.push(eNode);
         visitChildren(element);
         mCurrentStack.pop();
@@ -129,6 +147,11 @@ public class AxiTreeNodeVisitor extends DeepAXITreeVisitor {
         
         AbstractSchemaArtifactNode currentNode = mCurrentStack.peek();
         currentNode.add(cNode);
+        
+        if(cNode.isSelected()) {
+        	mNodesToBeExpanded.add(cNode);
+        }
+        
         mCurrentStack.push(cNode);
         visitChildren(element);
         mCurrentStack.pop();
@@ -144,6 +167,10 @@ public class AxiTreeNodeVisitor extends DeepAXITreeVisitor {
         
         AbstractSchemaArtifactNode currentNode = mCurrentStack.peek();
         currentNode.add(aNode);
+        
+        if(aNode.isSelected()) {
+        	mNodesToBeExpanded.add(aNode);
+        }
 //        visitChildren(attribute);
     }
 }
