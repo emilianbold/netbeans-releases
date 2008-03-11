@@ -235,11 +235,6 @@ public final class JaxWsDataObject extends MultiDataObject {
             return false;
         }
         
-//        @Override
-//        public boolean canDestroy() {
-//            return false;
-//        }
-        
         @Override
         public boolean canRename() {
             return false;
