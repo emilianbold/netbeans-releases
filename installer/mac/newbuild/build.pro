@@ -39,5 +39,12 @@
     <property name="cpp.appname" value="C/C++"/>
 
     <property name="dmg.prefix.name" value="_${prefix}-${buildnumber}"/>
+
+    <property name="welcome.cpp" value="NetBeans IDE ${appversion} with the C/C++ pack"/>
+    <property name="welcome.javase" value="NetBeans IDE ${appversion} with the Java SE pack"/>
+    <property name="welcome.ruby" value="NetBeans IDE ${appversion} with the Ruby pack"/>
+    <property name="welcome.javaee" value="NetBeans IDE ${appversion} with the Web and Java EE pack and bundled runtimes"/>
+    <property name="welcome.full" value="NetBeans IDE ${appversion} with the bundled runtimes"/>
+    <property name="welcome.php" value="NetBeans IDE ${appversion} with the PHP pack"/>              
               
 </project>
