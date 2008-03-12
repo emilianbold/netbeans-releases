@@ -268,7 +268,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                     // This code transfers changes between Local Variables and Watches
                     AbstractVariable parent = ((AbstractField) this).parent;
                     while (parent instanceof AbstractField) {
-                        parent.value = getDebugger().requestValue(parent.getName());
+                        parent.value = getDebugger().requestValue(parent.getFullName());
                         getDebugger().variableChanged(parent);
                         parent = ((AbstractField) parent).parent;
                     }
@@ -279,6 +279,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                     // is displayed, the AbstractVariable will be created from the GdbVariable.
                     // For that case, we need to update the GdbVariable!
                     getDebugger().updateGdbVariable(parent.getName(), parent.value);
+                    getDebugger().fireLocalsRefresh(parent);
                 }
                 getDebugger().variableChanged(this);
             }
