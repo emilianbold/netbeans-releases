@@ -7,7 +7,7 @@
     <grammars/>    
     <resources base="http://www.zvents.com/rest">
         <resource path="search">
-            <method name="GET" id="zvents.searchGet">
+            <method name="GET" id="searchGet">
                 <doc xml:lang="en">
                     Search for events based on the type indicated in the &quot;what&quot; parameter.
                     API documentation :  http://corporate.zvents.com/developers/documentation/search.html  
