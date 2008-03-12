@@ -95,6 +95,7 @@ public class Mercurial {
     private static final String MERCURIAL_SUPPORTED_VERSION_093 = "0.9.3"; // NOI18N
     private static final String MERCURIAL_SUPPORTED_VERSION_094 = "0.9.4"; // NOI18N
     private static final String MERCURIAL_SUPPORTED_VERSION_095 = "0.9.5"; // NOI18N
+    private static final String MERCURIAL_SUPPORTED_VERSION_100 = "1.0"; // NOI18N
     private static Mercurial instance;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     
@@ -151,7 +152,8 @@ public class Mercurial {
         if (version != null) {
             goodVersion = version.startsWith(MERCURIAL_SUPPORTED_VERSION_093) ||
                           version.startsWith(MERCURIAL_SUPPORTED_VERSION_094) ||
-                          version.startsWith(MERCURIAL_SUPPORTED_VERSION_095);
+                          version.startsWith(MERCURIAL_SUPPORTED_VERSION_095) ||
+                          version.startsWith(MERCURIAL_SUPPORTED_VERSION_100);
             if (!goodVersion){
                 Preferences prefs = HgModuleConfig.getDefault().getPreferences();
                 runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
