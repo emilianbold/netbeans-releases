@@ -79,7 +79,7 @@ made subject to such option by the copyright holder.
                 <text>For the integration module:</text>
                 <file location="${license.file}"/>
                 <text>For the TopLink library:</text>
-                <file location="./external/glassfish-persistence-v2-build-58g-license.txt"/>
+                <file location="./external/glassfish-persistence-v2ur1-build-09d-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
