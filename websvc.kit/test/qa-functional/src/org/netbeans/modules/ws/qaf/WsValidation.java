@@ -372,14 +372,14 @@ public class WsValidation extends WebServicesTestBase {
      * Test for Refresh Service action of Web Services node (from WSDL) 
      */
     public void testRefreshService() {
-        refreshWSDL("service",false);
+        refreshWSDL("service","",false);
     }
 
     /**
      * Test for Refresh Client action of Web Services References node 
      */
     public void testRefreshClient() {
-        refreshWSDL("client",false);
+        refreshWSDL("client","",false);
     }
     
     /**
@@ -387,7 +387,7 @@ public class WsValidation extends WebServicesTestBase {
      * including WSDL regeneration 
      */
     public void testRefreshServiceAndReplaceWSDL() {
-        refreshWSDL("service",true);
+        refreshWSDL("service","",true);
     }
 
     /**
@@ -395,7 +395,7 @@ public class WsValidation extends WebServicesTestBase {
      * including WSDL regeneration
      */
     public void testRefreshClientAndReplaceWSDL() {
-        refreshWSDL("client",true);
+        refreshWSDL("client","",true);
     }
 
     public static TestSuite suite() {
@@ -702,7 +702,7 @@ public class WsValidation extends WebServicesTestBase {
      * Projects tab
      * @param type
      */
-    private void refreshWSDL(String type, boolean includeSources) {
+    public void refreshWSDL(String type,java.lang.String wsname,boolean includeSources) {
         ProjectsTabOperator prj = new ProjectsTabOperator();
         JTreeOperator prjtree = new JTreeOperator(prj);
         ProjectRootNode prjnd;
@@ -710,9 +710,14 @@ public class WsValidation extends WebServicesTestBase {
         NbDialogOperator ccr;
         if (type.equalsIgnoreCase("service")) {
             prjnd = new ProjectRootNode(prjtree, getWsProjectName());
-            actual = new Node(prjnd, "Web Services|" + getWsName()); //NOI18N  
+            if(!wsname.equalsIgnoreCase("")){
+                actual = new Node(prjnd, "Web Services|" + wsname); //NOI18N
+            }
+            else {
+                actual = new Node(prjnd, "Web Services|" + getWsName()); //NOI18N  
+            }
             actual.performPopupActionNoBlock(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_RefreshServiceAction")); //NOI18N
-            ccr = new NbDialogOperator("Confirm Client Refresh"); //NOI18N
+            ccr = new NbDialogOperator("Confirm Service Refresh"); //NOI18N
             new EventTool().waitNoEvent(2000);
             if(includeSources) {
                 new JCheckBoxOperator(ccr,0).push();

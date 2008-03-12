@@ -53,7 +53,7 @@
 
     <description>YouTube Video Service</description>
     
-    <display-name>YouTubeVideos</display-name>
+    <display-name>Video Service</display-name>
     
     <!-- xi:include href="YouTubeVideosMetaData.xml"/ -->
     <saas-metadata>
@@ -66,10 +66,11 @@
         </authentication>
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="ListByTag" href="#youtube.listByTag"/>
         <method name="ListFeatured" href="#youtube.listFeatured"/>
         <method name="ListPopular" href="#youtube.listPopular"/>
     </methods>
-
+    -->
 </saas-services>

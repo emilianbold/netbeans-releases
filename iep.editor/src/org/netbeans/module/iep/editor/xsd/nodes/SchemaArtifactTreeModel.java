@@ -6,10 +6,15 @@
 package org.netbeans.module.iep.editor.xsd.nodes;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.iep.editor.wizard.ElementOrTypeChooserHelper;
 import org.netbeans.modules.xml.axi.AXIComponent;
@@ -29,16 +34,40 @@ public class SchemaArtifactTreeModel extends DefaultTreeModel {
      
     private List<AXIComponent> mExistingArtificatNames = new ArrayList<AXIComponent>();
     
-    SchemaArtifactTreeModel(FolderNode node) {
+    private JTree mTree;
+    
+    private List<AbstractSchemaArtifactNode> mNodesToBeExpanded = new ArrayList<AbstractSchemaArtifactNode>();
+    
+    SchemaArtifactTreeModel(FolderNode node, JTree tree) {
         super(node, true);
+        this.mTree = tree;
     }
     
-    public SchemaArtifactTreeModel(FolderNode node, Project  project, List<AXIComponent> existingArtificatNames) {
-        this(node);
+    public SchemaArtifactTreeModel(FolderNode node, 
+                                   Project  project, 
+                                   List<AXIComponent> existingArtificatNames,
+                                   JTree tree) {
+        this(node, tree);
         this.mRootNode = node;
         this.mProject = project;
         this.mExistingArtificatNames = existingArtificatNames;
         populateTree();
+        
+        Runnable r = new Runnable() {
+        	public void run() {
+        		Iterator<AbstractSchemaArtifactNode> it = mNodesToBeExpanded.iterator();
+                
+                while(it.hasNext()) {
+                	AbstractSchemaArtifactNode node = it.next();
+                	TreePath path = new TreePath(node.getPath());
+                	mTree.expandPath(path);
+                }
+        		
+        	}
+        };
+        
+        
+        SwingUtilities.invokeLater(r);
     }
     
     private void populateTree() {
@@ -65,8 +94,13 @@ public class SchemaArtifactTreeModel extends DefaultTreeModel {
         LogicalViewProvider viewProvider = project.getLookup().lookup(LogicalViewProvider.class);
         if(viewProvider != null) {
            Node projectNode = viewProvider.createLogicalView(); 
-           ProjectNode pNode = new ProjectNode(projectNode, mExistingArtificatNames);
+           ProjectNode pNode = new ProjectNode(projectNode, mExistingArtificatNames, mTree);
            this.mRootNode.add(pNode);
+           
+           //expand nodes
+           List<AbstractSchemaArtifactNode> nodesToBeExpanded = pNode.getNodesToBeExpanded();
+           mNodesToBeExpanded.addAll(nodesToBeExpanded);
+           
         }
     }
     
