@@ -698,4 +698,25 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             }
         }
     }
+
+    /**
+     * Builds the parents of vis. node up to and including the root node
+     * from VisualizerNode hierarchy
+    */
+    VisualizerNode[] getPathToRoot() {
+        return getPathToRoot(0);
+    }
+
+    VisualizerNode[] getPathToRoot(int depth) {
+        depth++;
+        VisualizerNode[] retNodes;
+        if (parent == null || parent.parent == null) {
+            retNodes = new VisualizerNode[depth];
+        }
+        else {
+            retNodes = parent.parent.getPathToRoot(depth);
+        }
+        retNodes[retNodes.length - depth] = this;
+        return retNodes;
+    }
 }
