@@ -44,14 +44,13 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.db.mysql.DatabaseUtils;
 import org.netbeans.modules.db.mysql.ServerInstance;
 import org.netbeans.modules.db.mysql.ServerNodeProvider;
+import org.netbeans.modules.db.mysql.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -75,7 +74,7 @@ public class PropertiesDialog  {
         
         tabbedPane = createTabbedPane(basePanel, adminPanel);
     }
-     
+    
     /**
      * Display the properties dialog
      * 
@@ -102,8 +101,6 @@ public class PropertiesDialog  {
         
         if ( ok ) {
             updateServer();
-            server.disconnect();
-            DatabaseUtils.connectToServerAsync(server);
         }     
         
         return ok;
@@ -162,6 +159,8 @@ public class PropertiesDialog  {
     }
 
     private void updateServer() {
+        boolean needsReconnect = needsReconnect();
+        
         server.setHost(basePanel.getHost());
         server.setPort(basePanel.getPort());
         server.setUser(basePanel.getUser());
@@ -175,9 +174,22 @@ public class PropertiesDialog  {
         server.setStopPath(adminPanel.getStopPath());
         server.setStopArgs(adminPanel.getStopArgs());
 
-        // Register the node provider in case it isn't currently registered
-        ServerNodeProvider.getDefault().setRegistered(true);        
+        ServerNodeProvider provider = ServerNodeProvider.getDefault();
+        if ( ! provider.isRegistered() ) {
+            provider.setRegistered(true);
+        } else if ( needsReconnect ) {
+            server.connectAsync();
+        }
     }
+
+    public boolean needsReconnect() {
+        return ( ! Utils.stringEquals(server.getHost(), basePanel.getHost()) ||
+                 ! Utils.stringEquals(server.getPort(), basePanel.getPort()) ||
+                 ! Utils.stringEquals(server.getUser(), basePanel.getUser()) ||
+                 ! Utils.stringEquals(server.getPassword(), 
+                                        basePanel.getPassword()) );
+    }
+
         
     private static String getMessage(String id) {
         return NbBundle.getMessage(PropertiesDialog.class, id);

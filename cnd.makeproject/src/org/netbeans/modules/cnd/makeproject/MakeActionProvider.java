@@ -775,21 +775,40 @@ public class MakeActionProvider implements ActionProvider {
         boolean cRequired = conf.hasCFiles(pd);
         boolean cppRequired = conf.hasCPPFiles(pd);
         boolean fRequired = CppSettings.getDefault().isFortranEnabled() && conf.hasFortranFiles(pd);
+        boolean runBTA = false;
         
         if (validated) {
             return lastValidation;
         }
-        if (csconf.isValid()) {
+        if (csconf.getFlavor() != null && csconf.getFlavor().equals(CompilerFlavor.Unknown.toString())) {
+            // Confiiguration was created with unknown tool set. Use the now default one.
+            csname = CppSettings.getDefault().getCompilerSetName();
+            cs = CompilerSetManager.getDefault().getCompilerSet(csname);
+            if (cs == null) {
+                cs = CompilerSetManager.getDefault().getCompilerSet(csconf.getOption());
+            }
+            if (cs == null && CompilerSetManager.getDefault().getCompilerSets().size() > 0) {
+                cs = CompilerSetManager.getDefault().getCompilerSet(0);
+            }
+            runBTA = true;
+        }
+        else if (csconf.isValid()) {
             csname = csconf.getOption();
             cs = CompilerSetManager.getDefault().getCompilerSet(csname);
         } else {
             csname = csconf.getOldName();
-            cs = CompilerSet.getCompilerSet(csconf.getOldName());
+            CompilerFlavor flavor = null;
+            if (csconf.getFlavor() != null) {
+                flavor = CompilerFlavor.toFlavor(csconf.getFlavor());
+                }
+            else {
+                flavor = CompilerFlavor.GNU;
+            }
+            cs = CompilerSet.getCustomCompilerSet("", flavor, csconf.getOldName());
             CompilerSetManager.getDefault().add(cs);
             csconf.setValid();
         }
         
-        boolean runBTA = false;
         
         // Check for a valid make program
         file = new File(cs.getTool(Tool.MakeTool).getPath());
@@ -831,6 +850,7 @@ public class MakeActionProvider implements ActionProvider {
             model.setFortranRequired(fRequired);
             model.setShowRequiredBuildTools(true);
             model.setShowRequiredDebugTools(false);
+            model.SetEnableRequiredCompilerCB(conf.isMakefileConfiguration());
             if (bt.initBuildTools(model, errs)) {
                 String name = model.getSelectedCompilerSetName();
                 conf.getCRequired().setValue(model.isCRequired());

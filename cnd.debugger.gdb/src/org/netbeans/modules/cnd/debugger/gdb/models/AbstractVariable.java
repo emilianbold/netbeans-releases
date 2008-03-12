@@ -258,12 +258,12 @@ public class AbstractVariable implements LocalVariable, Customizer {
                     }
                 }
                 ovalue = this.value;
-                value = getDebugger().updateVariable(fullname, value);
+                this.value = getDebugger().updateVariable(fullname, value);
             }
         }
         if (msg != null) {
             NotifyDescriptor nd = new NotifyDescriptor.Message(msg);
-            nd.setTitle("TITLE_SetValue_Warning"); // NOI18N
+            nd.setTitle(NbBundle.getMessage(AbstractVariable.class, "TITLE_SetValue_Warning")); // NOI18N
             DialogDisplayer.getDefault().notify(nd);
         }
     }
@@ -522,7 +522,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
             if (currentEngine == null) {
                 return null;
             }
-            debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
+            debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
         }
         return debugger;
     }

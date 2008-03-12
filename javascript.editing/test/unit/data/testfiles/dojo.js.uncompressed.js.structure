@@ -1,4 +1,3 @@
-TMP:CONSTRUCTOR:[]:ESCAPED{TMP}:
 cb:METHOD:[]:ESCAPED{cb}(PARAMETERS{ESCAPED{res}}):
 fp:METHOD:[]:ESCAPED{fp}(PARAMETERS{ESCAPED{e}}):
 gcs:METHOD:[]:ESCAPED{gcs}(PARAMETERS{ESCAPED{node}}):
@@ -30,9 +29,6 @@ dojo.version:CLASS:[]:ESCAPED{dojo.version}:
   revision:PROPERTY:[]:ESCAPED{revision}:
   toString:METHOD:[]:ESCAPED{toString}:
 dojo:CLASS:[]:ESCAPED{dojo}:
-  Color:CONSTRUCTOR:[]:ESCAPED{Color}(PARAMETERS{ESCAPED{color}}):
-  Deferred:CONSTRUCTOR:[]:ESCAPED{Deferred}(PARAMETERS{ESCAPED{canceller}}):
-  NodeList:CONSTRUCTOR:[]:ESCAPED{NodeList}:
   _Line:METHOD:[]:ESCAPED{_Line}(PARAMETERS{ESCAPED{start}, ESCAPED{end}}):
   _Url:METHOD:[]:ESCAPED{_Url}:
   _abs:METHOD:[]:ESCAPED{_abs}(PARAMETERS{ESCAPED{node}, ESCAPED{includeScroll}}):
@@ -114,6 +110,7 @@ dojo:CLASS:[]:ESCAPED{dojo}:
   isArray:METHOD:[]:ESCAPED{isArray}(PARAMETERS{ESCAPED{it}}):
   isArrayLike:METHOD:[]:ESCAPED{isArrayLike}(PARAMETERS{ESCAPED{it}}):
   isDescendant:METHOD:[]:ESCAPED{isDescendant}(PARAMETERS{ESCAPED{node}, ESCAPED{ancestor}}):
+  isFunction:METHOD:[]:ESCAPED{isFunction}:
   isObject:METHOD:[]:ESCAPED{isObject}(PARAMETERS{ESCAPED{it}}):
   isString:METHOD:[]:ESCAPED{isString}(PARAMETERS{ESCAPED{it}}):
   loaded:METHOD:[]:ESCAPED{loaded}:
@@ -159,12 +156,18 @@ d:CLASS:[]:ESCAPED{d}:
   _xhrObj:METHOD:[]:ESCAPED{_xhrObj}:
   experimental:METHOD:[]:ESCAPED{experimental}:
   query:METHOD:[]:ESCAPED{query}(PARAMETERS{ESCAPED{query}, ESCAPED{root}}):
-dojo._Url.prototype:CLASS:[]:ESCAPED{dojo._Url.prototype}:
+dojo._Url:CLASS:[]:ESCAPED{dojo._Url}:
   toString:METHOD:[]:ESCAPED{toString}:
+TMP:CLASS:[]:ESCAPED{TMP}:
+  TMP:CONSTRUCTOR:[]:ESCAPED{TMP}:
 dojo._listener:CLASS:[]:ESCAPED{dojo._listener}:
   add:METHOD:[]:ESCAPED{add}(PARAMETERS{ESCAPED{source}, ESCAPED{method}, ESCAPED{listener}}):
   getDispatcher:METHOD:[]:ESCAPED{getDispatcher}:
   remove:METHOD:[]:ESCAPED{remove}(PARAMETERS{ESCAPED{source}, ESCAPED{method}, ESCAPED{handle}}):
+dojo.Deferred:CLASS:[]:ESCAPED{dojo.Deferred}:
+  Deferred:CONSTRUCTOR:[]:ESCAPED{Deferred}(PARAMETERS{ESCAPED{canceller}}):
+dojo.Color:CLASS:[]:ESCAPED{dojo.Color}:
+  Color:CONSTRUCTOR:[]:ESCAPED{Color}(PARAMETERS{ESCAPED{color}}):
 dojo.Color.named:CLASS:[]:ESCAPED{dojo.Color.named}:
   aqua:PROPERTY:[]:ESCAPED{aqua}:
   black:PROPERTY:[]:ESCAPED{black}:
@@ -278,6 +281,8 @@ _nilExtents:CLASS:[]:ESCAPED{_nilExtents}:
 ret:CLASS:[]:ESCAPED{ret}:
   x:PROPERTY:[]:ESCAPED{x}:
   y:PROPERTY:[]:ESCAPED{y}:
+dojo.NodeList:CLASS:[]:ESCAPED{dojo.NodeList}:
+  NodeList:CONSTRUCTOR:[]:ESCAPED{NodeList}:
 currentPart:CLASS:[]:ESCAPED{currentPart}:
   attrs:PROPERTY:[]:ESCAPED{attrs}:
   classes:PROPERTY:[]:ESCAPED{classes}:
@@ -325,6 +330,6 @@ _d:CLASS:[]:ESCAPED{_d}:
   _ioWatch:METHOD:[]:ESCAPED{_ioWatch}(PARAMETERS{ESCAPED{dfd}, ESCAPED{validCheck}, ESCAPED{ioCheck}, ESCAPED{resHandle}}):
 runner:CLASS:[]:ESCAPED{runner}:
   run:METHOD:[]:ESCAPED{run}:
-dojo._Animation.prototype:CLASS:[]:ESCAPED{dojo._Animation.prototype}:
+dojo._Animation:CLASS:[]:ESCAPED{dojo._Animation}:
   _startTimer:METHOD:[]:ESCAPED{_startTimer}:
   _stopTimer:METHOD:[]:ESCAPED{_stopTimer}:

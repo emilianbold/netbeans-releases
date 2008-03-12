@@ -58,7 +58,7 @@ public class Utils {
     private static Logger LOGGER = Logger.getLogger(Utils.class.getName());
     
     public static void displayError(String msg, Exception ex) {
-        LOGGER.log(Level.WARNING, msg, ex);
+        LOGGER.log(Level.INFO, msg, ex);
         
         String reason = ex.getMessage() != null ? ex.getMessage() : 
             NbBundle.getMessage(Utils.class, "MSG_SeeErrorLog");
@@ -155,5 +155,14 @@ public class Utils {
                 NotifyDescriptor.OK_OPTION);
 
         DialogDisplayer.getDefault().notify(ndesc);
+    }
+    
+    /**
+     * See if two strings are equal, taking into account possibility of
+     * null
+     */
+    public static boolean stringEquals(String str1, String str2) {
+        return  (str1 == null && str2 == null) ||
+                (str2 != null && str1 != null && str1.equals(str2));
     }
 }

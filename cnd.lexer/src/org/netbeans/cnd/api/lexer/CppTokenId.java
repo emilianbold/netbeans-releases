@@ -71,7 +71,7 @@ public enum CppTokenId implements TokenId {
     
     ERROR(null, "error"), // NOI18N
     IDENTIFIER(null, "identifier"), // NOI18N
-    
+
     // C/C++ keywords
     ALIGNOF("alignof", "keyword"), // g++ // NOI18N
     __ALIGNOF__("__alignof__", "keyword"), // gcc // NOI18N
@@ -250,9 +250,10 @@ public enum CppTokenId implements TokenId {
     DBL_SHARP("##", "special"), // NOI18N
     BACK_SLASH("\\", "special"), // NOI18N
             
-    WHITESPACE(null, "whitespace"), // all spaces except new line // NOI18N
-    ESCAPED_LINE(null, "whitespace"), // line escape with \ // NOI18N
-    NEW_LINE(null, "whitespace"), // new line \n or \r // NOI18N
+    WHITESPACE(null, "whitespace"), // NOI18N // all spaces except new line
+    ESCAPED_LINE(null, "whitespace"), // NOI18N // line escape with \
+    ESCAPED_WHITESPACE(null, "whitespace"), // NOI18N // whitespace escape with \ inside it
+    NEW_LINE(null, "whitespace"), // NOI18N // new line \n or \r
     LINE_COMMENT(null, "comment"), // NOI18N
     BLOCK_COMMENT(null, "comment"), // NOI18N
     DOXYGEN_COMMENT(null, "comment"), // NOI18N
