@@ -52,7 +52,7 @@
 
     <description>Yahoo News Search Service</description>
     
-    <display-name>YahooNewsSearchService</display-name>
+    <display-name>News Search Service</display-name>
 
     <saas-metadata>
 
@@ -67,6 +67,7 @@
 
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="newsSearch" href="#search">
             <documentation>
@@ -75,5 +76,6 @@
             </documentation>
         </method>
     </methods>
-
+    -->
+    
 </saas-services>
