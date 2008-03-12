@@ -433,7 +433,8 @@ public final class CodeStyle {
 
     public enum BracePlacement {
         SAME_LINE,
-        NEW_LINE;
+        NEW_LINE,
+        NEW_LINE_HALF_INDENTED;
         
         @Override
         public String toString() {
