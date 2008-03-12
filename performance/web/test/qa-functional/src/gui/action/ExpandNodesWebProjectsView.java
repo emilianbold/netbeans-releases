@@ -74,7 +74,8 @@ public class ExpandNodesWebProjectsView extends WebPerformanceTestCase {
      */
     public ExpandNodesWebProjectsView(String testName) {
         super(testName);
-        init();
+        expectedTime = WINDOW_OPEN;
+//        init();
     }
     
     /**
@@ -84,33 +85,39 @@ public class ExpandNodesWebProjectsView extends WebPerformanceTestCase {
      */
     public ExpandNodesWebProjectsView(String testName, String performanceDataName) {
         super(testName, performanceDataName);
+        expectedTime = WINDOW_OPEN;
+//        init();
     }
     
-    protected void init() {
-        super.init();
-        project = testDataProject;
-        expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 1000;
-        WAIT_AFTER_PREPARE = 2000;
-    }
-
     public void testExpandProjectNode(){
         pathToFolderNode = "";
+        project = testDataProject;
+        WAIT_AFTER_OPEN = 1000;
+        WAIT_AFTER_PREPARE = 2000;
         doMeasurement();
     }
 
     public void testExpandSourcePackagesNode(){
         pathToFolderNode = "Source Packages";
+        project = testDataProject;
+        WAIT_AFTER_OPEN = 1000;
+        WAIT_AFTER_PREPARE = 2000;
         doMeasurement();
     }
     
     public void testExpandFolderWith50JspFiles(){
         pathToFolderNode = "Web Pages|jsp50";
+        project = testDataProject;
+        WAIT_AFTER_OPEN = 1000;
+        WAIT_AFTER_PREPARE = 2000;
         doMeasurement();
     }
     
     public void testExpandFolderWith100JspFiles(){
         pathToFolderNode = "Web Pages|jsp100";
+        project = testDataProject;
+        WAIT_AFTER_OPEN = 1000;
+        WAIT_AFTER_PREPARE = 2000;
         doMeasurement();
     }
     
@@ -120,6 +127,7 @@ public class ExpandNodesWebProjectsView extends WebPerformanceTestCase {
         projectTab.getProjectRootNode("TestWebProject").collapse();
         projectTab.getProjectRootNode(testDataProject).collapse();
         System.setProperty("perf.dont.resolve.java.badges", "true");
+        repaintManager().addRegionFilter(repaintManager().EXPLORER_FILTER);
     }
         
     public void prepare() {
@@ -128,23 +136,27 @@ public class ExpandNodesWebProjectsView extends WebPerformanceTestCase {
         else
 	    nodeToBeExpanded = new Node(projectTab.getProjectRootNode(project), pathToFolderNode);
         //repaintManager().setOnlyExplorer(true);
-        repaintManager().addRegionFilter(repaintManager().EXPLORER_FILTER);
-        nodeToBeExpanded.select();
+
+//        nodeToBeExpanded.select();
     }
     
     public ComponentOperator open(){
+//workaround for starting event:
+//        nodeToBeExpanded.tree().clickMouse(1);
+
+        nodeToBeExpanded.tree().doExpandPath(nodeToBeExpanded.getTreePath());
         nodeToBeExpanded.expand();
         return null;
     }
     
     public void close(){
         //repaintManager().setOnlyExplorer(true);
-        repaintManager().resetRegionFilters();
         nodeToBeExpanded.collapse();
     }
     
     public void shutdown() {
         super.shutdown();
+        repaintManager().resetRegionFilters();
         System.setProperty("perf.dont.resolve.java.badges", "false");
         projectTab.getProjectRootNode(testDataProject).collapse();
         new RestoreWindowAction().performAPI(projectTab);
