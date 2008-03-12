@@ -111,6 +111,7 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
                 );
         checkStatus();
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JsfFormCustomizer.class, "ACSD_JsfForm"));
         dialog.setVisible(true);
         repaint();
         

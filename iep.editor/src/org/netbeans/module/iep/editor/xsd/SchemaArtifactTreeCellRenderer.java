@@ -86,7 +86,8 @@ public class SchemaArtifactTreeCellRenderer implements TreeCellRenderer  {
             comp = checkBoxRenderer;
           
         } else {
-            mDefaultRenderer.setIcon(nodeValue.getIcon());
+            mDefaultRenderer.setOpenIcon(nodeValue.getIcon());
+            mDefaultRenderer.setClosedIcon(nodeValue.getIcon());
             comp = mDefaultRenderer.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
         }
         

@@ -258,7 +258,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                     }
                 }
                 ovalue = this.value;
-                value = getDebugger().updateVariable(fullname, value);
+                this.value = getDebugger().updateVariable(fullname, value);
             }
         }
         if (msg != null) {
