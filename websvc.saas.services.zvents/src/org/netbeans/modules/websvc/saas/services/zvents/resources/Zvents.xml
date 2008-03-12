@@ -52,7 +52,7 @@
 
     <description>Zvents Service</description>
     
-    <display-name>Zvents</display-name>
+    <display-name>Event Search Service</display-name>
 
     <saas-metadata>
 
@@ -67,8 +67,10 @@
 
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="searchGet" href="#zvents.searchGet"/>
     </methods>
-
+    -->
+    
 </saas-services>

@@ -50,9 +50,9 @@
                api-doc="http://www.weatherbug.com/howto/api/APIOverview.htm"
                url="org/netbeans/modules/websvc/saas/services/weatherbug/resources/WeatherBugWadl.xml">
 
-    <description>WeatherBug Service</description>
+    <description>Weather Report Service</description>
     
-    <display-name>WeatherBug</display-name>
+    <display-name>Weather Report Service</display-name>
 
     <saas-metadata>
 
@@ -67,8 +67,9 @@
 
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="liveWeatherRSS" href="#WeatherBug.LiveWeatherRSS"/>
     </methods>
-
+    -->
 </saas-services>
