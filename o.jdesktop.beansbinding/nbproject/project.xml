@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -40,19 +40,19 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-
-<library version="1.0">
-    <name>beans-binding</name>
-    <type>j2se</type>
-    <localizing-bundle>org.netbeans.modules.form.resources.Bundle</localizing-bundle>
-    <volume>
-        <type>classpath</type>
-        <resource>jar:nbinst://org.jdesktop.beansbinding/modules/ext/beansbinding-1.2.1.jar!/</resource>
-    </volume>
-    <volume>
-        <type>javadoc</type>
-        <resource>jar:nbinst://org.jdesktop.beansbinding/docs/beansbinding-1.2.1-doc.zip!/</resource>
-    </volume>
-</library>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>org.jdesktop.beansbinding</code-name-base>
+            <module-dependencies/>
+            <public-packages>
+                <subpackages>org.jdesktop</subpackages>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/beansbinding-1.2.1.jar</runtime-relative-path>
+                <binary-origin>external/beansbinding-1.2.1.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>
