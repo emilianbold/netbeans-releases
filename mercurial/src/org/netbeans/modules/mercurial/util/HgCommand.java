@@ -146,6 +146,7 @@ public class HgCommand {
     private static final String HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD = 
             "--template=rev:{rev}\\nauth:{author}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\n" + // NOI18N
             "\\nendCS:\\n"; // NOI18N
+    private static final String HG_LOG_REV_TIP_RANGE = "tip:0"; // NOI18N
     private static final String HG_LOG_REVISION_OUT = "rev:"; // NOI18N
     private static final String HG_LOG_AUTHOR_OUT = "auth:"; // NOI18N
     private static final String HG_LOG_DESCRIPTION_OUT = "desc:"; // NOI18N
@@ -889,6 +890,9 @@ public class HgCommand {
     public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, int limit, OutputLogger logger) {
          return getLogMessages(rootUrl, null, null, null, true, false, limit, logger);
     }
+    public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, int limit, OutputLogger logger) {
+         return getLogMessages(rootUrl, files, null, null, true, false, limit, logger);
+    }
 
     public static HgLogMessage[] getLogMessages(final String rootUrl, int limit, OutputLogger logger) {
          return getLogMessages(rootUrl, null, null, null, true, true, limit, logger);
@@ -1200,6 +1204,13 @@ public class HgCommand {
             command.add(HG_FLAG_REV_CMD);
             command.add(revStr);
         }    
+        
+        // Make sure revsions listed from "tip" down to "tip - limit"
+        if(limit >= 0 && dateStr == null && revStr == null){
+            command.add(HG_FLAG_REV_CMD);
+            command.add(HG_LOG_REV_TIP_RANGE);
+        }    
+        
         if(bGetFileInfo){
             command.add(HG_LOG_TEMPLATE_HISTORY_CMD);
         }else{
@@ -1626,6 +1637,8 @@ public class HgCommand {
         command.add(HG_COMMIT_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
 
         String projectUserName = new HgConfigFiles(repository).getUserName(false);
         String globalUsername = HgConfigFiles.getInstance().getUserName();
@@ -1658,7 +1671,7 @@ public class HgCommand {
             command.add(tempfile.getAbsolutePath());
 
             for(File f: commitFiles){
-                command.add(f.getAbsolutePath());
+                command.add(f.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));            
             }
             List<String> list = exec(command);
             

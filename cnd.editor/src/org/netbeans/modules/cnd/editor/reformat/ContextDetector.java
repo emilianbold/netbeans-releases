@@ -346,7 +346,22 @@ public class ContextDetector extends ExtendedTokenSequence {
             }
             if (previous.id() == RPAREN || previous.id() == RBRACKET){
                 if (next.id() == IDENTIFIER) {
-                     return OperatorKind.BINARY;
+                    if (isPreviousStatementParen()) {
+                        switch(current.id()){
+                            case STAR:
+                            case AMP:
+                                return OperatorKind.TYPE_MODIFIER;
+                            case PLUS:
+                            case MINUS:
+                                return OperatorKind.UNARY;
+                            case GT:
+                            case LT:
+                            default:
+                                return OperatorKind.SEPARATOR;
+                        }
+                    } else {
+                        return OperatorKind.BINARY;
+                    }
                 }
             }
             if (previous.id() == IDENTIFIER){
@@ -413,6 +428,59 @@ public class ContextDetector extends ExtendedTokenSequence {
             }
         }
         return OperatorKind.SEPARATOR;
+    }
+    
+    private boolean isPreviousStatementParen(){
+        int index = index();
+        try {
+            while(movePrevious()){
+                switch (token().id()) {
+                    case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
+                    case NEW_LINE:
+                    case LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                        break;
+                    default:
+                        return isStatementParen();
+                }
+            }
+            return true;
+        } finally {
+            moveIndex(index);
+            moveNext();
+        }
+    }
+    
+    private boolean isStatementParen(){
+        if (token().id() == RPAREN){
+            int level = 1;
+            while(movePrevious()){
+                switch (token().id()) {
+                    case RPAREN:
+                        level++;
+                        break;
+                    case LPAREN:
+                        level--;
+                        if (level == 0){
+                            Token<CppTokenId> previous = lookPreviousImportant();
+                            if (previous != null && 
+                               (previous.id() == FOR ||
+                                previous.id() == IF ||
+                                previous.id() == WHILE ||
+                                previous.id() == CATCH ||
+                                previous.id() == SWITCH)) {
+                                return true;
+                            }
+                            return false;
+                        }
+                        break;
+                }
+            }
+        }
+        return false;
     }
     
     private boolean isLikeExpession(){

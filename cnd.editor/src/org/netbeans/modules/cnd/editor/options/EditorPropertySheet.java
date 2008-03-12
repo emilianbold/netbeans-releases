@@ -83,7 +83,7 @@ import org.openide.util.NbBundle;
  */
 public class EditorPropertySheet extends javax.swing.JPanel implements ActionListener, PropertyChangeListener, PreferenceChangeListener {
     
-    private static final boolean USE_NEW_FORMATTER = false;
+    private static final boolean USE_NEW_FORMATTER = true;
     private static final boolean TRACE = false;
     
     private EditorOptionsPanelController topControler;
