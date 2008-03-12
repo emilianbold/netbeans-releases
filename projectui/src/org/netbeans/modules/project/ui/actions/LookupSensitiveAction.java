@@ -57,14 +57,16 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /** Action sensitive to current project
  * @author Petr Hrebejk
  */
-public abstract class LookupSensitiveAction extends BasicAction implements LookupListener {
+public abstract class LookupSensitiveAction extends BasicAction implements LookupListener, Presenter.Popup, Presenter.Menu {
     private static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions"); // NOI18N
+    private static Logger LOG = Logger.getLogger(LookupSensitiveAction.class.getName());
 
     private Lookup lookup;
     private Class<?>[] watch;
@@ -160,8 +162,21 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     }
 
     private void doRefresh() {
+        if (refreshing) {
+            return;
+        }
         refreshing = true;
         try {
+            if (LOG.isLoggable(Level.FINER)) {
+                LogRecord r = new LogRecord(Level.FINER, "LOG_ACTION_REFRESH"); // NOI18N
+                r.setResourceBundle(NbBundle.getBundle(LookupSensitiveAction.class));
+                r.setParameters(new Object[]{
+                    getClass(),
+                    lookup
+                });
+                r.setLoggerName(LOG.getName());
+                LOG.log(r);
+            }
             refresh( lookup );
         } finally {
             refreshing = false;
@@ -194,6 +209,20 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
         }
     }
 
+    // Implementation of Presenter.Menu ----------------------------------------
+    
+    public JMenuItem getMenuPresenter () {
+        JMenuItem menuPresenter = new JMenuItem();
+        org.openide.awt.Actions.connect(menuPresenter, this, false);
+        return menuPresenter;
+    }
+
+    public JMenuItem getPopupPresenter () {
+        JMenuItem menuPresenter = new JMenuItem();
+        org.openide.awt.Actions.connect(menuPresenter, this, true);
+        return menuPresenter;
+    }
+    
     /**
      * #120721: do not want to use Utilities.actionsGlobalContext since that does not survive focus change,
      * and we would like to mimic the selection tracking behavior of Hacks.keepCurrentProjectNameUpdated.

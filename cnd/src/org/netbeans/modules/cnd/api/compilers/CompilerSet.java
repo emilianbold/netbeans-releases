@@ -467,12 +467,12 @@ public class CompilerSet {
 //        return new CompilerSet(CompilerFlavor.GNU, directory);
     }
     
-    public static void removeCompilerSet(CompilerSet cs) {
-//        csmap.remove(cs.getDirectory());
-//        for (Tool tool : cs.getTools()) {
-//            cache.remove(cs.getDirectory() + File.separator + tool.getKind());
-//        }
-    }
+//    public static void removeCompilerSet(CompilerSet cs) {
+////        csmap.remove(cs.getDirectory());
+////        for (Tool tool : cs.getTools()) {
+////            cache.remove(cs.getDirectory() + File.separator + tool.getKind());
+////        }
+//    }
     
     /**
      * If no compilers are found an empty compiler set is created so we don't have an empty list.
