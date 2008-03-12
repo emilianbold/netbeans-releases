@@ -10,8 +10,13 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.ImageIcon;
+import javax.swing.JTree;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
@@ -31,9 +36,16 @@ public class ProjectNode extends AbstractSchemaArtifactNode {
     
     private List<AXIComponent> mExistingArtificatNames = new ArrayList<AXIComponent>();
     
-    public ProjectNode(Node projectDelegate, List<AXIComponent> existingArtificatNames) {
+    private JTree mTree;
+    
+    private List<AbstractSchemaArtifactNode> mNodesToBeExpanded = new ArrayList<AbstractSchemaArtifactNode>();
+    
+    public ProjectNode(Node projectDelegate, 
+            List<AXIComponent> existingArtificatNames,
+            JTree tree) {
         super(projectDelegate.getDisplayName());
         this.mProjectDelegateNode = projectDelegate;
+        this.mTree = tree;
         //this.setUserObject(projectDelegate.getDisplayName());
         
         this.mIcon = new ImageIcon(this.mProjectDelegateNode.getIcon(BeanInfo.ICON_COLOR_16x16)); 
@@ -54,8 +66,14 @@ public class ProjectNode extends AbstractSchemaArtifactNode {
                         try {
                             FileObject fo = FileUtil.toFileObject(file);
                             DataObject fileDataObject = DataObject.find(fo);
-                            FileNode fileNode = new FileNode(fileDataObject.getNodeDelegate(), mExistingArtificatNames);
+                            FileNode fileNode = new FileNode(fileDataObject.getNodeDelegate(), mExistingArtificatNames, mTree);
                             this.add(fileNode);
+                            
+                            
+                            List<AbstractSchemaArtifactNode> nodesToBeExpanded = fileNode.getNodesToBeExpanded();
+                            mNodesToBeExpanded.addAll(nodesToBeExpanded);
+                            
+                            
                         } catch(Exception ex) {
                             ex.printStackTrace();
                         }
@@ -64,6 +82,10 @@ public class ProjectNode extends AbstractSchemaArtifactNode {
             }
             
         }
+    }
+    
+    public List<AbstractSchemaArtifactNode> getNodesToBeExpanded() {
+    	return this.mNodesToBeExpanded;
     }
     
     private File[] recursiveListFiles(File file, FileFilter filter) {

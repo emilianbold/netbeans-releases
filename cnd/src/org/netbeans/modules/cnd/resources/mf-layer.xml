@@ -281,21 +281,7 @@ made subject to such option by the copyright holder.
         <file name="org-netbeans-modules-cnd-settings-CppSettings.settings" url="CppSettings.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.settings.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
         </file>
-        
-        <!--
-        <file name="org-netbeans-modules-cnd-settings-ShellSettings.settings" url="ShellSettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.settings.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
-        </file>
-        
-        <file name="org-netbeans-modules-cnd-settings-MakeSettings.settings" url="MakeSettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.settings.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/MakefileSettings.gif"/>
-        </file>
-        -->
         
         <folder name="MIMEResolver">
             

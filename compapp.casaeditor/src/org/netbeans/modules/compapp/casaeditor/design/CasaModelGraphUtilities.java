@@ -58,6 +58,7 @@ import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.Constants;
+import org.netbeans.modules.compapp.casaeditor.graph.CasaFactory;
 import org.netbeans.modules.compapp.casaeditor.graph.WaitMessageHandler;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetEngine;
@@ -77,7 +78,6 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaRegion;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
-import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -291,8 +291,9 @@ public class CasaModelGraphUtilities {
         buildProcess2EndpointMap(process2EndpointRefMap, su.getProvides());
         buildProcess2EndpointMap(process2EndpointRefMap, su.getConsumes());
         
+        boolean showEndpointGroup = CasaFactory.getCasaCustomizer().getBOOLEAN_CLASSIC_SESU_LAYOUT_STYLE();
         for (String processName : process2EndpointRefMap.keySet()) {
-            if (!processName.equals(NULL_PROCESS_NAME)) {
+            if (showEndpointGroup && !processName.equals(NULL_PROCESS_NAME)) {
                 List<CasaEndpointRef> endpointRefs = process2EndpointRefMap.get(processName);
                 CasaEndpoint endpoint = endpointRefs.get(0).getEndpoint().get();
                 createProcess(su, endpoint, scene, false);
