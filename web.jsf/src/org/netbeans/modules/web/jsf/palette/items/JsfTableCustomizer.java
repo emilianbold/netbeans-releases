@@ -115,6 +115,7 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
         
         checkStatus();
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JsfFormCustomizer.class, "ACSD_JsfTable"));
         dialog.setVisible(true);
         repaint();
         

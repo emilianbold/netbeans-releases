@@ -67,6 +67,10 @@ public class PlaceholderSchemaAttribute {
         
     }
     
+    public void setAXIComponent(AXIComponent component) {
+        this.mComponent = component;
+    }
+   
     public AXIComponent getAXIComponent() {
         return this.mComponent;
     }
@@ -110,4 +114,7 @@ public class PlaceholderSchemaAttribute {
     public void setAttributeComment(String attributeComment) {
         this.mAttributeComment = attributeComment;
     }
+    
+    
+   
 }
