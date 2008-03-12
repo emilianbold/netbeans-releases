@@ -343,6 +343,13 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         return mBadges;
     }
     
+    public void updatePinImage() {
+        for (Widget child : mPinsHolderWidget.getChildren()) {
+            if (child instanceof CasaPinWidget) {
+                ((CasaPinWidget)child).updatePinImage();
+            }
+        }
+    }
     
         
     private static class BindingPinsLayout implements Layout {
