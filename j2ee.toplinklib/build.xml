@@ -75,7 +75,7 @@ made subject to such option by the copyright holder.
                  needsrestart="${nbm.needs.restart}"
                  releasedate="${nbm.release.date}"
 		 moduleauthor="${nbm.module.author}">
-            <license name="glassfish-persistence-v2-build-58g-license.txt">
+            <license>
                 <text>For the integration module:</text>
                 <file location="${license.file}"/>
                 <text>For the TopLink library:</text>
