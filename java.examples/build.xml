@@ -53,8 +53,8 @@ made subject to such option by the copyright holder.
             </fileset>
         </path>
         <path id="beans-binding-classpath">
-            <fileset dir="../form/external">
-                <include name="**/beansbinding*.jar"/>
+            <fileset dir="../o.jdesktop.beansbinding/external">
+                <include name="**/*.jar"/>
             </fileset>
         </path>
         <ant dir="ClientEditor" target="compile" inheritAll="false" >

@@ -22,7 +22,7 @@
 	    
 	-->	
 		<resource path="xml">
-			<method name="GET" id="amazonecs.ItemSearch">
+			<method name="GET" id="itemSearch">
 				<doc>
 Amazon E-Commerce Service (ECS) lets you search Amazon's product catalogs and
 retrieve detailed product information, including prices, images, customer reviews, 
