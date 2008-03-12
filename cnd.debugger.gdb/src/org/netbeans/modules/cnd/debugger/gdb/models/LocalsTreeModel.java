@@ -76,6 +76,9 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
         
     public LocalsTreeModel(ContextProvider lookupProvider) {
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        if (debugger != null) {
+            debugger.addPropertyChangeListener(GdbDebugger.PROP_LOCALS_REFRESH, this);
+        }
     }    
     
     public Object getRoot() {
