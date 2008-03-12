@@ -63,7 +63,7 @@ public class MakeCalleeCurrentActionProvider extends ActionsProviderSupport impl
     
     
     public MakeCalleeCurrentActionProvider(ContextProvider lookupProvider) {
-        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
         this.lookupProvider = lookupProvider;
         debugger.addPropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
     }

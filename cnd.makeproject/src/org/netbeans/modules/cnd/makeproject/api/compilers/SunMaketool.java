@@ -48,4 +48,11 @@ public class SunMaketool extends Tool {
     public SunMaketool(CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
         super(flavor, MakeTool, name, displayName, path); // NOI18N
     }
+    
+    @Override
+    public SunMaketool createCopy() {
+        SunMaketool copy = new SunMaketool(getFlavor(), "", getDisplayName(), getPath());
+        copy.setName(getName());
+        return copy;
+    }
 }

@@ -38,17 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.openide.xml;
 
-import org.openide.util.*;
-import org.xml.sax.*;
-
-import java.io.*;
-
-import java.util.*;
-
-import javax.swing.event.*;
-
+import java.io.IOException;
+import java.util.logging.Logger;
+import org.openide.util.Lookup;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Entity resolver resolving all entities registered by modules.
@@ -104,8 +102,7 @@ public abstract class EntityCatalog implements EntityResolver {
         public InputSource resolveEntity(String publicID, String systemID)
         throws IOException, SAXException {
             if (result == null) {
-                Lookup.Template<EntityCatalog> temp = new Lookup.Template<EntityCatalog>(EntityCatalog.class);
-                result = Lookup.getDefault().lookup(temp);
+                result = Lookup.getDefault().lookupResult(EntityCatalog.class);
             }
 
             for (EntityCatalog res : result.allInstances()) {
@@ -117,6 +114,9 @@ public abstract class EntityCatalog implements EntityResolver {
                 }
             }
 
+            if (systemID != null && systemID.startsWith("http")) { // NOI18N
+                Logger.getLogger(EntityCatalog.class.getName()).warning("No resolver found for " + systemID);
+            }
             return null;
         }
     }

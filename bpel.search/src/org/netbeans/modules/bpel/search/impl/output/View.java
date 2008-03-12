@@ -83,9 +83,10 @@ public final class View extends TopComponent implements SearchListener {
 
   public void searchFinished(SearchEvent event) {
     String text = event.getSearchOption().getText();
+    String target = event.getSearchOption().getTarget().toString();
    
-    myList.finished(text, myFoundCount);
-    myTree.finished(text, myFoundCount);
+    myList.finished(target, text, myFoundCount);
+    myTree.finished(target, text, myFoundCount);
 
     View view = (View) WindowManager.getDefault().findTopComponent(View.NAME);
 //out();

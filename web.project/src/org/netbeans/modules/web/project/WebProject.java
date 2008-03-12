@@ -740,7 +740,7 @@ public final class WebProject implements Project, AntProjectListener {
                     }
                 });
             } else {
-                genFilesHelper.refreshBuildScript(org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                genFilesHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                                                   org.netbeans.modules.web.project.WebProject.class.getResource("resources/build-impl.xsl"),
                                                   false);
             }
@@ -897,11 +897,16 @@ public final class WebProject implements Project, AntProjectListener {
 
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
 
-            //update lib references in private properties
-            ArrayList l = new ArrayList();
+            //update lib references in project properties
+            ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
             l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
             l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
             ProjectProperties.storeLibrariesLocations(l.iterator(), props, getProjectDirectory());
+            
+            // #129316
+            ProjectProperties.removeObsoleteLibraryLocations(ep);
+            ProjectProperties.refreshLibraryTotals(props, cpMod.getClassPathSupport(), ProjectProperties.JAVAC_CLASSPATH,  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
+            ProjectProperties.refreshLibraryTotals(props, cpMod.getClassPathSupport(), WebProjectProperties.WAR_CONTENT_ADDITIONAL,  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
 
             //add webinf.dir required by 6.0 projects
             if (props.getProperty(WebProjectProperties.WEBINF_DIR) == null) {
@@ -1002,7 +1007,7 @@ public final class WebProject implements Project, AntProjectListener {
             // unregister project's classpaths to GlobalPathRegistry
             GsfClassPathProviderImpl gsfCpProvider = lookup.lookup(GsfClassPathProviderImpl.class);
             if (gsfCpProvider != null) {
-                //org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT));
+                org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT));
                 org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE));
                 //org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.COMPILE, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.COMPILE));
             }

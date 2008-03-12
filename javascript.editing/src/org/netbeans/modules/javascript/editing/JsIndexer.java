@@ -109,9 +109,43 @@ public class JsIndexer implements Indexer {
     static final String FIELD_CLASS = "clz"; //NOI18N
     
     public boolean isIndexable(ParserFile file) {
-        if (JsMimeResolver.isJavaScriptExt(file.getExtension()) ||
-                file.getExtension().equals("rhtml") ||  file.getExtension().equals("html")) { // NOI18N
-
+        if (file.getExtension().equals("rhtml") ||  file.getExtension().equals("html")) { // NOI18N
+            return true;
+        } else if (JsMimeResolver.isJavaScriptExt(file.getExtension()))  {
+            // Avoid double-indexing files that have multiple versions - e.g. foo.js and foo-min.js
+            // or foo.uncompressed
+            String name = file.getNameExt();
+if (name.indexOf("button") != -1) {
+    System.out.println("foo");
+}            
+            if (name.endsWith("-min.js")) {
+                // See if we have a corresponding "un-min'ed" version in the same directory;
+                // if so, skip it
+                // Subtrack out the -min part
+                name = name.substring(0, name.length()-7) + ".js"; // NOI18N
+                if (new File(file.getFile().getParentFile(), name).exists()) {
+                    return false;
+                }
+            } else {
+                // PENDING:  http://code.google.com/p/jqueryjs/    -- uses ".min.js" instead of "-min.js"; also has .pack.js
+                
+                // See if we have -uncompressed or -debug - prefer these over the compressed or non-debug versions
+                // TODO - just check for hardcoded "dojo.uncompressed" since that's the common thing? Also crosscheck
+                // this list with the common JavaScript frameworks and make sure we hit all the major patterns
+                // (Perhaps hardcode the list). It would be good if we could check multiple of the loadpath directories
+                // too, not just the same directory since there's a good likelihood (with the library manager) you
+                // have these in different dirs.
+                if (name.endsWith(".js") && !name.endsWith(".uncompressed.js") && !name.endsWith("-debug.js")) { // NOI18N
+                    File parent = file.getFile().getParentFile();
+                    String base = name.substring(0, name.length()-3);
+                    if (new File(parent, base + ".uncompressed.js").exists()) { // NOI18N
+                        return false;
+                    } else if (new File(parent, base + "-debug.js").exists()) { // NOI18N
+                        return false;
+                    }
+                }
+            }
+            
             // Skip Gem versions; Rails copies these files into the project anyway! Don't want
             // duplicate entries.
             if (PREINDEXING) {
@@ -221,10 +255,10 @@ public class JsIndexer implements Indexer {
                     if (Character.isUpperCase(name.charAt(0))) {
                         indexClass(child, document, signature);
                     }
-                } else if (childKind == ElementKind.GLOBAL || childKind == ElementKind.PROPERTY) {
+                } else if (childKind == ElementKind.GLOBAL || 
+                        childKind == ElementKind.PROPERTY || 
+                        childKind == ElementKind.CLASS) {
                     indexFuncOrProperty(child, document, computeSignature(child));
-                } else if (childKind == ElementKind.CLASS) {
-                    // Nothing to be stored; inferred from methods or properties  
                 } else {
                     assert false : childKind;
                 }

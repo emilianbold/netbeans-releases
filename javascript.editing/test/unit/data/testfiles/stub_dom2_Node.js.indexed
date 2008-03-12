@@ -38,6 +38,7 @@ Indexed:
   base : lookupprefix;Node;lookupPrefix|DOCUMENTED|FUNCTION|namespaceURI;0;36dc;IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ;;
   base : namespaceuri;Node;namespaceURI|DOCUMENTED|PROPERTY|;0;39b1;IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ;;
   base : nextsibling;Node;nextSibling|DOCUMENTED|PROPERTY|;0;3cdc;;;
+  base : node;;Node|DOCUMENTED|PROPERTY|;0;0;;;
   base : nodename;Node;nodeName|DOCUMENTED|PROPERTY|;0;3d67;;;
   base : nodetype;Node;nodeType|DOCUMENTED|PROPERTY|;0;3ddd;;;
   base : nodevalue;Node;nodeValue|DOCUMENTED|PROPERTY|;0;3e59;;;
@@ -99,5 +100,6 @@ Indexed:
   fqn : node.setuserdata;;Node.setUserData|DOCUMENTED|FUNCTION|key,data,handler;0;4ebd;IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ;;
   fqn : node.text_node;;Node.TEXT_NODE|DOCUMENTED|PROPERTY|;0;586;;;
   fqn : node.textcontent;;Node.textContent|DOCUMENTED|PROPERTY|;0;51cc;IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ;;
+  fqn : node;;Node|DOCUMENTED|PROPERTY|;0;0;;;
 
 Not Indexed:

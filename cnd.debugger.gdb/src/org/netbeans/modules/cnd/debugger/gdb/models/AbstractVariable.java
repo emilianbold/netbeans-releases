@@ -258,7 +258,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                     }
                 }
                 ovalue = this.value;
-                value = getDebugger().updateVariable(fullname, value);
+                this.value = getDebugger().updateVariable(fullname, value);
             }
         }
         if (msg != null) {
@@ -522,7 +522,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
             if (currentEngine == null) {
                 return null;
             }
-            debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
+            debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
         }
         return debugger;
     }

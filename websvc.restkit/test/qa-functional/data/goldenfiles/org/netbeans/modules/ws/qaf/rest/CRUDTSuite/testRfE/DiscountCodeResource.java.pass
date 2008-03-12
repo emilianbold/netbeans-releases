@@ -1,7 +1,7 @@
 /*
  *  DiscountCodeResource
  *
- * Created on December 12, 2007, 1:27 AM
+ * Created on March 11, 2008, 10:39 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -32,7 +32,7 @@ import o.n.m.ws.qaf.rest.crud.converter.DiscountCodeConverter;
 public class DiscountCodeResource {
     private String id;
     private UriInfo context;
-  
+    
     /** Creates a new instance of DiscountCodeResource */
     public DiscountCodeResource() {
     }

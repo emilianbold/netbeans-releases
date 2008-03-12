@@ -44,7 +44,7 @@
     <Component class="javax.swing.JSeparator" name="jSeparator1">
       <Properties>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="99" green="99" id="Button.disabledText" palette="3" red="99" type="palette"/>
+          <Color blue="c0" green="c0" id="Active Caption Border" palette="2" red="c0" type="palette"/>
         </Property>
       </Properties>
       <Constraints>

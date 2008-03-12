@@ -46,14 +46,11 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.multiview.MultiViewSupport;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -75,11 +72,11 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
-import org.openide.util.NbBundle;
 import org.openide.windows.CloneableOpenSupport;
 
 public final class JaxWsDataObject extends MultiDataObject {
     
+    private static final String BUILD_IMPL_XML_PATH = "nbproject/build-impl.xml"; // NOI18N
     private transient JaxWsJavaEditorSupport jes;    
     private transient MultiViewSupport mvc;
     private transient Service service;
@@ -153,7 +150,7 @@ public final class JaxWsDataObject extends MultiDataObject {
                     }
                 }
                 // cleaning java artifacts
-                FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+                FileObject buildImplFo = project.getProjectDirectory().getFileObject(BUILD_IMPL_XML_PATH);
                 try {
                     ExecutorTask wsimportTask = ActionUtils.runTarget(buildImplFo, new String[]{"wsimport-service-clean-" + serviceName}, null); //NOI18N
                     wsimportTask.waitFinished();
@@ -234,11 +231,6 @@ public final class JaxWsDataObject extends MultiDataObject {
         public boolean canCopy() {
             return false;
         }
-        
-//        @Override
-//        public boolean canDestroy() {
-//            return false;
-//        }
         
         @Override
         public boolean canRename() {

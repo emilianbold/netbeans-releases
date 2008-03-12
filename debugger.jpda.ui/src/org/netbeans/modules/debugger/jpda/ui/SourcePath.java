@@ -477,21 +477,23 @@ public class SourcePath {
         List annotations = null;
         if (currentOperation != null) {
             annotations = new ArrayList();
-            annotations.add(createAnnotation(debugger, url, currentOperation,
-                                             EditorContext.CURRENT_LINE_ANNOTATION_TYPE,
-                                             true));
+            Object ann = createAnnotation(debugger, url, currentOperation,
+                                          EditorContext.CURRENT_LINE_ANNOTATION_TYPE,
+                                          true);
+            if (ann != null) annotations.add(ann);
             int lineNumber;
             if (currentOperation.getMethodName() != null) {
                 lineNumber = currentOperation.getMethodStartPosition().getLine();
             } else {
                 lineNumber = currentOperation.getStartPosition().getLine();
             }
-            annotations.add(EditorContextBridge.getContext().annotate (
+            ann = EditorContextBridge.getContext().annotate (
                 url,
                 lineNumber,
                 EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE,
                 debugger
-            ));
+            );
+            if (ann != null) annotations.add(ann);
         }
         boolean isNewLineExp = false;
         if (lastOperations != null && lastOperations.size() > 0) {
@@ -502,33 +504,37 @@ public class SourcePath {
             for (int i = 0; i < lastOperations.size(); i++) {
                 Operation lastOperation = (Operation) lastOperations.get(i);
                 if (currentOperation == lastOperation && i == lastOperations.size() - 1) {
-                    annotations.add(createAnnotation(debugger, url,
-                                                     lastOperation,
-                                                     EditorContext.CURRENT_OUT_OPERATION_ANNOTATION_TYPE,
-                                                     false));
+                    Object ann = createAnnotation(debugger, url,
+                                                  lastOperation,
+                                                  EditorContext.CURRENT_OUT_OPERATION_ANNOTATION_TYPE,
+                                                  false);
+                    if (ann != null) annotations.add(ann);
                     int lineNumber = lastOperation.getEndPosition().getLine();
-                    annotations.add(EditorContextBridge.getContext().annotate (
+                    ann = EditorContextBridge.getContext().annotate (
                         url,
                         lineNumber,
                         EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE,
                         debugger
-                    ));
+                    );
+                    if (ann != null) annotations.add(ann);
                     isNewLineExp = false;
                 } else {
-                    annotations.add(createAnnotation(debugger, url,
-                                                     lastOperation,
-                                                     EditorContext.CURRENT_LAST_OPERATION_ANNOTATION_TYPE,
-                                                     true));
+                    Object ann = createAnnotation(debugger, url,
+                                                  lastOperation,
+                                                  EditorContext.CURRENT_LAST_OPERATION_ANNOTATION_TYPE,
+                                                  true);
+                    if (ann != null) annotations.add(ann);
                 }
             }
         }
         if (isNewLineExp) {
-            annotations.add(EditorContextBridge.getContext().annotate (
+            Object ann = EditorContextBridge.getContext().annotate (
                 url,
                 locLineNumber,
                 EditorContext.CURRENT_LINE_ANNOTATION_TYPE,
                 debugger
-            ));
+            );
+            if (ann != null) annotations.add(ann);
         }
         if (annotations != null) {
             return annotations;

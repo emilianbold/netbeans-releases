@@ -131,7 +131,7 @@ public class Utilities {
         };
 
     public static List<UnitCategory> makeUpdateCategories (final List<UpdateUnit> units, boolean isNbms) {
-        if (! isNbms) {
+        if (! isNbms && ! units.isEmpty ()) {
             List<UnitCategory> fcCats = makeFirstClassUpdateCategories ();
             if (! fcCats.isEmpty ()) {
                 return fcCats;
