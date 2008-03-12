@@ -91,7 +91,6 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         wizard.putProperty(ConfigureProjectPanel.PROJECT_DIR, null);
         wizard.putProperty(ConfigureProjectPanel.SET_AS_MAIN, null);
         wizard.putProperty(ConfigureProjectPanel.WWW_FOLDER, null);
-        wizard.putProperty(ConfigureProjectPanel.IS_PROJECT_FOLDER, null);
         wizard.putProperty(ConfigureProjectPanel.LOCAL_SERVERS, null);
         wizard.putProperty(ConfigureProjectPanel.CREATE_INDEX_FILE, null);
         wizard.putProperty(ConfigureProjectPanel.INDEX_FILE, null);
@@ -212,12 +211,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     private File getSources(AntProjectHelper helper) {
-        boolean projectFolder = (Boolean) descriptor.getProperty(ConfigureProjectPanel.IS_PROJECT_FOLDER);
-        if (projectFolder) {
+        LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.WWW_FOLDER);
+        if (ConfigureProjectPanel.isProjectFolder(localServer)) {
             File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
             return new File(projectDirectory, "web"); // NOI18N
         }
-        LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.WWW_FOLDER);
         return new File(localServer.getSrcRoot());
     }
 

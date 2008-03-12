@@ -68,7 +68,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     static final String PROJECT_DIR = "projectDir"; // NOI18N
     static final String SET_AS_MAIN = "setAsMain"; // NOI18N
     static final String WWW_FOLDER = "wwwFolder"; // NOI18N
-    static final String IS_PROJECT_FOLDER = "isProjectFolder"; // NOI18N
     static final String LOCAL_SERVERS = "localServers"; // NOI18N
     static final String CREATE_INDEX_FILE = "createIndexFile"; // NOI18N
     static final String INDEX_FILE = "indexFile"; // NOI18N
@@ -150,7 +149,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         // sources
         LocalServer sourceRoot = sourcesPanelVisual.getSourcesLocation();
         d.putProperty(WWW_FOLDER, sourceRoot);
-        d.putProperty(IS_PROJECT_FOLDER, SourcesPanelVisual.isProjectFolder(sourceRoot));
         d.putProperty(LOCAL_SERVERS, sourcesPanelVisual.getLocalServerModel());
 
         // options
@@ -191,6 +189,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
 
     public boolean isFinishPanel() {
         return true;
+    }
+
+    static boolean isProjectFolder(LocalServer localServer) {
+        return SourcesPanelVisual.isProjectFolder(localServer);
     }
 
     public String getWebFolderName() {
@@ -297,7 +299,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     }
 
     private String validateSources() {
-        String sourcesLocation = sourcesPanelVisual.getSourcesLocation().getSrcRoot();
+        LocalServer localServer = sourcesPanelVisual.getSourcesLocation();
+        if (isProjectFolder(localServer)) {
+            // no need to validate source directory
+            return null;
+        }
+        String sourcesLocation = localServer.getSrcRoot();
 
         File sources = new File(sourcesLocation);
         if (!Utils.isValidFileName(sources.getName())) {

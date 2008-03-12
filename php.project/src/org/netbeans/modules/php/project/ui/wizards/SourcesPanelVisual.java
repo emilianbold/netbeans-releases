@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.ComboBoxEditor;
@@ -200,7 +201,7 @@ public class SourcesPanelVisual extends JPanel {
     // End of variables declaration//GEN-END:variables
 
     static boolean isProjectFolder(LocalServer localServer) {
-        return defaultLocalServer == localServer;
+        return defaultLocalServer.equals(localServer);
     }
 
     LocalServer getSourcesLocation() {
@@ -296,6 +297,40 @@ public class SourcesPanelVisual extends JPanel {
                 return -1;
             }
             return srcRoot.compareTo(ls.getSrcRoot());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final LocalServer other = (LocalServer) obj;
+            if (virtualHost != other.virtualHost && (virtualHost == null || !virtualHost.equals(other.virtualHost))) {
+                return false;
+            }
+            if (documentRoot != other.documentRoot && (documentRoot == null || !documentRoot.equals(other.documentRoot))) {
+                return false;
+            }
+            if (editable != other.editable) {
+                return false;
+            }
+            if (srcRoot != other.srcRoot && (srcRoot == null || !srcRoot.equals(other.srcRoot))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 97 * hash + (virtualHost != null ? virtualHost.hashCode() : 0);
+            hash = 97 * hash + (documentRoot != null ? documentRoot.hashCode() : 0);
+            hash = 97 * hash + (editable ? 1 : 0);
+            hash = 97 * hash + (srcRoot != null ? srcRoot.hashCode() : 0);
+            return hash;
         }
     }
 
