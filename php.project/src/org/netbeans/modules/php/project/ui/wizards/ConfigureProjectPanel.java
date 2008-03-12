@@ -68,6 +68,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     static final String PROJECT_DIR = "projectDir"; // NOI18N
     static final String SET_AS_MAIN = "setAsMain"; // NOI18N
     static final String WWW_FOLDER = "wwwFolder"; // NOI18N
+    static final String IS_PROJECT_FOLDER = "isProjectFolder"; // NOI18N
     static final String LOCAL_SERVERS = "localServers"; // NOI18N
     static final String CREATE_INDEX_FILE = "createIndexFile"; // NOI18N
     static final String INDEX_FILE = "indexFile"; // NOI18N
@@ -147,12 +148,15 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         d.putProperty(PROJECT_NAME, locationPanelVisual.getProjectName());
 
         // sources
-        d.putProperty(WWW_FOLDER, sourcesPanelVisual.getSourcesLocation());
+        LocalServer sourceRoot = sourcesPanelVisual.getSourcesLocation();
+        d.putProperty(WWW_FOLDER, sourceRoot);
+        d.putProperty(IS_PROJECT_FOLDER, SourcesPanelVisual.isProjectFolder(sourceRoot));
         d.putProperty(LOCAL_SERVERS, sourcesPanelVisual.getLocalServerModel());
 
         // options
         d.putProperty(CREATE_INDEX_FILE, optionsPanelVisual.isCreateIndex());
         d.putProperty(INDEX_FILE, optionsPanelVisual.getIndexName());
+        d.putProperty(ENCODING, optionsPanelVisual.getEncoding());
         d.putProperty(SET_AS_MAIN, optionsPanelVisual.isSetAsMain());
     }
 

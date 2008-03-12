@@ -41,14 +41,31 @@ package org.netbeans.modules.php.project.ui.wizards;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpProjectType;
+import org.netbeans.modules.php.project.ui.wizards.SourcesPanelVisual.LocalServer;
+import org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.ProjectGenerator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * @author Tomas Mysik
@@ -74,6 +91,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         wizard.putProperty(ConfigureProjectPanel.PROJECT_DIR, null);
         wizard.putProperty(ConfigureProjectPanel.SET_AS_MAIN, null);
         wizard.putProperty(ConfigureProjectPanel.WWW_FOLDER, null);
+        wizard.putProperty(ConfigureProjectPanel.IS_PROJECT_FOLDER, null);
         wizard.putProperty(ConfigureProjectPanel.LOCAL_SERVERS, null);
         wizard.putProperty(ConfigureProjectPanel.CREATE_INDEX_FILE, null);
         wizard.putProperty(ConfigureProjectPanel.INDEX_FILE, null);
@@ -89,30 +107,41 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     public Set instantiate(ProgressHandle handle) throws IOException {
-        final Set<Object> resultSet = new HashSet<Object>(2);
+        final Set<FileObject> resultSet = new HashSet<FileObject>();
 
-        File indexFile = (File) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
-        handle.start(indexFile == null ? 2 : 3);
-        int progres = 1;
-
-        File dirF = (File) descriptor.getProperty("projdir"); // NOI18N
-        if (dirF != null) {
-            dirF = FileUtil.normalizeFile(dirF);
-        }
+        handle.start(5);
 
         String msg = NbBundle.getMessage(
                 NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_CreatingProject");
-        handle.progress(msg, progres++);
+        handle.progress(msg, 3);
 
+        // project
+        File projectDirectory = (File) descriptor.getProperty(ConfigureProjectPanel.PROJECT_DIR);
+        String projectName = (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME);
+        AntProjectHelper helper = createProject(projectDirectory, projectName);
+        resultSet.add(helper.getProjectDirectory());
+
+        // sources
+        FileObject sourceDir = createSourceRoot(helper);
+        resultSet.add(sourceDir);
+
+        // index file
+        String indexFile = (String) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
         if (indexFile != null) {
             msg = NbBundle.getMessage(
                     NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_CreatingIndexFile");
-            handle.progress(msg, progres++);
+            handle.progress(msg, 4);
+
+            FileObject template = Templates.getTemplate(descriptor);
+            DataObject indexDO = createIndexFile(template, sourceDir);
+            if (indexDO != null) {
+                resultSet.add(indexDO.getPrimaryFile());
+            }
         }
 
         msg = NbBundle.getMessage(
                 NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_PreparingToOpen");
-        handle.progress(msg, progres++);
+        handle.progress(msg, 5);
 
         return resultSet;
     }
@@ -154,5 +183,79 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return new WizardDescriptor.Panel[] {
             new ConfigureProjectPanel(),
         };
+    }
+
+    private AntProjectHelper createProject(File dir, String name) throws IOException {
+        FileObject projectFO = FileUtil.createFolder(new File(dir, name));
+        AntProjectHelper helper = ProjectGenerator.createProject(projectFO, PhpProjectType.TYPE);
+
+        // configure
+        Element data = helper.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+        Element nameEl = doc.createElementNS(PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+                PhpProjectSharedConstants.PHP_PROJECT_NAME);
+        nameEl.appendChild(doc.createTextNode(name));
+        data.appendChild(nameEl);
+        helper.putPrimaryConfigurationData(data, true);
+
+        EditableProperties properties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+
+        configureSources(helper, properties);
+        configureEncoding(properties);
+
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
+
+        Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+        ProjectManager.getDefault().saveProject(project);
+
+        return helper;
+    }
+
+    private File getSources(AntProjectHelper helper) {
+        boolean projectFolder = (Boolean) descriptor.getProperty(ConfigureProjectPanel.IS_PROJECT_FOLDER);
+        if (projectFolder) {
+            File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
+            return new File(projectDirectory, "web"); // NOI18N
+        }
+        LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.WWW_FOLDER);
+        return new File(localServer.getSrcRoot());
+    }
+
+    private void configureSources(AntProjectHelper helper, EditableProperties properties) {
+        File srcDir = getSources(helper);
+        File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
+        String srcPath = PropertyUtils.relativizeFile(projectDirectory, srcDir);
+        if (srcPath.startsWith("../")) { // NOI18N
+            // relative path, change to absolute
+            srcPath = srcDir.getAbsolutePath();
+        }
+
+        properties.setProperty(PhpProject.SRC, srcPath);
+    }
+
+    private void configureEncoding(EditableProperties properties) {
+        Charset charset = (Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING);
+        properties.setProperty(PhpProject.SOURCE_ENCODING, charset.name());
+    }
+
+    private FileObject createSourceRoot(AntProjectHelper helper) throws IOException {
+        return FileUtil.createFolder(getSources(helper));
+    }
+
+    private DataObject createIndexFile(FileObject template, FileObject sourceDir) throws IOException {
+        String indexFileName = getIndexFileName(template.getExt());
+
+        DataFolder dataFolder = DataFolder.findFolder(sourceDir);
+        DataObject dataTemplate = DataObject.find(template);
+        return dataTemplate.createFromTemplate(dataFolder, indexFileName);
+    }
+
+    private String getIndexFileName(String plannedExt) {
+        String name = (String) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
+        String ext = "." + plannedExt; // NOI18N
+        if (name.endsWith(ext)) {
+            return name.substring(0, name.length() - ext.length());
+        }
+        return name;
     }
 }
