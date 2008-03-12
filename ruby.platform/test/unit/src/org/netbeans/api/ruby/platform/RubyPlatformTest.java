@@ -95,6 +95,16 @@ public class RubyPlatformTest extends RubyTestBase {
         assertNotNull("rdoc found", platform.getRDoc());
     }
     
+    public void testFindIRB() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        assertNotNull("irb found", platform.getIRB());
+    }
+
+    public void testFindIRBWithSuffix() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRuby(false, "1.8.6-p110"));
+        assertNotNull("irb found", platform.getIRB());
+    }
+    
     public void testLongDescription() throws Exception {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
         assertEquals("right long description", "JRuby 1.8.6 (2008-01-12 patchlevel 5512) [java]", jruby.getInfo().getLongDescription());

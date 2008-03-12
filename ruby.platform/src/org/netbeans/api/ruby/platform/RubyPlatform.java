@@ -109,6 +109,7 @@ public final class RubyPlatform {
     private boolean indexInitialized;
     
     private String rdoc;
+    private String irb;
 
     private PropertyChangeSupport pcs;
 
@@ -488,7 +489,7 @@ public final class RubyPlatform {
      * Try to find a path to the <tt>toFind</tt> executable in the "Ruby
      * specific" manner.
      *
-     * @param toFind executable to be find, e.g. rails, rake, ...
+     * @param toFind executable to be find, e.g. rails, rake, rdoc, irb ...
      * @return path to the found executable; might be <tt>null</tt> if not
      *         found.
      */
@@ -528,6 +529,29 @@ public final class RubyPlatform {
         return exec;
     }
 
+    /**
+     * The same as {@link #findExecutable(String)}, but if fails and withSuffix
+     * is set to true, it tries to find also executable with the suffix with
+     * which was compiled the interpreter. E.g. for <em>ruby1.8.6-p111</em>
+     * tries to find <em>irb1.8.6-p111</em>.
+     * 
+     * @param toFind see {@link #findExecutable(String)}
+     * @param withSuffix whether to try also suffix version when non-suffix is not found
+     * @return see {@link #findExecutable(String)}
+     */
+    public String findExecutable(final String toFind, final boolean withSuffix) {
+        String exec = findExecutable(toFind);
+        if (exec == null && withSuffix && !isJRuby()) { // JRuby is not compiled with custom suffix
+            String name = new File(getInterpreter(true)).getName();
+            if (name.startsWith("ruby")) { // NOI18N
+                String suffix = name.substring(4);
+                // Try to find with suffix (#120441)
+                exec = findExecutable(toFind + suffix);
+            }
+        }
+        return exec;
+    }
+
     private static String findExecutable(final String dir, final String toFind) {
         String exec = dir + File.separator + toFind;
         if (!new File(exec).isFile()) {
@@ -539,17 +563,16 @@ public final class RubyPlatform {
 
     public String getRDoc() {
         if (rdoc == null) {
-            rdoc = findExecutable("rdoc"); // NOI18N
-            if (rdoc == null && !isJRuby()) {
-                String name = new File(getInterpreter(true)).getName();
-                if (name.startsWith("ruby")) { // NOI18N
-                    String suffix = name.substring(4);
-                    // Try to find with suffix (#120441)
-                    rdoc = findExecutable("rdoc" + suffix); // NOI18N
-                }
-            }
+            rdoc = findExecutable("rdoc", true); // NOI18N
         }
         return rdoc;
+    }
+
+    public String getIRB() {
+        if (irb == null) {
+            irb = findExecutable("irb", true); // NOI18N
+        }
+        return irb;
     }
 
     public FileObject getRubyStubs() {
