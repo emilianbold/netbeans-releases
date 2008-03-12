@@ -199,6 +199,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             MemberSelectTree mst = (MemberSelectTree) expression;
             object = mst.getExpression().accept(this, evaluationContext);
             methodName = mst.getIdentifier().toString();
+            if (object == null) {
+                Assert2.error(arg0, "methodCallOnNull", methodName);
+            }
             if (currentPath != null) {
                 TreePath memberSelectPath = TreePath.getPath(currentPath, mst);
                 if (memberSelectPath == null) memberSelectPath = currentPath;

@@ -169,6 +169,9 @@ public final class DocPositions {
             } else {
                 blockSectionStart = 0;
             }
+        } catch (Throwable t) {
+            // for debug purposes
+            throw new IllegalStateException('\'' + env.javadoc.getRawCommentText() + '\'', t);
         } finally {
             env = null;
         }
