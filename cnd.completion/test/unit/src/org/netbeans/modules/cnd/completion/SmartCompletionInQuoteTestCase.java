@@ -91,16 +91,24 @@ public class SmartCompletionInQuoteTestCase extends CompletionBaseTestCase {
     public void testInCpuComputeSupportMetricImplInExpr() throws Exception {
         super.performTest("cpu.cc", 58, 27);
     }
+    
     public void testInCpuComputeSupportMetricImplInSwitch() throws Exception {
         super.performTest("cpu.cc", 60, 14);
     }
+    
     public void testInCpuComputeSupportMetricImplInCase() throws Exception {
         super.performTest("cpu.cc", 61, 16);
     }
+    
     public void testInCpuComputeSupportMetricImplInMethodCall() throws Exception {
         super.performTest("cpu.cc", 70, 7);
     }
+    
     public void testInCpuComputeSupportMetricImplInMethodCallParam() throws Exception {
         super.performTest("cpu.cc", 70, 23);
+    }
+    
+    public void testClassesInParameters() throws Exception {
+        super.performTest("customer.cc", 57, 45);
     }
 }

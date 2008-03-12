@@ -170,46 +170,18 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
     
     public void testSwitchFormatting3Half() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineWhile, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
                 "int main(int i)\n" +
                 "{\n" +
-                "  while (this.number < 2 &&\n" +
-                "      number != 3)\n" +
-                "    {\n" +
-                "      method(12);\n" +
-                "    }\n" +
-                "  do\n" +
-                "    {\n" +
-                "      op1().op2.op3().op4();\n" +
-                "    }\n" +
-                "   while (this.number < 2 &&\n" +
-                "   number != 3);\n" +
+                "if (offset)\n" +
+                "    *offset = layout->record_size / BITS_PER_UNIT;\n" +
                 "}\n");
-
-        
         reformat();
         assertDocumentText("Incorrect formatting for macro define with paren",
                 "int main(int i)\n" +
                 "{\n" +
-                "  while (this.number < 2 &&\n" +
-                "          number != 3)\n" +
-                "    {\n" +
-                "      method(12);\n" +
-                "    }\n" +
-                "  do\n" +
-                "    {\n" +
-                "      op1().op2.op3().op4();\n" +
-                "    }\n" +
-                "  while (this.number < 2 &&\n" +
-                "          number != 3);\n" +
+                "    if (offset)\n" +
+                "        *offset = layout->record_size / BITS_PER_UNIT;\n" +
                 "}\n");
     }
 

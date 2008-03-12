@@ -108,46 +108,6 @@ implements Runnable {
     }
 
     @Override
-    public AWTEvent getNextEvent() throws InterruptedException {
-        try {
-            tick();
-            return super.getNextEvent();
-        } finally {
-            done();
-        }
-    }
-
-    @Override
-    public synchronized AWTEvent peekEvent() {
-        try {
-            tick();
-            return super.peekEvent();
-        } finally {
-            done();
-        }
-    }
-
-    @Override
-    public synchronized AWTEvent peekEvent(int id) {
-        try {
-            tick();
-            return super.peekEvent(id);
-        } finally {
-            done();
-        }
-    }
-
-    @Override
-    protected void pop() throws EmptyStackException {
-        try {
-            tick();
-            super.pop();
-        } finally {
-            done();
-        }
-    }
-
-    @Override
     public void postEvent(AWTEvent theEvent) {
         try {
             tick();
