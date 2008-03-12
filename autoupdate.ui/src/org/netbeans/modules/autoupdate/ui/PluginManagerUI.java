@@ -61,7 +61,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.modules.autoupdate.services.OperationContainerImpl.OperationType;
 import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

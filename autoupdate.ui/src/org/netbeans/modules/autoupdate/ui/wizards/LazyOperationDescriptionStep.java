@@ -60,6 +60,8 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /**
  *
@@ -70,10 +72,9 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
     private static final String CONTENT = "OperationDescriptionStep_Header_Content";
     private static final String TABLE_TITLE_INSTALL = "OperationDescriptionStep_TableInstall_Title";
     private static final String TABLE_TITLE_UPDATE = "OperationDescriptionStep_TableUpdate_Title";
-    private static final String DEPENDENCIES_TITLE_INSTALL = "DependenciesResolutionStep_Table_Title";
-    private static final String DEPENDENCIES_TITLE_UPDATE = "DependenciesResolutionStep_Table_Title";
     private PanelBodyContainer component;
     private Collection<LazyUnit> installModel = null;
+    private boolean hasUpdates = false;
     private OperationType operationType = null;
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener> ();
     private RequestProcessor.Task checkRealUpdatesTask = null;
@@ -83,25 +84,23 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
     public LazyOperationDescriptionStep (Collection<LazyUnit> model, OperationType doOperation) {
         this.installModel = model;
         this.operationType = doOperation;
+        this.hasUpdates = installModel != null && ! installModel.isEmpty ();
     }
     
     public Component getComponent() {
         if (component == null) {
             JPanel body;
             String tableTitle = null;
-            String dependenciesTitle = null;
             String head = null;
             String content = null;
             switch (operationType) {
             case INSTALL :
                 tableTitle = getBundle (TABLE_TITLE_INSTALL);
-                dependenciesTitle = getBundle (DEPENDENCIES_TITLE_INSTALL);
                 head = getBundle (HEAD);
                 content = getBundle (CONTENT);
                 break;
             case UPDATE :
                 tableTitle = getBundle (TABLE_TITLE_UPDATE);
-                dependenciesTitle = getBundle (DEPENDENCIES_TITLE_UPDATE);
                 head = getBundle (HEAD);
                 content = getBundle (CONTENT);
                 break;
@@ -113,7 +112,7 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
                     preparePluginsForShow (installModel, operationType),
                     "",
                     "",
-                    true);
+                    false);
             component = new PanelBodyContainer (head, content, body);
             component.setPreferredSize (OperationWizardModel.PREFFERED_DIMENSION);
             component.setWaitingState (true, Utilities.getTimeOfInitialization ());
@@ -127,7 +126,8 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
         checkRealUpdatesTask = RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
                 Collection<UpdateElement> updates = AutoupdateCheckScheduler.checkUpdateElements (operationType);
-                if (updates != null && ! updates.isEmpty ()) {
+                hasUpdates = updates != null && ! updates.isEmpty ();
+                if (hasUpdates) {
                     assert wd != null : "WizardDescriptor must found!";
                     OperationContainer oc = OperationType.UPDATE == operationType ?
                         OperationContainer.createForUpdate() :
@@ -136,19 +136,40 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
                     for (UpdateElement el : updates) {
                         allOk &= oc.canBeAdded (el.getUpdateUnit (), el);
                     }
+                    hasUpdates = hasUpdates && allOk;
                     if (allOk) {
                         oc.add (updates);
-                        WizardDescriptor.Iterator<WizardDescriptor> panels = new InstallUnitWizardIterator (new InstallUnitWizardModel (operationType, oc));
-                        wd.setPanelsAndSettings (panels, wd);
-                        fireChange ();
+                        final WizardDescriptor.Iterator<WizardDescriptor> panels = new InstallUnitWizardIterator (new InstallUnitWizardModel (operationType, oc), true);
+                        SwingUtilities.invokeLater (new Runnable () {
+                            public void run () {
+                                wd.setPanelsAndSettings (panels, wd);
+                                fireChange ();
+                            }
+                        });
                     }
                 }
-                SwingUtilities.invokeLater (new Runnable () {
-                    public void run () {
-                        component.setWaitingState (false);
-                        fireChange ();
-                    }
-                });
+            }
+        });
+        checkRealUpdatesTask.addTaskListener (new TaskListener () {
+            public void taskFinished (Task task) {
+                task.removeTaskListener (this);
+                if (! hasUpdates) {
+                    final JPanel body = new OperationDescriptionPanel (
+                            getBundle ("LazyOperationDescriptionStep_NoUpdates_Title"), // NOI18N
+                            getBundle ("LazyOperationDescriptionStep_NoUpdates"), // NOI18N
+                            "", "",
+                            false);
+                    installModel = Collections.EMPTY_SET;
+                    LazyUnit.storeLazyUnits (operationType, installModel);
+                    SwingUtilities.invokeLater (new Runnable () {
+                        public void run () {
+                            component.setBody (body);
+                            component.setWaitingState (false);
+                            AutoupdateCheckScheduler.notifyAvailable (installModel, operationType);
+                            fireChange ();
+                        }
+                    });
+                }
             }
         });
     }

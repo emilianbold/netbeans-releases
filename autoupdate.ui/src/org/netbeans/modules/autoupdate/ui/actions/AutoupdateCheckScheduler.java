@@ -48,7 +48,6 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
@@ -376,7 +375,7 @@ public class AutoupdateCheckScheduler {
     
     private static AvailableUpdatesNotification.UpdatesFlasher flasher;
     
-    private static void notifyAvailable (final Collection<LazyUnit> units, final OperationType type) {
+    public static void notifyAvailable (final Collection<LazyUnit> units, final OperationType type) {
         if (units == null || units.isEmpty ()) {
             if (flasher != null) {
                 flasher.disappear ();
@@ -398,10 +397,7 @@ public class AutoupdateCheckScheduler {
                                 NotifyDescriptor.WARNING_MESSAGE));
                     return ;
                 }
-                Collection<LazyUnit> helpUnits = Collections.EMPTY_SET;
                 try {
-                    helpUnits = LazyUnit.loadLazyUnits (type);
-                    LazyUnit.storeLazyUnits (type, null);
                     wizardFinished = new InstallUnitWizard ().invokeLazyWizard (units, type);
                 } finally {
                     if (wizardFinished) {
@@ -416,7 +412,6 @@ public class AutoupdateCheckScheduler {
                         RequestProcessor.getDefault ().post (doCheckAvailableUpdates);
                     } else {
                         // notify available plugins/updates in the future
-                        LazyUnit.storeLazyUnits (type, helpUnits);
                     }
                 }
             }
