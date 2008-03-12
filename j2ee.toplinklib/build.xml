@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="unzip">
-        <unzip src="./external/glassfish-persistence-v2-build-58g.jar" dest="./external/toplink"/>
+        <unzip src="./external/glassfish-persistence-v2ur1-build-09d.jar" dest="./external/toplink"/>
     </target>
     
     <target name="clean" depends="projectized-common.clean,clean-toplink"/>

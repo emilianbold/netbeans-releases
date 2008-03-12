@@ -39,8 +39,8 @@
 
 package org.netbeans.editor.ext.html.parser;
 
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -57,7 +57,7 @@ public class AstNode {
     private int startOffset;
     private int endOffset;
     private boolean closed;
-    private List<AstNode> children = new ArrayList<AstNode>();
+    private List<AstNode> children = new LinkedList<AstNode>();
     private AstNode parent = null;
     
     //XXX Storing the SyntaxElement instance is a hack - the SyntaxElement-s should

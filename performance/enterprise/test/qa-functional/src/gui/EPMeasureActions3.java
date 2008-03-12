@@ -65,7 +65,6 @@ public class EPMeasureActions3  {
 //        suite.addTest(new OpenComplexDiagram("testGC","Open Complex Diagram - Test GC"));         
         suite.addTest(new OpenBPELproject("measureTime","OpenBPELproject"));
 
-        suite.addTest(new StartAppserver("measureTime","Start Appserver"));
         suite.addTest(new OpenSchemaView("testOpenComplexSchemaView", "Open Complex Schema View"));
         suite.addTest(new WatchProjects("testGCProjects"));
         return suite;

@@ -1357,6 +1357,37 @@ public class JavaSourceTest extends NbTestCase {
         }
     }
     
+    public void DISABLEDtestRegisterSameTask() throws Exception {        
+        final FileObject testFile1 = createTestFile("Test1");
+        final ClassPath bootPath = createBootPath();
+        final ClassPath compilePath = createCompilePath();
+        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
+              JavaSource js = JavaSource.create(cpInfo, testFile1);
+        final CountDownLatch latch1 = new CountDownLatch (1);
+        final CountDownLatch latch2 = new CountDownLatch (1);
+        CancellableTask<CompilationInfo> task = new CancellableTask<CompilationInfo>() {
+            public void cancel() {}
+            public void run(CompilationInfo parameter) throws Exception {
+                if (latch1.getCount() > 0) {
+                    latch1.countDown();
+                    return ;
+                }
+                
+                latch2.countDown();
+            }
+        };
+        js.addPhaseCompletionTask(task, Phase.PARSED, Priority.NORMAL);
+        assertTrue(latch1.await(10, TimeUnit.SECONDS));
+        js.removePhaseCompletionTask(task);
+        Reference<JavaSource> r = new WeakReference<JavaSource>(js);
+        js = null;
+        
+        assertGC("", r);
+        
+        js = JavaSource.create(cpInfo, testFile1);
+        js.addPhaseCompletionTask(task, Phase.PARSED, Priority.NORMAL);
+        assertTrue(latch2.await(10, TimeUnit.SECONDS));
+    }
     
     private static class TestProvider implements JavaSource.JavaFileObjectProvider {
         
