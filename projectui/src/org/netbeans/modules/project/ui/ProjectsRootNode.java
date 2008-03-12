@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
@@ -516,8 +517,10 @@ public class ProjectsRootNode extends AbstractNode {
                 fireDisplayNameChange( null, null );
             }
             if ( OpenProjectList.PROPERTY_REPLACE.equals(e.getPropertyName())) {
+                OpenProjectList.LOGGER.log(Level.FINER, "replacing for {0}", this);
                 Project p = getLookup().lookup(Project.class);
                 if (p == null) {
+                    OpenProjectList.LOGGER.log(Level.FINE, "no project in lookup {0}", this);
                     return;
                 }
                 FileObject fo = p.getProjectDirectory();
@@ -528,11 +531,15 @@ public class ProjectsRootNode extends AbstractNode {
                     Node n = null;
                     if (logicalView) {
                         n = ch.logicalViewForProject(newProj, null);
+                        OpenProjectList.LOGGER.log(Level.FINER, "logical view {0}", n);
                     } else {
                         Node[] arr = PhysicalView.createNodesForProject(newProj);
+                        OpenProjectList.LOGGER.log(Level.FINER, "physical view {0}", Arrays.asList(arr));
                         if (arr.length > 1) {
                             pair.project = newProj;
+                            OpenProjectList.LOGGER.log(Level.FINER, "refreshing for {0}", newProj);
                             ch.refresh(newProj);
+                            OpenProjectList.LOGGER.log(Level.FINER, "refreshed for {0}", newProj);
                             return;
                         }
                         for (Node one : arr) {
@@ -543,14 +550,20 @@ public class ProjectsRootNode extends AbstractNode {
                         }
                         assert n != null;
                     }
+                    OpenProjectList.LOGGER.log(Level.FINER, "change original: {0}", n);
                     changeOriginal(n, true);
 
                     BadgingLookup bl = (BadgingLookup)getLookup();
                     if (bl.isSearchInfo()) {
+                        OpenProjectList.LOGGER.log(Level.FINER, "is search info {0}", bl);
                         bl.setMyLookups(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(newProj)));
                     } else {
+                        OpenProjectList.LOGGER.log(Level.FINER, "no search info {0}", bl);
                         bl.setMyLookups(n.getLookup());
                     }
+                    OpenProjectList.LOGGER.log(Level.FINER, "done {0}", this);
+                } else {
+                    OpenProjectList.LOGGER.log(Level.FINE, "wrong directories. current: " + fo + " new " + newProj.getProjectDirectory());
                 }
             }
         }

@@ -80,10 +80,6 @@ public class HttpSettingsTest extends NbTestCase {
         super (name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run (new NbTestSuite (HttpSettingsTest.class));
-    }
-    
     public void run (final TestResult result) {
         //just initialize Preferences before code NbTestCase
         Preferences.userRoot ();                        
@@ -368,6 +364,9 @@ public class HttpSettingsTest extends NbTestCase {
     }    
     
     public void testSwitchAutoAndManualMode () throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         setUpAutoDirect ();
         
         // ensure auto detect mode
