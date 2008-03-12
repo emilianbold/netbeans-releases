@@ -167,22 +167,50 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    public void testReformatArrayInitializerWithNewline2() {
+    
+    public void testSwitchFormatting3Half() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.newLineWhile, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
-                "int[][] foo4 =  {\n" +
-                "{1, 2, 3},\n" +
-                "{3,4,5},\n" +
-                "{7,8,9}\n" +
-                "};\n" +
-                "\n");
+                "int main(int i)\n" +
+                "{\n" +
+                "  while (this.number < 2 &&\n" +
+                "      number != 3)\n" +
+                "    {\n" +
+                "      method(12);\n" +
+                "    }\n" +
+                "  do\n" +
+                "    {\n" +
+                "      op1().op2.op3().op4();\n" +
+                "    }\n" +
+                "   while (this.number < 2 &&\n" +
+                "   number != 3);\n" +
+                "}\n");
+
+        
         reformat();
-        assertDocumentText("Incorrect array initializer with newline reformatting",
-                "int[][] foo4 = {\n" +
-                "    {1, 2, 3},\n" +
-                "    {3, 4, 5},\n" +
-                "    {7, 8, 9}\n" +
-                "};\n" +
-                "\n");
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "int main(int i)\n" +
+                "{\n" +
+                "  while (this.number < 2 &&\n" +
+                "          number != 3)\n" +
+                "    {\n" +
+                "      method(12);\n" +
+                "    }\n" +
+                "  do\n" +
+                "    {\n" +
+                "      op1().op2.op3().op4();\n" +
+                "    }\n" +
+                "  while (this.number < 2 &&\n" +
+                "          number != 3);\n" +
+                "}\n");
     }
+
 }
