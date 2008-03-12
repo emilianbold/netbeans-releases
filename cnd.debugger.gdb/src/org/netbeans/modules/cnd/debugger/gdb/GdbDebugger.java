@@ -112,11 +112,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public static final String          PROP_CURRENT_CALL_STACK_FRAME = "currentCallStackFrame"; // NOI18N
     public static final String          PROP_KILLTERM = "killTerm"; // NOI18N
     public static final String          PROP_SHARED_LIB_LOADED = "sharedLibLoaded"; // NOI18N
+    public static final String          PROP_VALUE_CHANGED = "valueChanged"; // NOI18N
+    public static final String          PROP_LOCALS_REFRESH = "localsRefresh"; // NOI18N
 
     public static final String          STATE_NONE = "state_none"; // NOI18N
     public static final String          STATE_STARTING = "state_starting"; // NOI18N
     public static final String          STATE_LOADING = "state_loading"; // NOI18N
-    public static final String          STATE_LOADED = "state_loaded"; // NOI18N
     public static final String          STATE_READY = "state_ready"; // NOI18N
     public static final String          STATE_RUNNING = "state_running"; // NOI18N
     public static final String          STATE_STOPPED = "state_stopped"; // NOI18N
@@ -738,6 +739,20 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
+    public void updateGdbVariable(String name, String value) {
+        synchronized (localVariables) {
+            for (GdbVariable var : localVariables) {
+                if (name.equals(var.getName())) {
+                    var.setValue(value);
+                }
+            }
+        }
+    }
+    
+    public void fireLocalsRefresh(Object node) {
+        firePropertyChange(PROP_LOCALS_REFRESH, 0, node);
+    }
+    
     private void updateCurrentCallStack() {
         gdb.stack_list_frames();
     }
@@ -806,7 +821,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
                 int conType = pae.getProfile().getConsoleType().getValue();
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    gdb.data_evaluate_expression("_gdbHelperSetLineBuffered()"); // NOI18N
+                    gdb.data_evaluate_expression("_gdbHelperSetLineBuffered()"); // NOI18N 
                 }
             }
         } else if (msg.startsWith(Disassembly.RESPONSE_HEADER)) {
@@ -827,7 +842,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         ProjectActionEvent pae;
                         pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
                         int conType = pae.getProfile().getConsoleType().getValue();
-                        if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+                        if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW && !Utilities.isWindows()) {
+                            // FIXME - core dumping on Windows...
                             gdb.data_evaluate_expression("_gdbHelperSetLineBuffered()"); // NOI18N
                         }
                     }
@@ -1068,6 +1084,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         CommandBuffer cb = new CommandBuffer();
         gdb.data_evaluate_expression(cb, name + '=' + value);
         return cb.waitForCompletion();
+    }
+    
+    public void variableChanged(Object var) {
+        firePropertyChange(PROP_VALUE_CHANGED, null, var);
     }
     
     // currently not called - should do more than set state (see JPDADebuggerImpl)
