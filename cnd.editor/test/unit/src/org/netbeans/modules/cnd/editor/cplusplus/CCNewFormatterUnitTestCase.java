@@ -2675,4 +2675,48 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 );
     }
 
+    public void testIssue129747() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentNamespace, false);
+        setLoadDocumentText(
+                "enum CpuArch { OPTERON, INTEL, SPARC}; // CPU architecture\n"
+                );
+        reformat();
+        assertDocumentText("Issue 129747",
+                "enum CpuArch\n" +
+                "{\n" +
+                "    OPTERON, INTEL, SPARC\n" +
+                "}; // CPU architecture\n"
+                );
+    }
+
+    public void tesIssue129608() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentNamespace, false);
+        setLoadDocumentText(
+                "int foo()\n" +
+                "{\n" +
+                "s = (teststruct_t)\n" +
+                " {\n" +
+                "    .a = 1,\n" +
+                "            .b = 2,\n" +
+                "            .c = 3,\n" +
+                "};\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Issue 129608",
+                "int foo()\n" +
+                "{\n" +
+                "    s = (teststruct_t){\n" +
+                "        .a = 1,\n" +
+                "        .b = 2,\n" +
+                "        .c = 3,\n" +
+                "    };\n" +
+                "}\n"
+                );
+    }
+
 }

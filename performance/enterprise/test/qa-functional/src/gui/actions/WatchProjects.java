@@ -99,7 +99,7 @@ public class WatchProjects extends JellyTestCase {
         );
         
         System.setProperty("assertgc.paths", "20");
-        Log.assertInstances("Checking if all projects are really garbage collected");
+        Log.assertInstances("Checking if all projects and DesignView are really garbage collected");
     }
 
     public void testInitGCProjects() throws Exception {

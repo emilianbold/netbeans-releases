@@ -127,7 +127,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                 user = server.getUser();
             }
                
-            result = createConnection(server, dbname, grantUser.getUser());
+            result = createConnection(server, dbname, user);
             
             if ( result != null && ServerInstance.isSampleName(dbname) ) {
                 server.createSample(dbname, result);
@@ -187,17 +187,16 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                     dbname),
                 NbBundle.getMessage(CreateDatabasePanel.class,
                     "CreateDatabasePanel.STR_DatabaseExistsTitle"),
-                NotifyDescriptor.YES_NO_CANCEL_OPTION);
+                NotifyDescriptor.YES_NO_OPTION);
         
         Object response =  DialogDisplayer.getDefault().notify(ndesc);
         
-        if ( response == NotifyDescriptor.CANCEL_OPTION ) {
+        if ( response == NotifyDescriptor.NO_OPTION ) {
             return false;
-        } else if ( response == NotifyDescriptor.YES_OPTION) {
+        } else {
             server.dropDatabase(dbname);
+            return true;
         }
-        
-        return true;        
     }
     
     private static DatabaseConnection createConnection(
@@ -486,9 +485,10 @@ private void chkGrantAccessItemStateChanged(java.awt.event.ItemEvent evt) {//GEN
                     users.remove(rootUser);
                 }
             } catch ( DatabaseException dbe )  {
-                LOGGER.log(Level.WARNING, null, dbe);
-                Utils.displayError("CreateDatabasePanel.MSG_UnableToGetUsers", 
-                        dbe);
+                // This can be caused by permission problems.  Log the error
+                // and continue with an empty user list
+                LOGGER.log(Level.INFO, null, dbe);
+                users.clear();
             }
         }
 
