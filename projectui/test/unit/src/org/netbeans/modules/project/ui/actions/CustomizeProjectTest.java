@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,33 +37,35 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.module.iep.editor.xsd.nodes;
+package org.netbeans.modules.project.ui.actions;
 
-import org.netbeans.module.iep.editor.xsd.nodes.images.NodeIcons;
-import org.netbeans.modules.xml.axi.Attribute;
+import javax.swing.Action;
+import org.netbeans.modules.project.ui.actions.TestSupport.TestProject;
+import org.netbeans.spi.project.ui.CustomizerProvider;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author radval
+ * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-public class SchemaAttributeNode extends AbstractSchemaArtifactNode implements SelectableTreeNode {
+public class CustomizeProjectTest extends LookupSensitiveActionBase {
+    public CustomizeProjectTest(String testName) {
+        super(testName);
+    }            
 
-    private boolean mSelected;
-    
-    public SchemaAttributeNode(Attribute attr) {
-        super(attr);
-        
-        
-        this.mIcon = NodeIcons.ATTRIBUTE.getIcon();
-        this.setAllowsChildren(false);
-    }
-    
-    public boolean isSelected() {
-        return mSelected;
+    @Override
+    protected Action create(Lookup context) {
+        return new CustomizeProject(context);
     }
 
-    public void setSelected(boolean selected) {
-        this.mSelected = selected;
+    @Override
+    protected void enhanceProject(TestProject prj) {
+        CustomizerProvider customizer = new CustomizerProvider() {
+            public void showCustomizer() {
+            }
+        };
+        prj.setLookup(Lookups.singleton(customizer));
     }
 
 }

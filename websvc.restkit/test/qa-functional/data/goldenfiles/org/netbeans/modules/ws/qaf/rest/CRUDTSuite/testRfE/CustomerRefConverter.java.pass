@@ -1,7 +1,7 @@
 /*
  *  CustomerRefConverter
  *
- * Created on November 27, 2007, 2:08 AM
+ * Created on March 11, 2008, 10:39 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -27,7 +27,7 @@ public class CustomerRefConverter {
     private Customer entity;
     private boolean isUriExtendable;
     private URI uri;
-  
+    
     /** Creates a new instance of CustomerRefConverter */
     public CustomerRefConverter() {
     }
