@@ -212,8 +212,11 @@ public final class LibrariesLocationUpdater implements PropertyChangeListener {
     }
     
     private void storeLibLocations() {
-        ProjectProperties.storeLibrariesLocations(project, antHelper, cs, additionalClassPathProperty != null ?
-            new String[]{classPathProperty, additionalClassPathProperty} : new String[]{classPathProperty});
+        ProjectProperties.storeLibrariesLocations(project, antHelper, cs, 
+            additionalClassPathProperty != null ? new String[]{classPathProperty, additionalClassPathProperty} : new String[]{classPathProperty},
+            additionalClassPathProperty != null ? new String[]{projectXMLElement, additionalProjectXMLElement} : new String[]{projectXMLElement},
+            true
+            );
     }
 
 }

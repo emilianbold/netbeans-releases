@@ -286,6 +286,15 @@ public final class CreatedModifiedFilesFactory {
             } else {
                 copyAndSubstituteTokens(content, target, tokens);
             }
+            // #129446: form editor doesn't work sanely unless you do this:
+            if (target.hasExt("form")) { // NOI18N
+                FileObject java = FileUtil.findBrother(target, "java"); // NOI18N
+                if (java != null) {
+                    java.setAttribute("justCreatedByNewWizard", true); // NOI18N
+                }
+            } else if (target.hasExt("java") && FileUtil.findBrother(target, "form") != null) { // NOI18N
+                target.setAttribute("justCreatedByNewWizard", true); // NOI18N
+            }
         }
         
     }
@@ -550,7 +559,7 @@ public final class CreatedModifiedFilesFactory {
             if (layer != null && layer.findResource(layerPath) != null) {
                 layerOp = new CreatedModifiedFiles.Operation() {
                     public void run() throws IOException {
-                        throw new IOException("cannot run"); // NOI18N
+                        throw new IOException("cannot overwrite " + layerPath); // NOI18N
                     }
                     public String[] getModifiedPaths() {
                         return new String[0];

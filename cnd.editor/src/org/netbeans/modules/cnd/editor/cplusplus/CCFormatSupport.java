@@ -897,8 +897,9 @@ public class CCFormatSupport extends ExtFormatSupport {
                         if (isEnumComma(t)) {
                             indent = getTokenIndent(t);
                             break;
-                        } // else continue to default
-
+                        }
+                        // else continue to default
+                        //nobreak
                     default:
                         indent = computeStatementIndent(t);
                         break;
@@ -1373,6 +1374,11 @@ public class CCFormatSupport extends ExtFormatSupport {
 
     private int getFormatStatementContinuationIndent() {
         return getCodeStyle().getFormatStatementContinuationIndent();
+    }
+
+    @Override
+    public int getShiftWidth() {
+        return getCodeStyle().indentSize();
     }
 
     private boolean alignMultilineCallArgs() {

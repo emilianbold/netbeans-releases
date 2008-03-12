@@ -295,7 +295,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
             items.add(item);
         }
         boolean res = handleLibraryClassPathItems(items, classPathProperty, projectXMLElementName, operation, true);
-        ProjectProperties.storeLibrariesLocations(project, antHelper, cs, libUpdaterProperties);
+        ProjectProperties.storeLibrariesLocations(project, antHelper, cs, libUpdaterProperties, null, false);
         return res;
     }
     
