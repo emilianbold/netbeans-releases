@@ -311,6 +311,8 @@ public class FormEditor {
 	
         openForms.put(formModel, this);
 
+        Logger.getLogger("TIMER").log(Level.FINE, "FormModel", new Object[] { formDataObject.getPrimaryFile(), formModel}); // NOI18N
+
         // Force initialization of Auto Set Component Name.
         // It cannot be initialized in constructor of FormModel,
         // because it may call getResourceSupport() which
