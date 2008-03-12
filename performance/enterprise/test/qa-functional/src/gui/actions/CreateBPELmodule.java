@@ -94,6 +94,7 @@ public class CreateBPELmodule extends org.netbeans.performance.test.utilities.Pe
     }
     
     public void prepare(){
+        new EventTool().waitNoEvent(3000);
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
         wizard.selectProject(project);
@@ -119,6 +120,7 @@ public class CreateBPELmodule extends org.netbeans.performance.test.utilities.Pe
     }
     
     public void close(){
+        closeAllModal(); // This is necessary in case open failed
         ProjectSupport.closeProject(project_name);
 //        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }

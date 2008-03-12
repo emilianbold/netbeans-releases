@@ -16,14 +16,9 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/**
- *
- */
 package org.netbeans.modules.bpel.model.impl;
 
 import java.util.concurrent.atomic.AtomicReference;
-
 import javax.xml.namespace.QName;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -37,11 +32,10 @@ import org.netbeans.modules.bpel.model.xam.BpelElements;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.w3c.dom.Element;
-
+import org.netbeans.modules.bpel.model.api.support.Utils;
 
 /**
  * @author ads
- *
  */
 public class ThrowImpl extends ActivityImpl implements Throw {
 
@@ -137,7 +131,5 @@ public class ThrowImpl extends ActivityImpl implements Throw {
         return myAttributes.get();
     }
     
-    private static AtomicReference<Attribute[]> myAttributes =
-        new AtomicReference<Attribute[]>();
-
+    private static AtomicReference<Attribute[]> myAttributes = new AtomicReference<Attribute[]>();
 }

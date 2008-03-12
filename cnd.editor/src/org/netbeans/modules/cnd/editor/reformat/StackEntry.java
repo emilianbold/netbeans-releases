@@ -53,8 +53,9 @@ class StackEntry {
     private CppTokenId importantKind;
     private boolean likeToFunction = false;
     private boolean likeToArrayInitialization = false;
-    private boolean likeToArrayInExpression = false;
     private String text;
+    private int indent;
+    private int selfIndent;
 
     StackEntry(ExtendedTokenSequence ts) {
         super();
@@ -121,6 +122,7 @@ class StackEntry {
                     {
                         if (paren == 0) {
                             likeToArrayInitialization = true;
+                            likeToFunction = false;
                             return;
                         }
                         break;
@@ -199,6 +201,22 @@ class StackEntry {
         }
     }
 
+    public int getIndent(){
+        return indent;
+    }
+
+    public void setIndent(int indent){
+        this.indent = indent;
+    }
+
+    public int getSelfIndent(){
+        return selfIndent;
+    }
+
+    public void setSelfIndent(int selfIndent){
+        this.selfIndent = selfIndent;
+    }
+    
     public int getIndex() {
         return index;
     }
@@ -229,14 +247,6 @@ class StackEntry {
 
     public void setLikeToArrayInitialization(boolean likeToArrayInitialization) {
         this.likeToArrayInitialization = likeToArrayInitialization;
-    }
-
-    public boolean isLikeToArrayInExpression() {
-        return likeToArrayInExpression;
-    }
-
-    public void setLikeToArrayInExpression(boolean likeToArrayInExpression) {
-        this.likeToArrayInExpression = likeToArrayInExpression;
     }
 
     @Override

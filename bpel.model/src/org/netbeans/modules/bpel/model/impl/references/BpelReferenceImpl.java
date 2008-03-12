@@ -16,21 +16,16 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/**
- *
- */
 package org.netbeans.modules.bpel.model.impl.references;
 
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReferenceable;
+import org.netbeans.modules.bpel.model.api.references.MappedReference;
 import org.netbeans.modules.xml.xam.AbstractComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 
-
 /**
  * @author ads
- *
  */
 class BpelReferenceImpl<T extends BpelReferenceable>
     extends AbstractReference<T>  implements BpelReference<T>, MappedReference
@@ -112,9 +107,6 @@ class BpelReferenceImpl<T extends BpelReferenceable>
     }
     
     private Attribute myAttribute;
-    
     private BpelReferenceBuilder.BpelResolver myResolver;
-    
     private boolean isResolved;
-
 }
