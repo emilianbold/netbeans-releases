@@ -190,59 +190,75 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         // TODO add your handling code here:
         //mTableModel.addNewRow();
-        
+    	mExistingArtificatNames.clear();
         //go through available attr and add for preselection
-        mExistingArtificatNames = new ArrayList<AXIComponent>();
+    	//only the once which user has not modified in table
+    	
         List<PlaceholderSchemaAttribute> attrList =  this.mTableModel.getAttributeList();
         Iterator<PlaceholderSchemaAttribute> it = attrList.iterator();
         while(it.hasNext()) {
             PlaceholderSchemaAttribute attr = it.next();
             AXIComponent comp = attr.getAXIComponent();
-            mExistingArtificatNames.add(comp);
-        }
-        
-        mExistingArtificatNames = SchemaArtifactSelectionDialog.showDialog(this.mProject, mExistingArtificatNames);
-        
-//        //remove duplicate named component
-//        List<String> nameList = new ArrayList<String>();
-//        Iterator<AXIComponent> itC = mExistingArtificatNames.iterator();
-//        
-//        while(itC.hasNext()) {
-//            AXIComponent comp = itC.next();
-//            
-//            AXIType type = (AXIType) comp;
-//            String name = type.getName();
-//            if(nameList.contains(name)) {
-//                mExistingArtificatNames.remove(comp);
-//            } else {
-//                nameList.add(name);
-//            }
-//        }
-        
-        
-        //now add to table
-        Iterator<AXIComponent> itC = mExistingArtificatNames.iterator();
-        
-        while(itC.hasNext()) {
-            AXIComponent comp = itC.next();
-            AXIType type = (AXIType) comp;
-            String name = type.getName();
-            
-            SchemaComponent sc = comp.getPeer();
-            SchemaComponentIEPTypeFinderVisitor visitor = new SchemaComponentIEPTypeFinderVisitor();
-            sc.accept(visitor);
-            String iepType = visitor.getIEPType();
-            
-            
-            PlaceholderSchemaAttribute attr = new PlaceholderSchemaAttribute(comp);
-            attr.setAttributeName(name);
-            attr.setAttributeType(iepType);
-            if(SharedConstants.SQL_TYPE_VARCHAR.equals(iepType)) {
-                attr.setAttributeSize("50"); //by default use 50 for size. size is required for VARCHAR
+            if(comp != null) {
+            	mExistingArtificatNames.add(comp);
             }
-            
-            this.mTableModel.addRow(attr);
         }
+        
+        
+        List<AXIComponent> copiedExistingArtificatNames = new ArrayList<AXIComponent>();
+        copiedExistingArtificatNames.addAll(mExistingArtificatNames);
+        
+         List<AXIComponent> newComponents = SchemaArtifactSelectionDialog.showDialog(this.mProject, copiedExistingArtificatNames);
+        
+         //remove the once which are no longer available in new selection
+         List<AXIComponent> removedArtificatNames = new ArrayList<AXIComponent>();
+        Iterator<AXIComponent> itA = mExistingArtificatNames.iterator();
+        while(itA.hasNext()) {
+            AXIComponent comp = itA.next();
+            if(!newComponents.contains(comp)) {
+                removedArtificatNames.add(comp);
+                
+                PlaceholderSchemaAttribute attr = mTableModel.getMatchingRow(comp);
+                if(attr != null) {
+                    mTableModel.removeRow(attr);
+                }
+            } 
+        }
+        mExistingArtificatNames.removeAll(removedArtificatNames);
+        
+        //keep the once which user has modified in table or newly addded
+        
+         itA = newComponents.iterator();
+        while(itA.hasNext()) {
+            AXIComponent comp = itA.next();
+            if(!mExistingArtificatNames.contains(comp)) {
+                mExistingArtificatNames.add(comp);
+                
+                //now add to table
+                AXIType type = (AXIType) comp;
+                String name = type.getName();
+
+                SchemaComponent sc = comp.getPeer();
+                SchemaComponentIEPTypeFinderVisitor visitor = new SchemaComponentIEPTypeFinderVisitor();
+                sc.accept(visitor);
+                String iepType = visitor.getIEPType();
+
+
+                PlaceholderSchemaAttribute attr = new PlaceholderSchemaAttribute(comp);
+                attr.setAttributeName(name);
+                attr.setAttributeType(iepType);
+                if(SharedConstants.SQL_TYPE_VARCHAR.equals(iepType)) {
+                    attr.setAttributeSize("50"); //by default use 50 for size. size is required for VARCHAR
+                }
+
+                this.mTableModel.addRow(attr);
+            }
+        }
+        
+        
+        
+        
+        
         
 }//GEN-LAST:event_addButtonActionPerformed
 

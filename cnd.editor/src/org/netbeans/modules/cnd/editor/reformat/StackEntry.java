@@ -121,6 +121,7 @@ class StackEntry {
                     {
                         if (paren == 0) {
                             likeToArrayInitialization = true;
+                            likeToFunction = false;
                             return;
                         }
                         break;

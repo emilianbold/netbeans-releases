@@ -51,7 +51,7 @@
                    
     <description>Google Map Service</description>
     
-    <display-name>GoogleMap</display-name>
+    <display-name>Map Service</display-name>
 
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.components.google.Bundle</localizing-bundle>
