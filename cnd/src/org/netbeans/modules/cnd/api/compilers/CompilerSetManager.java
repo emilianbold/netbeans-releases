@@ -122,8 +122,13 @@ public class CompilerSetManager {
     public static synchronized CompilerSetManager getDefault(boolean doCreate) {
         if (instance == null && doCreate) {
             instance = restoreFromDisk();
-            if (instance == null)
+            if (instance == null) {
                 instance = new CompilerSetManager();
+                instance.saveToDisk();
+            }
+        }
+        if (instance != null && instance.getCompilerSets().size() == 0) { // No compilers found
+            instance.add(CompilerSet.createEmptyCompilerSet());
         }
         return instance;
     }
@@ -132,6 +137,9 @@ public class CompilerSetManager {
      * Replace the default CompilerSetManager. Let registered listeners know its been updated.
      */
     public static synchronized void setDefault(CompilerSetManager csm) {
+        if (csm.getCompilerSets().size() == 0) { // No compilers found
+            csm.add(CompilerSet.createEmptyCompilerSet());
+        }
         instance = csm;
 //        fireCompilerSetChangeNotification(csm);
     }
@@ -479,10 +487,10 @@ public class CompilerSetManager {
     public void remove(CompilerSet cs) {
         if (sets.contains(cs)) {
             sets.remove(cs);
-            CompilerSet.removeCompilerSet(cs); // has it's own cache!!!!!!
-            if (CppSettings.getDefault().getCompilerSetName().equals(cs.getName())) {
-                CppSettings.getDefault().setCompilerSetName("");
-            }
+//            CompilerSet.removeCompilerSet(cs); // has it's own cache!!!!!!
+//            if (CppSettings.getDefault().getCompilerSetName().equals(cs.getName())) {
+//                CppSettings.getDefault().setCompilerSetName("");
+//            }
 //            if (this == instance) {
 //                fireCompilerSetChangeNotification(instance);
 //            }

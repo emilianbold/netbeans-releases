@@ -348,7 +348,10 @@ public class FormEditor {
         formLoaded = true;
 	
         getCodeGenerator().initialize(formModel);
-        getResourceSupport(); // make sure ResourceSupport is created and initialized
+        ResourceSupport resupport = getResourceSupport(); // make sure ResourceSupport is created and initialized
+        if (resupport.getDesignLocale() != null) {
+            resupport.updateDesignLocale();
+        }
 
         getBindingSupport();
         formModel.fireFormLoaded();

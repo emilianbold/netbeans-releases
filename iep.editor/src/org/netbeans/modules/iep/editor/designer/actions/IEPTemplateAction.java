@@ -64,7 +64,6 @@ public class IEPTemplateAction extends AbstractAction {
         
         if (panels == null) {
             panels = new WizardDescriptor.Panel[]{
-                new IEPWizardPanel2(project),
                 new IEPWizardPanel3(project)
             };
         

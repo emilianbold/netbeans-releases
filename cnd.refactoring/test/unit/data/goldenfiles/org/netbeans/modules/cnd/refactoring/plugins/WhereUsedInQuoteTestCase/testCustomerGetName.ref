@@ -1,0 +1,4 @@
+References in file quote_nosyshdr/customer.cc
+[2319-2319] string Customer::<b>GetName</b>() const {
+References in file quote_nosyshdr/customer.h
+[2294-2294] string <b>GetName</b>() const;
