@@ -132,10 +132,17 @@ public final class WebServiceManager {
             removeWebService(wsData, true, false);
 
             Throwable exc = wsdlModeler.getCreationException();
-            String cause = (exc != null) ? exc.getLocalizedMessage() : null;
-            String excString = (exc != null) ? exc.getClass().getName() + " - " + cause : null;
-            String message = NbBundle.getMessage(WebServiceManager.class, "WS_MODELER_ERROR") + "\n\n" + excString; // NOI18N
-            Exceptions.printStackTrace(Exceptions.attachLocalizedMessage(exc, message));
+            String message = NbBundle.getMessage(WebServiceManager.class, "WS_MODELER_ERROR");
+            if (exc != null) {
+                String cause = exc.getLocalizedMessage();
+                String excString = exc.getClass().getName() + " - " + cause;
+                message += "\n\n" + excString; // NOI18N
+                Exceptions.printStackTrace(Exceptions.attachLocalizedMessage(exc, message));
+            } else {
+                exc = new IllegalStateException(message);
+                Exceptions.printStackTrace(exc);
+            }
+            
             return;
         } else if (model.getServices().isEmpty()) {
             // If there are no services in the WSDL, warn the user
