@@ -77,7 +77,6 @@ import org.netbeans.modules.form.layoutdesign.*;
 import org.netbeans.modules.form.layoutdesign.LayoutConstants.PaddingType;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 import org.netbeans.modules.form.palette.PaletteUtils;
-import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
