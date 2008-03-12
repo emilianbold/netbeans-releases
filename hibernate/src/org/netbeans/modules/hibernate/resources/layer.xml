@@ -270,4 +270,11 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="j2ee">
+        <folder name="webtier">
+            <folder name="framework">
+                <file name="org-netbeans-modules-hibernate-framework-HibernateFrameworkProvider.instance" />
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
