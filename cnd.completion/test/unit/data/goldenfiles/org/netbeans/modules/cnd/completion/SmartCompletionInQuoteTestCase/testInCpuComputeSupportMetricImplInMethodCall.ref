@@ -1,0 +1,6 @@
+SetCategory(int category) void
+SetDescription(const char* description) void
+SetSupportMetric(int m) void
+SetType(int type) void
+SetUnits(int u) void
+SetVendor(const char* v) void

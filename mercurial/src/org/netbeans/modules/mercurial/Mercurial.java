@@ -66,6 +66,10 @@ import org.openide.DialogDisplayer;
  * @author Maros Sandor
  */
 public class Mercurial {
+    public static final int HG_FETCH_20_REVISIONS = 20;
+    public static final int HG_FETCH_50_REVISIONS = 50;
+    public static final int HG_FETCH_ALL_REVISIONS = -1;
+    
     public static final String MERCURIAL_OUTPUT_TAB_TITLE = org.openide.util.NbBundle.getMessage(Mercurial.class, "CTL_Mercurial_DisplayName"); // NOI18N
     public static final String CHANGESET_STR = "changeset:"; // NOI18N
 
