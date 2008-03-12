@@ -153,6 +153,7 @@ import org.netbeans.modules.java.source.JavadocEnv;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
+import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
@@ -1303,7 +1304,8 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     return Phase.MODIFIED;
                 }
                 long start = System.currentTimeMillis ();
-                currentInfo.getJavacTask().analyze();
+                JavacTaskImpl jti = currentInfo.getJavacTask();
+                PostFlowAnalysis.analyze(jti.analyze(), jti.getContext());
                 currentPhase = Phase.RESOLVED;
                 long end = System.currentTimeMillis ();
                 logTime(currentInfo.getFileObject(),currentPhase,(end-start));
