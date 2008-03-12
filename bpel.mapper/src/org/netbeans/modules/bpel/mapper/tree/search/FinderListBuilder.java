@@ -93,6 +93,11 @@ public class FinderListBuilder {
         ArrayList<TreeItemFinder> finderList = new ArrayList<TreeItemFinder>();
         //
         XPathVariable var = varRef.getVariable();
+        // Variable could be deleted but the reference no.
+        // issue 128684
+        if (var == null) {
+            return finderList;
+        }
         assert var instanceof XPathBpelVariable;
         XPathBpelVariable bpelVar = (XPathBpelVariable)var;
         VariableDeclaration varDecl = bpelVar.getVarDecl();
