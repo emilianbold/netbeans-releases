@@ -40,13 +40,14 @@ public class SchemaArtifactSelectionPanel extends javax.swing.JPanel {
     public SchemaArtifactSelectionPanel(List<AXIComponent> existingArtificatNames, Project project) {
         this();
         FolderNode rootNode = new FolderNode(NbBundle.getMessage(ElementOrTypeChooserHelper.class, "LBL_ByFile_DisplayName"));
+        this.mExistingArtificatNames = existingArtificatNames;
         
         SchemaArtifactTreeModel model = new SchemaArtifactTreeModel(rootNode, 
                                                                     project, 
                                                                     existingArtificatNames,
                                                                     jTree1);
         
-        this.mExistingArtificatNames = existingArtificatNames;
+        
         this.jTree1.setModel(model);
         //this.jTree1.addMouseListener(new TreeMouseListener());
         
