@@ -71,6 +71,7 @@ public class StripAction extends ContextAction {
     
     private final VCSContext context;
     private static String HG_STIP_SAVE_BUNDLE = "saving bundle to ";
+    private static String HG_TIP = "tip"; // NOI18N
             
     public StripAction(String name, VCSContext context) {
         this.context = context;
@@ -93,6 +94,7 @@ public class StripAction extends ContextAction {
             return;
         }
         rev = strip.getSelectionRevision();
+        if(rev == null) rev = HG_TIP;
         final boolean doBackup = strip.isBackupRequested();
         final String revStr = rev;
 

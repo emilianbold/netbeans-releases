@@ -73,6 +73,7 @@ public class BackoutAction extends ContextAction {
     private final VCSContext context;
     private static final String HG_BACKOUT_REVISION_REPLACE = "\\{revision}";
     public static final String HG_BACKOUT_REVISION = " {revision}";
+    private static String HG_TIP = "tip"; // NOI18N
             
     public BackoutAction(String name, VCSContext context) {
         this.context = context;
@@ -111,6 +112,7 @@ public class BackoutAction extends ContextAction {
             return;
         }
         rev = backout.getSelectionRevision();
+        if(rev == null) rev = HG_TIP;
         commitMsg = backout.getCommitMessage();
         final boolean doMerge = false; // Now handling this using our own merge mechanism, not backout's
         final String revStr = rev;

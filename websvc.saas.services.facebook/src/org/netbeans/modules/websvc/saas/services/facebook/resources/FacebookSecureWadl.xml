@@ -11,7 +11,7 @@
 	    http://developers.facebook.com/documentation.php
 	</doc>
 	<resource path="restserver.php">
-	    <method name="POST" id="facebook.auth_getSession">
+	    <method name="POST" id="auth_getSession">
 		<doc xml:lang="en">
 		    Create a facebook session, see
 		    http://developers.facebook.com/documentation.php?v=1.0&amp;method=auth.getSession

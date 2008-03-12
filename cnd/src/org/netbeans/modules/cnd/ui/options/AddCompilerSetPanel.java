@@ -77,7 +77,7 @@ public class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentL
         taInfo.setBackground(getBackground());
         validateData();
         
-        setPreferredSize(new Dimension(600, 300));
+        setPreferredSize(new Dimension(700, 300));
         
         tfBaseDirectory.getDocument().addDocumentListener(this);
         tfName.getDocument().addDocumentListener(this);
