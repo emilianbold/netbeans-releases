@@ -70,10 +70,10 @@ public class SchemaArtifactSelectionDialog {
         DialogDescriptor dd = new DialogDescriptor(panel, "Select schema elements or types", true, null);
         DialogDisplayer dDisplayer = DialogDisplayer.getDefault();
         
-        if(dDisplayer.notify(dd) == DialogDescriptor.OK_OPTION) {
-            //ok is clicked do processing
-            artifactNamesList = panel.getSelectedArtifactNames();
-        }
+        dDisplayer.notify(dd);
+        
+        //ok is clicked do processing
+        artifactNamesList = panel.getSelectedArtifactNames();
         
         return artifactNamesList;
     }
