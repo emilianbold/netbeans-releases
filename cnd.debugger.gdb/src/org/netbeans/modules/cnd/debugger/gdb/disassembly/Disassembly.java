@@ -283,6 +283,9 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         // reload disassembler if needed
         // TODO: there may be functions with the same name called one from the other, we need to check that too
         CallStackFrame frame = debugger.getCurrentCallStackFrame();
+        if (frame == null) {
+            return;
+        }
         if (force || lastFrame == null || !lastFrame.getFunctionName().equals(frame.getFunctionName())) {
             String filename = frame.getFileName();
             if (filename != null && filename.length() > 0) {

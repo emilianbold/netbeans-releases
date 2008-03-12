@@ -200,7 +200,7 @@ public class DuplicateCompilerSetPanel extends javax.swing.JPanel implements Doc
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 16, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 4, 16, 16);
         add(tfName, gridBagConstraints);
         tfName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "AddCompilerSetPanel.tfName.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -226,7 +226,7 @@ public class DuplicateCompilerSetPanel extends javax.swing.JPanel implements Doc
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 16);
         add(cbFamily, gridBagConstraints);
 
         lbName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("lbToolSetName_MN").charAt(0));
@@ -248,7 +248,7 @@ public class DuplicateCompilerSetPanel extends javax.swing.JPanel implements Doc
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(16, 4, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(16, 4, 0, 16);
         add(tfBaseDirectory, gridBagConstraints);
         tfBaseDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "AddCompilerSetPanel.tfBaseDirectory.AccessibleContext.accessibleDescription")); // NOI18N
 

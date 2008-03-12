@@ -496,27 +496,20 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
     }
     
     private void writefile(final File file) throws ConfigurationException {
-        boolean assertEnabled = false;
-        assert assertEnabled = true;
-
         assert file != null : "File to write can't be null"; // NOI18N
+        assert file.getParentFile() != null : "File parent folder can't be null"; // NOI18N
 
         try {
-            FileObject cfolder = FileUtil.toFileObject(file.getParentFile());
+            FileObject cfolder = FileUtil.toFileObject(FileUtil.normalizeFile(file.getParentFile()));
             if (cfolder == null) {
-                File parentFile = file.getParentFile();
-                if (assertEnabled) {
-                    LOGGER.log(Level.INFO, "Absolute " + file.isAbsolute()); // NOI18N
-                    LOGGER.log(Level.INFO, "Path " + file.getAbsolutePath()); // NOI18N
-                    LOGGER.log(Level.INFO, "Parent " + parentFile); // NOI18N
-                    LOGGER.log(Level.INFO, "Grand Parent " + ((parentFile != null) ? parentFile.getParent() : null)); // NOI18N
-                }
                 try {
-                    cfolder = FileUtil.toFileObject(parentFile.getParentFile()).createFolder(parentFile.getName());
-                } catch (IOException ioe) {
-                    throw new ConfigurationException(NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_FailedToCreateConfigFolder", parentFile.getAbsolutePath()));
+                    cfolder = FileUtil.createFolder(FileUtil.normalizeFile(file.getParentFile()));
+                } catch (IOException ex) {
+                    throw new ConfigurationException(NbBundle.getMessage(TomcatModuleConfiguration.class,
+                            "MSG_FailedToCreateConfigFolder", file.getParentFile().getAbsolutePath()));
                 }
             }
+
             final FileObject folder = cfolder;
             final ConfigurationException anonClassException[] = new ConfigurationException[]{null};
             FileSystem fs = folder.getFileSystem();
