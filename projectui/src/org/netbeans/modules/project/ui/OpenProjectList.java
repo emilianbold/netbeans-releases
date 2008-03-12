@@ -248,6 +248,7 @@ public final class OpenProjectList {
         }
         
         public void run() {
+            LOGGER.log(Level.FINE, "LoadOpenProjects.run: {0}", action); // NOI18N
             switch (action) {
                 case 0: 
                     action = 1;
@@ -280,14 +281,18 @@ public final class OpenProjectList {
         }
         
         private void updateGlobalState() {
+            LOGGER.log(Level.FINER, "updateGlobalState"); // NOI18N
             synchronized (INSTANCE) {
                 INSTANCE.openProjects = openedProjects;
                 INSTANCE.mainProject = mainProject;
                 INSTANCE.getRecentTemplates().addAll(recentTemplates);
+                LOGGER.log(Level.FINER, "updateGlobalState, applied"); // NOI18N
             }
             
             INSTANCE.pchSupport.firePropertyChange(PROPERTY_OPEN_PROJECTS, new Project[0], openedProjects.toArray(new Project[0]));
             INSTANCE.pchSupport.firePropertyChange(PROPERTY_MAIN_PROJECT, null, INSTANCE.mainProject);
+
+            LOGGER.log(Level.FINER, "updateGlobalState, done, notified"); // NOI18N
         }
             
         private void loadOnBackground() {
@@ -296,6 +301,7 @@ public final class OpenProjectList {
             toOpenProjects.addAll(URLs2Projects(URLs));
             Project[] inital;
             synchronized (toOpenProjects) {
+                LOGGER.log(Level.FINER, "loadOnBackground {0}", toOpenProjects); // NOI18N
                 inital = toOpenProjects.toArray(new Project[0]);
             }
             recentTemplates = new ArrayList<String>( OpenProjectListSettings.getInstance().getRecentTemplates() );
@@ -323,11 +329,15 @@ public final class OpenProjectList {
                         break;
                     }
                     p = toOpenProjects.remove();
+                    LOGGER.log(Level.FINER, "after remove {0}", toOpenProjects); // NOI18N
                 }
+                LOGGER.log(Level.FINE, "about to open a project {0}", p); // NOI18N
                 openedProjects.add(p);
                 notifyOpened(p);
+                LOGGER.log(Level.FINE, "notify opened {0}", p); // NOI18N
                 PropertyChangeEvent ev = new PropertyChangeEvent(this, PROPERTY_REPLACE, null, p);
                 pchSupport.firePropertyChange(ev);
+                LOGGER.log(Level.FINE, "property change notified {0}", p); // NOI18N
             }
 
             if (inital != null) {
