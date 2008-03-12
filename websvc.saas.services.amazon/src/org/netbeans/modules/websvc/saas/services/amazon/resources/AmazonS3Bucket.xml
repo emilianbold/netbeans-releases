@@ -58,10 +58,8 @@
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
 
-        <group name="Amazon">
-            <group name="Simple Storage Service"/>
-        </group>
-
+        <group name="Amazon"/>
+  
         <authentication profile="SaaSServices/AmazonS3/profile.properties">
             <signed-url sig-id="Authorization" id="amazons3.bucket">
                 <sign>

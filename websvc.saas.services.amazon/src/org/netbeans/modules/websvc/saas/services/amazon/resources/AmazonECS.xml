@@ -67,8 +67,10 @@
 
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="searchItem" href="#amazonecs.ItemSearch"/>
     </methods>
+    -->
 
 </saas-services>
