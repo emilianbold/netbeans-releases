@@ -121,7 +121,7 @@ public class AxiTreeNodeVisitor extends DeepAXITreeVisitor {
     public void visit(Element element) { 
         SchemaElementNode eNode = new SchemaElementNode(element);
         if(this.mExistingArtificatNames.contains(element)) {
-            this.mExistingArtificatNames.remove(element);
+//            this.mExistingArtificatNames.remove(element);
             eNode.setSelected(true);
         }
         
@@ -141,7 +141,7 @@ public class AxiTreeNodeVisitor extends DeepAXITreeVisitor {
     public void visit(ContentModel element) {
         SchemaComplexTypeNode cNode = new SchemaComplexTypeNode(element);
         if(this.mExistingArtificatNames.contains(element)) {
-            this.mExistingArtificatNames.remove(element);
+//            this.mExistingArtificatNames.remove(element);
             cNode.setSelected(true);
         }
         
@@ -161,7 +161,7 @@ public class AxiTreeNodeVisitor extends DeepAXITreeVisitor {
     public void visit(Attribute attribute) {
         SchemaAttributeNode aNode = new SchemaAttributeNode(attribute);
         if(this.mExistingArtificatNames.contains(attribute.getName())) {
-            this.mExistingArtificatNames.remove(attribute.getName());
+//            this.mExistingArtificatNames.remove(attribute.getName());
             aNode.setSelected(true);
         }
         
