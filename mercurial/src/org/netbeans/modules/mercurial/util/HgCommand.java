@@ -146,6 +146,7 @@ public class HgCommand {
     private static final String HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD = 
             "--template=rev:{rev}\\nauth:{author}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\n" + // NOI18N
             "\\nendCS:\\n"; // NOI18N
+    private static final String HG_LOG_REV_TIP_RANGE = "tip:0"; // NOI18N
     private static final String HG_LOG_REVISION_OUT = "rev:"; // NOI18N
     private static final String HG_LOG_AUTHOR_OUT = "auth:"; // NOI18N
     private static final String HG_LOG_DESCRIPTION_OUT = "desc:"; // NOI18N
@@ -1200,6 +1201,13 @@ public class HgCommand {
             command.add(HG_FLAG_REV_CMD);
             command.add(revStr);
         }    
+        
+        // Make sure revsions listed from "tip" down to "tip - limit"
+        if(limit >= 0 && dateStr == null && revStr == null){
+            command.add(HG_FLAG_REV_CMD);
+            command.add(HG_LOG_REV_TIP_RANGE);
+        }    
+        
         if(bGetFileInfo){
             command.add(HG_LOG_TEMPLATE_HISTORY_CMD);
         }else{
