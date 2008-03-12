@@ -67,7 +67,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -137,7 +136,6 @@ public final class OpenProjectList {
     private static final int NUM_TEMPLATES = 15;
     
     static final Logger LOGGER = Logger.getLogger(OpenProjectList.class.getName());
-    private static final Level LOG_LEVEL = Level.FINE;
     
     private static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
 
@@ -485,8 +483,8 @@ public final class OpenProjectList {
         
         long end = System.currentTimeMillis();
         
-        if (LOGGER.isLoggable(LOG_LEVEL)) {
-            LOGGER.log(LOG_LEVEL, "opening projects took: " + (end - start) + "ms");
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "opening projects took: " + (end - start) + "ms");
         }
     }
     
@@ -1116,8 +1114,8 @@ public final class OpenProjectList {
             this.size = size;
             recentProjects = new ArrayList<ProjectReference>( size );
             recentProjectsInfos = new ArrayList<UnloadedProjectInformation>(size);
-            if (LOGGER.isLoggable(LOG_LEVEL)) {
-                LOGGER.log(LOG_LEVEL, "created a RecentProjectList: size=" + size);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "created a RecentProjectList: size=" + size);
             }
         }
         
@@ -1126,8 +1124,8 @@ public final class OpenProjectList {
             
             if ( index == -1 ) {
                 // Project not in list
-                if (LOGGER.isLoggable(LOG_LEVEL)) {
-                    LOGGER.log(LOG_LEVEL, "add new recent project: " + p);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "add new recent project: " + p);
                 }
                 if ( recentProjects.size() == size ) {
                     // Need some space for the newly added project
@@ -1145,8 +1143,8 @@ public final class OpenProjectList {
                 }
             }
             else {
-                if (LOGGER.isLoggable(LOG_LEVEL)) {
-                    LOGGER.log(LOG_LEVEL, "re-add recent project: " + p);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "re-add recent project: " + p);
                 }
                 // Project is in list => just move it to first place
                 recentProjects.remove( index );
@@ -1166,8 +1164,8 @@ public final class OpenProjectList {
         public boolean remove( Project p ) {
             int index = getIndex( p );
             if ( index != -1 ) {
-                if (LOGGER.isLoggable(LOG_LEVEL)) {
-                    LOGGER.log(LOG_LEVEL, "remove recent project: " + p);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "remove recent project: " + p);
                 }
                 recentProjects.remove( index );
                 recentProjectsInfos.remove(index);
@@ -1224,24 +1222,24 @@ public final class OpenProjectList {
                 Project p = pRef.getProject();
                 if ( p == null || !p.getProjectDirectory().isValid() ) {
                     remove( p );        // Folder does not exist any more => remove from
-                    if (LOGGER.isLoggable(LOG_LEVEL)) {
-                        LOGGER.log(LOG_LEVEL, "removing dead recent project: " + p);
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "removing dead recent project: " + p);
                     }
                 }
                 else {
                     result.add( p );
                 }
             }
-            if (LOGGER.isLoggable(LOG_LEVEL)) {
-                LOGGER.log(LOG_LEVEL, "recent projects: " + result);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "recent projects: " + result);
             }
             return result;
         }
         
         public boolean isEmpty() {
             boolean empty = recentProjects.isEmpty();
-            if (LOGGER.isLoggable(LOG_LEVEL)) {
-                LOGGER.log(LOG_LEVEL, "recent projects empty? " + empty);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "recent projects empty? " + empty);
             }
             return empty;
         }
@@ -1250,8 +1248,8 @@ public final class OpenProjectList {
             List<URL> URLs = OpenProjectListSettings.getInstance().getRecentProjectsURLs();
             List<String> names = OpenProjectListSettings.getInstance().getRecentProjectsDisplayNames();
             List<ExtIcon> icons = OpenProjectListSettings.getInstance().getRecentProjectsIcons();
-            if (LOGGER.isLoggable(LOG_LEVEL)) {
-                LOGGER.log(LOG_LEVEL, "recent project list load: " + URLs);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "recent project list load: " + URLs);
             }
             recentProjects.clear();
             for ( Iterator it = URLs.iterator(); it.hasNext(); ) {
@@ -1290,8 +1288,8 @@ public final class OpenProjectList {
                     URLs.add( pURL );
                 }
             }
-            if (LOGGER.isLoggable(LOG_LEVEL)) {
-                LOGGER.log(LOG_LEVEL, "recent project list save: " + URLs);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "recent project list save: " + URLs);
             }
             OpenProjectListSettings.getInstance().setRecentProjectsURLs( URLs );
             int listSize = recentProjectsInfos.size();
@@ -1353,8 +1351,8 @@ public final class OpenProjectList {
                     projectURL = p.getProjectDirectory().getURL();                
                 }
                 catch( FileStateInvalidException e ) {
-                    if (LOGGER.isLoggable(LOG_LEVEL)) {
-                        LOGGER.log(LOG_LEVEL, "FSIE getting URL for project: " + p.getProjectDirectory());
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "FSIE getting URL for project: " + p.getProjectDirectory());
                     }
                 }
             }
@@ -1374,8 +1372,8 @@ public final class OpenProjectList {
                     }
                 }
                 
-                if (LOGGER.isLoggable(LOG_LEVEL)) {
-                    LOGGER.log(LOG_LEVEL, "no active project reference for " + projectURL);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "no active project reference for " + projectURL);
                 }
                 if ( projectURL != null ) {                    
                     FileObject dir = URLMapper.findFileObject( projectURL );
@@ -1384,23 +1382,23 @@ public final class OpenProjectList {
                             p = ProjectManager.getDefault().findProject( dir );
                             if ( p != null ) {
                                 projectReference = new WeakReference<Project>( p ); 
-                                if (LOGGER.isLoggable(LOG_LEVEL)) {
-                                    LOGGER.log(LOG_LEVEL, "found " + p);
+                                if (LOGGER.isLoggable(Level.FINE)) {
+                                    LOGGER.log(Level.FINE, "found " + p);
                                 }
                                 return p;
                             }
                         }       
                         catch ( IOException e ) {
                             // Ignore invalid folders
-                            if (LOGGER.isLoggable(LOG_LEVEL)) {
-                                LOGGER.log(LOG_LEVEL, "could not load recent project from " + projectURL);
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.log(Level.FINE, "could not load recent project from " + projectURL);
                             }
                         }
                     }
                 }
                 
-                if (LOGGER.isLoggable(LOG_LEVEL)) {
-                    LOGGER.log(LOG_LEVEL, "no recent project in " + projectURL);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "no recent project in " + projectURL);
                 }
                 return null; // Empty reference                
             }
