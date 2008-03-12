@@ -119,6 +119,9 @@ class DragWindow extends JWindow {
 
         BufferedImage res = config.createCompatibleImage(contentSize.width, contentSize.height);
         Graphics2D g = res.createGraphics();
+        //some components may be non-opaque so just black rectangle would be painted then
+        g.setColor( Color.white );
+        g.fillRect(0, 0, contentSize.width, contentSize.height);
         if( WinSysPrefs.HANDLER.getBoolean(WinSysPrefs.DND_SMALLWINDOWS, true) && c.getWidth() > 0 && c.getHeight() > 0 ) {
             double xScale = contentSize.getWidth() / c.getWidth();
             double yScale = contentSize.getHeight() / c.getHeight();
