@@ -100,6 +100,10 @@ public class RubyPlatformTest extends RubyTestBase {
         assertNotNull("irb found", platform.getIRB());
     }
 
+    public void testFindJIRB() throws Exception {
+        assertNotNull("jirb found", RubyPlatformManager.getDefaultPlatform().getIRB());
+    }
+
     public void testFindIRBWithSuffix() throws Exception {
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRuby(false, "1.8.6-p110"));
         assertNotNull("irb found", platform.getIRB());

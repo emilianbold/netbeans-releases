@@ -570,7 +570,7 @@ public final class RubyPlatform {
 
     public String getIRB() {
         if (irb == null) {
-            irb = findExecutable("irb", true); // NOI18N
+            irb = findExecutable(isJRuby() ? "jirb" : "irb", true); // NOI18N
         }
         return irb;
     }
