@@ -316,13 +316,12 @@ public class ElementJavadoc {
                     }
                     Set<Integer> paramPos = new HashSet<Integer>();
                     List<ParamTag> paramTags = null;
-                    Map<Integer, List<Tag>> paramInlineTags = null;
+                    Map<Integer, List<Tag>> paramInlineTags = new HashMap<Integer, List<Tag>>();
                     Map<Integer, ParamTag> inheritedParamTags = null;
                     Map<Integer, List<Tag>> inheritedParamInlineTags = null;
                     Parameter[] parameters = mdoc.parameters();
                     if (parameters.length > 0) {
                         paramTags = new ArrayList<ParamTag>();
-                        paramInlineTags = new HashMap<Integer, List<Tag>>();
                         for (int i = 0; i < parameters.length; i++)
                             paramPos.add(i);
                     }

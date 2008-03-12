@@ -167,40 +167,22 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    public void testBlankLineAfterEndLineComment() {
+    
+    public void testSwitchFormatting3Half() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentNamespace, false);
         setLoadDocumentText(
-                "namespace AC\n" +
+                "int main(int i)\n" +
                 "{\n" +
-                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
-                "{\n" +
-                "public:\n" +
-                "    int number;\n" +
-                "    char** cc;\n" +
-                "ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
-                "    {\n" +
-                "    }\n" +
-                "} FAR ct_data;\n" +
-                "}\n"
-                );
+                "if (offset)\n" +
+                "    *offset = layout->record_size / BITS_PER_UNIT;\n" +
+                "}\n");
         reformat();
-        assertDocumentText("Incorrect blak line after end line comment",
-                "namespace AC\n" +
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "int main(int i)\n" +
                 "{\n" +
-                "\n" +
-                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
-                "{\n" +
-                "public:\n" +
-                "    int number;\n" +
-                "    char** cc;\n" +
-                "\n" +
-                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
-                "    {\n" +
-                "    }\n" +
-                "} FAR ct_data;\n" +
-                "}\n"
-                );
+                "    if (offset)\n" +
+                "        *offset = layout->record_size / BITS_PER_UNIT;\n" +
+                "}\n");
     }
+
 }
