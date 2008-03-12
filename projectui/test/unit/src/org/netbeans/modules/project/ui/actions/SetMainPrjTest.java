@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,18 +31,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ruby.rhtml;
 
-import org.netbeans.editor.Settings;
-import org.openide.modules.ModuleInstall;
+package org.netbeans.modules.project.ui.actions;
 
+import javax.swing.Action;
+import org.netbeans.modules.project.ui.actions.TestSupport.TestProject;
+import org.openide.util.Lookup;
 
-public class RhtmlModuleInstaller extends ModuleInstall {
+/**
+ *
+ * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
+ */
+public class SetMainPrjTest extends LookupSensitiveActionBase {
+    public SetMainPrjTest(String testName) {
+        super(testName);
+    }            
 
     @Override
-    public void restored() {
-        Settings.addInitializer(new RhtmlEditorSettings());
-        Settings.reset();
+    protected Action create(Lookup context) {
+        return new SetMainProject(context);
+    }
+
+    @Override
+    protected void enhanceProject(TestProject prj) {
+    }
+
+
+    // disable these tests as the menu item is completely different
+    @Override
+    public void testNoNeedToRefreshWhenNotVisibleMenu() {
+    }
+    @Override
+    public void testCloneNoNeedToRefreshWhenNotVisibleMenu() {
     }
 }

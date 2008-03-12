@@ -7,6 +7,7 @@
 package org.netbeans.modules.iep.editor.wizard;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -14,15 +15,22 @@ import java.util.Vector;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.JList;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumnModel;
 
+import org.netbeans.api.project.Project;
+import org.netbeans.module.iep.editor.xsd.nodes.SchemaComponentIEPTypeFinderVisitor;
 import org.netbeans.modules.iep.editor.designer.JTextFieldFilter;
 import org.netbeans.modules.iep.editor.ps.SelectPanelTableCellRenderer;
 import org.netbeans.modules.iep.editor.share.SharedConstants;
+import org.netbeans.modules.xml.axi.AXIComponent;
+import org.netbeans.modules.xml.axi.AXIType;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 
 /**
  *
@@ -44,10 +52,19 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
     
     private static JComboBox mComboBoxSqlType;
     
+    private Project mProject;
+    
+    private List<AXIComponent> mExistingArtificatNames = new ArrayList<AXIComponent>();
+    
     /** Creates new form IEPAttributeConfigurationPanel */
     public IEPAttributeConfigurationPanel() {
         initComponents();
         initGUI();
+    }
+    
+    public IEPAttributeConfigurationPanel(Project project) {
+        this();
+        this.mProject = project;
     }
     
     public void addDefaultIEPAttributes(List<XSDToIEPAttributeNameVisitor.AttributeNameToType> nameToTypeList) {
@@ -172,9 +189,64 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         // TODO add your handling code here:
-        mTableModel.addNewRow();
+        //mTableModel.addNewRow();
+        
+        //go through available attr and add for preselection
+        mExistingArtificatNames = new ArrayList<AXIComponent>();
+        List<PlaceholderSchemaAttribute> attrList =  this.mTableModel.getAttributeList();
+        Iterator<PlaceholderSchemaAttribute> it = attrList.iterator();
+        while(it.hasNext()) {
+            PlaceholderSchemaAttribute attr = it.next();
+            AXIComponent comp = attr.getAXIComponent();
+            mExistingArtificatNames.add(comp);
+        }
+        
+        mExistingArtificatNames = SchemaArtifactSelectionDialog.showDialog(this.mProject, mExistingArtificatNames);
+        
+//        //remove duplicate named component
+//        List<String> nameList = new ArrayList<String>();
+//        Iterator<AXIComponent> itC = mExistingArtificatNames.iterator();
+//        
+//        while(itC.hasNext()) {
+//            AXIComponent comp = itC.next();
+//            
+//            AXIType type = (AXIType) comp;
+//            String name = type.getName();
+//            if(nameList.contains(name)) {
+//                mExistingArtificatNames.remove(comp);
+//            } else {
+//                nameList.add(name);
+//            }
+//        }
+        
+        
+        //now add to table
+        Iterator<AXIComponent> itC = mExistingArtificatNames.iterator();
+        
+        while(itC.hasNext()) {
+            AXIComponent comp = itC.next();
+            AXIType type = (AXIType) comp;
+            String name = type.getName();
+            
+            SchemaComponent sc = comp.getPeer();
+            SchemaComponentIEPTypeFinderVisitor visitor = new SchemaComponentIEPTypeFinderVisitor();
+            sc.accept(visitor);
+            String iepType = visitor.getIEPType();
+            
+            
+            PlaceholderSchemaAttribute attr = new PlaceholderSchemaAttribute(comp);
+            attr.setAttributeName(name);
+            attr.setAttributeType(iepType);
+            if(SharedConstants.SQL_TYPE_VARCHAR.equals(iepType)) {
+                attr.setAttributeSize("50"); //by default use 50 for size. size is required for VARCHAR
+            }
+            
+            this.mTableModel.addRow(attr);
+        }
+        
 }//GEN-LAST:event_addButtonActionPerformed
 
+    
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
         List<PlaceholderSchemaAttribute> attrList = new ArrayList<PlaceholderSchemaAttribute>();
         
@@ -320,6 +392,11 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
         }
         
     }
+    
+    public JTable getTable() {
+        return this.mAttributeTable;
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton deleteButton;

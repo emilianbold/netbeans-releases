@@ -75,12 +75,12 @@ public class CompilerSet {
 
     /** Recognized (and prioritized) types of compiler sets */
     public enum CompilerFlavor {
-            Sun12("Sun12"), // NOI18N
-            Sun11("Sun11"), // NOI18N
-            Sun10("Sun10"), // NOI18N
-            Sun9("Sun9"), // NOI18N
-            Sun8("Sun8"), // NOI18N
-            Sun("Sun"), // NOI18N
+            Sun12("SunStudio_12"), // NOI18N
+            Sun11("SunStudio_11"), // NOI18N
+            Sun10("SunStudio_10"), // NOI18N
+            Sun9("SunStudio_9"), // NOI18N
+            Sun8("SunStudio_8"), // NOI18N
+            Sun("SunStudio"), // NOI18N
             SunUCB("SunUCB"), // NOI18N
             GNU("GNU"), // NOI18N
             Cygwin("Cygwin"), // NOI18N
@@ -119,17 +119,17 @@ public class CompilerSet {
         
         public static CompilerFlavor toFlavor(String name) {
             if (name != null) {
-                if (name.equals("Sun")) { // NOI18N
+                if (name.equals("SunStudio")) { // NOI18N
                     return Sun;
-                } else if (name.equals("Sun12")) { // NOI18N
+                } else if (name.equals("SunStudio_12")) { // NOI18N
                     return Sun12;
-                } else if (name.equals("Sun11")) { // NOI18N
+                } else if (name.equals("SunStudio_11")) { // NOI18N
                     return Sun11;
-                } else if (name.equals("Sun10")) { // NOI18N
+                } else if (name.equals("SunStudio_10")) { // NOI18N
                     return Sun10;
-                } else if (name.equals("Sun9")) { // NOI18N
+                } else if (name.equals("SunStudio_9")) { // NOI18N
                     return Sun9;
-                } else if (name.equals("Sun8")) { // NOI18N
+                } else if (name.equals("SunStudio_8")) { // NOI18N
                     return Sun8;
                 } else if (name.equals("SunUCB")) { // NOI18N
                     return SunUCB;
@@ -149,36 +149,37 @@ public class CompilerSet {
             return GNU;
         }
         
-        public static CompilerFlavor getFlavor(String name) {
-            if (name == null) {
-                return null;
+        public static String mapOldToNew(String flavor, int version) {
+            if (version <=43) {
+                if (flavor.equals("Sun")) { // NOI18N
+                    return "SunStudio"; // NOI18N
+                }
+                else if (flavor.equals("Sun12")) { // NOI18N
+                    return "SunStudio_12"; // NOI18N
+                }
+                else if (flavor.equals("Sun11")) { // NOI18N
+                    return "SunStudio_11"; // NOI18N
+                }
+                else if (flavor.equals("Sun10")) { // NOI18N
+                    return "SunStudio_10"; // NOI18N
+                }
+                else if (flavor.equals("Sun9")) { // NOI18N
+                    return "SunStudio_9"; // NOI18N
+                }
+                else if (flavor.equals("Sun8")) { // NOI18N
+                    return "SunStudio_8"; // NOI18N
+                }
+                else if (flavor.equals("DJGPP")) { // NOI18N
+                    return "GNU"; // NOI18N
+                }
+                else if (flavor.equals("Interix")) { // NOI18N
+                    return "GNU"; // NOI18N
+                }
+                else if (flavor.equals("Unknown")) { // NOI18N
+                    return "GNU"; // NOI18N
+                }
             }
-            if (name.equals("Sun")) { // NOI18N
-                return Sun;
-            } else if (name.equals("Sun12")) { // NOI18N
-                return Sun12;
-            } else if (name.equals("Sun11")) { // NOI18N
-                return Sun11;
-            } else if (name.equals("Sun10")) { // NOI18N
-                return Sun10;
-            } else if (name.equals("Sun9")) { // NOI18N
-                return Sun9;
-            } else if (name.equals("Sun8")) { // NOI18N
-                return Sun8;
-            } else if (name.equals("SunUCB")) { // NOI18N
-                return SunUCB;
-            } else if (name.equals("Cygwin")) { // NOI18N
-                return Cygwin;
-            } else if (name.equals("MinGW")) { // NOI18N
-                return MinGW;
-            } else if (name.equals("DJGPP")) { // NOI18N
-                return DJGPP;
-            } else if (name.equals("Interix")) { // NOI18N
-                return Interix;
-            } else if (name.equals("Unknown")) { // NOI18N
-                return Unknown;
-            }
-            return null;
+            return flavor;
         }
         
         public static List getFlavors() {
@@ -191,10 +192,11 @@ public class CompilerSet {
             list.add(Sun10);
             list.add(Sun9);
             list.add(Sun8);
+            list.add(Sun);
             list.add(SunUCB);
-            list.add(DJGPP);
-            list.add(Interix);
-            list.add(Unknown);
+//            list.add(DJGPP);
+//            list.add(Interix);
+//            list.add(Unknown);
             return list;
         }
     
@@ -205,8 +207,8 @@ public class CompilerSet {
     
     public static final String None = "None"; // NOI18N
     
-    private static HashMap<String, CompilerSet> csmap = new HashMap();
-    private static HashMap<String, CompilerSet> basemap = new HashMap();
+//    private static HashMap<String, CompilerSet> csmap = new HashMap();
+//    private static HashMap<String, CompilerSet> basemap = new HashMap();
     
     private CompilerFlavor flavor;
     private int id;
@@ -243,7 +245,7 @@ public class CompilerSet {
         
         switch (flavor) {
             case Interix:
-                basemap.put(getBase(directory), this);
+//                basemap.put(getBase(directory), this);
                 driveLetterPrefix = "/dev/fs/"; // NOI18N
                 break;
                 
@@ -284,7 +286,7 @@ public class CompilerSet {
             libraryOption = "-l"; // NOI18N
         }
         this.flavor = flavor;
-        csmap.put(directory, this);
+//        csmap.put(directory, this);
         setAutoGenerated(true);
         setAsDefault(false);
     }
@@ -300,6 +302,18 @@ public class CompilerSet {
         }
         setAutoGenerated(true);
         setAsDefault(false);
+    }
+    
+    public CompilerSet createCopy() {
+        CompilerSet copy = new CompilerSet(flavor, getDirectory(), name);
+        copy.setAutoGenerated(isAutoGenerated());
+        copy.setAsDefault(isDefault());
+        
+        for (Tool tool : getTools()) {
+            copy.addTool(tool.createCopy());
+        }
+        
+        return copy;
     }
     
     /**
@@ -400,13 +414,13 @@ public class CompilerSet {
     }
     
     public static CompilerSet getCompilerSet(String directory, String[] list) {
-        CompilerSet cs = csmap.get(directory);
+        CompilerSet cs = null; //csmap.get(directory);
         if (cs != null) {
             return cs;
         }
         String base = getBase(directory);
         if (base.length() > 0) {
-            cs = basemap.get(base);
+//            cs = basemap.get(base);
             if (cs != null) {
                 cs.addDirectory(directory);
                 return cs;
@@ -454,10 +468,10 @@ public class CompilerSet {
     }
     
     public static void removeCompilerSet(CompilerSet cs) {
-        csmap.remove(cs.getDirectory());
-        for (Tool tool : cs.getTools()) {
-            cache.remove(cs.getDirectory() + File.separator + tool.getKind());
-        }
+//        csmap.remove(cs.getDirectory());
+//        for (Tool tool : cs.getTools()) {
+//            cache.remove(cs.getDirectory() + File.separator + tool.getKind());
+//        }
     }
     
     /**
@@ -571,6 +585,10 @@ public class CompilerSet {
         return flavor;
     }
     
+    public void setFlavor(CompilerFlavor flavor) {
+        this.flavor = flavor;
+    }
+    
     public void addDirectory(String path) {
         if (directory.length() == 0) {
             directory.append(path);
@@ -588,22 +606,32 @@ public class CompilerSet {
         return name;
     }
     
+    public void setName(String name) {
+        this.name = name;
+    }
+    
     public String getDisplayName() {
         return displayName;
     }
     
-    private static HashMap<String, Tool> cache = new HashMap();
+//    private static HashMap<String, Tool> cache = new HashMap();
     
     public Tool addTool(String name, String path, int kind) {
-        Tool tool = cache.get(path + File.separator + kind);
+        if (findTool(kind) != null)
+            return null;
+        Tool tool = null; //cache.get(path + File.separator + kind);
         if (tool == null) {
             tool = compilerProvider.createCompiler(flavor, kind, name, Tool.getToolDisplayName(kind), path);
-            cache.put(path + File.separator + kind, tool);
+//            cache.put(path + File.separator + kind, tool);
         }
         if (!tools.contains(tool)) {
             tools.add(tool);
         }
         return tool;
+    }
+    
+    public void addTool(Tool tool) {
+        tools.add(tool);
     }
     
     public Tool addNewTool(String name, String path, int kind) {
@@ -683,7 +711,7 @@ public class CompilerSet {
         Tool t;
 //        if (kind == Tool.MakeTool || kind == Tool.DebuggerTool) {
             // Fixup: all tools should go here ....
-            t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
+            t = compilerProvider.createCompiler(getCompilerFlavor(), kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
 //        }
 //        else {
 //            t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], ""); // NOI18N
