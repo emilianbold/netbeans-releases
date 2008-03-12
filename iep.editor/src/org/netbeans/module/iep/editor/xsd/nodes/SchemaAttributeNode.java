@@ -55,7 +55,7 @@ public class SchemaAttributeNode extends AbstractSchemaArtifactNode implements S
         
         
         this.mIcon = NodeIcons.ATTRIBUTE.getIcon();
-        
+        this.setAllowsChildren(false);
     }
     
     public boolean isSelected() {

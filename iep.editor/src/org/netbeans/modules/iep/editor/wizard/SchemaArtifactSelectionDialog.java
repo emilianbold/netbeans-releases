@@ -65,10 +65,7 @@ public class SchemaArtifactSelectionDialog {
     
     public static  List<AXIComponent> showDialog(Project project, List<AXIComponent> existingArtificatNames) {
         List<AXIComponent> artifactNamesList = new ArrayList<AXIComponent>();
-        FolderNode rootNode = new FolderNode(NbBundle.getMessage(ElementOrTypeChooserHelper.class, "LBL_ByFile_DisplayName"));
-        
-        SchemaArtifactTreeModel model = new SchemaArtifactTreeModel(rootNode, project, existingArtificatNames);
-        SchemaArtifactSelectionPanel panel = new SchemaArtifactSelectionPanel(model, existingArtificatNames);
+        SchemaArtifactSelectionPanel panel = new SchemaArtifactSelectionPanel(existingArtificatNames, project);
         
         DialogDescriptor dd = new DialogDescriptor(panel, "Select schema elements or types", true, null);
         DialogDisplayer dDisplayer = DialogDisplayer.getDefault();
