@@ -16,16 +16,14 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.bpel.model.impl.references;
+package org.netbeans.modules.bpel.model.api.references;
 
 import org.netbeans.modules.xml.xam.dom.Attribute;
-
 
 /**
  * This interface should be implemented by references that wants to 
  * give information about attribute in parenbt element to impl.  
  * @author ads
- *
  */
 public interface MappedReference {
 
@@ -38,5 +36,4 @@ public interface MappedReference {
      * Sets attribute. 
      */
     void setAttribute( Attribute attr );
-    
 }
