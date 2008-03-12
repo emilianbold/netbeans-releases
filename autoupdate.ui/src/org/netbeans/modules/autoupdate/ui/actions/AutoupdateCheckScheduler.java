@@ -48,6 +48,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
@@ -173,10 +174,10 @@ public class AutoupdateCheckScheduler {
             if (Utilities.shouldCheckAvailableUpdates ()) {
                 Collection<UpdateElement> updates = checkUpdateElements (OperationType.UPDATE);
                 hasUpdates = updates != null && ! updates.isEmpty ();
-                LazyUnit.storeLazyUnits (OperationType.UPDATE, updates);
+                LazyUnit.storeUpdateElements (OperationType.UPDATE, updates);
             }
             if (! hasUpdates && Utilities.shouldCheckAvailableNewPlugins ()) {
-                LazyUnit.storeLazyUnits (OperationType.INSTALL, checkUpdateElements (OperationType.INSTALL));
+                LazyUnit.storeUpdateElements (OperationType.INSTALL, checkUpdateElements (OperationType.INSTALL));
             }
             RequestProcessor.getDefault ().post (doCheckLazyUpdates, 500);
         }
@@ -397,7 +398,10 @@ public class AutoupdateCheckScheduler {
                                 NotifyDescriptor.WARNING_MESSAGE));
                     return ;
                 }
+                Collection<LazyUnit> helpUnits = Collections.EMPTY_SET;
                 try {
+                    helpUnits = LazyUnit.loadLazyUnits (type);
+                    LazyUnit.storeLazyUnits (type, null);
                     wizardFinished = new InstallUnitWizard ().invokeLazyWizard (units, type);
                 } finally {
                     if (wizardFinished) {
@@ -412,6 +416,7 @@ public class AutoupdateCheckScheduler {
                         RequestProcessor.getDefault ().post (doCheckAvailableUpdates);
                     } else {
                         // notify available plugins/updates in the future
+                        LazyUnit.storeLazyUnits (type, helpUnits);
                     }
                 }
             }

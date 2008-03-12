@@ -123,7 +123,7 @@ public final class LazyInstallUnitWizardIterator implements WizardDescriptor.Ite
             this.notification = notification;
         }
         
-        public static void storeLazyUnits (OperationType operationType, Collection<UpdateElement> elements) {
+        public static void storeUpdateElements (OperationType operationType, Collection<UpdateElement> elements) {
             Preferences p = getPreferences (operationType);
             try {
                 if (p.keys ().length > 0) {
@@ -137,6 +137,23 @@ public final class LazyInstallUnitWizardIterator implements WizardDescriptor.Ite
             }
             for (UpdateElement el : elements) {
                 p.put (el.getCodeName (), toString (el));
+            }
+        }
+        
+        public static void storeLazyUnits (OperationType operationType, Collection<LazyUnit> units) {
+            Preferences p = getPreferences (operationType);
+            try {
+                if (p.keys ().length > 0) {
+                    p.clear ();
+                }
+            } catch (BackingStoreException ex) {
+                Logger.getLogger (LazyInstallUnitWizardIterator.class.getName ()).log (Level.WARNING, ex.getLocalizedMessage (), ex);
+            }
+            if (units == null) {
+                return ;
+            }
+            for (LazyUnit u : units) {
+                p.put (u.getCodeName (), u.toString ());
             }
         }
         
@@ -172,6 +189,15 @@ public final class LazyInstallUnitWizardIterator implements WizardDescriptor.Ite
         
         public String getNotification () {
             return notification == null ? "" : notification.trim ();
+        }
+        
+        @Override
+        public String toString () {
+            return  codeName + DELIMETER +
+                    (displayName == null ? codeName : displayName) + DELIMETER +
+                    (oldVersion == null ? "" : oldVersion) + DELIMETER +
+                    (newVersion == null ? "" : newVersion) + DELIMETER +
+                    (notification == null ? " " : notification);
         }
         
         private static String toString (UpdateElement el) {
