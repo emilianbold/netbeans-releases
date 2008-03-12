@@ -112,6 +112,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public static final String          PROP_CURRENT_CALL_STACK_FRAME = "currentCallStackFrame"; // NOI18N
     public static final String          PROP_KILLTERM = "killTerm"; // NOI18N
     public static final String          PROP_SHARED_LIB_LOADED = "sharedLibLoaded"; // NOI18N
+    public static final String          PROP_VALUE_CHANGED = "valueChanged"; // NOI18N
 
     public static final String          STATE_NONE = "state_none"; // NOI18N
     public static final String          STATE_STARTING = "state_starting"; // NOI18N
@@ -738,6 +739,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
+    public void updateGdbVariable(String name, String value) {
+        synchronized (localVariables) {
+            for (GdbVariable var : localVariables) {
+                if (name.equals(var.getName())) {
+                    var.setValue(value);
+                }
+            }
+        }
+    }
+    
     private void updateCurrentCallStack() {
         gdb.stack_list_frames();
     }
@@ -1068,6 +1079,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         CommandBuffer cb = new CommandBuffer();
         gdb.data_evaluate_expression(cb, name + '=' + value);
         return cb.waitForCompletion();
+    }
+    
+    public void variableChanged(Object var) {
+        firePropertyChange(PROP_VALUE_CHANGED, null, var);
     }
     
     // currently not called - should do more than set state (see JPDADebuggerImpl)
