@@ -1637,6 +1637,8 @@ public class HgCommand {
         command.add(HG_COMMIT_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
 
         String projectUserName = new HgConfigFiles(repository).getUserName(false);
         String globalUsername = HgConfigFiles.getInstance().getUserName();
@@ -1669,7 +1671,7 @@ public class HgCommand {
             command.add(tempfile.getAbsolutePath());
 
             for(File f: commitFiles){
-                command.add(f.getAbsolutePath());
+                command.add(f.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));            
             }
             List<String> list = exec(command);
             

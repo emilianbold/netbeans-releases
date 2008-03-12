@@ -283,6 +283,18 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     fastCheckProblem = createProblem(fastCheckProblem, true, msg);
                     return fastCheckProblem;
                 }
+                FileObject parentFolder = fo.getParent();
+                Enumeration enumeration = parentFolder.getFolders(false);
+                while (enumeration.hasMoreElements()) {
+                    FileObject subfolder = (FileObject) enumeration.nextElement();
+                    if (subfolder.getName().equals(newName)) {
+                        String msg = new MessageFormat(getString("ERR_ClassPackageClash")).format(
+                            new Object[] {newName, pkgname}
+                        );
+                        fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+                        return fastCheckProblem;
+                    }
+                }
             }
             FileObject primFile = treePathHandle.getFileObject();
             FileObject folder = primFile.getParent();
