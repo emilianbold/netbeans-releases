@@ -40,8 +40,10 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 
+import java.io.File;
 import javax.swing.JPanel;
 
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /**
@@ -53,6 +55,13 @@ class LocationPanelVisual extends JPanel {
 
     public LocationPanelVisual() {
         initComponents();
+        init();
+    }
+
+    private void init() {
+        LocationListener listener = new LocationListener();
+        addProjectNameListener(listener);
+        addProjectLocationListener(listener);
     }
 
     @Override
@@ -177,7 +186,8 @@ class LocationPanelVisual extends JPanel {
     }
 
     public String getFullProjectPath() {
-        return createdFolderTextField.getText().trim();
+        File projectPath = new File(getProjectLocation(), getProjectName());
+        return projectPath.getAbsolutePath();
     }
 
     public String getProjectLocation() {
@@ -193,7 +203,22 @@ class LocationPanelVisual extends JPanel {
         projectLocationTextField.setText(projectLocation);
     }
 
-    public void setCreatedProjectFolder(String projectFolder) {
-        createdFolderTextField.setText(projectFolder);
+    private class LocationListener implements DocumentListener {
+
+        public void insertUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+
+        private void processUpdate() {
+            createdFolderTextField.setText(getFullProjectPath());
+        }
     }
 }

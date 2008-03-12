@@ -45,6 +45,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.MessageFormat;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -105,17 +106,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         getComponent();
         descriptor = (WizardDescriptor) settings;
 
-        // wizard title
-        String title = NbBundle.getMessage(ConfigureProjectPanel.class, "TXT_PhpProject");
-        descriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
-
         // location
-        String projectLocation = getProjectLocation().getAbsolutePath();
-        String projectName = getProjectName();
-        File projectFolder = new File(projectLocation, projectName);
-        locationPanelVisual.setProjectLocation(projectLocation);
-        locationPanelVisual.setProjectName(projectName);
-        locationPanelVisual.setCreatedProjectFolder(projectFolder.getAbsolutePath());
+        locationPanelVisual.setProjectLocation(getProjectLocation().getAbsolutePath());
+        locationPanelVisual.setProjectName(getProjectName());
 
         // sources
         MutableComboBoxModel localServers = getLocalServers();
@@ -259,13 +252,14 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     private void registerListeners() {
         ActionListener defaultActionListener = new DefaultActionListener();
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
+        ChangeListener defaultChangeListener = new DefaultChangeListener();
 
         // location
-        DocumentListener listener = new LocationListener();
-        locationPanelVisual.addProjectLocationListener(listener);
-        locationPanelVisual.addProjectNameListener(listener);
+        locationPanelVisual.addProjectLocationListener(defaultDocumentListener);
+        locationPanelVisual.addProjectNameListener(defaultDocumentListener);
 
         // sources
+        sourcesPanelVisual.addSourcesListener(defaultChangeListener);
 
         // options
         optionsPanelVisual.addCreateIndexListener(defaultActionListener);
@@ -295,39 +289,18 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         if (Utils.getCanonicalFile(f) == null) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation");
         }
-        // not allow to create project on unix root folder, see #82339
-        File cfl = Utils.getCanonicalFile(new File(projectPath));
-        if (Utilities.isUnix() && cfl != null && cfl.getParentFile().getParent() == null) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectInRootNotSupported");
-        }
-
-        final File destFolder = new File(projectPath).getAbsoluteFile();
-        if (Utils.getCanonicalFile(destFolder) == null) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation");
-        }
-
-        File projLoc = FileUtil.normalizeFile(destFolder);
-        while (projLoc != null && !projLoc.exists()) {
-            projLoc = projLoc.getParentFile();
-        }
-        if (projLoc == null || !projLoc.canWrite()) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectFolderReadOnly");
-        }
-
-        if (FileUtil.toFileObject(projLoc) == null) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation");
-        }
-
-        File[] kids = destFolder.listFiles();
-        if (destFolder.exists() && kids != null && kids.length > 0) {
-            // Folder exists and is not empty
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectFolderExists");
-        }
-        return null;
+        return validateProjectDirectory(projectPath, "Project"); // NOI18N
     }
 
     private String validateSources() {
-        return null;
+        String sourcesLocation = sourcesPanelVisual.getSourcesLocation().getSrcRoot();
+
+        File sources = new File(sourcesLocation);
+        if (!Utils.isValidFileName(sources.getName())) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
+        }
+
+        return validateProjectDirectory(sourcesLocation, "Sources"); // NOI18N
     }
 
     private String validateOptions() {
@@ -340,29 +313,36 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         return null;
     }
 
-    private class LocationListener implements DocumentListener {
-
-        public void insertUpdate(DocumentEvent e) {
-            processUpdate();
+    private String validateProjectDirectory(String projectPath, String type) {
+        // not allow to create project on unix root folder, see #82339
+        File cfl = Utils.getCanonicalFile(new File(projectPath));
+        if (Utilities.isUnix() && cfl != null && cfl.getParentFile().getParent() == null) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "InRootNotSupported");
         }
 
-        public void removeUpdate(DocumentEvent e) {
-            processUpdate();
+        final File destFolder = new File(projectPath).getAbsoluteFile();
+        if (Utils.getCanonicalFile(destFolder) == null) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_Illegal" + type + "Location");
         }
 
-        public void changedUpdate(DocumentEvent e) {
-            processUpdate();
+        File projLoc = FileUtil.normalizeFile(destFolder);
+        while (projLoc != null && !projLoc.exists()) {
+            projLoc = projLoc.getParentFile();
+        }
+        if (projLoc == null || !projLoc.canWrite()) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "FolderReadOnly");
         }
 
-        private void processUpdate() {
-            String projectLocation = locationPanelVisual.getProjectLocation();
-            String projectName = locationPanelVisual.getProjectName();
-
-            File f = new File(projectLocation, projectName);
-            locationPanelVisual.setCreatedProjectFolder(f.getAbsolutePath());
-
-            fireChangeEvent();
+        if (FileUtil.toFileObject(projLoc) == null) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_Illegal" + type + "Location");
         }
+
+        File[] kids = destFolder.listFiles();
+        if (destFolder.exists() && kids != null && kids.length > 0) {
+            // Folder exists and is not empty
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "FolderExists");
+        }
+        return null;
     }
 
     private class DefaultActionListener implements ActionListener {
@@ -387,6 +367,13 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         }
 
         private void processUpdate() {
+            fireChangeEvent();
+        }
+    }
+
+    private class DefaultChangeListener implements ChangeListener {
+
+        public void stateChanged(ChangeEvent e) {
             fireChangeEvent();
         }
     }

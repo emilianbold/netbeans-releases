@@ -50,11 +50,13 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -63,11 +65,12 @@ import org.openide.util.NbBundle;
 public class SourcesPanelVisual extends JPanel {
 
     private static final long serialVersionUID = -358263102348820543L;
+    static final LocalServer defaultLocalServer = new LocalServer(null, null,
+            NbBundle.getMessage(SourcesPanelVisual.class, "LBL_UseProjectFolder"), false);
 
     private final WebFolderNameProvider webFolderNameProvider;
     MutableComboBoxModel localServerComboBoxModel = new LocalServerComboBoxModel();
-    static final LocalServer defaultLocalServer = new LocalServer(null, null,
-            NbBundle.getMessage(SourcesPanelVisual.class, "LBL_UseProjectFolder"), false);
+    private final LocalServerComboBoxEditor localServerComboBoxEditor = new LocalServerComboBoxEditor();
 
     /** Creates new form SourcesPanelVisual */
     public SourcesPanelVisual(WebFolderNameProvider webFolderNameProvider) {
@@ -79,7 +82,11 @@ public class SourcesPanelVisual extends JPanel {
     private void init() {
         localServerComboBox.setModel(localServerComboBoxModel);
         localServerComboBox.setRenderer(new LocalServerComboBoxRenderer());
-        localServerComboBox.setEditor(new LocalServerComboBoxEditor());
+        localServerComboBox.setEditor(localServerComboBoxEditor);
+    }
+
+    void addSourcesListener(ChangeListener listener) {
+        localServerComboBoxEditor.changeSupport.addChangeListener(listener);
     }
 
     /** This method is called from within the constructor to
@@ -332,8 +339,9 @@ public class SourcesPanelVisual extends JPanel {
     private static class LocalServerComboBoxEditor implements ComboBoxEditor, UIResource, DocumentListener {
         private static final long serialVersionUID = -4527321803090719483L;
 
-        private final JTextField component = new JTextField();
+        final JTextField component = new JTextField();
         private LocalServer activeItem;
+        final ChangeSupport changeSupport = new ChangeSupport(this);
 
         public LocalServerComboBoxEditor() {
             component.setOpaque(true);
@@ -389,6 +397,7 @@ public class SourcesPanelVisual extends JPanel {
                 activeItem.setSrcRoot(component.getText().trim());
             }
             component.setEnabled(enabled);
+            changeSupport.fireChange();
         }
     }
 }
