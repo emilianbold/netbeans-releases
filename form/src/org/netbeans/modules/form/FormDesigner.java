@@ -257,6 +257,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             addPropertyChangeListener("activatedNodes", new PropertyChangeListener() { // NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
                     try {
+                        if (formEditor == null) {
+                            // Lazy synchronization of already closed form - issue 129877
+                            return;
+                        }
                         Lookup[] lookups = lookup.getSubLookups();
                         Node[] oldNodes = (Node[])evt.getOldValue();
                         Node[] nodes = (Node[])evt.getNewValue();
