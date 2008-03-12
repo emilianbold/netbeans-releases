@@ -47,12 +47,12 @@
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://developer.amazonwebservices.com/connect/kbcategory.jspa?categoryID=46"
+               api-doc="http://docs.amazonwebservices.com/AmazonS3/2006-03-01/RESTAPI.html"
                url="org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3BucketsWadl.xml">
 
     <description>AmazonS3 Buckets Service</description>
     
-    <display-name>S3 Buckets Service</display-name>
+    <display-name>S3 Service</display-name>
 
     <saas-metadata>
 

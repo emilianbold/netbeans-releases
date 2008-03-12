@@ -16,8 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-package org.netbeans.modules.bpel.model.impl;
+package org.netbeans.modules.bpel.model.api.support;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -36,6 +35,30 @@ import java.util.Map.Entry;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 
+import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
+import org.netbeans.modules.bpel.model.impl.BpelContainerImpl;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.ActivityBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.EmptyBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.ThrowBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.SequenceBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.CompensateBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.InvokeBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.ReceiveBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.ReplyBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.AssignBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.WaitBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.FlowBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.PickBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.IfBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.ExitBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.FlowBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.WhileBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.ScopeBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.ForEachBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.RethrowBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.CompensateScopeBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.RepeatUntilBuilder;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.ValidateBuilder;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Compensate;
@@ -48,6 +71,7 @@ import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.TerminationHandler;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReferenceable;
+import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
 import org.netbeans.modules.bpel.model.api.support.Pattern;
@@ -55,7 +79,6 @@ import org.netbeans.modules.bpel.model.api.support.Roles;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.bpel.model.impl.references.BpelAttributesType;
 import org.netbeans.modules.bpel.model.impl.references.BpelReferenceBuilder;
-import org.netbeans.modules.bpel.model.impl.references.SchemaReferenceBuilder;
 import org.netbeans.modules.bpel.model.impl.references.WSDLReferenceBuilder;
 import org.netbeans.modules.bpel.model.xam.BpelElements;
 import org.netbeans.modules.bpel.model.xam.BpelTypes;
@@ -73,67 +96,36 @@ import org.w3c.dom.Element;
  */
 public final class Utils {
 
-    /*
-     * XML entities and symbols helper constant.
-     */
     public static final char SEMICOLON = ';';                                       // NOI18N
-
     public static final char AMP = '&';                                             // NOI18N
-    
     public static final String QUOT = AMP + "quot" + SEMICOLON;                     // NOI18N
-
     public static final String APOS = AMP + "apos" +SEMICOLON;                      // NOI18N
-
     public static final String GT = AMP + "gt" + SEMICOLON;                         // NOI18N
-    
-    
-
     public static final String BAD_ATTRIBUTE_VALUE = "BAD_ATTRIBUTE_VALUE";         // NOI18N
-
     public static final String BAD_ATTRIBUTE_URI_VALUE = "BAD_ATTRIBUTE_URI_VALUE"; // NOI18N
-    
     public static final String BAD_VARIABLE_NAME="BAD_VARIABLE_NAME";               // NOI18N
-    
     public static final String BAD_CORRELATION_SET_NAME="BAD_CORRELATION_SET_NAME"; // NOI18N
-    
     public static final String BAD_PARTNER_LINK_NAME = "BAD_PARTNER_LINK_NAME";     // NIO18N
-    
-    public static final String BAD_MESSAGE_EXCHANGE_NAME = 
-        "BAD_MESSAGE_EXCHANGE_NAME";                                                // NOI18N
-    
+    public static final String BAD_MESSAGE_EXCHANGE_NAME = "BAD_MESSAGE_EXCHANGE_NAME"; // NOI18N
     public static final String BAD_LINK_NAME = "BAD_LINK_NAME";                     // NOI18N
-    
     public static final String BAD_URI_VALUE= "BAD_URI_VALUE";                      // NOI18N
-    
     public static final String BAD_NCNAME_VALUE = "BAD_NCNAME_VALUE";               // NOI18N
-
+    public static final String BAD_VARIABLE_FOR_FOR_EACH = "BAD_VARIABLE_FOR_FOR_EACH"; // NOI18N
+    public static final String BAD_VARIABLE_FOR_ON_EVENT = "BAD_VARIABLE_FOR_ON_EVENT"; // NOI18N
+    public static final String  BAD_VARIABLE_FOR_SCOPE_IN_ON_EVENT = "BAD_VARIABLE_FOR_SCOPE_IN_ON_EVENT"; // NOI18N
     static final String BUNDLE = "org/netbeans/modules/bpel/model/impl/Bundle";     // NOI18N
-    
-    public static final String BAD_VARIABLE_FOR_FOR_EACH =
-           "BAD_VARIABLE_FOR_FOR_EACH";                                             // NOI18N
-    
-    public static final String BAD_VARIABLE_FOR_ON_EVENT =
-           "BAD_VARIABLE_FOR_ON_EVENT";                                             // NOI18N
-    
-    public static final String  BAD_VARIABLE_FOR_SCOPE_IN_ON_EVENT =
-           "BAD_VARIABLE_FOR_SCOPE_IN_ON_EVENT";                                    // NOI18N
-    
     static final String XML_COMMENT_START = "<!--";                                 // NOI18N
-    
     static final String XML_COMMENT_END = "-->";                                    // NOI18N
     
-    public static final DefaultParentAccess DEFAULT_PARENT_ACCESS = 
-        new DefaultParentAccess();
+    public static final DefaultParentAccess DEFAULT_PARENT_ACCESS = new DefaultParentAccess();
 
-    private Utils() {
-    }
-
+    private Utils() {}
 
     /**
      * <code>value</code> could be incorrectly formated and doesn't represent
      * QName. In this case null will be return.
      */
-    static QName getQName( String value, BpelEntity entity ) {
+    public static QName getQName( String value, BpelEntity entity ) {
         if (value == null) {
             return null;
         }
@@ -149,7 +141,7 @@ public final class Utils {
     }
 
     @SuppressWarnings("unchecked")
-    static Collection<Class<? extends BpelEntity>> of( BpelTypes[] types )
+    public static Collection<Class<? extends BpelEntity>> of( BpelTypes[] types )
     {
         if ( types.length == 0 ){
             return Collections.EMPTY_LIST;
@@ -163,7 +155,7 @@ public final class Utils {
         return list;
     }
 
-    static Object parse( Class clazz, String value ) {
+    public static Object parse( Class clazz, String value ) {
         if (clazz.equals(Roles.class)) {
             return Roles.forString(value);
         }
@@ -181,9 +173,7 @@ public final class Utils {
     }
 
     @SuppressWarnings("unchecked")
-    static <T> List<T> parseList( BpelEntity entity, Class<T> clazz,
-            String value )
-    {
+    public static <T> List<T> parseList( BpelEntity entity, Class<T> clazz, String value) {
         if (clazz.equals(QName.class)) {
             List<QName> list = new LinkedList<QName>();
             if (value == null) {
@@ -203,10 +193,7 @@ public final class Utils {
         return null;
     }
 
-
-    static BpelEntity createActivityGroup( BpelModelImpl model,
-            Element element )
-    {
+    public static BpelEntity createActivityGroup( BpelModelImpl model, Element element) {
         ActivityBuilder builder = getActivityBuilder( element.getLocalName() );
         if ( builder!= null ){
             return builder.build( model , element );
@@ -214,49 +201,15 @@ public final class Utils {
         return null;
     }
 
-
     public static String getResourceString( String key, Object... args ) {
         ResourceBundle bundle = ResourceBundle.getBundle(BUNDLE);
         String str = bundle.getString(key);
         return MessageFormat.format(str, args);
     }
 
-
     public static boolean checkNCName( String str ) {
         return org.netbeans.modules.xml.xam.dom.Utils.isValidNCName( str );
     }
-    
-//    public static FileObject[] getFilesByNamespace( ModelSource source , 
-//            String namespace , DocumentTypesEnum type )
-//    {
-//        assert namespace!= null;
-//        List<FileObject> list = new LinkedList<FileObject>();
-//        Project project =  FileOwnerQuery.getOwner((FileObject) 
-//                source.getLookup().lookup(FileObject.class));
-//        /*
-//         * We perform search only in sources folder of project for avoiding
-//         * search in "build" folder.
-//         * Otherwise we will have duplicate models for files wuth same contents.
-//         * See bug description in #6423749 ( bugtruk ). 
-//         */
-//        SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(
-//                JavaProjectConstants.SOURCES_TYPE_JAVA);
-//        for (SourceGroup group : groups) {
-//            File file = FileUtil.toFile(group.getRootFolder());
-//            if (file == null) {
-//                return null;
-//            }
-//            Map<FileObject, String> map = Utilities.getFiles2NSMappingInProj(
-//                    file, type);
-//            for (Entry<FileObject, String> entry : map.entrySet()) {
-//                String ns = entry.getValue();
-//                if (namespace.equals(ns)) {
-//                    list.add(entry.getKey());
-//                }
-//            }
-//        }
-//        return list.toArray( new FileObject[ list.size()] );
-//    }
     
     public static void splitQName( String qName , String[] result ){
         assert qName!=null;
@@ -348,7 +301,6 @@ public final class Utils {
         return nonNull;
     }
     
-
     public static boolean checkPasteCompensate( final BpelContainerImpl container, 
             final Component component ) 
     {
@@ -632,6 +584,4 @@ class ActivityCreatorHolder {
         PRIVATE_ENTITIES.put( Utils.APOS , '\'' );
         PRIVATE_ENTITIES.put( Utils.QUOT  , '"');
     }
-    
-
 }

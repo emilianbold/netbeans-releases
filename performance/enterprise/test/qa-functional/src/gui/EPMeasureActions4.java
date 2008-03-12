@@ -55,10 +55,12 @@ public class EPMeasureActions4  {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
             
-        suite.addTest(new WatchProjects("testInitGCProjects"));
+// Disabled testGCProjects check to shorten run time        
+//        suite.addTest(new WatchProjects("testInitGCProjects"));
         suite.addTest(new OpenSchemaView("testOpenSchemaView", "Open Schema View")); 
         suite.addTest(new StartAppserver("measureTime","Start Appserver"));
-        suite.addTest(new WatchProjects("testGCProjects"));
+// Disabled testGCProjects check to shorten run time        
+//        suite.addTest(new WatchProjects("testGCProjects"));
         return suite;
     }
     
