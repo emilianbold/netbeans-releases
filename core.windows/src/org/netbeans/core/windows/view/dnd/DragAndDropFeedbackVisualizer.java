@@ -80,6 +80,9 @@ public class DragAndDropFeedbackVisualizer {
         Dimension tabContentSize = source.getTopComponentAt(idx).getSize();
         tabContentSize.width--;
         tabContentSize.height--;
+        //#129900 - IllegalArgumentException
+        tabContentSize.width = Math.max( tabContentSize.width, 1 );
+        tabContentSize.height = Math.max( tabContentSize.height, 1 );
         
         Dimension size = new Dimension( tabContentSize );
         if( prefs.getBoolean(WinSysPrefs.DND_SMALLWINDOWS, true) ) {
