@@ -141,6 +141,15 @@ made subject to such option by the copyright holder.
     </mod-element>
   </xmltype>
   <xmltype>
+    <name>sunEjb300</name>
+    <mod-element>
+      <name>enterprise-beans</name>
+      <sub-element>
+        <name>property</name>
+      </sub-element>
+     </mod-element>
+  </xmltype>
+  <xmltype>
     <name>sunEjb211</name>
     <mod-element>
       <name>ejb</name>

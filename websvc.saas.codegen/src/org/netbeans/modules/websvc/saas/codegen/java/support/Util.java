@@ -74,7 +74,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.AbstractGenerator;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
@@ -118,7 +117,7 @@ public class Util {
     public static final String APUT = AT + Constants.PUT_ANNOTATION;      //NOI18N
     public static final String ADELETE = AT + Constants.DELETE_ANNOTATION;      //NOI18N
     public static final String SCANNING_IN_PROGRESS = "ScanningInProgress";//NOI18N
-    
+    private static final String BUILD_XML_PATH = "build.xml"; // NOI18N
     /*
      * Check if the primary file of d is a REST Resource
      */ 
@@ -603,7 +602,7 @@ public class Util {
     }
 
     public static FileObject findBuildXml(Project project) {
-        return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+        return project.getProjectDirectory().getFileObject(BUILD_XML_PATH);
     }
     
     public static DataObject createDataObjectFromTemplate(String template, 
