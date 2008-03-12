@@ -50,6 +50,8 @@ import javax.swing.DefaultComboBoxModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Dialog;
+import java.util.Arrays;
+import java.util.HashSet;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -83,13 +85,15 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
     private HgLogMessage[] messages;
     private int fetchRevisionLimit = Mercurial.HG_NUMBER_TO_FETCH_DEFAULT;
     private boolean bGettingRevisions = false;
+    private File [] roots;
     
     /** Creates new form ExportDiffPanel */
-    public ExportDiffPanel(File repo, RepositoryRevision repoRev, File fileToDiff) {
+    public ExportDiffPanel(File repo, RepositoryRevision repoRev, File [] roots, File fileToDiff) {
         this.fileToDiff = fileToDiff;
         this.repoRev = repoRev;
-        repository = repo;
-        refreshViewTask = rp.create(new RefreshViewTask());
+        this.roots = roots;
+        this.repository = repo;
+        this.refreshViewTask = rp.create(new RefreshViewTask());
         initComponents();
         revisionsComboBox.setMaximumRowCount(Mercurial.HG_MAX_REVISION_COMBO_SIZE);
         if(fileToDiff != null){
@@ -312,7 +316,8 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
     private void refreshRevisions() {
         bGettingRevisions = true;
         OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
-        messages = HgCommand.getLogMessagesNoFileInfo(repository.getAbsolutePath(), fetchRevisionLimit, logger);
+        Set<File> setRoots = new HashSet<File>(Arrays.asList(roots));        
+        messages = HgCommand.getLogMessagesNoFileInfo(repository.getAbsolutePath(), setRoots, fetchRevisionLimit, logger);
 
         Set<String>  targetRevsSet = new LinkedHashSet<String>();
         int size;

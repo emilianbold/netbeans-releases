@@ -890,6 +890,9 @@ public class HgCommand {
     public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, int limit, OutputLogger logger) {
          return getLogMessages(rootUrl, null, null, null, true, false, limit, logger);
     }
+    public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, int limit, OutputLogger logger) {
+         return getLogMessages(rootUrl, files, null, null, true, false, limit, logger);
+    }
 
     public static HgLogMessage[] getLogMessages(final String rootUrl, int limit, OutputLogger logger) {
          return getLogMessages(rootUrl, null, null, null, true, true, limit, logger);

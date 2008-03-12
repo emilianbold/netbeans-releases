@@ -41,6 +41,8 @@
 package org.netbeans.modules.mercurial.ui.update;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 import java.util.LinkedHashSet;
@@ -70,10 +72,12 @@ public class UpdatePanel extends javax.swing.JPanel {
     private HgLogMessage[] messages;
     private int fetchRevisionLimit = Mercurial.HG_NUMBER_TO_FETCH_DEFAULT;
     private boolean bGettingRevisions = false;
+    private File [] roots;
 
     /** Creates new form ReverModificationsPanel */
-     public UpdatePanel(File repo) {
+     public UpdatePanel(File repo, File [] roots) {
         repository = repo;
+        this.roots = roots;
         refreshViewTask = rp.create(new RefreshViewTask());
         initComponents();
         revisionsComboBox.setMaximumRowCount(Mercurial.HG_MAX_REVISION_COMBO_SIZE);
@@ -251,7 +255,8 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
     private void refreshRevisions() {
         bGettingRevisions = true;
         OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
-        messages = HgCommand.getLogMessagesNoFileInfo(repository.getAbsolutePath(), fetchRevisionLimit, logger);
+        Set<File> setRoots = new HashSet<File>(Arrays.asList(roots));        
+        messages = HgCommand.getLogMessagesNoFileInfo(repository.getAbsolutePath(), setRoots, fetchRevisionLimit, logger);
 
         Set<String>  targetRevsSet = new LinkedHashSet<String>();
 
