@@ -16,14 +16,14 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-package org.netbeans.modules.bpel.model.impl;
+package org.netbeans.modules.bpel.model.api.support;
 
 import java.util.Iterator;
 
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Process;
+import org.netbeans.modules.bpel.model.impl.BpelEntityImpl;
 
 /**
  * @author ads
@@ -153,10 +153,7 @@ public class ContainerIterator<E extends BpelContainer> implements Iterator<E> {
     }
 
     private BpelEntity myObject;
-
     private BpelContainer next;
-
     private Class<E> myClass;
-
     private boolean isInTree;
 }
