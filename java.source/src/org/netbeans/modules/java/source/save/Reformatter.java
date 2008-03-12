@@ -1791,6 +1791,8 @@ public class Reformatter implements ReformatTask {
                     else
                         spaces(cs.spaceWithinBraces() ? 1 : 0);
                     afterNewline = oldAfterNewLine;
+                } else if (bracePlacement != CodeStyle.BracePlacement.SAME_LINE) {
+                    newline();
                 }
                 indent = halfIndent;
                 Diff diff = diffs.isEmpty() ? null : diffs.getFirst();

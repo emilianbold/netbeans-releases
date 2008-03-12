@@ -68,6 +68,13 @@ public class SunFortranCompiler extends BasicCompiler {
     }
     
     @Override
+    public SunFortranCompiler createCopy() {
+        SunFortranCompiler copy = new SunFortranCompiler(getFlavor(), getKind(), "", getDisplayName(), getPath());
+        copy.setName(getName());
+        return copy;
+    }
+    
+    @Override
     public String getDevelopmentModeOptions(int value) {
         return DEVELOPMENT_MODE_OPTIONS[value];
     }
