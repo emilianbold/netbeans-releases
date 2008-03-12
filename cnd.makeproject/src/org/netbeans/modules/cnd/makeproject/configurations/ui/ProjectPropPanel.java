@@ -40,23 +40,38 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
+import javax.swing.plaf.UIResource;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.IllegalCharsetNameException;
 import java.util.ArrayList;
 import java.util.Vector;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.DirectoryChooserInnerPanel;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 public class ProjectPropPanel extends javax.swing.JPanel implements ActionListener {
 
     private SourceRootChooser sourceRootChooser;
     private Project project;
     private MakeConfigurationDescriptor makeConfigurationDescriptor;
+    private String originalEncoding;
 
     /** Creates new form ProjectPropPanel */
     public ProjectPropPanel(Project project, ConfigurationDescriptor configurationDescriptor) {
@@ -68,6 +83,125 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
 
         MakeCustomizerProvider makeCustomizerProvider = (MakeCustomizerProvider) project.getLookup().lookup(MakeCustomizerProvider.class);
         makeCustomizerProvider.addActionListener(this);
+        
+        this.originalEncoding = getPreferences().get("CND_ENCODING", null);
+        if (originalEncoding == null) {
+            Charset enc = FileEncodingQuery.getDefaultEncoding();
+            originalEncoding = enc.name();
+        }
+//        if (originalEncoding != null) {
+//            try {
+//                FileEncodingQuery.setDefaultEncoding(Charset.forName(value));
+//            } catch (UnsupportedCharsetException e) {
+//                //When the encoding is not supported by JVM do not set it as default
+//            }
+//        }
+        if (this.originalEncoding == null) {
+            this.originalEncoding = Charset.defaultCharset().name();
+        }
+        
+        this.encoding.setModel(new EncodingModel(this.originalEncoding));
+        this.encoding.setRenderer(new EncodingRenderer());
+        
+
+        this.encoding.addActionListener(new ActionListener () {
+            public void actionPerformed(ActionEvent arg0) {
+                handleEncodingChange();
+            }            
+        });
+    }
+    
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(ProjectPropPanel.class);
+    }
+    
+    private void handleEncodingChange () {
+            Charset enc = (Charset) encoding.getSelectedItem();
+            String encName;
+            if (enc != null) {
+                encName = enc.name();
+            }
+            else {
+                encName = originalEncoding;
+            }
+            getPreferences().put("CND_ENCODING", encName);
+    }
+    
+    private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
+        
+        public EncodingRenderer() {
+            setOpaque(true);
+        }
+        
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            assert value instanceof Charset;
+            setName("ComboBox.listRenderer"); // NOI18N
+            setText(((Charset) value).displayName());
+            setIcon(null);
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());             
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            return this;
+        }
+        
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name; // NOI18N
+        }
+        
+    }
+    
+    private static class EncodingModel extends DefaultComboBoxModel {
+        
+        public EncodingModel (String originalEncoding) {
+            Charset defEnc = null;
+            for (Charset c : Charset.availableCharsets().values()) {
+                if (c.name().equals(originalEncoding)) {
+                    defEnc = c;
+                }
+                addElement(c);
+            }
+            if (defEnc == null) {
+                //Create artificial Charset to keep the original value
+                //May happen when the project was set up on the platform
+                //which supports more encodings
+                try {
+                    defEnc = new UnknownCharset (originalEncoding);
+                    addElement(defEnc);
+                } catch (IllegalCharsetNameException e) {
+                    //The source.encoding property is completely broken
+                    Logger.getLogger(this.getClass().getName()).info("IllegalCharsetName: " + originalEncoding);
+                }
+            }
+            if (defEnc == null) {
+                defEnc = Charset.defaultCharset();
+            }
+            setSelectedItem(defEnc);
+        }
+    }
+    
+    private static class UnknownCharset extends Charset {
+        
+        UnknownCharset (String name) {
+            super (name, new String[0]);
+        }
+    
+        public boolean contains(Charset c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public CharsetDecoder newDecoder() {
+            throw new UnsupportedOperationException();
+        }
+
+        public CharsetEncoder newEncoder() {
+            throw new UnsupportedOperationException();
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -107,6 +241,7 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
             return getString("ADD_BUTTON_TXT");
         }
     }
+    
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -120,6 +255,9 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
         projectLabel = new javax.swing.JLabel();
         projectTextField = new javax.swing.JTextField();
         sourceRootPanel = new javax.swing.JPanel();
+        encodingPanel = new javax.swing.JPanel();
+        encodingLabel = new javax.swing.JLabel();
+        encoding = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -150,8 +288,38 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         add(sourceRootPanel, gridBagConstraints);
+
+        encodingLabel.setLabelFor(encoding);
+        org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.encodingLabel.text")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout encodingPanelLayout = new org.jdesktop.layout.GroupLayout(encodingPanel);
+        encodingPanel.setLayout(encodingPanelLayout);
+        encodingPanelLayout.setHorizontalGroup(
+            encodingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(encodingPanelLayout.createSequentialGroup()
+                .add(encodingLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(encoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 137, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        encodingPanelLayout.setVerticalGroup(
+            encodingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(encodingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(encodingLabel)
+                .add(encoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(encodingPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox encoding;
+    private javax.swing.JLabel encodingLabel;
+    private javax.swing.JPanel encodingPanel;
     private javax.swing.JLabel projectLabel;
     private javax.swing.JTextField projectTextField;
     private javax.swing.JPanel sourceRootPanel;

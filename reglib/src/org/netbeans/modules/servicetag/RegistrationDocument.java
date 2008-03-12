@@ -78,7 +78,7 @@ import javax.xml.transform.stream.StreamResult;
 class RegistrationDocument {
 
     private static final String REGISTRATION_DATA_SCHEMA =
-            "/com/sun/servicetag/resources/product_registration.xsd";
+            "/org/netbeans/modules/servicetag/resources/product_registration.xsd";
     private static final String REGISTRATION_DATA_VERSION = "1.0";
     private static final String SERVICE_TAG_VERSION = "1.0";
     final static String ST_NODE_REGISTRATION_DATA = "registration_data";

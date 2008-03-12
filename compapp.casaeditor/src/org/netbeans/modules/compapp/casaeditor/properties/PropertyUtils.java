@@ -72,6 +72,7 @@ public abstract class PropertyUtils {
         EXPERT_SET,
         COLOR_SET,
         FONT_SET,
+        STYLE_SET,
         GENERIC_SET;
         
         private String myDisplayName;
