@@ -50,7 +50,6 @@ import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
@@ -81,13 +80,8 @@ public class RubyValidation extends JellyTestCase {
         suite.addTest(new RubyValidation("testRunRubyFile"));
         suite.addTest(new RubyValidation("testCreateRailsProject"));
         suite.addTest(new RubyValidation("testRailsGenerate"));
-
-        // Disabled: As of integration 
-        //   http://hg.netbeans.org/main/rev/87ddcc7d8407
-        // we no longer create an IRB top component; it's a normal
-        // IRB output window.
+        // disabled until 129751 is fixed
         //suite.addTest(new RubyValidation("testIrbShell"));
-
         return suite;
     }
     
@@ -119,13 +113,11 @@ public class RubyValidation extends JellyTestCase {
      * - open IRB shell window 
      * - close it
      */
-    public void testIrbShell() throws Exception{
-        String rubyproject_packagename = "org.netbeans.modules.ruby.rubyproject.Bundle";
-        String irb_action = Bundle.getStringTrimmed(rubyproject_packagename, "CTL_IrbAction");
-        String irb_TC = Bundle.getString(rubyproject_packagename, "CTL_IrbTopComponent");
-        new Action("Window|Other|" + irb_action, null).perform(); //NOI18N
-        TopComponentOperator tco = new TopComponentOperator(irb_TC);
-        tco.close();
+    public void testIrbShell() {
+        String irbItem = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.Bundle", "CTL_IrbAction");
+        String irbTitle = Bundle.getString("org.netbeans.modules.ruby.rubyproject.Bundle", "CTL_IrbTopComponent");
+        new Action("Window|Other|" + irbItem, null).perform();
+        new OutputTabOperator(irbTitle).close();
     }   
 
 
@@ -161,16 +153,19 @@ public class RubyValidation extends JellyTestCase {
     
     /** Test run Ruby file
      * - find main.rb in editor
-     * - call "Run File" popup action in editor
+     * - call "Run "main.rb"" popup action in editor
      * - wait for main.rb output tab
      * - check "Hello World" is printed out
      */
     public void testRunRubyFile() {
         // wait main.rb is opened in editor
         EditorOperator editor = new EditorOperator("main.rb"); // NOI18N
-        // "Run File"
-        String runFileItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_RunSingleAction_Name", new Integer[] {0});
-        // call "Run File" in editor
+        // "Run "main.rb""
+        String runFileItem = Bundle.getStringTrimmed(
+                "org.netbeans.modules.project.ui.actions.Bundle",
+                "LBL_RunSingleAction_Name",
+                new Object[]{new Integer(1), "main.rb"});
+        // call "Run "main.rb"" in editor
         new Action(null, runFileItem).perform(editor);
         // check message in output tab
         new OutputTabOperator("main.rb").waitText("Hello World"); // NOI18N

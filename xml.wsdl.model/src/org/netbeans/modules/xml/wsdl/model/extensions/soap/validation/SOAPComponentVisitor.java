@@ -296,9 +296,9 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
             int colonIndex = -1;
             int contextStartIndex = -1;
             
-            if (location.startsWith("http")) {
+            if (location.startsWith("http://")) {
                 // look for ${HttpDefaultPort} token 
-                colonIndex = location.indexOf(":", 6);
+                colonIndex = location.indexOf(":", 7);
                 contextStartIndex = location.indexOf("/", 7);
                 
                 if (HTTP_DEFAULT_PORT_TOKEN.equals(location.substring(colonIndex + 1, contextStartIndex))) {
@@ -318,9 +318,9 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
             int colonIndex = -1;
             int contextStartIndex = -1;
             
-            if (location.startsWith("https")) {
+            if (location.startsWith("https://")) {
                 // look for ${HttpDefaultPort} token 
-                colonIndex = location.indexOf(":", 7);
+                colonIndex = location.indexOf(":", 8);
                 contextStartIndex = location.indexOf("/", 8);
                 
                 if (HTTPS_DEFAULT_PORT_TOKEN.equals(location.substring(colonIndex + 1, contextStartIndex))) {

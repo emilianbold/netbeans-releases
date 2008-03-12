@@ -550,6 +550,7 @@ public class Utilities {
 
         @Override
         public StringBuilder visitWildcard(WildcardType t, Boolean p) {
+            int len = DEFAULT_VALUE.length();
             DEFAULT_VALUE.append("?"); //NOI18N
             TypeMirror bound = t.getSuperBound();
             if (bound == null) {
@@ -559,7 +560,7 @@ public class Utilities {
                     if (bound.getKind() == TypeKind.WILDCARD)
                         bound = ((WildcardType)bound).getSuperBound();
                     visit(bound, p);
-                } else {
+                } else if (len == 0) {
                     bound = SourceUtils.getBound(t);
                     if (bound != null && (bound.getKind() != TypeKind.DECLARED || !((TypeElement)((DeclaredType)bound).asElement()).getQualifiedName().contentEquals("java.lang.Object"))) { //NOI18N
                         DEFAULT_VALUE.append(" extends "); //NOI18N
@@ -573,6 +574,7 @@ public class Utilities {
             return DEFAULT_VALUE;
         }
 
+        @Override
         public StringBuilder visitError(ErrorType t, Boolean p) {
             Element e = t.asElement();
             if (e instanceof TypeElement) {
