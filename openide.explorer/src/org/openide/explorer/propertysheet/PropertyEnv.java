@@ -291,6 +291,7 @@ public class PropertyEnv {
      * @since 2.20
      */
     public void addPropertyChangeListener(PropertyChangeListener l) {
+        System.out.println( "added prop listener :" +l );
         getChange().addPropertyChangeListener(l);
     }
 
