@@ -5,6 +5,8 @@ public:
 
 template <T> class Map {
 public:
+    T mapMethod();
+    iterator returnIterator();
     typedef T iterator;
 };
 

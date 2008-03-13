@@ -53,8 +53,12 @@ public class TemplateSpecializationTestCase extends CompletionBaseTestCase {
         super(testName, false);
     }
     
-    public void testIteratorVariableDeref() throws Exception {
-        super.performTest("mapIterator.cc", 17, 9);
+    public void testTypedefIteratorVariableDeref() throws Exception {
+        super.performTest("mapIterator.cc", 18, 11);
+    }
+    
+    public void testDirectIteratorVariableDeref() throws Exception {
+        super.performTest("mapIterator.cc", 19, 10);
     }
     
     public void testInFunctionAfterUnderscore() throws Exception {
@@ -63,6 +67,6 @@ public class TemplateSpecializationTestCase extends CompletionBaseTestCase {
     }  
     
     public void testIteratorVisibilityGlobal() throws Exception {
-        super.performTest("mapIterator.cc", 12, 7);
+        super.performTest("mapIterator.cc", 14, 8);
     }
 }
