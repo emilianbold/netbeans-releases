@@ -188,6 +188,9 @@ public class ReformatterImpl {
                             // save K&R start
                             braces.lastKRstart = braces.lastStatementStart;
                         }
+                        if (braces.lastStatementParen >= 0) {
+                            braces.lastStatementParen = ts.index();
+                        }
                     }
                     braces.parenDepth++;
                     if (doFormat()) {
@@ -207,6 +210,9 @@ public class ReformatterImpl {
                         if (entry == null || entry.getKind() != LBRACE ||
                             entry.getImportantKind() == CLASS || entry.getImportantKind() == NAMESPACE){
                             braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
+                        }
+                        if (braces.lastStatementParen >= 0) {
+                            braces.lastStatementParen = -1;
                         }
                     }
                     if (doFormat()) {
@@ -510,6 +516,7 @@ public class ReformatterImpl {
                 case IF: //("if", "keyword-directive"),
                 {
                     braces.push(ts);
+                    braces.lastStatementParen = ts.index();
                     if (doFormat()) {
                         spaceAfterBefore(current, codeStyle.spaceBeforeIfParen(), LPAREN);
                     }
@@ -526,6 +533,7 @@ public class ReformatterImpl {
                 case WHILE: //("while", "keyword-directive"),
                 {
                     braces.push(ts);
+                    braces.lastStatementParen = ts.index();
                     if (doFormat()) {
                         boolean doSpaceBefore = true;
                         if (braces.isDoWhile) {
@@ -556,6 +564,7 @@ public class ReformatterImpl {
                 case FOR: //("for", "keyword-directive"),
                 {
                     braces.push(ts);
+                    braces.lastStatementParen = ts.index();
                     if (doFormat()) {
                         spaceAfterBefore(current, codeStyle.spaceBeforeForParen(), LPAREN);
                     }
@@ -569,6 +578,7 @@ public class ReformatterImpl {
                 case CATCH: //("catch", "keyword-directive"), //C++
                 {
                     braces.push(ts);
+                    braces.lastStatementParen = ts.index();
                     if (doFormat()) {
                         boolean doSpaceBefore = true;
                         if (ts.isFirstLineToken()) {
@@ -606,6 +616,7 @@ public class ReformatterImpl {
                 case SWITCH: //("switch", "keyword-directive"),
                 {
                     braces.push(ts);
+                    braces.lastStatementParen = ts.index();
                     if (doFormat()) {
                         spaceAfterBefore(current, codeStyle.spaceBeforeSwitchParen(), LPAREN);
                     }

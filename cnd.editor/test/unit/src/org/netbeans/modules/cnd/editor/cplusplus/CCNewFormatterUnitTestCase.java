@@ -3273,4 +3273,21 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "          number != 3);\n" +
                 "}\n");
     }
+
+    public void testDereferenceAfterIf() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int main(int i)\n" +
+                "{\n" +
+                "if (offset)\n" +
+                "    *offset = layout->record_size/ BITS_PER_UNIT;\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect space for dereference after if",
+                "int main(int i)\n" +
+                "{\n" +
+                "    if (offset)\n" +
+                "        *offset = layout->record_size / BITS_PER_UNIT;\n" +
+                "}\n");
+    }
 }

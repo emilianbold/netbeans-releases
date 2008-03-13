@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import org.netbeans.modules.autoupdate.ui.wizards.UninstallUnitWizard;
+import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizard;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Point;

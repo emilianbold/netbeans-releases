@@ -2026,13 +2026,25 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     CompilerSet defaultCS = csm.getDefaultCompilerSet();
     if (defaultCS != null)
         defaultName = defaultCS.getName();
+    String selectedName = null;
+    CompilerSet selectedCS = (CompilerSet)lstDirlist.getSelectedValue();
+    if (selectedCS != null)
+        selectedName = selectedCS.getName();
     csm = newCsm;
     CompilerSet defaultCompilerSet = csm.getCompilerSet(defaultName);
     if (defaultCompilerSet != null) {
         csm.setDefault(defaultCompilerSet);
     }
+    if (selectedName != null) {
+        selectedCS = csm.getCompilerSet(selectedName);
+    }
     changed = true;
-    update(false);
+    if (selectedCS != null) {
+        update(false, selectedCS);
+    }
+    else {
+        update(false);
+    }
 }//GEN-LAST:event_btRestoreActionPerformed
     
     

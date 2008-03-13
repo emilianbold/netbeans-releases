@@ -63,6 +63,7 @@ class BracesStack {
     int lastKRstart = -1;
     boolean isDoWhile = false;
     boolean isLabel = false;
+    int lastStatementParen = -1;
 
     BracesStack(CodeStyle codeStyle) {
         this.codeStyle = codeStyle;
@@ -76,6 +77,7 @@ class BracesStack {
         clone.lastKRstart = lastKRstart;
         clone.parenDepth = parenDepth;
         clone.isDoWhile = isDoWhile;
+        clone.lastStatementParen = lastStatementParen;
         clone.isLabel = isLabel;
         for(int i = 0; i < stack.size(); i++){
             clone.stack.add(stack.get(i));
@@ -89,6 +91,7 @@ class BracesStack {
         lastKRstart = clone.lastKRstart;
         parenDepth = clone.parenDepth;
         isDoWhile = clone.isDoWhile;
+        lastStatementParen = clone.lastStatementParen;
         isLabel = clone.isLabel;
         stack.clear();
         for(int i = 0; i < clone.stack.size(); i++){
