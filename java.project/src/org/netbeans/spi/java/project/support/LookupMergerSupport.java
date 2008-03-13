@@ -45,6 +45,8 @@ import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
+import org.netbeans.spi.java.queries.support.SourceForBinaryQueryimplementation2Base;
 import org.netbeans.spi.project.LookupMerger;
 import org.openide.util.Lookup;
 
@@ -88,7 +90,7 @@ public final class LookupMergerSupport {
         
     }
     
-    private static class SFBIMerged implements SourceForBinaryQueryImplementation {
+    private static class SFBIMerged extends SourceForBinaryQueryimplementation2Base {
         private Lookup lookup;
         
         public SFBIMerged(Lookup lkp) {
@@ -100,6 +102,25 @@ public final class LookupMergerSupport {
                 SourceForBinaryQuery.Result res = impl.findSourceRoots(binaryRoot);
                 if (res != null) {
                     return res;
+                }
+            }
+            return null;
+        }
+
+        public Result findSourceRoots2(URL binaryRoot) {
+            Collection<? extends SourceForBinaryQueryImplementation> col = lookup.lookupAll(SourceForBinaryQueryImplementation.class);
+            for (SourceForBinaryQueryImplementation impl : col) {
+                if (impl instanceof SourceForBinaryQueryImplementation2) {
+                    SourceForBinaryQueryImplementation2.Result res = ((SourceForBinaryQueryImplementation2)impl).findSourceRoots2(binaryRoot);
+                    if (res != null) {
+                        return res;
+                    }
+                }
+                else {
+                    SourceForBinaryQuery.Result res = impl.findSourceRoots(binaryRoot);
+                    if (res != null) {
+                        return asResult(res);
+                    }
                 }
             }
             return null;
