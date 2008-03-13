@@ -39,10 +39,11 @@ import org.netbeans.modules.bpel.model.api.ToPartContainer;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
+import org.netbeans.modules.bpel.model.api.references.MappedReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.bpel.model.impl.BpelEntityImpl;
-import org.netbeans.modules.bpel.model.impl.Utils;
+import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.bpel.model.xam.spi.ExternalModelRetriever;
 import org.netbeans.modules.xml.wsdl.model.Fault;
 import org.netbeans.modules.xml.wsdl.model.Input;
@@ -162,8 +163,6 @@ public final class WSDLReferenceBuilder {
                 context.getNamespaceURI( prefix ) );
         return models;
     }
-    
-    
     
     static Collection<WSDLModel> getWSDLModels( BpelModel model , 
             String namespace )
@@ -839,5 +838,4 @@ class OperationResolver extends AbstractNamedReferenceFactory {
         collection = portType.getOperations();
         return collection;
     }
-    
 }

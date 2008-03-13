@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,15 +39,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.autoupdate.ui;
+package org.netbeans.modules.autoupdate.ui.wizards;
 
+import org.netbeans.modules.autoupdate.ui.*;
 import java.awt.Dialog;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
-import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizardIterator;
-import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizardModel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -71,6 +72,14 @@ public class InstallUnitWizard {
     
     public boolean invokeWizard (InstallUnitWizardModel model) {
         WizardDescriptor.Iterator<WizardDescriptor> iterator = new InstallUnitWizardIterator (model);
+        return implInvokeWizard (iterator);
+    }
+    
+    public boolean invokeLazyWizard (Collection<LazyUnit> units, OperationType doOperation) {
+        return implInvokeWizard (new LazyInstallUnitWizardIterator (units, doOperation));
+    }
+    
+    private boolean implInvokeWizard (WizardDescriptor.Iterator<WizardDescriptor> iterator) {
         WizardDescriptor wizardDescriptor = new WizardDescriptor (iterator);
         wizardDescriptor.setModal (true);
         

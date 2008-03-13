@@ -51,7 +51,6 @@ import org.netbeans.api.ruby.platform.RubyTestBase;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 
 public class GemManagerTest extends RubyTestBase {
 
@@ -154,7 +153,7 @@ public class GemManagerTest extends RubyTestBase {
         FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
         GemManager.initializeRepository(gemRepo);
         jruby.setGemHome(FileUtil.toFile(gemRepo));
-        String version = Utilities.isWindows() ? "0.9.3" : "0.1.10";
+        String version = "0.10.0";
         installFakeGem("ruby-debug-base", version, platform);
         assertEquals("native fast debugger available", version, gemManager.getVersion("ruby-debug-base"));
         assertNull("no jruby fast debugger available", gemManager.getVersionForPlatform("ruby-debug-base"));

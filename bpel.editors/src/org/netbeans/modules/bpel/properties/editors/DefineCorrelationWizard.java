@@ -532,7 +532,8 @@ public class DefineCorrelationWizard implements WizardProperties {
     public abstract class WizardAbstractPanel implements WizardDescriptor.ValidatingPanel {
         protected JPanel wizardPanel = createWizardPanel();
         protected ChangeSupport changeSupport = new ChangeSupport(this);
-        protected int insetX = 5, insetY = 5;
+        protected int insetX = CommonUtils.isMacOS() ? 10 : 6, 
+                      insetY = CommonUtils.isMacOS() ? 10 : 6;
         
         protected JPanel createWizardPanel() {
             JPanel panel = new JPanel();
@@ -1359,15 +1360,6 @@ public class DefineCorrelationWizard implements WizardProperties {
                 hash = 97 * hash + (mapperTreeNode != null ? mapperTreeNode.hashCode() : 0);
                 return hash;
             }
-            /*
-            public int hashCode() {
-                int hash = 7;
-                hash = 97 * hash + (activity != null ? activity.hashCode() : 0);
-                hash = 97 * hash + (message != null ? message.hashCode() : 0);
-                hash = 97 * hash + (part != null ? part.hashCode() : 0);
-                return hash;
-            }
-            */
             
             public void extractDataFromTreePath(TreePath treePath) {
                 mapperTreeNode = (CorrelationMapperTreeNode) treePath.getLastPathComponent();
@@ -2501,6 +2493,44 @@ class WsdlNamespaceContext implements NamespaceContext {
         String single = getPrefix(namespaceURI);
         return Collections.singletonList(single).iterator();
     }
+}
+//============================================================================//
+class CommonUtils {
+    private static final String
+        WINDOWS_OS_FAMILY_NAME = "Windows", // NOI18N
+        SUN_OS_FAMILY_NAME     = "SunOS", // NOI18N
+        MAC_OS_FAMILY_NAME     = "Mac"; // NOI18N
+
+    /**
+     * Defines a name of a current operation system.
+     * @return a name of a current operation system.
+     */
+    public static String getOperatingSystemName() {
+        return System.getProperty("os.name");
+    }
+    
+    private static boolean osBelongsToFamily(String osFamilyName) {
+        String osName = getOperatingSystemName();
+        return (osName.toUpperCase().indexOf(osFamilyName.toUpperCase()) > -1);
+    }
+    
+    /**
+     * Defines whether a current operation system belongs to Windows family.
+     * @return true if an operation system belongs to Windows family.
+     */
+    public static boolean isWindowsOS() {return osBelongsToFamily(WINDOWS_OS_FAMILY_NAME);}
+
+    /**
+     * Defines whether a current operation system belongs to SunOS (Solaris) family.
+     * @return true if an operation system belongs to SunOS (Solaris) family.
+     */
+    public static boolean isSunOS() {return osBelongsToFamily(SUN_OS_FAMILY_NAME);}
+
+    /**
+     * Defines whether a current operation system belongs to MAC OS X family.
+     * @return true if an operation system belongs to MAC OS X family.
+     */
+    public static boolean isMacOS() {return osBelongsToFamily(MAC_OS_FAMILY_NAME);}
 }
 //============================================================================//
 interface WizardProperties {
