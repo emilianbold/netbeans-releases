@@ -77,6 +77,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.spi.editor.completion.*;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -539,12 +540,16 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                     if (guardedPos) {
                         Toolkit.getDefaultToolkit().beep();
                     } else if (compEditable) {
+                        // Consuming completion
+                        if ((e.getModifiers() & InputEvent.CTRL_MASK) > 0) { // CTRL+ENTER
+                            consumeIdentifier();
+                        }
                         LogRecord r = new LogRecord(Level.FINE, "COMPL_KEY_SELECT_DEFAULT"); // NOI18N
-                        r.setParameters(new Object[] {'\n', layout.getSelectedIndex(), item.getClass().getSimpleName()});
-                            item.defaultAction(getActiveComponent());
+                        r.setParameters(new Object[]{'\n', layout.getSelectedIndex(), item.getClass().getSimpleName()});
+                        item.defaultAction(getActiveComponent());
                         uilog(r);
+                        return;
                     }
-                    return;
                 }
             } else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN
                     || e.getKeyCode() == KeyEvent.VK_PAGE_UP || e.getKeyCode() == KeyEvent.VK_PAGE_DOWN
@@ -628,6 +633,31 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         }
         if (oldCompletionResult != null) {
             oldCompletionResult.cancel();
+        }
+    }
+
+    /** 
+     * Consumes identifier part of text behind caret upto first non-identifier
+     * char.
+     */
+    private void consumeIdentifier() {
+        JTextComponent comp = getActiveComponent();
+        BaseDocument doc = (BaseDocument) comp.getDocument();
+        int initCarPos = comp.getCaretPosition();
+        int carPos = initCarPos;
+        boolean nonChar = false;
+        char c;
+        try {
+            while(nonChar == false) {
+                c = doc.getChars(carPos, 1)[0];
+                if(!Character.isJavaIdentifierPart(c)) {
+                    nonChar = true;
+                }
+                carPos++;
+            }
+            doc.remove(initCarPos, carPos - initCarPos -1);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     
