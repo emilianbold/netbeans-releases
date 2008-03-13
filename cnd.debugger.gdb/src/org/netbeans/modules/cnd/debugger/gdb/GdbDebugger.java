@@ -1432,7 +1432,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 return;
             } else {
                 int pos1, pos2;
-                pos1 = frame.indexOf("fullname=\"");
+                pos1 = frame.indexOf("fullname=\""); // NOI18N
                 if (pos1 > 0 && (pos2 = frame.indexOf('"', pos1 + 10)) > 0) {
                     File file = new File(getOSPath(frame.substring(pos1 + 10, pos2)));
                     if (file == null || !file.exists()) {

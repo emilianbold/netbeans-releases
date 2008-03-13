@@ -103,7 +103,7 @@ made subject to such option by the copyright holder.
         <path id="coverage.source.path" path="${coverage.source.path}"/>
     </target>
 
-    <target name="emma-init-coverage-source-path-kit" if="coverage.kit" depends="-init-props">
+    <target name="emma-init-coverage-source-path-kit" if="coverage.kit">
         <property name="coverage.source.path" refid="ws.kit.src.path" />
         <echo>coverage.source.path=${coverage.source.path}</echo>
         <path id="coverage.source.path" refid="ws.kit.src.path"/>
@@ -122,7 +122,7 @@ made subject to such option by the copyright holder.
         </antcall>
     </target>
 
-    <target name="coverage-runtests-kit" if="coverage.kit" depends="-init-props">
+    <target name="coverage-runtests-kit" if="coverage.kit">
         <fail unless="j2ee.appserver.path" message="Need appserver to be able to measure coverage"/>
         <property name="xtest.userdata|com.sun.aas.installRoot" value="${j2ee.appserver.path}"/>
         <antcall target="runtests">
