@@ -42,8 +42,11 @@ package org.netbeans.test.ide;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTree;
@@ -64,7 +67,7 @@ final class WatchProjects {
     private static Method getProjects;
     private static Method closeProjects;
     private static Object projectManager;
-    
+
     private WatchProjects() {
     }
     
@@ -96,22 +99,42 @@ final class WatchProjects {
             getProjects.invoke(projectManager)
         );
         
-        if (System.getProperty("java.version").startsWith("1.5")) {
-            // hopefully this hack will be needed just on 1.5
-            resetJTreeUIs(Frame.getFrames());
-            
-            // clear input method memory leak on JDK 1.5
-            Class<?> inputMethod = Class.forName("sun.awt.im.InputContext");
-            Field f = inputMethod.getDeclaredField("previousInputMethod");
-            f.setAccessible(true);
-            f.set(null, null);
-        }
-        
+        resetJTreeUIs(Frame.getFrames());
+
         tryCloseNavigator();
         
+        StringSelection ss = new StringSelection("");
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, ss);
+        Toolkit.getDefaultToolkit().getSystemSelection().setContents(ss, ss);
+            
+        for (Frame f : Frame.getFrames()) {
+            f.setVisible(false);
+        }
+        
+        clearField("sun.awt.im.InputContext", "previousInputMethod");
+        clearField("sun.awt.im.InputContext", "inputMethodWindowContext");
+        clearField("sun.awt.im.CompositionAreaHandler", "compositionAreaOwner");
+        clearField("sun.awt.AppContext", "mainAppContext");
+        clearField("org.netbeans.modules.beans.BeanPanel", "INSTANCE");
+        clearField("java.awt.KeyboardFocusManager", "focusedWindow");
+        clearField("java.awt.KeyboardFocusManager", "activeWindow");
+        clearField("java.awt.KeyboardFocusManager", "focusOwner");
+        clearField("org.netbeans.jemmy.EventTool", "listenerSet");
+        clearField("sun.awt.X11.XKeyboardFocusManagerPeer", "currentFocusOwner");
+        clearField("sun.awt.X11.XKeyboardFocusManagerPeer", "currentFocusedWindow");
+        clearField("org.netbeans.modules.java.navigation.CaretListeningFactory", "INSATNCE");
+        
+        Object o = getFieldValue("org.netbeans.api.java.source.JavaSource", "toRemove");
+        if (o instanceof Collection) {
+            Collection c = (Collection)o;
+            c.clear();
+        }
+        
+        clearField("sun.awt.im.InputContext", "previousInputMethod");
+        clearField("sun.awt.im.InputContext", "inputMethodWindowContext");
+        
         System.setProperty("assertgc.paths", "5");
-        // disabled due to issue 129435
-        // Log.assertInstances("Checking if all projects are really garbage collected");
+        Log.assertInstances("Checking if all projects are really garbage collected");
     }
     
     private static void resetJTreeUIs(Component[] arr) {
@@ -130,7 +153,7 @@ final class WatchProjects {
     /** 
      * #124061 workaround - close navigator before tests
      */
-    private static void tryCloseNavigator() {
+    private static void tryCloseNavigator() throws Exception {
         for (TopComponent c : TopComponent.getRegistry().getOpened()) {
             LOG.fine("Processing TC " + c.getDisplayName() + "class " + c.getClass().getName());
             if (c.getClass().getName().equals("org.netbeans.modules.navigator.NavigatorTC")) {
@@ -144,6 +167,42 @@ final class WatchProjects {
                 break;
             }
         }
+        clearField("org.netbeans.modules.navigator.NavigatorTC", "instance");
+        clearField("org.netbeans.modules.navigator.ProviderRegistry","instance");
+    }
+
+    private static void clearField(String clazz, String... name) throws Exception {
+        Object ret = null;
+        for (int i = 0; i < name.length; i++) {
+            Field f = i == 0 ? getField(clazz, name[0]) : getField(ret.getClass(), name[i]);
+            Object now = ret;
+            ret = f.get(now);
+            f.set(now, null);
+            Assert.assertEquals("Field is really cleared " + f, null, f.get(now));
+        }
+    }
+    private static Object getFieldValue(String clazz, String... name) throws Exception {
+        Object ret = null;
+        for (int i = 0; i < name.length; i++) {
+            Field f = i == 0 ? getField(clazz, name[0]) : getField(ret.getClass(), name[i]);
+            ret = f.get(ret);
+        }
+        return ret;
+    }
+    
+    
+    private static Field getField(String clazz, String name) throws NoSuchFieldException, ClassNotFoundException {
+        ClassLoader l = Thread.currentThread().getContextClassLoader();
+        if (l == null) {
+            l = WatchProjects.class.getClassLoader();
+        }
+        Class<?> c = Class.forName(clazz, true, l);
+        return getField(c, name);
+    }
+    private static Field getField(Class<?> clazz, String name) throws NoSuchFieldException {
+        Field f = clazz.getDeclaredField(name);
+        f.setAccessible(true);
+        return f;
     }
     
 }
