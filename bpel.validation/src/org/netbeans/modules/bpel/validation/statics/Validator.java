@@ -1919,7 +1919,7 @@ public final class Validator extends BpelValidator {
             Collection<PropertyAlias> collection = getPropertyAliases(reference.getQName(), message, correlation.getBpelModel());
 
             if (collection.size() == 0 && reference != null && reference.get() != null) {
-              addError("FIX_AbsentPropertyAliasForMessage", correlation, reference.get().getName()); // NOI18N
+              addError("FIX_AbsentPropertyAliasForMessage", correlation, reference.get().getName(), set.getName()); // NOI18N
             }
         }
     }
