@@ -1198,9 +1198,9 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
 
     protected void init() {
         this.setAttribute(ATTR_VERSION, VERSION);
-        if (this.getAttributeValue(ATTR_EXECUTION_STRATEGY_CODE) == null) {
+        /*if (this.getAttributeValue(ATTR_EXECUTION_STRATEGY_CODE) == null) {
             setExecutionStrategyCode(new Integer(EXECUTION_STRATEGY_DEFAULT));
-        }
+        }*/
     }
 
     protected void setSQLObjectProperties(SQLObject obj) {
