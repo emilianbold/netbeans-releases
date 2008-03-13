@@ -80,7 +80,6 @@ import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Attribute;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * This class represents the condition set at source table, target table and at each case
@@ -90,7 +89,7 @@ import org.netbeans.modules.etl.logger.LogUtil;
  */
 public class SQLConditionImpl implements SQLCondition, Cloneable {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(SQLConditionImpl.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SQLConditionImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     class SecondParseObjectInfo {
@@ -1091,7 +1090,7 @@ public class SQLConditionImpl implements SQLCondition, Cloneable {
                     Attribute copiedAttr = (Attribute) attr.clone();
                     this.attributes.put(name, copiedAttr);
                 } catch (CloneNotSupportedException ex) {
-                    mLogger.errorNoloc(mLoc.t("PRSR108: Failed to copy source objects attributes{0}", LOG_CATEGORY), ex);
+                    mLogger.errorNoloc(mLoc.t("EDIT108: Failed to copy source objects attributes{0}", LOG_CATEGORY), ex);
                 }
             }
         }
@@ -1115,7 +1114,7 @@ public class SQLConditionImpl implements SQLCondition, Cloneable {
                 this.addObject(clonedObj);
                 origToCloneMap.put(obj, clonedObj);
             } catch (CloneNotSupportedException ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR109: Failed to copy source objects attributes{0}", LOG_CATEGORY), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT108: Failed to copy source objects attributes{0}", LOG_CATEGORY), ex);
             }
         }
 
@@ -1317,7 +1316,7 @@ public class SQLConditionImpl implements SQLCondition, Cloneable {
             ConditionUtil.populateCondition(this, obj);
             this.root = findRootPredicate();
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR110: Error finding root predicate from text condition{0}in {1}", this.conditionText, LOG_CATEGORY), ex);
+            mLogger.errorNoloc(mLoc.t("EDIT110: Error finding root predicate from text condition{0}in {1}", this.conditionText, LOG_CATEGORY), ex);
         }
     }
 

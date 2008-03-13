@@ -167,22 +167,47 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    public void testReformatArrayInitializerWithNewline2() {
+    
+    public void testLabelIndentHalf() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
-                "int[][] foo4 =  {\n" +
-                "{1, 2, 3},\n" +
-                "{3,4,5},\n" +
-                "{7,8,9}\n" +
-                "};\n" +
-                "\n");
+                "int foo()\n" +
+                "{\n" +
+                "  start: while(true){\n" +
+                "int i = 0;\n" +
+                "goto start;\n" +
+                "end:\n" +
+                "if(true){\n" +
+                "foo();\n" +
+                "second:\n" +
+                "foo();\n" +
+                "}\n" +
+                "}\n" +
+                "}\n");
         reformat();
-        assertDocumentText("Incorrect array initializer with newline reformatting",
-                "int[][] foo4 = {\n" +
-                "    {1, 2, 3},\n" +
-                "    {3, 4, 5},\n" +
-                "    {7, 8, 9}\n" +
-                "};\n" +
-                "\n");
+        assertDocumentText("Incorrect label half indent",
+                "int foo()\n" +
+                "{\n" +
+                "start:\n" +
+                "  while (true)\n" +
+                "    {\n" +
+                "      int i = 0;\n" +
+                "      goto start;\n" +
+                "end:\n" +
+                "      if (true)\n" +
+                "        {\n" +
+                "          foo();\n" +
+                "second:\n" +
+                "          foo();\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n");
     }
+
 }
