@@ -3405,4 +3405,126 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    DECL_VISIBILITY(decl) = VISIBILITY_PROTECTED;\n" +
                 "}\n");
     }
+
+    public void testLabelIndentHalf() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        setLoadDocumentText(
+                "int foo()\n" +
+                "{\n" +
+                "  start: while(true){\n" +
+                "int i = 0;\n" +
+                "goto start;\n" +
+                "end:\n" +
+                "if(true){\n" +
+                "foo();\n" +
+                "second:\n" +
+                "foo();\n" +
+                "}\n" +
+                "}\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect label half indent",
+                "int foo()\n" +
+                "{\n" +
+                "start:\n" +
+                "  while (true)\n" +
+                "    {\n" +
+                "      int i = 0;\n" +
+                "      goto start;\n" +
+                "end:\n" +
+                "      if (true)\n" +
+                "        {\n" +
+                "          foo();\n" +
+                "second:\n" +
+                "          foo();\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n");
+    }
+
+    public void testLabelIndentHalf2() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.absoluteLabelIndent, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        setLoadDocumentText(
+                "int foo()\n" +
+                "{\n" +
+                "  start: while(true){\n" +
+                "int i = 0;\n" +
+                "goto start;\n" +
+                "end:\n" +
+                "if(true){\n" +
+                "foo();\n" +
+                "second:\n" +
+                "foo();\n" +
+                "}\n" +
+                "}\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect label half indent",
+                "int foo()\n" +
+                "{\n" +
+                "start:\n" +
+                "  while (true)\n" +
+                "    {\n" +
+                "      int i = 0;\n" +
+                "      goto start;\n" +
+                "    end:\n" +
+                "      if (true)\n" +
+                "        {\n" +
+                "          foo();\n" +
+                "        second:\n" +
+                "          foo();\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n");
+    }
+
+    public void testLabelStatementIndent() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.absoluteLabelIndent, false);
+        setLoadDocumentText(
+                "int foo()\n" +
+                "{\n" +
+                "  start: while(true){\n" +
+                "int i = 0;\n" +
+                "goto start;\n" +
+                "end:\n" +
+                "if(true){\n" +
+                "foo();\n" +
+                "second:\n" +
+                "foo();\n" +
+                "}\n" +
+                "}\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect label indent",
+                "int foo()\n" +
+                "{\n" +
+                "start:\n" +
+                "    while (true) {\n" +
+                "        int i = 0;\n" +
+                "        goto start;\n" +
+                "    end:\n" +
+                "        if (true) {\n" +
+                "            foo();\n" +
+                "        second:\n" +
+                "            foo();\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n");
+    }
 }
