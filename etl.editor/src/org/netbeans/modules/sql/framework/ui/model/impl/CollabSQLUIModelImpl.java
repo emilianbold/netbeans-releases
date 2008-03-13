@@ -82,7 +82,6 @@ import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
@@ -93,7 +92,7 @@ import org.netbeans.modules.sql.framework.model.DBTable;
 public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLUIModel {
 
     private static final String LOG_CATEGORY = CollabSQLUIModelImpl.class.getName();
-    private static transient final Logger mLogger = LogUtil.getLogger(CollabSQLUIModelImpl.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(CollabSQLUIModelImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     protected boolean isReloaded = false;
     protected boolean restoring = false;
@@ -333,7 +332,7 @@ public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLU
                 // reload time we do not want to handle auto join
                 addObjectInGraph(sqlObj, false);
             } catch (BaseException e) {
-                mLogger.errorNoloc(mLoc.t("PRSR142: Error caught while restoring object ({0})", sqlObj.getDisplayName()), e);
+                mLogger.errorNoloc(mLoc.t("EDIT141: Error caught while restoring object ({0})", sqlObj.getDisplayName()), e);
                 throw e;
             }
         }
@@ -502,7 +501,7 @@ public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLU
             try {
                 addObjectInGraph((SQLDBTable) it.next(), false);
             } catch (BaseException e) {
-                mLogger.errorNoloc(mLoc.t("PRSR143: Error while adding table to canvas. ({0})", LOG_CATEGORY), e);
+                mLogger.errorNoloc(mLoc.t("EDIT143: Error while adding table to canvas. ({0})", LOG_CATEGORY), e);
                 throw e;
             }
         }

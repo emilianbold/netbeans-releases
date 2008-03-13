@@ -69,7 +69,6 @@ import javax.swing.tree.TreePath;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 
@@ -79,7 +78,7 @@ import org.netbeans.modules.sql.framework.model.SQLDBTable;
  * @version $Revision$
  */
 public class TableColumnTreeCellEditor extends JComponent implements TreeCellEditor {
- private static transient final Logger mLogger = LogUtil.getLogger(TableColumnTreeCellEditor.class.getName());
+ private static transient final Logger mLogger = Logger.getLogger(TableColumnTreeCellEditor.class.getName());
  private static transient final Localizer mLoc = Localizer.get();
     /**
      * Class CheckBoxItemListener listens for checkbox changes.
@@ -109,10 +108,10 @@ public class TableColumnTreeCellEditor extends JComponent implements TreeCellEdi
 
             if (node.getUserObject() instanceof SQLDBTable) {
                 if (!isSelected) {
-                    String nbBundle1 = mLoc.t("PRSR001: All links to and from the table will be lost. Are you sure you want to deselect all table columns?");
-                    String message = Localizer.parse(nbBundle1);
-                    String nbBundle2 = mLoc.t("PRSR001: Confirm deselect all");
-                    String header = Localizer.parse(nbBundle2);
+                    String nbBundle1 = mLoc.t("BUND489: All links to and from the table will be lost. Are you sure you want to deselect all table columns?");
+                    String message = nbBundle1.substring(15);
+                    String nbBundle2 = mLoc.t("BUND490: Confirm deselect all");
+                    String header = nbBundle2.substring(15);
                     int response = JOptionPane.showConfirmDialog(parent, message, header, JOptionPane.YES_OPTION);
                     if (response == JOptionPane.YES_OPTION) {
                         selectTableAndColumn(isSelected);

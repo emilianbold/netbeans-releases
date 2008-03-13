@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,39 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ws.qaf.rest;
 
-import com.meterware.httpunit.HeaderOnlyWebRequest;
-import java.net.URL;
+package org.netbeans.spi.java.queries.support;
+
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.modules.java.queries.SFBQImpl2Result;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
+import org.openide.util.Parameters;
 
 /**
- *
- * @author lukas
+ * Base class for {@link SourceForBinaryQueryImplementation2} which need to delegate
+ * to other {@link SourceForBinaryQueryImplementation}.
+ * @since 1.16
+ * @author Tomas Zezula
  */
-public class DeleteMethodWebRequest extends HeaderOnlyWebRequest {
-
-    public DeleteMethodWebRequest(String arg0) {
-        super(arg0);
-    }
-
-    public DeleteMethodWebRequest(URL arg0, String arg1) {
-        super(arg0, arg1);
-    }
-
-    public DeleteMethodWebRequest(URL arg0, String arg1, String arg2) {
-        super(arg0, arg1, arg2);
-    }
+public abstract class SourceForBinaryQueryimplementation2Base implements SourceForBinaryQueryImplementation2 {
 
     /**
-     * Returns the HTTP method defined for this request.
-     **/
-    @Override
-    public String getMethod() {
-        return "DELETE";
+     * Creates a wrapper for {@link SourceForBinaryQuery.Result}. This method
+     * should be used by delegating {@link SourceForBinaryQueryImplementation2}
+     * which need to delegate to {@link SourceForBinaryQueryImplementation}. 
+     * @param result returned by {@link SourceForBinaryQueryImplementation},
+     * When result is already instanceof {@link SourceForBinaryQueryImplementation2.Result}
+     * it's returned without wrapping.
+     * @return a {@link SourceForBinaryQueryImplementation2.Result}.
+     */
+    protected final Result asResult (SourceForBinaryQuery.Result result) {
+        Parameters.notNull("result", result);   //NOI18N
+        if (result instanceof Result) {
+            return (Result) result;
+        }
+        else {
+            return new SFBQImpl2Result(result);
+        }
     }
 }

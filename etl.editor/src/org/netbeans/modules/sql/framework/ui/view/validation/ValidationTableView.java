@@ -61,7 +61,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.ValidationInfo;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 
@@ -80,7 +79,7 @@ public class ValidationTableView extends JPanel {
     private IGraphView graphView;
     private TableCellRenderer cellRenderer;
     private String maxLengthStr = "THIS IS MAX LENGTH STRING";
-    private static transient final Logger mLogger = LogUtil.getLogger(ValidationTableView.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ValidationTableView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     static {
         errorImg = new ImageIcon(errorImgUrl);
@@ -200,21 +199,21 @@ public class ValidationTableView extends JPanel {
                 if (type == ValidationInfo.VALIDATION_WARNING) {
                     label = new JLabel(warningImg);
                     label.setDisplayedMnemonic('W');
-                    String nbBundle1 = mLoc.t("PRSR001: Warning");
-                    label.setToolTipText(Localizer.parse(nbBundle1));
-                    label.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle1));
+                    String nbBundle1 = mLoc.t("BUND479: Warning");
+                    label.setToolTipText(nbBundle1.substring(15));
+                    label.getAccessibleContext().setAccessibleName(nbBundle1.substring(15));
                 } else if (type == ValidationInfo.VALIDATION_INFO) {
                     label = new JLabel(infoImg);
                     label.setDisplayedMnemonic('I');
-                    String nbBundle2 = mLoc.t("PRSR001: Information");
-                    label.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle2));
-                    label.setToolTipText(Localizer.parse(nbBundle2));
+                    String nbBundle2 = mLoc.t("BUND480: Information");
+                    label.getAccessibleContext().setAccessibleName(nbBundle2.substring(15));
+                    label.setToolTipText(nbBundle2.substring(15));
                 } else {
                     label = new JLabel(errorImg);
                     label.setDisplayedMnemonic('E');
-                    String nbBundle3 = mLoc.t("PRSR001: Error");
-                    label.setToolTipText(Localizer.parse(nbBundle3));
-                    label.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle3));
+                    String nbBundle3 = mLoc.t("BUND481: Error");
+                    label.setToolTipText(nbBundle3.substring(15));
+                    label.getAccessibleContext().setAccessibleName(nbBundle3.substring(15));
                 }
                 return label;
             }

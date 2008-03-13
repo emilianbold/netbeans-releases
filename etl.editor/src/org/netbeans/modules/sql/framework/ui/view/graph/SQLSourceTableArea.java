@@ -87,7 +87,6 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
@@ -126,7 +125,7 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
     private JMenuItem synchroniseItem;
     private JMenuItem remountItem;
     private transient ETLCollaborationTopPanel designView;
-    private static transient final Logger mLogger = LogUtil.getLogger(SQLSourceTableArea.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SQLSourceTableArea.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     
     /**
@@ -152,32 +151,32 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
         try {
             ActionListener aListener = new TableActionListener();
             // Show SQL
-            String nbBundle1 = mLoc.t("PRSR001: Show SQL");
-            String lblShowSql = Localizer.parse(nbBundle1);
+            String nbBundle1 = mLoc.t("BUND365: Show SQL");
+            String lblShowSql = nbBundle1.substring(15);
             showSqlItem = new JMenuItem(lblShowSql, new ImageIcon(showSqlUrl));
-            showSqlItem.setAccelerator(KeyStroke.getKeyStroke('S', InputEvent.CTRL_MASK));
+            showSqlItem.setAccelerator(KeyStroke.getKeyStroke('B', InputEvent.ALT_DOWN_MASK));
             showSqlItem.addActionListener(aListener);
             popUpMenu.add(showSqlItem);
 
             // Show data
-            String nbBundle2 = mLoc.t("PRSR001: Show Data");
-            String lblShowData = Localizer.parse(nbBundle2);
+            String nbBundle2 = mLoc.t("BUND453: Show Data");
+            String lblShowData = nbBundle2.substring(15);
             showDataItem = new JMenuItem(lblShowData, new ImageIcon(showDataUrl));
-            showDataItem.setAccelerator(KeyStroke.getKeyStroke('D',InputEvent.CTRL_MASK));
+            showDataItem.setAccelerator(KeyStroke.getKeyStroke('D',InputEvent.ALT_DOWN_MASK));
             showDataItem.addActionListener(aListener);
             popUpMenu.add(showDataItem);
 
 
             addSelectVisibleColumnsPopUpMenu(aListener);
             synchroniseItem = new JMenuItem("Refresh Metadata", new ImageIcon(synchroniseImgUrl));
-            synchroniseItem.setAccelerator(KeyStroke.getKeyStroke('R',InputEvent.CTRL_MASK));
+            synchroniseItem.setAccelerator(KeyStroke.getKeyStroke('R',InputEvent.ALT_DOWN_MASK));
             synchroniseItem.addActionListener(aListener);
             popUpMenu.add(synchroniseItem);
 
-            String nbBundle3 = mLoc.t("PRSR001: Remount");
-            String lblRemount = Localizer.parse(nbBundle3);
+            String nbBundle3 = mLoc.t("BUND027: Remount");
+            String lblRemount = nbBundle3.substring(15);
             remountItem = new JMenuItem(lblRemount, new ImageIcon(remountImgUrl));
-            remountItem.setAccelerator(KeyStroke.getKeyStroke('M',InputEvent.CTRL_MASK));
+            remountItem.setAccelerator(KeyStroke.getKeyStroke('M',InputEvent.SHIFT_DOWN_MASK));
             remountItem.addActionListener(aListener);
             SQLObject tbl = (SQLObject) SQLSourceTableArea.this.getDataObject();
             SQLDBModelImpl impl = (SQLDBModelImpl) tbl.getParentObject();
@@ -187,17 +186,17 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             }
 
             // Define data filtering action
-            String nbBundle4 = mLoc.t("PRSR001: Extraction Condition...");
+            String nbBundle4 = mLoc.t("BUND455: Extraction Condition...");
             popUpMenu.addSeparator();
-            dataFilterMapItem = new JMenuItem(Localizer.parse(nbBundle4), new ImageIcon(dataFilterImgUrl));
-            dataFilterMapItem.setAccelerator(KeyStroke.getKeyStroke('F',InputEvent.CTRL_MASK));
+            dataFilterMapItem = new JMenuItem(nbBundle4.substring(15), new ImageIcon(dataFilterImgUrl));
+            dataFilterMapItem.setAccelerator(KeyStroke.getKeyStroke('X',InputEvent.ALT_DOWN_MASK));
             dataFilterMapItem.addActionListener(aListener);
             popUpMenu.add(dataFilterMapItem);
 
             // Define data validation action
-            String nbBundle5 = mLoc.t("PRSR001: Data Validation...");
-            dataValidationMapItem = new JMenuItem(Localizer.parse(nbBundle5), new ImageIcon(defineValidationImgUrl));
-            dataValidationMapItem.setAccelerator(KeyStroke.getKeyStroke('V',InputEvent.CTRL_MASK));
+            String nbBundle5 = mLoc.t("BUND456: Data Validation...");
+            dataValidationMapItem = new JMenuItem(nbBundle5.substring(15), new ImageIcon(defineValidationImgUrl));
+            dataValidationMapItem.setAccelerator(KeyStroke.getKeyStroke('Y',InputEvent.ALT_DOWN_MASK));
             dataValidationMapItem.addActionListener(aListener);
             popUpMenu.add(dataValidationMapItem);
 
@@ -207,17 +206,17 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
 
             // Show properties
             popUpMenu.addSeparator();
-            String nbBundle6 = mLoc.t("PRSR001: Properties");
-            String lblProps = Localizer.parse(nbBundle6);
+            String nbBundle6 = mLoc.t("BUND443: Properties");
+            String lblProps = nbBundle6.substring(15);
             propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
-            propertiesItem.setAccelerator(KeyStroke.getKeyStroke('P',InputEvent.CTRL_MASK));
+            propertiesItem.setAccelerator(KeyStroke.getKeyStroke('Z',InputEvent.SHIFT_DOWN_MASK));
             propertiesItem.addActionListener(aListener);
             popUpMenu.add(propertiesItem);
 
             // Auto map action
-            String nbBundle7 = mLoc.t("PRSR001: Auto Map");
-            autoMapItem = new JMenuItem(Localizer.parse(nbBundle7), new ImageIcon(autoMapImgUrl));
-            autoMapItem.setAccelerator(KeyStroke.getKeyStroke('A',InputEvent.CTRL_MASK));
+            String nbBundle7 = mLoc.t("BUND458: Auto Map");
+            autoMapItem = new JMenuItem(nbBundle7.substring(15), new ImageIcon(autoMapImgUrl));
+            autoMapItem.setAccelerator(KeyStroke.getKeyStroke('A',InputEvent.SHIFT_DOWN_MASK));
             autoMapItem.addActionListener(aListener);
 
             popUpMenu.addSeparator();
@@ -302,10 +301,10 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
         IGraphView gView = this.getGraphView();
         CollabSQLUIModel sqlModel = (CollabSQLUIModel) gView.getGraphModel();
 
-        String nbBundle8 = mLoc.t("PRSR001: If columns are deleted or renamed you may lose existing mappings.");
-        String dlgMsg = Localizer.parse(nbBundle8);
-        String nbBundle9 = mLoc.t("PRSR001: Refresh Metadata");
-        String dlgTitle = Localizer.parse(nbBundle9);
+        String nbBundle8 = mLoc.t("BUND026: If columns are deleted or renamed you may lose existing mappings.");
+        String dlgMsg = nbBundle8.substring(15);
+        String nbBundle9 = mLoc.t("BUND024: Refresh Metadata");
+        String dlgTitle = nbBundle9.substring(15);
         int response = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), dlgMsg, dlgTitle, JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
 
         if (JOptionPane.OK_OPTION == response) {
