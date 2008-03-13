@@ -82,7 +82,7 @@ public class ProjectSourceForBinaryQuery extends SourceForBinaryQueryimplementat
                 else {
                     final SourceForBinaryQuery.Result result = sfbqi.findSourceRoots(binaryRoot);
                     if (result != null) {
-                        asResult (result);
+                        return asResult (result);
                     }
                 }
             }

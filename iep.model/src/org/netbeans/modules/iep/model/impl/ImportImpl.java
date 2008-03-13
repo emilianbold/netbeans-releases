@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,27 +31,74 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.gsf.api;
+package org.netbeans.modules.iep.model.impl;
 
-import java.awt.event.ActionEvent;
-import javax.swing.Action;
-import javax.swing.text.JTextComponent;
+import org.netbeans.modules.iep.model.Component;
+import org.netbeans.modules.iep.model.IEPComponent;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.IEPQNames;
+import org.netbeans.modules.iep.model.IEPVisitor;
+import org.netbeans.modules.iep.model.Import;
+import org.w3c.dom.Element;
+
 
 /**
- * Interface for actions that should be added into the set of
- * actions managed by the editor kit (which can then be bound to
- * editor keybindings rathr than global shortcuts, etc.)
- * 
- * @todo Provide a way to set the updateMask in BaseAction?
- * 
- * @author Tor Norbye
+ *
+ * @author radval
  */
-public interface EditorAction extends Action {
-    /** Action was invoked from an editor */
-    // TODO - must add "applies to" here!!
-    void actionPerformed(ActionEvent evt, final JTextComponent target);
-    String getActionName();
-    Class getShortDescriptionBundleClass();
+public class ImportImpl extends IEPComponentBase implements Import {
+
+	
+	
+    public ImportImpl(IEPModel model) {
+        this(model, createNewElement(IEPQNames.IMPORT.getQName(), model));
+    }
+    
+    public ImportImpl(IEPModel model, Element e) {
+        super(model, e);
+    }
+
+    public void accept(IEPVisitor visitor) {
+        visitor.visitImport(this);
+    }
+
+    public IEPComponent createChild(Element childEl) {
+        return null;
+    }
+
+    public String getLocation() {
+        return getAttribute(ATTR_LOCATION);
+    }
+
+    public void setLocation(String location) {
+        setAttribute(LOCATIION_PROPERTY, ATTR_LOCATION, location);
+    }
+
+    public String getNamespace() {
+        return getAttribute(ATTR_NAMESPACE);
+    }
+
+    public void setNamespace(String namespace) {
+        setAttribute(NAMESPACE_PROPERTY, ATTR_NAMESPACE, namespace);
+    }
+
+    public String getImportType() {
+        return getAttribute(ATTR_IMPORT_TYPE);
+    }
+
+    public void setImportType(String value) {
+        setAttribute(IMPORT_TYPE_PROPERTY, ATTR_IMPORT_TYPE, value);
+    }
+    
+    public Component getParentComponent() {
+        return (Component) getParent();
+    }
+
+    
 }

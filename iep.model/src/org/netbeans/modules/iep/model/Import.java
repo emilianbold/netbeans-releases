@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,27 +31,71 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.gsf.api;
+package org.netbeans.modules.iep.model;
 
-import java.awt.event.ActionEvent;
-import javax.swing.Action;
-import javax.swing.text.JTextComponent;
+import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement.StringAttribute;
+import org.netbeans.modules.xml.xam.dom.Attribute;
 
 /**
- * Interface for actions that should be added into the set of
- * actions managed by the editor kit (which can then be bound to
- * editor keybindings rathr than global shortcuts, etc.)
- * 
- * @todo Provide a way to set the updateMask in BaseAction?
- * 
- * @author Tor Norbye
+ *
+ * @author radval
  */
-public interface EditorAction extends Action {
-    /** Action was invoked from an editor */
-    // TODO - must add "applies to" here!!
-    void actionPerformed(ActionEvent evt, final JTextComponent target);
-    String getActionName();
-    Class getShortDescriptionBundleClass();
+public interface Import extends IEPComponent {
+
+    static final String LOCATIION_PROPERTY = "location";
+
+    static final String NAMESPACE_PROPERTY = "namespace";
+
+    static final String IMPORT_TYPE_PROPERTY = "importType";                              // NOI18N
+    
+    /**
+     * This type should be used for xsd document.
+     */
+    String SCHEMA_IMPORT_TYPE ="http://www.w3.org/2001/XMLSchema";  // NOI18N
+    
+    /**
+     * This type should be used for wsdl document.
+     */
+    String WSDL_IMPORT_TYPE = "http://schemas.xmlsoap.org/wsdl/";   // NOI18N
+
+    
+    static final Attribute ATTR_LOCATION = new StringAttribute(LOCATIION_PROPERTY);
+
+    static final Attribute ATTR_NAMESPACE = new StringAttribute(NAMESPACE_PROPERTY);
+        
+    static final Attribute ATTR_IMPORT_TYPE = new StringAttribute(IMPORT_TYPE_PROPERTY);
+    
+    String getLocation();
+    
+    void setLocation(String location);
+    
+    String getNamespace();
+    
+    void setNamespace(String namespace);
+    
+    /**
+     * Getter for ""importType" attribute.
+     * 
+     * @return "importType" attribute value.
+     */
+    String getImportType();
+
+    /**
+     * Setter for ""importType" attribute.
+     * 
+     * @param value
+     *            New "importType" attribute value.
+     */
+    void setImportType( String value );
+    
+    
+    Component getParentComponent();
+    
+    
 }

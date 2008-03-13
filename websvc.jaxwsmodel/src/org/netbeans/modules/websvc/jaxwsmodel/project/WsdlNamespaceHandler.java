@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,27 +31,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.gsf.api;
+package org.netbeans.modules.websvc.jaxwsmodel.project;
 
-import java.awt.event.ActionEvent;
-import javax.swing.Action;
-import javax.swing.text.JTextComponent;
+import java.io.File;
+import java.io.IOException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * Interface for actions that should be added into the set of
- * actions managed by the editor kit (which can then be bound to
- * editor keybindings rathr than global shortcuts, etc.)
- * 
- * @todo Provide a way to set the updateMask in BaseAction?
- * 
- * @author Tor Norbye
+ *
+ * @author mkuchtiak
  */
-public interface EditorAction extends Action {
-    /** Action was invoked from an editor */
-    // TODO - must add "applies to" here!!
-    void actionPerformed(ActionEvent evt, final JTextComponent target);
-    String getActionName();
-    Class getShortDescriptionBundleClass();
+public class WsdlNamespaceHandler extends DefaultHandler {
+    public static final String SAX_PARSER_FINISHED_OK="sax_parser_finished_correctly"; //NOI18N
+    
+    public static final String WSDL_SOAP_URI = "http://schemas.xmlsoap.org/wsdl/";
+    private String targetNamespace;
+
+    public void parse(File file) throws ParserConfigurationException, SAXException, IOException {
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        SAXParser saxParser = factory.newSAXParser();
+        saxParser.parse(file, this);
+    }
+    public String getTargetNamespace() {
+        return targetNamespace;
+    }
+    public void startElement(String uri, String localName, String qname, org.xml.sax.Attributes attributes) throws org.xml.sax.SAXException {
+        if ("definitions".equals(localName)) { // NOI18N
+            targetNamespace = attributes.getValue("targetNamespace");// NOI18N
+            throw new SAXException(SAX_PARSER_FINISHED_OK);
+        }
+    }
 }
