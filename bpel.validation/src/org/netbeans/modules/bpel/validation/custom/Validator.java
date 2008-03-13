@@ -402,7 +402,13 @@ public final class Validator extends BpelValidator {
   // # 120390
   private void checkInstantiateAndUse(CorrelationsHolder holder) {
     CreateInstanceActivity creator = getCreateInstanceActivity(holder);
+//out();
+//out(" holder: " + holder);
+//out("creator: " + creator);
 
+    if ( !(creator instanceof Receive)) {
+      return;
+    }
     if (isCreateInstanceYes(creator)) {
       return;
     }
