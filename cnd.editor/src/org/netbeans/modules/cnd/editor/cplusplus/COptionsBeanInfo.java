@@ -39,21 +39,17 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.makefile;
+package org.netbeans.modules.cnd.editor.cplusplus;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.editor.*;
+/** BeanInfo for CC editor options */
+public class COptionsBeanInfo extends CCOptionsBeanInfo {
 
-/**
- * Extended settings for Makefile.
- */
-public class MakefileSettingsInitializer {
-    public static Acceptor getAbbrevResetAcceptor() {
-        return SettingsDefaults.defaultAbbrevResetAcceptor;
-    }
+    public COptionsBeanInfo() {
+	super();
+    }   
     
-    public static List<? extends TokenContext> getTokenContext() {
-        return Collections.singletonList(MakefileTokenContext.context);
+    @Override
+    protected Class getBeanClass() {
+	return COptions.class;
     }
 }

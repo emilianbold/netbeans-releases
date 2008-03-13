@@ -39,21 +39,21 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.makefile;
+package org.netbeans.modules.cnd.editor.cplusplus;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.editor.*;
+/** Options for the C editor kit */
+public class COptions extends CCOptions {
 
-/**
- * Extended settings for Makefile.
- */
-public class MakefileSettingsInitializer {
-    public static Acceptor getAbbrevResetAcceptor() {
-        return SettingsDefaults.defaultAbbrevResetAcceptor;
-    }
+    static final long serialVersionUID = 6972381723748170673L;
     
-    public static List<? extends TokenContext> getTokenContext() {
-        return Collections.singletonList(MakefileTokenContext.context);
+    private static final String CC = "C"; //NOI18N
+
+    public COptions() {
+        super(CKit.class, CC);
+    }
+  
+    /** Return the C Indent Engine class */
+    protected @Override Class getDefaultIndentEngineClass() {
+        return CIndentEngine.class;
     }
 }

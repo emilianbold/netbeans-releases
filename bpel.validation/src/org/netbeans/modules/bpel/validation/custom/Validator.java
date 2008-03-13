@@ -42,7 +42,6 @@ package org.netbeans.modules.bpel.validation.custom;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.Set;
@@ -793,6 +792,57 @@ public final class Validator extends BpelValidator {
     addError("FIX_Activity_with_Correlation", parent); // NOI18N
   }
   
+  // # 129986
+  @Override
+  public void visit(Receive receive) {
+//out();
+//out("RECEIVE: " + receive);
+    WSDLReference<PortType> ref = receive.getPortType();
+
+    if (ref == null) {
+      return;
+    }
+    PortType portType = ref.get();
+
+    if (portType == null) {
+      return;
+    }
+    Collection<Operation> operations = portType.getOperations();
+
+    if (operations.size() != 1) {
+      return;
+    }
+    Operation operation = operations.iterator().next();
+
+    if (operation == null) {
+      return;
+    }
+    if (operation.getInput() == null || operation.getOutput() == null) {
+      return;
+    }
+    if ( !findReply(receive.getBpelModel().getProcess(), portType)) {
+      addError("FIX_In_Out_Receive_Reply", receive, receive.getName()); // NOI18N
+    }
+  }
+
+  private boolean findReply(BpelEntity entity, PortType portType) {
+    if (entity instanceof Reply) {
+      WSDLReference<PortType> ref = ((Reply) entity).getPortType();
+
+      if (ref != null && portType == ref.get()) {
+        return true;
+      }
+    }
+    List<BpelEntity> children = entity.getChildren();
+
+    for (BpelEntity child : children) {
+      if (findReply(child, portType)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public void visit(Reply reply) {
       super.visit(reply);
