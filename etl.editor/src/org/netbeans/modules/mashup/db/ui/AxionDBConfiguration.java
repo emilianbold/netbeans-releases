@@ -43,7 +43,6 @@ import java.util.Properties;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.nodes.BeanNode;
 import org.openide.util.NbBundle;
 
@@ -58,15 +57,15 @@ public class AxionDBConfiguration {
     public static final String PROP_DRIVER_LOC = "DriverLocation";
     public static final String PROP_LOC = "location";
     public static final String PROP_DRV_LOC = "driver";
-    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileResulSetPanel.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(FlatfileResulSetPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     public static AxionDBConfiguration getDefault() {
         return DEFAULT;
     }
 
     public String displayName() {
-        String nbBundle4 = mLoc.t("PRSR001: MashupDB Configuration");
-        return Localizer.parse(nbBundle4);
+        String nbBundle4 = mLoc.t("BUND253: MashupDB Configuration");
+        return nbBundle4.substring(15);
     }
 
     protected final String putProperty(String key, String value, boolean notify) {
@@ -127,8 +126,8 @@ public class AxionDBConfiguration {
             Properties prop = new Properties();
             prop.setProperty(PROP_DRIVER_LOC, driver);
             prop.setProperty(PROP_DB_LOC, dbLoc);
-            String nbBundle3 = mLoc.t("PRSR001: MashupDB Configurations");
-            prop.store(out, Localizer.parse(nbBundle3));
+            String nbBundle3 = mLoc.t("BUND254: MashupDB Configurations");
+            prop.store(out, nbBundle3.substring(15));
             out.close();
         } catch (FileNotFoundException ex) {
             //ignore
@@ -184,8 +183,8 @@ public class AxionDBConfiguration {
             Properties prop = new Properties();
             prop.setProperty(PROP_DB_LOC, location);
             prop.setProperty(PROP_DRIVER_LOC, drv);
-            String nbBundle3 = mLoc.t("PRSR001: MashupDB Configurations");
-            prop.store(out,Localizer.parse(nbBundle3));
+            String nbBundle3 = mLoc.t("BUND254: MashupDB Configurations");
+            prop.store(out,nbBundle3.substring(15));
             out.close();
             File db = new File(location);
             if (!db.exists()) {
@@ -234,8 +233,8 @@ public class AxionDBConfiguration {
                 FileOutputStream out = null;
                 try {
                     out = new FileOutputStream(conf);
-                    String nbBundle2 = mLoc.t("PRSR001: Mashup Database Location");
-                    prop.store(out, Localizer.parse(nbBundle2));
+                    String nbBundle2 = mLoc.t("BUND255: Mashup Database Location");
+                    prop.store(out, nbBundle2.substring(15));
                     out.close();
                 } catch (FileNotFoundException ex) {
                     //ignore
@@ -251,8 +250,8 @@ public class AxionDBConfiguration {
 
     protected static BeanNode createViewNode() throws java.beans.IntrospectionException {
         BeanNode nd = new BeanNode(AxionDBConfiguration.getDefault());
-        String nbBundle1 = mLoc.t("PRSR001: Mashup Database");
-        nd.setName(Localizer.parse(nbBundle1));
+        String nbBundle1 = mLoc.t("BUND256: Mashup Database");
+        nd.setName(nbBundle1.substring(15));
         return nd;
     }
 }

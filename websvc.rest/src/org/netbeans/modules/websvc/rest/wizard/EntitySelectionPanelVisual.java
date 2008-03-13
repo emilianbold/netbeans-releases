@@ -142,11 +142,6 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
         listAvailable.getAccessibleContext().setAccessibleDescription(bundle.getString("DESC_AvailableEntityClasses")); // NOI18N
 
         listSelected.setCellRenderer(ENTITY_LIST_RENDERER);
-        listSelected.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                listSelectedPropertyChange(evt);
-            }
-        });
         listSelected.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 listSelectedValueChanged(evt);
@@ -216,7 +211,7 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
                 .add(buttonAddAll)
                 .add(18, 18, 18)
                 .add(buttonRemoveAll)
-                .addContainerGap(131, Short.MAX_VALUE))
+                .addContainerGap(139, Short.MAX_VALUE))
         );
 
         buttonAdd.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "AddEntityClass")); // NOI18N
@@ -307,10 +302,6 @@ private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         updateButtons();
         fireChange();
 }//GEN-LAST:event_addActionPerformed
-
-private void listSelectedPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_listSelectedPropertyChange
-    fireChange();
-}//GEN-LAST:event_listSelectedPropertyChange
 
 private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_listSelectedValueChanged
     fireChange();
