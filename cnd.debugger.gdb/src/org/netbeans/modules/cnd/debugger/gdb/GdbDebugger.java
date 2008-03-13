@@ -130,6 +130,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public static final Object          LAST_GO_WAS_NEXT = "lastGoWasNext"; // NOI18N
     
     private Object                      lastGo;
+    private String                      lastStop;
     
     private static final int            DEBUG_ATTACH = 999;
     
@@ -1285,6 +1286,15 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         String reason = map.get("reason"); // NOI18N
         
         if (state.equals(STATE_STARTING)) {
+            String frame = map.get("frame"); // NOI18N
+            if (frame != null) {
+                map = GdbUtils.createMapFromString(frame);
+                String fullname = map.get("fullname"); // NOI18N
+                String line = map.get("line"); // NOI18N
+                if (fullname != null && line != null) {
+                    lastStop = fullname + ":" + line; // NOI18N
+                }
+            }
             setLoading();
             return;
         }
@@ -1302,6 +1312,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 finish(false);
             } else if (reason.equals("breakpoint-hit")) { // NOI18N
                 String tid = map.get("thread-id"); // NOI18N
+                lastStop = null;
                 if (tid != null && !tid.equals(currentThreadID)) {
                     currentThreadID = tid;
                 }
@@ -1330,6 +1341,15 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     dlopenPending = false;
                     checkSharedLibs(null);
                 }
+                String frame = map.get("frame"); // NOI18N
+                if (frame != null) {
+                    map = GdbUtils.createMapFromString(frame);
+                    String fullname = map.get("fullname"); // NOI18N
+                    String line = map.get("line"); // NOI18N
+                    if (fullname != null && line != null) {
+                        lastStop = fullname + ":" + line; // NOI18N
+                    }
+                }
                 GdbTimer.getTimer("Startup").stop("Startup1"); // NOI18N
                 GdbTimer.getTimer("Startup").report("Startup1"); // NOI18N
                 GdbTimer.getTimer("Startup").free(); // NOI18N
@@ -1344,8 +1364,18 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     finish(false);
                 }
             } else if (reason.equals("end-stepping-range")) { // NOI18N
+                lastStop = null;
                 gdb.stack_list_frames();
                 setStopped();
+                String frame = map.get("frame"); // NOI18N
+                if (frame != null) {
+                    map = GdbUtils.createMapFromString(frame);
+                    String fullname = map.get("fullname"); // NOI18N
+                    String line = map.get("line"); // NOI18N
+                    if (fullname != null && line != null) {
+                        lastStop = fullname + ":" + line; // NOI18N
+                    }
+                }
                 if (GdbTimer.getTimer("Step").getSkipCount() == 0) { // NOI18N
                     GdbTimer.getTimer("Step").stop("Step1");// NOI18N
                     GdbTimer.getTimer("Step").report("Step1");// NOI18N
@@ -1373,8 +1403,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             }
         } else if (dlopenPending) {
-                dlopenPending = false;
-                checkSharedLibs(lastGo);
+            dlopenPending = false;
+            checkSharedLibs(lastGo);
         } else {
             gdb.stack_list_frames();
             setStopped();
@@ -1412,6 +1442,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         });
     }
     
+    /**
+     * We've stopped from a dlopen event while stepping. We need to go to the next
+     * line of code. If we have a valid stack trace, its trivial. But on systems where
+     * we don't (Linux) we use the lastStep field and set a temporary breakpoint on
+     * the line following it. This is a bit of a hack, but its required if we don't
+     * have a valid stack.
+     */
     private void stepOutOfDlopen() {
         String oldState = state;
         state = STATE_SILENT_STOP;
@@ -1446,6 +1483,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         if (valid) {
             gdb.exec_next();
+        } else if (lastStop != null) {
+            int pos = lastStop.lastIndexOf(':');
+            int lnum = Integer.parseInt(lastStop.substring(pos + 1)) + 1;
+            gdb.break_insert(GDB_TMP_BREAKPOINT, lastStop.substring(0, pos + 1) + lnum);
+            gdb.exec_continue();
         }
         state = oldState;
     }
