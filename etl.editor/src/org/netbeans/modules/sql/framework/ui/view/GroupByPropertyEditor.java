@@ -58,7 +58,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * @author Ritesh Adval
@@ -68,7 +68,7 @@ public class GroupByPropertyEditor extends PropertyEditorSupport implements IPro
 
     private static final String LOG_CATEGORY = GroupByPropertyEditor.class.getName();
     private IProperty property;
-    private static transient final Logger mLogger = LogUtil.getLogger(GroupByPropertyEditor.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(GroupByPropertyEditor.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private TargetTable targetTable;
     IGraphViewContainer editor;
@@ -148,7 +148,7 @@ public class GroupByPropertyEditor extends PropertyEditorSupport implements IPro
                     this.property.setValue(this.getValue());
                 }
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR199: Error occured in setting the property value for Group By{0}from joinview table.", text), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT199: Error occured in setting the property value for Group By{0}from joinview table.", text), ex);
             }
         }
     }

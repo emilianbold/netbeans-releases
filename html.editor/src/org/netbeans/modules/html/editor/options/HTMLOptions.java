@@ -42,7 +42,6 @@
 package org.netbeans.modules.html.editor.options;
 
 import java.util.MissingResourceException;
-import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.editor.ext.html.HTMLSettingsNames;
 import org.netbeans.modules.editor.html.HTMLKit;
@@ -139,11 +138,11 @@ public class HTMLOptions extends BaseOptions {
             COMPLETION_LOWER_CASE_PROP);
     }        
 
-    protected Class getDefaultIndentEngineClass() {                             
+    protected @Override Class getDefaultIndentEngineClass() {                             
 	return HTMLIndentEngine.class;                                          
     }
 
-    public HelpCtx getHelpCtx () {
+    public @Override HelpCtx getHelpCtx () {
         return new HelpCtx (HELP_ID);
     }
     
@@ -175,12 +174,16 @@ public class HTMLOptions extends BaseOptions {
     /**
      * Get localized string
      */
-    protected String getString(String key) {
+    protected @Override String getString(String key) {
         try {
             return NbBundle.getMessage(HTMLOptions.class, key);
         } catch (MissingResourceException e) {
             return super.getString(key);
         }
+    }
+
+    protected @Override String getContentType() {
+        return HTMLKit.HTML_MIME_TYPE;
     }
 
 }

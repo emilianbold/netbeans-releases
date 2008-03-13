@@ -290,15 +290,15 @@ public class JavaOptions extends BaseOptions {
         setSettingBoolean(JavaSettingsNames.GOTO_CLASS_SHOW_LIBRARY_CLASSES, v, GOTO_CLASS_SHOW_LIBRARY_CLASSES_PROP);
     }
 
-    protected Class getDefaultIndentEngineClass() {
+    protected @Override Class getDefaultIndentEngineClass() {
         return JavaIndentEngine.class;
     }
 
-    public HelpCtx getHelpCtx () {
+    public @Override HelpCtx getHelpCtx () {
         return new HelpCtx (HELP_ID);
     }
 
-    public Map getCodeFoldingProps(){
+    public @Override Map getCodeFoldingProps(){
         Map map = new HashMap(super.getCodeFoldingProps());
         
         Boolean val = (Boolean)getSettingValue(JavaSettingsNames.CODE_FOLDING_COLLAPSE_METHOD);
@@ -319,7 +319,7 @@ public class JavaOptions extends BaseOptions {
         return map;
     }
 
-    public void setCodeFoldingProps(Map props){
+    public @Override void setCodeFoldingProps(Map props){
         String name = SettingsNames.CODE_FOLDING_ENABLE;
         setSettingValue(name, props.get(name));
         name = JavaSettingsNames.CODE_FOLDING_COLLAPSE_METHOD;
@@ -337,7 +337,7 @@ public class JavaOptions extends BaseOptions {
     /**
      * Get localized string
      */
-    protected String getString(String key) {
+    protected @Override String getString(String key) {
         try {
             return NbBundle.getMessage(JavaOptions.class, key);
         } catch (MissingResourceException e) {
@@ -345,5 +345,7 @@ public class JavaOptions extends BaseOptions {
         }
     }
 
-    
+    protected @Override String getContentType() {
+        return JavaKit.JAVA_MIME_TYPE;
+    }
 }

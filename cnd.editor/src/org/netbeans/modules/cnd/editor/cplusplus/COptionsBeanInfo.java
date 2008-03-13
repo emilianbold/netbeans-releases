@@ -39,50 +39,17 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.autoupdate.ui;
+package org.netbeans.modules.cnd.editor.cplusplus;
 
-import java.awt.Dialog;
-import java.text.MessageFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
-import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizardIterator;
-import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizardModel;
-import org.openide.DialogDisplayer;
-import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
+/** BeanInfo for CC editor options */
+public class COptionsBeanInfo extends CCOptionsBeanInfo {
 
-/**
- *
- * @author Jiri Rechtacek
- */
-public class InstallUnitWizard {
+    public COptionsBeanInfo() {
+	super();
+    }   
     
-    private final Logger log = Logger.getLogger (this.getClass ().getName ());
-    
-    /** Creates a new instance of InstallUnitWizard */
-    public InstallUnitWizard () {}
-    
-    public boolean invokeWizard (OperationType doOperation, PluginManagerUI manager) {
-        InstallUnitWizardModel model = new InstallUnitWizardModel (doOperation);
-        model.setPluginManager (manager);
-        return invokeWizard (model);
+    @Override
+    protected Class getBeanClass() {
+	return COptions.class;
     }
-    
-    public boolean invokeWizard (InstallUnitWizardModel model) {
-        WizardDescriptor.Iterator<WizardDescriptor> iterator = new InstallUnitWizardIterator (model);
-        WizardDescriptor wizardDescriptor = new WizardDescriptor (iterator);
-        wizardDescriptor.setModal (true);
-        
-        wizardDescriptor.setTitleFormat (new MessageFormat(NbBundle.getMessage (InstallUnitWizard.class, "InstallUnitWizard_MessageFormat")));
-        wizardDescriptor.setTitle (NbBundle.getMessage (InstallUnitWizard.class, "InstallUnitWizard_Title"));
-        
-        Dialog dialog = DialogDisplayer.getDefault ().createDialog (wizardDescriptor);
-        dialog.setVisible (true);
-        dialog.toFront ();
-        boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
-        log.log (Level.FINE, "InstallUnitWizard returns with value " + wizardDescriptor.getValue ());
-        return !cancelled;
-    }
-    
 }
