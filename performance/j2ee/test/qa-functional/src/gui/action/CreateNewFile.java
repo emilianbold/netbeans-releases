@@ -129,8 +129,6 @@ public class CreateNewFile extends org.netbeans.performance.test.utilities.Perfo
     }
     
     public void prepare() {
-        // do nothing
-//        gui.Utilities.workarroundMainMenuRolledUp();
         new NewFileAction().performMenu();
         wizard = new NewFileWizardOperator();
         wizard.selectProject(project);
@@ -148,7 +146,7 @@ public class CreateNewFile extends org.netbeans.performance.test.utilities.Perfo
 
     public ComponentOperator open() {
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        wizard.finish();
+        if (System.getProperty("os.name").indexOf("Windows")!=-1) wizard.finish();
         return new EditorOperator(fileName);
     }
     

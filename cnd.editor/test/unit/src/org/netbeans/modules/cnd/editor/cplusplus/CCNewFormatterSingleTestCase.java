@@ -167,22 +167,22 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    public void testReformatArrayInitializerWithNewline2() {
+    
+    public void testSwitchFormatting3Half() {
         setDefaultsOptions();
         setLoadDocumentText(
-                "int[][] foo4 =  {\n" +
-                "{1, 2, 3},\n" +
-                "{3,4,5},\n" +
-                "{7,8,9}\n" +
-                "};\n" +
-                "\n");
+                "int main(int i)\n" +
+                "{\n" +
+                "if (offset)\n" +
+                "    *offset = layout->record_size / BITS_PER_UNIT;\n" +
+                "}\n");
         reformat();
-        assertDocumentText("Incorrect array initializer with newline reformatting",
-                "int[][] foo4 = {\n" +
-                "    {1, 2, 3},\n" +
-                "    {3, 4, 5},\n" +
-                "    {7, 8, 9}\n" +
-                "};\n" +
-                "\n");
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "int main(int i)\n" +
+                "{\n" +
+                "    if (offset)\n" +
+                "        *offset = layout->record_size / BITS_PER_UNIT;\n" +
+                "}\n");
     }
+
 }
