@@ -51,7 +51,6 @@ import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.model.impl.ETLCollaborationModel;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
@@ -69,21 +68,21 @@ import org.openide.NotifyDescriptor;
 public class EditDbModelAction extends GraphAction {
 
     private static final URL dbmodelNamesUrl = EditDbModelAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/DatabaseProperties.png");
-    private static transient final Logger mLogger = LogUtil.getLogger(EditDbModelAction.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(EditDbModelAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     public EditDbModelAction() {
         //action name
-        String nbBundle1 = mLoc.t("PRSR001: Database Properties...");
-        this.putValue(Action.NAME,Localizer.parse(nbBundle1));
+        String nbBundle1 = mLoc.t("BUND019: Database Properties...");
+        this.putValue(Action.NAME,nbBundle1.substring(15));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(dbmodelNamesUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("PRSR001: Edit Database Properties (Cntl-D)");
-        this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
-        // Acceleratot Cntl-D
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('D', InputEvent.CTRL_MASK));
+        String nbBundle2 = mLoc.t("BUND020: Edit Database Properties (Shift-D)");
+        this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
+        // Acceleratot Shift-D
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('D', InputEvent.SHIFT_DOWN_MASK));
     }
 
     /**
@@ -108,8 +107,8 @@ public class EditDbModelAction extends GraphAction {
             if (!srcDBModels.isEmpty() || !tgtDBModels.isEmpty()) {
                 etlEditor.editDBModel();
             } else {
-                String nbBundle3 = mLoc.t("PRSR001: No associated database properties to edit.\nAt least one table needs to be added to this collaboration.");
-                String noDBModelMsg = Localizer.parse(nbBundle3);
+                String nbBundle3 = mLoc.t("BUND021: No associated database properties to edit.\nAt least one table needs to be added to this collaboration.");
+                String noDBModelMsg = nbBundle3.substring(15);
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(noDBModelMsg, NotifyDescriptor.INFORMATION_MESSAGE));
             }
         }
