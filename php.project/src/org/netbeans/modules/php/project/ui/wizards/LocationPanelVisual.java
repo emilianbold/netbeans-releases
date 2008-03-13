@@ -43,15 +43,18 @@ package org.netbeans.modules.php.project.ui.wizards;
 import java.io.File;
 import javax.swing.JPanel;
 
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.openide.util.ChangeSupport;
 
 /**
  * @author Tomas Mysik
  */
-class LocationPanelVisual extends JPanel {
+class LocationPanelVisual extends JPanel implements DocumentListener {
 
     private static final long serialVersionUID = 9464147466826L;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     public LocationPanelVisual() {
         initComponents();
@@ -59,9 +62,8 @@ class LocationPanelVisual extends JPanel {
     }
 
     private void init() {
-        LocationListener listener = new LocationListener();
-        addProjectNameListener(listener);
-        addProjectLocationListener(listener);
+        projectLocationTextField.getDocument().addDocumentListener(this);
+        projectNameTextField.getDocument().addDocumentListener(this);
     }
 
     @Override
@@ -71,12 +73,12 @@ class LocationPanelVisual extends JPanel {
         projectNameTextField.requestFocus();
     }
 
-    void addProjectNameListener(DocumentListener listener) {
-        projectNameTextField.getDocument().addDocumentListener(listener);
+    void addLocationListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
     }
 
-    void addProjectLocationListener(DocumentListener listener) {
-        projectLocationTextField.getDocument().addDocumentListener(listener);
+    void removeLocationListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     /** This method is called from within the constructor to
@@ -203,22 +205,21 @@ class LocationPanelVisual extends JPanel {
         projectLocationTextField.setText(projectLocation);
     }
 
-    private class LocationListener implements DocumentListener {
+    // listeners
+    public void insertUpdate(DocumentEvent e) {
+        processUpdate();
+    }
 
-        public void insertUpdate(DocumentEvent e) {
-            processUpdate();
-        }
+    public void removeUpdate(DocumentEvent e) {
+        processUpdate();
+    }
 
-        public void removeUpdate(DocumentEvent e) {
-            processUpdate();
-        }
+    public void changedUpdate(DocumentEvent e) {
+        processUpdate();
+    }
 
-        public void changedUpdate(DocumentEvent e) {
-            processUpdate();
-        }
-
-        private void processUpdate() {
-            createdFolderTextField.setText(getFullProjectPath());
-        }
+    private void processUpdate() {
+        createdFolderTextField.setText(getFullProjectPath());
+        changeSupport.fireChange();
     }
 }

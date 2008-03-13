@@ -48,6 +48,7 @@ import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.MutableComboBoxModel;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,6 +62,7 @@ public final class Utils {
 
     public static String browseLocationAction(final Component parent, String path) {
         JFileChooser chooser = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setDialogTitle(NbBundle.getMessage(ConfigureProjectPanel.class, "LBL_SelectProjectLocation"));
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         if (path != null && path.length() > 0) {
@@ -70,7 +72,7 @@ public final class Utils {
             }
         }
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(parent)) {
-            return chooser.getSelectedFile().getAbsolutePath();
+            return FileUtil.normalizeFile(chooser.getSelectedFile()).getAbsolutePath();
         }
         return null;
     }

@@ -68,6 +68,7 @@ public class SourcesPanelVisual extends JPanel {
     static final LocalServer DEFAULT_LOCAL_SERVER;
 
     private final WebFolderNameProvider webFolderNameProvider;
+    final ChangeSupport changeSupport = new ChangeSupport(this);
     MutableComboBoxModel localServerComboBoxModel = new LocalServerComboBoxModel();
     private final LocalServerComboBoxEditor localServerComboBoxEditor = new LocalServerComboBoxEditor();
 
@@ -91,7 +92,11 @@ public class SourcesPanelVisual extends JPanel {
     }
 
     void addSourcesListener(ChangeListener listener) {
-        localServerComboBoxEditor.changeSupport.addChangeListener(listener);
+        changeSupport.addChangeListener(listener);
+    }
+
+    void removeSourcesListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     /** This method is called from within the constructor to
@@ -370,12 +375,11 @@ public class SourcesPanelVisual extends JPanel {
         }
     }
 
-    private static class LocalServerComboBoxEditor implements ComboBoxEditor, UIResource, DocumentListener {
+    private class LocalServerComboBoxEditor implements ComboBoxEditor, UIResource, DocumentListener {
         private static final long serialVersionUID = -4527321803090719483L;
 
-        final JTextField component = new JTextField();
+        private final JTextField component = new JTextField();
         private LocalServer activeItem;
-        final ChangeSupport changeSupport = new ChangeSupport(this);
 
         public LocalServerComboBoxEditor() {
             component.setOpaque(true);

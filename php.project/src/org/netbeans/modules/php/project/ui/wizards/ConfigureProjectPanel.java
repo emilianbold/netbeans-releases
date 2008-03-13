@@ -40,15 +40,11 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.MessageFormat;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.ui.wizards.SourcesPanelVisual.LocalServer;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -62,7 +58,7 @@ import org.openide.util.Utilities;
  * @author Tomas Mysik
  */
 public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel,
-        SourcesPanelVisual.WebFolderNameProvider {
+        SourcesPanelVisual.WebFolderNameProvider, ChangeListener {
 
     static final String DEFAULT_SOURCE_FOLDER = "web"; // NOI18N
 
@@ -83,11 +79,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     private WizardDescriptor descriptor;
     private final String[] steps;
 
-    public ConfigureProjectPanel() {
-        steps = new String[] {
-            NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_ProjectTitleName"),
-            //NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_ServerConfiguration"),
-        };
+    public ConfigureProjectPanel(String[] steps) {
+        this.steps = steps;
     }
 
     public Component getComponent() {
@@ -107,6 +100,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     public void readSettings(Object settings) {
         getComponent();
         descriptor = (WizardDescriptor) settings;
+
+        unregisterListeners();
 
         // location
         locationPanelVisual.setProjectLocation(getProjectLocation().getAbsolutePath());
@@ -136,7 +131,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
             optionsPanelVisual.setSetAsMain(setAsMain);
         }
 
-        // listeners
         registerListeners();
         fireChangeEvent();
     }
@@ -216,6 +210,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
                 || projectLocation.getParentFile() == null
                 || !projectLocation.isDirectory()) {
             projectLocation = ProjectChooser.getProjectsFolder();
+            descriptor.putProperty(PROJECT_DIR, projectLocation);
         }
         return projectLocation;
     }
@@ -258,20 +253,25 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     }
 
     private void registerListeners() {
-        ActionListener defaultActionListener = new DefaultActionListener();
-        DocumentListener defaultDocumentListener = new DefaultDocumentListener();
-        ChangeListener defaultChangeListener = new DefaultChangeListener();
-
         // location
-        locationPanelVisual.addProjectLocationListener(defaultDocumentListener);
-        locationPanelVisual.addProjectNameListener(defaultDocumentListener);
+        locationPanelVisual.addLocationListener(this);
 
         // sources
-        sourcesPanelVisual.addSourcesListener(defaultChangeListener);
+        sourcesPanelVisual.addSourcesListener(this);
 
         // options
-        optionsPanelVisual.addCreateIndexListener(defaultActionListener);
-        optionsPanelVisual.addIndexNameListener(defaultDocumentListener);
+        optionsPanelVisual.addOptionsListener(this);
+    }
+
+    private void unregisterListeners() {
+        // location
+        locationPanelVisual.removeLocationListener(this);
+
+        // sources
+        sourcesPanelVisual.removeSourcesListener(this);
+
+        // options
+        optionsPanelVisual.removeOptionsListener(this);
     }
 
     private String validFreeProjectName(File parentFolder, int index) {
@@ -358,36 +358,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         return null;
     }
 
-    private class DefaultActionListener implements ActionListener {
-
-        public void actionPerformed(ActionEvent e) {
-            fireChangeEvent();
-        }
-    }
-
-    private class DefaultDocumentListener implements DocumentListener {
-
-        public void insertUpdate(DocumentEvent e) {
-            processUpdate();
-        }
-
-        public void removeUpdate(DocumentEvent e) {
-            processUpdate();
-        }
-
-        public void changedUpdate(DocumentEvent e) {
-            processUpdate();
-        }
-
-        private void processUpdate() {
-            fireChangeEvent();
-        }
-    }
-
-    private class DefaultChangeListener implements ChangeListener {
-
-        public void stateChanged(ChangeEvent e) {
-            fireChangeEvent();
-        }
+    public void stateChanged(ChangeEvent e) {
+        fireChangeEvent();
     }
 }
