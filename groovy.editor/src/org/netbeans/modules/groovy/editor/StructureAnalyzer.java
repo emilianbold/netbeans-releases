@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
@@ -524,6 +525,14 @@ public class StructureAnalyzer implements StructureScanner {
         @Override
         public String toString() {
             return getName();
+        }
+
+        public String getSortText() {
+            return getName();
+        }
+
+        public ImageIcon getCustomIcon() {
+            return null;
         }
     }
     
