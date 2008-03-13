@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,41 +39,52 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.beans.loader;
+package org.netbeans.modules.cnd.editor.cplusplus;
 
-import java.io.IOException;
-import org.netbeans.modules.spring.api.beans.SpringConstants;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.UniFileLoader;
+import java.util.MissingResourceException;
+
 import org.openide.util.NbBundle;
+import org.netbeans.modules.editor.options.BaseOptionsBeanInfo;
 
-public class SpringXMLConfigDataLoader extends UniFileLoader {
+/** BeanInfo for CC editor options */
+public class CCOptionsBeanInfo extends BaseOptionsBeanInfo {
 
-    private static final long serialVersionUID = 1L;
-
-    public SpringXMLConfigDataLoader() {
-        super("org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataObject"); // NOI18N
+    private static final String[] EXPERT_PROP_NAMES = new String[] {
+        CCOptions.JAVADOC_AUTO_POPUP_PROP,
+    };
+    
+    public CCOptionsBeanInfo() {
+	super("/org/netbeans/modules/cnd/editor/cplusplus/CCIcon"); //NOI18N
+    }
+    
+    protected @Override String[] getPropNames() {
+        // already merged on initialization
+        return CCOptions.CC_PROP_NAMES;
     }
 
-    @Override
-    protected String defaultDisplayName() {
-        return NbBundle.getMessage(SpringXMLConfigDataLoader.class, "LBL_SpringXMLConfigName");
+    protected @Override void updatePropertyDescriptors() {
+        super.updatePropertyDescriptors();
+        setExpert(EXPERT_PROP_NAMES);
+        String hidden[] = new String[] {
+                CCOptions.LINE_HEIGHT_CORRECTION_PROP,
+                CCOptions.STATUS_BAR_CARET_DELAY_PROP,
+                CCOptions.STATUS_BAR_VISIBLE_PROP,
+                CCOptions.COMPLETION_AUTO_POPUP_PROP,
+                CCOptions.INDENT_ENGINE_PROP,
+                CCOptions.JAVADOC_AUTO_POPUP_PROP
+        };
+        setHidden(hidden);
+    }    
+    
+    protected @Override Class getBeanClass() {
+	return CCOptions.class;
     }
 
-    @Override
-    protected void initialize() {
-        super.initialize();
-        getExtensions().addMimeType(SpringConstants.CONFIG_MIME_TYPE);
-    }
-
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new SpringXMLConfigDataObject(primaryFile, this);
-    }
-
-    @Override
-    protected String actionsContext() {
-        return "Loaders/" + SpringConstants.CONFIG_MIME_TYPE + "/Actions"; // NOI18N
+    protected @Override String getString(String key) {
+        try {
+            return NbBundle.getBundle(CCOptionsBeanInfo.class).getString(key);
+        } catch (MissingResourceException e) {
+            return super.getString(key);
+        }
     }
 }

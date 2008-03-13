@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,41 +39,17 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.beans.loader;
+package org.netbeans.modules.cnd.editor.cplusplus;
 
-import java.io.IOException;
-import org.netbeans.modules.spring.api.beans.SpringConstants;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.UniFileLoader;
-import org.openide.util.NbBundle;
+/** BeanInfo for CC editor options */
+public class COptionsBeanInfo extends CCOptionsBeanInfo {
 
-public class SpringXMLConfigDataLoader extends UniFileLoader {
-
-    private static final long serialVersionUID = 1L;
-
-    public SpringXMLConfigDataLoader() {
-        super("org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataObject"); // NOI18N
-    }
-
+    public COptionsBeanInfo() {
+	super();
+    }   
+    
     @Override
-    protected String defaultDisplayName() {
-        return NbBundle.getMessage(SpringXMLConfigDataLoader.class, "LBL_SpringXMLConfigName");
-    }
-
-    @Override
-    protected void initialize() {
-        super.initialize();
-        getExtensions().addMimeType(SpringConstants.CONFIG_MIME_TYPE);
-    }
-
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new SpringXMLConfigDataObject(primaryFile, this);
-    }
-
-    @Override
-    protected String actionsContext() {
-        return "Loaders/" + SpringConstants.CONFIG_MIME_TYPE + "/Actions"; // NOI18N
+    protected Class getBeanClass() {
+	return COptions.class;
     }
 }
