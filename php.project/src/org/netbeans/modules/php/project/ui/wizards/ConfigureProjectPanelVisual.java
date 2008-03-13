@@ -43,7 +43,6 @@ import java.awt.BorderLayout;
 
 import javax.swing.JPanel;
 
-import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 class ConfigureProjectPanelVisual extends JPanel {
