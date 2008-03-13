@@ -6,7 +6,6 @@ import javax.swing.undo.UndoManager;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
@@ -16,12 +15,12 @@ import org.openide.util.HelpCtx;
 public final class UndoAction extends AbstractAction {
 
     private static final String LOG_CATEGORY = UndoAction.class.getName();
-    private static transient final Logger mLogger = LogUtil.getLogger(UndoAction.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(UndoAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public String getName() {
-        String nbBundle = mLoc.t("PRSR001: Undo");
-        return Localizer.parse(nbBundle);
+        String nbBundle = mLoc.t("BUND320: Undo");
+        return nbBundle.substring(15);
     }
 
     protected String iconResource() {
