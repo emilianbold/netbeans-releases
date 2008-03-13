@@ -43,9 +43,11 @@ package gui.window;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.actions.Action;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
 
 import org.netbeans.junit.NbTestSuite;
 
@@ -92,37 +94,37 @@ public class ProfilerWindows extends org.netbeans.performance.test.utilities.Per
     }
     
     public void testProfilerControlPanel() {
-        commandName = "Profiler Control Panel"; //NOI18N
+        commandName = "Window|Profiling|Profiler Control Panel"; //NOI18N
         windowName = "Profiler"; ////NOI18N
         doMeasurement();
     }
     
     public void testProfilerTelemetryOverview() {
-        commandName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle", "HINT_TelemetryOverviewAction");
+        commandName = "Window|Profiling|"+Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle", "HINT_TelemetryOverviewAction");
         windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "LAB_TelemetryOverviewPanelName");
         doMeasurement();
     }
     
     public void testProfilerLiveResults() {
-        commandName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle", "LBL_ShowLiveResultsWindowAction");
+        commandName = "Window|Profiling|"+Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle", "LBL_ShowLiveResultsWindowAction");
         windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "LAB_ResultsWindowName");
         doMeasurement();
     }
     
     public void testProfilerVMTelemetry() {
-        commandName = "VM Telemetry"; //NOI18N
+        commandName = "Window|Profiling|VM Telemetry"; //NOI18N
         windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "LAB_TelemetryWindowName");
         doMeasurement();
     }
     
     public void testProfilerThreads() {
-        commandName = "Threads"; //NOI18N
+        commandName = "Window|Profiling|Threads"; //NOI18N
         windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "ThreadsWindow_ThreadsWindowName");
         doMeasurement();
     }
     
     public void testProfilerProfilingPoints() {
-        commandName = "Profiling Points"; //NOI18N
+        commandName = "Window|Profiling|Profiling Points"; //NOI18N
         windowName = "Profiling Points"; ////NOI18N
         doMeasurement();
     }
@@ -131,8 +133,9 @@ public class ProfilerWindows extends org.netbeans.performance.test.utilities.Per
     }
     
     public ComponentOperator open() {
-        new Action(menuPrefix+commandName,null).performMenu(); // NOI18N
-	waitNoEvent(1000);
+//        new Action(menuPrefix+commandName,null).performMenu(); // NOI18N
+//	waitNoEvent(1000);
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(commandName);
         return new TopComponentOperator(windowName);
     }
     
