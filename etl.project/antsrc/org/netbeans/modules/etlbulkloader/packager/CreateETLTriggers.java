@@ -5,8 +5,8 @@
 package org.netbeans.modules.etlbulkloader.packager;
 
 import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+import org.netbeans.modules.etl.project.Localizer;
+
 
 /**
  *
@@ -14,7 +14,7 @@ import org.netbeans.modules.etl.logger.LogUtil;
  */
 public class CreateETLTriggers {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(CreateETLTriggers.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(CreateETLTriggers.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public CreateETLTriggers() {

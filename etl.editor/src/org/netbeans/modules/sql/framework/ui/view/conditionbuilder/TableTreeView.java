@@ -67,7 +67,6 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
@@ -79,7 +78,7 @@ import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
  */
 public class TableTreeView extends JPanel {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(TableTreeView.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(TableTreeView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     private class ColumnTransferable implements Transferable {
@@ -196,7 +195,7 @@ public class TableTreeView extends JPanel {
                     try {
                         dge.startDrag(DragSource.DefaultCopyDrop, new ColumnTransferable(obj));
                     } catch (InvalidDnDOperationException ex) {
-                        mLogger.errorNoloc(mLoc.t("PRSR159: invalid drag and drop{0}", LOG_CATEGORY), ex);
+                        mLogger.errorNoloc(mLoc.t("EDIT043: invalid drag and drop{0}", LOG_CATEGORY), ex);
                     }
                 }
             }
