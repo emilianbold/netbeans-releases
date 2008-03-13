@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.WeakHashMap;
 import javax.security.auth.Refreshable;
 import org.netbeans.api.debugger.jpda.Field;
@@ -56,6 +58,7 @@ import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.ui.Constants;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -71,6 +74,7 @@ import org.openide.util.NbBundle;
 public class VariablesTableModel implements TableModel, Constants {
     
     private JPDADebugger debugger;
+    private Set<ModelListener> listeners = new HashSet<ModelListener>();
 
     public VariablesTableModel(ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
@@ -91,10 +95,17 @@ public class VariablesTableModel implements TableModel, Constants {
                     return ((ObjectVariable) row).getToStringValue ();
                 } catch (InvalidExpressionException ex) {
                     return getMessage (ex);
+                } finally {
+                    fireChildrenChange(row);
                 }
             else
-            if (row instanceof Variable)
-                return ((Variable) row).getValue ();
+            if (row instanceof Variable) {
+                try {
+                    return ((Variable) row).getValue ();
+                } finally {
+                    fireChildrenChange(row);
+                }
+            }
             if (row instanceof Operation ||
                 row == "lastOperations" || // NOI18N
                 row instanceof String && ((String) row).startsWith("operationArguments ")) { // NOI18N
@@ -125,10 +136,19 @@ public class VariablesTableModel implements TableModel, Constants {
                 String e = w.getExceptionDescription ();
                 if (e != null)
                     return ">" + e + "<";
-                return w.getValue ();
+                try {
+                    return w.getValue ();
+                } finally {
+                    fireChildrenChange(row);
+                }
             } else 
-            if (row instanceof Variable)
-                return ((Variable) row).getValue ();
+            if (row instanceof Variable) {
+                try {
+                    return ((Variable) row).getValue ();
+                } finally {
+                    fireChildrenChange(row);
+                }
+            }
         }
         if (row instanceof JPDAClassType) {
             return ""; // NOI18N
@@ -239,12 +259,26 @@ public class VariablesTableModel implements TableModel, Constants {
         throw new UnknownTypeException (row);
     }
     
+    private void fireChildrenChange(Object row) {
+        Set<ModelListener> ls;
+        synchronized(listeners) {
+            ls = new HashSet(listeners);
+        }
+        for (ModelListener ml : ls)
+            ml.modelChanged (
+                new ModelEvent.NodeChanged(this, row, ModelEvent.NodeChanged.CHILDREN_MASK)
+            );
+    }
+    
     /** 
      * Registers given listener.
      * 
      * @param l the listener to add
      */
     public void addModelListener (ModelListener l) {
+        synchronized(listeners) {
+            listeners.add(l);
+        }
     }
 
     /** 
@@ -253,6 +287,9 @@ public class VariablesTableModel implements TableModel, Constants {
      * @param l the listener to remove
      */
     public void removeModelListener (ModelListener l) {
+        synchronized(listeners) {
+            listeners.remove(l);
+        }
     }
     
     static String getShort (String c) {
