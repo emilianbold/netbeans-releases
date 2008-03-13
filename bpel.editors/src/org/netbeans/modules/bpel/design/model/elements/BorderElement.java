@@ -67,8 +67,5 @@ public abstract class BorderElement extends VisualElement {
     public void setBounds(double x, double y, double w, double h) {
         shape = shape.reshape(x, y, w, h);
     }
-    
-    public static final Paint STROKE_COLOR = new Color(0xD0D0D0);
-    // public static final Paint STROKE_COLOR = new Color(0xEEEEEE);
 }
  

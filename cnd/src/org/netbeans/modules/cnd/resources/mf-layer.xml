@@ -237,6 +237,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 
                 <file name="Settings.settings" url="MakefileOptions.settings"/>
+                
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.makefile.MakefileKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.makefile.MakefileKit"/>
@@ -281,21 +282,7 @@ made subject to such option by the copyright holder.
         <file name="org-netbeans-modules-cnd-settings-CppSettings.settings" url="CppSettings.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.settings.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
         </file>
-        
-        <!--
-        <file name="org-netbeans-modules-cnd-settings-ShellSettings.settings" url="ShellSettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.settings.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
-        </file>
-        
-        <file name="org-netbeans-modules-cnd-settings-MakeSettings.settings" url="MakeSettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.settings.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/MakefileSettings.gif"/>
-        </file>
-        -->
         
         <folder name="MIMEResolver">
             
@@ -328,10 +315,12 @@ made subject to such option by the copyright holder.
         <folder name="IndentEngine">
             <file name="org-netbeans-modules-cnd-editor-fortran-FIndentEngine.settings" url="FIndentEngine.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.fortran.Bundle"/>
+                <attr name="hidden" boolvalue="true"/>
             </file>
             
             <file name="org-netbeans-modules-cnd-editor-makefile-MakefileIndentEngine.settings" url="MakefileIndentEngine.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.makefile.Bundle"/>
+                <attr name="hidden" boolvalue="true"/>
             </file>
         </folder> <!-- IndentEngine -->
     </folder>	<!-- Services -->
