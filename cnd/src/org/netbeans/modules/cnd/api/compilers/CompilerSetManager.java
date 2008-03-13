@@ -124,7 +124,9 @@ public class CompilerSetManager {
             instance = restoreFromDisk();
             if (instance == null) {
                 instance = new CompilerSetManager();
-                instance.saveToDisk();
+                if (instance.getCompilerSets().size() >= 0) {
+                    instance.saveToDisk();
+                }
             }
         }
         if (instance != null && instance.getCompilerSets().size() == 0) { // No compilers found
