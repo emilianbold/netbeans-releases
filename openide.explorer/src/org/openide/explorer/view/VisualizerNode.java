@@ -635,8 +635,11 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
                 // either starts the processing of the queue immediatelly
                 // (if we are in AWT-Event thread) or uses 
                 // SwingUtilities.invokeLater to do so
-                // #126560 - queue all request which come under Children.MUTEX write lock before running
-                Children.MUTEX.postReadRequest(this);
+                // #126560 - queue all requests which come under Children.MUTEX write lock before running
+                if (Children.MUTEX.isWriteAccess())
+                    Children.MUTEX.postReadRequest(this);
+                else
+                    Mutex.EVENT.writeAccess(this);
             }
         }
 
