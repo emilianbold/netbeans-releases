@@ -49,7 +49,7 @@ import java.util.Set;
 import org.jruby.ast.ConstDeclNode;
 import org.jruby.ast.ConstNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.SymbolNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -124,24 +124,24 @@ public abstract class AstElement extends RubyElement {
 
     public static AstElement create(CompilationInfo info, Node node) {
         switch (node.nodeId) {
-        case NodeTypes.DEFNNODE:
-        case NodeTypes.DEFSNODE:
+        case DEFNNODE:
+        case DEFSNODE:
             return new AstMethodElement(info, node);
-        case NodeTypes.CLASSNODE:
-        case NodeTypes.SCLASSNODE:
+        case CLASSNODE:
+        case SCLASSNODE:
             return new AstClassElement(info, node);
-        case NodeTypes.MODULENODE:
+        case MODULENODE:
             return new AstModuleElement(info, node);
-        case NodeTypes.CONSTNODE:
+        case CONSTNODE:
             return new AstVariableElement(info, node, ((ConstNode)node).getName());
-        case NodeTypes.CLASSVARNODE:
-        case NodeTypes.CLASSVARDECLNODE:
-        case NodeTypes.INSTASGNNODE:
-        case NodeTypes.INSTVARNODE:
+        case CLASSVARNODE:
+        case CLASSVARDECLNODE:
+        case INSTASGNNODE:
+        case INSTVARNODE:
             return new AstFieldElement(info, node);
-        case NodeTypes.CONSTDECLNODE:
+        case CONSTDECLNODE:
             return new AstConstantElement(info, (ConstDeclNode)node);
-        case NodeTypes.SYMBOLNODE:
+        case SYMBOLNODE:
             return new AstAttributeElement(info, (SymbolNode)node, null);
         default:
             return null;

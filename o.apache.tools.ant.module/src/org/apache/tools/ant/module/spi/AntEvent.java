@@ -206,6 +206,7 @@ public final class AntEvent {
     
     /**
      * Get a property set on the current Ant project.
+     * Also can retrieve references using their string values since org.apache.tools.ant.module/3 3.29.
      * @param name the property name
      * @return its value, or null
      */
@@ -215,6 +216,7 @@ public final class AntEvent {
     
     /**
      * Get a set of property names defined on the current Ant project.
+     * Also includes reference names since org.apache.tools.ant.module/3 3.29.
      * @return a set of property names; may be empty but not null
      */
     public Set<String> getPropertyNames() {

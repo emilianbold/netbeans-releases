@@ -73,7 +73,8 @@ import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xpath.ext.XPathStringLiteral;
 
 /**
- * 
+ * Looks on the current state of the BPEL Mapper and modifies 
+ * the BPEL model correspondingly.  
  * 
  * @author nk160297
  */

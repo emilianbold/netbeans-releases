@@ -13,7 +13,7 @@
 <body>
 
 <h2>JSF 1.2 Accordion Tab Component</h2>
-<p><small><a href="#seealso">See Also  </a></small><small><a href="#tutorials"></a></small>
+<p><small><a href="#seealso">See Also  </a></small>
 
 <p>The Accordion Tab component <img src="../../../images/accordiontab.png"  alt="Accordion Tab component icon">&nbsp;is used with the <a href="accordion.html">Accordion component</a>, which serves as the container and parent component for accordion tabs. You can add an Accordion Tab component to an accordion byt dragging the accorion tab from the Woodstock Composite catergory of the Palette to the Accordion component in the Visual Designer. You can also right-click the Accordion compontent and choose Add Accordion Tab. </p>
 <ul class="note">
@@ -39,7 +39,12 @@
     </ul>
   </li>
   <li>Right-click the Accordion component and choose one of several actions:<ul><li><b>Property Bindings</b>. Opens a dialog box that enables you to bind  properties of the component in addition to the <code>summary</code> property to other objects or bean properties that update this component's properties automatically.</li>
-		    <li><strong>Add Binding Attribute.</strong> Adds a bindig attribute to the Accordion Tab component. </li>
+		    <li><b>Add Binding Attribute. </b>This option adds a binding attribute to the component. <br>
+<ul>
+  <li><b>Note: </b>If you plan to script the component in Java code, you  must manually add a binding attribute, which is bound using a value binding expression to a property of the backing page bean.</li>
+</ul>
+</li>
+			<li><strong>Remove Binding Attribute.</strong> This option removes the binding attribute from the component. </li>
 		    <li><b>Snap to Grid</b>. This option aligns the Accordion component along the grid lines in the Visual Designer.</li>
 		    <li> <b>Preview in Browser</b>. See how the page renders in the default web browser for your system. </li>
     </ul>
@@ -57,21 +62,7 @@
 	
 	<dd><a href="../palette.html">About the Visual Web Palette</a></dd>
 </dl>
-<dl>     <dt>
-         <a name="tutorials">Tutorials</a>
-      </dt>
-      <dd>
-        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-          <param name="content" value="http://www.netbeans.org/kb/60/web/about_components.html">
-          <param name="text" value="Delving Into Components"></object>
-      </dd>
-<dd>
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-		<param name="content" value="http://www.netbeans.org/kb/60/web/intro.html
-		<param name="text" value="Getting Started with NetBeans 6.0">
-</object>
-</dd>
-</dl>
+
 <hr>
 <!-- Start Customer Feedback Link -->
 <!-- <p><b>Comments or questions?</b><br>

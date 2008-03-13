@@ -119,8 +119,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         DebuggerEngine currentEngine = DebuggerManager.
             getDebuggerManager ().getCurrentEngine ();
         if (currentEngine == null) return null;
-        return (JPDADebugger) currentEngine.lookupFirst 
-            (null, JPDADebugger.class);
+        return currentEngine.lookupFirst(null, JPDADebugger.class);
     }
 
     private void updateCurrentThread () {
@@ -171,7 +170,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         DebuggerEngine currentEngine = (currentSession == null) ?
             null : currentSession.getCurrentEngine();
         final SourcePath sourcePath = (currentEngine == null) ? 
-            null : (SourcePath) currentEngine.lookupFirst(null, SourcePath.class);
+            null : currentEngine.lookupFirst(null, SourcePath.class);
 
         // 3) annotate current line & stack
         synchronized (currentPCLock) {

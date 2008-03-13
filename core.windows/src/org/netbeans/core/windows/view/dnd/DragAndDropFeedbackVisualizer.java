@@ -41,7 +41,6 @@
 
 package org.netbeans.core.windows.view.dnd;
 
-import org.netbeans.swing.tabcontrol.*;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -81,6 +80,9 @@ public class DragAndDropFeedbackVisualizer {
         Dimension tabContentSize = source.getTopComponentAt(idx).getSize();
         tabContentSize.width--;
         tabContentSize.height--;
+        //#129900 - IllegalArgumentException
+        tabContentSize.width = Math.max( tabContentSize.width, 1 );
+        tabContentSize.height = Math.max( tabContentSize.height, 1 );
         
         Dimension size = new Dimension( tabContentSize );
         if( prefs.getBoolean(WinSysPrefs.DND_SMALLWINDOWS, true) ) {
@@ -122,28 +124,25 @@ public class DragAndDropFeedbackVisualizer {
             originalLocationOnScreen.x += tabRect.x;
         }
 
-        SwingUtilities.invokeLater( new Runnable() {
-
-            public void run() {
-                DragWindow tmp = createDragWindow( tabIndex );
-                if( null != tmp ) {
-                    dragOffset = e.getDragOrigin();
-                    if( prefs.getBoolean(WinSysPrefs.DND_SMALLWINDOWS, true) ) {
-                        dragOffset.x -= tabRect.x;
-                    }
-                    //move the window of the visible screen area to avoid blinking
-                    //TODO make sure the window is really not visible
-//                        dragImageSize = w.getSize();
-//                        w.setSize( new Dimension(1,1) );
-                    tmp.setLocation(-1000, -1000);
-                    //let the JNA transparency stuff to kick in
-                    tmp.setVisible( true );
-                    //make drag window visible, i.e. move to proper location, 
-                    //dragImage.setLocation( startingPoint );
-                    dragWindow = tmp;
+        DragWindow tmp = createDragWindow( tabIndex );
+        if( null != tmp ) {
+            dragOffset = new Point( e.getDragOrigin() );
+            if( prefs.getBoolean(WinSysPrefs.DND_SMALLWINDOWS, true) ) {
+                dragOffset.x -= tabRect.x;
+                int maxWidth = prefs.getInt(WinSysPrefs.DND_SMALLWINDOWS_WIDTH, 250);
+                if( e.getDragOrigin().x - tabRect.x > maxWidth ) {
+                    dragOffset.x = maxWidth - 20;
                 }
             }
-        });
+            Point loc = new Point( e.getDragOrigin() );
+            SwingUtilities.convertPointToScreen(loc, source.getComponent());
+            tmp.setLocation( loc.x-dragOffset.x, loc.y-dragOffset.y );
+            //let the JNA transparency stuff to kick in
+            tmp.setVisible( true );
+            //make drag window visible, i.e. move to proper location, 
+            //dragImage.setLocation( startingPoint );
+            dragWindow = tmp;
+        }
     }
 
     public void update(DragSourceDragEvent e) {

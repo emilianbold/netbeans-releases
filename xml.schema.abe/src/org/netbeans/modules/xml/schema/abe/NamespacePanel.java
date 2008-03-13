@@ -169,6 +169,9 @@ public class NamespacePanel extends GradientShadePanel{
                 mouseClickedActionHandler(e, true);
             }
         });
+        
+        this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NamespacePanel.class,"LBL_NAMESPACE_PANEL"));
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NamespacePanel.class,"HINT_NAMESPACE_PANEL"));
     }
     
     public void mouseClickedActionHandler(MouseEvent e, boolean handelPopupOnly){

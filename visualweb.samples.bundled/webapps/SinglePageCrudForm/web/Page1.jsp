@@ -31,26 +31,26 @@
 <jsp:root version="2.1" xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:webuijsf="http://www.sun.com/webui/webuijsf">
     <jsp:directive.page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8"/>
     <f:view>
-        <webuijsf:page binding="#{Page1.page1}" id="page1">
-            <webuijsf:html binding="#{Page1.html1}" id="html1">
-                <webuijsf:head binding="#{Page1.head1}" id="head1">
-                    <webuijsf:link binding="#{Page1.link1}" id="link1" url="/resources/stylesheet.css"/>
+        <webuijsf:page id="page1">
+            <webuijsf:html id="html1">
+                <webuijsf:head id="head1">
+                    <webuijsf:link id="link1" url="/resources/stylesheet.css"/>
                 </webuijsf:head>
-                <webuijsf:body binding="#{Page1.body1}" id="body1" style="-rave-layout: grid">
+                <webuijsf:body id="body1" style="-rave-layout: grid">
                     <webuijsf:form binding="#{Page1.form1}" id="form1" virtualFormsConfig="vcrControlsVForm | | mainPanel:vcrControls:next mainPanel:vcrControls:last mainPanel:vcrControls:prev mainPanel:vcrControls:first , crdVForm | | mainPanel:crudControls:delete mainPanel:crudControls:create , saveVForm | mainPanel:tripForm:toCity mainPanel:tripForm:fromCity mainPanel:tripForm:tripType mainPanel:tripForm:depDateCalendar | mainPanel:crudControls:save , personVForm | mainPanel:personForm:personId | mainPanel:personForm:personId , resetVForm | | mainPanel:crudControls:cancel">
                         <div style="position: absolute; left: 0px; top: 0px">
                             <jsp:directive.include file="Masthead.jspf"/>
                         </div>
-                        <h:panelGrid binding="#{Page1.mainPanel}" id="mainPanel" style="margin: 5px; padding: 5px; height: 100%; left: 0px; top: 160px; position: absolute; width: 760px">
-                            <h:panelGrid binding="#{Page1.personForm}" columns="4" id="personForm" style="">
-                                <webuijsf:label binding="#{Page1.person}" id="person" text="Label"/>
+                        <h:panelGrid id="mainPanel" style="margin: 5px; padding: 5px; height: 100%; left: 0px; top: 160px; position: absolute; width: 760px">
+                            <h:panelGrid columns="4" id="personForm" style="">
+                                <webuijsf:label id="person" text="Label"/>
                                 <webuijsf:dropDown binding="#{Page1.personId}" converter="#{Page1.personIdConverter}" id="personId"
                                     items="#{Page1.personDataProvider.options['PERSON.PERSONID,PERSON.NAME']}"
                                     onChange="webui.suntheme.common.timeoutSubmitForm(this.form, 'mainPanel:personForm:personId');" valueChangeListenerExpression="#{Page1.personId_processValueChange}"/>
-                                <webuijsf:label binding="#{Page1.title1}" id="title1" text="Label"/>
-                                <webuijsf:staticText binding="#{Page1.title}" id="title"/>
+                                <webuijsf:label id="title1" text="Label"/>
+                                <webuijsf:staticText id="title"/>
                             </h:panelGrid>
-                            <h:panelGrid binding="#{Page1.vcrControls}" columns="4" id="vcrControls" style="">
+                            <h:panelGrid columns="4" id="vcrControls" style="">
                                 <webuijsf:button actionExpression="#{Page1.first_action}" binding="#{Page1.first}" id="first"
                                     imageURL="/resources/pagination_first.gif" text="Button"/>
                                 <webuijsf:button actionExpression="#{Page1.prev_action}" binding="#{Page1.prev}" id="prev"
@@ -60,26 +60,26 @@
                                 <webuijsf:button actionExpression="#{Page1.last_action}" binding="#{Page1.last}" id="last"
                                     imageURL="/resources/pagination_last.gif" text="Button"/>
                             </h:panelGrid>
-                            <h:panelGrid binding="#{Page1.tripForm}" columns="3" id="tripForm" style="width: 100%">
-                                <webuijsf:label binding="#{Page1.label1}" id="label1" text="Dep Date"/>
+                            <h:panelGrid columns="3" id="tripForm" style="width: 100%">
+                                <webuijsf:label id="label1" text="Dep Date"/>
                                 <webuijsf:calendar binding="#{Page1.depDateCalendar}" id="depDateCalendar"/>
-                                <webuijsf:message binding="#{Page1.message1}" for="depDateCalendar" id="message1" showDetail="false" showSummary="true"/>
-                                <webuijsf:label binding="#{Page1.label2}" id="label2" text="Dep City"/>
-                                <webuijsf:textField binding="#{Page1.fromCity}" id="fromCity" text="#{Page1.tripDataProvider.value['TRIP.DEPCITY']}" validatorExpression="#{Page1.fromCity_validate}"/>
-                                <webuijsf:message binding="#{Page1.message2}" for="fromCity" id="message2" showDetail="false" showSummary="true"/>
-                                <webuijsf:label binding="#{Page1.label3}" id="label3" text="Dest City"/>
-                                <webuijsf:textField binding="#{Page1.toCity}" id="toCity" text="#{Page1.tripDataProvider.value['TRIP.DESTCITY']}" validatorExpression="#{Page1.toCity_validate}"/>
-                                <webuijsf:message binding="#{Page1.message3}" for="toCity" id="message3" showDetail="false" showSummary="true"/>
-                                <webuijsf:label binding="#{Page1.label4}" id="label4" text="Trip Type"/>
+                                <webuijsf:message for="depDateCalendar" id="message1" showDetail="false" showSummary="true"/>
+                                <webuijsf:label id="label2" text="Dep City"/>
+                                <webuijsf:textField id="fromCity" text="#{Page1.tripDataProvider.value['TRIP.DEPCITY']}" validatorExpression="#{Page1.fromCity_validate}"/>
+                                <webuijsf:message for="fromCity" id="message2" showDetail="false" showSummary="true"/>
+                                <webuijsf:label id="label3" text="Dest City"/>
+                                <webuijsf:textField id="toCity" text="#{Page1.tripDataProvider.value['TRIP.DESTCITY']}" validatorExpression="#{Page1.toCity_validate}"/>
+                                <webuijsf:message for="toCity" id="message3" showDetail="false" showSummary="true"/>
+                                <webuijsf:label id="label4" text="Trip Type"/>
                                 <webuijsf:dropDown binding="#{Page1.tripType}" converter="#{Page1.tripTypeConverter}" id="tripType" items="#{Page1.triptypeDataProvider.options['TRIPTYPE.TRIPTYPEID,TRIPTYPE.NAME']}"/>
                             </h:panelGrid>
-                            <h:panelGrid binding="#{Page1.crudControls}" columns="4" id="crudControls" style="">
+                            <h:panelGrid columns="4" id="crudControls" style="">
                                 <webuijsf:button actionExpression="#{Page1.create_action}" binding="#{Page1.create}" id="create" text="Create"/>
                                 <webuijsf:button actionExpression="#{Page1.save_action}" binding="#{Page1.save}" id="save" text="Save"/>
                                 <webuijsf:button actionExpression="#{Page1.cancel_action}" binding="#{Page1.cancel}" id="cancel" text="Cancel Create"/>
                                 <webuijsf:button actionExpression="#{Page1.delete_action}" binding="#{Page1.delete}" id="delete" text="Delete"/>
                             </h:panelGrid>
-                            <webuijsf:messageGroup binding="#{Page1.messageGroup1}" id="messageGroup1"/>
+                            <webuijsf:messageGroup id="messageGroup1"/>
                         </h:panelGrid>
                     </webuijsf:form>
                 </webuijsf:body>

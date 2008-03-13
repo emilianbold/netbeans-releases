@@ -43,6 +43,7 @@ package org.netbeans.modules.java.project;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -68,6 +69,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public class BrokenReferencesModel extends AbstractListModel {
@@ -262,12 +264,12 @@ public class BrokenReferencesModel extends AbstractListModel {
             }
             else {
                 //XXX: Should check all the volumes (sources, javadoc, ...)?
-                for (URL url : lib.getContent("classpath")) { // NOI18N
+                for (URL url : lib.getRawContent("classpath")) { // NOI18N
                     if ("jar".equals(url.getProtocol())) {   //NOI18N
                         url = FileUtil.getArchiveFile (url);
                     }
                     FileObject fo = LibrariesSupport.resolveLibraryEntryFileObject(lib.getManager().getLocation(), url);
-                    if (null == fo) {
+                    if (null == fo && !canResolveEvaluatedUrl(helper.getStandardPropertyEvaluator(), lib.getManager().getLocation(), url)) {
                         set.add(new OneReference(REF_TYPE_LIBRARY_CONTENT, libraryRef, true));
                         break;
                     }
@@ -278,6 +280,19 @@ public class BrokenReferencesModel extends AbstractListModel {
         return set;
     }
     
+    /** Tests whether evaluated URL can be resolved. To support library entry 
+     * like "${MAVEN_REPO}/struts/struts.jar".
+     */
+    private static boolean canResolveEvaluatedUrl(PropertyEvaluator eval, URL libBase, URL libUrl) {
+        String path = LibrariesSupport.convertURLToFilePath(libUrl);
+        String newPath = eval.evaluate(path);
+        if (newPath.equals(path)) {
+            return false;
+        }
+        URL newUrl = LibrariesSupport.convertFilePathToURL(newPath);
+        return null != LibrariesSupport.resolveLibraryEntryFileObject(libBase, newUrl);
+    }
+
     private static File getFile (AntProjectHelper helper, PropertyEvaluator evaluator, String name) {
         if (helper != null) {
             return new File(helper.resolvePath(name));

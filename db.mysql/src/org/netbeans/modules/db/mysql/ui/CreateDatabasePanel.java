@@ -63,7 +63,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         }
     }
     
-    public static boolean showCreateDatabaseDialog(ServerInstance server) {
+    public static DatabaseConnection showCreateDatabaseDialog(ServerInstance server) {
         assert SwingUtilities.isEventDispatchThread();
         
         CreateDatabasePanel panel = new CreateDatabasePanel(server);
@@ -83,7 +83,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
             // The user cancelled
             if (!DialogDescriptor.OK_OPTION.equals(desc.getValue())) {
-                return false;
+                return null;
             }
                         
             return createDatabase(panel.getServer(), panel.getDatabaseName(),
@@ -102,39 +102,42 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
      *      set to true if the user wants to create and register a
      *      DatabaseConnection for this database in the Database Explorer
      * 
-     * @return true to indicate the dialog can be exited, false to indicate
-     *      that the dialog should stay displayed (e.g. we want the user
-     *      to be able to try again).
+     * @return the database connection to the newly created database or 
+     *         <code>null</code> if a connection to the database was not created.
      */
-    private static boolean createDatabase(ServerInstance server,
+    private static DatabaseConnection createDatabase(ServerInstance server,
             String dbname, DatabaseUser grantUser) {
         
         boolean dbCreated = false;
+        DatabaseConnection result = null;
         try {
             if ( ! checkDeleteExistingDatabase(server, dbname) ) {
-                return true;
+                return null;
             }
             
             server.createDatabase(dbname);
             
             dbCreated = true;
             
+            String user;
             if ( grantUser != null ) {
                 server.grantFullDatabaseRights(dbname, grantUser);
+                user = grantUser.getUser();
+            } else {
+                user = server.getUser();
             }
                
-            DatabaseConnection dbconn = 
-                    createConnection(server, dbname, grantUser.getUser());
+            result = createConnection(server, dbname, user);
             
-            if ( dbconn != null && ServerInstance.isSampleName(dbname) ) {
-                server.createSample(dbname, dbconn);
+            if ( result != null && ServerInstance.isSampleName(dbname) ) {
+                server.createSample(dbname, result);
             }
         } catch ( DatabaseException ex ) {
             displayCreateFailure(server, ex, dbname, dbCreated);
-            return false;
+            return null;
         }
         
-        return true;
+        return result;
     }
         
     private static void displayCreateFailure(ServerInstance server,
@@ -184,17 +187,16 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                     dbname),
                 NbBundle.getMessage(CreateDatabasePanel.class,
                     "CreateDatabasePanel.STR_DatabaseExistsTitle"),
-                NotifyDescriptor.YES_NO_CANCEL_OPTION);
+                NotifyDescriptor.YES_NO_OPTION);
         
         Object response =  DialogDisplayer.getDefault().notify(ndesc);
         
-        if ( response == NotifyDescriptor.CANCEL_OPTION ) {
+        if ( response == NotifyDescriptor.NO_OPTION ) {
             return false;
-        } else if ( response == NotifyDescriptor.YES_OPTION) {
+        } else {
             server.dropDatabase(dbname);
+            return true;
         }
-        
-        return true;        
     }
     
     private static DatabaseConnection createConnection(
@@ -483,9 +485,10 @@ private void chkGrantAccessItemStateChanged(java.awt.event.ItemEvent evt) {//GEN
                     users.remove(rootUser);
                 }
             } catch ( DatabaseException dbe )  {
-                LOGGER.log(Level.WARNING, null, dbe);
-                Utils.displayError("CreateDatabasePanel.MSG_UnableToGetUsers", 
-                        dbe);
+                // This can be caused by permission problems.  Log the error
+                // and continue with an empty user list
+                LOGGER.log(Level.INFO, null, dbe);
+                users.clear();
             }
         }
 

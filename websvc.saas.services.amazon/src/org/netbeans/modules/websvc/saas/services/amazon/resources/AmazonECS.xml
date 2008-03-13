@@ -52,7 +52,7 @@
 
     <description>Amazon Electronic Commerce Service</description>
     
-    <display-name>AmazonECS</display-name>
+    <display-name>Associates Service</display-name>
 
     <saas-metadata>
 
@@ -67,8 +67,10 @@
 
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="searchItem" href="#amazonecs.ItemSearch"/>
     </methods>
+    -->
 
 </saas-services>

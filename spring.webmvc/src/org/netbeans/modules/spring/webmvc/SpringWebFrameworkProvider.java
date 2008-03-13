@@ -45,8 +45,6 @@ package org.netbeans.modules.spring.webmvc;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
@@ -54,8 +52,6 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -87,7 +83,6 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
 
     @Override
     public File[] getConfigurationFiles(WebModule webModule) {
-        // Don't add configuration files to the Configuration Files node.           
         return new File[0];
     }
     
@@ -95,7 +90,6 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
     public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
         boolean defaultValue = (webModule == null || !isInWebModule(webModule));
         panel = new SpringWebModuleExtender(this, controller, !defaultValue); // NOI18N
-        // may need to use panel for setting an extended configuration
         return panel;
     }  
 

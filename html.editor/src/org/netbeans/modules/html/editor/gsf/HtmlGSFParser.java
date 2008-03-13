@@ -42,20 +42,28 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.editor.ext.html.dtd.DTD;
+import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.AstNode;
+import org.netbeans.editor.ext.html.parser.AstNodeUtils;
+import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParseEvent;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.PositionManager;
+import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.gsf.spi.DefaultError;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,16 +71,17 @@ import org.openide.util.Exceptions;
  */
 public class HtmlGSFParser implements Parser, PositionManager {
 
+    private static final String FALLBACK_DOCTYPE = "-//W3C//DTD HTML 4.01 Transitional//EN";  // NOI18N
     private static final Logger LOGGER = Logger.getLogger(HtmlGSFParser.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
-    public void parseFiles(Job job) {
-        for (ParserFile file : job.files) {
+    public void parseFiles(final Job job) {
+        for (final ParserFile file : job.files) {
             try {
                 ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
                 job.listener.started(beginEvent);
 
-                ParserResult result = null;
+                HtmlParserResult result = null;
 
                 CharSequence buffer = job.reader.read(file);
                 int caretOffset = job.reader.getCaretOffset(file);
@@ -88,7 +97,51 @@ public class HtmlGSFParser implements Parser, PositionManager {
 
                 result = new HtmlParserResult(this, file, elements);
 
-                //TODO implement some error checks here, at least for unpaired tags?
+                //highlight unpaired tags
+                AstNode root = result.root();
+
+                final DTD[] dtds = new DTD[]{org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null)};
+                //find document type declaration
+                AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+
+                    public void visit(AstNode node) {
+                        if (node.type() == AstNode.NodeType.DECLARATION) {
+                            SyntaxElement.Declaration declaration = (SyntaxElement.Declaration) node.element();
+                            String publicID = declaration.getPublicIdentifier();
+                            if (publicID != null) {
+                                DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(publicID, null);
+                                if (dtd != null) {
+                                    dtds[0] = dtd;
+                                }
+                            }
+                        }
+                    }
+                });
+
+                AstNodeUtils.visitChildren(root,
+                        new AstNodeVisitor() {
+
+                            public void visit(AstNode node) {
+                                if (node.type() == AstNode.NodeType.UNMATCHED_TAG) {
+                                    AstNode unmatched = node.children().get(0);
+                                    if (dtds[0] != null) {
+                                        //check the unmatched tag according to the DTD
+                                        Element element = dtds[0].getElement(node.name().toUpperCase());
+                                        if (element != null) {
+                                            if (unmatched.type() == AstNode.NodeType.OPEN_TAG && element.hasOptionalEnd() || unmatched.type() == AstNode.NodeType.ENDTAG && element.hasOptionalStart()) {
+                                                return;
+                                            }
+                                        }
+                                    }
+
+                                    Error error =
+                                            new DefaultError("unmatched_tag", NbBundle.getMessage(this.getClass(), "MSG_Unmatched_Tag"), null, file.getFileObject(),
+                                            node.startOffset(), node.endOffset(), Severity.WARNING); //NOI18N
+                                    job.listener.error(error);
+
+                                }
+                            }
+                        });
 
                 ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
                 job.listener.finished(doneEvent);

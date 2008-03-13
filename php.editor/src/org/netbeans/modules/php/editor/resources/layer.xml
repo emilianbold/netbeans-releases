@@ -11,7 +11,7 @@
     </folder>
     <folder name="Loaders">
         <folder name="text">
-            <folder name="x-php">
+            <folder name="x-php5">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/editor/resources/php16.png"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/php/editor/resources/php16.png"/>
             </folder>
@@ -19,17 +19,37 @@
     </folder>
     <folder name="GsfPlugins">
         <folder name="text">
-            <folder name="x-php">
+            <folder name="x-php5">
                 <file name="language.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.PHPLanguage"/>
+                </file>
+                <file name="parser.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Parser"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.parser.GSFPHPParser"/>
+                </file>
+                
+                <file name="completion.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Completable"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.PHPCodeCompletion"/>
+                </file>
+
+                <file name="indexer.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Indexer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.index.PHPIndexer"/>
+                </file>
+
+                <file name="semantic.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.SemanticAnalyzer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.parser.SemanticAnalysis"/>
                 </file>
             </folder>
         </folder>
     </folder>
     <folder name="Editors">
         <folder name="text">
-            <folder name="x-php">
+            <folder name="x-php5">
+                <file name="org-netbeans-modules-php-editor-indent-PHPIndentTaskFactory.instance"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
                 
                 <folder name="FontsColors">
@@ -47,7 +67,7 @@
     <folder name="OptionsDialog">
         <folder name="PreviewExamples">
             <folder name="text">
-                <file name="x-php" url="PHP5Example"/>
+                <file name="x-php5" url="PHP5Example"/>
             </folder>
         </folder>
         <file name="RubyOptions.instance">

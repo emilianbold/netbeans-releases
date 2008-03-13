@@ -62,6 +62,9 @@ public class FolderOrderIllegalTest extends NbTestCase {
         LOG = Logger.getLogger("org.openide.loaders.FolderList." + getName());
     }
     public void testRenameBehaviour() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         File dir = new File(getWorkDir(), "dir");
         dir.mkdirs();
         File old = new File(getWorkDir(), "old");

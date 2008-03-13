@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.editor.reformat;
 
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
@@ -49,6 +50,7 @@ import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -149,9 +151,11 @@ public class Reformatter implements ReformatTask {
             }
             if (end - start > 0) {
                 if (!checkRemoved(doc.getText(start, end - start))){
-                    // Reformat
-                    System.out.println("Reformat failed. Reformat try to remove: "+doc.getText(start, end - start));
-                    System.out.println("    Changeset:"+diff);
+                    // Reformat failed
+                    Logger log = Logger.getLogger("org.netbeans.modules.cnd.editor"); // NOI18N
+                    String error = NbBundle.getMessage(Reformatter.class, "REFORMATTING_FAILED", // NOI18N
+                            doc.getText(start, end - start), diff.toString());
+                    log.severe(error);
                     break;
                 }
                 doc.remove(start, end - start);
@@ -165,10 +169,21 @@ public class Reformatter implements ReformatTask {
     private boolean checkRemoved(String whatRemoved){
         for(int i = 0; i < whatRemoved.length(); i++){
             char c = whatRemoved.charAt(i);
-            if (c == ' ' || c == '\n' || c == '\t') {
-                continue;
+            switch(c){
+                case ' ':
+                case '\n':
+                case '\t':
+                case '\r':
+                case '\f':
+                case 0x0b:
+                case 0x1c:
+                case 0x1d:
+                case 0x1e:
+                case 0x1f:
+                    break;
+                default:
+                    return false;
             }
-            return false;
         }
         return true;
     }
@@ -191,12 +206,14 @@ public class Reformatter implements ReformatTask {
     static class Diff {
         private int start;
         private int end;
-        private String text;
+        private int newLines;
+        private int spaces;
 
-        Diff(int start, int end, String text) {
+        Diff(int start, int end, int newLines, int spaces) {
             this.start = start;
             this.end = end;
-            this.text = text;
+            this.spaces = spaces;
+            this.newLines = newLines;
         }
 
         public int getStartOffset() {
@@ -208,37 +225,42 @@ public class Reformatter implements ReformatTask {
         }
 
         public String getText() {
-            return text;
+            return repeatChar(newLines, '\n')+repeatChar(spaces, ' '); // NOI18N
         }
 
-        public void setText(String text) {
-            this.text = text;
+        public void setText(int newLines, int spaces) {
+            this.newLines = newLines;
+            this.spaces = spaces;
         }
         
-        public void replaceSpaces(String space){
-            int i = text.lastIndexOf('\n'); // NOI18N
-            if (i >= 0) {
-                text = text.substring(0, i + 1)+space;
-            } else {
-                text = space; // NOI18N
-            }
+        public void replaceSpaces(int spaces){
+            this.spaces = spaces;
         }
 
         public boolean hasNewLine(){
-            return text.lastIndexOf('\n') >= 0; // NOI18N
+            return newLines > 0;
         }
 
         public int spaceLength() {
-            int i = text.lastIndexOf('\n'); // NOI18N
-            if (i >= 0) {
-                return text.length()-i+1;
-            }
-            return text.length();
+            return spaces;
         }
 
         @Override
         public String toString() {
-            return "Diff<" + start + "," + end + ">:" + text; //NOI18N
+            return "Diff<" + start + "," + end + ">: newLines="+newLines+" spaces="+spaces; //NOI18N
+        }
+
+        public static String repeatChar(int length, char c){
+            StringBuilder buf = new StringBuilder(length);
+            for (int i = 0; i < length; i++) {
+                buf.append(c);
+            }
+            return buf.toString();
+        }
+
+        public static boolean equals(String text, int newLines, int spaces){
+           String space = repeatChar(newLines, '\n')+repeatChar(spaces, ' '); // NOI18N
+           return text.equals(space);
         }
     }
 }

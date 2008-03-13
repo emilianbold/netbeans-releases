@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<installer-gui-script minSpecVersion="1.0">
+    <title>@TITLE@</title>
+    <welcome file="Welcome.txt"></welcome>
+    <license file="License.txt"></license>
+    <background file="background.tif" scaling="none" alignment="topleft"></background>
+    <options allow-external-scripts="no" customize="never" rootVolumeOnly="false"></options>
+    <script>
+/* js:pkmk:start */
+function installationCheckRAM() {
+	return  checkMemsize() ;
+}
+/* js:pkmk:end */
+
+
+/* js:pkmk:start */
+function checkMemsize() {
+	var result = false;
+	try {
+		result = system.sysctl('hw.memsize') >= '134217728';
+	} catch (e) {}
+	
+	if(!result) {
+		my.result.type = 'Warn';
+		my.result.title = 'Memory Warning';
+		my.result.message = 'You have less than 128 MB of RAM.';
+	}
+	return result;
+}
+/* js:pkmk:end */
+
+
+/* ******* DO NOT EDIT ANYTHING BELOW THIS LINE ******* */
+/* THE TEXT BELOW IS THE DEFINITION FOR THE REQUIREMENTS EDITOR */
+
+/*
+ %%%Requirements Editor%%%
+ {
+	 clauses = (
+				{
+					anyOrAll = 2; 
+					connector = ""; 
+					msg = "You have less than 128 MB of RAM."; 
+					msgTitle = "Memory Warning"; 
+					rules = (
+							 {
+								 argumentField = "hw.memsize"; 
+								 argumentStringField = ""; 
+								 booleanType = true; 
+								 choiceProperty = enabled; 
+								 comboType = ""; 
+								 comparator = ">="; 
+								 mainChoice = "Result of Sysctl"; 
+								 numberType = ""; 
+								 pathField = ""; 
+								 pathKeyKeyField = ""; 
+								 pathKeyPathField = ""; 
+								 specificChoice = choice0; 
+								 stringType = 134217728; 
+							 }
+							 ); 
+					title = "Check memsize"; 
+					type = 2; 
+				}
+				); 
+	 functionName = installationCheckRAM; 
+ }
+ %%%Requirements Editor%%%
+ */
+</script>
+    <script>
+/* js:pkmk:start */
+function volumeCheckTiger() {
+	return  checkSystemversion() ;
+}
+/* js:pkmk:end */
+
+
+/* js:pkmk:start */
+function checkSystemversion() {
+	var result = false;
+	try {
+		result = my.target.systemVersion.ProductVersion >= '10.4';
+	} catch (e) {}
+	
+	if(!result) {
+		my.result.type = 'Fatal';
+		my.result.title = '';
+		my.result.message = '';
+	}
+	return result;
+}
+/* js:pkmk:end */
+
+
+/* ******* DO NOT EDIT ANYTHING BELOW THIS LINE ******* */
+/* THE TEXT BELOW IS THE DEFINITION FOR THE REQUIREMENTS EDITOR */
+
+/*
+ %%%Requirements Editor%%%
+ {
+	 clauses = (
+				{
+					anyOrAll = 2; 
+					connector = ""; 
+					msg = ""; 
+					msgTitle = ""; 
+					rules = (
+							 {
+								 argumentField = ""; 
+								 argumentStringField = ""; 
+								 booleanType = true; 
+								 choiceProperty = enabled; 
+								 comboType = ""; 
+								 comparator = ">="; 
+								 mainChoice = "Target OS Version (e.g. 10.x.x)"; 
+								 numberType = ""; 
+								 pathField = ""; 
+								 pathKeyKeyField = ""; 
+								 pathKeyPathField = ""; 
+								 specificChoice = choice0; 
+								 stringType = "10.4"; 
+							 }
+							 ); 
+					title = "Check systemVersion"; 
+					type = 3; 
+				}
+				); 
+	 functionName = volumeCheckTiger; 
+ }
+ %%%Requirements Editor%%%
+ */
+</script>
+    <script>
+/* js:pkmk:start */
+function choiceIsADowngrade() {
+	return  checkChoiceUpgradeAction() ;
+}
+/* js:pkmk:end */
+
+
+/* js:pkmk:start */
+function checkChoiceUpgradeAction() {
+	var result = false;
+	try {
+		result = my.choice.packageUpgradeAction == 'downgrade' || my.choice.packageUpgradeAction == 'mixed';
+	} catch (e) {}
+	
+	return result;
+}
+/* js:pkmk:end */
+
+
+/* ******* DO NOT EDIT ANYTHING BELOW THIS LINE ******* */
+/* THE TEXT BELOW IS THE DEFINITION FOR THE REQUIREMENTS EDITOR */
+
+/*
+ %%%Requirements Editor%%%
+ {
+	 clauses = (
+				{
+					anyOrAll = 1; 
+					connector = ""; 
+					msg = ""; 
+					msgTitle = ""; 
+					rules = (
+							 {
+								 argumentField = ""; 
+								 argumentStringField = ""; 
+								 booleanType = true; 
+								 choiceProperty = packageUpgradeAction; 
+								 comboType = downgrade; 
+								 comparator = "=="; 
+								 mainChoice = "Current Choice"; 
+								 numberType = ""; 
+								 pathField = ""; 
+								 pathKeyKeyField = ""; 
+								 pathKeyPathField = ""; 
+								 specificChoice = choice0; 
+								 stringType = ""; 
+							 }, 
+							 {
+								 argumentField = ""; 
+								 argumentStringField = ""; 
+								 booleanType = true; 
+								 choiceProperty = packageUpgradeAction; 
+								 comboType = mixed; 
+								 comparator = "=="; 
+								 mainChoice = "Current Choice"; 
+								 numberType = ""; 
+								 pathField = ""; 
+								 pathKeyKeyField = ""; 
+								 pathKeyPathField = ""; 
+								 specificChoice = choice0; 
+								 stringType = ""; 
+							 }
+							 ); 
+					title = "Check Choice Upgrade Action"; 
+					type = 0; 
+				}
+				); 
+	 functionName = choiceIsADowngrade; 
+ }
+ %%%Requirements Editor%%%
+ */
+</script>
+    <choices-outline>
+        <line choice="netbeans">
+            <line choice="baseide"></line>
+            <line choice="cpp"></line>           
+        </line>           
+    </choices-outline>
+    <choice id="netbeans" title="@NB_TITLE@" description="NetBeans IDE" start_selected="true" start_enabled="true" start_visible="true"></choice>
+    <choice id="baseide" title="Base IDE" description="Core components of an integrated development environment." start_selected="true" start_enabled="false" start_visible="true">
+        <pkg-ref id="org.netbeans.ide"></pkg-ref>
+    </choice>  
+    <choice id="cpp" title="C/C++" description="Tools for developing C and C++ applications. Includes project templates, support for existing projects, advanced editor, debug support, and makefile wizard for configuration management." start_selected="true" start_enabled="true" start_visible="true" selected="choices.cpp.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
+        <pkg-ref id="ident.pkg.cpp"></pkg-ref>
+    </choice>   
+    <pkg-ref id="org.netbeans.ide" version="6.1.0.6.1" installKBytes="@SIZE_BASEIDE@" auth="Admin" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.cpp" version="0.0.0.0.1" installKBytes="@SIZE_CPP@" auth="Root" onConclusion="None">file:./Contents/Packages/cpp.pkg</pkg-ref>   
+
+</installer-gui-script>

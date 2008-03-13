@@ -118,7 +118,7 @@ implements Executor {
         );
         this.lookupProvider = lookupProvider;
         setProviderToDisableOnLazyAction(this);
-        Map properties = (Map) lookupProvider.lookupFirst (null, Map.class);
+        Map properties = lookupProvider.lookupFirst(null, Map.class);
         if (properties != null) {
             smartSteppingStepOut = properties.containsKey (StepIntoActionProvider.SS_STEP_OUT);
         }
@@ -311,7 +311,7 @@ implements Executor {
                      (lookupProvider, t, getSmartSteppingFilterImpl ())
                 ) {
                     // YES!
-                    Session session = (Session) lookupProvider.lookupFirst(null, Session.class);
+                    Session session = lookupProvider.lookupFirst(null, Session.class);
                     if (session != null) {
                         DebuggerManager.getDebuggerManager().setCurrentSession(session);
                     }
@@ -416,8 +416,7 @@ implements Executor {
     
     private CompoundSmartSteppingListener getCompoundSmartSteppingListener () {
         if (compoundSmartSteppingListener == null)
-            compoundSmartSteppingListener = (CompoundSmartSteppingListener) lookupProvider.
-                lookupFirst (null, CompoundSmartSteppingListener.class);
+            compoundSmartSteppingListener = lookupProvider.lookupFirst(null, CompoundSmartSteppingListener.class);
         return compoundSmartSteppingListener;
     }
 }

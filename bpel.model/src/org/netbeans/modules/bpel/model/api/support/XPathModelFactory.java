@@ -16,22 +16,21 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.model.api.support;
 
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.impl.references.SchemaReferenceBuilder;
+import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathModelHelper;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 
 /**
- *
  * @author nk160297
  */
 public final class XPathModelFactory {

@@ -111,8 +111,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         name = QualifiedNameCache.getManager().getString(initName(ast));
         rawName = AstUtil.getRawNameInChildren(ast);
 
-        assert ast.getFirstChild() != null;
-        setStatic(ast.getFirstChild().getType() == CPPTokenTypes.LITERAL_static);
+        AST child = ast.getFirstChild();
+        assert child != null;
+        if (child != null) {
+            setStatic(child.getType() == CPPTokenTypes.LITERAL_static);
+        }   
         if (!isStatic()) {
             for( CsmFunction fu : ((FileImpl) file).getStaticFunctionDeclarations() ) {
                 if( name.equals(fu.getName()) ) {
@@ -646,7 +649,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             token = token.getNextSibling();
         }
         while( token != null ) {
-            if( token.getType() == CPPTokenTypes.LITERAL_const ) {
+            if( token.getType() == CPPTokenTypes.LITERAL_const ||
+                token.getType() == CPPTokenTypes.LITERAL___const ||
+                token.getType() == CPPTokenTypes.LITERAL___const__) {
                 ret = true;
                 break;
             }

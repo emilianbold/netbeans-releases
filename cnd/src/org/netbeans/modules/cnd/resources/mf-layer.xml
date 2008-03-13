@@ -180,9 +180,33 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
                 
+                <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-cnd-editor-fortran-preferences.xml" url="fortran/Fortran-editor-preferences.xml"/>
+                    </folder>
+                </folder>
+                
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.fortran.FKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.fortran.FKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
+                
+                <folder name="Popup">
+                    <file name="format">
+                        <attr name="position" intvalue="1480"/>
+                    </file>                    
+                    <file name="SeparatorBeforeCut.instance">
+			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1960"/>
+                    </file>
+                    
+                    <file name="SeparatorAfterPaste.instance">
+			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4100"/>
+                    </file>
+            
+                </folder>
             </folder>
             
             <folder name="x-make">
@@ -206,9 +230,17 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
                 
+                <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-cnd-editor-makefile-preferences.xml" url="makefile/Makefile-editor-preferences.xml"/>
+                    </folder>
+                </folder>
+                
                 <file name="Settings.settings" url="MakefileOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.makefile.MakefileKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.makefile.MakefileKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
             </folder>
             
@@ -249,21 +281,7 @@ made subject to such option by the copyright holder.
         <file name="org-netbeans-modules-cnd-settings-CppSettings.settings" url="CppSettings.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.settings.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
         </file>
-        
-        <!--
-        <file name="org-netbeans-modules-cnd-settings-ShellSettings.settings" url="ShellSettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.settings.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
-        </file>
-        
-        <file name="org-netbeans-modules-cnd-settings-MakeSettings.settings" url="MakeSettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.settings.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/MakefileSettings.gif"/>
-        </file>
-        -->
         
         <folder name="MIMEResolver">
             

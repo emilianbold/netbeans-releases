@@ -42,6 +42,8 @@ package org.netbeans.modules.cnd.editor.reformat;
 import java.util.Stack;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.editor.api.CodeStyle.BracePlacement;
 import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
@@ -50,27 +52,32 @@ import static org.netbeans.cnd.api.lexer.CppTokenId.*;
  */
 class BracesStack {
     
-    private static final boolean TRACE_STACK = true;
-    private static final boolean TRACE_STATEMENT = true;
+    private static final boolean TRACE_STACK = false;
+    private static final boolean TRACE_STATEMENT = false;
     
     private Stack<StackEntry> stack = new Stack<StackEntry>();
+    private CodeStyle codeStyle;
     private StatementContinuation statementContinuation = StatementContinuation.STOP;
     int lastStatementStart = -1;
     int parenDepth = 0;
+    int lastKRstart = -1;
     boolean isDoWhile = false;
     boolean isLabel = false;
+    int lastStatementParen = -1;
 
-    BracesStack() {
-        super();
+    BracesStack(CodeStyle codeStyle) {
+        this.codeStyle = codeStyle;
     }
 
     @Override
     public BracesStack clone(){
-        BracesStack clone = new BracesStack();
+        BracesStack clone = new BracesStack(codeStyle);
         clone.statementContinuation = statementContinuation;
         clone.lastStatementStart = lastStatementStart;
+        clone.lastKRstart = lastKRstart;
         clone.parenDepth = parenDepth;
         clone.isDoWhile = isDoWhile;
+        clone.lastStatementParen = lastStatementParen;
         clone.isLabel = isLabel;
         for(int i = 0; i < stack.size(); i++){
             clone.stack.add(stack.get(i));
@@ -81,16 +88,183 @@ class BracesStack {
     public void reset(BracesStack clone){
         statementContinuation = clone.statementContinuation;
         lastStatementStart = clone.lastStatementStart;
+        lastKRstart = clone.lastKRstart;
         parenDepth = clone.parenDepth;
         isDoWhile = clone.isDoWhile;
+        lastStatementParen = clone.lastStatementParen;
         isLabel = clone.isLabel;
         stack.clear();
         for(int i = 0; i < clone.stack.size(); i++){
             stack.add(clone.stack.get(i));
         }
     }
-    
-    public void push(StackEntry entry) {
+
+    public void push(ExtendedTokenSequence ts) {
+        StackEntry prevEntry = peek();
+        int prevIndent = 0;
+        int prevSelfIndent = 0;
+        int statementIndent = codeStyle.indentSize();
+        if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_HALF_INDENTED){
+            statementIndent = codeStyle.indentSize()/2;
+        }
+        if (prevEntry != null){
+            prevIndent = prevEntry.getIndent();
+            prevSelfIndent = prevEntry.getSelfIndent();
+        }
+        StackEntry newEntry = new StackEntry(ts);
+        switch (newEntry.getKind()) {
+            case ELSE: //("else", "keyword-directive"),
+                if (prevEntry != null && 
+                   (prevEntry.getKind() == IF || prevEntry.getKind() == ELSE)) {
+                    newEntry.setIndent(prevIndent);
+                    newEntry.setSelfIndent(prevSelfIndent);
+                    break;
+                }
+                newEntry.setIndent(prevIndent + statementIndent);
+                newEntry.setSelfIndent(prevIndent);
+                break;
+            case IF: //("if", "keyword-directive"),
+                if (prevEntry != null && prevEntry.getKind() == ELSE) {
+                    newEntry.setIndent(prevIndent);
+                    newEntry.setSelfIndent(prevSelfIndent);
+                    break;
+                }
+                newEntry.setIndent(prevIndent + statementIndent);
+                newEntry.setSelfIndent(prevIndent);
+                break;
+            case WHILE: //("while", "keyword-directive"),
+                if (isDoWhile) {
+                    newEntry.setIndent(prevIndent);
+                    newEntry.setSelfIndent(prevSelfIndent);
+                    break;
+                }
+                newEntry.setIndent(prevIndent + statementIndent);
+                newEntry.setSelfIndent(prevIndent);
+                break;
+            case DO: //("do", "keyword-directive"),
+            case TRY: //("try", "keyword-directive"), // C++
+            case CATCH: //("catch", "keyword-directive"), //C++
+            case FOR: //("for", "keyword-directive"),
+            case ASM: //("asm", "keyword-directive"), // gcc and C++
+            case SWITCH: //("switch", "keyword-directive"),
+                newEntry.setIndent(prevIndent + statementIndent);
+                newEntry.setSelfIndent(prevIndent);
+                break;
+            case LBRACE:
+            {
+                CppTokenId kind = newEntry.getImportantKind();
+                if (kind != null) {
+                    switch (kind) {
+                        case SWITCH: //("switch", "keyword-directive"),
+                            if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_HALF_INDENTED){
+                                if (codeStyle.indentCasesFromSwitch()) {
+                                    newEntry.setIndent(prevIndent + codeStyle.indentSize());
+                                    newEntry.setSelfIndent(prevIndent);
+                                    break;
+                                }
+                                newEntry.setIndent(prevIndent+statementIndent);
+                                newEntry.setSelfIndent(prevIndent);
+                            } else {
+                                if (codeStyle.indentCasesFromSwitch()) {
+                                    newEntry.setIndent(prevIndent + statementIndent);
+                                    newEntry.setSelfIndent(prevSelfIndent);
+                                    break;
+                                }
+                                newEntry.setIndent(prevIndent);
+                                newEntry.setSelfIndent(prevSelfIndent);
+                            }
+                            break;
+                        case ELSE: //("else", "keyword-directive"),
+                        case IF: //("if", "keyword-directive"),
+                        case TRY: //("try", "keyword-directive"), // C++
+                        case CATCH: //("catch", "keyword-directive"), //C++
+                        case WHILE: //("while", "keyword-directive"),
+                        case FOR: //("for", "keyword-directive"),
+                        case DO: //("do", "keyword-directive"),
+                        case ASM: //("asm", "keyword-directive"), // gcc and C++
+                            if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_HALF_INDENTED){
+                                newEntry.setIndent(prevIndent+statementIndent);
+                                newEntry.setSelfIndent(prevIndent);
+                            } else {
+                                newEntry.setIndent(prevIndent);
+                                newEntry.setSelfIndent(prevSelfIndent);
+                            }
+                            break;
+                        case NAMESPACE: //("namespace", "keyword"), //C++
+                            if (codeStyle.indentNamespace()) {
+                                statementIndent = codeStyle.indentSize();
+                                if (codeStyle.getFormatNewlineBeforeBraceNamespace() == BracePlacement.NEW_LINE_HALF_INDENTED){
+                                    statementIndent /= 2;
+                                }
+                                newEntry.setIndent(prevIndent + statementIndent);
+                                newEntry.setSelfIndent(prevIndent);
+                            } else {
+                                newEntry.setIndent(prevIndent);
+                                newEntry.setSelfIndent(prevIndent);
+                            }
+                            break;
+                        case CLASS: //("class", "keyword"), //C++
+                        case STRUCT: //("struct", "keyword"),
+                        case ENUM: //("enum", "keyword"),
+                        case UNION: //("union", "keyword"),
+                            statementIndent = codeStyle.indentSize();
+                            if (codeStyle.getFormatNewlineBeforeBraceClass() == BracePlacement.NEW_LINE_HALF_INDENTED){
+                                statementIndent /= 2;
+                            }
+                            newEntry.setIndent(prevIndent + statementIndent);
+                            newEntry.setSelfIndent(prevIndent);
+                    }
+                } else if (newEntry.isLikeToFunction()){
+                    statementIndent = codeStyle.indentSize();
+                    if (codeStyle.getFormatNewlineBeforeBraceDeclaration() == BracePlacement.NEW_LINE_HALF_INDENTED){
+                        statementIndent /= 2;
+                    }
+                    newEntry.setIndent(prevIndent + statementIndent);
+                    newEntry.setSelfIndent(prevIndent);
+                } else if (newEntry.isLikeToArrayInitialization()){
+                    newEntry.setIndent(prevIndent + statementIndent);
+                    newEntry.setSelfIndent(prevIndent);
+                } else {
+                    if (prevEntry != null && prevEntry.getImportantKind() == SWITCH) {
+                        if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_HALF_INDENTED){
+                            newEntry.setIndent(prevIndent + statementIndent);
+                            newEntry.setSelfIndent(prevIndent);
+                        } else {
+                            if (codeStyle.indentCasesFromSwitch()) {
+                                newEntry.setIndent(prevSelfIndent + codeStyle.indentSize() + statementIndent);
+                                newEntry.setSelfIndent(prevSelfIndent + statementIndent);
+                            } else {
+                                newEntry.setIndent(prevSelfIndent + statementIndent);
+                                newEntry.setSelfIndent(prevSelfIndent);
+                            }
+                        }
+                    } else {
+                        newEntry.setIndent(prevIndent + statementIndent);
+                        newEntry.setSelfIndent(prevIndent);
+                    }
+                }
+            }
+        }
+        push(newEntry);
+    }
+        
+    public int getIndent(){
+        StackEntry top = peek();
+        if (top != null) {
+            return top.getIndent();
+        }
+        return 0;
+    }
+
+    public int getSelfIndent(){
+        StackEntry top = peek();
+        if (top != null) {
+            return top.getSelfIndent();
+        }
+        return 0;
+    }
+
+    private void push(StackEntry entry) {
         statementContinuation = StatementContinuation.STOP;
         if (entry.getKind() == ELSE){
             if (stack.size() > 0 && 
@@ -103,80 +277,97 @@ class BracesStack {
             if (peek() != null && peek().isLikeToArrayInitialization()){
                 // this is two dimensiomal arry initialization
                 entry.setLikeToArrayInitialization(true);
+                if (parenDepth > 0) {
+                    entry.setLikeToArrayInitialization(true);
+                }
             }
         }
         if (entry.getKind() == LBRACE){
-            if(!entry.isLikeToArrayInitialization()) {
+            if(entry.isLikeToArrayInitialization()) {
+                if (parenDepth > 0) {
+                    // This is array in paraneter
+                    entry.setLikeToArrayInitialization(true);
+                }
+            } else {
                 clearLastStatementStart();
             }
         } else if (lastStatementStart != entry.getIndex()) {
             lastStatementStart = entry.getIndex();
-            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+entry.getText());
+            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+entry.getText()); // NOI18N
         }
         stack.push(entry);
         if (TRACE_STACK) System.out.println("push: "+toString()); // NOI18N
     }
 
-    public int pop(ExtendedTokenSequence ts) {
-        clearLastStatementStart();
+    public void pop(ExtendedTokenSequence ts) {
+        if (parenDepth <= 0) {
+            clearLastStatementStart();
+        }
         statementContinuation = StatementContinuation.STOP;
-        int res = popImpl(ts);
+        popImpl(ts);
         if (TRACE_STACK) System.out.println("pop "+ts.token().id().name()+": "+toString()); // NOI18N
-        return res;
     }
 
-    public int popImpl(ExtendedTokenSequence ts) {
+    public void popImpl(ExtendedTokenSequence ts) {
         if (stack.empty()) {
-            return 0;
+            return;
         }
         CppTokenId id = ts.token().id();
         if (id == RBRACE) {
-            return popBrace(ts);
+            popBrace(ts);
+        } else {
+            popStatement(ts);
         }
-        return popStatement(ts);
     }
 
-    public int popBrace(ExtendedTokenSequence ts) {
-        int res = 0;
+    public void popBrace(ExtendedTokenSequence ts) {
         int brace = 0;
         for (int i = stack.size() - 1; i >= 0; i--) {
             StackEntry top = stack.get(i);
             if (top.getKind() == LBRACE) {
                 brace = i - 1;
                 stack.setSize(i);
-                res = getLength();
-                if (isStatement(peek())){
-                    res--;
-                }
                 break;
             }
         }
         if (brace < 0) {
             stack.setSize(0);
-            return res;
+            return;
         }
         popStatement(ts);
-        return res;
     }
 
-    public int popStatement(ExtendedTokenSequence ts) {
+    public void popStatement(ExtendedTokenSequence ts) {
         Token<CppTokenId> next = getNextImportant(ts);
         for (int i = stack.size() - 1; i >= 0; i--) {
             StackEntry top = stack.get(i);
             switch (top.getKind()) {
                 case LBRACE: {
                     stack.setSize(i + 1);
-                    return getLength();
+                    return;
                 }
                 case IF: //("if", "keyword-directive"),
                 {
                     if (next != null && next.id() == ELSE) {
                         if (i > 0 && stack.get(i-1).getKind() == ELSE) {
                             stack.setSize(i);
-                            return getLength();
+                            return;
                         } else {
                             stack.setSize(i + 1);
-                            return getLength();
+                            return;
+                        }
+                    }
+                    break;
+                }
+                case DO: //("do", "keyword-directive"),
+                {
+                    if (next != null && next.id() == WHILE) {
+                        if (i > 0 && stack.get(i-1).getKind() == WHILE) {
+                            stack.setSize(i);
+                            return;
+                        } else {
+                            stack.setSize(i + 1);
+                            return;
                         }
                     }
                     break;
@@ -187,13 +378,11 @@ class BracesStack {
                 case SWITCH: //("switch", "keyword-directive"),
                 case FOR: //("for", "keyword-directive"),
                 case ASM: //("asm", "keyword-directive"), // gcc and C++
-                case DO: //("do", "keyword-directive"),
                 case WHILE: //("while", "keyword-directive"),
                     break;
             }
         }
         stack.setSize(0);
-        return 0;
     }
     
     private boolean isStatement(StackEntry top){
@@ -240,31 +429,7 @@ class BracesStack {
     }
 
     public int getLength() {
-        StackEntry prev = null;
-        int res = 0;
-        for(int i = 0; i < stack.size(); i++){
-            StackEntry entry = stack.get(i);
-            if (entry.getKind() == LBRACE) {
-                if (prev == null) {
-                    res++;
-                } else {
-                    if (prev.getKind()==LBRACE){
-                        CppTokenId kind = prev.getImportantKind();
-                        if (kind != SWITCH) {
-                            res++;
-                        }
-                    }
-                }
-            } else if (entry.getKind() == IF){
-                if (prev == null || prev.getKind()!=ELSE) {
-                    res++;
-                }
-            } else {
-                res++;
-            }
-            prev = entry;
-        }
-        return res;
+        return stack.size();
     }
     
     public int switchDepth(){
@@ -300,6 +465,7 @@ class BracesStack {
                 Token<CppTokenId> current = ts.token();
                 switch (current.id()) {
                     case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
                     case NEW_LINE:
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
@@ -336,7 +502,7 @@ class BracesStack {
             }
             buf.append(entry.toString());
         }
-        buf.append("+"+getLength()); // NOI18N
+        buf.append("+"+getIndent()+"-"+getSelfIndent()); // NOI18N
         return buf.toString();
     }
 
@@ -478,7 +644,7 @@ class BracesStack {
     public void setLastStatementStart(ExtendedTokenSequence ts) {
         if (lastStatementStart == -1) {
             lastStatementStart = ts.index();
-            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+ts.token().text());
+            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+ts.token().text()); // NOI18N
         }
     }
     

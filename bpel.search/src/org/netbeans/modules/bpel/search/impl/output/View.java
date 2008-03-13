@@ -83,11 +83,14 @@ public final class View extends TopComponent implements SearchListener {
 
   public void searchFinished(SearchEvent event) {
     String text = event.getSearchOption().getText();
+    String target = event.getSearchOption().getTarget().toString();
    
-    myList.finished(text, myFoundCount);
-    myTree.finished(text, myFoundCount);
+    myList.finished(target, text, myFoundCount);
+    myTree.finished(target, text, myFoundCount);
 
     View view = (View) WindowManager.getDefault().findTopComponent(View.NAME);
+//out();
+//out("VIEW: " + view.getClass().getName() + " " + view.hashCode());
     view.show(myList, myTree);
   }
 
@@ -95,6 +98,7 @@ public final class View extends TopComponent implements SearchListener {
     createTabbed();
     myTabbed.addTrees(list, tree);
     open();
+    requestActive();
   }
 
   private void createTabbed() {
@@ -147,7 +151,8 @@ public final class View extends TopComponent implements SearchListener {
     super.componentClosed();
     myList = null;
     myTree = null;
-    myTabbed = null;
+//  myTabbed.removeAll();
+//  myTabbed = null;
   }
 
   @Override

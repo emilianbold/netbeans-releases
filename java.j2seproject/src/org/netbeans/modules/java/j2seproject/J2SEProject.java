@@ -458,12 +458,11 @@ public final class J2SEProject implements Project, AntProjectListener {
                     J2SEProject.class.getResource("resources/build-impl.xsl"),
                     false);
                 genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_XML_PATH,
+                    J2SEProjectUtil.getBuildXmlName(J2SEProject.this),
                     J2SEProject.class.getResource("resources/build.xsl"),
                     false);
             }
-        }
-        
+        }    
     }
     
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
@@ -483,7 +482,7 @@ public final class J2SEProject implements Project, AntProjectListener {
                         J2SEProject.class.getResource("resources/build-impl.xsl"),
                         true);
                     genFilesHelper.refreshBuildScript(
-                        GeneratedFilesHelper.BUILD_XML_PATH,
+                        J2SEProjectUtil.getBuildXmlName(J2SEProject.this),
                         J2SEProject.class.getResource("resources/build.xsl"),
                         true);
                 }                
@@ -628,7 +627,9 @@ public final class J2SEProject implements Project, AntProjectListener {
 
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
-                helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.jar", evaluator(), "jar", "clean"), // NOI18N
+                new J2SEProjectAntArtifact (J2SEProject.this,
+                        JavaProjectConstants.ARTIFACT_TYPE_JAR,
+                        "dist.jar", "jar", "clean"), // NOI18N
             };
         }
 
@@ -660,7 +661,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             // "web-types",         // NOI18N
             "junit",                // NOI18N
             // "MIDP",              // NOI18N
-            "simple-files"          // NOI18N
+            "simple-files"          // NOI18N        
         };
         
         private static final String[] LIBRARY_TYPES = new String[] { 

@@ -27,16 +27,17 @@
  */
 package org.netbeans.modules.ruby.hints;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
+import org.jruby.common.IRubyWarnings.ID;
+import org.jruby.lexer.yacc.SyntaxException.PID;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.ruby.RubyParser.RubyError;
 import org.netbeans.modules.ruby.hints.spi.Description;
 import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.ErrorRule;
@@ -55,14 +56,25 @@ import org.openide.util.NbBundle;
  */
 public class CommonSyntaxErrors implements ErrorRule {
 
-    public Set<String> getCodes() {
+    public Set<ID> getCodes() {
         // Add more as necessary
-        return Collections.singleton("Syntax error, unexpected '=' "); // NOI18N
+        //return Collections.singleton("Syntax error, unexpected '=' "); // NOI18N
+        return Collections.singleton(ID.SYNTAX_ERROR);
     }
 
-    public void run(RuleContext context, Error error, List<Description> result) {
+    public void run(RuleContext context, RubyError error, List<Description> result) {
         CompilationInfo info = context.compilationInfo;
 
+        PID pid = (PID) error.getParameters()[0];
+        if (pid != PID.GRAMMAR_ERROR) {
+            return;
+        }
+
+        String message = error.getDisplayName();
+        if (message.indexOf("'='") == -1) { // NOI18N
+            return;
+        } 
+        
         // See if it's a "begin"
         try {
             // TODO - if we get many codes, switch on these here!

@@ -60,6 +60,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
@@ -107,6 +108,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private NativeProject nativeProject = null;
     public static String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
+    private String sourceEncoding = null;
 
     public MakeConfigurationDescriptor(String baseDir) {
         super();
@@ -116,6 +118,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         sourceRoots = new ArrayList<String>();
         setModified(true);
         ToolsPanel.addCompilerSetModifiedListener(this);
+        sourceEncoding = FileEncodingQuery.getDefaultEncoding().name();
     }
 
     /*
@@ -405,6 +408,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setProjectItemsMap(((MakeConfigurationDescriptor) copyProjectDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor) copyProjectDescriptor).getProjectItemsChangeListeners());
         setSourceRoots(((MakeConfigurationDescriptor) copyProjectDescriptor).getSourceRootsRaw());
+        setSourceEncoding(((MakeConfigurationDescriptor) copyProjectDescriptor).getSourceEncoding());
     }
 
     public void assign(ConfigurationDescriptor clonedConfigurationDescriptor) {
@@ -427,6 +431,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setProjectItemsMap(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsChangeListeners());
         setSourceRoots(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getSourceRootsRaw());
+        setSourceEncoding(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getSourceEncoding());
     }
 
     public ConfigurationDescriptor cloneProjectDescriptor() {
@@ -438,6 +443,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         clone.setProjectItemsMap(getProjectItemsMap());
         clone.setProjectItemsChangeListeners(getProjectItemsChangeListeners());
         clone.setSourceRoots(getSourceRootsRaw());
+        clone.setSourceEncoding(getSourceEncoding());
         return clone;
     }
 
@@ -480,6 +486,14 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         return saveRunnable.ret;
     }
 
+    public String getSourceEncoding() {
+        return sourceEncoding;
+    }
+
+    public void setSourceEncoding(String sourceEncoding) {
+        this.sourceEncoding = sourceEncoding;
+    }
+
     private class SaveRunnable implements Runnable {
 
         public boolean ret = false;
@@ -520,7 +534,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "Makefile-impl.mk"); // NOI18N
         Configuration[] confs = getConfs().getConfs();
         for (int i = 0; i < confs.length; i++) {
-            metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "Makefile-" + confs[i].getName() + ".mk");
+            metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "Makefile-" + confs[i].getName() + ".mk"); // NOI18N
         } // NOI18N
         boolean allOk = true;
         for (int i = 0; i < metadataFiles.size(); i++) {
@@ -691,7 +705,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
      * Return real list
      */
     public List<String> getSourceRootsRaw() {
-        return sourceRoots;
+        synchronized (sourceRoots) {
+            return sourceRoots;
+        }
     }
 
     public void setSourceRoots(List list) {

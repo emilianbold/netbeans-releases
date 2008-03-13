@@ -62,7 +62,7 @@ public class MeasureActions1  {
         suite.addTest(new ExpandNodesProjectsView("testExpandFolderWith100TxtFiles", "Expand folder with 100 txt files"));
         suite.addTest(new ExpandNodesProjectsView("testExpandFolderWith100XmlFiles", "Expand folder with 100 xml files"));
 
-        suite.addTest(new SwitchToFile("testSwitchJavaToJava", "Switch from Java file to Java file"));
+/*        suite.addTest(new SwitchToFile("testSwitchJavaToJava", "Switch from Java file to Java file"));
         suite.addTest(new SwitchToFile("testSwitchJavaToJSP", "Switch from Java file to JSP file"));
         suite.addTest(new SwitchToFile("testSwitchJSPToJSP", "Switch from JSP file to JSP file"));
         suite.addTest(new SwitchToFile("testSwitchJSPToXML", "Switch from JSP file to XML file"));
@@ -72,7 +72,7 @@ public class MeasureActions1  {
         suite.addTest(new SwitchView("testSwitchToFiles", "Switch to Files view"));
         suite.addTest(new SwitchView("testSwitchToServices", "Switch to Services view"));
         suite.addTest(new SwitchView("testSwitchToFavorites", "Switch to Favorite Folders view"));
-        
+*/        
       
         return suite;
     }

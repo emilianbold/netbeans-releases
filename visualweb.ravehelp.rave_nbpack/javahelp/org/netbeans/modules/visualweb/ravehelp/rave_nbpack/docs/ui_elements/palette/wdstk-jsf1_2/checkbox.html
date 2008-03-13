@@ -13,7 +13,7 @@
 <body>
 
 <h2>JSF 1.2 Checkbox Component</h2>
-<p><small><a href="#seealso">See Also  </a></small><small><a href="#tutorials"></a></small></p>
+<p><small><a href="#seealso">See Also  </a></small></p>
 
 <p>You can drag the Checkbox component <img src="../../../images/bh_checkbox_icon.gif" alt="checkbox component icon">&nbsp;from the Palette's Woodstock Basic category to the Visual Designer to create a single checkbox with an optional label.</p>
    <ul class="note">
@@ -52,7 +52,12 @@ value.</p>
   </li>
   <li><b>Bind to Data. </b>Opens a dialog box that enables you to bind the component's <code>selected</code> property to a data provider or an object so your application can evaluate it when the page is submitted. For more information, see <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>.</li>
   <li><b>Property Bindings</b>. Opens a dialog box that enables you to bind properties of the component in addition to the <code>selected</code> property to other objects or bean properties that update this component's properties automatically.</li>
-  <li><b>Configure Virtual Forms.</b> Enables you to add the component to a <a href="../../../components/aboutvirtualforms.html">virtual form</a>. </li>
+  <li><b>Add Binding Attribute. </b>This option adds a binding attribute to the component. <br>
+<ul>
+  <li><b>Note: </b>If you plan to script the component in Java code, you  must manually add a binding attribute, which is bound using a value binding expression to a property of the backing page bean.</li>
+</ul>
+</li>
+			<li><strong>Remove Binding Attribute.</strong> This option removes the binding attribute from the component. </li><li><b>Configure Virtual Forms.</b> Enables you to add the component to a <a href="../../../components/aboutvirtualforms.html">virtual form</a>. </li>
 </ul>
 <h3>Detecting a Selected Checkbox</h3>
 <p>  The checkbox component uses both the <code>selected</code> and <code>selectedValue</code> properties to pass information about the checkbox's selection status. The <code>selected</code> property is used to indicate that the checkbox is selected, and a checkmark is displayed in the page. The <code>selectedValue</code> property is used to pass a data value for the checkbox. A checkbox is considered to be selected when the value of the <code>selected</code> property is equal to the value of the <code>selectedValue</code> property. You can display a checkbox as selected on the initial viewing of the page by assigning the same value to the <code>selectedValue</code> and the <code>selected</code> properties. </p>
@@ -76,29 +81,7 @@ value.</p>
 	<dd><a href="../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
 	<dd><a href="../palette.html">About the Visual Web Palette</a></dd>
 </dl>
-<dl>     <dt>
-         <a name="tutorials">Tutorials</a>
-      </dt>
-      <dd>
-        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-          <param name="content" value="http://www.netbeans.org/kb/60/web/about_components.html">
-          <param name="text" value="Delving Into Components"></object>
-      </dd>
-<dd>
- <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
- <param name="content" value="http://www.netbeans.org/kb/60/web/listbox_components.html">
- <param name="text" value="Using Listbox Components"></object>
-</dd> 
 
-<dd>
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-		<param name="content" value="http://www.netbeans.org/kb/60/web/intro.html
-		<param name="text" value="Getting Started with NetBeans 6.0">
-</object>
-</dd>
-
-
-</dl>
 
 <hr>
 <!-- Start Customer Feedback Link -->
