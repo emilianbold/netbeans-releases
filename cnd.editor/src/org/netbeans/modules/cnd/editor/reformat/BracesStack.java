@@ -141,9 +141,9 @@ class BracesStack {
                 newEntry.setIndent(prevIndent + statementIndent);
                 newEntry.setSelfIndent(prevIndent);
                 break;
+            case CATCH: //("catch", "keyword-directive"), //C++
             case DO: //("do", "keyword-directive"),
             case TRY: //("try", "keyword-directive"), // C++
-            case CATCH: //("catch", "keyword-directive"), //C++
             case FOR: //("for", "keyword-directive"),
             case ASM: //("asm", "keyword-directive"), // gcc and C++
             case SWITCH: //("switch", "keyword-directive"),
@@ -372,9 +372,16 @@ class BracesStack {
                     }
                     break;
                 }
-                case ELSE: //("else", "keyword-directive"),
                 case TRY: //("try", "keyword-directive"), // C++
                 case CATCH: //("catch", "keyword-directive"), //C++
+                    if (next != null && next.id() == CATCH) {
+                        if (i > 0) {
+                            stack.setSize(i);
+                            return;
+                        }
+                    }
+                    break;
+                case ELSE: //("else", "keyword-directive"),
                 case SWITCH: //("switch", "keyword-directive"),
                 case FOR: //("for", "keyword-directive"),
                 case ASM: //("asm", "keyword-directive"), // gcc and C++
