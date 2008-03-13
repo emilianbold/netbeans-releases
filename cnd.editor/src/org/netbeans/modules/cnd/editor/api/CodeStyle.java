@@ -122,6 +122,11 @@ public final class CodeStyle {
                          EditorOptions.indentCasesFromSwitchDefault);
     }
 
+    public boolean absoluteLabelIndent() {
+        return getOption(EditorOptions.absoluteLabelIndent,
+                         EditorOptions.absoluteLabelIndentDefault);
+    }
+
     public boolean sharpAtStartLine(){
         return getOption(EditorOptions.sharpAtStartLine,
                          EditorOptions.sharpAtStartLineDefault);
