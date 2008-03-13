@@ -268,9 +268,10 @@ public class EditorOptions {
     
     private static final String APACHE_PROFILE = "Apache"; // NOI18N
     private static final String DEFAULT_PROFILE = "Default"; // NOI18N
+    private static final String GNU_PROFILE = "GNU"; // NOI18N
 
     public static final String[] PREDEFINED_STYLES = new String[]
-                              {DEFAULT_PROFILE, APACHE_PROFILE};
+                              {DEFAULT_PROFILE, APACHE_PROFILE, GNU_PROFILE};
 
     private static Map<String,Object> defaults;
     private static Map<String,Map<String,Object>> namedDefaults;
@@ -390,7 +391,20 @@ public class EditorOptions {
         apache.put(newLineCatch, true);
         apache.put(newLineElse, true);
         apache.put(newLineWhile, true);
-        
+// I see that GNU style differ from apache only in half indent
+// Is it true?
+        Map<String,Object> gnu = new HashMap<String,Object>();
+        namedDefaults.put(GNU_PROFILE, gnu);
+        gnu.put(indentCasesFromSwitch, false);
+        gnu.put(alignMultilineCallArgs, true);
+        gnu.put(alignMultilineMethodParams, true);
+        gnu.put(newLineCatch, true);
+        gnu.put(newLineElse, true);
+        gnu.put(newLineWhile, true);
+        gnu.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        gnu.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        gnu.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        gnu.put(newLineBeforeBrace, BracePlacement.NEW_LINE_HALF_INDENTED.name());
     }
 
     public static Object getDefault(CodeStyle.Language language, String styleId, String id){
