@@ -230,16 +230,13 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
     
     private void jButtonAddConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddConnectionActionPerformed
-        Datasource brokenDatasource = (Datasource)datasourceList.getSelectedValue();  
-        // workaround for 128734 
-        if (brokenDatasource != null) {
-            addDatabaseConnection(brokenDatasource);
-            // enable the scrollbar 
-            if (datasourceList.getModel().getSize() > 0) {
-                jScrollPane2.setBorder(scrollPaneBorder);
-                jTextArea2.setText(org.openide.util.NbBundle.getMessage(MissingDatabaseConnectionWarning.class, "LBL_MissingDatabaseConnectionWarning"));
-            }
-        }        
+        Datasource brokenDatasource = (Datasource) datasourceList.getSelectedValue();
+        addDatabaseConnection(brokenDatasource);
+        // enable the scrollbar 
+        if (datasourceList.getModel().getSize() > 0) {
+            jScrollPane2.setBorder(scrollPaneBorder);
+            jTextArea2.setText(org.openide.util.NbBundle.getMessage(MissingDatabaseConnectionWarning.class, "LBL_MissingDatabaseConnectionWarning"));
+        }
         // refresh the jList
         datasourceList.setCellRenderer(new DatasourceRenderer());                
 }//GEN-LAST:event_jButtonAddConnectionActionPerformed
