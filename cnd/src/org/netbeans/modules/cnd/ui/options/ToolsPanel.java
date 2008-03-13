@@ -90,7 +90,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /** Display the "Tools Default" panel */
 public class ToolsPanel extends JPanel implements ActionListener, DocumentListener,
@@ -590,6 +589,13 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         cbCRequired.setVisible(model.showRequiredBuildTools());
         cbFortranRequired.setVisible(model.showRequiredBuildTools() && CppSettings.getDefault().isFortranEnabled());
         
+//        if (model.showRequiredTools()) {
+//            errorTextArea.setForeground(Color.RED);
+//        }
+//        else {
+//            errorTextArea.setForeground(Color.YELLOW);
+//        }
+        
         if (doInitialize) {
             // Set Default
             if (!csm.getCompilerSets().isEmpty()) {
@@ -1056,14 +1062,17 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         return changed;
     }
     
-    /**
-     * Post version information for tools not considered part of a CompilerSet (make and gdb).
-     *
-     * @param name The name of the tool (no directory information)
-     * @param path The absolute path of the tool
-     */
-    private void postVersionInfo(String name, String path) {
-        postVersionInfo(CompilerFlavor.Unknown, name, path);
+    String getToolVersion(Tool tool, JTextField tf) {
+        StringBuilder version = new StringBuilder();
+        
+        version.append(tool.getDisplayName() + ": "); // NOI18N
+        if (isPathFieldValid(tf)) {
+            version.append(postVersionInfo(tool.getFlavor(), tool.getPath(), tf.getText()));
+        }
+        else {
+            version.append(getString("TOOL_NOT_FOUND"));
+        }
+        return version.toString();
     }
     
     /**
@@ -1073,7 +1082,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
      * @param name The name of the tool (no directory information)
      * @param path The absolute path of the tool
      */
-    private void postVersionInfo(CompilerFlavor flavor, String name, String path) {
+    private String postVersionInfo(CompilerFlavor flavor, String name, String path) {
+        String version = null;
         File file = new File(path);
         if (file.exists()) {
             try {
@@ -1081,12 +1091,14 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 if (fo != null) {
                     String mime = fo.getMIMEType();
                     if (mime.startsWith("application/x-exe") || mime.equals(MIMENames.SHELL_MIME_TYPE)) { // NOI18N
-                        RequestProcessor.getDefault().post(new VersionCommand(flavor, name, path));
+                        VersionCommand versionCommand = new VersionCommand(flavor, path);
+                        version = versionCommand.getVersion();
                     }
                 }
             } catch (IOException ex) {
             }
         }
+        return version;
     }
     
 //    private void addRemoveUserTool(JComboBox jc, Tool selected, int kind) {
@@ -1917,18 +1929,19 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }// </editor-fold>//GEN-END:initComponents
 
 private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btVersionsActionPerformed
-    if (isPathFieldValid(tfMakePath))
-        postVersionInfo(tfMakePath.getText(), tfMakePath.getText());
-    if (isPathFieldValid(tfGdbPath))
-        postVersionInfo(tfGdbPath.getText(), tfGdbPath.getText());
-    if (isPathFieldValid(tfCppPath))
-        postVersionInfo(tfCppPath.getText(), tfCppPath.getText());
-    if (isPathFieldValid(tfCPath))
-        postVersionInfo(tfCPath.getText(), tfCPath.getText());
-    if (isPathFieldValid(tfFortranPath))
-        postVersionInfo(tfFortranPath.getText(), tfFortranPath.getText());
+    StringBuilder versions = new StringBuilder();
     
-                    
+    versions.append("\n"); // NOI18N
+    versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCompiler), tfCPath) + "\n"); // NOI18N
+    versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCCompiler), tfCppPath) + "\n"); // NOI18N
+    versions.append(getToolVersion(currentCompilerSet.findTool(Tool.FortranCompiler), tfFortranPath) + "\n"); // NOI18N
+    versions.append(getToolVersion(currentCompilerSet.findTool(Tool.MakeTool), tfMakePath) + "\n"); // NOI18N
+    versions.append(getToolVersion(currentCompilerSet.findTool(Tool.DebuggerTool), tfGdbPath) + "\n"); // NOI18N
+    
+    NotifyDescriptor nd = new NotifyDescriptor.Message(versions.toString());
+
+    nd.setTitle(NbBundle.getMessage(VersionCommand.class, "LBL_VersionInfo_Title"));
+    DialogDisplayer.getDefault().notify(nd);
 }//GEN-LAST:event_btVersionsActionPerformed
 
 private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
