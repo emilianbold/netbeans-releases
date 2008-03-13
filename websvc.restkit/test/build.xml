@@ -52,25 +52,6 @@ made subject to such option by the copyright holder.
     <property name="xtest.testtype" value="qa-functional"/>
     <property name="xtest.attribs" value="validation,stable"/>
 
-    <target name="-init-props">
-        <property name="build.dir" value="${nb_all}/websvc.restkit/build" />
-        <mkdir dir="${build.dir}" />
-        <property name="lib.dir" value="${build.dir}/libs"/>
-        <mkdir dir="${lib.dir}" />
-
-        <condition property="skip-download-httpunit" >
-            <and>
-                <available file="${lib.dir}/httpunit-1.6.2.jar" />
-                <available file="${lib.dir}/Tidy-r7.jar" />
-            </and>
-        </condition>
-    </target>
-
-    <target name="clean">
-        <antcall target="xtest.clean"/>
-        <ant antfile="build-qa-functional.xml" target="-clean-httpunit"/>
-    </target>
-
     <path id="ws.kit.path">
         <pathelement location="${netbeans.dest.dir}/extra/modules/org-netbeans-modules-websvc-rest.jar"/>
         <pathelement location="${netbeans.dest.dir}/extra/modules/org-netbeans-modules-websvc-rest-samples.jar"/>
@@ -131,14 +112,8 @@ made subject to such option by the copyright holder.
     <target name="emma-init-coverage-source-path" depends="emma-init-coverage-source-path-module,emma-init-coverage-source-path-kit"/>
 
     <target name="coverage-runtests-module" unless="coverage.kit">
-        <copy file="${emma.dir}/emma.jar" todir="${lib.dir}"/>
-        <path id="httpunit.libs">
-            <fileset dir="${lib.dir}">
-                <include name="*.jar"/>
-            </fileset>
-        </path>
         <antcall target="runtests">
-            <param name="coverage.lib.path" refid="httpunit.libs"/>
+            <param name="coverage.lib.path" location="${emma.dir}/emma.jar"/>
             <param name="xtest.jvm.coverage.args" value="-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
             <param name="xtest.ide.coverage.args" value="-J-Dnetbeans.security.nocheck=true -J-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
             <!-- code coverage needs to parse project.xml in everytime -->
@@ -149,15 +124,9 @@ made subject to such option by the copyright holder.
 
     <target name="coverage-runtests-kit" if="coverage.kit" depends="-init-props">
         <fail unless="j2ee.appserver.path" message="Need appserver to be able to measure coverage"/>
-        <copy file="${emma.dir}/emma.jar" todir="${lib.dir}"/>
-        <path id="httpunit.libs">
-            <fileset dir="${lib.dir}">
-                <include name="*.jar"/>
-            </fileset>
-        </path>
         <property name="xtest.userdata|com.sun.aas.installRoot" value="${j2ee.appserver.path}"/>
         <antcall target="runtests">
-            <param name="coverage.lib.path" refid="httpunit.libs"/>
+            <param name="coverage.lib.path" location="${emma.dir}/emma.jar"/>
             <param name="xtest.jvm.coverage.args" value="-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
             <param name="xtest.ide.coverage.args" value="-J-Dnetbeans.security.nocheck=true -J-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
             <!-- code coverage needs to parse project.xml in everytime -->
