@@ -73,7 +73,7 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
-        <change id="queries">
+        <change id="queries-spi-support">
             <api name="queries"/>
             <summary>Support for delegating SourceForBinaryQueryImplementation2</summary>
             <version major="1" minor="16"/>
