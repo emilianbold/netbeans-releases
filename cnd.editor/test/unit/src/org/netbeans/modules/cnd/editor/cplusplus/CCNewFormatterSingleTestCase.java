@@ -168,10 +168,8 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testSwitchFormatting3Half() {
+    public void testLabelIndentHalf() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineWhile, true);
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
@@ -179,37 +177,36 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
-                "int main(int i)\n" +
+                "int foo()\n" +
                 "{\n" +
-                "  while (this.number < 2 &&\n" +
-                "      number != 3)\n" +
-                "    {\n" +
-                "      method(12);\n" +
-                "    }\n" +
-                "  do\n" +
-                "    {\n" +
-                "      op1().op2.op3().op4();\n" +
-                "    }\n" +
-                "   while (this.number < 2 &&\n" +
-                "   number != 3);\n" +
+                "  start: while(true){\n" +
+                "int i = 0;\n" +
+                "goto start;\n" +
+                "end:\n" +
+                "if(true){\n" +
+                "foo();\n" +
+                "second:\n" +
+                "foo();\n" +
+                "}\n" +
+                "}\n" +
                 "}\n");
-
-        
         reformat();
-        assertDocumentText("Incorrect formatting for macro define with paren",
-                "int main(int i)\n" +
+        assertDocumentText("Incorrect label half indent",
+                "int foo()\n" +
                 "{\n" +
-                "  while (this.number < 2 &&\n" +
-                "          number != 3)\n" +
+                "start:\n" +
+                "  while (true)\n" +
                 "    {\n" +
-                "      method(12);\n" +
+                "      int i = 0;\n" +
+                "      goto start;\n" +
+                "end:\n" +
+                "      if (true)\n" +
+                "        {\n" +
+                "          foo();\n" +
+                "second:\n" +
+                "          foo();\n" +
+                "        }\n" +
                 "    }\n" +
-                "  do\n" +
-                "    {\n" +
-                "      op1().op2.op3().op4();\n" +
-                "    }\n" +
-                "  while (this.number < 2 &&\n" +
-                "          number != 3);\n" +
                 "}\n");
     }
 
