@@ -61,7 +61,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementScanner6;
-import javax.swing.text.Document;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
@@ -72,7 +71,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.editor.TokenItem;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
@@ -301,7 +299,7 @@ public final class CompletionManager {
         String tagName = context.getTag().getNodeName();
         if(tagName.equals(BEAN_TAG) && ContextUtilities.isPNamespaceAdded(context.getDocumentContext())) {
             try {
-                final JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(context.getDocument());
+                final JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(context.getFileObject());
                 if (js == null) {
                     return;
                 }
@@ -312,7 +310,7 @@ public final class CompletionManager {
                 js.runUserActionTask(new Task<CompilationController>() {
 
                     public void run(CompilationController cc) throws Exception {
-                        String className = new BeanClassFinder(context.getTag(), context.getDocument()).findImplementationClass();
+                        String className = new BeanClassFinder(context.getTag(), context.getFileObject()).findImplementationClass();
                         if (className == null) {
                             return;
                         }
@@ -504,8 +502,7 @@ public final class CompletionManager {
 
         @Override
         public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
-            Document doc = context.getDocument();
-            final FileObject fo = NbEditorUtilities.getFileObject(doc);
+            final FileObject fo = context.getFileObject();
             if (fo == null) {
                 return Collections.emptyList();
             }
@@ -584,10 +581,9 @@ public final class CompletionManager {
         public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
             final List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
             try {
-                Document doc = context.getDocument();
                 final String typedChars = context.getTypedPrefix();
 
-                JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(doc);
+                JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(context.getFileObject());
                 if (js == null) {
                     return Collections.emptyList();
                 }
@@ -711,9 +707,8 @@ public final class CompletionManager {
                 if (classBinaryName == null || classBinaryName.equals("")) { // NOI18N
                     return Collections.emptyList();
                 }
-                Document doc = context.getDocument();
 
-                final JavaSource javaSource = SpringXMLConfigEditorUtils.getJavaSource(doc);
+                final JavaSource javaSource = SpringXMLConfigEditorUtils.getJavaSource(context.getFileObject());
                 if (javaSource == null) {
                     return Collections.emptyList();
                 }
@@ -849,7 +844,7 @@ public final class CompletionManager {
         @Override
         protected String getTypeName(CompletionContext context) {
             Node tag = context.getTag();
-            return new BeanClassFinder(tag, context.getDocument()).findImplementationClass();
+            return new BeanClassFinder(tag, context.getFileObject()).findImplementationClass();
         }
     }
     
@@ -878,7 +873,7 @@ public final class CompletionManager {
         @Override
         protected String getTypeName(CompletionContext context) {
             Node tag = context.getTag();
-            SpringBean mergedBean = SpringXMLConfigEditorUtils.getMergedBean(tag, context.getDocument());
+            SpringBean mergedBean = SpringXMLConfigEditorUtils.getMergedBean(tag, context.getFileObject());
             if(mergedBean == null) {
                 return null;
             }
@@ -888,7 +883,7 @@ public final class CompletionManager {
             // if factory-bean has been defined, resolve it and get it's class name
             if (mergedBean.getFactoryBean() != null) {
                 final String factoryBeanName = mergedBean.getFactoryBean();
-                FileObject fo = NbEditorUtilities.getFileObject(context.getDocument());
+                FileObject fo = context.getFileObject();
                 if (fo == null) {
                     return null;
                 }
@@ -939,7 +934,7 @@ public final class CompletionManager {
         public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
             final List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
             final String propertyPrefix = context.getTypedPrefix();
-            final JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(context.getDocument());
+            final JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(context.getFileObject());
             if (js == null) {
                 return Collections.emptyList();
             }
@@ -952,7 +947,7 @@ public final class CompletionManager {
                     public void run(CompilationController cc) throws Exception {
                         String className = new BeanClassFinder(
                                 SpringXMLConfigEditorUtils.getBean(context.getTag()), 
-                                context.getDocument()).findImplementationClass();
+                                context.getFileObject()).findImplementationClass();
                         if (className == null) {
                             return;
                         }
@@ -1056,8 +1051,7 @@ public final class CompletionManager {
 
         public List<SpringXMLConfigCompletionItem> doCompletion(CompletionContext context) {
             List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
-            Document doc = context.getDocument();
-            FileObject fileObject = NbEditorUtilities.getFileObject(doc).getParent();
+            FileObject fileObject = context.getFileObject().getParent();
             String typedChars = context.getTypedPrefix();
 
             int lastSlashIndex = typedChars.lastIndexOf("/"); // NOI18N

@@ -45,7 +45,6 @@ import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.DocumentContext;
-import org.netbeans.modules.spring.beans.editor.EditorContextFactory;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.openide.filesystems.FileObject;
@@ -85,8 +84,8 @@ public final class HyperlinkEnv {
     public HyperlinkEnv(Document document, int offset) {
         this.document = document;
         this.offset = offset;
-        this.documentContext = EditorContextFactory.getDocumentContext(document, offset);
-        if(documentContext.isValid()) {
+        this.documentContext = DocumentContext.createContext(document, offset);
+        if(documentContext != null) {
             currentTag = documentContext.getCurrentElement();
             attribName = ContextUtilities.getAttributeTokenImage(documentContext);
             token = documentContext.getCurrentToken();

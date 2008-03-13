@@ -43,18 +43,22 @@ package org.netbeans.modules.spring.beans.completion;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.beans.editor.DocumentContext;
-import org.netbeans.modules.spring.beans.editor.EditorContextFactory;
 import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
+import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
 import org.netbeans.modules.xml.text.syntax.dom.EndTag;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Node;
 
 /**
@@ -74,24 +78,43 @@ public class CompletionContext {
     };
     
     private CompletionType completionType = CompletionType.NONE;
-    private Document doc;
+    private BaseDocument bDoc;
     private int caretOffset;
     private DocumentContext documentContext;
-    private String typedChars = "";
+    private String typedChars = ""; // NOI18N
     private char lastTypedChar;
     private XMLSyntaxSupport support;
+    private FileObject fileObject;
+    private BaseDocument internalDoc = new BaseDocument(XMLKit.class, false);
 
     public CompletionContext(Document doc, int caretOffset) {
-        this.doc = doc;
+        this.bDoc = (BaseDocument) doc;
         this.caretOffset = caretOffset;
-        this.support = (XMLSyntaxSupport) ((BaseDocument)doc).getSyntaxSupport();
-        this.documentContext = EditorContextFactory.getDocumentContext(doc, caretOffset);
-        this.lastTypedChar = support.lastTypedChar();
+        this.fileObject = NbEditorUtilities.getFileObject(doc);
         initContext();
     }
     
     private void initContext() {
+        boolean copyResult = copyDocument(bDoc, internalDoc);
+        if(!copyResult) {
+            return;
+        }
+        
+        this.support = (XMLSyntaxSupport) internalDoc.getSyntaxSupport();
+        this.documentContext = DocumentContext.createContext(internalDoc, caretOffset);
+        
+        // get last inserted character from the actual document
+        this.lastTypedChar = ((XMLSyntaxSupport) bDoc.getSyntaxSupport()).lastTypedChar(); 
+        
+        if(documentContext == null) {
+            return;
+        }
+        
         TokenItem token = documentContext.getCurrentToken();
+        if(token == null) {
+            return;
+        }
+        
         boolean tokenBoundary = (token.getOffset() == caretOffset) 
                 || ((token.getOffset() + token.getImage().length()) == caretOffset);
         
@@ -228,6 +251,42 @@ public class CompletionContext {
                 completionType = CompletionType.NONE;
                 break;
         }
+        
+        computeExistingAttributes();
+    }
+    
+    private void computeExistingAttributes() {
+        existingAttributes = new ArrayList<String>();
+        TokenItem item = documentContext.getCurrentToken().getPrevious();
+        while(item != null) {
+            int tokenId = item.getTokenID().getNumericID();
+            if(tokenId == XMLDefaultTokenContext.TAG_ID) {
+                break;
+            }
+            if(tokenId == XMLDefaultTokenContext.ARGUMENT_ID) {
+                existingAttributes.add(item.getImage());
+            }
+            item = item.getPrevious();
+        }
+    }
+    
+    private boolean copyDocument(BaseDocument src, BaseDocument dest) {
+        boolean retVal = true;
+        
+        src.readLock();
+        dest.atomicLock();
+        try {
+            String docText = src.getText(0, src.getLength());
+            dest.insertString(0, docText, null);
+        } catch(BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+            retVal = false;
+        } finally {
+            src.readUnlock();
+            dest.atomicUnlock();
+        }
+        
+        return retVal;
     }
 
     public CompletionType getCompletionType() {
@@ -238,8 +297,8 @@ public class CompletionContext {
         return typedChars;
     }
     
-    public Document getDocument() {
-        return this.doc;
+    public FileObject getFileObject() {
+        return this.fileObject;
     }
     
     public DocumentContext getDocumentContext() {
@@ -260,20 +319,6 @@ public class CompletionContext {
     }
     
     public List<String> getExistingAttributes() {
-        if(existingAttributes != null)
-            return existingAttributes;
-        existingAttributes = new ArrayList<String>();
-        TokenItem item = documentContext.getCurrentToken().getPrevious();
-        while(item != null) {
-            if(item.getTokenID().getNumericID() ==
-                    XMLDefaultTokenContext.TAG_ID)
-                break;
-            if(item.getTokenID().getNumericID() ==
-                    XMLDefaultTokenContext.ARGUMENT_ID) {
-                existingAttributes.add(item.getImage());
-            }
-            item = item.getPrevious();
-        }
         return existingAttributes;
     }
 }

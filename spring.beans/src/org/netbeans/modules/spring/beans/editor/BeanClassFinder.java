@@ -52,12 +52,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
@@ -103,16 +101,14 @@ public class BeanClassFinder {
     private Node beanNode;
     private FileObject fileObject;
     private Set<String> walkedBeanNames;  
-    private Document document;
     private String startBeanName;
     private SpringBean startBean;
 
-    public BeanClassFinder(Node beanNode, Document document) {
+    public BeanClassFinder(Node beanNode, FileObject fileObject) {
         this.beanNode = beanNode;
-        this.document = document;
-        this.fileObject = NbEditorUtilities.getFileObject(document);
+        this.fileObject = fileObject;
         this.walkedBeanNames = new HashSet<String>();
-        this.startBean = SpringXMLConfigEditorUtils.getMergedBean(beanNode, document);
+        this.startBean = SpringXMLConfigEditorUtils.getMergedBean(beanNode, fileObject);
         startBeanName = getBeanIdOrName(beanNode);
     }
 
@@ -157,7 +153,7 @@ public class BeanClassFinder {
 
                 public void run(SpringBeans springBeans) {
                     SpringBean bean = springBeans.findBean(beanName);
-                    bean = SpringXMLConfigEditorUtils.getMergedBean(bean, document);
+                    bean = SpringXMLConfigEditorUtils.getMergedBean(bean, fileObject);
                     if(bean == null) {
                         return;
                     }
@@ -192,7 +188,7 @@ public class BeanClassFinder {
         }
         
         try {
-            JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(document);
+            JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(fileObject);
             if (js == null) {
                 return null;
             }

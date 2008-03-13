@@ -70,7 +70,7 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
         try {
             final String className = new BeanClassFinder(
                                 SpringXMLConfigEditorUtils.getBean(env.getCurrentTag()), 
-                                env.getDocument()).findImplementationClass();
+                                env.getFile()).findImplementationClass();
             if (className == null) {
                 return;
             }

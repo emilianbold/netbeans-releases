@@ -41,13 +41,10 @@
 
 package org.netbeans.modules.spring.beans.editor;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Stack;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
@@ -55,7 +52,6 @@ import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
-import org.netbeans.modules.xml.text.syntax.dom.EndTag;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.w3c.dom.Attr;
@@ -69,31 +65,33 @@ import org.w3c.dom.Node;
  */
 public class DocumentContext {
 
-    public static final String PREFIX = "ns"; //NOI18N
-    public static final String XSI_SCHEMALOCATION = "schemaLocation"; //NOI18N
-    public static final String XSI_NONS_SCHEMALOCATION = "noNamespaceSchemaLocation"; //NOI18N
-    
     private Document document;
     private XMLSyntaxSupport syntaxSupport;
     private int caretOffset = -1;
     private SyntaxElement element;
     private TokenItem token;
     private boolean valid = false;
-    private StartTag docRoot;
-    private String defaultNamespace;
     private HashMap<String, String> declaredNamespaces =
             new HashMap<String, String>();
-    private String schemaLocation;
-    private String noNamespaceSchemaLocation;
 
-    DocumentContext(Document document) {
+    public static DocumentContext createContext(Document document, int caretOffset) {
+        DocumentContext ctx = new DocumentContext(document, caretOffset);
+        if(!ctx.isValid()) {
+            return null;
+        }
+        
+        return ctx;
+    }
+    
+    private DocumentContext(Document document, int caretOffset) {
         this.document = document;
         this.syntaxSupport = (XMLSyntaxSupport) ((BaseDocument) document).getSyntaxSupport();
-    }
-
-    public void reset(int caretOffset) {
         this.caretOffset = caretOffset;
         initialize();
+    }
+
+    public Map<String, String> getDeclaredNamespaceMap() {
+        return declaredNamespaces;
     }
 
     private void initialize() {
@@ -102,7 +100,6 @@ public class DocumentContext {
         try {
             element = syntaxSupport.getElementChain(caretOffset);
             token = syntaxSupport.getTokenChain(caretOffset, Math.min(document.getLength(), caretOffset+1));
-            this.docRoot = ContextUtilities.getRoot(element);
             populateNamespaces();
         } catch (BadLocationException ex) {
             // No context support available in this case
@@ -110,7 +107,7 @@ public class DocumentContext {
         }
     }
 
-    public boolean isValid() {
+    private boolean isValid() {
         return this.valid;
     }
 
@@ -142,58 +139,6 @@ public class DocumentContext {
         return this.element;
     }
     
-    public List<String> getPathFromRoot() {
-        if (isValid()) {
-            SyntaxElement elementRef = this.element;
-            Stack<SyntaxElement> stack = new Stack<SyntaxElement>();
-
-            while (elementRef != null) {
-                if ((elementRef instanceof EndTag) ||
-                        (elementRef instanceof EmptyTag && stack.isEmpty()) ||
-                        (elementRef instanceof StartTag && stack.isEmpty())) {
-                    stack.push(elementRef);
-                    elementRef = elementRef.getPrevious();
-                    continue;
-                }
-                if (elementRef instanceof StartTag) {
-                    StartTag start = (StartTag) elementRef;
-                    if (stack.peek() instanceof EndTag) {
-                        EndTag end = (EndTag) stack.peek();
-                        if (end.getTagName().equals(start.getTagName())) {
-                            stack.pop();
-                        }
-                    } else {
-                        SyntaxElement e = (SyntaxElement) stack.peek();
-                        String tagAtTop = (e instanceof StartTag) ? ((StartTag) e).getTagName() : ((EmptyTag) e).getTagName();
-                        stack.push(elementRef);
-                    }
-                }
-                elementRef = elementRef.getPrevious();
-            }
-
-            return createPath(stack);
-        }
-
-        return Collections.emptyList();
-    }
-
-    private List<String> createPath(Stack<SyntaxElement> stack) {
-        ArrayList<String> pathList = new ArrayList<String>();
-        while (!stack.isEmpty()) {
-            SyntaxElement top = stack.pop();
-            String tagName = (top instanceof StartTag) ? ((StartTag) top).getTagName() : ((EmptyTag) top).getTagName();
-            if (tagName != null) {
-                pathList.add(tagName);
-            }
-        }
-
-        return Collections.unmodifiableList(pathList);
-    }
-
-    public Document getDocument() {
-        return this.document;
-    }
-
     public String lookupNamespacePrefix(String prefix) {
         return declaredNamespaces.get(prefix);
     }
@@ -210,10 +155,6 @@ public class DocumentContext {
     
     public Collection<String> getDeclaredNamespaces() {
         return declaredNamespaces.values();
-    }
-
-    public StartTag getDocRoot() {
-        return docRoot;
     }
 
     public int getCaretOffset() {
@@ -255,35 +196,5 @@ public class DocumentContext {
             }
             node = node.getParentNode();
         }
-    }
-    
-    public String getNoNamespaceSchemaLocation() {
-        return noNamespaceSchemaLocation;
-    }
-
-    public String getSchemaLocation() {
-        return schemaLocation;
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final DocumentContext other = (DocumentContext) obj;
-        if (this.document != other.document && (this.document == null || !this.document.equals(other.document))) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 61 * hash + (this.document != null ? this.document.hashCode() : 0);
-        return hash;
     }
 }
