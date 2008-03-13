@@ -149,6 +149,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     /** Dis update */
     public static final String          DIS_UPDATE = "dis_update"; // NOI18N
     
+    private static final String MSG_BREAKPOINT_ERROR = "Cannot insert breakpoint";
+    
     private GdbProxy gdb;
     private ContextProvider lookupProvider;
     private String state = STATE_NONE;
@@ -426,12 +428,15 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
-    public void showCurrentSource() {
+    public void showCurrentSource(boolean dis) {
         final CallStackFrame csf = getCurrentCallStackFrame();
         if (csf == null) {
             return;
         }
-        final boolean inDis = (currentBreakpoint == null) ? Disassembly.isInDisasm() : (currentBreakpoint instanceof AddressBreakpoint);
+        if (!dis) {
+            dis = (currentBreakpoint == null) ? Disassembly.isInDisasm() : (currentBreakpoint instanceof AddressBreakpoint);
+        }
+        final boolean inDis = dis;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 // show current line
@@ -890,6 +895,19 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 // ignore - probably a breakpoint from another project
             } else if (msg.contains("Undefined mi command: ") && msg.contains("(missing implementation")) { // NOI18N
                 // ignore - gdb/mi defines commands which haven't been implemented yet
+            } else if (msg.contains(MSG_BREAKPOINT_ERROR)) { // NOI18N
+                setStopped();
+                int start = msg.indexOf(MSG_BREAKPOINT_ERROR) + MSG_BREAKPOINT_ERROR.length();
+                int end = msg.indexOf(".", start); // NOI18N
+                if (end != -1) {
+                    String breakpoinIdx = msg.substring(start, end).trim();
+                    BreakpointImpl breakpoint = breakpointList.get(breakpoinIdx);
+                    if (breakpoint != null) {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                NbBundle.getMessage(GdbDebugger.class, "ERR_InvalidBreakpoint", breakpoint.getBreakpoint())));
+                        breakpoint.getBreakpoint().disable();
+                    }
+                }
             } else if (pendingBreakpointMap.remove(Integer.valueOf(token)) != null) {
                 if (pendingBreakpointMap.isEmpty() && state.equals(STATE_LOADING)) {
                     setReady();
@@ -901,8 +919,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
-    public void fireDisUpdate() {
-        firePropertyChange(DIS_UPDATE, 0, 1);
+    public void fireDisUpdate(boolean open) {
+        firePropertyChange(DIS_UPDATE, open, !open);
     }
     
     /** Handle gdb responses starting with '*' */
