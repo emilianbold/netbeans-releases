@@ -1067,7 +1067,17 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         
         version.append(tool.getDisplayName() + ": "); // NOI18N
         if (isPathFieldValid(tf)) {
-            version.append(postVersionInfo(tool.getFlavor(), tool.getPath(), tf.getText()));
+            String path = tf.getText();
+            if (!IpeUtils.isPathAbsolute(path)) {
+                path = Path.findCommand(path);
+            }
+            String v = postVersionInfo(tool.getFlavor(), path);
+            if (v != null) {
+                version.append(v);
+            }
+            else {
+                version.append(getString("TOOL_VERSION_NOT_FOUND"));
+            }
         }
         else {
             version.append(getString("TOOL_NOT_FOUND"));
@@ -1082,8 +1092,10 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
      * @param name The name of the tool (no directory information)
      * @param path The absolute path of the tool
      */
-    private String postVersionInfo(CompilerFlavor flavor, String name, String path) {
+    private String postVersionInfo(CompilerFlavor flavor, String path) {
         String version = null;
+        if (path == null)
+            return null;
         File file = new File(path);
         if (file.exists()) {
             try {

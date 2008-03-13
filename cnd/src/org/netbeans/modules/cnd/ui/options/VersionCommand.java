@@ -90,6 +90,8 @@ public class VersionCommand {
         if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
             if (name.equals("gmake")) { // NOI18N
                 option = "--version"; // NOI18N
+            } else if (name.equals("gdb")) { // NOI18N
+                option = "--version"; // NOI18N
             } else if (name.equals("make")) { // NOI18N
                 path = "/sbin/uname"; // NOI18N
                 option = "-sr"; // NOI18N
