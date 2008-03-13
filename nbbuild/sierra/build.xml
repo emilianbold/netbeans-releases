@@ -273,7 +273,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="eventHandlers/onEvent"/></antcall>
 
         <!-- exit -->
-        <antcall target="do-test-jbi"><param name="dir" value="exit/ExitBpel"/></antcall>
+        <!--antcall target="do-test-jbi"><param name="dir" value="exit/ExitBpel"/></antcall--> <!-- todo a? -->
     </target>
 
     <target name="test-7">
@@ -302,6 +302,9 @@
     </target>
 
     <target name="test-8">
+        <!-- misc -->
+        <antcall target="do-test-jbi"><param name="dir" value="misc/MiscBpel"/></antcall>
+
         <!-- PartnerLinks -->
         <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/DuplicateProject1"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/DuplicateProject2"/></antcall>
@@ -385,6 +388,8 @@
     <target name="do-print">
         <subant target="${action}" inheritAll="false">
             <buildpath location="${home}/print"/>
+            <buildpath location="${home}/xml.xpath.ext"/> <!-- todo r -->
+            <buildpath location="${home}/xml.wsdl.extensions"/> <!-- todo r -->
         </subant>
     </target>
 

@@ -167,7 +167,11 @@ public class FileObjectInLookupTest extends NbTestCase {
                 i++;
                 continue;
             }
-            fail(msg + "\nError at position " + i + " expected: " + fo + " but was: " + all.get(i) + "\nAll: " + all);
+            fail(msg + "\nError at position " + i + " expected: " + fo 
+                    + "@" + Integer.toHexString(fo.hashCode()) + 
+                    " but was: " + all.get(i) + "@" + Integer.toHexString(all.get(i).hashCode()) 
+                    + " \nAll: " + all
+            );
         }
     }
     

@@ -52,6 +52,7 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
@@ -79,6 +80,9 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
         createSaasServiceClass();
         addSaasServiceMethod();
         addImportsToSaasService();
+   
+        //Modify Authenticator class
+        modifyAuthenticationClass(); 
 
         FileObject outputWrapperFO = generateJaxbOutputWrapper();
         if (outputWrapperFO != null) {
@@ -107,7 +111,7 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
         String converterName = getConverterName();
         
         //Evaluate query parameters
-        List<ParameterInfo> filterParams = filterParameters();
+        List<ParameterInfo> filterParams = getBean().filterParametersByAuth(bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
         paramUse += getHeaderOrParameterUsage(filterParams);
         paramDecl += getHeaderOrParameterDeclaration(filterParams);
 
@@ -116,9 +120,13 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
         
         String methodBody = "";
         methodBody += "        " + converterName + " converter = new " + converterName + "();\n";
+        methodBody += "        try {\n";
         methodBody += "             String result = " + getSaasServiceName() + "." + getSaasServiceMethodName() + "(" + paramUse + ");\n";
         methodBody += "             converter.setString(result);\n";
-        methodBody += "             return converter;\n";
+        methodBody += "        } catch (java.io.IOException ex) {\n";
+        methodBody += "             throw new WebApplicationException(ex);\n";
+        methodBody += "        }\n";
+        methodBody += "        return converter;\n";
         
         return methodBody;
     }

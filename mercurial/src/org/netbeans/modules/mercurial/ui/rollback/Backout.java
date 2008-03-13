@@ -63,14 +63,14 @@ public class Backout implements PropertyChangeListener {
     private RepositoryRevision repoRev;
     
     /** Creates a new instance of Backout */
-    public Backout(File repository, RepositoryRevision repoRev) {
-        this (repository, null, repoRev);
+    public Backout(File repository, RepositoryRevision repoRev, File [] roots) {
+        this (repository, null, repoRev, roots);
     }
 
-    public Backout(File repository, String defaultRevision, RepositoryRevision repoRev) {
+    public Backout(File repository, String defaultRevision, RepositoryRevision repoRev, File [] roots) {
         this.repoRev = repoRev;
         this.repository = repository;
-        panel = new BackoutPanel(repository, repoRev);
+        panel = new BackoutPanel(repository, repoRev, roots);
         okButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(okButton, org.openide.util.NbBundle.getMessage(Backout.class, "CTL_BackoutForm_Action_Backout")); // NOI18N
         okButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Backout.class, "ACSD_BackoutForm_Action_Backout")); // NOI18N

@@ -251,6 +251,10 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         assert jdctx.jdts.token().id() == JavadocTokenId.TAG;
 
         Tag tag = jdctx.positions.getTag(caretOffset);
+        if (tag == null) {
+            // eg * description @
+            return;
+        }
         if (JavadocCompletionUtils.isBlockTag(tag)) {
             resolveBlockTag(tag, jdctx);
         } else {

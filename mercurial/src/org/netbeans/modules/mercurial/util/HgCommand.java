@@ -139,10 +139,14 @@ public class HgCommand {
     private static final String HG_LOG_TEMPLATE_LONG_CMD = "--template={rev}\\n{desc}\\n{date|hgdate}\\n{node|short}\\n"; // NOI18N
 
     private static final String HG_LOG_NO_MERGES_CMD = "-M";
-    private static final String HG_LOG_DEBUG_CMD = "--debug";
+    private static final String HG_LOG_DEBUG_CMD = "--debug";  
     private static final String HG_LOG_TEMPLATE_HISTORY_CMD = 
             "--template=rev:{rev}\\nauth:{author}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\n" + // NOI18N
             "file_mods:{files}\\nfile_adds:{file_adds}\\nfile_dels:{file_dels}\\nfile_copies:\\nendCS:\\n"; // NOI18N
+    private static final String HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD = 
+            "--template=rev:{rev}\\nauth:{author}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\n" + // NOI18N
+            "\\nendCS:\\n"; // NOI18N
+    private static final String HG_LOG_REV_TIP_RANGE = "tip:0"; // NOI18N
     private static final String HG_LOG_REVISION_OUT = "rev:"; // NOI18N
     private static final String HG_LOG_AUTHOR_OUT = "auth:"; // NOI18N
     private static final String HG_LOG_DESCRIPTION_OUT = "desc:"; // NOI18N
@@ -876,9 +880,35 @@ public class HgCommand {
         
         return messages.toArray(new HgLogMessage[0]);
     }       
-   
     public static HgLogMessage[] getLogMessages(final String rootUrl, 
-            final Set<File> files, String fromRevision, String toRevision, boolean bShowMerges,  OutputLogger logger) {
+            final Set<File> files, String fromRevision, String toRevision, 
+            boolean bShowMerges, OutputLogger logger) {
+         return getLogMessages(rootUrl, files, fromRevision, toRevision, 
+                                bShowMerges, true, -1, logger);
+    }
+
+    public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, int limit, OutputLogger logger) {
+         return getLogMessages(rootUrl, null, null, null, true, false, limit, logger);
+    }
+    public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, int limit, OutputLogger logger) {
+         return getLogMessages(rootUrl, files, null, null, true, false, limit, logger);
+    }
+
+    public static HgLogMessage[] getLogMessages(final String rootUrl, int limit, OutputLogger logger) {
+         return getLogMessages(rootUrl, null, null, null, true, true, limit, logger);
+    }
+    
+    public static HgLogMessage[] getLogMessages(final String rootUrl, final Set<File> files, int limit, OutputLogger logger) {
+         return getLogMessages(rootUrl, files, null, null, true, true, limit, logger);
+    }
+    
+    public static HgLogMessage[] getLogMessages(final String rootUrl, final Set<File> files,  OutputLogger logger) {
+         return getLogMessages(rootUrl, files, null, null, true, true, -1, logger);
+    }
+
+     public static HgLogMessage[] getLogMessages(final String rootUrl, 
+            final Set<File> files, String fromRevision, String toRevision, 
+            boolean bShowMerges,  boolean bGetFileInfo, int limit, OutputLogger logger) {
         final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);  
         final File root = new File(rootUrl);
         
@@ -891,7 +921,7 @@ public class HgCommand {
             List<String> list = new LinkedList<String>();
             list = HgCommand.doLogForHistory(root, 
                     files != null ? new ArrayList<File>(files) : null,
-                    fromRevision, toRevision, headRev, bShowMerges, logger);
+                    fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, logger);
             processLogMessages(list, messages);
             
         } catch (HgException ex) {
@@ -1132,7 +1162,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static List<String> doLogForHistory(File repository, List<File> files, 
-            String from, String to, String headRev, boolean bShowMerges, OutputLogger logger) throws HgException {
+            String from, String to, String headRev, boolean bShowMerges, boolean bGetFileInfo, int limit, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         if (files != null && files.isEmpty()) return null;
         
@@ -1141,6 +1171,10 @@ public class HgCommand {
         command.add(getHgCommand());
         command.add(HG_VERBOSE_CMD);
         command.add(HG_LOG_CMD);
+        if (limit >= 0) {
+                command.add(HG_LOG_LIMIT_CMD);
+                command.add(Integer.toString(limit));
+        }
         boolean doFollow = true;
         if( files != null){
             for (File f : files) {
@@ -1169,8 +1203,19 @@ public class HgCommand {
         if(dateStr == null && revStr != null){
             command.add(HG_FLAG_REV_CMD);
             command.add(revStr);
-        }        
-        command.add(HG_LOG_TEMPLATE_HISTORY_CMD);
+        }    
+        
+        // Make sure revsions listed from "tip" down to "tip - limit"
+        if(limit >= 0 && dateStr == null && revStr == null){
+            command.add(HG_FLAG_REV_CMD);
+            command.add(HG_LOG_REV_TIP_RANGE);
+        }    
+        
+        if(bGetFileInfo){
+            command.add(HG_LOG_TEMPLATE_HISTORY_CMD);
+        }else{
+            command.add(HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD);            
+        }
 
         if( files != null){
             for (File f : files) {
@@ -1592,6 +1637,8 @@ public class HgCommand {
         command.add(HG_COMMIT_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
 
         String projectUserName = new HgConfigFiles(repository).getUserName(false);
         String globalUsername = HgConfigFiles.getInstance().getUserName();
@@ -1624,7 +1671,7 @@ public class HgCommand {
             command.add(tempfile.getAbsolutePath());
 
             for(File f: commitFiles){
-                command.add(f.getAbsolutePath());
+                command.add(f.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));            
             }
             List<String> list = exec(command);
             

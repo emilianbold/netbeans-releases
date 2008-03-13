@@ -54,12 +54,12 @@ import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.jdesktop.layout.GroupLayout;
+import org.netbeans.modules.cnd.editor.filecreation.CndExtensionList;
 import org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions;
 import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.loaders.ExtensionList;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -110,8 +110,8 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
     private void editExtensionsButtonActionPerformed(ExtensionsElements ee) {
         StringArrayCustomEditor editor = new StringArrayCustomEditor(
                 ee.getValues(), ee.defaultValue,
-                getMessage("EE_ItemLabel"), getMessage("EE_ItemLabel_Mnemonic").charAt(0), 
-                getMessage("EE_ItemListLabel"), getMessage("EE_ItemListLabel_Mnemonic").charAt(0), 
+                getMessage("EE_ItemLabel"), getMessage("EE_ItemLabel_Mnemonic").charAt(0),  // NOI18N
+                getMessage("EE_ItemListLabel"), getMessage("EE_ItemListLabel_Mnemonic").charAt(0),  // NOI18N
                 false);
         
         JPanel outerPanel = new JPanel();
@@ -145,8 +145,7 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
             ExtensionsSettings es = ExtensionsSettings.getInstance(che);
             final ExtensionsElements ee = new ExtensionsElements(es);
 
-            ee.label.setText(NbBundle.getMessage(CndOtherOptionsPanel.class,
-			"EE_ExtensionListTitle", che.getDisplayNameForExtensionList()));
+            ee.label.setText(NbBundle.getMessage(CndOtherOptionsPanel.class, "EE_ExtensionListTitle", che.getDisplayNameForExtensionList()));
             ee.button.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     editExtensionsButtonActionPerformed(ee);
@@ -290,7 +289,7 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
             button.setText(getMessage("CndOtherOptionsPanel.Extensions.EditButton"));
         }
 
-        private final String DELIMITER = ", ";
+        private final String DELIMITER = ", "; // NOI18N
     
         public void updateTextField() {
             String text = "";
@@ -317,10 +316,7 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
         }
 
         public void apply() {
-            ExtensionList el = new ExtensionList();
-            for (String string : list) {
-                el.addExtension(string);
-            }
+            CndExtensionList el = new CndExtensionList(getValues());
 
             es.setExtensionList(el);
             es.setDefaultExtension(defaultValue);

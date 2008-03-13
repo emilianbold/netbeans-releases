@@ -42,10 +42,13 @@
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Image;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.imageio.ImageIO;
 import javax.swing.Action;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
@@ -62,9 +65,13 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.compapp.casaeditor.Constants;
+import org.netbeans.modules.compapp.casaeditor.graph.CasaFactory;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaAttribute;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -72,18 +79,16 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaAttribute;
  */
 public class ServiceUnitNode extends CasaNode {
     
-    private static final Image ICON = Utilities.loadImage(
+    private static final Image DEFAULT_ICON = Utilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/ServiceUnitNode.png");     // NOI18N
     
     private static final String CHILD_ID_PROVIDES_LIST = "ProvidesList";        // NOI18N
     private static final String CHILD_ID_CONSUMES_LIST = "ConsumesList";        // NOI18N
-    
-    
+        
     public ServiceUnitNode(CasaServiceEngineServiceUnit component, CasaNodeFactory factory) {
         super(component, new MyChildren(component, factory), factory);
     }
-    
-    
+        
     @Override
     protected void addCustomActions(List<Action> actions) {
         CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
@@ -102,13 +107,16 @@ public class ServiceUnitNode extends CasaNode {
     @Override
     public String getName() {
         CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
+        /*
         if (su != null) {
             return NbBundle.getMessage(getClass(), "LBL_ServiceUnit");      // NOI18N
         }
         return super.getName();
+        */
+        return su.getUnitName();
     }
 
-
+    /*
     @Override
     public String getHtmlDisplayName() {
         try {
@@ -126,9 +134,10 @@ public class ServiceUnitNode extends CasaNode {
         } catch (Throwable t) {
             // getHtmlDisplayName MUST recover gracefully.
             return getBadName();
-        }
+        }        
     }
-
+    */
+    
     @Override
     protected void setupPropertySheet(Sheet sheet) {
         final CasaServiceEngineServiceUnit casaSU = (CasaServiceEngineServiceUnit) getData();
@@ -209,7 +218,8 @@ public class ServiceUnitNode extends CasaNode {
         public Object getChildKeys(Object data)  {
             List<String> children = new ArrayList<String>();
             Set<String> processInfo = getProcessNames();
-            if (processInfo.size() == 0) {
+            if (!CasaFactory.getCasaCustomizer().getBOOLEAN_CLASSIC_SESU_LAYOUT_STYLE() 
+                    || processInfo.size() == 0) {
                 children.add(CHILD_ID_CONSUMES_LIST);
                 children.add(CHILD_ID_PROVIDES_LIST);
             } else {
@@ -257,12 +267,13 @@ public class ServiceUnitNode extends CasaNode {
     
     @Override
     public Image getIcon(int type) {
-        return ICON;
+        CasaServiceEngineServiceUnit sesu = (CasaServiceEngineServiceUnit) getData();
+        return getProjectIconImage(sesu.getComponentName());
     }
     
     @Override
     public Image getOpenedIcon(int type) {
-        return ICON;
+        return getIcon(type);
     }
     
     @Override
@@ -281,5 +292,27 @@ public class ServiceUnitNode extends CasaNode {
             return getModel().isDeletable(su);
         }
         return false;
+    }
+    
+    public static Image getProjectIconImage(String compName) {
+        Image ret = DEFAULT_ICON;       
+      
+        JbiDefaultComponentInfo defaultCompInfo = 
+                JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
+        JBIComponentStatus compStatus = defaultCompInfo.getComponentHash().get(compName);
+        
+        URL projectIconURL = null;        
+        if (compStatus != null) {
+            projectIconURL = compStatus.getProjectIconURL();
+            if (projectIconURL != null) {
+                try {
+                    ret = ImageIO.read(projectIconURL);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        
+        return ret;
     }
 }

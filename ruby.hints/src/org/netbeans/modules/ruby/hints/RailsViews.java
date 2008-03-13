@@ -35,7 +35,7 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -67,8 +67,8 @@ public class RailsViews implements AstRule {
         return info.getFileObject().getName().endsWith("_controller"); // NOI18N
     }
 
-    public Set<Integer> getKinds() {
-        return Collections.singleton(NodeTypes.DEFNNODE);
+    public Set<NodeType> getKinds() {
+        return Collections.singleton(NodeType.DEFNNODE);
     }
     
     public void run(RuleContext context, List<Description> result) {
@@ -103,7 +103,7 @@ public class RailsViews implements AstRule {
      * For example, methods that contain a redirect method probably don't need one.
      */
     private boolean shouldHaveView(CompilationInfo info, Node node) {
-        if (node.nodeId == NodeTypes.FCALLNODE) {
+        if (node.nodeId == NodeType.FCALLNODE) {
             String method = ((INameNode)node).getName();
             
             if (method.startsWith("redirect_")) { // NOI18N

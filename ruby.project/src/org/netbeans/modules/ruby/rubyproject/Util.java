@@ -50,6 +50,7 @@ import java.util.List;
 import javax.swing.JComboBox;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
@@ -277,7 +278,9 @@ public final class Util {
     }
 
     public static void storeWizardPlatform(JComboBox platforms) {
-        org.netbeans.modules.ruby.platform.Util.getPreferences().put(
-                LAST_PLATFORM_ID, PlatformComponentFactory.getPlatform(platforms).getID());
+        RubyPlatform selectedPlatform = PlatformComponentFactory.getPlatform(platforms);
+        if (selectedPlatform != null) {
+            org.netbeans.modules.ruby.platform.Util.getPreferences().put(LAST_PLATFORM_ID, selectedPlatform.getID());
+        }
     }
 }

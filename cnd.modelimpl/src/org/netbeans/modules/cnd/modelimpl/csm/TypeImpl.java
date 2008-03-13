@@ -102,6 +102,27 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     }
 
     // package-local - for facory only
+    TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, AST ast, CsmFile file, CsmOffsetable offset) {
+        super(file, offset);
+        this._setClassifier(classifier);
+        this.pointerDepth = (byte) pointerDepth;
+        this.reference = reference;
+        this.arrayDepth = (byte) arrayDepth;
+        _const = initIsConst(ast);
+        if (classifier == null) {
+            this._setClassifier(initClassifier(ast));
+            this.classifierText = initClassifierText(ast);
+        } else {
+            CharSequence typeName = classifier.getName();
+            if (typeName == null || typeName.length()==0){
+                this.classifierText = initClassifierText(ast);
+            } else {
+                this.classifierText = typeName;
+            }
+        }
+    }
+    
+    // package-local - for facory only
     TypeImpl(AST classifier, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
         super(classifier, file);
         //setAst(classifier);
@@ -162,6 +183,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
 		switch( token.getType() ) {
 		    case CPPTokenTypes.LITERAL_const:
                     case CPPTokenTypes.LITERAL___const:
+                    case CPPTokenTypes.LITERAL___const__:
 			return true;
 		    case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
 		    case CPPTokenTypes.CSM_QUALIFIED_ID:

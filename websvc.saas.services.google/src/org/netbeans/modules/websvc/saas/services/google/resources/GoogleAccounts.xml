@@ -52,7 +52,7 @@
 
     <description>Google Accounts Service</description>
     
-    <display-name>GoogleAccounts</display-name>
+    <display-name>Accounts Service</display-name>
 
     <saas-metadata>
 
@@ -62,7 +62,7 @@
         </group>
 
         <authentication profile="SaaSServices/Google/profile.properties">
-            <api-key id="dev_id"/>
+            <api-key id="key"/>
         </authentication>
 
     </saas-metadata>

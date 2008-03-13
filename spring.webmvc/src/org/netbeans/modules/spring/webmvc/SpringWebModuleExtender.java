@@ -53,8 +53,10 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,6 +68,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.CreateCapability;
@@ -89,6 +92,9 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -104,10 +110,10 @@ import org.openide.util.NbBundle;
 public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {      
     private static final Logger LOGGER = Logger.getLogger(SpringWebModuleExtender.class.getName());
     
-    private SpringConfigPanelVisual frameworkPanelVisual;
     private final SpringWebFrameworkProvider framework;
     private final ExtenderController controller;
-    private boolean customizer;
+    private final boolean customizer;
+    private SpringConfigPanelVisual component;
     private String dispatcherName = "dispatcher"; // NOI18N
     private String dispatcherMapping = "*.htm"; // NOI18N
     private boolean includeJstl = true;
@@ -142,10 +148,11 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     }
 
     public SpringConfigPanelVisual getComponent() {
-        if (frameworkPanelVisual == null) {
-            frameworkPanelVisual = new SpringConfigPanelVisual(this);
+        if (component == null) {
+            component = new SpringConfigPanelVisual(this);
+            component.setEnabled(!customizer);
         }
-        return frameworkPanelVisual;
+        return component;
     }
 
     public boolean isValid() {
@@ -153,20 +160,12 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNameIsEmpty")); // NOI18N
             return false;
         }
-        
-        // TODO clean up this method;  Either just check filename or also have servlet name check
-        // conditional error message
-        String whichError = ""; // NOI18N
-        boolean isDispatcherConfigFilenameValid = SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid(dispatcherName);
-        if (!isDispatcherConfigFilenameValid){
-            whichError = NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherServletConfigFilenameIsNotValid");
-        }                
- 
-        if (!isDispatcherConfigFilenameValid ){
-            controller.setErrorMessage(whichError); // NOI18N
+               
+        if (!SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid(dispatcherName)){
+            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherServletConfigFilenameIsNotValid")); 
             return false;
-        }   
-        
+        }                
+
         if (dispatcherMapping == null || dispatcherMapping.trim().length() == 0) {
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherMappingPatternIsEmpty")); // NOI18N
             return false;
@@ -181,12 +180,6 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         
     public HelpCtx getHelp() {
         return new HelpCtx(SpringWebModuleExtender.class);
-    }
-
-    public void readSettings(Object settings) {
-    }
-
-    public void storeSettings(Object settings) {
     }
 
     public final void addChangeListener(ChangeListener l) {
@@ -296,14 +289,15 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             FileObject jsp = webInf.createFolder("jsp");
 
             // COPY TEMPLATE SPRING RESOURCES (JSP, XML, PROPERTIES)
+            DataFolder webInfDO = DataFolder.findFolder(webInf);
             copyResource("index.jsp", FileUtil.createData(jsp, "index.jsp")); // NOI18N
             copyResource("jdbc.properties", FileUtil.createData(webInf, "jdbc.properties")); // NOI18N
             final List<File> newFiles = new ArrayList<File>(2);
             FileObject configFile;
-            configFile = copyResource("applicationContext.xml", FileUtil.createData(webInf, "applicationContext.xml")); // NOI18N
+            configFile = createFromTemplate("applicationContext.xml", webInfDO, "applicationContext"); // NOI18N
             addFileToOpen(configFile);
             newFiles.add(FileUtil.toFile(configFile));
-            configFile = copyResource("dispatcher-servlet.xml", FileUtil.createData(webInf, getComponent().getDispatcherName() + "-servlet.xml")); // NOI18N
+            configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet"); // NOI18N
             addFileToOpen(configFile);
             newFiles.add(FileUtil.toFile(configFile));
 
@@ -346,6 +340,17 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
 
         public Set<FileObject> getFilesToOpen() {
             return filesToOpen;
+        }
+
+        private FileObject createFromTemplate(String templateName, DataFolder targetDO, String fileName) throws IOException {
+            FileObject templateFO = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("SpringFramework/Templates/" + templateName);
+            DataObject templateDO = DataObject.find(templateFO);
+            Map<String, Object> values = new HashMap<String, Object>();
+            // This is needed, because all XML files have a virtual charset that
+            // detects the encoding of the file, and createFromTemplate() uses the
+            // name of that charset (ALWAYS "UTF-8") as the encoding value.
+            values.put("encoding", FileEncodingQuery.getEncoding(targetDO.getPrimaryFile()).name()); // NOI18N
+            return templateDO.createFromTemplate(targetDO, fileName, values).getPrimaryFile();
         }
 
         protected FileObject copyResource(String resourceName, FileObject target) throws UnsupportedEncodingException, IOException {

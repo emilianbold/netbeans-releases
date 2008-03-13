@@ -382,14 +382,17 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
                 refreshUI (); // refresh font viewer
             } else
             if (dd.getValue ().equals (loc ("CTL_Font_Inherited"))) {
-                f = new Font (
-                    (String) getDefault (currentLanguage, category, StyleConstants.FontFamily),
-                    (((Boolean) getDefault (currentLanguage, category, StyleConstants.Bold)) ?
-                        Font.BOLD : 0) +
-                    (((Boolean) getDefault (currentLanguage, category, StyleConstants.Italic)) ?
-                        Font.ITALIC : 0),
-                    (Integer) getDefault (currentLanguage, category, StyleConstants.FontSize)
-                );
+                String fontName = (String) getDefault (currentLanguage, category, StyleConstants.FontFamily);
+                int style = 0;
+                if (Boolean.TRUE.equals(getDefault (currentLanguage, category, StyleConstants.Bold))) {
+                    style += Font.BOLD;
+                }
+                if (Boolean.TRUE.equals(getDefault (currentLanguage, category, StyleConstants.Italic))) {
+                    style += Font.ITALIC;
+                }
+                Integer size = (Integer) getDefault (currentLanguage, category, StyleConstants.FontSize);
+                
+                f = new Font (fontName, style, size == null ? getDefaultFontSize() : size);
                 category = modifyFont (category, f);
                 replaceCurrrentCategory (category);
                 setToBeSaved (currentProfile, currentLanguage);
@@ -434,8 +437,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     public void update (ColorModel colorModel) {
         this.colorModel = colorModel;
         currentProfile = colorModel.getCurrentProfile ();
-        currentLanguage = (String) colorModel.getLanguages ().
-            iterator ().next ();
+        currentLanguage = ColorModel.ALL_LANGUAGES;
         if (preview != null) 
             preview.removePropertyChangeListener 
                 (Preview.PROP_CURRENT_ELEMENT, this);

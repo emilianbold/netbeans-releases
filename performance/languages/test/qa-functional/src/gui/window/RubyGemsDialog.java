@@ -41,7 +41,6 @@
 
 package gui.window;
 
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -70,8 +69,8 @@ public class RubyGemsDialog extends org.netbeans.performance.test.utilities.Perf
     @Override
     public void initialize() {
         log("::initialize");
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.rubyproject.gems.Bundle", "CTL_RubyGems");
-        TITLE = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.rubyproject.gems.Bundle", "CTL_RubyGems");
+        MENU = "Ruby Gems"; //Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.rubyproject.gems.Bundle", "CTL_RubyGems");
+        TITLE = "Ruby Gems"; //org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.rubyproject.gems.Bundle", "CTL_RubyGems");
         
     }
     @Override

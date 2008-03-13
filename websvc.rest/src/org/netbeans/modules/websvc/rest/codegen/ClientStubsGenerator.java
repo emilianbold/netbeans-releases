@@ -878,7 +878,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 "__RESOURCE_NAME__",
                 "__STUB_METHODS__"
             };
-            if(r.isContainer() && root != null) {
+            if(r.isContainer() && root != null && root.getChildren().size() > 0) {
                 String containerName = r.getName();
                 String containerRepName = root.getName();
                 //TODO
@@ -1049,13 +1049,13 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     if(child.isEntity()) //child is a Entity and has a non-generic converter
                         sb.append("         '\""+childName+"\":{\"@uri\":\"'+" +
                             "this."+childName+".getUri()+'\", \""+childRepName+"\":" +
-                            "{\"$\":\"'+eval(\"this."+childName+".get\"+this."+childName+".getFields()[0].substring(0,1).toUpperCase()+this."+childName+".getFields()[0].substring(1)+\"()\")+'\"}},'+\n");
+                            ":\"'+eval(\"this."+childName+".get\"+this."+childName+".getFields()[0].substring(0,1).toUpperCase()+this."+childName+".getFields()[0].substring(1)+\"()\")+'\"},'+\n");
                     else
                         sb.append("         '\""+childName+"\":{\"@uri\":\"'+this."+childName+".getUri()+'\"},'+\n");
                 }else if(child.isRoot()) {
                     sb.append("         this."+childName+".toString()+','+\n");
                 }else
-                    sb.append("         '\""+childName+"\":{\"$\":\"'+this."+childName+"+'\"},'+\n");
+                    sb.append("         '\""+childName+"\":\"'+this."+childName+"+'\",'+\n");
             }
             return sb.toString();
         }

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.JTextComponent;
@@ -126,27 +127,37 @@ public class CustomEditorDrop implements ActiveEditorDrop {
                     if (showParams && bean.getInputParameters() != null) {
                         allParams.addAll(bean.getInputParameters());
                     }
-                    CustomCodeSetupPanel panel = new CustomCodeSetupPanel(
-                            codegen.getSubresourceLocatorUriTemplate(),
-                            bean.getQualifiedClassName(), 
-                            allParams,
-                            codegen.canShowResourceInfo(), showParams);
+                    if(codegen.canShowResourceInfo() || (showParams && !allParams.isEmpty())) {
+                        CustomCodeSetupPanel panel = new CustomCodeSetupPanel(
+                                codegen.getSubresourceLocatorUriTemplate(),
+                                bean.getQualifiedClassName(), 
+                                allParams,
+                                codegen.canShowResourceInfo(), showParams);
 
-                    DialogDescriptor desc = new DialogDescriptor(panel, 
-                            NbBundle.getMessage(CustomEditorDrop.class,
-                            "LBL_CustomizeSaasService", displayName));
-                    Object response = DialogDisplayer.getDefault().notify(desc);
-                    
-                    if (response.equals(NotifyDescriptor.YES_OPTION)) {
-                        codegen.setSubresourceLocatorUriTemplate(panel.getUriTemplate());
-                        codegen.setSubresourceLocatorName(panel.getMethodName());
-                    } else {
-                        // cancel
-                        return;
+                        DialogDescriptor desc = new DialogDescriptor(panel, 
+                                NbBundle.getMessage(CustomEditorDrop.class,
+                                "LBL_CustomizeSaasService", displayName));
+                        Object response = DialogDisplayer.getDefault().notify(desc);
+
+                        if (response.equals(NotifyDescriptor.YES_OPTION)) {
+                            codegen.setSubresourceLocatorUriTemplate(panel.getUriTemplate());
+                            codegen.setSubresourceLocatorName(panel.getMethodName());
+                        } else {
+                            // cancel
+                            return;
+                        }
                     }
 
-                    codegen.generate(dialog.getProgressHandle());
-                    Util.showMethod(targetFO, codegen.getSubresourceLocatorName());
+                    try {
+                        codegen.generate(dialog.getProgressHandle());
+                    } catch(IOException ex) {
+                        if(!ex.getMessage().equals(Util.SCANNING_IN_PROGRESS))
+                            errors.add(ex);
+                    }
+                    try {
+                        Util.showMethod(targetFO, codegen.getSubresourceLocatorName());
+                    } catch(IOException ex) {//ignore
+                    }
                 } catch (Exception ioe) {
                     errors.add(ioe);
                 } finally {

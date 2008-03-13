@@ -18,15 +18,16 @@
     <tocitem text="About Projects" target="proj_about" />
     <tocitem text="Working with Projects" target="proj_process"/>
     <tocitem text="Project Tasks: Quick Reference" target="proj_quickref"/>
-    <tocitem text="Multiple Source Roots in Projects" target="proj_sources_multi"/>
     <tocitem text="Creating a Java Project" target="proj_creating"/>
     <tocitem text="Java Project Templates" target="proj_templates" />
     <tocitem text="Importing an Eclipse or JBuilder Project" target="proj_import" />
-    <tocitem text="Deleting a Project" target="proj_deleting" />
-    <tocitem text="Moving, Copying, and Renaming a Project" target="proj_move_copy_rename" />
     <tocitem text="Setting the Main Project" target="proj_main" />
+    <tocitem text="Multiple Source Roots in Projects" target="proj_sources_multi"/>
+    <tocitem text="Sharing Libraries in a Java Project" target="proj_sharing" />
     <tocitem text="Adding Javadoc to a Project" target="javadoc.add" />
     <tocitem text="Setting the Target JDK" target="proj_jdk" />
+    <tocitem text="Moving, Copying, and Renaming a Project" target="proj_move_copy_rename" />
+    <tocitem text="Deleting a Project" target="proj_deleting" />
     <tocitem text="Standard Projects" >
     <tocitem text="About Standard Projects" target="proj_stand_about" />
     <tocitem text="Managing the Classpath" target="comp_classpath" />
@@ -197,6 +198,13 @@
     <tocitem text="Adding Arguments for Message Formats" target="internation.addparams" />
     <tocitem text="Configuring Internationalization Settings" target="internation.settings" />
     </tocitem>     
+    
+    <tocitem text="Using the Spring Framework">
+        <tocitem text="About Spring Framework Support" target="spring.framework.about"/>
+	<tocitem text="Adding Spring Support to a Project" target="spring.framework.add"/>
+	<tocitem text="Creating a Spring Configuration File" target="spring.framework.create"/>
+	<tocitem text="Organizing Spring Configuration Files" target="spring.framework.organize"/>
+    </tocitem>
     
     <tocitem text="Working with Ant">
     <tocitem text="About Working with Ant" target="ant_intro" />

@@ -52,7 +52,7 @@
 
     <description>Google Service</description>
     
-    <display-name>GoogleGeocoding</display-name>
+    <display-name>Geocoding Service</display-name>
 
     <saas-metadata>
 
@@ -62,13 +62,15 @@
         </group>
 
         <authentication profile="SaaSServices/Google/profile.properties">
-            <api-key id="dev_id"/>
+            <api-key id="key"/>
         </authentication>
 
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="getGeocode" href="#google.Geocode"/>
     </methods>
+    -->
 
 </saas-services>

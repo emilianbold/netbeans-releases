@@ -45,7 +45,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.actions.BuildToolsAction;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
@@ -64,7 +63,6 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 public class GdbProfile implements ConfigurationAuxObject {
@@ -167,12 +165,16 @@ public class GdbProfile implements ConfigurationAuxObject {
         model.setGdbRequired(true);
         model.setShowRequiredBuildTools(false);
         model.setShowRequiredDebugTools(true);
+        model.setCompilerSetName(null); // means don't change
+        model.setSelectedCompilerSetName(csname);
         BuildToolsAction bt = (BuildToolsAction) SystemAction.get(BuildToolsAction.class);
         bt.setTitle(NbBundle.getMessage(GdbProfile.class, "LBL_ResolveMissingGdb_Title")); // NOI18N
         if (bt.initBuildTools(model, new ArrayList())) {
 //            if (!name.equals(model.getGdbName())) {
 //                setGdbCommand(model.getGdbName());
 //            }
+            conf.getCompilerSet().setValue(model.getSelectedCompilerSetName());
+            cs = CompilerSetManager.getDefault().getCompilerSet(model.getSelectedCompilerSetName());
             return cs.getTool(Tool.DebuggerTool).getPath();
         } else {
             return null;

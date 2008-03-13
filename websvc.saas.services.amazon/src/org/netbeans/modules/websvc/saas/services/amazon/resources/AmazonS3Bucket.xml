@@ -47,28 +47,36 @@
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://developer.amazonwebservices.com/connect/kbcategory.jspa?categoryID=46"
+               api-doc="http://docs.amazonwebservices.com/AmazonS3/2006-03-01/RESTAPI.html"
                url="org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3BucketWadl.xml">
 
     <description>AmazonS3 Bucket Service</description>
     
-    <display-name>AmazonS3 Bucket</display-name>
+    <display-name>S3 Buckets Service</display-name>
 
     <saas-metadata>
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
 
-        <group name="Amazon">
-            <group name="AmazonS3"/>
-        </group>
-
+        <group name="Amazon"/>
+  
         <authentication profile="SaaSServices/AmazonS3/profile.properties">
-            <signed-url>
+            <signed-url sig-id="Authorization" id="amazons3.bucket">
                 <sign>
                     <params>
-                        <param name="HTTP-Verb" type="string" required="true" default="GET" />
+                        <param name="HTTP-Verb" type="string" required="true" default="GET"/>
                         <param name="Date" type="date" required="true"/>
                         <param name="HTTP-Request-URI" type="string"/>
+                        <param name="Bucket" type="string" required="true" default=""/>
+                    </params>
+                </sign>
+            </signed-url>
+            <signed-url sig-id="Authorization" id="amazons3.object">
+                <sign>
+                    <params>
+                        <param name="HTTP-Verb" type="string" required="true" default="GET"/>
+                        <param name="Date" type="date" required="true"/>
+                        <param name="HTTP-Request-URI" type="string" default="&quot;/&quot; + object + &quot;/&quot;"/>
                         <param name="Bucket" type="string" required="true" default=""/>
                     </params>
                 </sign>
@@ -77,6 +85,7 @@
         
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="getBucket" href="#amazons3.getBucket"/>
         <method name="getObject" href="#amazons3.getObject"/>
@@ -85,5 +94,6 @@
         <method name="setAcl" href="#amazons3.setAcl"/>
         <method name="getLocation" href="#amazons3.getLocation"/>
     </methods>
-
+    -->
+    
 </saas-services>

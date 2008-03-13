@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTElif;
@@ -204,6 +205,10 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         public CsmObject getOwner() {
             return null;
         }
+
+        public CsmReferenceKind getKind() {
+            return CsmReferenceKind.DECLARATION;
+        }
     }
 
     private class MacroReference extends OffsetableBase implements CsmReference {
@@ -253,5 +258,9 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         public CsmObject getOwner() {
             return getTargetFile();
         }
+        
+        public CsmReferenceKind getKind() {
+            return CsmReferenceKind.DECLARATION;
+        }        
     }
 }

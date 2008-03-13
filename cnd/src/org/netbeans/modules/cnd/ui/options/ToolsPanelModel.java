@@ -117,6 +117,10 @@ public abstract class ToolsPanelModel {
     
     public abstract String getCompilerSetName();
     
+    public void setSelectedCompilerSetName(String name) {};
+    
+    public String getSelectedCompilerSetName() {return null;}
+    
 //    protected abstract void setCCompilerName(String name);
 //    
 //    protected abstract void setCppCompilerName(String name);
@@ -132,4 +136,8 @@ public abstract class ToolsPanelModel {
     public abstract void setShowRequiredDebugTools(boolean value);
     
     public abstract boolean showRequiredDebugTools();
+    
+    public void SetEnableRequiredCompilerCB(boolean enabled) {}
+    
+    public boolean enableRequiredCompilerCB() {return true;}
 }

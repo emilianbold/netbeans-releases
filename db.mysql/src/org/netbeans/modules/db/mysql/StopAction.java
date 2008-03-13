@@ -80,7 +80,7 @@ public class StopAction extends CookieAction {
         
         ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
         
-        return server != null && server.isRunning();
+        return server != null && server.isConnected();
     }
 
     @Override

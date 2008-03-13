@@ -282,7 +282,7 @@ public class XMLContentPanel extends AbstractPanel {
             while (it.hasNext()) {
                  String next = (String) it.next();
                  rootModel.addElement(next);
-            }        
+            }    
     }
 
     @Override
