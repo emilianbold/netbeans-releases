@@ -426,6 +426,11 @@ public final class Validator extends BpelValidator {
 //out();
 //out("SEE: " + getName(holder));
     for (Correlation correlation : correlations) {
+      Initiate initiate = correlation.getInitiate();
+
+      if (initiate != Initiate.NO) {
+        continue;
+      }
       BpelReference<CorrelationSet> ref = correlation.getSet();
 
       if (ref == null) {
@@ -437,17 +442,17 @@ public final class Validator extends BpelValidator {
         continue;
       }
 //out("check: " + getName(correlation));
-      if ( !checkCorrelation(set, holder, process)) {
-        addError("FIX_Not_Instantiated_Correlation", correlation); // NOI18N
+      if ( !checkCorrelationSet(set, holder, process)) {
+        addError("FIX_Not_Instantiated_Correlation_Set", correlation, set.getName()); // NOI18N
       }
     }
   }
 
-  private boolean checkCorrelation(CorrelationSet set, CorrelationsHolder holder, BpelEntity root) {
+  private boolean checkCorrelationSet(CorrelationSet set, CorrelationsHolder holder, BpelEntity root) {
     List<BpelEntity> children = root.getChildren();
 
     for (BpelEntity child : children) {
-      if (checkCorrelation(set, holder, child)) {
+      if (checkCorrelationSet(set, holder, child)) {
         return true;
       }
     }

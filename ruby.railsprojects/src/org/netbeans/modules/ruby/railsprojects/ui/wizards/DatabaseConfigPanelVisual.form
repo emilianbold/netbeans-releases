@@ -34,20 +34,20 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="useIDEConnections" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="259" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
-          <Component id="ideConnectionsPanel" alignment="1" pref="492" max="32767" attributes="0"/>
+          <Component id="ideConnectionsPanel" alignment="1" pref="277" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Component id="useRailsAdapter" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="adapterConfigurationPanel" alignment="1" pref="492" max="32767" attributes="0"/>
+          <Component id="adapterConfigurationPanel" alignment="1" pref="277" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Component id="useJdbc" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
-              <Component id="jSeparator1" pref="480" max="32767" attributes="0"/>
+              <Component id="jSeparator1" pref="265" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
