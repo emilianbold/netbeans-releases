@@ -168,20 +168,45 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testSwitchFormatting3Half() {
+    public void testLabelIndentHalf() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
-                "int main(int i)\n" +
+                "int foo()\n" +
                 "{\n" +
-                "if (offset)\n" +
-                "    *offset = layout->record_size / BITS_PER_UNIT;\n" +
+                "  start: while(true){\n" +
+                "int i = 0;\n" +
+                "goto start;\n" +
+                "end:\n" +
+                "if(true){\n" +
+                "foo();\n" +
+                "second:\n" +
+                "foo();\n" +
+                "}\n" +
+                "}\n" +
                 "}\n");
         reformat();
-        assertDocumentText("Incorrect formatting for macro define with paren",
-                "int main(int i)\n" +
+        assertDocumentText("Incorrect label half indent",
+                "int foo()\n" +
                 "{\n" +
-                "    if (offset)\n" +
-                "        *offset = layout->record_size / BITS_PER_UNIT;\n" +
+                "start:\n" +
+                "  while (true)\n" +
+                "    {\n" +
+                "      int i = 0;\n" +
+                "      goto start;\n" +
+                "end:\n" +
+                "      if (true)\n" +
+                "        {\n" +
+                "          foo();\n" +
+                "second:\n" +
+                "          foo();\n" +
+                "        }\n" +
+                "    }\n" +
                 "}\n");
     }
 

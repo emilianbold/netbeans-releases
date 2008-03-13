@@ -706,8 +706,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/ui/status/Bundle"); // NOI18N
         statusLabel.setText(bundle.getString("CTL_Versioning_Status_Table_Title")); // NOI18N
         statusLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        statusLabel.setMaximumSize(new java.awt.Dimension(120, 17));
-        statusLabel.setMinimumSize(new java.awt.Dimension(120, 17));
         jPanel2.add(statusLabel);
         statusLabel.getAccessibleContext().setAccessibleName(bundle.getString("CTL_Versioning_Status_Table_Title")); // NOI18N
 

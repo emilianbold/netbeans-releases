@@ -2936,6 +2936,19 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         listener.cleanDiagnostics();
                         state = 0;
                     } catch (Throwable t) {
+                        if (LOGGER.isLoggable(Level.FINEST)) {
+                            final ClassPath bootPath   = cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
+                            final ClassPath classPath  = cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
+                            final ClassPath sourcePath = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+                            final String message = String.format("batchCompile caused an exception Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s",
+                                        FileUtil.getFileDisplayName(rootFo),
+                                        active.toUri().toString(),
+                                        bootPath == null   ? null : bootPath.toString(),
+                                        classPath == null  ? null : classPath.toString(),
+                                        sourcePath == null ? null : sourcePath.toString()
+                                        );
+                            LOGGER.log(Level.FINEST, message, t);  //NOI18N
+                        }
                         if (t instanceof ThreadDeath) {
                             throw (ThreadDeath) t;
                         }
@@ -2995,9 +3008,15 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         final TransTypes trans,
         final com.sun.tools.javac.util.Name.Table nameTable,
         final ClasspathInfo cpInfo) throws IOException {
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("Dump classes: " + entered);      //NOI18N
+        }
         for (ClassSymbol classSym : entered) {
             JavaFileObject source = classSym.sourcefile;            
             dumpTopLevel(classSym, fileManager, source, currentRoot, dirtyFiles, javacTypes, trans, nameTable, cpInfo);
+        }
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("Class dump finished.");              //NOI18N
         }
     }
     

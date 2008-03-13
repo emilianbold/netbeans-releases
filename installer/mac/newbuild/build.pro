@@ -37,6 +37,7 @@
     <property name="ruby.appname" value="Ruby"/>
     <property name="soa.appname" value="SOA"/>
     <property name="cpp.appname" value="C/C++"/>
+    <property name="php.appname" value="PHP"/>
 
     <property name="dmg.prefix.name" value="_${prefix}-${buildnumber}"/>
 
