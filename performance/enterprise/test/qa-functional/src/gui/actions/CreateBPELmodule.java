@@ -42,21 +42,20 @@
 package gui.actions;
 
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
-import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.ide.ProjectSupport;
 
 
 /**
  * Test create BPELmodule
  *
- * @author  rashid@netbeans.org
+ * @author  rashid@netbeans.org, mrkam@netbeans.org
  */
 public class CreateBPELmodule extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
@@ -92,6 +91,8 @@ public class CreateBPELmodule extends org.netbeans.performance.test.utilities.Pe
         project = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.wizards.Bundle","Templates/Project/SOA/emptyBpelpro.xml"); // "BPEL Module"
         project_type="BPELModule";
         index=1;
+        
+        MainWindowOperator.getDefault().maximize();
     }
     
     public void prepare(){

@@ -983,7 +983,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     }
                                     lastNamespace = kind != ExprKind.SCOPE ? null : finder.getExactNamespace(var); // try package
                                     if (lastNamespace == null) { // not package, let's try class name
-                                        CsmClass cls = sup.getClassFromName(var, true);
+                                        CsmClassifier cls = sup.getClassFromName(var, true);
                                         if (cls == null) { // class not found
                                             // try now resolver
                                             if (kind == ExprKind.SCOPE) {
@@ -1339,7 +1339,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                }
                 
                 if (isConstructor) { // Help for the constructor
-                    CsmClass cls = null;
+                    CsmClassifier cls = null;
                     if (first) {
                         cls = sup.getClassFromName(mtdName, true);
                     } else { // not first

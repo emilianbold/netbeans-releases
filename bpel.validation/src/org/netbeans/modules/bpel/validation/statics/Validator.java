@@ -555,8 +555,7 @@ public final class Validator extends BpelValidator {
         if ( counterName == null ){
             return;
         }
-        ContainerIterator<BaseScope> containerIterator = 
-            new ContainerIterator<BaseScope>( forEach ,BaseScope.class );
+        ContainerIterator<BaseScope> containerIterator = new ContainerIterator<BaseScope>(forEach, BaseScope.class);
         BaseScope scope = containerIterator.next();
         assert scope!=null;
         VariableContainer container = scope.getVariableContainer();
