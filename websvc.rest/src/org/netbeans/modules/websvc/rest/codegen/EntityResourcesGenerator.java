@@ -140,7 +140,8 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Constants.XML_ROOT_ELEMENT,
         Constants.XML_ELEMENT,
         Constants.XML_TRANSIENT,
-        Constants.XML_ATTRIBUTE
+        Constants.XML_ATTRIBUTE,
+        Constants.URI_BUILDER
     };
     
     private static final String mimeTypes = "{\"" + MimeType.XML.value() + "\", \"" +
@@ -1659,7 +1660,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Object returnType = Constants.URI_TYPE;
         
         String bodyText = "{if (isUriExtendable) {" +
-                "return uri.resolve($ID_TO_URI$ + \"/\");" +
+                "return UriBuilder.fromUri(uri).path($ID_TO_URI$ + \"/\").build();" +
                 "}" +
                 "return uri;" +
                 "}";
