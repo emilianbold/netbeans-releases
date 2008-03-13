@@ -95,6 +95,8 @@ public class EditorOptions {
     public static final boolean sharpAtStartLineDefault = true;
     public static final String indentCasesFromSwitch = "indentCasesFromSwitch"; //NOI18N
     public static final boolean indentCasesFromSwitchDefault = true;
+    public static final String absoluteLabelIndent = "absoluteLabelIndent"; //NOI18N
+    public static final boolean absoluteLabelIndentDefault = true;
 
     public static final String indentNamespace = "indentNamespace"; //NOI18N
     public static final boolean indentNamespaceDefault = true;
@@ -289,6 +291,7 @@ public class EditorOptions {
         defaults.put(sharpAtStartLine, sharpAtStartLineDefault);
         defaults.put(indentNamespace, indentNamespaceDefault);
         defaults.put(indentCasesFromSwitch, indentCasesFromSwitchDefault);
+        defaults.put(absoluteLabelIndent, absoluteLabelIndentDefault);
 
         //BracesPlacement
         defaults.put(newLineBeforeBraceNamespace,newLineBeforeBraceNamespaceDefault);
