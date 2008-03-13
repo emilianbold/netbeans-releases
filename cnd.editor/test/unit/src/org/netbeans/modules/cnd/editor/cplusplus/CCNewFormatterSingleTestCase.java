@@ -167,40 +167,47 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    public void testBlankLineAfterEndLineComment() {
+    
+    public void testLabelIndentHalf() {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentNamespace, false);
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
-                "namespace AC\n" +
+                "int foo()\n" +
                 "{\n" +
-                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
-                "{\n" +
-                "public:\n" +
-                "    int number;\n" +
-                "    char** cc;\n" +
-                "ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
-                "    {\n" +
-                "    }\n" +
-                "} FAR ct_data;\n" +
-                "}\n"
-                );
+                "  start: while(true){\n" +
+                "int i = 0;\n" +
+                "goto start;\n" +
+                "end:\n" +
+                "if(true){\n" +
+                "foo();\n" +
+                "second:\n" +
+                "foo();\n" +
+                "}\n" +
+                "}\n" +
+                "}\n");
         reformat();
-        assertDocumentText("Incorrect blak line after end line comment",
-                "namespace AC\n" +
+        assertDocumentText("Incorrect label half indent",
+                "int foo()\n" +
                 "{\n" +
-                "\n" +
-                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
-                "{\n" +
-                "public:\n" +
-                "    int number;\n" +
-                "    char** cc;\n" +
-                "\n" +
-                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
+                "start:\n" +
+                "  while (true)\n" +
                 "    {\n" +
+                "      int i = 0;\n" +
+                "      goto start;\n" +
+                "end:\n" +
+                "      if (true)\n" +
+                "        {\n" +
+                "          foo();\n" +
+                "second:\n" +
+                "          foo();\n" +
+                "        }\n" +
                 "    }\n" +
-                "} FAR ct_data;\n" +
-                "}\n"
-                );
+                "}\n");
     }
+
 }

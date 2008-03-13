@@ -53,7 +53,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.IConditionGraphViewContainer;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.Lookup;
@@ -70,7 +69,7 @@ public final class SQLOutputConditionView extends TopComponent implements Proper
     private static IConditionGraphViewContainer sqlView;
     private Set<Component> components = new HashSet<Component>(1);
     private JTabbedPane tabbedPane = TabbedPaneFactory.createCloseButtonTabbedPane();
-    private static transient final Logger mLogger = LogUtil.getLogger(SQLOutputConditionView.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SQLOutputConditionView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public SQLOutputConditionView(IConditionGraphViewContainer view) {
@@ -78,12 +77,12 @@ public final class SQLOutputConditionView extends TopComponent implements Proper
         initComponents();
         // setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/etl/ui/resources/images/ETLCollab.gif"));
         setLayout(new BorderLayout());
-        String nbBundle1 = mLoc.t("PRSR001: Conditional Builder Output View");
-        setName(Localizer.parse(nbBundle1));
-        String nbBundle2 = mLoc.t("PRSR001: Conditional Builder Output View");
-        getAccessibleContext().setAccessibleDescription(Localizer.parse(nbBundle2));
-        String nbBundle3 = mLoc.t("PRSR001: Conditional Builder Output View");
-        setToolTipText(Localizer.parse(nbBundle3));
+        String nbBundle1 = mLoc.t("BUND364: Conditional Builder Output View");
+        setName(nbBundle1.substring(15));
+        String nbBundle2 = mLoc.t("BUND364: Conditional Builder Output View");
+        getAccessibleContext().setAccessibleDescription(nbBundle2.substring(15));
+        String nbBundle3 = mLoc.t("BUND364: Conditional Builder Output View");
+        setToolTipText(nbBundle3.substring(15));
         tabbedPane.addPropertyChangeListener(this);
     }
 
@@ -129,13 +128,13 @@ public final class SQLOutputConditionView extends TopComponent implements Proper
     public static synchronized SQLOutputConditionView findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
-            mLogger.infoNoloc(mLoc.t("PRSR180: Cannot find{0}component. It will not be located properly in the window system.in{1}", PREFERRED_ID, SQLOutputConditionView.class.getName()));
+            mLogger.infoNoloc(mLoc.t("EDIT702: Cannot find{0}component. It will not be located properly in the window system.in{1}", PREFERRED_ID, SQLOutputConditionView.class.getName()));
             return getDefault();
         }
         if (win instanceof SQLOutputConditionView) {
             return (SQLOutputConditionView) win;
         }
-        mLogger.infoNoloc(mLoc.t("PRSR181: There seem to be multiple components with the '{0}' ID. That is a potential source of errors and unexpected behavior.", PREFERRED_ID, SQLOutputConditionView.class.getName()));
+        mLogger.infoNoloc(mLoc.t("EDIT703: There seem to be multiple components with the '{0}' ID. That is a potential source of errors and unexpected behavior.", PREFERRED_ID, SQLOutputConditionView.class.getName()));
         return getDefault();
     }
 

@@ -2,4 +2,5 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.nbjunit/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/junit/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/junit/layer.xml
-OpenIDE-Module-Specification-Version: 1.46
+OpenIDE-Module-Specification-Version: 1.47
+AutoUpdate-Show-In-Client: false

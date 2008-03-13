@@ -38,11 +38,14 @@ package org.netbeans.installer.products.tomcat;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
+import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
@@ -55,18 +58,19 @@ import org.netbeans.installer.wizard.components.WizardComponent;
 /**
  *
  * @author Kirill Sorokin
+ * @author Dmitry Lipin
  */
 public class ConfigurationLogic extends ProductConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private List<WizardComponent> wizardComponents;
-    
+
     public ConfigurationLogic() throws InitializationException {
         wizardComponents = Wizard.loadWizardComponents(
                 WIZARD_COMPONENTS_URI,
                 getClass().getClassLoader());
     }
-    
+
     public void install(
             final Progress progress) throws InstallationException {
         final File location = getProduct().getInstallationLocation();
@@ -81,7 +85,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         //            getString("CL.install.error.irrelevant.files"), // NOI18N
         //            e);
         //}
-        
+
         /////////////////////////////////////////////////////////////////////////////
 //        try {
 //            progress.setDetail(getString("CL.install.files.permissions")); // NOI18N
@@ -93,37 +97,78 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 //                    e);
 //        }
         
+        //get bundled registry to perform further runtime integration
+        //http://wiki.netbeans.org/NetBeansInstallerIDEAndRuntimesIntegration
+        Registry bundledRegistry = new Registry();
+        try {
+            final String bundledRegistryUri = System.getProperty(
+                    Registry.BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY);
+
+            bundledRegistry.loadProductRegistry(
+                    (bundledRegistryUri != null) ? bundledRegistryUri : Registry.DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI);
+        } catch (InitializationException e) {
+            LogManager.log("Cannot load bundled registry", e);
+        }
+
         /////////////////////////////////////////////////////////////////////////////
         // Reference: http://wiki.netbeans.org/wiki/view/TomcatAutoRegistration
         try {
             progress.setDetail(getString("CL.install.ide.integration")); // NOI18N
-            
-            final List<Product> ides = 
+
+            final List<Product> ides =
                     Registry.getInstance().getProducts("nb-base");
-            for (Product ide: ides) {
+            List<Product> productsToIntegrate = new ArrayList<Product>();
+            for (Product ide : ides) {
                 if (ide.getStatus() == Status.INSTALLED) {
-                    final File nbLocation = ide.getInstallationLocation();
-                    
-                    if (nbLocation != null) {
-                        NetBeansUtils.setJvmOption(
-                                nbLocation,
-                                JVM_OPTION_AUTOREGISTER_HOME_NAME,
-                                location.getAbsolutePath(),
-                                true);
-                        NetBeansUtils.setJvmOption(
-                                nbLocation,
-                                JVM_OPTION_AUTOREGISTER_TOKEN_NAME,
-                                Long.toString(System.currentTimeMillis()),
-                                false);
-                        
-                        // if the IDE was installed in the same session as the
-                        // appserver, we should add its "product id" to the IDE
-                        if (ide.hasStatusChanged()) {
-                            NetBeansUtils.addPackId(
-                                    nbLocation,
-                                    PRODUCT_ID);
+                    LogManager.log("... checking if " + getProduct().getDisplayName() + " can be integrated with " + ide.getDisplayName() + " at " + ide.getInstallationLocation());
+                    final File ideLocation = ide.getInstallationLocation();
+                    if (ideLocation != null && FileUtils.exists(location) && !FileUtils.isEmpty(location)) {
+                        final Product bundledProduct = bundledRegistry.getProduct(ide.getUid(), ide.getVersion());
+                        if (bundledProduct != null) {
+                            //one of already installed IDEs is in the bundled registry as well - we need to integrate with it
+                            productsToIntegrate.add(ide);
+                            LogManager.log("... will be integrated since this produce is also bundled");
+                        } else {
+                            //check if this IDE is not integrated with any other GF instance - we need integrate with such IDE instance
+                            try {
+                                String path = NetBeansUtils.getJvmOption(ideLocation, JVM_OPTION_AUTOREGISTER_HOME_NAME);
+                                if (path == null || !FileUtils.exists(new File(path)) || FileUtils.isEmpty(new File(path))) {
+                                    LogManager.log("... will be integrated since there it is not yet integrated with any instance or such an instance does not exist");
+                                    productsToIntegrate.add(ide);
+                                } else {
+                                    LogManager.log("... will not be integrated since it is already integrated with another instance at " + path);
+                                }
+                            } catch (IOException e) {
+                                LogManager.log(e);
+                            }
                         }
                     }
+                }
+            }
+
+            for (Product productToIntegrate : productsToIntegrate) {
+                final File ideLocation = productToIntegrate.getInstallationLocation();
+                LogManager.log("... integrate " + getProduct().getDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + ideLocation);
+                /////////////////////////////////////////////////////////////////////////////
+                // Reference: http://wiki.netbeans.org/wiki/view/TomcatAutoRegistration
+        
+                NetBeansUtils.setJvmOption(
+                        ideLocation,
+                        JVM_OPTION_AUTOREGISTER_HOME_NAME,
+                        location.getAbsolutePath(),
+                        true);
+                NetBeansUtils.setJvmOption(
+                        ideLocation,
+                        JVM_OPTION_AUTOREGISTER_TOKEN_NAME,
+                        Long.toString(System.currentTimeMillis()),
+                        false);
+
+                // if the IDE was installed in the same session as the
+                // appserver, we should add its "product id" to the IDE
+                if (productToIntegrate.hasStatusChanged()) {
+                    NetBeansUtils.addPackId(
+                            location,
+                            PRODUCT_ID);
                 }
             }
         } catch (IOException e) {
@@ -131,32 +176,35 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.ide.integration"), // NOI18N
                     e);
         }
-        
+
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
-    
+
     public void uninstall(
             final Progress progress) throws UninstallationException {
         final File location = getProduct().getInstallationLocation();
-        
+
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.uninstall.ide.integration")); // NOI18N
-            
+
             final List<Product> ides =
                     Registry.getInstance().getProducts("nb-base");
             for (Product ide: ides) {
                 if (ide.getStatus() == Status.INSTALLED) {
+                    LogManager.log("... checking if " + ide.getDisplayName() + " is integrated with " + getProduct().getDisplayName() + " installed at " + location);
                     final File nbLocation = ide.getInstallationLocation();
                     
                     if (nbLocation != null) {
+                        LogManager.log("... ide location is " + nbLocation);
                         final String value = NetBeansUtils.getJvmOption(
                                 nbLocation,
                                 JVM_OPTION_AUTOREGISTER_HOME_NAME);
-                        
+                        LogManager.log("... ide integrated with: " + value);
                         if ((value != null) &&
                                 (value.equals(location.getAbsolutePath()))) {
+			    LogManager.log("... removing integration");
                             NetBeansUtils.removeJvmOption(
                                     nbLocation,
                                     JVM_OPTION_AUTOREGISTER_HOME_NAME);
@@ -164,6 +212,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                                     nbLocation,
                                     JVM_OPTION_AUTOREGISTER_TOKEN_NAME);
                         }
+                    } else {
+                        LogManager.log("... ide location is null");
                     }
                 }
             }
@@ -172,16 +222,16 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.uninstall.error.ide.integration"), // NOI18N
                     e);
         }
-        
+
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
-    
+
     public List<WizardComponent> getWizardComponents(
             ) {
         return wizardComponents;
     }
-    
+
     @Override
     public String getIcon() {
         if (SystemUtils.isWindows()) {
@@ -191,40 +241,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
     }
     
-    // private //////////////////////////////////////////////////////////////////////
-    private void integrateWithIDE(
-            final Progress progress, 
-            final File directory)  throws InstallationException {
-        /////////////////////////////////////////////////////////////////////////////
-        // Reference: http://wiki.netbeans.org/wiki/view/TomcatAutoRegistration
-        try {
-            progress.setDetail(getString("CL.install.ide.integration")); // NOI18N
-            
-            List<Product> ides = Registry.getInstance().getProducts("nb-ide");
-            for (Product ide: ides) {
-                if (ide.getStatus() == Status.INSTALLED) {
-                    File nbLocation = ide.getInstallationLocation();
-                    
-                    if (nbLocation != null) {
-                        NetBeansUtils.setJvmOption(
-                                nbLocation,
-                                JVM_OPTION_AUTOREGISTER_HOME_NAME,
-                                directory.getAbsolutePath(),
-                                true);
-                        NetBeansUtils.setJvmOption(
-                                nbLocation,
-                                JVM_OPTION_AUTOREGISTER_TOKEN_NAME,
-                                "" + System.currentTimeMillis(),
-                                false);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.ide.integration"), // NOI18N
-                    e);
-        }
-    }
     @Override
     public boolean allowModifyMode() {
         return false;
@@ -241,6 +257,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String JVM_OPTION_AUTOREGISTER_HOME_NAME =
             "-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome"; // NOI18N
     
-    public static final String PRODUCT_ID = 
+    public static final String PRODUCT_ID =
             "TOMCAT"; // NOI18N
 }

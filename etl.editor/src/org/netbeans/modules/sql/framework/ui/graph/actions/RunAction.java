@@ -39,7 +39,6 @@ import javax.swing.AbstractAction;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.view.graph.actions.TestRunAction;
 import org.openide.util.HelpCtx;
 
@@ -52,12 +51,12 @@ import org.openide.util.HelpCtx;
 public class RunAction extends AbstractAction {
 
     private static final String LOG_CATEGORY = RunAction.class.getName();
-    private static transient final Logger mLogger = LogUtil.getLogger(RunAction.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(RunAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public String getName() {
-        String nbBundle = mLoc.t("PRSR001: Run");
-        return Localizer.parse(nbBundle);
+        String nbBundle = mLoc.t("BUND035: Run");
+        return nbBundle.substring(15);
     }
 
     protected String iconResource() {
