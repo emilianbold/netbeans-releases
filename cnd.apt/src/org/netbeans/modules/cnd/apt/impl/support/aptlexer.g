@@ -936,8 +936,8 @@ Identifier
             // I think this check should have been done before
             //{ LA(1)!='L' || (LA(2)!='\'' && LA(2) != '\"') }? // L"" and L'' are StringLiterals/CharLiterals, not ID
             (
-		(options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_')
-		(options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_'|'0'..'9')*
+                (options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_') 
+		(options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_'|'0'..'9'|'$')* // '$' added for gcc support
             )
         ;
 
