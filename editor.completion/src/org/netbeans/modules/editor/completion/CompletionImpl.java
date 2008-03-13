@@ -548,8 +548,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                         r.setParameters(new Object[]{'\n', layout.getSelectedIndex(), item.getClass().getSimpleName()});
                         item.defaultAction(getActiveComponent());
                         uilog(r);
-                        return;
                     }
+                    return;
                 }
             } else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN
                     || e.getKeyCode() == KeyEvent.VK_PAGE_UP || e.getKeyCode() == KeyEvent.VK_PAGE_DOWN
