@@ -933,7 +933,7 @@ public class ResourceSupport {
         rememberedLocales.put(getSrcDataObject(), locale); // keep to survive form reload
     }
 
-    private void updateDesignLocale() {
+    void updateDesignLocale() {
         Collection<FormProperty> props = getAllResourceProperties(VALID_RESOURCE_VALUE);
         // read all values in advance - setting certain properties might reset others (e.g. action and text)
         List<Object> values = new ArrayList<Object>(props.size());
@@ -953,10 +953,10 @@ public class ResourceSupport {
             prop.setChangeFiring(false);
             try {
                 if (value instanceof I18nValue) {
-                    prop.setValue(i18nService.switchLocale((I18nValue)value, designLocale));
+                    prop.setValue(getI18nService().switchLocale((I18nValue)value, designLocale));
                 }
                 else if (value instanceof ResourceValue) {
-                    prop.setValue(resourceService.switchLocale((ResourceValue)value, designLocale));
+                    prop.setValue(getResourceService().switchLocale((ResourceValue)value, designLocale));
                 }
             }
             catch (Exception ex) {
