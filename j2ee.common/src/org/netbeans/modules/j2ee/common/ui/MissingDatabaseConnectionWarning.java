@@ -237,7 +237,7 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
             // enable the scrollbar 
             if (datasourceList.getModel().getSize() > 0) {
                 jScrollPane2.setBorder(scrollPaneBorder);
-                jTextArea2.setText(org.openide.util.NbBundle.getMessage(MissingDatabaseConnectionWarning.class, "LBL_SelectDatasource"));
+                jTextArea2.setText(org.openide.util.NbBundle.getMessage(MissingDatabaseConnectionWarning.class, "LBL_MissingDatabaseConnectionWarning"));
             }
         }        
         // refresh the jList
