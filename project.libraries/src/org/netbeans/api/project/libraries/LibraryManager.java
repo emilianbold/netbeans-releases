@@ -64,6 +64,7 @@ import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;
+import org.openide.util.WeakListeners;
 
 /**
  * LibraryManager provides registry of the installed libraries.
@@ -107,6 +108,7 @@ public final class LibraryManager {
     private final ArealLibraryProvider alp;
     /** null for default manager */
     private final LibraryStorageArea area;
+    private LookupListener lookupListener;
 
     private LibraryManager () {
         alp = null;
@@ -173,11 +175,12 @@ public final class LibraryManager {
             if (area == null) {
                 if (result == null) {
                     result = Lookup.getDefault().lookupResult(LibraryProvider.class);
-                    result.addLookupListener(new LookupListener() {
+                    lookupListener = new LookupListener() {
                         public void resultChanged(LookupEvent ev) {
                             resetCache();
                         }
-                    });
+                    };
+                    result.addLookupListener(WeakListeners.create(LookupListener.class, lookupListener, result));
                 }
                 Collection<? extends LibraryProvider> instances = result.allInstances();
                 Collection<LibraryProvider> added = new HashSet<LibraryProvider>(instances);

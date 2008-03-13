@@ -168,21 +168,40 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testSwitchFormatting3Half() {
+    public void testTryCatchHalf() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.newLineCatch, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
-                "int main(int i)\n" +
+                "int foo()\n" +
                 "{\n" +
-                "if (offset)\n" +
-                "    *offset = layout->record_size / BITS_PER_UNIT;\n" +
+                "  if (strcmp (TREE_STRING_POINTER (id), \"default\") == 0)\n" +
+                "    DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;  // comment\n" +
+                "  else if (strcmp (TREE_STRING_POINTER (id), \"hidden\") == 0)\n" +
+                "    DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;  \n" +
+                "  else if (strcmp (TREE_STRING_POINTER (id), \"protected\") == 0)\n" +
+                "    DECL_VISIBILITY (decl) = VISIBILITY_PROTECTED;   /* comment */   \n" +
+                "  else\n" +
+                "    DECL_VISIBILITY (decl) = VISIBILITY_PROTECTED;\n" +
                 "}\n");
         reformat();
-        assertDocumentText("Incorrect formatting for macro define with paren",
-                "int main(int i)\n" +
+        assertDocumentText("Incorrect formatting try-catch half indent",
+                "int foo()\n" +
                 "{\n" +
-                "    if (offset)\n" +
-                "        *offset = layout->record_size / BITS_PER_UNIT;\n" +
+                "  if (strcmp(TREE_STRING_POINTER(id), \"default\") == 0)\n" +
+                "    DECL_VISIBILITY(decl) = VISIBILITY_DEFAULT; // comment\n" +
+                "  else if (strcmp(TREE_STRING_POINTER(id), \"hidden\") == 0)\n" +
+                "    DECL_VISIBILITY(decl) = VISIBILITY_HIDDEN;\n" +
+                "  else if (strcmp(TREE_STRING_POINTER(id), \"protected\") == 0)\n" +
+                "    DECL_VISIBILITY(decl) = VISIBILITY_PROTECTED; /* comment */\n" +
+                "  else\n" +
+                "    DECL_VISIBILITY(decl) = VISIBILITY_PROTECTED;\n" +
                 "}\n");
     }
-
 }
