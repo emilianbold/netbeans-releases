@@ -49,6 +49,7 @@ import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.ide.ProjectSupport;
 
 
@@ -98,6 +99,7 @@ public class CreateBPELmodule extends org.netbeans.performance.test.utilities.Pe
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
         wizard.selectProject(project);
+        wizard.move(0, 0);
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
         

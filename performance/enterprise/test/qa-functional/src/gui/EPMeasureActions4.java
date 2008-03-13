@@ -58,6 +58,7 @@ public class EPMeasureActions4  {
 // Disabled testGCProjects check to shorten run time        
 //        suite.addTest(new WatchProjects("testInitGCProjects"));
         suite.addTest(new OpenSchemaView("testOpenSchemaView", "Open Schema View")); 
+        suite.addTest(new OpenSchemaView("testOpenComplexSchemaView", "Open Complex Schema View"));
         suite.addTest(new StartAppserver("measureTime","Start Appserver"));
 // Disabled testGCProjects check to shorten run time        
 //        suite.addTest(new WatchProjects("testGCProjects"));
