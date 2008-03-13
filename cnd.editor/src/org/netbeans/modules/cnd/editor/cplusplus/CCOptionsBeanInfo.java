@@ -39,21 +39,52 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.makefile;
+package org.netbeans.modules.cnd.editor.cplusplus;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.editor.*;
+import java.util.MissingResourceException;
 
-/**
- * Extended settings for Makefile.
- */
-public class MakefileSettingsInitializer {
-    public static Acceptor getAbbrevResetAcceptor() {
-        return SettingsDefaults.defaultAbbrevResetAcceptor;
+import org.openide.util.NbBundle;
+import org.netbeans.modules.editor.options.BaseOptionsBeanInfo;
+
+/** BeanInfo for CC editor options */
+public class CCOptionsBeanInfo extends BaseOptionsBeanInfo {
+
+    private static final String[] EXPERT_PROP_NAMES = new String[] {
+        CCOptions.JAVADOC_AUTO_POPUP_PROP,
+    };
+    
+    public CCOptionsBeanInfo() {
+	super("/org/netbeans/modules/cnd/editor/cplusplus/CCIcon"); //NOI18N
     }
     
-    public static List<? extends TokenContext> getTokenContext() {
-        return Collections.singletonList(MakefileTokenContext.context);
+    protected @Override String[] getPropNames() {
+        // already merged on initialization
+        return CCOptions.CC_PROP_NAMES;
+    }
+
+    protected @Override void updatePropertyDescriptors() {
+        super.updatePropertyDescriptors();
+        setExpert(EXPERT_PROP_NAMES);
+        String hidden[] = new String[] {
+                CCOptions.LINE_HEIGHT_CORRECTION_PROP,
+                CCOptions.STATUS_BAR_CARET_DELAY_PROP,
+                CCOptions.STATUS_BAR_VISIBLE_PROP,
+                CCOptions.COMPLETION_AUTO_POPUP_PROP,
+                CCOptions.INDENT_ENGINE_PROP,
+                CCOptions.JAVADOC_AUTO_POPUP_PROP
+        };
+        setHidden(hidden);
+    }    
+    
+    protected @Override Class getBeanClass() {
+	return CCOptions.class;
+    }
+
+    protected @Override String getString(String key) {
+        try {
+            return NbBundle.getBundle(CCOptionsBeanInfo.class).getString(key);
+        } catch (MissingResourceException e) {
+            return super.getString(key);
+        }
     }
 }

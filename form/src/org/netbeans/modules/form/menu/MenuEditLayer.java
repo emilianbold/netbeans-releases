@@ -1404,7 +1404,8 @@ public class MenuEditLayer extends JPanel {
             // open top level menus when clicking them
             RADComponent rad = formDesigner.getHandleLayer().getMetaComponentAt(e.getPoint(), HandleLayer.COMP_DEEPEST);
             if(rad != null) {
-                JComponent c = (JComponent) formDesigner.getComponent(rad);
+                Object o = formDesigner.getComponent(rad);
+                JComponent c = (o instanceof JComponent) ? (JComponent)o : null;
                 if(c != null && isTopLevelMenu(c)) {
                     if(e.getClickCount() > 1) {
                         isEditing = true;
