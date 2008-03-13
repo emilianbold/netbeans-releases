@@ -24,15 +24,12 @@ import org.netbeans.modules.bpel.model.api.While;
 import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
 import org.netbeans.modules.bpel.model.xam.BpelElements;
 import org.w3c.dom.Element;
-
+import org.netbeans.modules.bpel.model.api.support.Utils;
 
 /**
  * @author ads
- *
  */
 public class WhileImpl extends ConditionalActivity implements While {
-
-
 
     WhileImpl( BpelModelImpl model, Element e ) {
         super(model, e);
@@ -114,5 +111,4 @@ public class WhileImpl extends ConditionalActivity implements While {
         }
         return super.getMultiplicity(entity);
     }
-
 }
