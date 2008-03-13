@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.ruby;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,7 +51,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.ImageIcon;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.jruby.ast.CallNode;
 
 import org.jruby.ast.ClassNode;
@@ -66,7 +70,6 @@ import org.jruby.ast.ListNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeType;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.StrNode;
 import org.jruby.ast.SymbolNode;
@@ -74,6 +77,10 @@ import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.parser.RubyParserResult;
 import org.jruby.util.ByteList;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.gsf.api.ElementHandle;
@@ -92,6 +99,8 @@ import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.AstFieldElement;
 import org.netbeans.modules.ruby.elements.AstMethodElement;
 import org.netbeans.modules.ruby.elements.AstModuleElement;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 
@@ -124,10 +133,18 @@ public class StructureAnalyzer implements StructureScanner {
     private CompilationInfo info;
     private RubyParseResult result;
 
+    private static final String RUBY_KEYWORD = "org/netbeans/modules/ruby/jruby.png"; //NOI18N
+    private static ImageIcon keywordIcon;
+    
     public StructureAnalyzer() {
     }
 
     public List<?extends StructureItem> scan(CompilationInfo info, HtmlFormatter formatter) {
+        if (RubyUtils.isRhtmlFile(info.getFileObject())) {
+            return scanRhtml(info, formatter);
+        }
+
+        
         this.result = AstUtilities.getParseResult(info);
         this.info = info;
         this.formatter = formatter;
@@ -298,6 +315,10 @@ public class StructureAnalyzer implements StructureScanner {
     }
 
     public Map<String,List<OffsetRange>> folds(CompilationInfo info) {
+        if (RubyUtils.isRhtmlFile(info.getFileObject())) {
+            return Collections.emptyMap();
+        }
+
         Node root = AstUtilities.getRoot(info);
 
         if (root == null) {
@@ -965,5 +986,299 @@ public class StructureAnalyzer implements StructureScanner {
         public String toString() {
             return getName();
         }
+
+        public ImageIcon getCustomIcon() {
+            return null;
+        }
+
+        public String getSortText() {
+            return getName();
+        }
     }
+    
+    public List<? extends StructureItem> scanRhtml(CompilationInfo info, final HtmlFormatter formatter) {
+        List<RhtmlStructureItem> items = new ArrayList<RhtmlStructureItem>();
+        AbstractDocument doc;
+        try {
+            doc = (AbstractDocument) info.getDocument();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return Collections.emptyList();
+        }
+        doc.readLock ();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(info.getDocument());
+            TokenSequence ts = th.tokenSequence();
+            if (ts == null) {
+                return items;
+            }
+
+            ts.moveStart();
+            while (ts.moveNext()) {
+                TokenId id = ts.token().id();
+                if (id.name().equals("DELIMITER")) {
+                    int start = ts.offset();
+                    if (ts.moveNext()) {
+                        Token token = ts.token();
+                        int end = ts.offset() + token.length();
+                        if (!token.id().name().equals("DELIMITER")) {
+                            while (ts.moveNext()) {
+                                if (ts.token().id().name().equals("DELIMITER")) {
+                                    end = ts.offset() + token.length();
+                                    break;
+                                }
+                            }
+                        }
+
+                        String name = navigatorName((Document)doc, th, start);
+                        items.add(new RhtmlStructureItem(name, formatter, start, end));
+                    }
+                }
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        } finally {
+            doc.readUnlock ();
+        }
+        
+        return items;
+    }
+    
+    public static String navigatorName(Document doc, TokenHierarchy th, int offset) {
+        TokenSequence ts = th.tokenSequence();
+        ts.move(offset);
+        if (ts.moveNext()) {
+            TokenId id = ts.token().id();
+            if (id.name().equals("DELIMITER")) {
+                if (ts.moveNext()) {
+                    id = ts.token().id();
+                    if (id.name().startsWith("RUBY")) {
+                        TokenSequence t = ts.embedded();
+                        if (t != null) {
+                            t.moveStart();
+                            t.moveNext();
+                            while (t.token().id() == RubyTokenId.WHITESPACE) {
+                                if (!t.moveNext()) {
+                                    break;
+                                }
+                            }
+                            int begin = t.offset();
+                            id = t.token().id();
+
+                            if (id == RubyTokenId.WHITESPACE) {
+                                // Empty tag
+                                return DEFAULT_LABEL;
+                            }
+
+                            if (id == RubyTokenId.STRING_BEGIN || id == RubyTokenId.QUOTED_STRING_BEGIN || id == RubyTokenId.REGEXP_BEGIN) {
+                                while (t.moveNext()) {
+                                    id = t.token().id();
+                                    if (id == RubyTokenId.STRING_END || id == RubyTokenId.QUOTED_STRING_END || id == RubyTokenId.REGEXP_END) {
+                                        int end = t.offset() + t.token().length();
+
+                                        return createName(doc, begin, end);
+                                    }
+                                }
+                            }
+
+                            int end = t.offset() + t.token().length();
+
+                            // See if this is a "foo.bar" expression and if so, include ".bar"
+                            if (t.moveNext()) {
+                                id = t.token().id();
+                                if (id == RubyTokenId.DOT) {
+                                    if (t.moveNext()) {
+                                        end = t.offset() + t.token().length();
+                                    }
+                                }
+                            }
+
+                            return createName(doc, begin, end);
+                        }
+                    }
+                }
+            }
+        }
+//
+//        // Fallback mechanism - just pull text out of the document
+//        String content = createName(doc, offset, offset + leaf.getLength());
+//        if (content.startsWith("<%= ")) { // NOI18N
+//            // NOI18N
+//            if (content.startsWith("<%= ")) { // NOI18N
+//                content = content.substring(4);
+//            } else {
+//                content = content.substring(3);
+//            }
+//        } else if (content.startsWith("<%")) { // NOI18N
+//            // NOI18N
+//            if (content.startsWith("<% ")) { // NOI18N
+//                content = content.substring(3);
+//            } else {
+//                content = content.substring(2);
+//            }
+//        }
+//        if (content.endsWith("-%>")) { // NOI18N
+//            content = content.substring(0, content.length() - 3);
+//        } else if (content.endsWith("%>")) { // NOI18N
+//            content = content.substring(0, content.length() - 2);
+//        }
+//        return content;
+////        }
+        return DEFAULT_LABEL;
+    }
+
+    /** Create label for a navigator item */
+    private static String createName(Document doc, int begin, int end) {
+        try {
+            boolean truncated = false;
+            int length = end - begin;
+            if (begin + length > doc.getLength()) {
+                length = doc.getLength() - begin;
+                truncated = true;
+            }
+            if (length > MAX_RUBY_LABEL_LENGTH) {
+                length = MAX_RUBY_LABEL_LENGTH;
+                truncated = true;
+            }
+            String content = doc.getText(begin, length);
+            int newline = content.indexOf('\n');
+            if (newline != -1) {
+                if (content.startsWith("<%\n") || content.startsWith("<%#\n")) {
+                    content = content.substring(newline+1);
+                    newline = content.indexOf('\n');
+                    if (newline != -1) {
+                        content = content.substring(0, newline);
+                    }
+                } else {
+                    boolean startsWithNewline = true;
+                    for (int i = 0; i < newline; i++) {
+                        if (!Character.isWhitespace((content.charAt(i)))) {
+                            startsWithNewline = false;
+                            break;
+                        }
+                    }
+                    if (startsWithNewline) {
+                        content = content.substring(newline+1);
+                    } else {
+                        content = content.substring(0, newline);
+                    }
+                }
+            }
+            if (truncated) {
+                return content + "..."; // NOI18N
+            } else {
+                return content;
+            }
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+        }
+
+        return DEFAULT_LABEL;
+    }
+    
+    private class RhtmlStructureItem implements StructureItem {
+        private String name;
+        private HtmlFormatter formatter;
+        private int start;
+        private int end;
+
+        public RhtmlStructureItem(String name, HtmlFormatter formatter, int start, int end) {
+            this.name = name;
+            this.formatter = formatter;
+            this.start = start;
+            this.end = end;
+        }
+        
+        public String getName() {
+            return name;
+        }
+
+        public String getHtml() {
+            formatter.reset();
+            formatter.appendText(name);
+            return formatter.getText();
+        }
+
+        public ElementHandle getElementHandle() {
+            return null;
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.OTHER;
+        }
+
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        public boolean isLeaf() {
+            return true;
+        }
+
+        public List<? extends StructureItem> getNestedItems() {
+            return Collections.emptyList();
+        }
+
+        public long getPosition() {
+            return start;
+        }
+
+        public long getEndPosition() {
+            return end;
+        }
+        
+        @Override
+        public int hashCode() {
+            int hash = 7;
+
+            hash = (29 * hash) + ((this.getName() != null) ? this.getName().hashCode() : 0);
+
+            // hash = 29 * hash + (this.modifiers != null ? this.modifiers.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            return getName();
+        }
+        
+        @Override
+        public boolean equals(Object o) {
+            if (o == null) {
+                return false;
+            }
+
+            if (!(o instanceof RubyStructureItem)) {
+                // System.out.println("- not a desc");
+                return false;
+            }
+
+            RubyStructureItem d = (RubyStructureItem)o;
+
+            if (!getName().equals(d.getName())) {
+                // System.out.println("- name");
+                return false;
+            }
+
+            return true;
+        }
+
+        public ImageIcon getCustomIcon() {
+            if (keywordIcon == null) {
+                keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(RUBY_KEYWORD));
+            }
+            
+            return keywordIcon;
+        }
+        
+        public String getSortText() {
+            return Integer.toHexString(10000+(int)getPosition());
+        }
+    }
+    
+    /** Number of characters to display from the Ruby fragments in the navigator */
+    private static final int MAX_RUBY_LABEL_LENGTH = 30;
+    /** Default label to use on navigator items where we don't have more accurate
+     * information */
+    private static final String DEFAULT_LABEL = "<% %>"; // NOI18N
 }
