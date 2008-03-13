@@ -86,7 +86,6 @@ import com.nwoods.jgo.layout.JGoLayeredDigraphAutoLayout;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.ETLDataObject;
 
 import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
@@ -103,7 +102,7 @@ public abstract class GraphView extends JGoView implements IGraphView {
     private static final int STANDARD_SCALE = 1;
     private static final int VIEW_SCALE = 2;
     private static final int PAGE_SCALE = 3;
-    private static transient final Logger mLogger = LogUtil.getLogger(GraphView.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(GraphView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private static final String NETBEANS_DBTABLE_MIMETYPE = "application/x-java-netbeans-dbexplorer-table;class=org.netbeans.api.db.explorer.DatabaseMetaDataTransfer$Table";
     protected static DataFlavor[] mDataFlavorArray = new DataFlavor[2];
@@ -318,10 +317,10 @@ public abstract class GraphView extends JGoView implements IGraphView {
         Collection links = this.getSelectedLinks();
         //no nodes are selected but one or more link is selected by user
         if (nodes.size() == 0 && links.size() > 0) {
-            String nbBundle = mLoc.t("PRSR001: Confirm Deletion");
-            String nbBundle1 = mLoc.t("PRSR001: Do you want to delete 000?");
-            String title = Localizer.parse(nbBundle);
-            String msg = Localizer.parse(nbBundle1);
+            String nbBundle = mLoc.t("BUND325: Confirm Deletion");
+            String nbBundle1 = mLoc.t("BUND326: Do you want to delete 000?");
+            String title = nbBundle.substring(15);
+            String msg = nbBundle.substring(15);
             msg = msg.replaceFirst("000", "All selected links");
 
             int option = UIUtil.showYesAllDialog(this, msg, title);
@@ -349,10 +348,10 @@ public abstract class GraphView extends JGoView implements IGraphView {
 
             //links.removeAll(node.getAllLinks());
             if (!delete) {
-                String nbBundle = mLoc.t("PRSR001: Confirm Deletion");
-                String nbBundle1 = mLoc.t("PRSR001: Do you want to delete 000?");
-                String title = Localizer.parse(nbBundle);
-                String msg = Localizer.parse(nbBundle1);
+                String nbBundle = mLoc.t("BUND325: Confirm Deletion");
+                String nbBundle1 = mLoc.t("BUND326: Do you want to delete 000?");
+                String title = nbBundle.substring(15);
+                String msg = nbBundle1.substring(15);
                 SQLObject sqlObject = (SQLObject) node.getDataObject();
                 if (nodes.size() > 1) {
                     msg = msg.replaceFirst("000", "All selected components");
@@ -835,8 +834,8 @@ public abstract class GraphView extends JGoView implements IGraphView {
      * Reset selection colors
      */
     public void resetSelectionColors() {
-        setDefaultPrimarySelectionColor(new Color(73, 117, 183));
-        setDefaultSecondarySelectionColor(new Color(73, 117, 183));
+        setDefaultPrimarySelectionColor(new Color(73, 115, 183));
+        setDefaultSecondarySelectionColor(new Color(73, 115, 183));
 
     }
 
