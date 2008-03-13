@@ -347,8 +347,7 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
         
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value instanceof Datasource) {
-                String jndiName = ((Datasource)value).getJndiName();
-                setText(jndiName.substring(jndiName.indexOf("/")+1));
+                setText(((Datasource)value).getJndiName());
             }
             
             if (isSelected) {
