@@ -50,10 +50,14 @@ import java.util.concurrent.Future;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.Types;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.ElementHeaders;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.codetemplates.spi.*;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
@@ -77,7 +81,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     public static final String NAMED = "named"; //NOI18N
     public static final String UNCAUGHT_EXCEPTION_TYPE = "uncaughtExceptionType"; //NOI18N
 
-    private static final String FALSE = "false"; //NOI18N
+    private static final String TRUE = "true"; //NOI18N
     private static final String NULL = "null"; //NOI18N
     private static final String ERROR = "<error>"; //NOI18N
     
@@ -99,6 +103,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     }
     
     public synchronized void updateDefaultValues() {
+        updateTemplateEnding();
         updateTemplateBasedOnSelection();
         boolean cont = true;
         while (cont) {
@@ -134,6 +139,23 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     public void release() {
     }
     
+    private void updateTemplateEnding() {
+        String text = request.getParametrizedText();
+        if (text.endsWith("\n")) { //NOI18N
+            JTextComponent component = request.getComponent();
+            int offset = component.getSelectionEnd();
+            Document doc = component.getDocument();
+            if (doc.getLength() > offset) {
+                try {
+                    if ("\n".equals(doc.getText(offset, 1))) {
+                        request.setParametrizedText(text.substring(0, text.length() - 1));
+                    }
+                } catch (BadLocationException ble) {
+                }
+            }
+        }
+    }
+
     private void updateTemplateBasedOnSelection() {
         for (CodeTemplateParameter parameter : request.getAllParameters()) {
             if (CodeTemplateParameter.SELECTION_PARAMETER_NAME.equals(parameter.getName())) {
@@ -451,7 +473,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     if (type.getKind() == TypeKind.DECLARED)
                         return NULL;
                     else if (type.getKind() == TypeKind.BOOLEAN)
-                        return FALSE;
+                        return TRUE;
                 }
             }
         } catch (Exception e) {
