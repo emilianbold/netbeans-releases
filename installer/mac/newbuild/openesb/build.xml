@@ -65,10 +65,10 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>      
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/perm.sh" tofile="${basedir}/pkg/scripts/perm.sh"/>
         
-        <echo message="Building ${openesb.pkg.name} into ${basedir}/../build/${openesb.pkg.name}"/>
+        <echo message="Building openesb.pkg into ${basedir}/../build/openesb.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/${openesb.pkg.name} -f ${appdir} -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
+            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/openesb.pkg -f ${appdir} -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
         </exec>
     </target>
     
