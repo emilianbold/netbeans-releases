@@ -168,10 +168,8 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testTryCatchHalf() {
+    public void testLabelIndentHalf() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.newLineCatch, true);
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
@@ -181,27 +179,35 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
         setLoadDocumentText(
                 "int foo()\n" +
                 "{\n" +
-                "  if (strcmp (TREE_STRING_POINTER (id), \"default\") == 0)\n" +
-                "    DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;  // comment\n" +
-                "  else if (strcmp (TREE_STRING_POINTER (id), \"hidden\") == 0)\n" +
-                "    DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;  \n" +
-                "  else if (strcmp (TREE_STRING_POINTER (id), \"protected\") == 0)\n" +
-                "    DECL_VISIBILITY (decl) = VISIBILITY_PROTECTED;   /* comment */   \n" +
-                "  else\n" +
-                "    DECL_VISIBILITY (decl) = VISIBILITY_PROTECTED;\n" +
+                "  start: while(true){\n" +
+                "int i = 0;\n" +
+                "goto start;\n" +
+                "end:\n" +
+                "if(true){\n" +
+                "foo();\n" +
+                "second:\n" +
+                "foo();\n" +
+                "}\n" +
+                "}\n" +
                 "}\n");
         reformat();
-        assertDocumentText("Incorrect formatting try-catch half indent",
+        assertDocumentText("Incorrect label half indent",
                 "int foo()\n" +
                 "{\n" +
-                "  if (strcmp(TREE_STRING_POINTER(id), \"default\") == 0)\n" +
-                "    DECL_VISIBILITY(decl) = VISIBILITY_DEFAULT; // comment\n" +
-                "  else if (strcmp(TREE_STRING_POINTER(id), \"hidden\") == 0)\n" +
-                "    DECL_VISIBILITY(decl) = VISIBILITY_HIDDEN;\n" +
-                "  else if (strcmp(TREE_STRING_POINTER(id), \"protected\") == 0)\n" +
-                "    DECL_VISIBILITY(decl) = VISIBILITY_PROTECTED; /* comment */\n" +
-                "  else\n" +
-                "    DECL_VISIBILITY(decl) = VISIBILITY_PROTECTED;\n" +
+                "start:\n" +
+                "  while (true)\n" +
+                "    {\n" +
+                "      int i = 0;\n" +
+                "      goto start;\n" +
+                "end:\n" +
+                "      if (true)\n" +
+                "        {\n" +
+                "          foo();\n" +
+                "second:\n" +
+                "          foo();\n" +
+                "        }\n" +
+                "    }\n" +
                 "}\n");
     }
+
 }
