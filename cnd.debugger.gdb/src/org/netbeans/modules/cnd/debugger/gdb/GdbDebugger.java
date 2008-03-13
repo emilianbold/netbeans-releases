@@ -1419,6 +1419,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         cb.setID(gdb.stack_list_frames(cb));
         String msg = cb.waitForCompletion();
         int i = 0;
+        boolean valid = true;
+        
         for (String frame : GdbUtils.createListFromString(msg)) {
             if (frame.contains("func=\"dlopen\"")) { // NOI18N
                 gdb.stack_select_frame(i);
@@ -1426,11 +1428,40 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 gdb.exec_finish();
                 gdb.gdb_set("stop-on-solib-event"  , "1"); // NOI18N
                 gdb.exec_next();
-                break;
+                state = oldState;
+                return;
+            } else {
+                int pos1, pos2;
+                pos1 = frame.indexOf("fullname=\"");
+                if (pos1 > 0 && (pos2 = frame.indexOf('"', pos1 + 10)) > 0) {
+                    File file = new File(getOSPath(frame.substring(pos1 + 10, pos2)));
+                    if (file == null || !file.exists()) {
+                        valid = false;
+                    }
+                } else {
+                    valid = false;
+                }
             }
             i++;
         }
+        if (valid) {
+            gdb.exec_next();
+        }
         state = oldState;
+    }
+    
+    private String getOSPath(String path) {
+        if (Utilities.isWindows()) {
+            if (isCygwin() && path.startsWith("/cygdrive/")) { // NOI18N
+                return path.charAt(10) + ":" + path.substring(11); // NOI18N
+            } else if (isMinGW() && path.charAt(0) == '/' && path.charAt(2) == '/') {
+                return path.charAt(1) + ":" + path.substring(2); // NOI18N
+            } else {
+                return path;
+            }
+        } else {
+            return path;
+        }
     }
     
     private void threadsViewInit() {

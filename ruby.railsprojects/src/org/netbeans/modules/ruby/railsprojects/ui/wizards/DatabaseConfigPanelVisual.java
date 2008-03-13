@@ -65,7 +65,7 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
         ideConnectionsPanel.add(jdbcPanel, BorderLayout.CENTER);
         adapterConfigurationPanel.add(adaptersPanel, BorderLayout.CENTER);
         setName(NbBundle.getMessage(DatabaseConfigPanelVisual.class, "LAB_ConfigureDatabase"));
-        putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(DatabaseConfigPanelVisual.class, "TXT_ConfigureDatabase")); // NOI18N
+        putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(DatabaseConfigPanelVisual.class, "TXT_NewRoRApp")); // NOI18N
 
         initInnerPanels();
     }
