@@ -171,8 +171,12 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             TreePath treePath = tu.pathFor(component.getSelectionStart());
                             Tree tree = treePath.getLeaf();
                             if (tree.getKind() == Tree.Kind.BLOCK && tree == tu.pathFor(component.getSelectionEnd()).getLeaf()) {
+                                String selection = component.getSelectedText();
+                                int idx = 0;
+                                while ((idx < selection.length()) && (selection.charAt(idx) <= ' '))
+                                    idx++;
                                 final StringBuilder selectionText = new StringBuilder(parameter.getValue());
-                                final int caretOffset = component.getSelectionStart();
+                                final int caretOffset = component.getSelectionStart() + idx;
                                 final StringBuilder sb = new StringBuilder();
                                 final Trees trees = cInfo.getTrees();
                                 final SourcePositions sp = trees.getSourcePositions();
