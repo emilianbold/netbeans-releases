@@ -15,11 +15,11 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 public final class FileSelectionVisualPanel extends JPanel {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(FileSelectionVisualPanel.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(FileSelectionVisualPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     /**
      * PropertyChangeListener class listens to the selection of file
@@ -83,8 +83,8 @@ public final class FileSelectionVisualPanel extends JPanel {
 
     @Override
     public String getName() {
-        String nbBundle3 = mLoc.t("PRSR001: Choose Data source");
-        return Localizer.parse(nbBundle3);
+        String nbBundle3 = mLoc.t("BUND290: Choose Data source");
+        return nbBundle3.substring(15);
     }
 
     public boolean canAdvance() {
@@ -232,8 +232,8 @@ public final class FileSelectionVisualPanel extends JPanel {
         if (evt.getActionCommand().equalsIgnoreCase(JFileChooser.APPROVE_SELECTION)) {
             File files[] = fileChooser.getSelectedFiles();
             if ((files == null) || (files.length <= 0)) {
-                String nbBundle2 = mLoc.t("PRSR001: Bad file selection. Please try again.");
-                String msg = Localizer.parse(nbBundle2);
+                String nbBundle2 = mLoc.t("BUND291: Bad file selection. Please try again.");
+                String msg = nbBundle2.substring(15);
                 error.setText(msg);
                 return;
             }
@@ -320,8 +320,8 @@ public final class FileSelectionVisualPanel extends JPanel {
         if (model.getRowCount() == 0) {
             canAdvance = false;
             removeButton.setEnabled(false);
-            String nbBundle1 = mLoc.t("PRSR001: No table available for processing.");
-            setErrorText(Localizer.parse(nbBundle1));
+            String nbBundle1 = mLoc.t("BUND292: No table available for processing.");
+            setErrorText(nbBundle1.substring(15));
         }
         owner.fireChangeEvent();
     }

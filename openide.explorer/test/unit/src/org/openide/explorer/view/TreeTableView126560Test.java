@@ -130,9 +130,11 @@ public class TreeTableView126560Test extends NbTestCase {
             }
         }
         clearAwtQueue();
-        AwtBlock block = new AwtBlock();
-        block.block();               // wait until awt thread is blocked
         
+        // clear childrens while awt thread is busy (blocked in test)
+        // and set less childrens than node had before and release awt thread
+        AwtBlock block = new AwtBlock();
+        block.block();
         TestNode n = (TestNode) rootNode.getChildren().getNodes()[0];
         n.doSetChildren(Children.LEAF);
         n.doSetChildren(TestNode.prepareChildren(1, 0));
