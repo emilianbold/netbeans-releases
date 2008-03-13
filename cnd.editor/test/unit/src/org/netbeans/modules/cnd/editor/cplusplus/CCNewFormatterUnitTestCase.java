@@ -3274,6 +3274,34 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n");
     }
 
+    public void testDoWhileHalf2() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.newLineWhile, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        setLoadDocumentText(
+                "int foo() {\n" +
+                "do {\n" +
+                "    i++;\n" +
+                "} while(true);\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formatting do-while half indent",
+                "int foo()\n" +
+                "{\n" +
+                "  do\n" +
+                "    {\n" +
+                "      i++;\n" +
+                "    }\n" +
+                "  while (true);\n" +
+                "}\n");
+    }
+
     public void testDereferenceAfterIf() {
         setDefaultsOptions();
         setLoadDocumentText(
@@ -3288,6 +3316,93 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "{\n" +
                 "    if (offset)\n" +
                 "        *offset = layout->record_size / BITS_PER_UNIT;\n" +
+                "}\n");
+    }
+
+    public void testTryCatchHalf() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.newLineCatch, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        setLoadDocumentText(
+                "int foo() {\n" +
+                "try {\n" +
+                "    i++;\n" +
+                "} catch (char e){\n" +
+                "    i--;\n" +
+                "} catch (char e)\n" +
+                "    i--;\n" +
+                "if (true)try\n" +
+                "    i++;\n" +
+                "catch (char e)\n" +
+                "    i--;\n" +
+                " catch (char e){\n" +
+                "    i--;}\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formatting try-catch half indent",
+                "int foo()\n" +
+                "{\n" +
+                "  try\n" +
+                "    {\n" +
+                "      i++;\n" +
+                "    }\n" +
+                "  catch (char e)\n" +
+                "    {\n" +
+                "      i--;\n" +
+                "    }\n" +
+                "  catch (char e)\n" +
+                "    i--;\n" +
+                "  if (true) try\n" +
+                "      i++;\n" +
+                "    catch (char e)\n" +
+                "      i--;\n" +
+                "    catch (char e)\n" +
+                "      {\n" +
+                "        i--;\n" +
+                "      }\n" +
+                "}\n");
+    }
+
+    public void testEndLineComments() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.newLineCatch, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        setLoadDocumentText(
+                "int foo()\n" +
+                "{\n" +
+                "  if (strcmp (TREE_STRING_POINTER (id), \"default\") == 0)\n" +
+                "    DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;  // comment\n" +
+                "  else if (strcmp (TREE_STRING_POINTER (id), \"hidden\") == 0)\n" +
+                "    DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;  \n" +
+                "  else if (strcmp (TREE_STRING_POINTER (id), \"protected\") == 0)\n" +
+                "    DECL_VISIBILITY (decl) = VISIBILITY_PROTECTED;   /* comment */   \n" +
+                "  else\n" +
+                "    DECL_VISIBILITY (decl) = VISIBILITY_PROTECTED;\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect unexpected new line after semicolomn",
+                "int foo()\n" +
+                "{\n" +
+                "  if (strcmp(TREE_STRING_POINTER(id), \"default\") == 0)\n" +
+                "    DECL_VISIBILITY(decl) = VISIBILITY_DEFAULT; // comment\n" +
+                "  else if (strcmp(TREE_STRING_POINTER(id), \"hidden\") == 0)\n" +
+                "    DECL_VISIBILITY(decl) = VISIBILITY_HIDDEN;\n" +
+                "  else if (strcmp(TREE_STRING_POINTER(id), \"protected\") == 0)\n" +
+                "    DECL_VISIBILITY(decl) = VISIBILITY_PROTECTED; /* comment */\n" +
+                "  else\n" +
+                "    DECL_VISIBILITY(decl) = VISIBILITY_PROTECTED;\n" +
                 "}\n");
     }
 }

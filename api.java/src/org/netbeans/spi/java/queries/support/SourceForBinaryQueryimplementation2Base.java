@@ -37,48 +37,37 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.java.queries;
+package org.netbeans.spi.java.queries.support;
 
-import java.net.URL;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.modules.java.queries.SFBQImpl2Result;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
+import org.openide.util.Parameters;
 
 /**
- * Information about where Java sources corresponding to binaries
- * (classfiles) can be found. 
- * <p>
- * In addition to the original SourceForBinaryQueryImplementation this interface
- * also provides information used by the java infrastructure if sources should be
- * preferred over the binaries. When sources are preferred the java infrastructure
- * will use sources as a primary source of the metadata otherwise the binaries
- * (classfiles) are used as a primary source of information and sources are used
- * as a source of formal parameter names and javadoc only.
- * In general sources should be preferred for projects which are user editable
- * but not for libraries or platforms where the sources may not be complete or 
- * up to date.
- * </p>
- * @see org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation
- * @since org.netbeans.api.java/1 1.15
+ * Base class for {@link SourceForBinaryQueryImplementation2} which need to delegate
+ * to other {@link SourceForBinaryQueryImplementation}.
+ * @since 1.16
+ * @author Tomas Zezula
  */
-public interface SourceForBinaryQueryImplementation2 extends SourceForBinaryQueryImplementation {
+public abstract class SourceForBinaryQueryimplementation2Base implements SourceForBinaryQueryImplementation2 {
 
     /**
-     * Returns the source root(s) for a given binary root.
-     * @see SourceForBinaryQueryImplementation#findSourceRoots(java.net.URL) 
-     * @param binaryRoot the class path root of Java class files
-     * @return a result object encapsulating the answer or null if the binaryRoot is not recognized
+     * Creates a wrapper for {@link SourceForBinaryQuery.Result}. This method
+     * should be used by delegating {@link SourceForBinaryQueryImplementation2}
+     * which need to delegate to {@link SourceForBinaryQueryImplementation}. 
+     * @param result returned by {@link SourceForBinaryQueryImplementation},
+     * When result is already instanceof {@link SourceForBinaryQueryImplementation2.Result}
+     * it's returned without wrapping.
+     * @return a {@link SourceForBinaryQueryImplementation2.Result}.
      */
-    public Result findSourceRoots2 (final URL binaryRoot);
-    
-    public static interface Result extends SourceForBinaryQuery.Result {
-        
-        /**
-         * When true the java model prefers sources otherwise binaries are used.
-         * Project's {@link SourceForBinaryQueryImplementation} should return
-         * true. The platform and libraries {@link SourceForBinaryQueryImplementation}
-         * should return false - the attached sources may not be complete.
-         * @see SourceForBinaryQueryImplementation2
-         * @return true if sources should be used by the java infrastructure
-         */
-        public boolean preferSources();
+    protected final Result asResult (SourceForBinaryQuery.Result result) {
+        Parameters.notNull("result", result);   //NOI18N
+        if (result instanceof Result) {
+            return (Result) result;
+        }
+        else {
+            return new SFBQImpl2Result(result);
+        }
     }
 }

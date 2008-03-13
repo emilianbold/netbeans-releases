@@ -37,48 +37,47 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.java.queries;
+package org.netbeans.modules.java.queries;
 
-import java.net.URL;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Information about where Java sources corresponding to binaries
- * (classfiles) can be found. 
- * <p>
- * In addition to the original SourceForBinaryQueryImplementation this interface
- * also provides information used by the java infrastructure if sources should be
- * preferred over the binaries. When sources are preferred the java infrastructure
- * will use sources as a primary source of the metadata otherwise the binaries
- * (classfiles) are used as a primary source of information and sources are used
- * as a source of formal parameter names and javadoc only.
- * In general sources should be preferred for projects which are user editable
- * but not for libraries or platforms where the sources may not be complete or 
- * up to date.
- * </p>
- * @see org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation
- * @since org.netbeans.api.java/1 1.15
+ *
+ * @author Tomas Zezula
  */
-public interface SourceForBinaryQueryImplementation2 extends SourceForBinaryQueryImplementation {
-
-    /**
-     * Returns the source root(s) for a given binary root.
-     * @see SourceForBinaryQueryImplementation#findSourceRoots(java.net.URL) 
-     * @param binaryRoot the class path root of Java class files
-     * @return a result object encapsulating the answer or null if the binaryRoot is not recognized
-     */
-    public Result findSourceRoots2 (final URL binaryRoot);
+public class SFBQImpl2Result implements SourceForBinaryQueryImplementation2.Result {
     
-    public static interface Result extends SourceForBinaryQuery.Result {
-        
-        /**
-         * When true the java model prefers sources otherwise binaries are used.
-         * Project's {@link SourceForBinaryQueryImplementation} should return
-         * true. The platform and libraries {@link SourceForBinaryQueryImplementation}
-         * should return false - the attached sources may not be complete.
-         * @see SourceForBinaryQueryImplementation2
-         * @return true if sources should be used by the java infrastructure
-         */
-        public boolean preferSources();
+    private final SourceForBinaryQuery.Result delegate;
+    
+    public SFBQImpl2Result (final SourceForBinaryQuery.Result result) {
+        assert result != null;
+        this.delegate = result;
+    }
+
+    public boolean preferSources() {
+        //Preserve the old behavior from 4.0 to 6.1, ignore sources inside archives
+        final FileObject[] roots = this.delegate.getRoots();
+        for (FileObject root : roots) {
+            if (FileUtil.getArchiveFile(root) != null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public FileObject[] getRoots () {
+        return this.delegate.getRoots();
+    }
+
+    public void addChangeListener(ChangeListener l) {
+        this.delegate.addChangeListener(l);
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+        this.delegate.removeChangeListener(l);
     }
 }
