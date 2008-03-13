@@ -40,60 +40,52 @@
 package org.netbeans.modules.db.mysql.installations;
 
 import org.netbeans.modules.db.mysql.Installation;
+import org.netbeans.modules.db.mysql.Utils;
 import org.openide.util.Utilities;
 
 /**
- * Defines the installation of MySQL from mysql.com or other standalone
- * mechanism, where it is not installed as a service and you directly
- * call the commands to start and stop
+ * Standalone version on Linux.  Assuming installed as a service, and that
+ * the standard approach is to manage the service, not another instance.
  * 
  * @author David Van Couvering
  */
-public abstract class AbstractStandaloneInstallation extends AbstractInstallation {
-    private static final String START_PATH="/mysqld";
-    private static final String STOP_PATH="/mysqladmin";
-    private static final String DEFAULT_PORT = "3306";
+public class LinuxStandaloneInstallation implements Installation {
     
-    private String basePath;
+    private static final LinuxStandaloneInstallation DEFAULT = new
+            LinuxStandaloneInstallation();
     
-    protected AbstractStandaloneInstallation(String basePath) {
-        this.basePath = basePath;
+    private static final String SVC_EXE = "/etc/init.d/mysql"; // NOI18N
+    private static final String GKSU = "/usr/bin/gksu"; // NOI18N
+        
+    public static LinuxStandaloneInstallation getDefault() {
+        return DEFAULT;
     }
-            
+
+    protected LinuxStandaloneInstallation() {
+    }
+    
+    public String[] getStartCommand() {
+        return new String[] { GKSU, SVC_EXE + " start"};
+    }
+
+    public String[] getStopCommand() {
+        return new String[] { GKSU, SVC_EXE + " stop"};
+    }
+    
+    public boolean isInstalled() {
+        return Utilities.isUnix() && Utils.isValidExecutable(SVC_EXE) &&
+                Utils.isValidExecutable(GKSU);
+    }
+
     public boolean isStackInstall() {
         return false;
     }
 
     public String[] getAdminCommand() {
-        return new String[] { "", "" };
+        return new String[] { "", ""};
     }
 
-    public String[] getStartCommand() {
-        String command = basePath + START_PATH; // NOI18N
-        return new String[] { command, "" };
-    }
-
-    public String[] getStopCommand() {
-        String command = basePath + STOP_PATH; // NOI18N
-        return new String[] { command, "-u root stop" };
-    }
-    
     public String getDefaultPort() {
-        return DEFAULT_PORT;
-    }
-
-    @Override
-    protected String getBasePath() {
-        return basePath;
-    }
-
-    @Override
-    protected String getStartPath() {
-        return START_PATH;
-    }
-
-    @Override
-    protected String getStopPath() {
-        return STOP_PATH;
+        return "3306"; // NOI18N
     }
 }

@@ -40,60 +40,55 @@
 package org.netbeans.modules.db.mysql.installations;
 
 import org.netbeans.modules.db.mysql.Installation;
+import org.netbeans.modules.db.mysql.Utils;
+import org.openide.util.Utilities;
 
 /**
- * Provides some helper functionality for installations
+ * Webstack version on SXDE.
  * 
  * @author David Van Couvering
  */
-public abstract class AbstractInstallation implements Installation {
-    /**
-     * @return the base/installation path for this installation
-     */
-    protected abstract String getBasePath();
+public class SXDEWebStackInstallation implements Installation {
     
-    /**
-     * 
-     * @return the path for the start command, relative to its base path
-     */
-    protected abstract String getStartPath();
+    private static final SXDEWebStackInstallation DEFAULT = new
+            SXDEWebStackInstallation();
     
-    /**
-     * @return the path for the stop command, relative to its base path
-     */
-    protected abstract String getStopPath();
-    
-    /**
-     * Create a new installation given a new base path
-     * 
-     * @param basePath the base path to use for the installation
-     * 
-     * @return a new instance of the installation using this new base path
-     */
-    protected abstract Installation createInstallation(String basePath);
-   
-
-    public Installation getInstallation(String command, Command cmdType) {
-        // Installations either come with no admin UI or with phpmyadmin,
-        // so creating a new installation from the admin command doesn't
-        // really work...
-        if ( cmdType == Command.ADMIN ) {
-            return null;
-        }
+    private static final String SVC_EXE = "/usr/bin/svcadm"; // NOI18N
+    private static final String GKSU = "/usr/bin/gksu"; // NOI18N
+    private static final String MYSQLD_PATH = "/usr/mysql/bin/mysqld"; // NOI18N
+    private static final String SVC_NAME = 
+            "svc:/application/database/mysql:version_50"; // NOI18N
         
-        String newBasePath;
-        
-        if ( cmdType == Command.START ) {
-            newBasePath = command.replace(getStartPath(), "");
-        } else {
-            newBasePath = command.replace(getStopPath(), "");
-        }
-        if ( newBasePath.equals(command)) {
-            // not a valid command path
-            return null;
-        }
-        
-        return createInstallation(newBasePath);
+    public static SXDEWebStackInstallation getDefault() {
+        return DEFAULT;
     }
 
+    protected SXDEWebStackInstallation() {
+    }
+    
+    public String[] getStartCommand() {
+        return new String[] { GKSU, SVC_EXE + " -v enable " + SVC_NAME};
+    }
+
+    public String[] getStopCommand() {
+        return new String[] { GKSU, SVC_EXE + " -v disable " + SVC_NAME};
+    }
+    
+    public boolean isInstalled() {
+        return Utilities.isUnix() && Utils.isValidExecutable(SVC_EXE) &&
+                Utils.isValidExecutable(GKSU) && 
+                Utils.isValidExecutable(MYSQLD_PATH);
+    }
+
+    public boolean isStackInstall() {
+        return true;
+    }
+
+    public String[] getAdminCommand() {
+        return new String[] { "", ""};
+    }
+
+    public String getDefaultPort() {
+        return "3306"; // NOI18N
+    }
 }
