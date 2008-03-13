@@ -88,7 +88,6 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.plaf.PopupMenuUI;
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.actions.PropertyAction;
-import org.netbeans.modules.form.assistant.AssistantMessages;
 import org.netbeans.modules.form.editors.IconEditor.NbImageIcon;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.palette.PaletteUtils;

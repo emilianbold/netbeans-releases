@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="code-folding" foreColor="white" bgColor="253E5A"/>
     <fontcolor name="code-folding-bar" foreColor="253E5A"/>
     <fontcolor name="guarded" bgColor="darkGray"/>
-    <fontcolor name="highlight-caret-row" bgColor="253E5A"/>
+    <fontcolor name="highlight-caret-row" bgColor="ff1b3450"/>
     <fontcolor name="nbeditor-bracesMatching-match" bgColor="ff386f4c" foreColor="white">
         <font style="bold" />
     </fontcolor>
@@ -57,11 +57,12 @@ made subject to such option by the copyright holder.
     <fontcolor name="highlight-search" bgColor="38566F"/>
     <fontcolor name="inc-search" bgColor="38566F"/>
     <fontcolor name="line-number" foreColor="white"/>
-    <fontcolor name="selection" bgColor="38566F"/>
+    <fontcolor name="selection" bgColor="ff685d9c"/>
     <fontcolor name="status-bar"/>
     <fontcolor name="status-bar-bold" foreColor="white" bgColor="red"/>
     <fontcolor name="caret-color-insert-mode" foreColor="yellow" />
     <fontcolor name="text-limit-line-color" foreColor="253E5A"/>
     <fontcolor name="hyperlinks" foreColor="blue" underline="blue"/>
-    <fontcolor name="synchronized-text-blocks" bgColor="ff990099"/>
-</fontscolors>
+    <fontcolor name="synchronized-text-blocks-ext" foreColor="ffcc0099"/>
+    <fontcolor name="synchronized-text-blocks-ext-slave" foreColor="ff996600"/>
+ </fontscolors>
