@@ -49,6 +49,7 @@ import java.util.Set;
 
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.support.ImportHelper;
+import org.netbeans.modules.bpel.model.api.BaseCorrelation;
 import org.netbeans.modules.bpel.model.api.BaseScope;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -67,12 +68,15 @@ import org.netbeans.modules.bpel.model.api.FaultHandlers;
 import org.netbeans.modules.bpel.model.api.Flow;
 import org.netbeans.modules.bpel.model.api.ForEach;
 import org.netbeans.modules.bpel.model.api.If;
+import org.netbeans.modules.bpel.model.api.Invoke;
 import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
 import org.netbeans.modules.bpel.model.api.OnEvent;
 import org.netbeans.modules.bpel.model.api.OnMessage;
 import org.netbeans.modules.bpel.model.api.OperationReference;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.PartnerLinkContainer;
+import org.netbeans.modules.bpel.model.api.PatternedCorrelation;
+import org.netbeans.modules.bpel.model.api.PatternedCorrelationContainer;
 import org.netbeans.modules.bpel.model.api.Pick;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.Receive;
@@ -384,7 +388,7 @@ public final class Validator extends BpelValidator {
 
   private void checkHolders(List<CorrelationsHolder> holders) {
     for (CorrelationsHolder holder : holders) {
-      checkInstantiateAndUse(holder);
+      checkInitiateAndUse(holder);
     }
 //out();
 //out();
@@ -400,18 +404,7 @@ public final class Validator extends BpelValidator {
   }
 
   // # 120390
-  private void checkInstantiateAndUse(CorrelationsHolder holder) {
-    CreateInstanceActivity creator = getCreateInstanceActivity(holder);
-//out();
-//out(" holder: " + holder);
-//out("creator: " + creator);
-
-    if ( !(creator instanceof Receive)) {
-      return;
-    }
-    if (isCreateInstanceYes(creator)) {
-      return;
-    }
+  private void checkInitiateAndUse(CorrelationsHolder holder) {
     CorrelationContainer container = holder.getCorrelationContainer();
 
     if (container == null) {
@@ -448,30 +441,24 @@ public final class Validator extends BpelValidator {
     }
   }
 
-  private boolean checkCorrelationSet(CorrelationSet set, CorrelationsHolder holder, BpelEntity root) {
-    List<BpelEntity> children = root.getChildren();
+  private boolean checkCorrelationSet(CorrelationSet set, CorrelationsHolder holder, BpelEntity entity) {
+    List<BpelEntity> children = entity.getChildren();
 
     for (BpelEntity child : children) {
       if (checkCorrelationSet(set, holder, child)) {
         return true;
       }
     }
-    if (holder == root) {
+    if (holder == entity) {
       return false;
     }
-    if ( !(root instanceof CorrelationsHolder)) {
+    if (checkCorrelationSetInInvoke(set, entity)) {
+      return true;
+    }
+    if ( !(entity instanceof CorrelationsHolder)) {
       return false;
     }
-    CorrelationsHolder current = (CorrelationsHolder) root;
-    CreateInstanceActivity creator = getCreateInstanceActivity(current);
-//out();
-//out("  see: " + getName(current));
-
-    if ( !isCreateInstanceYes(creator)) {
-//out("    no create instance");
-      return false;
-    }
-//out("    is create instance");
+    CorrelationsHolder current = (CorrelationsHolder) entity;
     CorrelationContainer container = current.getCorrelationContainer();
 
     if (container == null) {
@@ -483,23 +470,53 @@ public final class Validator extends BpelValidator {
       return false;
     }
     for (Correlation correlation : correlations) {
-      BpelReference<CorrelationSet> ref = correlation.getSet();
-
-      if (ref == null) {
-        continue;
-      }
-      CorrelationSet corr = ref.get();
-
-      if (corr == null) {
-        continue;
-      }
+      if (theSame(set, correlation)) {
 //out("    view: " + getName(corr));
-      if (corr == set) {
-//out("    FOUND");
         return true;
+//out("    FOUND");
       }
     }
     return false;
+  }
+
+  private boolean checkCorrelationSetInInvoke(CorrelationSet set, BpelEntity entity) {
+    if ( !(entity instanceof Invoke)) {
+      return false;
+    }
+    Invoke invoke = (Invoke) entity;
+    PatternedCorrelationContainer container = invoke.getPatternedCorrelationContainer();
+
+    if (container == null) {
+      return false;
+    }
+    PatternedCorrelation [] correlations = container.getPatternedCorrelations();
+
+    if (correlations == null)  {
+      return false;
+    }
+    for (PatternedCorrelation correlation : correlations) {
+      if (theSame(set, correlation)) {
+//out("    view: " + getName(corr));
+        return true;
+//out("    FOUND");
+      }
+    }
+    return false;
+  }
+
+  private boolean theSame(CorrelationSet set, BaseCorrelation correlation) {
+    BpelReference<CorrelationSet> ref = correlation.getSet();
+
+    if (ref == null) {
+      return false;
+    }
+    CorrelationSet corr = ref.get();
+
+    if (corr == null) {
+      return false;
+    }
+//out("    view: " + getName(corr));
+    return corr == set && correlation.getInitiate() == Initiate.YES;
   }
 
   private void checkReplies(Reply reply1, Reply reply2) {
