@@ -64,6 +64,8 @@ import org.openide.util.Utilities;
 public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel,
         SourcesPanelVisual.WebFolderNameProvider {
 
+    static final String DEFAULT_SOURCE_FOLDER = "web"; // NOI18N
+
     static final String PROJECT_NAME = "projectName"; // NOI18N
     static final String PROJECT_DIR = "projectDir"; // NOI18N
     static final String SET_AS_MAIN = "setAsMain"; // NOI18N

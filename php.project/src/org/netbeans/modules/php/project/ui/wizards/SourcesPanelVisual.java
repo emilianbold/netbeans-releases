@@ -60,17 +60,22 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
- * @author  Tomas Mysik
+ * @author Tomas Mysik
  */
 public class SourcesPanelVisual extends JPanel {
 
     private static final long serialVersionUID = -358263102348820543L;
-    static final LocalServer defaultLocalServer = new LocalServer(null, null,
-            NbBundle.getMessage(SourcesPanelVisual.class, "LBL_UseProjectFolder"), false);
+    static final LocalServer DEFAULT_LOCAL_SERVER;
 
     private final WebFolderNameProvider webFolderNameProvider;
     MutableComboBoxModel localServerComboBoxModel = new LocalServerComboBoxModel();
     private final LocalServerComboBoxEditor localServerComboBoxEditor = new LocalServerComboBoxEditor();
+
+    static {
+        String msg = NbBundle.getMessage(SourcesPanelVisual.class, "LBL_UseProjectFolder",
+                File.separator + ConfigureProjectPanel.DEFAULT_SOURCE_FOLDER);
+        DEFAULT_LOCAL_SERVER = new LocalServer(null, null, msg, false);
+    }
 
     /** Creates new form SourcesPanelVisual */
     public SourcesPanelVisual(WebFolderNameProvider webFolderNameProvider) {
@@ -200,7 +205,7 @@ public class SourcesPanelVisual extends JPanel {
     // End of variables declaration//GEN-END:variables
 
     static boolean isProjectFolder(LocalServer localServer) {
-        return defaultLocalServer.equals(localServer);
+        return DEFAULT_LOCAL_SERVER.equals(localServer);
     }
 
     LocalServer getSourcesLocation() {
@@ -341,7 +346,7 @@ public class SourcesPanelVisual extends JPanel {
         private static final long serialVersionUID = 193082264935872743L;
 
         public LocalServerComboBoxModel() {
-            addElement(defaultLocalServer);
+            addElement(DEFAULT_LOCAL_SERVER);
         }
     }
 
