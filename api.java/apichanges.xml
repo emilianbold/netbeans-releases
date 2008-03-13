@@ -75,6 +75,21 @@ made subject to such option by the copyright holder.
 <changes>
         <change id="queries">
             <api name="queries"/>
+            <summary>Support for delegating SourceForBinaryQueryImplementation2</summary>
+            <version major="1" minor="16"/>
+            <date day="13" month="3" year="2008"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" modification="no" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Added support base class for SourceForBinaryQueryImplementation2 which delegates to other SourceForBinaryQueryImplementations.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.queries.support" name="SourceForBinaryQueryImplementation2Base"/>
+            <issue number="129884"/>
+        </change>
+        <change id="queries">
+            <api name="queries"/>
             <summary>Support for passing hint to the java infrastructure whether it should prefer source or binary</summary>
             <version major="1" minor="15"/>
             <date day="10" month="3" year="2008"/>
