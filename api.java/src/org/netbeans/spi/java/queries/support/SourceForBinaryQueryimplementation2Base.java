@@ -42,6 +42,7 @@ package org.netbeans.spi.java.queries.support;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.java.queries.SFBQImpl2Result;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
+import org.openide.util.Parameters;
 
 /**
  * Base class for {@link SourceForBinaryQueryImplementation2} which need to delegate
@@ -56,17 +57,13 @@ public abstract class SourceForBinaryQueryimplementation2Base implements SourceF
      * should be used by delegating {@link SourceForBinaryQueryImplementation2}
      * which need to delegate to {@link SourceForBinaryQueryImplementation}. 
      * @param result returned by {@link SourceForBinaryQueryImplementation},
-     * if null the method returns null. When result is already instanceof
-     * {@link SourceForBinaryQueryImplementation2.Result} it's returned without
-     * wrapping.
-     * @return a {@link SourceForBinaryQueryImplementation2.Result}, returns
-     * null when result parameter is null.
+     * When result is already instanceof {@link SourceForBinaryQueryImplementation2.Result}
+     * it's returned without wrapping.
+     * @return a {@link SourceForBinaryQueryImplementation2.Result}.
      */
     protected final Result asResult (SourceForBinaryQuery.Result result) {
-        if (result == null) {
-            return null;
-        }
-        else if (result instanceof Result) {
+        Parameters.notNull("result", result);   //NOI18N
+        if (result instanceof Result) {
             return (Result) result;
         }
         else {

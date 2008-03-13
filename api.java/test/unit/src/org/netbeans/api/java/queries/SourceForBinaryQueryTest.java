@@ -243,7 +243,8 @@ public class SourceForBinaryQueryTest extends NbTestCase {
                 return ((SourceForBinaryQueryImplementation2)this.impl).findSourceRoots2(binaryRoot);
             }
             else {
-                return asResult(this.impl.findSourceRoots(binaryRoot));
+                final SourceForBinaryQuery.Result result = this.impl.findSourceRoots(binaryRoot);
+                return result == null ? null : asResult(result);
             }
         }
 
