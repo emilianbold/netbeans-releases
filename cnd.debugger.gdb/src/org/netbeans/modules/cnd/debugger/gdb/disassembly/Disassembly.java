@@ -257,13 +257,13 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     public void insertUpdate(DocumentEvent e) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                updateAnnotations();
+                updateAnnotations(false);
             }
         });
     }
     
-    private void updateAnnotations() {
-        debugger.fireDisUpdate();
+    private void updateAnnotations(boolean open) {
+        debugger.fireDisUpdate(open);
         DebuggerManager dm = DebuggerManager.getDebuggerManager();
         Breakpoint[] bs = dm.getBreakpoints();
         for (int i = 0; i < bs.length; i++) {
@@ -440,7 +440,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             dobj.getCookie(OpenCookie.class).open();
             Disassembly dis = getCurrent();
             if (dis != null) {
-                dis.updateAnnotations();
+                dis.updateAnnotations(true);
             }
         } catch (Exception e) {
             e.printStackTrace();
