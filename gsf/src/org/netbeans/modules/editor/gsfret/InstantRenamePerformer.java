@@ -224,24 +224,24 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                 attribs = getSyncedTextBlocksHighlight("synchronized-text-blocks-ext"); //NOI18N
                 Color foreground = (Color) attribs.getAttribute(StyleConstants.Foreground);
                 Color background = (Color) attribs.getAttribute(StyleConstants.Background);
-                attribsLeft = AttributesUtilities.createImmutable(
+                attribsLeft = createAttribs(
                         StyleConstants.Background, background,
                         EditorStyleConstants.LeftBorderLineColor, foreground, 
                         EditorStyleConstants.TopBorderLineColor, foreground, 
                         EditorStyleConstants.BottomBorderLineColor, foreground
                 );
-                attribsRight = AttributesUtilities.createImmutable(
+                attribsRight = createAttribs(
                         StyleConstants.Background, background,
                         EditorStyleConstants.RightBorderLineColor, foreground, 
                         EditorStyleConstants.TopBorderLineColor, foreground, 
                         EditorStyleConstants.BottomBorderLineColor, foreground
                 );
-                attribsMiddle = AttributesUtilities.createImmutable(
+                attribsMiddle = createAttribs(
                         StyleConstants.Background, background,
                         EditorStyleConstants.TopBorderLineColor, foreground, 
                         EditorStyleConstants.BottomBorderLineColor, foreground
                 );
-                attribsAll = AttributesUtilities.createImmutable(
+                attribsAll = createAttribs(
                         StyleConstants.Background, background,
                         EditorStyleConstants.LeftBorderLineColor, foreground, 
                         EditorStyleConstants.RightBorderLineColor, foreground,
@@ -253,24 +253,24 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                 attribsSlave = getSyncedTextBlocksHighlight("synchronized-text-blocks-ext-slave"); //NOI18N
                 Color slaveForeground = (Color) attribsSlave.getAttribute(StyleConstants.Foreground);
                 Color slaveBackground = (Color) attribsSlave.getAttribute(StyleConstants.Background);
-                attribsSlaveLeft = AttributesUtilities.createImmutable(
+                attribsSlaveLeft = createAttribs(
                         StyleConstants.Background, slaveBackground,
                         EditorStyleConstants.LeftBorderLineColor, slaveForeground, 
                         EditorStyleConstants.TopBorderLineColor, slaveForeground, 
                         EditorStyleConstants.BottomBorderLineColor, slaveForeground
                 );
-                attribsSlaveRight = AttributesUtilities.createImmutable(
+                attribsSlaveRight = createAttribs(
                         StyleConstants.Background, slaveBackground,
                         EditorStyleConstants.RightBorderLineColor, slaveForeground, 
                         EditorStyleConstants.TopBorderLineColor, slaveForeground, 
                         EditorStyleConstants.BottomBorderLineColor, slaveForeground
                 );
-                attribsSlaveMiddle = AttributesUtilities.createImmutable(
+                attribsSlaveMiddle = createAttribs(
                         StyleConstants.Background, slaveBackground,
                         EditorStyleConstants.TopBorderLineColor, slaveForeground, 
                         EditorStyleConstants.BottomBorderLineColor, slaveForeground
                 );
-                attribsSlaveAll = AttributesUtilities.createImmutable(
+                attribsSlaveAll = createAttribs(
                         StyleConstants.Background, slaveBackground,
                         EditorStyleConstants.LeftBorderLineColor, slaveForeground, 
                         EditorStyleConstants.RightBorderLineColor, slaveForeground,
@@ -307,6 +307,25 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
         AttributeSet as = fcs != null ? fcs.getFontColors(name) : null;
         return as == null ? defaultSyncedTextBlocksHighlight : as;
+    }
+
+    private static AttributeSet createAttribs(Object... keyValuePairs) {
+        assert keyValuePairs.length % 2 == 0 : "There must be even number of prameters. " +
+            "They are key-value pairs of attributes that will be inserted into the set.";
+
+        List<Object> list = new ArrayList<Object>();
+        
+        for(int i = keyValuePairs.length / 2 - 1; i >= 0 ; i--) {
+            Object attrKey = keyValuePairs[2 * i];
+            Object attrValue = keyValuePairs[2 * i + 1];
+
+            if (attrKey != null && attrValue != null) {
+                list.add(attrKey);
+                list.add(attrValue);
+            }
+        }
+        
+        return AttributesUtilities.createImmutable(list.toArray());
     }
     
     public static OffsetsBag getHighlightsBag(Document doc) {
