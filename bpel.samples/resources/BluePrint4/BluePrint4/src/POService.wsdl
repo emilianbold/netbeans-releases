@@ -46,55 +46,45 @@
     </types>
 
     <message name="POMessage">
-        <part name="purchaseOrder"
-              element="sns:purchaseOrder"></part>
+        <part name="purchaseOrder" element="sns:purchaseOrder"></part>
     </message>
     
     <message name="orderFaultType">
-        <part name="faultInfo"
-              type="xsd:string"></part>
+        <part name="faultInfo" type="xsd:string"></part>
     </message>
     
     <portType name="purchaseOrderPT">
         <operation name="sendPurchaseOrder">
             <input name="sendPurchaseOrderRequest" message="tns:POMessage"></input>
             <output name="sendPurchaseOrderReply" message="tns:POMessage"></output>
-            <fault name="cannotCompleteOrder"
-                   message="tns:orderFaultType"></fault>
+            <fault name="cannotCompleteOrder" message="tns:orderFaultType"></fault>
         </operation>
     </portType>
     
-    <binding name="purchaseOrderBinding"
-             type="tns:purchaseOrderPT">
-        <soap:binding style="document"
-                      transport="http://schemas.xmlsoap.org/soap/http"/>
+    <binding name="purchaseOrderBinding" type="tns:purchaseOrderPT">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="sendPurchaseOrder">
             <soap:operation style="rpc"/>
             <input name="sendPurchaseOrderRequest">
-                <soap:body parts="purchaseOrder"
-                           use="literal"/>
+                <soap:body parts="purchaseOrder" use="literal"/>
             </input>
             <output name="sendPurchaseOrderReply">
-                <soap:body parts="purchaseOrder"
-                           use="literal"/>
+                <soap:body parts="purchaseOrder" use="literal"/>
             </output>
             <fault name="cannotCompleteOrder">
-                <soap:fault name="cannotCompleteOrder"
-                            use="literal"/>
+                <soap:fault name="cannotCompleteOrder" use="literal"/>
             </fault>
         </operation>
     </binding>
     
     <service name="purchaseOrderService">
-        <port name="purchaseOrderPort"
-              binding="tns:purchaseOrderBinding">
+        <port name="purchaseOrderPort" binding="tns:purchaseOrderBinding">
             <soap:address location="http://localhost:18181/wsdl/purchase/PurchaseOrder/Servicelocation/bp4"/>
         </port>
     </service>
     
     <plink:partnerLinkType name="purchasingLT">
-        <plink:role name="purchaseService"
-                    portType="tns:purchaseOrderPT"></plink:role>
+        <plink:role name="purchaseService" portType="tns:purchaseOrderPT"></plink:role>
     </plink:partnerLinkType>
     
     <bpws:property name="clrorla" type="xsd:int"/>
