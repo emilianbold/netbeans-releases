@@ -41,9 +41,14 @@
 
 package org.netbeans.modules.asm.core.ui.top;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.io.Serializable;
 import java.util.Collection;
 
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -70,6 +75,10 @@ final class NavigatorTopComponent extends TopComponent implements LookupListener
     //private NavigatorTab []tabs;
     
     private final RegisterUsagesPanel regUsagePanel;
+    
+    /** label signalizing no available providers */
+    private final JLabel notAvailLbl = new JLabel(
+            NbBundle.getMessage(NavigatorTopComponent.class, "MSG_NotAvailable")); //NOI18N
             
     private NavigatorTopComponent() {
         initComponents();
@@ -79,9 +88,17 @@ final class NavigatorTopComponent extends TopComponent implements LookupListener
         //mainTabbedPanel.setVisible(false);
         
         regUsagePanel = RegisterUsagesPanel.getInstance();
-        add(regUsagePanel, java.awt.BorderLayout.CENTER);
-        regUsagePanel.setVisible(false);
         
+        // Copied from the default NavigatorTC
+        notAvailLbl.setHorizontalAlignment(SwingConstants.CENTER);
+        notAvailLbl.setEnabled(false);
+        Color usualWindowBkg = UIManager.getColor("window"); //NOI18N
+        notAvailLbl.setBackground(usualWindowBkg != null ? usualWindowBkg : Color.white);
+        // to ensure our background color will have effect
+        notAvailLbl.setOpaque(true);
+        
+        showPanel(false);
+       
         /*tabs = new NavigatorTab[] {      
             RegisterUsagesPanel.getInstance()
         };
@@ -89,6 +106,22 @@ final class NavigatorTopComponent extends TopComponent implements LookupListener
         for (NavigatorTab tab : tabs) {
             mainTabbedPanel.add(tab.getName(), tab.getPanel());
         } */               
+    }
+    
+    private void showPanel(boolean show) {
+        if (show) {
+            remove(notAvailLbl);
+            add(regUsagePanel, BorderLayout.CENTER);
+        } else {
+            if (notAvailLbl.isShowing()) {
+                // already empty
+                return;
+            }
+            remove(regUsagePanel);
+            add(notAvailLbl, BorderLayout.CENTER);
+        }
+        revalidate();
+        repaint();
     }
     
     /** This method is called from within the constructor to
@@ -151,7 +184,7 @@ final class NavigatorTopComponent extends TopComponent implements LookupListener
     @Override
     public void componentHidden() {      
         lookupResult.removeLookupListener(this);
-        regUsagePanel.setVisible(false);
+        showPanel(false);
         //mainTabbedPanel.setVisible(false);
         lookupResult = null;
         setActivatedNodes(new Node[0]);
@@ -165,7 +198,7 @@ final class NavigatorTopComponent extends TopComponent implements LookupListener
         if (dob == null) {
             setActivatedNodes(new Node[0]);            
             //mainTabbedPanel.setVisible(false);
-            regUsagePanel.setVisible(false);
+            showPanel(false);
             return;                         
         }
         
@@ -180,7 +213,7 @@ final class NavigatorTopComponent extends TopComponent implements LookupListener
     
     private void addPanelsForModel(DataObject dob) {      
         //mainTabbedPanel.setVisible(true);
-        regUsagePanel.setVisible(true);
+        showPanel(true);
         regUsagePanel.setDocument(dob);
         
         /*for (NavigatorTab tab : tabs) {

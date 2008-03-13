@@ -39,49 +39,74 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.shell;
+package org.netbeans.modules.cnd.editor.cplusplus;
 
-import org.netbeans.modules.cnd.MIMENames;
+
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.modules.editor.options.OptionSupport;
 
-/**
- * Options for the shell editor kit
- *
- */
-public class ShellOptions extends org.netbeans.modules.editor.options.BaseOptions {
-    static final long serialVersionUID = 8408068822977698769L;
+/** Options for the CC editor kit */
+public class CCOptions extends BaseOptions {
+    
+    static final long serialVersionUID = 6972381723748170674L;
+    
+    private static final String CC = "CPLUSPLUS"; //NOI18N
+    private static final String HELP_ID = "Welcome_opt_editor_cpp"; // !!! NOI18N
 
-    public static final String SHELL = "shell"; //NOI18N
+    public static final String COMPLETION_AUTO_POPUP_PROP = "completionAutoPopup"; // NOI18N
+    public static final String JAVADOC_AUTO_POPUP_PROP = "javaDocAutoPopup"; //NOI18N
+    
+    static final String[] CC_PROP_NAMES = OptionSupport.mergeStringArrays(BaseOptions.BASE_PROP_NAMES, new String[] {
+                                                COMPLETION_AUTO_POPUP_PROP,
+                                                JAVADOC_AUTO_POPUP_PROP
+                                            });
 
-    public ShellOptions() {
-        super (ShellKit.class, SHELL);
+    public CCOptions() {
+        super(CCKit.class, CC);
+    }
+    
+    public CCOptions(Class kitClass, String typeName) {
+        super(kitClass, typeName);
+    }
+  
+    /** Return the C++ Indent Engine class */
+    protected @Override Class getDefaultIndentEngineClass() {
+        return CCIndentEngine.class;
     }
 
-    /** Return the Shell Indent Engine class */
-    // FIXUP
-    /*
-    protected Class getDefaultIndentEngineClass() {
-        return ShellIndentEngine.class;
+    public boolean getCompletionAutoPopup() {
+        return getSettingBoolean(ExtSettingsNames.COMPLETION_AUTO_POPUP);
     }
-    */
+    public void setCompletionAutoPopup(boolean v) {
+        setSettingBoolean(ExtSettingsNames.COMPLETION_AUTO_POPUP, v, COMPLETION_AUTO_POPUP_PROP);
+    }
 
-    /** @return localized string */
+    public boolean getJavaDocAutoPopup() {
+        return getSettingBoolean(ExtSettingsNames.JAVADOC_AUTO_POPUP);
+    }
+    public void setJavaDocAutoPopup(boolean auto) {
+        setSettingBoolean(ExtSettingsNames.JAVADOC_AUTO_POPUP, auto,
+            JAVADOC_AUTO_POPUP_PROP);
+    }
+
+    public @Override HelpCtx getHelpCtx() {
+        return new HelpCtx(HELP_ID);
+    }
+
+    /**
+     * Get the localized string from the argument. This method is called up the stack.
+     * So even though its not called inside this class, its definately needed!
+     */
     protected @Override String getString(String s) {
         try {
-            String res = NbBundle.getBundle(ShellOptions.class).getString(s);
+            String res = NbBundle.getBundle(CCOptions.class).getString(s);
             return (res == null) ? super.getString(s) : res;
         }
         catch (Exception e) {
             return super.getString(s);
         }
-    }
-
-    public @Override HelpCtx getHelpCtx() {
-        return new HelpCtx("Welcome_opt_editor_shell"); // NOI18N
-    }
-
-    protected @Override String getContentType() {
-        return MIMENames.SHELL_MIME_TYPE;
     }
 }
