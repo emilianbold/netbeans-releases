@@ -70,6 +70,8 @@ public class Constants {
     
     public static final String URI_INFO = RestConstants.REST_API_PACKAGE + "core.UriInfo";     //NOI18N
     
+    public static final String URI_BUILDER = RestConstants.REST_API_PACKAGE + "core.UriBuilder"; //NOI18N
+    
     public static final String URI_TYPE = "java.net.URI";       //NOI18N
     
     public static final String QUERY_TYPE = "javax.persistence.Query";       //NOI18N

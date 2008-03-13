@@ -167,22 +167,41 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    public void testReformatArrayInitializerWithNewline2() {
+    
+    public void testTryCatchHalf() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.newLineCatch, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
-                "int[][] foo4 =  {\n" +
-                "{1, 2, 3},\n" +
-                "{3,4,5},\n" +
-                "{7,8,9}\n" +
-                "};\n" +
-                "\n");
+                "int foo()\n" +
+                "{\n" +
+                "  if (strcmp (TREE_STRING_POINTER (id), \"default\") == 0)\n" +
+                "    DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;  // comment\n" +
+                "  else if (strcmp (TREE_STRING_POINTER (id), \"hidden\") == 0)\n" +
+                "    DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;  \n" +
+                "  else if (strcmp (TREE_STRING_POINTER (id), \"protected\") == 0)\n" +
+                "    DECL_VISIBILITY (decl) = VISIBILITY_PROTECTED;   /* comment */   \n" +
+                "  else\n" +
+                "    DECL_VISIBILITY (decl) = VISIBILITY_PROTECTED;\n" +
+                "}\n");
         reformat();
-        assertDocumentText("Incorrect array initializer with newline reformatting",
-                "int[][] foo4 = {\n" +
-                "    {1, 2, 3},\n" +
-                "    {3, 4, 5},\n" +
-                "    {7, 8, 9}\n" +
-                "};\n" +
-                "\n");
+        assertDocumentText("Incorrect formatting try-catch half indent",
+                "int foo()\n" +
+                "{\n" +
+                "  if (strcmp(TREE_STRING_POINTER(id), \"default\") == 0)\n" +
+                "    DECL_VISIBILITY(decl) = VISIBILITY_DEFAULT; // comment\n" +
+                "  else if (strcmp(TREE_STRING_POINTER(id), \"hidden\") == 0)\n" +
+                "    DECL_VISIBILITY(decl) = VISIBILITY_HIDDEN;\n" +
+                "  else if (strcmp(TREE_STRING_POINTER(id), \"protected\") == 0)\n" +
+                "    DECL_VISIBILITY(decl) = VISIBILITY_PROTECTED; /* comment */\n" +
+                "  else\n" +
+                "    DECL_VISIBILITY(decl) = VISIBILITY_PROTECTED;\n" +
+                "}\n");
     }
 }
