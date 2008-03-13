@@ -53,6 +53,10 @@ public class TemplateSpecializationTestCase extends CompletionBaseTestCase {
         super(testName, false);
     }
     
+    public void testIteratorVariableDeref() throws Exception {
+        super.performTest("mapIterator.cc", 17, 9);
+    }
+    
     public void testInFunctionAfterUnderscore() throws Exception {
         // IZ#10495: A lot of identical items in code completion listbox
         super.performTest("file.cc", 5, 6);

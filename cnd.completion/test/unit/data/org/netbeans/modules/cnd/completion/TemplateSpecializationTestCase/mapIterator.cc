@@ -13,4 +13,6 @@ mapA::iterator itA; // try something like Map<A>::
 
 void testIteratorVisibility() {
     Map<A>::iterator itAA; // try something like Map<A>::
+    itAA.foo();
+    itA.foo();
 }
