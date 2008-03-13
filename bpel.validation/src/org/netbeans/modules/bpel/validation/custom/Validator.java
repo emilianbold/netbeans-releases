@@ -383,6 +383,9 @@ public final class Validator extends BpelValidator {
   }
 
   private void checkHolders(List<CorrelationsHolder> holders) {
+    for (CorrelationsHolder holder : holders) {
+      checkInstantiateAndUse(holder);
+    }
 //out();
 //out();
     for (int i=0; i < holders.size(); i++) {
@@ -394,6 +397,98 @@ public final class Validator extends BpelValidator {
     }
 //out();
 //out();
+  }
+
+  // # 120390
+  private void checkInstantiateAndUse(CorrelationsHolder holder) {
+    CreateInstanceActivity creator = getCreateInstanceActivity(holder);
+
+    if (isCreateInstanceYes(creator)) {
+      return;
+    }
+    CorrelationContainer container = holder.getCorrelationContainer();
+
+    if (container == null) {
+      return;
+    }
+    Correlation [] correlations = container.getCorrelations();
+
+    if (correlations == null)  {
+      return;
+    }
+    Process process = holder.getBpelModel().getProcess();
+//out();
+//out("SEE: " + getName(holder));
+    for (Correlation correlation : correlations) {
+      BpelReference<CorrelationSet> ref = correlation.getSet();
+
+      if (ref == null) {
+        continue;
+      }
+      CorrelationSet set = ref.get();
+
+      if (set == null) {
+        continue;
+      }
+//out("check: " + getName(correlation));
+      if ( !checkCorrelation(set, holder, process)) {
+        addError("FIX_Not_Instantiated_Correlation", correlation); // NOI18N
+      }
+    }
+  }
+
+  private boolean checkCorrelation(CorrelationSet set, CorrelationsHolder holder, BpelEntity root) {
+    List<BpelEntity> children = root.getChildren();
+
+    for (BpelEntity child : children) {
+      if (checkCorrelation(set, holder, child)) {
+        return true;
+      }
+    }
+    if (holder == root) {
+      return false;
+    }
+    if ( !(root instanceof CorrelationsHolder)) {
+      return false;
+    }
+    CorrelationsHolder current = (CorrelationsHolder) root;
+    CreateInstanceActivity creator = getCreateInstanceActivity(current);
+//out();
+//out("  see: " + getName(current));
+
+    if ( !isCreateInstanceYes(creator)) {
+//out("    no create instance");
+      return false;
+    }
+//out("    is create instance");
+    CorrelationContainer container = current.getCorrelationContainer();
+
+    if (container == null) {
+      return false;
+    }
+    Correlation [] correlations = container.getCorrelations();
+
+    if (correlations == null)  {
+      return false;
+    }
+    for (Correlation correlation : correlations) {
+      BpelReference<CorrelationSet> ref = correlation.getSet();
+
+      if (ref == null) {
+        continue;
+      }
+      CorrelationSet corr = ref.get();
+
+      if (corr == null) {
+        continue;
+      }
+//out("    view: " + getName(corr));
+      if (corr == set) {
+//out("    FOUND");
+        return true;
+      }
+    }
+    return false;
   }
 
   private void checkReplies(Reply reply1, Reply reply2) {
