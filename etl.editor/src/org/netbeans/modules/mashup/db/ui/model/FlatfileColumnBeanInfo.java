@@ -26,7 +26,7 @@ import java.util.List;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 
 /**
@@ -46,7 +46,7 @@ public class FlatfileColumnBeanInfo extends SimpleBeanInfo {
 
     private static MethodDescriptor[] methods = null;
     
-    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileColumnBeanInfo.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(FlatfileColumnBeanInfo.class.getName());
     
     private static transient final Localizer mLoc = Localizer.get();
 
@@ -79,89 +79,89 @@ public class FlatfileColumnBeanInfo extends SimpleBeanInfo {
     public PropertyDescriptor[] getPropertyDescriptors() {
         if (properties == null) {
             List myProps = new ArrayList();
-            String nbBundle1 = mLoc.t("PRSR001: Column name");
+            String nbBundle1 = mLoc.t("BUND187: Column name");
             try {
                 PropertyDescriptor pd = new PropertyDescriptor("name", FlatfileColumn.class, "getName", null); // NOI18N
-                String label = Localizer.parse(nbBundle1); // NOI18N
+                String label = nbBundle1.substring(15); // NOI18N
                 pd.setDisplayName(label);
                 myProps.add(pd);
             } catch (IntrospectionException e) {
             }
 
-            String nbBundle2 = mLoc.t("PRSR001: Ordinal position");
+            String nbBundle2 = mLoc.t("BUND188: Ordinal position");
             try {
                 PropertyDescriptor pd = new PropertyDescriptor("ordinalPosition", FlatfileColumn.class, "getOrdinalPosition", null); // NOI18N
-                String label = Localizer.parse(nbBundle2);// NOI18N
+                String label = nbBundle2.substring(15);// NOI18N
                 pd.setDisplayName(label);
                 myProps.add(pd);
             } catch (IntrospectionException e) {
             }
 
-            String nbBundle3 = mLoc.t("PRSR001: Precision / length");
+            String nbBundle3 = mLoc.t("BUND189: Precision / length");
             try {
                 PropertyDescriptor pd = new PropertyDescriptor("precision", FlatfileColumn.class, "getPrecision", null); // NOI18N
-                String label = Localizer.parse(nbBundle3); // NOI18N
+                String label = nbBundle3.substring(15); // NOI18N
                 pd.setDisplayName(label);
                 myProps.add(pd);
             } catch (IntrospectionException e) {
             }
 
-            String nbBundle4 = mLoc.t("PRSR001: Scale");
+            String nbBundle4 = mLoc.t("BUND234: Scale");
             try {
                 PropertyDescriptor pd = new PropertyDescriptor("scale", FlatfileColumn.class, "getScale", null); // NOI18N
-                String label = Localizer.parse(nbBundle4); // NOI18N
+                String label = nbBundle4.substring(15); // NOI18N
                 pd.setDisplayName(label);
                 myProps.add(pd);
             } catch (IntrospectionException e) {
             }
             
-            String nbBundle5 = mLoc.t("PRSR001: Data type");
+            String nbBundle5 = mLoc.t("BUND191: Data type");
             try {
                 PropertyDescriptor pd = new PropertyDescriptor("sqlType", FlatfileColumn.class, "getJdbcTypeString", null); // NOI18N
-                String label = Localizer.parse(nbBundle5); // NOI18N
+                String label = nbBundle5.substring(15); // NOI18N
                 pd.setDisplayName(label);
                 myProps.add(pd);
             } catch (IntrospectionException e) {
             }
-            String nbBundle6 = mLoc.t("PRSR001: Nullable");
+            String nbBundle6 = mLoc.t("BUND192: Nullable");
             try {
                 PropertyDescriptor pd = new PropertyDescriptor("nullable", FlatfileColumn.class, "isNullable", null); // NOI18N
-                String label = Localizer.parse(nbBundle6); // NOI18N
+                String label = nbBundle6.substring(15); // NOI18N
                 pd.setDisplayName(label);
                 myProps.add(pd);
             } catch (IntrospectionException e) {
             }
             
-            String nbBundle7 = mLoc.t("PRSR001: Indexed");
+            String nbBundle7 = mLoc.t("BUND193: Indexed");
             try {
                 PropertyDescriptor pd = new PropertyDescriptor("indexed", FlatfileColumn.class, "isIndexed", null); // NOI18N
-                String label = Localizer.parse(nbBundle7); // NOI18N
+                String label = nbBundle7.substring(15); // NOI18N
                 pd.setDisplayName(label);
                 myProps.add(pd);
             } catch (IntrospectionException e) {
             }
 
-            String nbBundle8 = mLoc.t("PRSR001: Primary key");
+            String nbBundle8 = mLoc.t("BUND194: Primary key");
             try {
                 PropertyDescriptor pd = new PropertyDescriptor("primaryKey", FlatfileColumn.class, "isPrimaryKey", null); // NOI18N
-                String label = Localizer.parse(nbBundle8); // NOI18N
+                String label = nbBundle8.substring(15); // NOI18N
                 pd.setDisplayName(label);
                 myProps.add(pd);
             } catch (IntrospectionException e) {
             }
 
-            String nbBundle9 = mLoc.t("PRSR001: Foreign key");
+            String nbBundle9 = mLoc.t("BUND195: Foreign key");
             try {
                 PropertyDescriptor pd = new PropertyDescriptor("foreignKey", FlatfileColumn.class, "isForeignKey", null); // NOI18N
-                String label = Localizer.parse(nbBundle9); // NOI18N
+                String label = nbBundle9.substring(15); // NOI18N
                 pd.setDisplayName(label);
                 myProps.add(pd);
             } catch (IntrospectionException e) {
             }
-            String nbBundle10 = mLoc.t("PRSR001: Default Value");
+            String nbBundle10 = mLoc.t("BUND196: Default Value");
             try {
                 PropertyDescriptor pd = new PropertyDescriptor("defaultValue", FlatfileColumn.class, "getDefaultValue", null); // NOI18N
-                String label = Localizer.parse(nbBundle10); // NOI18N
+                String label = nbBundle10.substring(15); // NOI18N
                 pd.setDisplayName(label);
                 myProps.add(pd);
             } catch (IntrospectionException e) {

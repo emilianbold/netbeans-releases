@@ -56,8 +56,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.apache.tools.ant.Task;
 import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+import org.netbeans.modules.etl.project.Localizer;
+
 
 /**
  *
@@ -79,7 +79,7 @@ public class MasterIndexDesignTime extends Task {
     String parentPrimaryKey = null;
     ArrayList childrenForeignKey = new ArrayList();
     ArrayList orderByFields = new ArrayList();
-    private static transient final Logger mLogger = LogUtil.getLogger(MasterIndexDesignTime.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(MasterIndexDesignTime.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /** Creates a new instance of Main */

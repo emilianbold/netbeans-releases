@@ -230,26 +230,7 @@ public class ReformatterImpl {
                     if (isStart) {
                         Token<CppTokenId> next = ts.lookNextImportant();
                         if (next != null && next.id() == COLON) {
-                            braces.isLabel = true;
-                            if (doFormat()) {
-                                if (!ts.isFirstLineToken()) {
-                                    ts.addBeforeCurrent(1, 0);
-                                } else {
-                                    DiffResult diff = diffs.getDiffs(ts, -1);
-                                    if (diff == null){
-                                        if (previous != null && previous.id() == WHITESPACE) {
-                                            ts.replacePrevious(previous, 0, 0);
-                                        }
-                                    } else {
-                                        if (diff.after != null) {
-                                            diff.after.replaceSpaces(0);
-                                        }
-                                        if (diff.replace != null) {
-                                            diff.replace.replaceSpaces(0);
-                                        }
-                                    }
-                                }
-                            }
+                            indentLabel(previous);
                         }
                     }
                     break;
@@ -907,6 +888,33 @@ public class ReformatterImpl {
             }
         } else if (previous != null) {
             makeSpaceBefore(codeStyle.spaceBeforeElse());
+        }
+    }
+
+    private void indentLabel(Token<CppTokenId> previous) {
+        braces.isLabel = true;
+        int indent = 0;
+        if (!codeStyle.absoluteLabelIndent()) {
+            indent = braces.getSelfIndent();
+        }
+        if (doFormat()) {
+            if (!ts.isFirstLineToken()) {
+                ts.addBeforeCurrent(1, 0);
+            } else {
+                DiffResult diff = diffs.getDiffs(ts, -1);
+                if (diff == null) {
+                    if (previous != null && previous.id() == WHITESPACE) {
+                        ts.replacePrevious(previous, 0, indent);
+                    }
+                } else {
+                    if (diff.after != null) {
+                        diff.after.replaceSpaces(indent);
+                    }
+                    if (diff.replace != null) {
+                        diff.replace.replaceSpaces(indent);
+                    }
+                }
+            }
         }
     }
 
