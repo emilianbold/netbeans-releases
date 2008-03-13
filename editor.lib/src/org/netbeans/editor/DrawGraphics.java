@@ -608,7 +608,7 @@ interface DrawGraphics {
             }
 
             // If no text on the line then return + handle incorrect conditions
-            if (startOffset < 0 || startOffset >= endOffset || endOffset > buffer.length) {
+            if (startOffset < 0 || startOffset >= endOffset || startOffset - endOffset > buffer.length) {
                 startOffset = -1;
                 return;
             }
