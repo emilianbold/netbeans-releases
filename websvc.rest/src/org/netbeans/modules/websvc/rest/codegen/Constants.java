@@ -66,9 +66,11 @@ public class Constants {
     
     public static final String ENTITY_TYPE = RestConstants.REST_API_PACKAGE + "Entity";
     
-    public static final String HTTP_CONTEXT = RestConstants.REST_API_PACKAGE + "core.HttpContext";    //NOI18N
+    public static final String CONTEXT = RestConstants.REST_API_PACKAGE + "core.Context";    //NOI18N
     
     public static final String URI_INFO = RestConstants.REST_API_PACKAGE + "core.UriInfo";     //NOI18N
+    
+    public static final String URI_BUILDER = RestConstants.REST_API_PACKAGE + "core.UriBuilder"; //NOI18N
     
     public static final String URI_TYPE = "java.net.URI";       //NOI18N
     

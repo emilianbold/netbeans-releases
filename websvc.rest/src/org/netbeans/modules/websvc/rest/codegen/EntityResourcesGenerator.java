@@ -102,11 +102,11 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         RestConstants.POST,
         RestConstants.PRODUCE_MIME,
         RestConstants.CONSUME_MIME,
-        RestConstants.URI_PARAM,
+        RestConstants.PATH_PARAM,
         RestConstants.QUERY_PARAM,
         RestConstants.DEFAULT_VALUE,
         Constants.HTTP_RESPONSE,
-        Constants.HTTP_CONTEXT,
+        Constants.CONTEXT,
         Constants.URI_INFO
     };
     
@@ -140,7 +140,8 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Constants.XML_ROOT_ELEMENT,
         Constants.XML_ELEMENT,
         Constants.XML_TRANSIENT,
-        Constants.XML_ATTRIBUTE
+        Constants.XML_ATTRIBUTE,
+        Constants.URI_BUILDER
     };
     
     private static final String mimeTypes = "{\"" + MimeType.XML.value() + "\", \"" +
@@ -660,7 +661,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         String[] annotations = null;
         
         if (bean.isContainer()) {
-            annotations = new String[] {RestConstants.HTTP_CONTEXT_ANNOTATION};
+            annotations = new String[] {RestConstants.CONTEXT_ANNOTATION};
         }
         
         modifiedTree = JavaSourceHelper.addField(copy, modifiedTree, modifiers,
@@ -1659,7 +1660,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Object returnType = Constants.URI_TYPE;
         
         String bodyText = "{if (isUriExtendable) {" +
-                "return uri.resolve($ID_TO_URI$ + \"/\");" +
+                "return UriBuilder.fromUri(uri).path($ID_TO_URI$ + \"/\").build();" +
                 "}" +
                 "return uri;" +
                 "}";
@@ -1897,7 +1898,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             String[] uriParamArray = new String[size];
             
             for (int i = 0; i < size; i++) {
-                uriParamArray[i] = RestConstants.URI_PARAM_ANNOTATION;
+                uriParamArray[i] = RestConstants.PATH_PARAM_ANNOTATION;
             }
             
             if (append) {
@@ -1907,9 +1908,9 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             return uriParamArray;
         } else {
             if (!append) {
-                return new String[] {RestConstants.URI_PARAM_ANNOTATION};
+                return new String[] {RestConstants.PATH_PARAM_ANNOTATION};
             } else {
-                return new String[] {RestConstants.URI_PARAM_ANNOTATION, additionalUriParam};
+                return new String[] {RestConstants.PATH_PARAM_ANNOTATION, additionalUriParam};
             }
         }
     }

@@ -160,10 +160,9 @@ public class CustomizeProject extends ProjectAction implements Presenter.Popup {
     // Implementation of Presenter.Popup ---------------------------------------
     
     public JMenuItem getPopupPresenter() {
-        JMenuItem popupPresenter = new JMenuItem( this );
+        JMenuItem popupPresenter = new JMenuItem();
+        org.openide.awt.Actions.connect(popupPresenter, this, true);
         popupPresenter.setText( namePatternPopup );
-        popupPresenter.setIcon( null );
-
         return popupPresenter;
     }
     
