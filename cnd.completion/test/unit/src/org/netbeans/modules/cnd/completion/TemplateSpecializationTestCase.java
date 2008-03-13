@@ -56,5 +56,9 @@ public class TemplateSpecializationTestCase extends CompletionBaseTestCase {
     public void testInFunctionAfterUnderscore() throws Exception {
         // IZ#10495: A lot of identical items in code completion listbox
         super.performTest("file.cc", 5, 6);
-    }      
+    }  
+    
+    public void testIteratorVisibilityGlobal() throws Exception {
+        super.performTest("mapIterator.cc", 12, 7);
+    }
 }
