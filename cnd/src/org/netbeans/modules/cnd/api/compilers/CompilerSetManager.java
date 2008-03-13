@@ -54,9 +54,11 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.compilers.DefaultCompilerProvider;
-import org.netbeans.modules.cnd.settings.CppSettings;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
@@ -124,8 +126,12 @@ public class CompilerSetManager {
             instance = restoreFromDisk();
             if (instance == null) {
                 instance = new CompilerSetManager();
-                if (instance.getCompilerSets().size() >= 0) {
+                if (instance.getCompilerSets().size() > 0) {
                     instance.saveToDisk();
+                } else {
+                    String errormsg = getString("NO_COMPILERS_FOUND_MSG");
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(errormsg, NotifyDescriptor.WARNING_MESSAGE);
+                    DialogDisplayer.getDefault().notify(nd);
                 }
             }
         }
@@ -735,5 +741,10 @@ public class CompilerSetManager {
         }
         
         return new CompilerSetManager(css);
+    }
+    
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(CompilerSetManager.class, s);
     }
 }
