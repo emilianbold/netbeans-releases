@@ -568,7 +568,7 @@ public class WebProjectProperties {
                 cs, ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()));
 
         // Configure classpath from server (no server libraries)
-        if (!configured) {
+        if (!configured && J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
             setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()),
                     project, projectProperties, privateProperties, true);
         }
@@ -764,7 +764,9 @@ public class WebProjectProperties {
     
     private static void setNewServerInstanceValue(String newServInstID, Project project,
             EditableProperties projectProps, EditableProperties privateProps, boolean setFromServer) {
-        
+
+        assert newServInstID != null : "Server isntance id to set can't be null"; // NOI18N
+
         // update j2ee.platform.classpath
         String oldServInstID = privateProps.getProperty(J2EE_SERVER_INSTANCE);
         if (oldServInstID != null) {
@@ -896,11 +898,11 @@ public class WebProjectProperties {
             }
         }
 
-        removeServerClasspathProperties(privateProps);
         if (serverItems.isEmpty()) {
             removeServerClasspathProperties(props);
             return false;
         }
+        removeServerClasspathProperties(privateProps);
 
         props.setProperty(J2EE_PLATFORM_CLASSPATH, cs.encodeToStrings(serverItems, null, "classpath")); // NOI18N
         removeReferences(serverItems);
