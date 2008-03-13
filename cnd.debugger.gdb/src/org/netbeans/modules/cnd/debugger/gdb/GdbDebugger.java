@@ -148,6 +148,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     /** Dis update */
     public static final String          DIS_UPDATE = "dis_update"; // NOI18N
     
+    private static final String MSG_BREAKPOINT_ERROR = "Cannot insert breakpoint";
+    
     private GdbProxy gdb;
     private ContextProvider lookupProvider;
     private String state = STATE_NONE;
@@ -889,6 +891,19 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 // ignore - probably a breakpoint from another project
             } else if (msg.contains("Undefined mi command: ") && msg.contains("(missing implementation")) { // NOI18N
                 // ignore - gdb/mi defines commands which haven't been implemented yet
+            } else if (msg.contains(MSG_BREAKPOINT_ERROR)) { // NOI18N
+                setStopped();
+                int start = msg.indexOf(MSG_BREAKPOINT_ERROR) + MSG_BREAKPOINT_ERROR.length();
+                int end = msg.indexOf(".", start); // NOI18N
+                if (end != -1) {
+                    String breakpoinIdx = msg.substring(start, end).trim();
+                    BreakpointImpl breakpoint = breakpointList.get(breakpoinIdx);
+                    if (breakpoint != null) {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                NbBundle.getMessage(GdbDebugger.class, "ERR_InvalidBreakpoint", breakpoint.getBreakpoint())));
+                        breakpoint.getBreakpoint().disable();
+                    }
+                }
             } else if (pendingBreakpointMap.remove(Integer.valueOf(token)) != null) {
                 if (pendingBreakpointMap.isEmpty() && state.equals(STATE_LOADING)) {
                     setReady();
@@ -1432,7 +1447,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 return;
             } else {
                 int pos1, pos2;
-                pos1 = frame.indexOf("fullname=\"");
+                pos1 = frame.indexOf("fullname=\""); // NOI18N
                 if (pos1 > 0 && (pos2 = frame.indexOf('"', pos1 + 10)) > 0) {
                     File file = new File(getOSPath(frame.substring(pos1 + 10, pos2)));
                     if (file == null || !file.exists()) {

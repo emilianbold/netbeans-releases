@@ -134,6 +134,7 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
         useRailsAdapter = new javax.swing.JRadioButton();
         jSeparator1 = new javax.swing.JSeparator();
         useJdbc = new javax.swing.JCheckBox();
+        databaseAccessConfLabel = new javax.swing.JLabel();
 
         setPreferredSize(new java.awt.Dimension(226, 100));
 
@@ -157,35 +158,47 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(useJdbc, org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "UseJdbc")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(databaseAccessConfLabel, org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "LBL_DatabaseAccessInformation")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(useJdbc)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(ideConnectionsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 411, Short.MAX_VALUE)))
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(databaseAccessConfLabel)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(useIDEConnections)
-                .addContainerGap(259, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, ideConnectionsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)
+                .addContainerGap(190, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(adapterConfigurationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(useRailsAdapter)
-                .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, adapterConfigurationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .add(useJdbc)
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
-                .addContainerGap())
+                .addContainerGap(158, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .add(databaseAccessConfLabel)
+                .add(7, 7, 7)
                 .add(useIDEConnections)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(ideConnectionsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 110, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(useRailsAdapter)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(adapterConfigurationPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 137, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(adapterConfigurationPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 125, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(9, 9, 9)
@@ -196,6 +209,8 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
         useIDEConnections.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "ACSD_ConfigureUsingIDEConnections")); // NOI18N
         useRailsAdapter.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "ACSD_ConfigureDirectly")); // NOI18N
         useJdbc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "ASCD_UseJdbc")); // NOI18N
+        databaseAccessConfLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "ASCN_DatabaseAccessInformation")); // NOI18N
+        databaseAccessConfLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "ASCD_DatabaseAccessInformation")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "ASCN_DatabaseConfigPanel")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "ASCN_DatabaseConfigPanel")); // NOI18N
@@ -213,6 +228,7 @@ private void useRailsAdapterActionPerformed(java.awt.event.ActionEvent evt) {//G
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel adapterConfigurationPanel;
     private javax.swing.ButtonGroup configureOptionsButtonGroup;
+    private javax.swing.JLabel databaseAccessConfLabel;
     private javax.swing.JPanel ideConnectionsPanel;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JRadioButton useIDEConnections;
