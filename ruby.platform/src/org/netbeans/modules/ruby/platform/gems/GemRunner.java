@@ -73,8 +73,8 @@ final class GemRunner {
     
     private static final Logger LOGGER = Logger.getLogger(GemRunner.class.getName());
 
-    private RubyPlatform platform;
-    private ArrayList<String> output;
+    private final RubyPlatform platform;
+    private List<String> output;
     
     GemRunner(final RubyPlatform platform) {
         this.platform = platform;
@@ -129,7 +129,7 @@ final class GemRunner {
     }
 
     private boolean install(final List<String> gems, boolean rdoc, boolean ri, boolean includeDeps,
-            String version, Runnable asyncCompletionTask, Component parent, boolean local) {
+            String version, Runnable asyncCompletionTask, Component parent) {
         List<String> argList = new ArrayList<String>();
 
         for (String gem : gems) {
@@ -162,9 +162,9 @@ final class GemRunner {
 
         String gemCmd = "install"; // NOI18N
         if (asyncCompletionTask != null) {
-            String title = NbBundle.getMessage(GemManager.class, "Installation");
-            String success = NbBundle.getMessage(GemManager.class, "InstallationOk");
-            String failure = NbBundle.getMessage(GemManager.class, "InstallationFailed");
+            String title = NbBundle.getMessage(GemRunner.class, "Installation");
+            String success = NbBundle.getMessage(GemRunner.class, "InstallationOk");
+            String failure = NbBundle.getMessage(GemRunner.class, "InstallationFailed");
             asynchGemRunner(parent, title, success, failure, asyncCompletionTask, gemCmd, args);
             return false;
         } else {
@@ -174,13 +174,13 @@ final class GemRunner {
     
     private boolean installRemote(final List<String> gemNames, boolean rdoc, boolean ri, boolean includeDeps,
             String version, Runnable asyncCompletionTask, Component parent) {
-        return install(gemNames, rdoc, ri, includeDeps, version, asyncCompletionTask, parent, false);
+        return install(gemNames, rdoc, ri, includeDeps, version, asyncCompletionTask, parent);
     }
 
     private boolean installLocal(final File gem, boolean rdoc,
             boolean ri, Runnable asyncCompletionTask, Component parent) {
         // XXX make 'includeDeps' customizable
-        return install(Collections.singletonList(gem.getAbsolutePath()), rdoc, ri, false, null, asyncCompletionTask, parent, true);
+        return install(Collections.singletonList(gem.getAbsolutePath()), rdoc, ri, false, null, asyncCompletionTask, parent);
     }
 
     private boolean update(final List<String> gemNames, boolean rdoc, boolean ri,
@@ -208,9 +208,9 @@ final class GemRunner {
 
         String gemCmd = "update"; // NOI18N
         if (asyncCompletionTask != null) {
-            String title = NbBundle.getMessage(GemManager.class, "Update");
-            String success = NbBundle.getMessage(GemManager.class, "UpdateOk");
-            String failure = NbBundle.getMessage(GemManager.class, "UpdateFailed");
+            String title = NbBundle.getMessage(GemRunner.class, "Update");
+            String success = NbBundle.getMessage(GemRunner.class, "UpdateOk");
+            String failure = NbBundle.getMessage(GemRunner.class, "UpdateFailed");
             asynchGemRunner(parent, title, success, failure, asyncCompletionTask, gemCmd, args);
             return false;
         } else {
@@ -235,9 +235,9 @@ final class GemRunner {
         String gemCmd = "uninstall"; // NOI18N
 
         if (asyncCompletionTask != null) {
-            String title = NbBundle.getMessage(GemManager.class, "Uninstallation");
-            String success = NbBundle.getMessage(GemManager.class, "UninstallationOk");
-            String failure = NbBundle.getMessage(GemManager.class, "UninstallationFailed");
+            String title = NbBundle.getMessage(GemRunner.class, "Uninstallation");
+            String success = NbBundle.getMessage(GemRunner.class, "UninstallationOk");
+            String failure = NbBundle.getMessage(GemRunner.class, "UninstallationFailed");
             for (String gem : gemNames) {
                 args[nameIndex] = gem;
                 asynchGemRunner(parent, title, success, failure, asyncCompletionTask, gemCmd, args);
@@ -253,7 +253,7 @@ final class GemRunner {
         }
     }
     
-    ArrayList<String> getOutput() {
+    List<String> getOutput() {
         return output;
     }
 
@@ -411,23 +411,23 @@ final class GemRunner {
             originalCursor = null;
         }
         
-        final JButton closeButton = new JButton(NbBundle.getMessage(GemManager.class, "CTL_Close"));
+        final JButton closeButton = new JButton(NbBundle.getMessage(GemRunner.class, "CTL_Close"));
         final JButton cancelButton =
-                new JButton(NbBundle.getMessage(GemManager.class, "CTL_Cancel"));
+                new JButton(NbBundle.getMessage(GemRunner.class, "CTL_Cancel"));
         closeButton.getAccessibleContext()
-                .setAccessibleDescription(NbBundle.getMessage(GemManager.class, "AD_Close"));
+                .setAccessibleDescription(NbBundle.getMessage(GemRunner.class, "AD_Close"));
         
         Object[] options = new Object[] { closeButton, cancelButton };
         closeButton.setEnabled(false);
         
         final GemProgressPanel progress =
-                new GemProgressPanel(NbBundle.getMessage(GemManager.class, "GemPleaseWait"));
+                new GemProgressPanel(NbBundle.getMessage(GemRunner.class, "GemPleaseWait"));
         progress.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(GemManager.class, "GemProgressPanel.AccessibleContext.accessibleDescription"));
+                NbBundle.getMessage(GemRunner.class, "GemProgressPanel.AccessibleContext.accessibleDescription"));
 
         DialogDescriptor descriptor =
                 new DialogDescriptor(progress, description, true, options, closeButton,
-                DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(GemManager.class), null); // NOI18N
+                DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(GemRunner.class), null); // NOI18N
         descriptor.setModal(true);
         
         final Process[] processHolder = new Process[1];
@@ -438,7 +438,7 @@ final class GemRunner {
             public void actionPerformed(ActionEvent ev) {
                 dlg.setVisible(false);
                 dlg.dispose();
-                if (parent != null) parent.setCursor(originalCursor);
+                resetCursor(parent, originalCursor);
             }
         });
         
@@ -458,7 +458,7 @@ final class GemRunner {
                         successCompletionTask.run();
                     }
                 } finally {
-                    if (parent != null) parent.setCursor(originalCursor);
+                    resetCursor(parent, originalCursor);
                 }
             }
         };
@@ -469,7 +469,7 @@ final class GemRunner {
         
         if ((descriptor.getValue() == DialogDescriptor.CANCEL_OPTION) ||
                 (descriptor.getValue() == cancelButton)) {
-            if (parent != null) parent.setCursor(originalCursor);
+            resetCursor(parent, originalCursor);
             cancelButton.setEnabled(false);
             
             Process process = processHolder[0];
@@ -481,6 +481,10 @@ final class GemRunner {
             }
         }
     }
-    
 
+    private static void resetCursor(Component parent, Cursor originalCursor) {
+        if (parent != null) {
+            parent.setCursor(originalCursor);
+        }
+    }
 }
