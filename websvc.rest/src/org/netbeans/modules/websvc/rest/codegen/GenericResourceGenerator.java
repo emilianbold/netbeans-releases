@@ -47,8 +47,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
@@ -62,6 +60,7 @@ import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -183,7 +182,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
             );
             result.commit();
         } catch (IOException ex) {
-            Logger.getLogger(this.getClass().getName()).log(Level.INFO, "", ex);
+            Exceptions.printStackTrace(ex);
         }
     }
     
