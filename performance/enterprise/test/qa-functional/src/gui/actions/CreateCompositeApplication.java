@@ -96,7 +96,19 @@ public class CreateCompositeApplication extends org.netbeans.performance.test.ut
     }
     
     public void prepare(){
-        NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
+        NewProjectWizardOperator wizard; 
+        for(int attempt = 1; ; attempt++) {
+            new EventTool().waitNoEvent(3000);
+            try {
+                wizard = NewProjectWizardOperator.invoke();
+                break;
+            } catch (Exception exc) {
+                if (attempt < 5) {
+                    continue;
+                }
+                throw new Error(exc);
+            }
+        }   
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
