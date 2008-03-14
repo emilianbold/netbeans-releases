@@ -87,6 +87,38 @@ public class HibernateConfigurationPanel extends javax.swing.JPanel {
     public boolean isPanelValid() {
         return true;
     }
+    
+    public String getSessionName() {
+        return hibernateSessionNameTextField.getText().trim();
+    }
+    
+     public String getSelectedDialect() {
+        if (dialectComboBox.getSelectedItem() != null) {
+            return Util.getSelectedDialect(dialectComboBox.getSelectedItem().toString());
+        }
+        return null;
+    }
+
+    public String getSelectedDriver() {
+        return driverClassTextField.getText();
+    }
+
+    public String getSelectedURL() {
+        if (connectionURLComboBox.getSelectedItem() != null) {
+            return connectionURLComboBox.getSelectedItem().toString();
+        }
+        return null;
+
+    }
+
+    public String getUserName() {
+        return usernameTextField.getText().trim();
+    }
+
+    public String getPassword() {
+        return passwordTextField.getText().trim();
+    }
+    
 
     /** This method is called from within the constructor to
      * initialize the form.
