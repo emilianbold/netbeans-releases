@@ -40,57 +40,51 @@
  */
 package org.netbeans.modules.timers;
 
+import java.awt.Component;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.junit.NbTestCase;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
+import org.openide.explorer.view.NodeRenderer;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 
-/**
+/** Renderer for various NetBeans objects.
  *
- * @author Petr Hrebejk
+ * @author Jaroslav Tulach
  */
-public class InstanceWatcherTest extends NbTestCase {
+final class ObjectListRenderer extends DefaultListCellRenderer {
 
-    public InstanceWatcherTest(String testName) {
-    super(testName);
+    private NodeRenderer r;
+
+    ObjectListRenderer() {
+        super();
+        r = new NodeRenderer();
     }
 
-    public void testFiring() throws Exception {
-        System.out.println("addChangeListener");
-
-        QueueListener listener = new QueueListener();
-        InstanceWatcher iw = new InstanceWatcher();
-        
-        iw.addChangeListener(listener);
-        
-        Integer ts1 = new Integer( 20 );
-        iw.add( ts1 );
-               
-        WeakReference tmp; // For forcing GC
-        
-        tmp = new WeakReference<Object>( new Object() );
-        assertGC( "", tmp );
-        
-        assertEquals( "There should be no change in the queue", 0, listener.changeCount );
-        
-        ts1 = null; // Remove hard reference
-        
-        tmp = new WeakReference<Object>( new Object() );        
-        assertGC( "", tmp ); // Do garbage collect
-        
-        assertEquals( "There should be one change in the queue", 1, listener.changeCount );
-                
-    }
-
-    
-    private static class QueueListener implements ChangeListener {
-        
-        int changeCount;
-        
-        public void stateChanged( ChangeEvent e ) {
-            changeCount ++;
+    @Override
+    public Component getListCellRendererComponent(JList list, Object wr, int index, boolean isSelected, boolean cellHasFocus) {
+        Object value = ((WeakReference) wr).get();
+        if (value instanceof FileObject) {
+            try {
+                FileObject fo = (FileObject) value;
+                value = DataObject.find(fo);
+            } catch (IOException e) {
+                FileObject fo = (FileObject) value;
+                value = "FO: " + fo;
+            }
         }
         
+        if (value instanceof DataObject) {
+            value = ((DataObject)value).getNodeDelegate();
+        }
+        
+        if (value instanceof Node) {
+            Node node = (Node)value;
+            return r.getListCellRendererComponent(list, node, index, isSelected, cellHasFocus);
+        }
+
+        return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
     }
-    
 }
