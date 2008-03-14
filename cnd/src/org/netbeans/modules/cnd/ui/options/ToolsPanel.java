@@ -961,7 +961,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
      * @return Returns true if all data is valid
      */
     public boolean dataValid() {
-        
+        if (csm.getCompilerSets().size() == 0) {
+            valid = false;
+            firePropertyChange(PROP_VALID, !valid, valid);
+            return false;
+        }
         if (updating || changingCompilerSet) {
             return true;
         } else {

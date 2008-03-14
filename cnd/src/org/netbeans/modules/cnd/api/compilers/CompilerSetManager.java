@@ -128,7 +128,7 @@ public class CompilerSetManager {
             instance = restoreFromDisk();
             if (instance == null) {
                 instance = new CompilerSetManager();
-                if (instance.getCompilerSets().size() > 0) {
+                if (instance.getCompilerSets().size() > 0 && instance.getCompilerSets().get(0).getName() != CompilerSet.None) {
                     instance.saveToDisk();
                 } else {
                     DialogDescriptor dialogDescriptor = new DialogDescriptor(
