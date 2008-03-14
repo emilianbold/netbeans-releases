@@ -475,6 +475,7 @@ public class SourcePath {
                                            Operation currentOperation, List lastOperations,
                                            int locLineNumber) {
         List annotations = null;
+        int currentOperationLine = -1;
         if (currentOperation != null) {
             annotations = new ArrayList();
             Object ann = createAnnotation(debugger, url, currentOperation,
@@ -493,6 +494,7 @@ public class SourcePath {
                 EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE,
                 debugger
             );
+            currentOperationLine = lineNumber;
             if (ann != null) annotations.add(ann);
         }
         boolean isNewLineExp = false;
@@ -510,13 +512,15 @@ public class SourcePath {
                                                   false);
                     if (ann != null) annotations.add(ann);
                     int lineNumber = lastOperation.getEndPosition().getLine();
-                    ann = EditorContextBridge.getContext().annotate (
-                        url,
-                        lineNumber,
-                        EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE,
-                        debugger
-                    );
-                    if (ann != null) annotations.add(ann);
+                    if (currentOperationLine != lineNumber) {
+                        ann = EditorContextBridge.getContext().annotate (
+                            url,
+                            lineNumber,
+                            EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE,
+                            debugger
+                        );
+                        if (ann != null) annotations.add(ann);
+                    }
                     isNewLineExp = false;
                 } else {
                     Object ann = createAnnotation(debugger, url,
