@@ -501,7 +501,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         Object o = dispResults.get(idx);
         if (o instanceof RepositoryRevision) {
             RepositoryRevision repoRev = (RepositoryRevision) o;
-            ExportDiffAction.exportDiffRevision(repoRev);
+            ExportDiffAction.exportDiffRevision(repoRev, master.getRoots());
         }        
     }
     

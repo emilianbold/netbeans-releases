@@ -57,10 +57,13 @@ public class DTDOptions extends AbstractBaseOptions {
         super (DTDKit.class, "dtd"); // NOI18N
     }
 
-    protected Class getDefaultIndentEngineClass () {
+    protected @Override Class getDefaultIndentEngineClass () {
         return DTDIndentEngine.class;
 
     }
 
+    protected @Override String getContentType() {
+        return DTDKit.MIME_TYPE;
+    }
     
 }

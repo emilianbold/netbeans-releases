@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.editor.makefile;
 
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.editor.*;
 
 /**
@@ -51,7 +53,7 @@ public class MakefileSettingsInitializer {
         return SettingsDefaults.defaultAbbrevResetAcceptor;
     }
     
-    public static TokenContext [] getTokenContext() {
-        return new TokenContext[] { MakefileTokenContext.context };
+    public static List<? extends TokenContext> getTokenContext() {
+        return Collections.singletonList(MakefileTokenContext.context);
     }
 }

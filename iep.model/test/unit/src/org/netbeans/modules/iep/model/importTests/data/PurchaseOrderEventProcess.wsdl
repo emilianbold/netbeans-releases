@@ -1,0 +1,31 @@
+<definitions targetNamespace="PurchaseOrderEventProcess_iep"
+             xmlns:tns="PurchaseOrderEventProcess_iep"
+             xmlns:typens="PurchaseOrderEventProcess_iep"
+             xmlns:defns="PurchaseOrderEventProcess_iep"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:file="http://schemas.sun.com/jbi/wsdl-extensions/file/"
+             xmlns="http://schemas.xmlsoap.org/wsdl/">
+<types>
+    <xsd:schema targetNamespace="PurchaseOrderEventProcess_iep" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    </xsd:schema>
+</types>
+
+
+<portType name="InputPt">
+</portType>
+
+<plnk:partnerLinkType name="InputPlt" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype">
+    <plnk:role name = "InputRn" portType="tns:InputPt"/>
+</plnk:partnerLinkType>
+<!-- input binding -->
+<binding name="InputBinding" type="defns:InputPt">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+</binding>
+<!-- input service -->
+<service name="InputService">
+    <port name="InputPort" binding="tns:InputBinding">
+        <soap:address location="http://localhost:12100/service/PurchaseOrderEventProcess_iep"/>
+    </port>
+</service>
+</definitions>
