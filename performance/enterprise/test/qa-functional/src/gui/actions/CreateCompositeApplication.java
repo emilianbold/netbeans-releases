@@ -42,9 +42,9 @@
 package gui.actions;
 
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -55,7 +55,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 /**
  * Test create CreateCompositeApplication
  *
- * @author  rashid@netbeans.org
+ * @author  rashid@netbeans.org, mrkam@netbeans.org
  */
 public class CreateCompositeApplication extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
@@ -91,10 +91,26 @@ public class CreateCompositeApplication extends org.netbeans.performance.test.ut
 //        project = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.wizards.Bundle","Templates/Project/SOA/emptyBpelpro.xml"); // "Composite Application"
         project = "Composite Application"; // NOI18N
         index=1;
+        
+        MainWindowOperator.getDefault().maximize();
     }
     
     public void prepare(){
-        NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
+        NewProjectWizardOperator wizard; 
+        for(int attempt = 1; ; attempt++) {
+            log("Attempt " + attempt + " to open New Project Wizard");
+            new EventTool().waitNoEvent(3000);
+            try {
+                wizard = NewProjectWizardOperator.invoke();
+                break;
+            } catch (Exception exc) {
+                if (attempt < 5) {
+                    log("Attempt failed with exception: " + exc);
+                    continue;
+                }
+                throw new Error(exc);
+            }
+        }   
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();

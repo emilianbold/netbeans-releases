@@ -10,8 +10,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+import org.netbeans.modules.etl.project.Localizer;
 
 /**
  *
@@ -19,7 +18,7 @@ import org.netbeans.modules.etl.logger.LogUtil;
  */
 public class ETLBLUtils {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(ETLBLUtils.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ETLBLUtils.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public static boolean checkIfPackageExists(String absPackagePath, boolean createIfNotExists) {
@@ -76,7 +75,7 @@ public class ETLBLUtils {
 
 
         } catch (IOException ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR031: Exception :{0}",ex.getMessage()),ex);
+            mLogger.severe(mLoc.x("PRJS031: Exception4 :{0}",ex.getMessage()),ex);
         } finally {
             try {
                 //in.close();
@@ -84,7 +83,7 @@ public class ETLBLUtils {
                 fis.close();
                 fos.close();
             } catch (IOException ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR032: Exception :{0}",ex.getMessage()),ex);
+                mLogger.severe(mLoc.x("PRJS032: Exception :{0}",ex.getMessage()),ex);
             }
         }
     }

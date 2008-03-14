@@ -63,6 +63,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -114,7 +115,7 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
             DialogDescriptor.CLOSED_OPTION
         };
         final DialogDescriptor desc = new DialogDescriptor(panel, title, true, options,
-                DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx("projrave_ui_elements_dialogs_resolve_data_source_db"), null);
         desc.setMessageType(DialogDescriptor.WARNING_MESSAGE);
         Dialog dlg = null;
         try {
@@ -230,16 +231,13 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
     
     private void jButtonAddConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddConnectionActionPerformed
-        Datasource brokenDatasource = (Datasource)datasourceList.getSelectedValue();  
-        // workaround for 128734 
-        if (brokenDatasource != null) {
-            addDatabaseConnection(brokenDatasource);
-            // enable the scrollbar 
-            if (datasourceList.getModel().getSize() > 0) {
-                jScrollPane2.setBorder(scrollPaneBorder);
-                jTextArea2.setText(org.openide.util.NbBundle.getMessage(MissingDatabaseConnectionWarning.class, "LBL_MissingDatabaseConnectionWarning"));
-            }
-        }        
+        Datasource brokenDatasource = (Datasource) datasourceList.getSelectedValue();
+        addDatabaseConnection(brokenDatasource);
+        // enable the scrollbar 
+        if (datasourceList.getModel().getSize() > 0) {
+            jScrollPane2.setBorder(scrollPaneBorder);
+            jTextArea2.setText(org.openide.util.NbBundle.getMessage(MissingDatabaseConnectionWarning.class, "LBL_MissingDatabaseConnectionWarning"));
+        }
         // refresh the jList
         datasourceList.setCellRenderer(new DatasourceRenderer());                
 }//GEN-LAST:event_jButtonAddConnectionActionPerformed
@@ -347,8 +345,7 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
         
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value instanceof Datasource) {
-                String jndiName = ((Datasource)value).getJndiName();
-                setText(jndiName.substring(jndiName.indexOf("/")+1));
+                setText(((Datasource)value).getJndiName());
             }
             
             if (isSelected) {
