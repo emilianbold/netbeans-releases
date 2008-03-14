@@ -560,6 +560,10 @@ public class JsFormatterTest extends JsTestBase {
         insertNewline("hobbies: [ \"chess\",^", "hobbies: [ \"chess\",\n    ^", null);
     }
     
+    public void testIfIndent() throws Exception {
+        insertNewline("if (true)^\n    foo();", "if (true)\n    ^\n    foo();", null);
+    }
+    
     public void testParensIndent1() throws Exception {
         insertNewline(
                 "if (true)\n" +

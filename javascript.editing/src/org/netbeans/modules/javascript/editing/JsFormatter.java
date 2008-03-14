@@ -288,6 +288,10 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                         // end of line after braceless block start
                         OffsetRange stackOffset = stack.peek().range;
                         if (stackOffset.containsInclusive(ts.offset())) {
+                            if (indentOnly) {
+                                // enter pressed in braceless block
+                                return 1;
+                            }
                             // we are in the braceless block statement
                             int stackEndLine = Utilities.getLineOffset(doc, stackOffset.getEnd());
                             int offsetLine = Utilities.getLineOffset(doc, ts.offset());
