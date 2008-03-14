@@ -98,12 +98,14 @@ public class CreateBPELmodule extends org.netbeans.performance.test.utilities.Pe
     public void prepare(){
         NewProjectWizardOperator wizard;
         for(int attempt = 1; ; attempt++) {
+            log("Attempt " + attempt + " to open New Project Wizard");
             new EventTool().waitNoEvent(3000);
             try {
                 wizard = NewProjectWizardOperator.invoke();
                 break;
             } catch (Exception exc) {
                 if (attempt < 5) {
+                    log("Attempt failed with exception: " + exc);
                     continue;
                 }
                 throw new Error(exc);
