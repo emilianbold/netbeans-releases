@@ -83,6 +83,8 @@ public class ToggleBreakpoint extends WebPerformanceTestCase {
     protected void init() {
         super.init();
         expectedTime = UI_RESPONSE;
+        WAIT_AFTER_PREPARE = 1000;
+        WAIT_AFTER_OPEN = 100;
     }
     private EditorOperator editorOperator1;
     
@@ -94,15 +96,16 @@ public class ToggleBreakpoint extends WebPerformanceTestCase {
         // open file in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|"+file));
         editorOperator1 = new EditorWindowOperator().getEditor(file);
-        eventTool().waitNoEvent(500);
-        waitNoEvent(1000);
+//        eventTool().waitNoEvent(500);
+//        waitNoEvent(1000);
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
     }
     
     public void prepare() {
         System.out.println("=== " + this.getClass().getName() + " ===");
         editorOperator1.makeComponentVisible();
         editorOperator1.setCaretPosition(7,1);
-        eventTool().waitNoEvent(100);
+//        eventTool().waitNoEvent(100);
     }
     
     public ComponentOperator open(){
@@ -116,6 +119,7 @@ public class ToggleBreakpoint extends WebPerformanceTestCase {
     }
     
     protected void shutdown() {
+        repaintManager().resetRegionFilters();
         editorOperator1.closeDiscard();
         super.shutdown();
     }
