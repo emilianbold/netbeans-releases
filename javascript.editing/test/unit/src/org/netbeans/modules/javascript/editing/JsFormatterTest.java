@@ -42,6 +42,7 @@ package org.netbeans.modules.javascript.editing;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JTextArea;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
@@ -555,6 +556,73 @@ public class JsFormatterTest extends JsTestBase {
                 );
     }
     
+    public void testCommaIndent1() throws Exception {
+        insertNewline("hobbies: [ \"chess\",^", "hobbies: [ \"chess\",\n    ^", null);
+    }
+    
+    public void testIfIndent() throws Exception {
+        insertNewline("if (true)^\n    foo();", "if (true)\n    ^\n    foo();", null);
+    }
+    
+    public void testParensIndent1() throws Exception {
+        insertNewline(
+                "if (true)\n" +
+                "    for (var a in b)\n" +
+                "        foo();^",
+                "if (true)\n" +
+                "    for (var a in b)\n" +
+                "        foo();\n" +
+                "^", null
+                );
+    }
+    
+    public void testParensIndent2() throws Exception {
+        insertNewline(
+                "if (true)\n" +
+                "    for (var a in b) {\n" +
+                "        foo();^",
+                "if (true)\n" +
+                "    for (var a in b) {\n" +
+                "        foo();\n" +
+                "        ^", null
+                );
+    }
+    
+    public void testParensIndent3() throws Exception {
+        insertNewline(
+                "if (true) {\n" +
+                "    for (var a in b)\n" +
+                "        foo();^",
+                "if (true) {\n" +
+                "    for (var a in b)\n" +
+                "        foo();\n" +
+                "    ^", null
+                );
+    }
+    
+    public void testQuestionmarkIndent3() throws Exception {
+        insertNewline("j = t ?^",
+                "j = t ?\n    ^", null);
+    }
+
+    public void testDotIndent() throws Exception {
+        insertNewline("puts foo.^", "puts foo.\n    ^", null);
+    }
+
+    public void testIndent1() throws Exception {
+        insertNewline("x = [^[5]\n]\ny", "x = [\n    ^[5]\n]\ny", null);
+    }
+
+    public void testIndent2() throws Exception {
+        insertNewline("x = ^", "x = \n    ^", null);
+        insertNewline("x = ^", "x = \n    ^", new IndentPrefs(2,4));
+        insertNewline("x = ^ ", "x = \n^    ", null);
+    }
+
+    public void testIndent3() throws Exception {
+        insertNewline("      var foo^", "      var foo\n      ^", null);
+    }
+    
 //    public void testLineContinuation4() throws Exception {
 //        format("def foo\nfoo\nif true\nx\nend\nend", 
 //               "def foo\n  foo\n  if true\n    x\n  end\nend", null);
@@ -576,21 +644,8 @@ public class JsFormatterTest extends JsTestBase {
 //               "render foo,\n  bar\nbaz", null);
 //    }
 //    
-//    public void testCommaIndent() throws Exception {
-//        insertNewline("puts foo,^", "puts foo,\n  ^", null);
-//    }
-//    
-//    public void testQuestionmarkIndent3() throws Exception {
-//        insertNewline("j = t ?^",
-//                "j = t ?\n  ^", null);
-//    }
-//    
 //    public void testBackslashIndent() throws Exception {
 //        insertNewline("puts foo\\^", "puts foo\\\n  ^", null);
-//    }
-//
-//    public void testDotIndent() throws Exception {
-//        insertNewline("puts foo.^", "puts foo.\n  ^", null);
 //    }
 //
 //    public void testLineContinuationParens() throws Exception {
@@ -632,20 +687,6 @@ public class JsFormatterTest extends JsTestBase {
 //               "x = [\n  [5]\n]\ny", null);
 //        format("x = [\n[5]\n]\ny",
 //               "x = [\n  [5]\n]\ny", new IndentPrefs(2,4));
-//    }
-//
-//    public void testIndent1() throws Exception {
-//        insertNewline("x = [^[5]\n]\ny", "x = [\n  ^[5]\n]\ny", null);
-//    }
-//
-//    public void testIndent2() throws Exception {
-//        insertNewline("x = ^", "x = \n  ^", null);
-//        insertNewline("x = ^", "x = \n    ^", new IndentPrefs(2,4));
-//        insertNewline("x = ^ ", "x = \n^  ", null);
-//    }
-//
-//    public void testIndent3() throws Exception {
-//        insertNewline("      def foo^", "      def foo\n        ^", null);
 //    }
 //
 //    public void testHeredoc1() throws Exception {

@@ -55,7 +55,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 /**
  * Test create CreateCompositeApplication
  *
- * @author  rashid@netbeans.org
+ * @author  rashid@netbeans.org, mrkam@netbeans.org
  */
 public class CreateCompositeApplication extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
