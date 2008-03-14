@@ -263,6 +263,10 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         setSheet(sheet);
         firePropertySetsChange(null, null);
     }
+    
+    protected boolean needRefresh(String notificationSourceType) {
+        return false;
+    }
 
     //========================== Startable =====================================
     public boolean canStart() {
