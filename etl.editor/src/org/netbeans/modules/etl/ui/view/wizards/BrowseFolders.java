@@ -56,7 +56,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -84,7 +83,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     private Project project;
 
     private static JScrollPane SAMPLE_SCROLL_PANE = new JScrollPane();
-    private static transient final Logger mLogger = LogUtil.getLogger(BrowseFolders.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(BrowseFolders.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     
     /** Creates new form BrowseFolders */
@@ -104,10 +103,10 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         btv.setBorder( SAMPLE_SCROLL_PANE.getBorder() );
         btv.setPopupAllowed( false );
         
-        String nbBundle1 = mLoc.t("PRSR001: Folders:");
-        btv.getAccessibleContext ().setAccessibleName (Localizer.parse(nbBundle1));
-        String nbBundle2 = mLoc.t("PRSR001: The tree contains the folders contained in the project's directory");
-        btv.getAccessibleContext ().setAccessibleDescription(Localizer.parse(nbBundle2));
+        String nbBundle1 = mLoc.t("BUND041: Folders:");
+        btv.getAccessibleContext ().setAccessibleName (nbBundle1.substring(15));
+        String nbBundle2 = mLoc.t("BUND042: The tree contains the folders contained in the project's directory");
+        btv.getAccessibleContext ().setAccessibleDescription(nbBundle2.substring(15));
         expandSelection( preselectedFileName );
         //expandAllNodes( btv, manager.getRootContext() );
         folderPanel.add( btv, java.awt.BorderLayout.CENTER );
@@ -135,27 +134,25 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12)));
         
-        String nbBundle3 = mLoc.t("PRSR001: Browse folders to choose a target folder");
-        getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle3));
+        String nbBundle3 = mLoc.t("BUND043: Browse folders to choose a target folder");
+        getAccessibleContext().setAccessibleName(nbBundle3.substring(15));
         
-        String nbBundle4 = mLoc.t("PRSR001: Browse folders to choose a target folder");
-        getAccessibleContext().setAccessibleDescription(Localizer.parse(nbBundle4));
+        getAccessibleContext().setAccessibleDescription(nbBundle3.substring(15));
         
-        String nbBundle5 = mLoc.t("PRSR001: F");
-        jLabel1.setDisplayedMnemonic(Localizer.parse(nbBundle5).charAt(0));
+        String nbBundle5 = mLoc.t("BUND044: F");
+        jLabel1.setDisplayedMnemonic(nbBundle5.substring(15).charAt(0));
         jLabel1.setLabelFor(folderPanel);
         
-        String nbBundle6 = mLoc.t("PRSR001: Folders:");
-        jLabel1.setText(Localizer.parse(nbBundle6));
-        jLabel1.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle6));
+        String nbBundle6 = mLoc.t("BUND041: Folders:");
+        jLabel1.setText(nbBundle6.substring(15));
+        jLabel1.getAccessibleContext().setAccessibleName(nbBundle6.substring(15));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         add(jLabel1, gridBagConstraints);
         
-        String nbBundle7 = mLoc.t("PRSR001: Folders:");
-        jLabel1.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle7));
+        jLabel1.getAccessibleContext().setAccessibleName(nbBundle6.substring(15));
 
         folderPanel.setLayout(new java.awt.BorderLayout());
 
@@ -178,11 +175,11 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
 
         BrowseFolders bf = new BrowseFolders( folders, project, preselectedFileName );
         
-        String nbBundle1 = mLoc.t("PRSR001: Select Folder");
-        String nbBundle2 = mLoc.t("PRSR001: Cancel");
+        String nbBundle13 = mLoc.t("BUND047: Select Folder");
+        String nbBundle14 = mLoc.t("BUND048: Cancel");
         JButton options[] = new JButton[] {
-            new JButton(Localizer.parse(nbBundle1)), // NOI18N
-            new JButton(Localizer.parse(nbBundle2)), // NOI18N
+            new JButton(nbBundle13.substring(15)), // NOI18N
+            new JButton(nbBundle14.substring(15)), // NOI18N
         };
 
         OptionsListener optionsListener = new OptionsListener( bf );
@@ -190,21 +187,20 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         options[ 0 ].setActionCommand( OptionsListener.COMMAND_SELECT );
         options[ 0 ].addActionListener( optionsListener );
         
-        String nbBundle8 = mLoc.t("PRSR001: S");
-        options[ 0 ].setMnemonic (Localizer.parse(nbBundle8).charAt (0));
+        String nbBundle8 = mLoc.t("BUND049: S");
+        options[ 0 ].setMnemonic(nbBundle8.substring(15).charAt(0));
         
-        String nbBundle9 = mLoc.t("PRSR001: Select Folder");
-        options[ 0 ].getAccessibleContext ().setAccessibleName(Localizer.parse(nbBundle9));
+        String nbBundle9 = mLoc.t("BUND047: Select Folder");
+        options[ 0 ].getAccessibleContext ().setAccessibleName(nbBundle9.substring(15));
         
-        String nbBundle10 = mLoc.t("PRSR001: N/A");
-        options[ 0 ].getAccessibleContext ().setAccessibleDescription(Localizer.parse(nbBundle10));
+        String nbBundle10 = mLoc.t("BUND051: N/A");
+        options[ 0 ].getAccessibleContext ().setAccessibleDescription(nbBundle10.substring(15));
         options[ 1 ].setActionCommand( OptionsListener.COMMAND_CANCEL );
         options[ 1 ].addActionListener( optionsListener );
         
-        String nbBundle11 = mLoc.t("PRSR001: Cancel");
-        options[ 1 ].getAccessibleContext ().setAccessibleName (Localizer.parse(nbBundle11));
-        String nbBundle12 = mLoc.t("PRSR001: N/A");
-        options[ 1 ].getAccessibleContext ().setAccessibleDescription(Localizer.parse(nbBundle12));
+        String nbBundle11 = mLoc.t("BUND048: Cancel");
+        options[ 1 ].getAccessibleContext ().setAccessibleName (nbBundle11.substring(15));
+        options[ 1 ].getAccessibleContext ().setAccessibleDescription(nbBundle11.substring(15));
 
         DialogDescriptor dialogDescriptor = new DialogDescriptor(
             bf,                                     // innerPane

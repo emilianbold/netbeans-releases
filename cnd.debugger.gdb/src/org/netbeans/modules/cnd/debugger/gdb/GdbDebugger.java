@@ -130,6 +130,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public static final Object          LAST_GO_WAS_NEXT = "lastGoWasNext"; // NOI18N
     
     private Object                      lastGo;
+    private String                      lastStop;
     
     private static final int            DEBUG_ATTACH = 999;
     
@@ -147,6 +148,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     /** Dis update */
     public static final String          DIS_UPDATE = "dis_update"; // NOI18N
+    
+    private static final String MSG_BREAKPOINT_ERROR = "Cannot insert breakpoint";
     
     private GdbProxy gdb;
     private ContextProvider lookupProvider;
@@ -425,12 +428,15 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
-    public void showCurrentSource() {
+    public void showCurrentSource(boolean dis) {
         final CallStackFrame csf = getCurrentCallStackFrame();
         if (csf == null) {
             return;
         }
-        final boolean inDis = (currentBreakpoint == null) ? Disassembly.isInDisasm() : (currentBreakpoint instanceof AddressBreakpoint);
+        if (!dis) {
+            dis = (currentBreakpoint == null) ? Disassembly.isInDisasm() : (currentBreakpoint instanceof AddressBreakpoint);
+        }
+        final boolean inDis = dis;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 // show current line
@@ -889,6 +895,19 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 // ignore - probably a breakpoint from another project
             } else if (msg.contains("Undefined mi command: ") && msg.contains("(missing implementation")) { // NOI18N
                 // ignore - gdb/mi defines commands which haven't been implemented yet
+            } else if (msg.contains(MSG_BREAKPOINT_ERROR)) { // NOI18N
+                setStopped();
+                int start = msg.indexOf(MSG_BREAKPOINT_ERROR) + MSG_BREAKPOINT_ERROR.length();
+                int end = msg.indexOf(".", start); // NOI18N
+                if (end != -1) {
+                    String breakpoinIdx = msg.substring(start, end).trim();
+                    BreakpointImpl breakpoint = breakpointList.get(breakpoinIdx);
+                    if (breakpoint != null) {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                NbBundle.getMessage(GdbDebugger.class, "ERR_InvalidBreakpoint", breakpoint.getBreakpoint())));
+                        breakpoint.getBreakpoint().disable();
+                    }
+                }
             } else if (pendingBreakpointMap.remove(Integer.valueOf(token)) != null) {
                 if (pendingBreakpointMap.isEmpty() && state.equals(STATE_LOADING)) {
                     setReady();
@@ -900,8 +919,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
-    public void fireDisUpdate() {
-        firePropertyChange(DIS_UPDATE, 0, 1);
+    public void fireDisUpdate(boolean open) {
+        firePropertyChange(DIS_UPDATE, open, !open);
     }
     
     /** Handle gdb responses starting with '*' */
@@ -1285,6 +1304,15 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         String reason = map.get("reason"); // NOI18N
         
         if (state.equals(STATE_STARTING)) {
+            String frame = map.get("frame"); // NOI18N
+            if (frame != null) {
+                map = GdbUtils.createMapFromString(frame);
+                String fullname = map.get("fullname"); // NOI18N
+                String line = map.get("line"); // NOI18N
+                if (fullname != null && line != null) {
+                    lastStop = fullname + ":" + line; // NOI18N
+                }
+            }
             setLoading();
             return;
         }
@@ -1302,6 +1330,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 finish(false);
             } else if (reason.equals("breakpoint-hit")) { // NOI18N
                 String tid = map.get("thread-id"); // NOI18N
+                lastStop = null;
                 if (tid != null && !tid.equals(currentThreadID)) {
                     currentThreadID = tid;
                 }
@@ -1330,6 +1359,15 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     dlopenPending = false;
                     checkSharedLibs(null);
                 }
+                String frame = map.get("frame"); // NOI18N
+                if (frame != null) {
+                    map = GdbUtils.createMapFromString(frame);
+                    String fullname = map.get("fullname"); // NOI18N
+                    String line = map.get("line"); // NOI18N
+                    if (fullname != null && line != null) {
+                        lastStop = fullname + ":" + line; // NOI18N
+                    }
+                }
                 GdbTimer.getTimer("Startup").stop("Startup1"); // NOI18N
                 GdbTimer.getTimer("Startup").report("Startup1"); // NOI18N
                 GdbTimer.getTimer("Startup").free(); // NOI18N
@@ -1344,8 +1382,18 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     finish(false);
                 }
             } else if (reason.equals("end-stepping-range")) { // NOI18N
+                lastStop = null;
                 gdb.stack_list_frames();
                 setStopped();
+                String frame = map.get("frame"); // NOI18N
+                if (frame != null) {
+                    map = GdbUtils.createMapFromString(frame);
+                    String fullname = map.get("fullname"); // NOI18N
+                    String line = map.get("line"); // NOI18N
+                    if (fullname != null && line != null) {
+                        lastStop = fullname + ":" + line; // NOI18N
+                    }
+                }
                 if (GdbTimer.getTimer("Step").getSkipCount() == 0) { // NOI18N
                     GdbTimer.getTimer("Step").stop("Step1");// NOI18N
                     GdbTimer.getTimer("Step").report("Step1");// NOI18N
@@ -1373,8 +1421,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             }
         } else if (dlopenPending) {
-                dlopenPending = false;
-                checkSharedLibs(lastGo);
+            dlopenPending = false;
+            checkSharedLibs(lastGo);
         } else {
             gdb.stack_list_frames();
             setStopped();
@@ -1412,6 +1460,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         });
     }
     
+    /**
+     * We've stopped from a dlopen event while stepping. We need to go to the next
+     * line of code. If we have a valid stack trace, its trivial. But on systems where
+     * we don't (Linux) we use the lastStep field and set a temporary breakpoint on
+     * the line following it. This is a bit of a hack, but its required if we don't
+     * have a valid stack.
+     */
     private void stepOutOfDlopen() {
         String oldState = state;
         state = STATE_SILENT_STOP;
@@ -1432,7 +1487,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 return;
             } else {
                 int pos1, pos2;
-                pos1 = frame.indexOf("fullname=\"");
+                pos1 = frame.indexOf("fullname=\""); // NOI18N
                 if (pos1 > 0 && (pos2 = frame.indexOf('"', pos1 + 10)) > 0) {
                     File file = new File(getOSPath(frame.substring(pos1 + 10, pos2)));
                     if (file == null || !file.exists()) {
@@ -1446,6 +1501,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         if (valid) {
             gdb.exec_next();
+        } else if (lastStop != null) {
+            int pos = lastStop.lastIndexOf(':');
+            int lnum = Integer.parseInt(lastStop.substring(pos + 1)) + 1;
+            gdb.break_insert(GDB_TMP_BREAKPOINT, lastStop.substring(0, pos + 1) + lnum);
+            gdb.exec_continue();
         }
         state = oldState;
     }

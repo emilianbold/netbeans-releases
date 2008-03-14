@@ -55,15 +55,15 @@ public class MeasureActions3  {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
 
+        suite.addTest(new TypingInEditor("testJavaEditor", "Type a character in Java Editor"));
+        suite.addTest(new TypingInEditor("testTxtEditor", "Type a character in Txt Editor"));
+
         suite.addTest(new PageUpPageDownInEditor("testPageUp", "Press Page Up in the editor"));
         suite.addTest(new PageUpPageDownInEditor("testPageDown", "Press Page Down in the editor"));
         
         suite.addTest(new JavaCompletionInEditor("measureTime", "Invoke Code Completion dialog in Editor"));
         
-        suite.addTest(new TypingInEditor("testJavaEditor", "Type a character in Java Editor"));
-        suite.addTest(new TypingInEditor("testTxtEditor", "Type a character in Txt Editor"));
-     
-        
+      
         suite.addTest(new CloseEditor("testClosing20kBJavaFile", "Close Java file (20kB)"));
         suite.addTest(new CloseEditor("testClosing20kBFormFile", "Close Form file (20kB)"));
         

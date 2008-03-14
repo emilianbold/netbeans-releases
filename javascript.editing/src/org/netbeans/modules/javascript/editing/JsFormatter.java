@@ -59,12 +59,10 @@ import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.util.Exceptions;
 
-
 /**
  * Formatting and indentation for JavaScript
  * 
  * @todo dojo.js.uncompressed.js:5786 indentation
- * @todo Handle JSP
  * @todo Handle block comments - similar to multiline literals but should be indented by a relative amount
  * @todo Handle XML/E4X content
  * @todo Use the Context.modifyIndent() method to change line indents instead of
@@ -172,24 +170,6 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return ts.offset();
     }
     
-    private static int getPreviousLineFirstNonWhiteOffset(BaseDocument doc, int offset) {
-        int offsetPrevLine = -1;
-        try {
-            if (offset > -1) {
-                int o = Utilities.getRowStart(doc, offset);
-                if (o > 0) {
-                    offsetPrevLine = Utilities.getRowStart(doc, o - 1);
-                    if (offsetPrevLine > -1) {
-                        offsetPrevLine = Utilities.getRowFirstNonWhite(doc, offsetPrevLine);
-                    }
-                }
-            }
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return offsetPrevLine;
-    }
-    
     private int getBracketBalanceDelta(TokenId id) {
         if (id == JsTokenId.LPAREN || id == JsTokenId.LBRACKET) {
             return 1;
@@ -214,8 +194,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 LexUtilities.findNextIncluding(ts, Collections.singletonList(JsTokenId.COLON));
 
                 // skip whitespaces, comments and newlines
-                Token<? extends JsTokenId> token = LexUtilities.findNext(ts, 
-                        Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                Token<? extends JsTokenId> token = LexUtilities.findNextNonWsNonComment(ts);
                 JsTokenId tokenId = token.id();
                 
                 if (tokenId == JsTokenId.CASE || tokenId == JsTokenId.DEFAULT) {
@@ -225,8 +204,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 } else {
                     // look at the beginning of next line if there is case or default
                     LexUtilities.findNextIncluding(ts, Collections.singletonList(JsTokenId.EOL));
-                    LexUtilities.findNext(ts, 
-                            Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                    LexUtilities.findNextNonWsNonComment(ts);
                     if (ts.token().id() == JsTokenId.CASE || ts.token().id() == JsTokenId.DEFAULT) {
                         return 0;
                     }
@@ -272,8 +250,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 if (!indentOnly) {
                     TokenSequence<? extends JsTokenId> ts2 = LexUtilities.getPositionedSequence(doc, ts.offset());
                     // skip whitespaces and newlines
-                    Token<? extends JsTokenId> nextToken = LexUtilities.findNext(ts2, 
-                            Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                    Token<? extends JsTokenId> nextToken = LexUtilities.findNextNonWsNonComment(ts2);
                     TokenId tokenId = nextToken == null ? null : nextToken.id();
                     if (tokenId == JsTokenId.RBRACE) {
                         // if it is end of 'switch'
@@ -282,8 +259,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                             ts2.movePrevious();
                             if (LexUtilities.skipParenthesis(ts2, true)) {
                                 Token<? extends JsTokenId> token = ts2.token();
-                                token = LexUtilities.findPrevious(ts2,
-                                        Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                                token = LexUtilities.findPreviousNonWsNonComment(ts2);
                                 if (token.id() == JsTokenId.SWITCH) {
                                     return -1;
                                 }
@@ -291,8 +267,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                         }
                     } else if (tokenId == JsTokenId.CASE || tokenId == JsTokenId.DEFAULT) {
                         ts2 = LexUtilities.getPositionedSequence(doc, ts.offset());
-                        Token<? extends JsTokenId> prevToken = LexUtilities.findPrevious(ts2, 
-                                Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+                        Token<? extends JsTokenId> prevToken = LexUtilities.findPreviousNonWsNonComment(ts2);
                         if (prevToken.id() != JsTokenId.LBRACE) {
                             // it must be case or default
                             ts2 = LexUtilities.getPositionedSequence(doc, ts.offset());
@@ -313,6 +288,10 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                         // end of line after braceless block start
                         OffsetRange stackOffset = stack.peek().range;
                         if (stackOffset.containsInclusive(ts.offset())) {
+                            if (indentOnly) {
+                                // enter pressed in braceless block
+                                return 1;
+                            }
                             // we are in the braceless block statement
                             int stackEndLine = Utilities.getLineOffset(doc, stackOffset.getEnd());
                             int offsetLine = Utilities.getLineOffset(doc, ts.offset());
@@ -427,121 +406,6 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return null;
     }
     
-    private boolean hasBlockOnLine(BaseDocument doc, int begin, int end) {
-        int balance = 0;
-        if (embeddedJavaScript) {
-            TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-            // Probably an RHTML file - gotta process it in sections since I can have lines
-            // made up of both whitespace, ruby, html and delimiters and all ruby sections
-            // can affect the token balance
-            TokenSequence<?> t = th.tokenSequence();
-            if (t == null) {
-                return false;
-            }
-            t.move(begin);
-            if (!t.moveNext()) {
-                return false;
-            }
-            
-            do {
-                Token<?> token = t.token();
-                TokenId id = token.id();
-                if (id.primaryCategory().equals("html")) { // NOI18N
-                    // Some kind of "top level" language like RHTML which is two
-                    // levels away from JavaScript...
-                    TokenSequence<?> hts = t.embedded();
-                    hts.move(begin);
-                    hts.moveNext();
-                    do {
-                        Token<?> htmlToken = hts.token();
-                        if (htmlToken == null) {
-                            break;
-                        }
-                        TokenId htmlId = htmlToken.id();
-                        if (htmlId.primaryCategory().equals("script")) {
-                            TokenSequence<? extends JsTokenId> ts = hts.embedded(JsTokenId.language());
-                            ts.move(begin);
-                            ts.moveNext();
-                            do {
-                                Token<?extends JsTokenId> jsToken = ts.token();
-                                if (jsToken == null) {
-                                    break;
-                                }
-                                TokenId jsId = jsToken.id();
-
-                                if (jsId == JsTokenId.LBRACE) {
-                                    return true;
-                                }
-                                if (balance == 0 && jsId == JsTokenId.SEMI) {
-                                    return true;
-                                }
-                                if (jsId == JsTokenId.LPAREN) {
-                                    balance++;
-                                } else if (jsId == JsTokenId.RPAREN) {
-                                    balance--;
-                                }
-                            } while (ts.moveNext() && (ts.offset() < end));
-                        }
-                    } while (hts.moveNext() && (hts.offset() < end));
-                } else if (id.primaryCategory().equals("script")) { // NOI18N
-                    TokenSequence<? extends JsTokenId> ts = t.embedded(JsTokenId.language());
-                    ts.move(begin);
-                    ts.moveNext();
-                    do {
-                        Token<?extends JsTokenId> jsToken = ts.token();
-                        if (jsToken == null) {
-                            break;
-                        }
-                        TokenId jsId = jsToken.id();
-
-                        if (jsId == JsTokenId.LBRACE) {
-                            return true;
-                        }
-                        if (balance == 0 && jsId == JsTokenId.SEMI) {
-                            return true;
-                        }
-                        if (jsId == JsTokenId.LPAREN) {
-                            balance++;
-                        } else if (jsId == JsTokenId.RPAREN) {
-                            balance--;
-                        }
-                    } while (ts.moveNext() && (ts.offset() < end));
-                }
-
-            } while (t.moveNext() && (t.offset() < end));
-        } else {
-            TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, begin);
-            if (ts == null) {
-                return false;
-            }
-            
-            ts.move(begin);
-
-            if (!ts.moveNext()) {
-                return false;
-            }
-
-            do {
-                Token<?extends JsTokenId> token = ts.token();
-                TokenId jsId = token.id();
-                
-                if (jsId == JsTokenId.LBRACE) {
-                    return true;
-                }
-                if (balance == 0 && jsId == JsTokenId.SEMI) {
-                    return true;
-                }
-                if (jsId == JsTokenId.LPAREN) {
-                    balance++;
-                } else if (jsId == JsTokenId.RPAREN) {
-                    balance--;
-                }
-            } while (ts.moveNext() && (ts.offset() < end));
-        }
-
-        return false;
-    }
-
     private int isEndIndent(BaseDocument doc, int offset) throws BadLocationException {
         int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
