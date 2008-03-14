@@ -68,10 +68,6 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 	}
     }
 
-    private void setDefaultsOptions(){
-        EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
-    }
-
 //    public void testIdentMultyConstructor5() {
 //        setDefaultsOptions();
 //        setLoadDocumentText(

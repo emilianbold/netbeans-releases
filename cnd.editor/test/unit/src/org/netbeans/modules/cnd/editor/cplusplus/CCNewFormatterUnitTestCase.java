@@ -60,10 +60,6 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 	}
     }
 
-    private void setDefaultsOptions(){
-        EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
-    }
-    
     // -------- Reformat tests -----------
     
     public void testReformatMultiLineSystemOutPrintln() {
