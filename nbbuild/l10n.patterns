@@ -1,0 +1,19 @@
+**/*.jar:**/Bundle*.properties
+exclude **/*.jar:**/Bundle_noi18n.properties
+**/*.jar:**/resources/**/*.gif
+**/*.jar:**/resources/**/*.html
+**/*.jar:**/resources/**/*.png 
+**/*.jar:**/*.css
+**/*.jar:**/javahelp/**/*.gif
+**/*.jar:**/javahelp/**/*.hs
+**/*.jar:**/javahelp/**/*.html
+**/*.jar:**/javahelp/**/*.jhm
+**/*.jar:**/javahelp/**/*.jpeg
+**/*.jar:**/javahelp/**/*.jpg
+**/*.jar:**/javahelp/**/*.png 
+**/*.jar:**/javahelp/**/*.toc
+**/*.jar:**/javahelp/**/*.xml
+**/*.jar:**/*.url
+exclude **/*.jar:**/package.html
+
+exclude **/Info/info.xml:

@@ -1331,21 +1331,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="tmp"/>
   </target>
   
-  <target name="l10n-kit" depends="bootstrap,init-module-list,set-buildnumber,init-tasks" description="Builds the L10N kit">
+  <target name="l10n-kit" depends="bootstrap,set-buildnumber,init-tasks" description="Builds the L10N kit">
     <taskdef name="l10n" classname="org.netbeans.nbbuild.L10nTask"
              classpath="nbantext.jar"/>
-    <delete dir="${l10n.dist.dir}"/>
-    <mkdir dir="${l10n.dist.dir}/ide"/>
-    <delete dir="tmp"/>
-    <mkdir dir="tmp"/>
-    <property name="nbroot" location=".."/>
-    <l10n topdirs="${nbroot}" modules="${fixedmodules},${modules}"
-                localizablefile="l10n.list" generatedfile="l10n.list.translated"
-                distdir="${l10n.dist.dir}/ide" changedfile="l10n.list.changed"
-                globalfile="l10n-global.list"
-                builddir="tmp" buildnumber="${buildnumber}"
-                excludepattern="**/ja/,**/*_ja.*"/>
-    <delete dir="tmp"/>
+
+    <l10n nbmsdir="nbms" tmpdir="tmp" patternsFile="l10n.patterns"/>
   </target>
 
   <target name="bp-l10n-kit" depends="bootstrap,set-buildnumber,init-tasks">
