@@ -593,6 +593,10 @@ import javax.swing.text.View;
                         ctx.drawGraphics.setStrikeThroughColor(null);
                         ctx.drawGraphics.setUnderlineColor(null);
                         ctx.drawGraphics.setWaveUnderlineColor(null);
+                        ctx.drawGraphics.setTopBorderLineColor(null);
+                        ctx.drawGraphics.setRightBorderLineColor(null);
+                        ctx.drawGraphics.setBottomBorderLineColor(null);
+                        ctx.drawGraphics.setLeftBorderLineColor(null);
                         blankWidth = ctx.component.getWidth();
                     }
                 }
