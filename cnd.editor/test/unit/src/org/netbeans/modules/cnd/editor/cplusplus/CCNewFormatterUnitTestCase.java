@@ -60,10 +60,6 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 	}
     }
 
-    private void setDefaultsOptions(){
-        EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
-    }
-    
     // -------- Reformat tests -----------
     
     public void testReformatMultiLineSystemOutPrintln() {
@@ -3526,5 +3522,27 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "        }\n" +
                 "    }\n" +
                 "}\n");
+    }
+
+    public void testOperatorEQformatting() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "class real_c_float\n" +
+                "{\n" +
+                "  const real_c_float & operator=(long l){ from_long(l);\n" +
+                "    return *this;\n" +
+                "  }\n" +
+                "};\n");
+        reformat();
+        assertDocumentText("Incorrect operator = formatting",
+                "class real_c_float\n" +
+                "{\n" +
+                "\n" +
+                "    const real_c_float & operator=(long l)\n" +
+                "    {\n" +
+                "        from_long(l);\n" +
+                "        return *this;\n" +
+                "    }\n" +
+                "};\n");
     }
 }
