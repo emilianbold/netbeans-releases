@@ -72,60 +72,60 @@ public final class Icons {
     private Icons() {
     }
 
-    public static Icon getBusyIcon() {
-        Image img = Utilities.loadImage(WAIT);
-
-        if (img == null) {
-            return null;
-        } else {
-            return new ImageIcon(img);
-        }
-    }
-
-    public static Icon getMethodIcon() {
-        // TODO - consider modifiers
-        Image img =
-            Utilities.loadImage(ICON_BASE + "method" + "Public" + PNG_EXTENSION);
-
-        if (img == null) {
-            return null;
-        } else {
-            return new ImageIcon(img);
-        }
-    }
-
-    public static Icon getFieldIcon() {
-        // TODO - consider modifiers
-        Image img =
-            Utilities.loadImage(ICON_BASE + "field" + "Public" + PNG_EXTENSION);
-
-        if (img == null) {
-            return null;
-        } else {
-            return new ImageIcon(img);
-        }
-    }
-
-    public static Icon getClassIcon() {
-        Image img = Utilities.loadImage(ICON_BASE + "class" + PNG_EXTENSION);
-
-        if (img == null) {
-            return null;
-        } else {
-            return new ImageIcon(img);
-        }
-    }
-
-    public static Icon getModuleIcon() {
-        Image img =
-            Utilities.loadImage(ICON_BASE + "package"  + GIF_EXTENSION);
-
-        if (img == null) {
-            return null;
-        } else {
-            return new ImageIcon(img);
-        }
-    }
+//    public static Icon getBusyIcon() {
+//        Image img = Utilities.loadImage(WAIT);
+//
+//        if (img == null) {
+//            return null;
+//        } else {
+//            return new ImageIcon(img);
+//        }
+//    }
+//
+//    public static Icon getMethodIcon() {
+//        // TODO - consider modifiers
+//        Image img =
+//            Utilities.loadImage(ICON_BASE + "method" + "Public" + PNG_EXTENSION);
+//
+//        if (img == null) {
+//            return null;
+//        } else {
+//            return new ImageIcon(img);
+//        }
+//    }
+//
+//    public static Icon getFieldIcon() {
+//        // TODO - consider modifiers
+//        Image img =
+//            Utilities.loadImage(ICON_BASE + "field" + "Public" + PNG_EXTENSION);
+//
+//        if (img == null) {
+//            return null;
+//        } else {
+//            return new ImageIcon(img);
+//        }
+//    }
+//
+//    public static Icon getClassIcon() {
+//        Image img = Utilities.loadImage(ICON_BASE + "class" + PNG_EXTENSION);
+//
+//        if (img == null) {
+//            return null;
+//        } else {
+//            return new ImageIcon(img);
+//        }
+//    }
+//
+//    public static Icon getModuleIcon() {
+//        Image img =
+//            Utilities.loadImage(ICON_BASE + "package"  + GIF_EXTENSION);
+//
+//        if (img == null) {
+//            return null;
+//        } else {
+//            return new ImageIcon(img);
+//        }
+//    }
 
     public static ImageIcon getElementIcon( ElementKind elementKind, Collection<Modifier> modifiers ) {
     

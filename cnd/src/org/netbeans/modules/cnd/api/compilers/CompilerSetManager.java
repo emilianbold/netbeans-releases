@@ -54,9 +54,11 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.compilers.DefaultCompilerProvider;
-import org.netbeans.modules.cnd.settings.CppSettings;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
@@ -122,8 +124,19 @@ public class CompilerSetManager {
     public static synchronized CompilerSetManager getDefault(boolean doCreate) {
         if (instance == null && doCreate) {
             instance = restoreFromDisk();
-            if (instance == null)
+            if (instance == null) {
                 instance = new CompilerSetManager();
+                if (instance.getCompilerSets().size() > 0) {
+                    instance.saveToDisk();
+                } else {
+                    String errormsg = getString("NO_COMPILERS_FOUND_MSG");
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(errormsg, NotifyDescriptor.WARNING_MESSAGE);
+                    DialogDisplayer.getDefault().notify(nd);
+                }
+            }
+        }
+        if (instance != null && instance.getCompilerSets().size() == 0) { // No compilers found
+            instance.add(CompilerSet.createEmptyCompilerSet());
         }
         return instance;
     }
@@ -132,6 +145,9 @@ public class CompilerSetManager {
      * Replace the default CompilerSetManager. Let registered listeners know its been updated.
      */
     public static synchronized void setDefault(CompilerSetManager csm) {
+        if (csm.getCompilerSets().size() == 0) { // No compilers found
+            csm.add(CompilerSet.createEmptyCompilerSet());
+        }
         instance = csm;
 //        fireCompilerSetChangeNotification(csm);
     }
@@ -479,10 +495,10 @@ public class CompilerSetManager {
     public void remove(CompilerSet cs) {
         if (sets.contains(cs)) {
             sets.remove(cs);
-            CompilerSet.removeCompilerSet(cs); // has it's own cache!!!!!!
-            if (CppSettings.getDefault().getCompilerSetName().equals(cs.getName())) {
-                CppSettings.getDefault().setCompilerSetName("");
-            }
+//            CompilerSet.removeCompilerSet(cs); // has it's own cache!!!!!!
+//            if (CppSettings.getDefault().getCompilerSetName().equals(cs.getName())) {
+//                CppSettings.getDefault().setCompilerSetName("");
+//            }
 //            if (this == instance) {
 //                fireCompilerSetChangeNotification(instance);
 //            }
@@ -725,5 +741,10 @@ public class CompilerSetManager {
         }
         
         return new CompilerSetManager(css);
+    }
+    
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(CompilerSetManager.class, s);
     }
 }

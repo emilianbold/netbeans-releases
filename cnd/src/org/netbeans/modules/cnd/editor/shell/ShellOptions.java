@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.editor.shell;
 
+import org.netbeans.modules.cnd.MIMENames;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -66,7 +67,7 @@ public class ShellOptions extends org.netbeans.modules.editor.options.BaseOption
     */
 
     /** @return localized string */
-    protected String getString(String s) {
+    protected @Override String getString(String s) {
         try {
             String res = NbBundle.getBundle(ShellOptions.class).getString(s);
             return (res == null) ? super.getString(s) : res;
@@ -76,7 +77,11 @@ public class ShellOptions extends org.netbeans.modules.editor.options.BaseOption
         }
     }
 
-    public HelpCtx getHelpCtx() {
+    public @Override HelpCtx getHelpCtx() {
         return new HelpCtx("Welcome_opt_editor_shell"); // NOI18N
+    }
+
+    protected @Override String getContentType() {
+        return MIMENames.SHELL_MIME_TYPE;
     }
 }

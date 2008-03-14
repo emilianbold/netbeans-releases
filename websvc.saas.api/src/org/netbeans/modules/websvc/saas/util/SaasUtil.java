@@ -53,7 +53,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.net.URL;
-import java.util.Properties;
 import javax.swing.ImageIcon;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -569,5 +568,42 @@ public class SaasUtil {
             return r;
         }
         return Retriever.getDefault();
+    }
+    
+    public static String filenameFromPath(String path) {
+        return path.substring(path.lastIndexOf('/')+1);
+    }
+    
+    public static String dirOnlyPath(String path) {
+        int i = path.lastIndexOf('/');
+        if (i > -1) {
+            return path.substring(0, i);
+        }
+        return "";
+    }
+    
+    public static  FileObject saveResourceAsFile(FileObject baseDir, String destPath, String resourcePath) throws IOException {
+        FileObject destDir = FileUtil.createFolder(baseDir, destPath);
+        return saveResourceAsFile(destDir, resourcePath);
+    }
+    
+    public static FileObject saveResourceAsFile(FileObject destDir, String resourcePath) throws IOException {
+        InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath);
+        String filename = filenameFromPath(resourcePath);
+        FileObject outFile = destDir.getFileObject(filename);
+        if (outFile == null) {
+            outFile = destDir.createData(filename);
+        }
+        OutputStream out = outFile.getOutputStream();
+        if (in != null && out != null) {
+            try {
+                FileUtil.copy(in, out);
+                return outFile;
+            } finally {
+                in.close();
+                out.close();
+            }
+        }
+        return null;
     }
 }

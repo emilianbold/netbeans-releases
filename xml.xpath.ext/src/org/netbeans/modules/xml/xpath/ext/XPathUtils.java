@@ -9,6 +9,7 @@
 
 package org.netbeans.modules.xml.xpath.ext;
 
+import java.util.List;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.schema.model.ElementReference;
@@ -18,6 +19,7 @@ import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.LocalAttribute;
 import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.xpath.ext.schema.FindAllChildrenSchemaVisitor;
 
 /**
  * Utility class.
@@ -145,5 +147,18 @@ public class XPathUtils {
         //
         assert true : "Unsupported schema component in the BPEL mapper tree!"; // NOI18N
         return false;
+    }
+    
+    /**
+     * Checks if the specified Schema component has any subcomponents.
+     * @param sComp
+     * @return
+     */
+    public static boolean hasSubcomponents(SchemaComponent sComp) {
+        FindAllChildrenSchemaVisitor checker = 
+                new FindAllChildrenSchemaVisitor(true, true);
+        checker.lookForSubcomponents(sComp);
+        List<SchemaComponent> found = checker.getFound();
+        return found != null && !found.isEmpty();
     }
 }

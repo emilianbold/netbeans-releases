@@ -90,7 +90,7 @@ public class SchemaComponentIEPTypeFinderVisitor extends AbstractXSDVisitor {
             mIEPType = XSDTypeToIEPTypeConvertor.getIEPCLOBType();
         } else if(gt instanceof SimpleType) {
             //visit((GlobalSimpleType) gt);
-            processSimpleType((GlobalSimpleType) gt);
+            visit((GlobalSimpleType) gt);
         }
     }
     
@@ -102,16 +102,14 @@ public class SchemaComponentIEPTypeFinderVisitor extends AbstractXSDVisitor {
         }
     }
     
-    private void processSimpleType(GlobalSimpleType type) {
-       
-            
-            if(mBuiltInSimpleTypes.contains(type)) {
-                String typeName = type.getName();
-                mIEPType = XSDTypeToIEPTypeConvertor.getIEPType(typeName);
-            } else {
-                //user defined simple type which probably extends simple type
-                super.visit(type);
-            }
+    public void visit(GlobalSimpleType gst) {
+        if(mBuiltInSimpleTypes.contains(gst)) {
+            String typeName = gst.getName();
+            mIEPType = XSDTypeToIEPTypeConvertor.getIEPType(typeName);
+        } else {
+            //user defined simple type which probably extends simple type
+            super.visit(gst);
+        }
     }
     
   
@@ -124,7 +122,7 @@ public class SchemaComponentIEPTypeFinderVisitor extends AbstractXSDVisitor {
         } else {
             NamedComponentReference<GlobalSimpleType> typeRef = ga.getType();
             if(typeRef != null && typeRef.get() != null) {
-                processSimpleType(typeRef.get());
+                visit(typeRef.get());
             }
         }
         
@@ -138,7 +136,7 @@ public class SchemaComponentIEPTypeFinderVisitor extends AbstractXSDVisitor {
         } else {
             NamedComponentReference<GlobalSimpleType> typeRef = la.getType();
             if(typeRef != null && typeRef.get() != null) {
-                processSimpleType(typeRef.get());
+                visit(typeRef.get());
             }
         }
         
