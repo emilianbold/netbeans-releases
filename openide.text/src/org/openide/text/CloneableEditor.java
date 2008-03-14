@@ -157,9 +157,11 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         if (initialized || discard()) {
             return;
         }
-
         initialized = true;
+        doInitialize();
+    }
 
+    private void doInitialize() {
         Task prepareTask = support.prepareDocument();
 
         // load the doc synchronously
@@ -169,26 +171,26 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
         setLayout(new BorderLayout());
 
-        final QuietEditorPane pane = new QuietEditorPane();
+        final QuietEditorPane tmp = new QuietEditorPane();
 
-        pane.getAccessibleContext().setAccessibleName(
+        tmp.getAccessibleContext().setAccessibleName(
             NbBundle.getMessage(CloneableEditor.class, "ACS_CloneableEditor_QuietEditorPane", this.getName())
         );
-        pane.getAccessibleContext().setAccessibleDescription(
+        tmp.getAccessibleContext().setAccessibleDescription(
             NbBundle.getMessage(
                 CloneableEditor.class, "ACSD_CloneableEditor_QuietEditorPane",
                 this.getAccessibleContext().getAccessibleDescription()
             )
         );
 
-        this.pane = pane;
+        this.pane = tmp;
 
         // Init action map: cut,copy,delete,paste actions.
         javax.swing.ActionMap am = getActionMap();
 
         //#43157 - editor actions need to be accessible from outside using the TopComponent.getLookup(ActionMap.class) call.
         // used in main menu enabling/disabling logic.
-        javax.swing.ActionMap paneMap = pane.getActionMap();
+        javax.swing.ActionMap paneMap = tmp.getActionMap();
         am.setParent(paneMap);
 
         //#41223 set the defaults befor the custom editor + kit get initialized, giving them opportunity to
@@ -198,13 +200,13 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         paneMap.put("delete", getAction(DefaultEditorKit.deleteNextCharAction)); // NOI18N
         paneMap.put(DefaultEditorKit.pasteAction, getAction(DefaultEditorKit.pasteAction));
 
-        pane.setEditorKit(support.cesKit());
+        tmp.setEditorKit(support.cesKit());
 
-        pane.setDocument(doc);
+        tmp.setDocument(doc);
 
         if (doc instanceof NbDocument.CustomEditor) {
             NbDocument.CustomEditor ce = (NbDocument.CustomEditor) doc;
-            customComponent = ce.createEditor(pane);
+            customComponent = ce.createEditor(tmp);
 
             if (customComponent == null) {
                 throw new IllegalStateException(
@@ -218,14 +220,14 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         } else { // not custom editor
 
             // remove default JScrollPane border, borders are provided by window system
-            JScrollPane noBorderPane = new JScrollPane(pane);
-            pane.setBorder(null);
+            JScrollPane noBorderPane = new JScrollPane(tmp);
+            tmp.setBorder(null);
             add(support.wrapEditorComponent(noBorderPane), BorderLayout.CENTER);
         }
 
         if (doc instanceof NbDocument.CustomToolbar) {
             NbDocument.CustomToolbar ce = (NbDocument.CustomToolbar) doc;
-            customToolbar = ce.createToolbar(pane);
+            customToolbar = ce.createToolbar(tmp);
 
             if (customToolbar == null) {
                 throw new IllegalStateException(
@@ -240,11 +242,11 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             add(customToolbar, BorderLayout.NORTH);
         }
 
-        pane.setWorking(QuietEditorPane.ALL);
+        tmp.setWorking(QuietEditorPane.ALL);
 
         // set the caret to right possition if this component was deserialized
         if (cursorPosition != -1) {
-            Caret caret = pane.getCaret();
+            Caret caret = tmp.getCaret();
 
             if (caret != null) {
                 caret.setDot(cursorPosition);
