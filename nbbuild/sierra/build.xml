@@ -70,6 +70,7 @@
 
         <delete dir="${home}/nbbuild/netbeans"/>
         <unzip src="${netbeans}/netbeans.zip" dest="${home}/nbbuild"/>
+        <delete dir="${home}/nbbuild/netbeans/soa2"/>
         <echo file="${build.number}" message="netbeans hudson build: ${netbeans.file}${line.separator}" append="true"/>
     </target>
 
