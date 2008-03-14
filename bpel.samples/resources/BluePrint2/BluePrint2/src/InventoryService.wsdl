@@ -49,13 +49,11 @@
     </types>
 
     <message name="InventoryMessage">
-        <part name="inventoryPart"
-              element="inv:inventory"></part>
+        <part name="inventoryPart" element="inv:inventory"></part>
     </message>
     
     <message name="POMessage">
-        <part name="purchaseOrder"
-              element="po:purchaseOrder"></part>
+        <part name="purchaseOrder" element="po:purchaseOrder"></part>
     </message>
     
     <portType name="inventoryPortType">
@@ -70,10 +68,8 @@
         </operation>
     </portType>
     
-    <binding name="inventoryBinding"
-             type="tns:inventoryPortType">
-        <soap:binding style="document"
-                      transport="http://schemas.xmlsoap.org/soap/http"/>
+    <binding name="inventoryBinding" type="tns:inventoryPortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="inventoryService">
             <input name="purchaseOrder">
                 <soap:body parts="purchaseOrder" use="literal"/>
@@ -81,10 +77,8 @@
         </operation>
     </binding>
 
-    <binding name="inventoryCallbackBinding"
-             type="tns:inventoryServiceCallbackPortType">
-        <soap:binding style="document"
-                      transport="http://schemas.xmlsoap.org/soap/http"/>
+    <binding name="inventoryCallbackBinding" type="tns:inventoryServiceCallbackPortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="inventoryServiceResponse">
             <input name="inventoryResponse">
                 <soap:body parts="inventoryPart" use="literal"/>
@@ -93,37 +87,29 @@
     </binding>
     
     <service name="inventoryCallbackService">
-        <port name="inventoryCallbackServicePort"
-              binding="tns:inventoryCallbackBinding">
+        <port name="inventoryCallbackServicePort" binding="tns:inventoryCallbackBinding">
             <soap:address location="http://localhost:18181/wsdl/inventory/inventoryCallbackServiceLocation/bp2"/>
         </port>
     </service>
     
     <service name="inventoryService">
-        <port name="inventoryServicePort"
-              binding="tns:inventoryBinding">
+        <port name="inventoryServicePort" binding="tns:inventoryBinding">
             <soap:address location="http://localhost:18181/wsdl/inventory/ServiceLocation/bp2"/>
         </port>
     </service>
     
     <vprop:property name="orderID" type="xsd:int"/>
     
-    <vprop:propertyAlias propertyName="tns:orderID"
-                        messageType="tns:POMessage"
-                        part="purchaseOrder">
+    <vprop:propertyAlias propertyName="tns:orderID" messageType="tns:POMessage" part="purchaseOrder">
         <vprop:query>/po:purchaseOrder/po:orderId</vprop:query>
     </vprop:propertyAlias>
     
-    <vprop:propertyAlias propertyName="tns:orderID"
-                        messageType="tns:InventoryMessage"
-                        part="inventoryPart">
+    <vprop:propertyAlias propertyName="tns:orderID" messageType="tns:InventoryMessage" part="inventoryPart">
         <vprop:query>/inv:inventory/inv:orderId</vprop:query>
     </vprop:propertyAlias>
     
     <plink:partnerLinkType name="inventoryRequestingLT">
-        <plink:role portType="tns:inventoryPortType"
-                    name="inventoryService"></plink:role>
-        <plink:role portType="tns:inventoryServiceCallbackPortType"
-                    name="inventoryServiceRequester"></plink:role>
+        <plink:role portType="tns:inventoryPortType" name="inventoryService"></plink:role>
+        <plink:role portType="tns:inventoryServiceCallbackPortType" name="inventoryServiceRequester"></plink:role>
     </plink:partnerLinkType>
 </definitions>

@@ -218,7 +218,7 @@ public class WadlSaas extends Saas {
         super.refresh();
         if (wadlFile != null) {
             try {
-                wadlFile.delete();
+                wadlFile.getParent().delete();
             } catch(Exception e) {
                 Exceptions.printStackTrace(e);
             }
@@ -251,6 +251,9 @@ public class WadlSaas extends Saas {
         }
         FileObject wadlDir = getLocalWadlFile().getParent();
         schemaFiles = new ArrayList<FileObject>();
+        if (wadlModel.getGrammars() == null || wadlModel.getGrammars().getInclude() == null) {
+            return schemaFiles;
+        }
         for (Include include : wadlModel.getGrammars().getInclude()) {
             String uri = include.getHref();
             FileObject schemaFile = wadlDir.getFileObject(uri);
@@ -263,6 +266,7 @@ public class WadlSaas extends Saas {
                     Exceptions.printStackTrace(e);
                 }
             }
+            schemaFiles.add(schemaFile);
         }
         return schemaFiles;
     }
