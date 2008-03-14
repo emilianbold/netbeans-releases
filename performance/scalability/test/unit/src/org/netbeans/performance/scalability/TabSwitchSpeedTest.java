@@ -45,10 +45,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.rmi.activation.ActivateFailedException;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
@@ -59,6 +61,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
@@ -157,6 +160,22 @@ public class TabSwitchSpeedTest extends NbTestCase {
         doSwitchTest();
     }
     */
+    static Map<String,Object> map;
+    final void activateComponent(TopComponent tc) {
+        if (map == null) {
+            try {
+                Object o = Class.forName("org.netbeans.performance.scalability.Calls").newInstance();
+                @SuppressWarnings("unchecked")
+                Map<String,Object> m = (Map<String,Object>)o;
+                map = m;
+            } catch (Exception ex) {
+                throw (AssertionFailedError)new AssertionFailedError().initCause(ex);
+            }
+        }
+        
+        map.put("requestActive", tc);
+    }
+    
     private void doSwitchTest() throws Exception {
         Thread.sleep(5000);
         
@@ -166,8 +185,9 @@ public class TabSwitchSpeedTest extends NbTestCase {
 
             public void run() {
                 time = System.currentTimeMillis();
-                openTC[index].requestActive();
+                activateComponent(openTC[index]);
             }
+
         }
         Activate activate = new Activate();
         for (int i = openTC.length - 1; i > 0; i--) {

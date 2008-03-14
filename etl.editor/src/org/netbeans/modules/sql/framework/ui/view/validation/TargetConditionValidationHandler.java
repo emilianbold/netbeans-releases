@@ -42,7 +42,6 @@ package org.netbeans.modules.sql.framework.ui.view.validation;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.SQLCondition;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
@@ -64,7 +63,7 @@ import org.openide.DialogDisplayer;
 public class TargetConditionValidationHandler implements ValidationHandler {
 
     private IGraphView graphView;
-    private static transient final Logger mLogger = LogUtil.getLogger(TargetConditionValidationHandler.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(TargetConditionValidationHandler.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /**
@@ -91,13 +90,13 @@ public class TargetConditionValidationHandler implements ValidationHandler {
 
         if (TargetTable.JOIN_CONDITION.equals(oldCondition.getDisplayName())) {
             conditionView = ConditionBuilderUtil.getJoinConditionBuilderView(tTable, (IGraphViewContainer) graphView.getGraphViewContainer());
-            String nbBundle1 = mLoc.t("PRSR001: Target Join Condition...");
-            title = Localizer.parse(nbBundle1);
+            String nbBundle1 = mLoc.t("BUND462: Target Join Condition...");
+            title = nbBundle1.substring(15);
             dd = new DialogDescriptor(conditionView, title, true, NotifyDescriptor.OK_CANCEL_OPTION, null, null);
             
         } else {
-            String nbBundle2 = mLoc.t("PRSR001: Outer Filter Condition...");
-            title = Localizer.parse(nbBundle2);
+            String nbBundle2 = mLoc.t("BUND463: Outer Filter Condition...");
+            title = nbBundle2.substring(15);
             conditionView = ConditionBuilderUtil.getFilterConditionBuilderView(tTable, (IGraphViewContainer) graphView.getGraphViewContainer());
             dd = new DialogDescriptor(conditionView, title, true, NotifyDescriptor.OK_CANCEL_OPTION, null, null);
         }

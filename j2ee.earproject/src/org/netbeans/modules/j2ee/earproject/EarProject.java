@@ -47,6 +47,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -506,6 +507,18 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             // Make it easier to run headless builds on the same machine at least.
             EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
             ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
+            
+            //update lib references in project properties
+            EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
+            l.addAll(cs.itemsList(props.getProperty(EarProjectProperties.JAR_CONTENT_ADDITIONAL), EarProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
+            ProjectProperties.storeLibrariesLocations(l.iterator(), props, getProjectDirectory());
+            
+            // #129316
+            ProjectProperties.removeObsoleteLibraryLocations(ep);
+            ProjectProperties.refreshLibraryTotals(props, cs, EarProjectProperties.JAR_CONTENT_ADDITIONAL,  EarProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+            
             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
             try {
                 ProjectManager.getDefault().saveProject(EarProject.this);
