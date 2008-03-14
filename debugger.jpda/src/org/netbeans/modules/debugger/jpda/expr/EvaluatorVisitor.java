@@ -1360,8 +1360,18 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     @Override
     public Mirror visitArrayAccess(ArrayAccessTree arg0, EvaluationContext evaluationContext) {
         Mirror array = arg0.getExpression().accept(this, evaluationContext);
+        if (array == null) {
+            Assert2.error(arg0, "arrayIsNull", arg0.getExpression());
+        }
         Mirror index = arg0.getIndex().accept(this, evaluationContext);
-        return ((ArrayReference) array).getValue(((PrimitiveValue) index).intValue());
+        if (!(index instanceof PrimitiveValue)) {
+            Assert2.error(arg0, "arraySizeBadType", index);
+        }
+        int i = ((PrimitiveValue) index).intValue();
+        if (i >= ((ArrayReference) array).length()) {
+            Assert2.error(arg0, "arrayIndexOutOfBounds", array, i);
+        }
+        return ((ArrayReference) array).getValue(i);
     }
 
     @Override
