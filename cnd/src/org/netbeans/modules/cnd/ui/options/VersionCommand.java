@@ -47,8 +47,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -56,11 +55,8 @@ import org.openide.util.Utilities;
  *
  * @author gordonp
  */
-public class VersionCommand implements Runnable {
-    
+public class VersionCommand {
     private ProcessBuilder pb;
-    private String name;
-    private String path;
     private String version = null;
     private static HashMap<String, String> cygmap;
     
@@ -76,11 +72,10 @@ public class VersionCommand implements Runnable {
     /**
      * Creates a new instance of VersionCommand
      */
-    public VersionCommand(CompilerFlavor flavor, String name, String path) {
+    public VersionCommand(CompilerFlavor flavor, String path) {
         String option = null;
+        String name = IpeUtils.getBaseName(path);
         
-        this.name = name;
-        this.path = path;
         try {
             path = new File(path).getCanonicalPath();
         } catch (IOException ex) {
@@ -88,32 +83,19 @@ public class VersionCommand implements Runnable {
         
         if (flavor.isGnuCompiler()) { 
             option = "--version"; // NOI18N
-            path = cygwinPath(path);
         } else if (flavor.isSunCompiler()) {
             option = "-V"; // NOI18N
-        } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            if (path.endsWith("/sfw/bin/gmake")) { // NOI18N
+        }
+        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+            if (name.equals("gmake")) { // NOI18N
                 option = "--version"; // NOI18N
-            } else if (path.equals("/usr/ccs/bin/make") || path.equals("/usr/xpg4/bin/make")) { // NOI18N
+            } else if (name.equals("gdb")) { // NOI18N
+                option = "--version"; // NOI18N
+            } else if (name.equals("make")) { // NOI18N
                 path = "/sbin/uname"; // NOI18N
                 option = "-sr"; // NOI18N
             } else if (name.equals("dmake")) { // NOI18N
-                File inv;
-                String base = path.substring(0, path.length() - 10);
-                
-                inv = new File(base + "/inventory"); // NOI18N
-                if (inv.exists() && inv.isDirectory()) {
-                    String[] files = inv.list();
-                    for (int i = 0; i < files.length; i++) {
-                        if (files[i].equals("v14n1")) { // NOI18N
-                            version = NbBundle.getMessage(VersionCommand.class, "DMAKE10"); // NOI18N
-                        } else if (files[i].equals("v15n1")) { // NOI18N
-                            version = NbBundle.getMessage(VersionCommand.class, "DMAKE11"); // NOI18N
-                        } else if (files[i].equals("v16n1")) { // NOI18N
-                            version = NbBundle.getMessage(VersionCommand.class, "DMAKE12"); // NOI18N
-                        }
-                    }
-                }
+                option = "-v"; // NOI18N
             }
         }
         if (option == null) {
@@ -123,44 +105,25 @@ public class VersionCommand implements Runnable {
         if (version == null) {
             pb = new ProcessBuilder(path, option);
             pb.redirectErrorStream(true);
+            version = run();
         }
     }
     
-    public void run() {
-        
+    public String run() {
+        String v = null;
         if (pb != null) {
             try {
                 Process process = pb.start();
                 BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                version = br.readLine(); // just read 1st line...
+                v = br.readLine(); // just read 1st line...
                 br.close();
             } catch (IOException ioe) {
             }
         }
-        if (version != null) {
-            String message = NbBundle.getMessage(VersionCommand.class, "LBL_VersionInfo", name, path, version);
-            NotifyDescriptor nd = new NotifyDescriptor.Message(message);
-            
-            nd.setTitle(NbBundle.getMessage(VersionCommand.class, "LBL_VersionInfo_Title"));
-            DialogDisplayer.getDefault().notify(nd);
-        }
+        return v;
     }
     
-    /**
-     * Replace Cygwin symlinks with what they point to.
-     *
-     * @param orig The orignal path of a compiler/tool
-     * @returns The possibly modifued path of a real file
-     */
-    private String cygwinPath(String orig) {
-        int pos = orig.lastIndexOf(File.separatorChar);
-        String dir = orig.substring(0, pos);
-        String name = orig.substring(pos + 1);
-        String nuename = cygmap.get(name);
-        if (nuename != null) {
-            return dir + File.separator + nuename;
-        } else {
-            return orig;
-        }
+    public String getVersion() {
+        return version;
     }
 }
