@@ -65,6 +65,7 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
@@ -695,6 +696,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             setState(STATE_NONE);
             programPID = 0;
             gdbEngineProvider.getDestructor().killEngine();
+            GdbActionHandler gah = (GdbActionHandler) lookupProvider.lookupFirst(null, GdbActionHandler.class);
+            gah.executionFinished(0);
             Disassembly.close();
             GdbTimer.getTimer("Step").reset(); // NOI18N
         }

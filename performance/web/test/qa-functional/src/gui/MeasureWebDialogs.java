@@ -66,6 +66,7 @@ public class MeasureWebDialogs extends NbTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
 
+        suite.addTest(new OpenWebFiles("testOpeningTagFile", "Open Tag file"));
         suite.addTest(new OpenServletFile("testOpeningJavaFile", "Open Java file"));
         suite.addTest(new OpenServletFile("testOpeningServletFile", "Open Servlet file"));
         //suite.addTest(new OpenServletFile("testOpeningServletFile", "Open Servlet file II"));
@@ -73,7 +74,6 @@ public class MeasureWebDialogs extends NbTestCase {
         suite.addTest(new OpenWebFiles("testOpeningContextXmlFile", "Open context.xml file"));
         //suite.addTest(new OpenWebFiles("testOpeningBigJSPFile", "Open Big JSP file"));
         suite.addTest(new OpenWebFiles("testOpeningHTMLFile", "Open HTML file"));
-        suite.addTest(new OpenWebFiles("testOpeningTagFile", "Open Tag file"));
         suite.addTest(new OpenWebFiles("testOpeningTldFile", "Open TLD file"));
 
         suite.addTest(new OpenServletFileWithOpenedEditor("testOpeningJavaFile", "Open Java file if Editor opened"));
