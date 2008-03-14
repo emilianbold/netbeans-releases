@@ -20,7 +20,9 @@ export RESULT
 rm $RESULT
 
 testmodule() {
-    if ! ant -f $1/build.xml test -Dtest-unit-sys-prop.ignore.random.failures=true; then
+    if ant -f $1/build.xml test -Dtest-unit-sys-prop.ignore.random.failures=true; then
+        echo Test OK: $1
+    else
         echo $1 >>$RESULT
     fi
 }

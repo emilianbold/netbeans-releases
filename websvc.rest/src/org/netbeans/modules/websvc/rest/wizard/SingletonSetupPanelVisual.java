@@ -68,9 +68,9 @@ import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -542,7 +542,7 @@ private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
         try {            
             Templates.setTargetFolder(settings, SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage(), true));
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Exceptions.printStackTrace(ex);
         }
     }
 

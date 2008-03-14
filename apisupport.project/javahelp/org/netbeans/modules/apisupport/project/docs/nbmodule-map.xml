@@ -99,10 +99,12 @@
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_module" url="csh/BasicInfoWizardPanel.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicConfWizardPanel" url="csh/BasicConfWizardPanel.html"/>
     <!-- Module Suite Project -->
-    <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_suite" url="csh/BasicInfoWizardPanel_suite.html"/>-->
+    <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_suite" url="csh/BasicInfoWizardPanel_suite.html"/>
+    <!-- XXX could use a separate page if desired: -->
+    <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_application" url="csh/BasicInfoWizardPanel_suite.html"/>
     <!-- Library Wrapper Module Project -->
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.LibraryStartWizardPanel" url="csh/LibraryStartWizardPanel.html"/>
-    <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_library" url="csh/BasicInfoWizardPanel_library.html"/>-->
+    <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_library" url="csh/BasicInfoWizardPanel_library.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.LibraryConfWizardPanel" url="csh/LibraryConfWizardPanel.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel" url="csh/AddModulePanel.html"/>
 
