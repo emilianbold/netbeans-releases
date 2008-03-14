@@ -42,7 +42,6 @@ package org.netbeans.modules.bpel.validation.custom;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.Set;
@@ -172,7 +171,7 @@ public final class Validator extends BpelValidator {
       List<Receive> receives = getReceives(onAlarm);
 
       for (Receive receive : receives) {
-        addWarning("FIX_Receive_in_OnAlarm", receive); // NOI18N
+        addWarning("FIX_Receive_in_OnAlarm", receive, receive.getName()); // NOI18N
       }
     }
   }
@@ -212,8 +211,8 @@ public final class Validator extends BpelValidator {
       samePortType(receive1, receive2) &&
       sameOperation(receive1, receive2))
     {
-      addWarning("FIX_Receives_in_OnEventOnAlarm", receive1); // NOI18N
-      addWarning("FIX_Receives_in_OnEventOnAlarm", receive2); // NOI18N
+      addWarning("FIX_Receives_in_OnEventOnAlarm", receive1, receive1.getName(), receive2.getName()); // NOI18N
+      addWarning("FIX_Receives_in_OnEventOnAlarm", receive2, receive2.getName(), receive1.getName()); // NOI18N
     }
   }
 
@@ -290,7 +289,7 @@ public final class Validator extends BpelValidator {
       List<Receive> receives = getReceives(onEvent);
 
       for (Receive receive : receives) {
-        addWarning("FIX_Receive_in_OnEvent", receive); // NOI18N
+        addWarning("FIX_Receive_in_OnEvent", receive, receive.getName()); // NOI18N
       }
     }
   }
@@ -527,16 +526,16 @@ public final class Validator extends BpelValidator {
     if ( !isInGate(reply1) && !isInGate(reply2)) {
       if (haveTheSamePartnerLinkAndOperation(reply1, reply2)) {
         if ( !hasNextExit(reply1) && !hasNextExit(reply2)) {
-          addErrorCheck("FIX_Replies_PartnerLink_Gate", reply1); // NOI18N
-          addErrorCheck("FIX_Replies_PartnerLink_Gate", reply2); // NOI18N
+          addErrorCheck("FIX_Replies_PartnerLink_Gate", reply1, reply1.getName(), reply2.getName()); // NOI18N
+          addErrorCheck("FIX_Replies_PartnerLink_Gate", reply2, reply2.getName(), reply1.getName()); // NOI18N
           return;
         }
       }
     }
     if (getParent(reply1) == getParent(reply2)) {
       if (haveTheSamePartnerLinkAndOperation(reply1, reply2)) {
-        addErrorCheck("FIX_Replies_PartnerLink_Scope", reply1); // NOI18N
-        addErrorCheck("FIX_Replies_PartnerLink_Scope", reply2); // NOI18N
+        addErrorCheck("FIX_Replies_PartnerLink_Scope", reply1, reply1.getName(), reply2.getName()); // NOI18N
+        addErrorCheck("FIX_Replies_PartnerLink_Scope", reply2, reply2.getName(), reply1.getName()); // NOI18N
         return;
       }
     }
@@ -576,15 +575,15 @@ public final class Validator extends BpelValidator {
 
     if ( !isInGate(holder1) && !isInGate(holder2)) {
       if (haveTheSameCorrelationWithInitiateYes(holder1, holder2, parent1, parent2)) {
-        addErrorCheck("FIX_Holder_Correlation_Gate", holder1); // NOI18N
-        addErrorCheck("FIX_Holder_Correlation_Gate", holder2); // NOI18N
+        addErrorCheck("FIX_Holder_Correlation_Gate", holder1, getName(holder1), getName(holder2)); // NOI18N
+        addErrorCheck("FIX_Holder_Correlation_Gate", holder2, getName(holder2), getName(holder1)); // NOI18N
         return;
       }
     }
     if (parent1 == parent2) {
       if (haveTheSameCorrelationWithInitiateYes(holder1, holder2, parent1, parent2)) {
-        addErrorCheck("FIX_Holder_Correlation_Scope", holder1); // NOI18N
-        addErrorCheck("FIX_Holder_Correlation_Scope", holder2); // NOI18N
+        addErrorCheck("FIX_Holder_Correlation_Scope", holder1, getName(holder1), getName(holder2)); // NOI18N
+        addErrorCheck("FIX_Holder_Correlation_Scope", holder2, getName(holder2), getName(holder1)); // NOI18N
         return;
       }
     }
@@ -793,6 +792,57 @@ public final class Validator extends BpelValidator {
     addError("FIX_Activity_with_Correlation", parent); // NOI18N
   }
   
+  // # 129986
+  @Override
+  public void visit(Receive receive) {
+//out();
+//out("RECEIVE: " + receive);
+    WSDLReference<PortType> ref = receive.getPortType();
+
+    if (ref == null) {
+      return;
+    }
+    PortType portType = ref.get();
+
+    if (portType == null) {
+      return;
+    }
+    Collection<Operation> operations = portType.getOperations();
+
+    if (operations.size() != 1) {
+      return;
+    }
+    Operation operation = operations.iterator().next();
+
+    if (operation == null) {
+      return;
+    }
+    if (operation.getInput() == null || operation.getOutput() == null) {
+      return;
+    }
+    if ( !findReply(receive.getBpelModel().getProcess(), portType)) {
+      addError("FIX_In_Out_Receive_Reply", receive, receive.getName()); // NOI18N
+    }
+  }
+
+  private boolean findReply(BpelEntity entity, PortType portType) {
+    if (entity instanceof Reply) {
+      WSDLReference<PortType> ref = ((Reply) entity).getPortType();
+
+      if (ref != null && portType == ref.get()) {
+        return true;
+      }
+    }
+    List<BpelEntity> children = entity.getChildren();
+
+    for (BpelEntity child : children) {
+      if (findReply(child, portType)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public void visit(Reply reply) {
       super.visit(reply);
@@ -853,12 +903,12 @@ public final class Validator extends BpelValidator {
     return ImportHelper.getSchemaModel(imp, false);
   }
 
-  private void addErrorCheck(String key, Component component) {
+  private void addErrorCheck(String key, Component component, String name1, String name2) {
     if (myErrored.contains(component)) {
       return;
     }
     myErrored.add(component);
-    addError(key, component);
+    addError(key, component, name1, name2);
   }
 
   private List<Component> myErrored;

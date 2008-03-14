@@ -1197,8 +1197,11 @@ public final class OpenProjectList {
         public void refresh() {
             assert recentProjects.size() == recentProjectsInfos.size();
             boolean refresh = false;
-            int index = 0;
-            for (ProjectReference prjRef : recentProjects) {
+            Iterator<ProjectReference> recentProjectsIter = recentProjects.iterator();
+            Iterator<UnloadedProjectInformation> recentProjectsInfosIter = recentProjectsInfos.iterator();
+            while (recentProjectsIter.hasNext() && recentProjectsInfosIter.hasNext()) {
+                ProjectReference prjRef = recentProjectsIter.next();
+                recentProjectsInfosIter.next();
                 URL url = prjRef.getURL();
                 FileObject prjDir = null;
                 try {
@@ -1217,17 +1220,14 @@ public final class OpenProjectList {
                 
                 if (prj == null) { // externally deleted project probably
                     refresh = true;
-                    break;
-                } else if (prjDir.getFileObject("nbproject") == null || !prjDir.getFileObject("nbproject").isValid()) {
-                    prjDir.removeFileChangeListener(nbprojectDeleteListener);
-                    refresh = true;
-                    break;
+                    if (prjDir != null && prjDir.isFolder()) {
+                        prjDir.removeFileChangeListener(nbprojectDeleteListener);
+                    }
+                    recentProjectsIter.remove();
+                    recentProjectsInfosIter.remove();
                 }
-                index++;
             }
             if (refresh) {
-                recentProjects.remove(index);
-                recentProjectsInfos.remove(index);
                 pchSupport.firePropertyChange(PROPERTY_RECENT_PROJECTS, null, null);
                 save();
             }
@@ -1469,9 +1469,7 @@ public final class OpenProjectList {
         
         @Override
         public void fileDeleted(FileEvent fe) {
-            if (fe.getFile().getName().equals("nbproject")) {
-                recentProjects.refresh();
-            }
+            recentProjects.refresh();
         }
         
     }

@@ -48,7 +48,6 @@ import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import javax.swing.text.Position;
-import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 

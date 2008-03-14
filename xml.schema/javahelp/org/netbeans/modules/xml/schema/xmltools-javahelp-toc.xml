@@ -59,9 +59,10 @@
 			<tocitem text="Validating XML Schema Files" target="xmltools_tasks_validatingxmlschema" />
 		</tocitem>
 		<tocitem text="Using Code Completion">
-			<tocitem text="About Using Code Completion in XML Instance Documents Constrained by XML Schema" target="xmltools_tasks_usingcodecompletion" />
-			<tocitem text="Using Code Completion in XML Instance Documents Constrained by an XML Schema" target="xmltools_tasks_usingcodecompletion-oneschema" />
-			<tocitem text="Using Code Completion in XML Instance Documents Constrained by Multiple XML Schema Files" target="xmltools_tasks_usingcodecompletion-multi-schemas" />
+			<tocitem text="Overview of Code Completion in Schema-Constrained XML Documents
+" target="xmltools_tasks_usingcodecompletion" />
+			<tocitem text="Using Code Completion in XML Documents Constrained by a Single XML Schema" target="xmltools_tasks_usingcodecompletion-oneschema" />
+			<tocitem text="Using Code Completion in XML Documents Constrained by Multiple XML Schemas" target="xmltools_tasks_usingcodecompletion-multi-schemas" />
 			<tocitem text="Using Code Completion in XML Files Constrained by an XML Catalog" target="xmltools_tasks_usingcodecompletion-xml-catalog" />
 		</tocitem>
 	</tocitem>
