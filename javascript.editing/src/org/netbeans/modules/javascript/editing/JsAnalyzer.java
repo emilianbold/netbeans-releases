@@ -48,6 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.ImageIcon;
 import org.mozilla.javascript.FunctionNode;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Token;
@@ -589,6 +590,10 @@ public class JsAnalyzer implements StructureScanner {
             return name;
         }
 
+        public String getSortText() {
+            return getName();
+        }
+
         public String getHtml() {
             formatter.reset();
             formatter.appendText(name);
@@ -661,6 +666,10 @@ public class JsAnalyzer implements StructureScanner {
         public String toString() {
             return getName();
         }
+
+        public ImageIcon getCustomIcon() {
+            return null;
+        }
     }
 
     private class JsStructureItem implements StructureItem {
@@ -692,6 +701,10 @@ public class JsAnalyzer implements StructureScanner {
             }
             
             return name;
+        }
+        
+        public String getSortText() {
+            return getName();
         }
 
         public String getHtml() {
@@ -822,6 +835,10 @@ public class JsAnalyzer implements StructureScanner {
         @Override
         public String toString() {
             return getName();
+        }
+
+        public ImageIcon getCustomIcon() {
+            return null;
         }
     }
 }

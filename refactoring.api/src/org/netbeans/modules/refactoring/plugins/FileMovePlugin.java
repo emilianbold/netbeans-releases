@@ -42,6 +42,7 @@ package org.netbeans.modules.refactoring.plugins;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Logger;
 import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -112,7 +113,11 @@ public class FileMovePlugin implements RefactoringPlugin {
                 FileObject target = FileHandlingFactory.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
                 DataFolder targetFolder = DataFolder.findFolder(target);
                 if (!fo.isValid()) {
+                    String path = fo.getPath();
+                    Logger.getLogger(FileMovePlugin.class.getName()).fine("Invalid FileObject " + path + "trying to recreate...");
                     fo = FileUtil.toFileObject(FileUtil.toFile(fo));
+                    if (fo==null)
+                        Logger.getLogger(FileMovePlugin.class.getName()).severe("Invalid FileObject " + path + "\n. File not found.");
                 }
                 source = DataObject.find(fo);
                 sourceFolder = source.getFolder();

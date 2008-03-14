@@ -83,7 +83,7 @@ import org.openide.util.NbBundle;
  */
 public class EditorPropertySheet extends javax.swing.JPanel implements ActionListener, PropertyChangeListener, PreferenceChangeListener {
     
-    private static final boolean USE_NEW_FORMATTER = false;
+    private static final boolean USE_NEW_FORMATTER = true;
     private static final boolean TRACE = false;
     
     private EditorOptionsPanelController topControler;
@@ -195,6 +195,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.sharpAtStartLine));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.indentNamespace));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.indentCasesFromSwitch));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.absoluteLabelIndent));
         sheet.put(set);
         
 	set = new Sheet.Set();
