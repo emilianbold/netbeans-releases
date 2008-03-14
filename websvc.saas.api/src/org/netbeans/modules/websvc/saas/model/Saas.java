@@ -356,6 +356,6 @@ public class Saas {
         if (getSaasMetadata() != null && getSaasMetadata().getCodeGen() != null) {
             return getSaasMetadata().getCodeGen().getPackageName();
         }
-        return null;
+        return SaasUtil.deriveDefaultPackageName(this);
     }
 }

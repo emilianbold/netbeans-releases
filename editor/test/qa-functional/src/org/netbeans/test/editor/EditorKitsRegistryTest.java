@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package general;
+package org.netbeans.test.editor;
 
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;

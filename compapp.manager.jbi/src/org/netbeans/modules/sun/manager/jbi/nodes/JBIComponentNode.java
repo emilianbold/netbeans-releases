@@ -1354,19 +1354,11 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             if (saNames.size() > 0) {
 
                 JBINode jbiNode = (JBINode) getParentNode().getParentNode();
+                Node[] jbiNodeChildren = jbiNode.getChildren().getNodes();
 
-                JBIComponentContainerNode sesNode =
-                        (JBIComponentContainerNode.ServiceEngines) jbiNode.getChildren().getNodes()[0];
-                // Can't do refresh: NPE while invoking undeployment on multiple components.
-                sesNode.refresh();
-
-                JBIComponentContainerNode bcsNode =
-                        (JBIComponentContainerNode.BindingComponents) jbiNode.getChildren().getNodes()[1];
-                bcsNode.refresh();
-
-                JBIServiceAssembliesNode sasNode =
-                        (JBIServiceAssembliesNode) jbiNode.getChildren().getNodes()[3];
-                sasNode.refresh();
+                Node sesNode = jbiNodeChildren[0];
+                Node bcsNode = jbiNodeChildren[1];
+                Node sasNode = jbiNodeChildren[3];
 
                 try {
                     List<String> componentsNeedingStart =
@@ -1432,7 +1424,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                             }
                         }
 
-                        Node startableNode = isBC ? getChildNode(bcsNode, componentNeedingStart) : getChildNode(sesNode, componentNeedingStart);
+                        Node startableNode = isBC ? 
+                            getChildNode(bcsNode, componentNeedingStart) : 
+                            getChildNode(sesNode, componentNeedingStart);
                         ((Startable) startableNode).start();
                     }
                 } catch (ManagementRemoteException e) {
@@ -1449,8 +1443,6 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                         success = success && ((Undeployable) saNode).undeploy(force);
                     }
                 }
-
-                sasNode.refresh();
             }
 
             return success;

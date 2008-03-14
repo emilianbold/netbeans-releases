@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 <mconfig name="enterprise pack qa-performance test config">
 
     <!-- testbag common for all suites to setup usedir -->
-    <testbag testattribs="all or ui_responsiveness or menus or dialogs or actions" prio="1"
+    <testbag testattribs="ttt" prio="1"
              executor="ide_perf_setup" name="UI responsiveness - setup">
         <testset dir="qa-functional/src">
             <patternset>
@@ -56,12 +56,12 @@ made subject to such option by the copyright holder.
     </testbag>
     
     <!-- 1st round -->    
-    <testbag testattribs="all or ui_responsiveness or actions" prio="2"
+    <testbag testattribs="ttt" prio="2"
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/EPMeasureActions1.class"/>
-                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="128458, 128805"/>
+                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="128458, 128805, 130172"/>
             </patternset>
         </testset>
     </testbag>
@@ -87,8 +87,23 @@ made subject to such option by the copyright holder.
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/EPMeasureActions4.class"/>
                 <include name="gui/EPMeasureActions4.class/Open Schema View" expectedFail="129789"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="all or ui_responsiveness or actions" prio="2"
+             executor="ide_performance" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/EPMeasureActions4.class/Open Complex Schema View"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="all or ui_responsiveness or actions" prio="2"
+             executor="ide_performance" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/EPMeasureActions4.class/Start Appserver"/>
             </patternset>
         </testset>
     </testbag>
@@ -115,7 +130,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/EPMeasureActions1.class"/>
-                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="128458, 128805"/>
+                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="128458, 128805, 130172"/>
             </patternset>
         </testset>
     </testbag>
@@ -141,8 +156,23 @@ made subject to such option by the copyright holder.
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/EPMeasureActions4.class"/>
                 <include name="gui/EPMeasureActions4.class/Open Schema View" expectedFail="129789"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="(all or ui_responsiveness or actions) and NOT once" prio="5"
+             executor="ide_performance" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/EPMeasureActions4.class/Open Complex Schema View"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="(all or ui_responsiveness or actions) and NOT once" prio="5"
+             executor="ide_performance" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/EPMeasureActions4.class/Start Appserver"/>
             </patternset>
         </testset>
     </testbag>
@@ -169,7 +199,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/EPMeasureActions1.class"/>
-                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="128458, 128805"/>
+                <include name="gui/EPMeasureActions1.class/testGCProjects" expectedFail="128458, 128805, 130172"/>
             </patternset>
         </testset>
     </testbag>
@@ -195,8 +225,23 @@ made subject to such option by the copyright holder.
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/EPMeasureActions4.class"/>
                 <include name="gui/EPMeasureActions4.class/Open Schema View" expectedFail="129789"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="(all or ui_responsiveness or actions) and NOT once" prio="8"
+             executor="ide_performance" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/EPMeasureActions4.class/Open Complex Schema View"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="(all or ui_responsiveness or actions) and NOT once" prio="8"
+             executor="ide_performance" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/EPMeasureActions4.class/Start Appserver"/>
             </patternset>
         </testset>
     </testbag>
