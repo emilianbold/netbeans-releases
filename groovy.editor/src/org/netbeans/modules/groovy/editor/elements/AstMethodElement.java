@@ -43,7 +43,9 @@ public class AstMethodElement extends AstElement implements MethodElement {
     @Override
     public String getName() {
         if (name == null) {
-            if (node instanceof MethodNode) {
+            if (node instanceof ConstructorNode) {
+                name = ((ConstructorNode)node).getDeclaringClass().getNameWithoutPackage();
+            } else if (node instanceof MethodNode) {
                 name = ((MethodNode)node).getName();
             }
 
