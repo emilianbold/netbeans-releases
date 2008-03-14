@@ -83,7 +83,6 @@ public class VersionCommand {
         
         if (flavor.isGnuCompiler()) { 
             option = "--version"; // NOI18N
-            path = cygwinPath(path);
         } else if (flavor.isSunCompiler()) {
             option = "-V"; // NOI18N
         }
@@ -126,23 +125,5 @@ public class VersionCommand {
     
     public String getVersion() {
         return version;
-    }
-    
-    /**
-     * Replace Cygwin symlinks with what they point to.
-     *
-     * @param orig The orignal path of a compiler/tool
-     * @returns The possibly modifued path of a real file
-     */
-    private String cygwinPath(String orig) {
-        int pos = orig.lastIndexOf(File.separatorChar);
-        String dir = orig.substring(0, pos);
-        String name = orig.substring(pos + 1);
-        String nuename = cygmap.get(name);
-        if (nuename != null) {
-            return dir + File.separator + nuename;
-        } else {
-            return orig;
-        }
     }
 }
