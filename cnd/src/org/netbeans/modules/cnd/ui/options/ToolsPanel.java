@@ -1968,41 +1968,46 @@ private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//G
     
 }//GEN-LAST:event_btBaseDirectoryActionPerformed
 
-private void selectCompiler(JTextField tf) {
+private boolean selectCompiler(JTextField tf, Tool tool) {
     String seed = tfBaseDirectory.getText();
     FileChooser fileChooser = new FileChooser(getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false);
     int ret = fileChooser.showOpenDialog(this);
     if (ret == JFileChooser.CANCEL_OPTION) {
-        return;
+        return false;
     }
     if (!new File(new File(tfBaseDirectory.getText()), fileChooser.getSelectedFile().getName()).exists()) {
         NotifyDescriptor nb = new NotifyDescriptor.Message("Only compilers within base directory are allowed", NotifyDescriptor.ERROR_MESSAGE); // NOI18N
         DialogDisplayer.getDefault().notify(nb);
-        return;
+        return false;
     }
     tf.setText(fileChooser.getSelectedFile().getPath());
+    tool.setPath(tf.getText());
+    fireCompilerSetChange();
+    fireCompilerSetModified();
+    return true;
 }
 
-private void selectTool(JTextField tf) {
+private boolean selectTool(JTextField tf) {
     String seed = tfBaseDirectory.getText();
     FileChooser fileChooser = new FileChooser(getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false);
     int ret = fileChooser.showOpenDialog(this);
     if (ret == JFileChooser.CANCEL_OPTION) {
-        return;
+        return false;
     }
     tf.setText(fileChooser.getSelectedFile().getPath());
+    return true;
 }
 
 private void btCVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCVersionActionPerformed
-    selectCompiler(tfCPath);
+    selectCompiler(tfCPath, currentCompilerSet.getTool(Tool.CCompiler));
 }//GEN-LAST:event_btCVersionActionPerformed
 
 private void btCppVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCppVersionActionPerformed
-    selectCompiler(tfCppPath);
+    selectCompiler(tfCppPath, currentCompilerSet.getTool(Tool.CCCompiler));
 }//GEN-LAST:event_btCppVersionActionPerformed
 
 private void btFortranVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btFortranVersionActionPerformed
-    selectCompiler(tfFortranPath);
+    selectCompiler(tfFortranPath, currentCompilerSet.getTool(Tool.FortranCompiler));
 }//GEN-LAST:event_btFortranVersionActionPerformed
 
 private void btMakeVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btMakeVersionActionPerformed
