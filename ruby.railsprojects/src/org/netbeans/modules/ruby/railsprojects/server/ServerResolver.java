@@ -58,7 +58,7 @@ import org.openide.util.Exceptions;
  *
  * @author Erno Mononen
  */
-public final class ServerResolver {
+final class ServerResolver {
 
     private static final Logger LOGGER = Logger.getLogger(ServerResolver.class.getName());
     /**
