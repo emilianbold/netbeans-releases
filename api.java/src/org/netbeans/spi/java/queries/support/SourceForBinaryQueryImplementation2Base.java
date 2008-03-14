@@ -50,7 +50,7 @@ import org.openide.util.Parameters;
  * @since 1.16
  * @author Tomas Zezula
  */
-public abstract class SourceForBinaryQueryimplementation2Base implements SourceForBinaryQueryImplementation2 {
+public abstract class SourceForBinaryQueryImplementation2Base implements SourceForBinaryQueryImplementation2 {
 
     /**
      * Creates a wrapper for {@link SourceForBinaryQuery.Result}. This method
