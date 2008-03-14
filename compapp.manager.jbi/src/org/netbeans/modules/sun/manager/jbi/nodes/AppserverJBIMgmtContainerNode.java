@@ -46,6 +46,7 @@ import com.sun.esb.management.api.notification.NotificationService;
 import com.sun.esb.management.common.ManagementRemoteException;
 import java.util.Collections;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.management.Notification;
 import javax.management.openmbean.CompositeDataSupport;
 import javax.swing.Action;
@@ -54,7 +55,6 @@ import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtControlle
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -65,6 +65,8 @@ import org.openide.util.actions.SystemAction;
 public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
         implements Refreshable {
 
+    private static Logger logger = Logger.getLogger("org.netbeans.modules.sun.manager.jbi.nodes.AppserverJBIMgmtContainerNode"); // NOI18N   
+    
     /**
      * Creates a new instance of AppserverJBIMgmtContainerNode.
      */
@@ -95,7 +97,8 @@ public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
                 }
             });
         } catch (ManagementRemoteException ex) {
-            Exceptions.printStackTrace(ex);
+            //Exceptions.printStackTrace(ex);
+            logger.warning("Cannot get notification service: " + ex.getMessage()); // NOI18N
         }
     }
     

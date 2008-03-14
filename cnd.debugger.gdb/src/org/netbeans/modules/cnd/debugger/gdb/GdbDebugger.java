@@ -811,6 +811,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else if (msg.startsWith("^done,value=") && msg.contains("auto; currently c")) { // NOI18N
             if (msg.contains("auto; currently c++")) { // NOI18N
                 cplusplus = true;
+                DebuggerManager.getDebuggerManager().getCurrentSession().setCurrentLanguage("C++");
             }
         } else if (msg.startsWith("^done,value=")) { // NOI18N (-data-evaluate-expression)
             cb = CommandBuffer.getCommandBuffer(itok);
