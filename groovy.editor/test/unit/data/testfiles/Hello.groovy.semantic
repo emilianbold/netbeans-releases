@@ -1,3 +1,5 @@
+package foo;
+
 class |>CLASS:Hello1<| {
 
     int |>FIELD:field1<| = 1;

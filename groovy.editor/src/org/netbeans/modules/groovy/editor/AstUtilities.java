@@ -219,31 +219,22 @@ public class AstUtilities {
                 columnNumber = 1;
             }
             
-            int start = getOffset(doc, lineNumber, columnNumber)
-                        + "class".length();
-            
+            int start = getOffset(doc, lineNumber, columnNumber) + "class".length(); // NOI18N
             try {
-                while (true) {
-                    char a[] = doc.getChars(start, 1);
-                    if (!(a[0] == ' ')) {
-                        break;
-                    }
-                    start++;
-                }
+                start = Utilities.getFirstNonWhiteFwd(doc, start);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            
 
             ClassNode classNode = (ClassNode) node;
-            return new OffsetRange(start, start + classNode.getName().length());
+            return new OffsetRange(start, start + classNode.getNameWithoutPackage().length());
         } else if (node instanceof ConstructorNode) {
             int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
             if (start < 0) {
                 start = 0;
             }
             ConstructorNode constructorNode = (ConstructorNode) node;
-            return new OffsetRange(start, start + constructorNode.getDeclaringClass().getName().length());
+            return new OffsetRange(start, start + constructorNode.getDeclaringClass().getNameWithoutPackage().length());
         } else if (node instanceof MethodNode) {
             int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
             if (start < 0) {

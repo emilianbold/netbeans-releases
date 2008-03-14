@@ -1,3 +1,5 @@
+package foo;
+
 class Hello1 {
 
     int field1 = 1;
