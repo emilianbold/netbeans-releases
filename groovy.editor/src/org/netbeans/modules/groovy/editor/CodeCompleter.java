@@ -77,17 +77,17 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 
 public class CodeCompleter implements Completable {
  
     private static ImageIcon keywordIcon;
-    boolean showSymbols = false;
     private boolean caseSensitive;
     private int anchor;
     private  final Logger LOG = Logger.getLogger(CodeCompleter.class.getName());
     
     public CodeCompleter() {
-    
+        //LOG.setLevel(Level.FINEST);
     }
 
     private void populateProposal(Object method, CompletionRequest request, List<CompletionProposal> proposals, boolean isGDK) {
@@ -154,7 +154,7 @@ public class CodeCompleter implements Completable {
         return false;
     }
     
-    private boolean completeMethods(List<CompletionProposal> proposals, CompletionRequest request, boolean isSymbol) {
+    private boolean completeMethods(List<CompletionProposal> proposals, CompletionRequest request) {
         
         // figure out which class we are dealing with:
         ASTNode root = AstUtilities.getRoot(request.info);
@@ -222,7 +222,6 @@ public class CodeCompleter implements Completable {
 
         final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
         
-        //LOG.setLevel(Level.FINEST);
         LOG.log(Level.FINEST, "complete(...), prefix: " + prefix);
         
         
@@ -251,11 +250,6 @@ public class CodeCompleter implements Completable {
         final BaseDocument doc = (BaseDocument)document;
         final FileObject fileObject = info.getFileObject();
         
-        boolean showLower = true;
-        boolean showUpper = true;
-        boolean showSymbols = false;
-        char first = 0;
-
         doc.readLock(); // Read-lock due to Token hierarchy use
         
         try {        
@@ -282,7 +276,7 @@ public class CodeCompleter implements Completable {
             // completeKeywords(proposals, request, showSymbols);
             
             // complte methods
-            completeMethods(proposals, request, showSymbols);
+            completeMethods(proposals, request);
             
             return proposals;
         } finally {
@@ -292,6 +286,10 @@ public class CodeCompleter implements Completable {
     }
 
     public String document(CompilationInfo info, ElementHandle element) {
+        LOG.log(Level.FINEST, "document(), ElementHandle : " + element);
+        String x = new String("<h2> teststuff </h2><p>Paragraph</p><h3> Block form </h3><p>" + 
+                element +
+                "</p><h4> Syntax </h4>");
         return "";
     }
 
@@ -372,7 +370,10 @@ public class CodeCompleter implements Completable {
         }
 
         public ElementHandle getElement() {
-            return GroovyParser.createHandle(request.info, element);
+            LOG.log(Level.FINEST, "getElement() request.info : " + request.info);
+            LOG.log(Level.FINEST, "getElement() element : " + element);
+            
+            return null;
         }
 
         public ElementKind getKind() {
@@ -436,12 +437,17 @@ public class CodeCompleter implements Completable {
         MetaMethod method;
         HtmlFormatter formatter;
         boolean isGDK;
+        AstMethodElement methodElement;
         
         MethodItem(MetaMethod method, int anchorOffset, CompletionRequest request, boolean isGDK) {
             super(null, anchorOffset, request);
             this.method = method;
             this.formatter = request.formatter;
             this.isGDK = isGDK;
+            
+            // This is an artificial, new ElementHandle which has no real
+            // equivalent in the AST. It's used to match the one passed to super.document()
+            methodElement = new AstMethodElement(new ASTNode());
         }
 
         @Override
@@ -547,8 +553,12 @@ public class CodeCompleter implements Completable {
         
 //        @Override
 //        public ElementHandle getElement() {
-//            // For completion documentation
-//            return GroovyParser.createHandle(request.info, new AstMethodElement());
+//            
+//            // to display the documentation box for each element, the completion-
+//            // element needs to implement this method. Otherwise document(...)
+//            // won't even be called at all.
+//            
+//            return methodElement;
 //        }
     }
     
