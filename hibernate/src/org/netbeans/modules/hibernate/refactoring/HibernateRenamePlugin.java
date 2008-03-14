@@ -151,7 +151,7 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
                     String newBinaryName = clazz.getNewBinaryName();
                     if (oldBinaryName != null && newBinaryName != null) {
 
-                        Map<FileObject, PositionBounds> occurrences = 
+                        Map<FileObject, PositionBounds> occurrences =
                                 HibernateRefactoringUtil.getJavaClassOccurrences(mFileObjs, oldBinaryName);
 
                         for (FileObject mFileObj : occurrences.keySet()) {
@@ -161,7 +161,7 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
                                     occurrences.get(mFileObj));
                             refactoringElements.add(refactoring, elem);
                         }
-                        
+
                         refactoringElements.registerTransaction(new JavaClassRenameTransaction(occurrences.keySet(), oldBinaryName, newBinaryName));
                     }
                 }
@@ -170,13 +170,13 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
                 // If the rename is not recursive (e.g, "a.b.c" -> "x.b.c"), the new name is the whole package name.
                 String newPackageName = recursive ? HibernateRefactoringUtil.getRenamedPackageName(fo, refactoring.getNewName()) : refactoring.getNewName();
                 if (oldPackageName != null && newPackageName != null) {
-                    Map<FileObject, List<PositionBounds>> occurrences = 
+                    Map<FileObject, List<PositionBounds>> occurrences =
                             HibernateRefactoringUtil.getJavaPackageOccurrences(mFileObjs, oldPackageName);
 
                     for (FileObject mFileObj : occurrences.keySet()) {
                         List<PositionBounds> locations = occurrences.get(mFileObj);
-                        
-                        for( PositionBounds loc : locations) {
+
+                        for (PositionBounds loc : locations) {
                             HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
                                     oldPackageName,
                                     newPackageName,
@@ -184,7 +184,7 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
                             refactoringElements.add(refactoring, elem);
                         }
                     }
-                    
+
                     refactoringElements.registerTransaction(new JavaPackageRenameTransaction(occurrences.keySet(), oldPackageName, newPackageName));
                 }
             }

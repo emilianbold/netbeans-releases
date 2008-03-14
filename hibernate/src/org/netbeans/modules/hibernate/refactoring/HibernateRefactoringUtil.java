@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.hibernate.refactoring;
 
 import java.io.File;
@@ -68,11 +67,13 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.hibernate.mapping.model.HibernateMapping;
 import org.netbeans.modules.hibernate.mapping.model.MyClass;
+import org.netbeans.modules.hibernate.service.HibernateEnvironment;
 import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
@@ -94,7 +95,6 @@ import org.openide.text.PositionBounds;
 public class HibernateRefactoringUtil {
 
     private static final Logger LOGGER = Logger.getLogger(HibernateRefactoringUtil.class.getName());
-
     private static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
 
     public static boolean isJavaFile(FileObject fo) {
@@ -102,22 +102,23 @@ public class HibernateRefactoringUtil {
     }
 
     public static RenamedClassName getRenamedClassName(final TreePathHandle oldHandle, final JavaSource javaSource, final String newName) throws IOException {
-        final RenamedClassName[] result = { null };
+        final RenamedClassName[] result = {null};
         javaSource.runUserActionTask(new Task<CompilationController>() {
+
             public void run(CompilationController cc) throws IOException {
                 cc.toPhase(Phase.ELEMENTS_RESOLVED);
                 Element element = oldHandle.resolveElement(cc);
                 if (element == null || element.getKind() != ElementKind.CLASS) {
                     return;
                 }
-                String oldBinaryName = ElementUtilities.getBinaryName((TypeElement)element);
+                String oldBinaryName = ElementUtilities.getBinaryName((TypeElement) element);
                 String oldSimpleName = element.getSimpleName().toString();
                 String newBinaryName = null;
                 element = element.getEnclosingElement();
                 if (element.getKind() == ElementKind.CLASS) {
-                    newBinaryName = ElementUtilities.getBinaryName((TypeElement)element) + '$' + newName;
+                    newBinaryName = ElementUtilities.getBinaryName((TypeElement) element) + '$' + newName;
                 } else if (element.getKind() == ElementKind.PACKAGE) {
-                    String packageName = ((PackageElement)element).getQualifiedName().toString();
+                    String packageName = ((PackageElement) element).getQualifiedName().toString();
                     newBinaryName = createQualifiedName(packageName, newName);
                 } else {
                     LOGGER.log(Level.WARNING, "Enclosing element of {0} was neither class nor package", oldHandle);
@@ -135,6 +136,7 @@ public class HibernateRefactoringUtil {
         }
         final List<String> result = new ArrayList<String>(1);
         javaSource.runUserActionTask(new Task<CompilationController>() {
+
             public void run(CompilationController cc) throws IOException {
                 cc.toPhase(Phase.ELEMENTS_RESOLVED);
                 for (TypeElement typeElement : cc.getTopLevelElements()) {
@@ -185,10 +187,11 @@ public class HibernateRefactoringUtil {
         do {
             FileObject fo = FileUtil.toFileObject(f);
             if (fo != null) {
-                if ("".equals(suffix))
+                if ("".equals(suffix)) {
                     return getPackageName(fo);
+                }
                 String prefix = getPackageName(fo);
-                return prefix + ("".equals(prefix)?"":".") + suffix; // NOI18N
+                return prefix + ("".equals(prefix) ? "" : ".") + suffix; // NOI18N
             }
             if (!"".equals(suffix)) {
                 suffix = "." + suffix; // NOI18N
@@ -199,7 +202,7 @@ public class HibernateRefactoringUtil {
                 throw new IllegalArgumentException("Cannot create package name for URL " + url); // NOI18N
             }
             f = f.getParentFile();
-        } while (f!=null);
+        } while (f != null);
         throw new IllegalArgumentException("Cannot create package name for URL " + url); // NOI18N
     }
 
@@ -256,14 +259,14 @@ public class HibernateRefactoringUtil {
             return newBinaryName;
         }
     }
-    
-        public static Map<FileObject, PositionBounds> getJavaClassOccurrences(List<FileObject> allMappingFiles, String oldBinaryName) {
+
+    public static Map<FileObject, PositionBounds> getJavaClassOccurrences(List<FileObject> allMappingFiles, String oldBinaryName) {
         Map<FileObject, PositionBounds> occurrences = new HashMap<FileObject, PositionBounds>();
         for (FileObject mFileObj : allMappingFiles) {
             try {
                 InputStream is = mFileObj.getInputStream();
                 HibernateMapping hbMapping = HibernateMapping.createGraph(is);
-                
+
                 // Check the name attribute of the <class> elment
                 MyClass[] myClazz = hbMapping.getMyClass();
 
@@ -280,11 +283,11 @@ public class HibernateRefactoringUtil {
                         break;
                     }
                 }
-                
-                // TODO: class name can be in other elements/attributes. 
-                // TODO: need to check all of them
-                // TODO:
-                
+
+            // TODO: class name can be in other elements/attributes. 
+            // TODO: need to check all of them
+            // TODO:
+
             } catch (FileNotFoundException ex) {
                 ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
@@ -324,6 +327,9 @@ public class HibernateRefactoringUtil {
                         String tagName = ((Tag) element).getTagName();
                         if (tagName.equalsIgnoreCase("class")) { // NOI18N
                             inClassElement = true;
+
+                        //String text = document.getText( item.getOffset(), element.getElementLength() );
+                        //System.err.println( "======element: " + text );
                         }
                     }
 
@@ -337,6 +343,7 @@ public class HibernateRefactoringUtil {
 
                         int startOffset = item.getOffset() + 1;
                         int endOffset = startOffset + className.length();
+
                         return new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
                                 editor.createPositionRef(endOffset, Bias.Forward));
                     }
@@ -353,56 +360,56 @@ public class HibernateRefactoringUtil {
 
         return null;
     }
-    
+
     public static Map<FileObject, List<PositionBounds>> getJavaPackageOccurrences(List<FileObject> allMappingFiles, String oldPkgName) {
         Map<FileObject, List<PositionBounds>> occurrences = new HashMap<FileObject, List<PositionBounds>>();
-        
+
         for (FileObject mFileObj : allMappingFiles) {
             List<PositionBounds> locs = new ArrayList<PositionBounds>();
             int startOffset = -1;
             try {
                 InputStream is = mFileObj.getInputStream();
                 HibernateMapping hbMapping = HibernateMapping.createGraph(is);
-                
+
                 // Check package attribute in the <hibernate-mapping> tag
                 String pkgName = hbMapping.getAttributeValue("package"); //NOI18N
-                if( pkgName.equals(oldPkgName) ) {
+                if (pkgName.equals(oldPkgName)) {
                     // Find one
                     PositionBounds location = getJavaPackagePositionBounds(mFileObj, oldPkgName, startOffset);
-                    locs.add( location );
-                    
+                    locs.add(location);
+
                     startOffset = location.getBegin().getOffset() + 1;
                 }
-                
+
                 // Check the name attribute in the <class> tag
                 MyClass[] myClazz = hbMapping.getMyClass();
 
                 for (int ci = 0; ci < myClazz.length; ci++) {
                     String clsName = myClazz[ci].getAttributeValue("name"); // NO I18N
-                    if (clsName.startsWith(oldPkgName) ) {
-                        
+                    if (clsName.startsWith(oldPkgName)) {
+
                         PositionBounds location = getJavaPackagePositionBounds(mFileObj, oldPkgName, startOffset);
-                        locs.add( location );
+                        locs.add(location);
 
                         startOffset = location.getBegin().getOffset() + 1;
                     }
-                    
-                    // TODO: class name can be in other elements/attributes. 
-                    // TODO: need to check all of them
-                    // TODO: 
-                    
+
+                // TODO: class name can be in other elements/attributes. 
+                // TODO: need to check all of them
+                // TODO: 
+
                 }
             } catch (FileNotFoundException ex) {
                 ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
-            
+
             // Find everything in this file
             occurrences.put(mFileObj, locs);
         }
-        
+
         return occurrences;
     }
-    
+
     private static PositionBounds getJavaPackagePositionBounds(FileObject mappingFile, String pkgName, int start) {
         try {
             // Get the document for this file
@@ -415,11 +422,11 @@ public class HibernateRefactoringUtil {
             CloneableEditorSupport editor = (CloneableEditorSupport) result;
             BaseDocument document = (BaseDocument) editor.openDocument();
             XMLSyntaxSupport syntaxSupport = (XMLSyntaxSupport) document.getSyntaxSupport();
-            
-            if( start == -1 ) {
+
+            if (start == -1) {
                 start = document.getStartPosition().getOffset();
             }
-            
+
             TokenItem item = syntaxSupport.getTokenChain(start, Math.min(start + 1, document.getLength()));
             if (item == null) {
                 return null;
@@ -430,7 +437,7 @@ public class HibernateRefactoringUtil {
                 TokenID tokenId = item.getTokenID();
 
                 if (tokenId == XMLDefaultTokenContext.TAG) {
-                    
+
                     SyntaxElement element = syntaxSupport.getElementChain(item.getOffset() + 1);
                     if (element instanceof StartTag || element instanceof EmptyTag) {
                         String tagName = ((Tag) element).getTagName();
@@ -467,5 +474,17 @@ public class HibernateRefactoringUtil {
         }
 
         return null;
+    }
+
+    public static boolean anyHibernateMappingFiles(FileObject fo) {
+        Project proj = org.netbeans.api.project.FileOwnerQuery.getOwner(fo);
+        HibernateEnvironment env = new HibernateEnvironment(proj);
+        List<FileObject> mFileObjs = env.getAllHibernateMappingFileObjects();
+        if (mFileObjs == null || mFileObjs.size() == 0) {
+            // OK, no mapping files at all. 
+            return false;
+        } else {
+            return true;
+        }
     }
 }

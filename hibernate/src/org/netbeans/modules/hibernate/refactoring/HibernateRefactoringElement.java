@@ -38,8 +38,10 @@
  */
 package org.netbeans.modules.hibernate.refactoring;
 
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -47,22 +49,39 @@ import org.openide.util.NbBundle;
  * 
  * @author Dongmei Cao
  */
-public class HibernateRenameRefactoringElement extends HibernateRefactoringElement {
+public class HibernateRefactoringElement extends SimpleRefactoringElementImplementation {
 
-    private String newName;
+    private FileObject mappingFileObject;
+    private PositionBounds position;
+    protected String origName;
 
-    public HibernateRenameRefactoringElement(FileObject fo, String oldName, String newName, PositionBounds position) {
-        super(fo, oldName, position);
-        this.newName = newName;
+    public HibernateRefactoringElement(FileObject fo, String oldName, PositionBounds position) {
+        this.mappingFileObject = fo;
+        this.origName = oldName;
+        this.position = position;
     }
 
-    @Override
     public String getText() {
-        return NbBundle.getMessage(HibernateRenameRefactoringElement.class, "CHANGE", origName, newName);
+        return NbBundle.getMessage(HibernateRefactoringElement.class, "FOUND", origName);
     }
 
-    @Override
+    public String getDisplayText() {
+        return getText();
+    }
+
     public void performChange() {
-    // Do nothing here. The changes are performed in RenameTransaction
+    // Do nothing here.
+    }
+
+    public Lookup getLookup() {
+        return Lookup.EMPTY;
+    }
+
+    public FileObject getParentFile() {
+        return mappingFileObject;
+    }
+
+    public PositionBounds getPosition() {
+        return position;
     }
 }
