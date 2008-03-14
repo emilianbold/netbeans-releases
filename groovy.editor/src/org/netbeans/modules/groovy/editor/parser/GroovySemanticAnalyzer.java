@@ -66,7 +66,8 @@ import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.openide.util.Exceptions;
 
 /**
- *
+ * @todo use visitor instead of annotate()
+ * 
  * @author MArtin Adamek
  */
 public class GroovySemanticAnalyzer implements SemanticAnalyzer {

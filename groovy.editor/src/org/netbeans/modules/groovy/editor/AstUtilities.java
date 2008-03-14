@@ -256,6 +256,18 @@ public class AstUtilities {
             if (start < 0) {
                 start = 0;
             }
+            // In case of variable in GString: "Hello, ${name}", node coordinates 
+            // are suggesting '{' (it means begin and end colum info is wrong).
+            // Pick up what we really want from this.
+            try {
+                if (node.getLineNumber() == node.getLastLineNumber() &&
+                        (node.getLastColumnNumber() - node.getColumnNumber() == 1) &&
+                        "{".equals(doc.getText(start, 1))) {
+                    start++;
+                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             VariableExpression variableExpression = (VariableExpression) node;
             return new OffsetRange(start, start + variableExpression.getName().length());
         } else if (node instanceof Parameter) {

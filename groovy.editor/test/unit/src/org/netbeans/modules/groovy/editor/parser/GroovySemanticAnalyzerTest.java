@@ -70,15 +70,14 @@ public class GroovySemanticAnalyzerTest extends GroovyTestBase {
         Logger.getLogger(org.netbeans.modules.groovy.editor.AstUtilities.class.getName()).setLevel(Level.FINEST);
     }
     
-        // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
-    }
+    // uncomment this to have logging
+//    protected Level logLevel() {
+//        // enabling logging
+//        return Level.INFO;
+//        // we are only interested in a single logger, so we set its level in setUp(),
+//        // as returning Level.FINEST here would log from all loggers
+//    }
 
-    
     private void parseFile(FileObject file) throws IOException {
         CompilationInfo info = getInfo(file);
         GroovySemanticAnalyzer analyzer = new GroovySemanticAnalyzer();
