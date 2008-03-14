@@ -44,7 +44,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComboBox;
@@ -54,6 +59,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.NbPreferences;
 
 public final class Util {
@@ -163,15 +169,39 @@ public final class Util {
         return host + ":" + port; // NOI18N
     }
 
+    /**
+     * Returns an {@link Iterable} which will uniquely traverse all valid
+     * elements on the <em>PATH</em> environment variables. That means,
+     * duplicates and elements which are not valid, existing directories are
+     * skipped.
+     * 
+     * @return an {@link Iterable} which will traverse all valid elements on the
+     * <em>PATH</em> environment variables.
+     */
+    public static Iterable<String> dirsOnPath() {
+        String rawPath = System.getenv("PATH"); // NOI18N
+        if (rawPath == null) {
+            rawPath = System.getenv("Path"); // NOI18N
+        }
+        if (rawPath == null) {
+            return Collections.emptyList();
+        }
+        Set<String> candidates = new LinkedHashSet<String>(Arrays.asList(rawPath.split(File.pathSeparator)));
+        for (Iterator<String> it = candidates.iterator(); it.hasNext();) {
+            String dir = it.next();
+            if (!new File(dir).isDirectory()) { // remove non-existing directories (#124562)
+                LOGGER.fine(dir + " found in the PATH environment variable. But is not a valid directory. Ignoring...");
+                it.remove();
+            }
+        }
+        return NbCollections.iterable(candidates.iterator());
+    }
+
     public static String findOnPath(final String toFind) {
-        String rubyLib = System.getenv("PATH"); // NOI18N
-        if (rubyLib != null) {
-            String[] paths = rubyLib.split("[:;]"); // NOI18N
-            for (String path : paths) {
-                String result = path + File.separator + toFind;
-                if (new File(result).isFile()) {
-                    return result;
-                }
+        for (String path : Util.dirsOnPath()) {
+            String result = path + File.separator + toFind;
+            if (new File(result).isFile()) {
+                return result;
             }
         }
         return null;
