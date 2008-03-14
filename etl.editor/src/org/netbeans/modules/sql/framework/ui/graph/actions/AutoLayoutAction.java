@@ -50,7 +50,6 @@ import javax.swing.KeyStroke;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 
 /**
@@ -60,23 +59,23 @@ import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 public class AutoLayoutAction extends GraphAction {
 
     private static final URL autoLayoutImgUrl = AutoLayoutAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/layout_edm.png");
-    private static transient final Logger mLogger = LogUtil.getLogger(AutoLayoutAction.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(AutoLayoutAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public AutoLayoutAction() {
         //action name
-        String nbBundle = mLoc.t("PRSR001: AutoLayout");
-        this.putValue(Action.NAME, Localizer.parse(nbBundle));
+        String nbBundle = mLoc.t("BUND311: AutoLayout");
+        this.putValue(Action.NAME, nbBundle.substring(15));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(autoLayoutImgUrl));
 
         //action tooltip
-        String nbBundle1 = mLoc.t("PRSR001: AutoLayout All Graph Objects (Cntl-L)");
-        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle1));
+        String nbBundle1 = mLoc.t("BUND312: AutoLayout All Graph Objects (Shift-L)");
+        this.putValue(Action.SHORT_DESCRIPTION, nbBundle1.substring(15));
 
-        // Acceleratot Cntl-L
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('L', InputEvent.CTRL_MASK ));
+        // Acceleratot Shift-L
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('L', InputEvent.SHIFT_DOWN_MASK));
 
     }
 

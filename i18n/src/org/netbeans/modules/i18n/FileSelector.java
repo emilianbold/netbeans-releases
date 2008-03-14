@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -114,7 +114,13 @@ public class FileSelector extends JPanel implements PropertyChangeListener, Expl
 
         if (template != null) {
             newButton = new JButton();
-            Mnemonics.setLocalizedText(newButton, NbBundle.getMessage(FileSelector.class, "CTL_CreateNewButton")); // NOI18N
+            Mnemonics.setLocalizedText(
+                    newButton,
+                    getLocMessage("CTL_CreateNewButton"));              //NOI18N
+            newButton.getAccessibleContext().setAccessibleName(
+                    getLocMessage("ACSN_CreateNewBundle"));             //NOI18N
+            newButton.getAccessibleContext().setAccessibleDescription(
+                    getLocMessage("ACSD_CreateNewBundle"));             //NOI18N
             newButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ev) {
                     if (selectedFolder == null)
@@ -155,7 +161,11 @@ public class FileSelector extends JPanel implements PropertyChangeListener, Expl
             }
         });
         okButton.setEnabled(false);
-        cancelButton = new JButton(NbBundle.getMessage(FileSelector.class, "CTL_CancelButton")); // NOI18N
+        cancelButton = new JButton(getLocMessage("CTL_CancelButton")); // NOI18N
+        cancelButton.getAccessibleContext().setAccessibleName(
+                getLocMessage("ACSN_CancelSelection"));                 //NOI18N
+        cancelButton.getAccessibleContext().setAccessibleDescription(
+                getLocMessage("ACSD_CancelSelection"));                 //NOI18N
 
         BeanTreeView treeView = new BeanTreeView ();
         treeView.setPopupAllowed(false);
@@ -165,9 +175,20 @@ public class FileSelector extends JPanel implements PropertyChangeListener, Expl
         treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FileSelector.class, "ACSD_FileSelectorTreeView")); // NOI18N
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FileSelector.class, "ACSD_FileSelectorPanel")); // NOI18N
 
+        JLabel treeViewLabel = new JLabel();
+        Mnemonics.setLocalizedText(
+                treeViewLabel,
+                getLocMessage("LBL_ExistingBundles"));                  //NOI18N
+        treeViewLabel.setLabelFor(treeView.getViewport());
+
         // label and text field with mnemonic
         JLabel label = new JLabel();
-        Mnemonics.setLocalizedText(label, NbBundle.getMessage(FileSelector.class, "LBL_FileName")); // NOI18N
+        Mnemonics.setLocalizedText(label,
+                getLocMessage("LBL_FileName"));                         //NOI18N
+        label.getAccessibleContext().setAccessibleName(
+                getLocMessage("ACSN_FileName"));                        //NOI18N
+        label.getAccessibleContext().setAccessibleDescription(
+                getLocMessage("ACSD_FileName"));                        //NOI18N
         fileNameTextField = new JTextField();
         fileNameTextField.getDocument().addDocumentListener(new DocumentListener() { // NOI18N
             public void changedUpdate(DocumentEvent e) {
@@ -187,15 +208,21 @@ public class FileSelector extends JPanel implements PropertyChangeListener, Expl
         layout.setAutocreateContainerGaps(true);
 
         layout.setHorizontalGroup(layout.createParallelGroup()
+            .add(treeViewLabel)
             .add(treeView, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(label)
                 .add(fileNameTextField)));
         layout.setVerticalGroup(layout.createSequentialGroup()
+            .add(treeViewLabel)
             .add(treeView, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(layout.createParallelGroup(GroupLayout.BASELINE)
                 .add(label)
                 .add(fileNameTextField)));
+    }
+
+    private static String getLocMessage(String bundleKey) {
+        return NbBundle.getMessage(FileSelector.class, bundleKey);
     }
 
     /**

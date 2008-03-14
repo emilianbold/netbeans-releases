@@ -46,13 +46,15 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
+import org.netbeans.spi.java.queries.support.SourceForBinaryQueryImplementation2Base;
 
 /**
  * Finds sources corresponding to binaries.
  * Assumes an instance of SourceForBinaryQueryImplementation is in project's lookup.
  * @author Jesse Glick, Tomas Zezula
  */
-public class ProjectSourceForBinaryQuery implements SourceForBinaryQueryImplementation {
+public class ProjectSourceForBinaryQuery extends SourceForBinaryQueryImplementation2Base {
     
     /** Default constructor for lookup. */
     public ProjectSourceForBinaryQuery() {}
@@ -63,6 +65,26 @@ public class ProjectSourceForBinaryQuery implements SourceForBinaryQueryImplemen
             SourceForBinaryQueryImplementation sfbqi = project.getLookup().lookup(SourceForBinaryQueryImplementation.class);
             if (sfbqi != null) {
                 return sfbqi.findSourceRoots(binaryRoot);
+            }
+        }
+        return null;
+    }
+
+    
+    public Result findSourceRoots2(URL binaryRoot) {
+        Project project = FileOwnerQuery.getOwner(URI.create(binaryRoot.toString()));
+        if (project != null) {
+            SourceForBinaryQueryImplementation sfbqi = project.getLookup().lookup(SourceForBinaryQueryImplementation.class);
+            if (sfbqi != null) {
+                if (sfbqi instanceof SourceForBinaryQueryImplementation2) {
+                    return ((SourceForBinaryQueryImplementation2)sfbqi).findSourceRoots2(binaryRoot);
+                }
+                else {
+                    final SourceForBinaryQuery.Result result = sfbqi.findSourceRoots(binaryRoot);
+                    if (result != null) {
+                        return asResult (result);
+                    }
+                }
             }
         }
         return null;
