@@ -118,10 +118,11 @@ public class Xsd2Java {
         }
         
         FileObject jaxbBaseDir = getOrCreateJaxbFolder();
-        File jaxbBasePath = FileUtil.normalizeFile(FileUtil.toFile(jaxbBaseDir));
-        File xsdFilePath = FileUtil.normalizeFile(FileUtil.toFile(xsdFile));
         FileObject userBuildFile = SaasServicesModel.getWebServiceHome()
                 .getParent().getParent().getFileObject("build.properties");
+        File jaxbBasePath = FileUtil.normalizeFile(FileUtil.toFile(jaxbBaseDir));
+        File xsdFilePath = FileUtil.normalizeFile(FileUtil.toFile(xsdFile));
+        File userBuildPath = FileUtil.normalizeFile(FileUtil.toFile(userBuildFile));
         
         Properties p = new Properties();
         p.setProperty(PROP_XSD_FILE, xsdFilePath.getPath());
@@ -129,7 +130,7 @@ public class Xsd2Java {
         p.setProperty(PROP_JAXB_BASE, jaxbBasePath.getPath());
         p.setProperty(PROP_JAXB_JAR, jaxbJarPath);
         p.setProperty(PROP_JAXB_SRC_JAR, jaxbSourceJarPath);
-        p.setProperty(PROP_USER_BUILD_PROPERTIES, userBuildFile.getPath());
+        p.setProperty(PROP_USER_BUILD_PROPERTIES, userBuildPath.getPath());
         
         return createJaxBJar(p);
     }

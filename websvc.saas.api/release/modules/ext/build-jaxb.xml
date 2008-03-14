@@ -71,9 +71,7 @@ made subject to such option by the copyright holder.
     <target name="-run-xjc" depends="-init-user, -init-xjc">
         <xjc schema="${xsd.file}"
             package="${packageName}"
-            xendorsed="true"
             destdir="${jaxb.base}/src">
-            <jvmarg value="-Djava.endorsed.dirs=${jaxws.endorsed.dir}"/>
         </xjc>
         
         <delete dir="${jaxb.base}/build"/>
