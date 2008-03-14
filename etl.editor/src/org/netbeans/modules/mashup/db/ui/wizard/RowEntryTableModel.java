@@ -54,7 +54,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * TableModel implementation that manages instances of classes which implement the
@@ -66,7 +66,7 @@ import org.netbeans.modules.etl.logger.LogUtil;
  */
 public class RowEntryTableModel implements TableModel {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(RowEntryTableModel.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(RowEntryTableModel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /**
@@ -440,10 +440,10 @@ public class RowEntryTableModel implements TableModel {
                 ((RowEntry) rowData).setValue(columnIndex, aValue);
                 success = true;
             } catch (Exception e) {
-                mLogger.errorNoloc(mLoc.t("PRSR081: Error while setting value for row {0}, col{1}", rowIndex, columnIndex), e);
+                mLogger.errorNoloc(mLoc.t("EDIT081: Error while setting value for row {0}, col{1}", rowIndex, columnIndex), e);
                 success = false;
             }
-            mLogger.infoNoloc(mLoc.t("PRSR082: After setValue at row{0}, col{1}:  value ={2}; rowData ={3}", rowIndex, columnIndex, aValue, rowData));
+            mLogger.infoNoloc(mLoc.t("EDIT082: After setValue at row{0}, col{1}:  value ={2}; rowData ={3}", rowIndex, columnIndex, aValue, rowData));
         }
 
         return success;
