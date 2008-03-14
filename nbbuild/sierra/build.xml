@@ -236,8 +236,8 @@
             <buildpath location="${home}/bpel.model/build.xml"/>
             <buildpath location="${home}/bpel.editors.api/build.xml"/>
             <buildpath location="${home}/bpel.debugger.api/build.xml"/>
-            <buildpath location="${home}/bpel.project/build.xml"/>
             <buildpath location="${home}/bpel.core/build.xml"/>
+            <buildpath location="${home}/bpel.project/build.xml"/>
             <buildpath location="${home}/bpel.debugger.bdi/build.xml"/>
             <buildpath location="${home}/bpel.debugger/build.xml"/>
             <buildpath location="${home}/bpel.debugger.ui/build.xml"/>
