@@ -38,60 +38,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.timers;
 
-package org.netbeans.core.windows.actions;
+import java.awt.Component;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
+import org.openide.explorer.view.NodeRenderer;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 
-import java.awt.EventQueue;
-import org.netbeans.core.windows.view.ui.toolbars.ToolbarConfiguration;
-import org.openide.awt.Mnemonics;
-import org.openide.awt.ToolbarPool;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.util.actions.Presenter;
-
-import javax.swing.*;
-
-
-/** Action that lists toolbars of current toolbar config in a submenu, the
- * same like a popup menu on toolbars area.
+/** Renderer for various NetBeans objects.
  *
- * @author Dafe Simonek
+ * @author Jaroslav Tulach
  */
-public class ToolbarsListAction extends AbstractAction
-                                implements Presenter.Menu {
-    
-    public ToolbarsListAction() {
-        putValue(NAME,NbBundle.getMessage(ToolbarsListAction.class, "CTL_ToolbarsListAction"));
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-    
-    /** Perform the action. Tries the performer and then scans the ActionMap
-     * of selected topcomponent.
-     */
-    public void actionPerformed(java.awt.event.ActionEvent ev) {
-        // no operation
-    }
-    
-    public JMenuItem getMenuPresenter() {
-        String label = NbBundle.getMessage(ToolbarsListAction.class, "CTL_ToolbarsListAction");
-        final JMenu menu = new JMenu(label);
-        Mnemonics.setLocalizedText(menu, label);
-        final ToolbarConfiguration curConf = 
-            ToolbarConfiguration.findConfiguration(ToolbarPool.getDefault().getConfiguration());
-        if (curConf == null) {
-            return null;
-        }
-        if (EventQueue.isDispatchThread()) {
-            return curConf.getToolbarsMenu(menu);
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    curConf.getToolbarsMenu(menu);
-                }
-            });
-            return menu;
-        }
+final class ObjectListRenderer extends DefaultListCellRenderer {
+
+    private NodeRenderer r;
+
+    ObjectListRenderer() {
+        super();
+        r = new NodeRenderer();
     }
 
+    @Override
+    public Component getListCellRendererComponent(JList list, Object wr, int index, boolean isSelected, boolean cellHasFocus) {
+        Object value = ((WeakReference) wr).get();
+        if (value instanceof FileObject) {
+            try {
+                FileObject fo = (FileObject) value;
+                value = DataObject.find(fo);
+            } catch (IOException e) {
+                FileObject fo = (FileObject) value;
+                value = "FO: " + fo;
+            }
+        }
+        
+        if (value instanceof DataObject) {
+            value = ((DataObject)value).getNodeDelegate();
+        }
+        
+        if (value instanceof Node) {
+            Node node = (Node)value;
+            return r.getListCellRendererComponent(list, node, index, isSelected, cellHasFocus);
+        }
+
+        return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+    }
 }
-
