@@ -504,7 +504,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
                     String quotedPath = s.substring(0, s.indexOf(StringUtils.SPACE));
                     String[] numbers = s.substring(s.indexOf(StringUtils.SPACE) + 1).
                             trim().split("[ |\t]+");
-                    if (numbers.length < 6 || numbers.length > 8) {
+                    if (numbers.length < 6) {
                         LogManager.log("...cannot parse the quota numbers [" + numbers.length + "]");
                         throw new IOException();
                     }
