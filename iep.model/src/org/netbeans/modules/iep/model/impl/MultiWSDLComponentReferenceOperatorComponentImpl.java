@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,35 +31,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package gui;
+package org.netbeans.modules.iep.model.impl;
 
-
-import org.netbeans.junit.NbTestSuite;
-import gui.actions.*;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.MultiWSDLComponentReference;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.w3c.dom.Element;
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author  mmirilovic@netbeans.org, rashid@netbeans.org, mrkam@netbeans.org
+ * @author radval
  */
-public class EPMeasureActions1  {
+public class MultiWSDLComponentReferenceOperatorComponentImpl extends OperatorComponentImpl implements MultiWSDLComponentReference {
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-            
-// Disabled testGCProjects check to shorten run time        
-//        suite.addTest(new WatchProjects("testInitGCProjects"));
-        suite.addTest(new CreateBPELmodule("measureTime", "Create BPEL module"));
-        suite.addTest(new CreateCompositeApplication("measureTime", "Create Composite Application"));
-//        suite.addTest(new AddNewWSDLDocument("measureTime", "Add New WSDL Document"));
-//        suite.addTest(new AddNewXMLSchema("measureTime", "Add New XML Schema"));
-//        suite.addTest(new AddNewXMLDocument("measureTime", "Add New XML Document"));
-//        suite.addTest(new AddNewBpelProcess("measureTime", "Add New Bpel Process")); 
-// Disabled testGCProjects check to shorten run time        
-//        suite.addTest(new WatchProjects("testGCProjects"));
-        return suite;
+    public MultiWSDLComponentReferenceOperatorComponentImpl(IEPModel model,  Element e) {
+        super(model, e);
+    }
+        
+    public MultiWSDLComponentReferenceOperatorComponentImpl(IEPModel model) {
+        super(model);
     }
     
+    public NamedComponentReference<PortType> getPortType() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setPortType(NamedComponentReference<PortType> value) {
+        setAttribute(PORT_TYPE, ATTR_PORTTYPE, value);
+    }
+
+    public NamedComponentReference<Operation> getOperation() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setOperation(NamedComponentReference<Operation> value) {
+        setAttribute(OPERATION, ATTR_PORTTYPE, value);
+    }
+
+    public NamedComponentReference<Message> getMessage() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setMessage(NamedComponentReference<Message> value) {
+        setAttribute(MESSAGE, ATTR_PORTTYPE, value);
+    }
+
 }

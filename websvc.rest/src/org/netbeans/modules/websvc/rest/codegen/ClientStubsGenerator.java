@@ -73,6 +73,7 @@ import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.*;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -595,7 +596,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
                     out.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            Exceptions.printStackTrace(e);
                 }
             }
 
@@ -670,6 +671,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                                     try {
                                         os.close();
                                     } catch(IOException ex) {
+                                        Exceptions.printStackTrace(ex);
                                     }
                                 }
                             }
@@ -682,6 +684,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 try {
                     zip.close();
                 } catch(IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }

@@ -98,9 +98,10 @@ public class OpenWebFiles extends WebPerformanceTestCase {
     }
     
     public void testOpeningWebXmlFile(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
         //repaintManager().setOnlyEditor(false);
-        repaintManager().resetRegionFilters();
+//        repaintManager().resetRegionFilters();
+//        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         setXMLEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         fileFolder = "WEB-INF"; 
@@ -112,9 +113,9 @@ public class OpenWebFiles extends WebPerformanceTestCase {
     }
 
     public void testOpeningContextXmlFile(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
         //repaintManager().setOnlyEditor(true);
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+//        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         setXMLEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         fileFolder = "META-INF"; 
@@ -124,9 +125,9 @@ public class OpenWebFiles extends WebPerformanceTestCase {
     }    
 
     public void testOpeningJSPFile(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
         //repaintManager().setOnlyEditor(true);
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+//        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         setXMLEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         fileFolder = "";
@@ -136,9 +137,9 @@ public class OpenWebFiles extends WebPerformanceTestCase {
     }
 
     public void testOpeningBigJSPFile(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
        //repaintManager().setOnlyEditor(true);
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+//        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         setXMLEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         fileFolder = "";
@@ -148,9 +149,9 @@ public class OpenWebFiles extends WebPerformanceTestCase {
     }
     
     public void testOpeningHTMLFile(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
         //repaintManager().setOnlyEditor(true);
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+//        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         setXMLEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         fileFolder = "";
@@ -160,9 +161,9 @@ public class OpenWebFiles extends WebPerformanceTestCase {
     }
 
     public void testOpeningTagFile(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
         //repaintManager().setOnlyEditor(true);
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+//        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         setXMLEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         fileFolder = "WEB-INF|tags"; 
@@ -172,9 +173,9 @@ public class OpenWebFiles extends WebPerformanceTestCase {
     }
 
     public void testOpeningTldFile(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
        //repaintManager().setOnlyEditor(true);
-       repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+//       repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         setXMLEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         fileFolder = "WEB-INF"; 
@@ -211,6 +212,7 @@ public class OpenWebFiles extends WebPerformanceTestCase {
         }
         log("------------------------- after popup invocation ------------");
         try {
+            repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
             popup.pushMenu(this.menuItem);
         }
         catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
