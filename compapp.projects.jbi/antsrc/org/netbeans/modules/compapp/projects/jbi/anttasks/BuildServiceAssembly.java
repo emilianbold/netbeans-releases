@@ -467,7 +467,7 @@ public class BuildServiceAssembly extends Task {
         NodeList systemNodes = doc.getElementsByTagName("system");
         for (int i = 0; i < systemNodes.getLength(); i++) {
             Element systemNode = (Element) systemNodes.item(i);
-            String uri = systemNode.getAttribute("uri");
+            String uri = systemNode.getAttribute("uri").replace("\\", "/");
             
             if (uri != null) {
                 URI realUri = new URI(uri);
@@ -476,7 +476,7 @@ public class BuildServiceAssembly extends Task {
                     uri = "../" + sesuName + "/META-INF/" + uri;
                     
                     // correct the URI (get rid of "META-INF/../")
-                    uri = uri.replace("/META-INF/..", "");
+                    uri = uri.replace("/META-INF/..", "").replace("\\", "/");
                     
                     systemNode.setAttribute("uri", uri);
                 }
