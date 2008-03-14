@@ -52,31 +52,45 @@ import org.netbeans.api.visual.widget.Scene;
 
 
 import java.beans.PropertyChangeListener;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
+import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaPopupMenuAction;
+import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaQoSEditAction;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
+import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
+import org.netbeans.modules.compapp.casaeditor.nodes.ConnectionNode;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.ClearConfigExtensionsAction;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
  * 
  * @author jqian
  */
-public class CasaConnectionWidget extends ConnectionWidget {
+public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimizable {
 
     private static final Stroke STROKE_DEFAULT = new BasicStroke(1.0f);
     private static final Stroke STROKE_HOVERED = new BasicStroke(1.5f);
     private static final Stroke STROKE_SELECTED = new BasicStroke(2.0f);
     private static final Image IMAGE_QOS_BADGE_ICON = Utilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/QoS.png");    // NOI18N
+
+    private static final Image IMAGE_UNCONFIGURED_QOS_BADGE_ICON = Utilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/nodes/resources/UnConfiguredQoS.png");    // NOI18N
+
     private DependenciesRegistry mDependenciesRegistry = new DependenciesRegistry(this);
     private Widget mQoSWidget;
-
+    private Widget mUnConfiguredQoSWidget;
+    
     public CasaConnectionWidget(Scene scene) {
         super(scene);
         setSourceAnchorShape(AnchorShape.NONE);
@@ -84,7 +98,50 @@ public class CasaConnectionWidget extends ConnectionWidget {
         setPaintControlPoints(true);
         setState(ObjectState.createNormal());
 
+        initQoSWidgets();
+    }
+    
+    public void updateQoSWidgets() {
+
+        ObjectScene objectScene = (ObjectScene) getScene();
+        final CasaConnection myCasaConnection =
+                (CasaConnection) objectScene.findObject(CasaConnectionWidget.this);
+        updateQoSWidgets(myCasaConnection);
+    }
+
+    private void initQoSWidgets() {
+
         mQoSWidget = new ImageWidget(getScene(), IMAGE_QOS_BADGE_ICON);
+        mUnConfiguredQoSWidget =
+                new ImageWidget(getScene(), IMAGE_UNCONFIGURED_QOS_BADGE_ICON);
+
+        CasaQoSEditAction qosEditAction =
+                new CasaQoSEditAction((CasaModelGraphScene) getScene());
+
+        mQoSWidget.getActions().addAction(qosEditAction);
+        mUnConfiguredQoSWidget.getActions().addAction(qosEditAction);
+
+        CasaPopupMenuAction popupMenuAction = new CasaPopupMenuAction(new PopupMenuProvider() {
+
+            public JPopupMenu getPopupMenu(Widget widget, Point localLocation) {
+                JPopupMenu popupMenu = new JPopupMenu();
+
+                CasaModelGraphScene scene = (CasaModelGraphScene) getScene();
+                CasaConnection casaConnection =
+                        (CasaConnection) scene.findObject(CasaConnectionWidget.this);
+                CasaNode node = scene.getNodeFactory().createNodeFor(casaConnection);
+
+                ClearConfigExtensionsAction clearQoSAction = new ClearConfigExtensionsAction(
+                        NbBundle.getMessage(ConnectionNode.class,
+                        "CLEAR_QOS_CONFIG"), // NOI18N
+                        node);
+                popupMenu.add(clearQoSAction.getPopupPresenter());
+                return popupMenu;
+            }
+        });
+        mQoSWidget.getActions().addAction(popupMenuAction);
+        //mUnConfiguredQoSWidget.getActions().addAction(popupMenuAction); 
+
 
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -95,9 +152,10 @@ public class CasaConnectionWidget extends ConnectionWidget {
                 //System.out.println("obj for connection is " + myCasaConnection);
                 if (myCasaConnection == null) {
                     return; // FIXME
+
                 }
 
-                updateQoSWidget(myCasaConnection);
+                updateQoSWidgets(myCasaConnection);
 
                 myCasaConnection.getModel().addPropertyChangeListener(new PropertyChangeListener() {
 
@@ -122,7 +180,7 @@ public class CasaConnectionWidget extends ConnectionWidget {
                         }
 
                         if (casaConnection == myCasaConnection) {
-                            updateQoSWidget(myCasaConnection);
+                            updateQoSWidgets(myCasaConnection);
                         }
                     }
                 });
@@ -188,7 +246,15 @@ public class CasaConnectionWidget extends ConnectionWidget {
                 int x = p.x + sourceWidget.getBounds().width / 2 + 10;
                 int y = p.y - 6;
 
+                /*CasaConnectionWidget.this.getControlPoints().size();
+                CasaNodeWidgetEngine sesuWidget = 
+                (CasaNodeWidgetEngine) sourceWidget.getParentWidget().getParentWidget();
+                if (sesuWidget.isMinimized()) {
+                
+                }*/
+
                 mQoSWidget.setPreferredLocation(new Point(x, y));
+                mUnConfiguredQoSWidget.setPreferredLocation(new Point(x, y));
             }
         };
 
@@ -204,23 +270,81 @@ public class CasaConnectionWidget extends ConnectionWidget {
         if (mQoSWidget != null) {
             mQoSWidget.removeFromParent();
         }
+        if (mQoSWidget != null) {
+            mUnConfiguredQoSWidget.removeFromParent();
+        }
     }
 
-    private void updateQoSWidget(CasaConnection casaConnection) {
-        if (isConnectionConfiguredWithQoS(casaConnection)) {
-            if (!getChildren().contains(mQoSWidget)) {
-                addChild(mQoSWidget);
-                getScene().validate();
+    private void updateQoSWidgets(CasaConnection casaConnection) {
+        boolean needValidation = false;
+
+        if (CasaFactory.getCasaCustomizer().getBOOLEAN_CLASSIC_QOS_STYLE()) {           
+            if (isConnectionConfiguredWithQoS(casaConnection)) {
+                if (getChildren().contains(mUnConfiguredQoSWidget)) {
+                    removeChild(mUnConfiguredQoSWidget);
+                    needValidation = true;
+                }
+                if (!getChildren().contains(mQoSWidget)) {
+                    addChild(mQoSWidget);
+                    needValidation = true;
+                }
+            } else {
+                if (getChildren().contains(mQoSWidget)) {
+                    removeChild(mQoSWidget);
+                    needValidation = true;
+                }
+                if (!getChildren().contains(mUnConfiguredQoSWidget)) {
+                    addChild(mUnConfiguredQoSWidget);
+                    needValidation = true;
+                }
             }
         } else {
+            if (getChildren().contains(mUnConfiguredQoSWidget)) {
+                removeChild(mUnConfiguredQoSWidget);
+                needValidation = true;
+            }
             if (getChildren().contains(mQoSWidget)) {
                 removeChild(mQoSWidget);
-                getScene().validate();
+                needValidation = true;
             }
+        } 
+
+        if (needValidation) {
+            getScene().validate();
         }
     }
 
     private boolean isConnectionConfiguredWithQoS(CasaConnection casaConnection) {
         return casaConnection.getChildren().size() != 0;
+    }
+
+    public void setMinimized(boolean isMinimized) {
+        if (isMinimized) {
+            if (getChildren().contains(mUnConfiguredQoSWidget)) {
+                removeChild(mUnConfiguredQoSWidget);
+            }
+            if (getChildren().contains(mQoSWidget)) {
+                removeChild(mQoSWidget);
+            }
+        } else {
+            ObjectScene objectScene = (ObjectScene) getScene();
+            CasaConnection casaConnection =
+                    (CasaConnection) objectScene.findObject(CasaConnectionWidget.this);
+            if (isConnectionConfiguredWithQoS(casaConnection)) {
+                if (!getChildren().contains(mQoSWidget)) {
+                    addChild(mQoSWidget);
+                }
+            } else {
+                if (!getChildren().contains(mUnConfiguredQoSWidget)) {
+                    addChild(mUnConfiguredQoSWidget);
+                }
+            }
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    getScene().validate();
+                }
+            });
+        }
     }
 }

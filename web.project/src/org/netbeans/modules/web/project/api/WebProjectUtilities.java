@@ -500,7 +500,7 @@ public class WebProjectUtilities {
                     } else {
                         for (int i=0; i<testFolders.length; i++) {
                             if (!testFolders[i].exists()) {
-                                testFolders[i].mkdirs();
+                                FileUtil.createFolder(testFolders[i]);
                             }
 
                             String name = testFolders[i].getName();
@@ -699,6 +699,8 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.LAUNCH_URL_RELATIVE, ""); // NOI18N
         ep.setProperty(WebProjectProperties.DISPLAY_BROWSER, "true"); // NOI18N
 
+        ep.setProperty(WebProjectProperties.DEBUG_SERVER, "true"); // NOI18N
+        
         ep.setProperty(WebProjectProperties.J2EE_SERVER_TYPE, serverType);
         
         ep.setProperty(WebProjectProperties.JAVAC_DEBUG, "true"); // NOI18N

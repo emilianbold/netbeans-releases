@@ -375,10 +375,13 @@ public final class TabbedSlideAdapter implements Tabbed {
         Action[] result = new Action[defaultActions.length + (isMDI ? 2 : 0)];
         System.arraycopy(defaultActions, 0, result, 0, defaultActions.length);
         if (isMDI) {
-            result[defaultActions.length-1] = 
-                new ActionUtils.AutoHideWindowAction(slideBar, tabIndex, true);
             result[defaultActions.length] = 
-                new ActionUtils.ToggleWindowTransparencyAction(slideBar, tabIndex, slideBar.isSlidedTabTransparent());
+                new ActionUtils.AutoHideWindowAction(slideBar, tabIndex, true);
+                result[defaultActions.length+1] = 
+                    new ActionUtils.ToggleWindowTransparencyAction(slideBar, 
+                        tabIndex, 
+                        slideBar.isSlidedTabTransparent() 
+                            && tabIndex == slideBar.getSelectionModel().getSelectedIndex());
         }
         return result;
     }

@@ -28,6 +28,7 @@
 package org.netbeans.modules.gsf;
 
 import javax.swing.Action;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
 /** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
@@ -42,13 +43,11 @@ public class NextCamelCasePosition extends AbstractCamelCasePosition {
         super(name, originalAction);
     }
 
-    @Override
-    protected int newOffset(JTextComponent textComponent) {
+    protected int newOffset(JTextComponent textComponent) throws BadLocationException {
         return CamelCaseOperations.nextCamelCasePosition(textComponent);
     }
 
-    @Override
-    protected void moveToNewOffset(JTextComponent textComponent, int offset) {
+    protected void moveToNewOffset(JTextComponent textComponent, int offset) throws BadLocationException {
         textComponent.setCaretPosition(offset);
     }
 }

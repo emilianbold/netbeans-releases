@@ -42,12 +42,18 @@
 package org.netbeans.modules.spring.beans.wizards;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 
-public class SpringXMLConfigNamespacesPanel implements WizardDescriptor.Panel {
+public class SpringXMLConfigNamespacesPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
     public static final String INCLUDED_NAMESPACES = "includedNamespaces"; // NOI18N
+    public static final String ADD_SPRING_TO_CLASSPATH = "addSpringToClassPath"; // NOI18N
+    public static final String SPRING_LIBRARY = "springLibrary"; // NOI18N
 
     private SpringXMLConfigNamespacesVisual component;
 
@@ -59,7 +65,7 @@ public class SpringXMLConfigNamespacesPanel implements WizardDescriptor.Panel {
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(SpringXMLConfigNamespacesPanel.class);
+        return null;
     }
 
     public boolean isValid() {
@@ -72,11 +78,16 @@ public class SpringXMLConfigNamespacesPanel implements WizardDescriptor.Panel {
     public final void removeChangeListener(ChangeListener l) {
     }
 
-    public void readSettings(Object settings) {
+    public void readSettings(WizardDescriptor settings) {
+        Project project = Templates.getProject(settings);
+        FileObject targetFolder = Templates.getTargetFolder(settings);
+        FileObject artifact = NewSpringXMLConfigWizardIterator.getSourceGroupArtifact(project, targetFolder);
+        getComponent().setClassPath(ClassPath.getClassPath(artifact, ClassPath.COMPILE));
     }
 
-    public void storeSettings(Object settings) {
-        WizardDescriptor wd = (WizardDescriptor) settings;
-        wd.putProperty(INCLUDED_NAMESPACES, getComponent().getIncludedNamespaces());
+    public void storeSettings(WizardDescriptor settings) {
+        settings.putProperty(INCLUDED_NAMESPACES, getComponent().getIncludedNamespaces());
+        settings.putProperty(ADD_SPRING_TO_CLASSPATH, getComponent().getAddSpringToClassPath());
+        settings.putProperty(SPRING_LIBRARY, getComponent().getSpringLibrary());
     }
 }

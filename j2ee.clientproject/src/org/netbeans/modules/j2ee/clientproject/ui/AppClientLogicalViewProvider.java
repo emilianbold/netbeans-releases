@@ -854,8 +854,8 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                     resolver,
                     ProjectProperties.RUN_CLASSPATH,
                     new String[]{ProjectProperties.BUILD_CLASSES_DIR},
-                    "platform.active", // NOI18N
-                    AppClientProjectProperties.JAVA_PLATFORM, // NOI18N
+                    AppClientProjectProperties.JAVA_PLATFORM,
+                    AppClientProjectProperties.J2EE_SERVER_INSTANCE,
                     AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH,
                     new Action[]{
                         LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
@@ -865,7 +865,8 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                         new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE) // NOI18N
                     },
                     ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES,
-                    cs)
+                    cs,
+                    new String[]{ProjectProperties.JAVAC_CLASSPATH})
                 };
             } else if (key == TEST_LIBRARIES) {
                 result = new Node[]{
@@ -892,9 +893,8 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                         new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
                     },
                     null,
-                    cs)
-                
-            ,
+                    cs,
+                    null)
                 };
             }
             // else if (key instanceof SourceGroup) {

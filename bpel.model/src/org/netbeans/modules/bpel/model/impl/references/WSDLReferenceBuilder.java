@@ -16,17 +16,12 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/**
- *
- */
 package org.netbeans.modules.bpel.model.impl.references;
 
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.bpel.model.api.BpelContainer;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
@@ -44,10 +39,11 @@ import org.netbeans.modules.bpel.model.api.ToPartContainer;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
+import org.netbeans.modules.bpel.model.api.references.MappedReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
-import org.netbeans.modules.bpel.model.api.support.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.bpel.model.impl.BpelEntityImpl;
-import org.netbeans.modules.bpel.model.impl.Utils;
+import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.bpel.model.xam.spi.ExternalModelRetriever;
 import org.netbeans.modules.xml.wsdl.model.Fault;
 import org.netbeans.modules.xml.wsdl.model.Input;
@@ -69,10 +65,8 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 
-
 /**
  * @author ads
- *
  */
 public final class WSDLReferenceBuilder {
     
@@ -169,8 +163,6 @@ public final class WSDLReferenceBuilder {
                 context.getNamespaceURI( prefix ) );
         return models;
     }
-    
-    
     
     static Collection<WSDLModel> getWSDLModels( BpelModel model , 
             String namespace )
@@ -846,5 +838,4 @@ class OperationResolver extends AbstractNamedReferenceFactory {
         collection = portType.getOperations();
         return collection;
     }
-    
 }

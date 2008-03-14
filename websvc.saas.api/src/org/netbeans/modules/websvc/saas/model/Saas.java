@@ -39,11 +39,16 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import org.netbeans.modules.websvc.saas.model.jaxb.Group;
+import java.util.Properties;
+import java.net.URL;
+import org.netbeans.modules.websvc.saas.model.jaxb.Artifact;
+import org.netbeans.modules.websvc.saas.model.jaxb.Artifacts;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices.Header;
@@ -51,6 +56,7 @@ import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.CodeGen;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -75,6 +81,8 @@ public class Saas {
     public static final String NS_WADL = "http://research.sun.com/wadl/2006/10";
     //private static final String CUSTOM = "custom";
     
+    public static final String ARTIFACT_TYPE_LIBRARY = "library";
+    
     protected final SaasServices delegate;
     private SaasGroup parentGroup;
     private SaasGroup topGroup;
@@ -82,8 +90,8 @@ public class Saas {
     
     private State state = State.UNINITIALIZED;
     protected FileObject saasFolder; // userdir folder to store customization and consumer artifacts
-    private FileObject moduleJar; // NBM this saas was loaded from
     private boolean userDefined = true;
+    private List<FileObject> libraryJars; // library artifacts to add to consumer project classpath
 
     public Saas(SaasGroup parentGroup, SaasServices services) {
         this.delegate = services;
@@ -123,11 +131,13 @@ public class Saas {
     }
     
     public SaasGroup getTopLevelGroup() {
+        if (topGroup == null && parentGroup != null) {
+            topGroup = parentGroup;
+            while (topGroup.getParent() != SaasServicesModel.getInstance().getRootGroup()) {
+                topGroup = topGroup.getParent();
+            }
+        }
         return topGroup;
-    }
-    
-    public void setTopLevelGroup(SaasGroup topGroup) {
-        this.topGroup = topGroup;
     }
     
     protected void computePathFromRoot() {
@@ -147,9 +157,16 @@ public class Saas {
         return saasFile;
     }
     
-    void save() {
+    public void save() {
         try {
             SaasUtil.saveSaas(this, getSaasFile());
+            java.io.OutputStream out = null;
+            try {
+                out = getPropFile().getOutputStream();
+                getProperties().store(out, null);
+            } finally {
+                if (out != null) { out.close(); }
+            }
         } catch(Exception e) {
             Exceptions.printStackTrace(e);
         }
@@ -195,14 +212,6 @@ public class Saas {
         }
     }
     
-    public FileObject getModuleJar() {
-        return moduleJar;
-    }
-
-    protected void setModuleJar(FileObject moduleJar) {
-        this.moduleJar = moduleJar;
-    }
-        
     public SaasMetadata getSaasMetadata() {
         return delegate.getSaasMetadata();
     }
@@ -266,19 +275,87 @@ public class Saas {
         setState(State.INITIALIZING);
         saasMethods = null;
     }
+
+    private Properties props;
+    public static final String SAAS_PROPERTIES = "saas.properties";
     
-    /**
-     * Get the URL class loader for the module defining this SaaS.
-     * @return URLClassLoader instance; or null if this SaaS does not come from an NBM
-     */
-    /*protected URLClassLoader getModuleLoader() {
-        if (loader == null) {
+    private Properties getProperties() throws IOException {
+        if (props == null) {
+            props = new Properties();
+            InputStream in = getPropFile().getInputStream();
             try {
-                loader = new URLClassLoader(new URL[] { new URL(moduleJar.getPath()) });
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
+                props.load(in);
+            } finally {
+                in.close();
             }
         }
-        return loader;
-    }*/
+        return props;
+    }
+
+
+    public static final String PROP_LOCAL_SERVICE_FILE = "local.service.file";
+    
+    private FileObject propFile;
+    private FileObject getPropFile() throws IOException {
+        if (propFile == null) {
+            propFile = getSaasFolder().getFileObject(SAAS_PROPERTIES);
+            if (propFile == null) {
+                propFile = getSaasFolder().createData(SAAS_PROPERTIES);
+            }
+        }
+        return propFile;
+    }
+    
+    protected String getProperty(String name) {
+        try {
+            return getProperties().getProperty(name);
+        } catch(IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+        return null;
+    }
+    
+    protected void setProperty(String name, String value) {
+        try {
+            getProperties().setProperty(name, value);
+        } catch(IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+    }
+    
+    /**
+     * @eturns absolute paths to all library jars, generated or 
+     * provided by vendor module.  Generated
+     */
+    public List<FileObject> getLibraryJars() {
+        if (getState() != State.READY) {
+            throw new IllegalStateException("Should only access libraries when in ready state");
+        }
+        
+        if (libraryJars == null) {
+            libraryJars = new ArrayList<FileObject>();
+            if (getSaasMetadata() != null && getSaasMetadata().getCodeGen() != null) {
+                for (Artifacts arts : getSaasMetadata().getCodeGen().getArtifacts()) {
+                    for (Artifact art : arts.getArtifact()) {
+                        if (ARTIFACT_TYPE_LIBRARY.equals(art.getType())) {
+                            try {
+                                URL url = new URL(art.getUrl());
+                                libraryJars.add(FileUtil.toFileObject(new File(url.toURI())));
+                            } catch(Exception ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return Collections.unmodifiableList(libraryJars);
+    }
+    
+    public String getPackageName() {
+        if (getSaasMetadata() != null && getSaasMetadata().getCodeGen() != null) {
+            return getSaasMetadata().getCodeGen().getPackageName();
+        }
+        return SaasUtil.deriveDefaultPackageName(this);
+    }
 }

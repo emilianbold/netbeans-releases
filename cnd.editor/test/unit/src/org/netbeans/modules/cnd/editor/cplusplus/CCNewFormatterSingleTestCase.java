@@ -68,40 +68,121 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 	}
     }
 
-    private void setDefaultsOptions(){
-        EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
-    }
-    public void testReformatArrayInitializerWithNewline2() {
+//    public void testIdentMultyConstructor5() {
+//        setDefaultsOptions();
+//        setLoadDocumentText(
+//            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" +
+//            "        ulong query_length, bool using_trans,\n" +
+//            "        bool suppress_use)\n" +
+//            ":Log_event(thd_arg,\n" +
+//            "        ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
+//            "        & (suppress_use          ? LOG_EVENT_SUPPRESS_USE_F    : 0)),\n" +
+//            "                using_trans),\n" +
+//            "                data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
+//            "                db(thd_arg->db), q_len((uint32) query_length),\n" +
+//            "                error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
+//            "                    ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
+//            "                        0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
+//            "                                thread_id(thd_arg->thread_id),\n" +
+//            "                                /* save the original thread id; we already know the server id */\n" +
+//            "                                slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
+//            "                                flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
+//            "                                sql_mode(thd_arg->variables.sql_mode),\n" +
+//            "                                auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
+//            "                                auto_increment_offset(thd_arg->variables.auto_increment_offset)\n" +
+//            "                        {\n" +
+//            "                            time_t end_time;\n" +
+//            "                        }\n"
+//            );
+//        reformat();
+//        assertDocumentText("Incorrect identing multyline constructor",
+//            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" +
+//            "        ulong query_length, bool using_trans,\n" +
+//            "        bool suppress_use)\n" +
+//            ": Log_event(thd_arg,\n" +
+//            "        ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
+//            "        & (suppress_use ? LOG_EVENT_SUPPRESS_USE_F : 0)),\n" +
+//            "        using_trans),\n" +
+//            "        data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
+//            "        db(thd_arg->db), q_len((uint32) query_length),\n" +
+//            "        error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
+//            "            ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
+//            "                 0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
+//            "        thread_id(thd_arg->thread_id),\n" +
+//            "        /* save the original thread id; we already know the server id */\n" +
+//            "        slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
+//            "        flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
+//            "        sql_mode(thd_arg->variables.sql_mode),\n" +
+//            "        auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
+//            "        auto_increment_offset(thd_arg->variables.auto_increment_offset) {\n" +
+//            "    time_t end_time;\n" +
+//            "}\n"
+//        );
+//    }
+
+//    public void testCaseIndentAftePreprocessor() {
+//        setDefaultsOptions();
+//        setLoadDocumentText(
+//            " C_MODE_START\n" +
+//            "#    include <decimal.h>\n" +
+//            "        C_MODE_END\n" +
+//            "\n" +
+//            "#    define DECIMAL_LONGLONG_DIGITS 22\n" +
+//            "\n" +
+//            "\n" +
+//            "        /* maximum length of buffer in our big digits (uint32) */\n" +
+//            "#    define DECIMAL_BUFF_LENGTH 9\n" +
+//            "        /*\n" +
+//            "        point on the border of our big digits))\n" +
+//            "*/\n" +
+//            "#    define DECIMAL_MAX_PRECISION ((DECIMAL_BUFF_LENGTH * 9) - 8*2)\n" +
+//            "\n"
+//            );
+//        reformat();
+//        assertDocumentText("Incorrect identing case after preprocessor",
+//            "C_MODE_START\n" +
+//            "#include <decimal.h>\n" +
+//            "C_MODE_END\n" +
+//            "\n" +
+//            "#define DECIMAL_LONGLONG_DIGITS 22\n" +
+//            "\n" +
+//            "\n" +
+//            "/* maximum length of buffer in our big digits (uint32) */\n" +
+//            "#define DECIMAL_BUFF_LENGTH 9\n" +
+//            "/*\n" +
+//            "point on the border of our big digits))\n" +
+//            "*/\n" +
+//            "#define DECIMAL_MAX_PRECISION ((DECIMAL_BUFF_LENGTH * 9) - 8*2)\n" +
+//            "\n"
+//        );
+//    }
+//
+
+
+//What about []:
+//        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
+//
+
+    
+    public void testOperatorEQformatting() {
         setDefaultsOptions();
         setLoadDocumentText(
-                "	void testError(CuTest *tc){\n" +
-                "		IndexReader* reader = NULL;\n" +
-                "		try{\n" +
-                "			RAMDirectory dir;\n" +
-                "		}catch(CLuceneError&){\n" +
-                "			_CLDELETE(reader);\n" +
-                "		}catch(...){\n" +
-                "			CuAssert(tc,_T(\"Error did not catch properly\"),false);\n" +
-                "		}\n" +
-                "	}\n" +
-                "\n");
-        reformat();
-        assertDocumentText("Incorrect tabbed catch reformatting",
-                "void testError(CuTest *tc)\n" +
+                "class real_c_float\n" +
                 "{\n" +
-                "    IndexReader* reader = NULL;\n" +
-                "    try {\n" +
-                "        RAMDirectory dir;\n" +
+                "  const real_c_float & operator=(long l){ from_long(l);\n" +
+                "    return *this;\n" +
+                "  }\n" +
+                "};\n");
+        reformat();
+        assertDocumentText("Incorrect operator = formatting",
+                "class real_c_float\n" +
+                "{\n" +
+                "\n" +
+                "    const real_c_float & operator=(long l)\n" +
+                "    {\n" +
+                "        from_long(l);\n" +
+                "        return *this;\n" +
                 "    }\n" +
-                "    catch(CLuceneError&){\n" +
-                "        _CLDELETE(reader);\n" +
-                "    }\n" +
-                "    catch(...){\n" +
-                "        CuAssert(tc,_T(\"Error did not catch properly\"),false);\n" +
-                "    }\n" +
-                "}\n" +
-                "\n");
+                "};\n");
     }
-                
- 
 }

@@ -94,9 +94,9 @@ public class TestUtilities {
      * @param folder the parent folder for the cache folder, 
      * typically the working dir.
      */ 
-    public static void setCacheFolder(File folder){
+    public static void setCacheFolder(File folder) throws Exception {
         File cacheFolder = new File(folder,"cache");
-        cacheFolder.mkdirs();
+        FileUtil.createFolder(cacheFolder);
         IndexUtil.setCacheFolder(cacheFolder);
     }
     

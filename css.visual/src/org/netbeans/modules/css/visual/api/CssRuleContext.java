@@ -23,58 +23,71 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.css.visual.api;
 
+import java.io.File;
 import javax.swing.text.Document;
-import org.netbeans.modules.css2.editor.model.CssModel;
-import org.netbeans.modules.css2.editor.model.CssRule;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.css.editor.model.CssModel;
+import org.netbeans.modules.css.editor.model.CssRule;
 
 /**
+ * A context class representig a parsed css source. 
+ * An instance is supposed to be set to StyleBuilderPanel.
  *
- * @author marek
+ * @author marek.fukala@sun.com
+ * 
  */
-public class CssRuleContext {
+public final class CssRuleContext {
 
-    private FileObject source;
-        private Document doc;
-        private CssRule selectedRule;
-        private CssModel model;
-        
-        public CssRuleContext(CssRule selectedRule, CssModel model, Document doc, FileObject source) {
-            this.selectedRule = selectedRule;
-            this.model = model;
-            this.source = source;
-            this.doc = doc;
-        }
-        
-        public CssRule selectedRule() {
-            return selectedRule;
-        }
-        
-        public CssModel model() {
-            return model;
-        }
-        
-        public FileObject fileObject() {
-            return source;
-        }
-        
-        public Document document() {
-            return doc;
-        }
-        
-        public boolean equals(Object o) {
-            if(!(o instanceof CssRuleContext)) {
-                return false;
-            } else {
-                CssRuleContext c = (CssRuleContext)o;
-                return c.document() == document() 
-                        && c.fileObject() == fileObject()
-                        && c.selectedRule() == selectedRule();
-            }
+    private File file;
+    private Document doc;
+    private CssRule selectedRule;
+    private CssModel model;
+
+    /**
+     * Creates an instance of CssRuleContext. 
+     * 
+     * @param selectedRule a selected rule from the list of rules held by the css model
+     * @param model an instance of CssModel
+     * @param doc source editor document for the model
+     * @param file 
+     */
+    public CssRuleContext(CssRule selectedRule, CssModel model, Document doc, File basePath) {
+        this.selectedRule = selectedRule;
+        this.model = model;
+        this.file = basePath;
+        this.doc = doc;
+    }
+
+    /** @param  a selected css rule from the list of rules held by the css model. */
+    public CssRule selectedRule() {
+        return selectedRule;
+    }
+
+    /** @param return an instance of CssModel which is this CssRuleContext based on. */
+    public CssModel model() {
+        return model;
+    }
+
+    /** @return a File representing a base of the css file. Used to resolve relative links.*/
+    public File base() {
+        return file;
+    }
+
+    /** @return source editor document for the css model or null if the model was created from a reader.*/
+    public Document document() {
+        return doc;
+    }
+
+    public boolean equals(Object o) {
+        if (!(o instanceof CssRuleContext)) {
+            return false;
+        } else {
+            CssRuleContext c = (CssRuleContext) o;
+            return c.document() == document() && c.base() == base() && c.selectedRule() == selectedRule();
         }
     }
+}
 

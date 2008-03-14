@@ -42,10 +42,15 @@
 package org.netbeans.modules.web.core.syntax;
 
 
+import java.util.List;
 import java.util.Map;
-import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
+import org.netbeans.modules.editor.gsfret.InstantRenameAction;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.SelectCodeElementAction;
+import org.netbeans.modules.gsf.api.BracketCompletion;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
@@ -61,9 +66,9 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.ext.java.JavaSyntax;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.spi.jsp.lexer.JspParseData;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -100,20 +105,32 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     private static final long serialVersionUID = 8933974837050367142L;
     
     public static final boolean debug = false;
+    private final String mimeType;
+
+    // called from the XML layer
+    private static JSPKit createKitForJsp() {
+        return new JSPKit(JSP_MIME_TYPE);
+    }
+    
+    // called from the XML layer
+    private static JSPKit createKitForTag() {
+        return new JSPKit(TAG_MIME_TYPE);
+    }
     
     /** Default constructor */
-    public JSPKit() {
+    public JSPKit(String mimeType) {
         super();
+        this.mimeType = mimeType;
     }
     
     @Override
     public String getContentType() {
-        return JSP_MIME_TYPE;
+        return mimeType;
     }
     
     @Override
     public Object clone() {
-        return new JSPKit();
+        return new JSPKit(mimeType);
     }
     
     /** Creates a new instance of the syntax coloring parser */
@@ -149,13 +166,17 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         Action[] javaActions = new Action[] {
             new JspInsertBreakAction(),
             new JspDefaultKeyTypedAction(),
-            new JspDeleteCharAction(deletePrevCharAction, false)
+            new JspDeleteCharAction(deletePrevCharAction, false),
+            new JspDeleteCharAction(deleteNextCharAction, true),
+            new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
+            new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
+            new InstantRenameAction(),
         };
         
         return TextAction.augmentList(super.createActions(), javaActions);
     }
     
-     private static class ColoringListener implements PropertyChangeListener {
+    private static class ColoringListener implements PropertyChangeListener {
         private Document doc;
         private Object parsedDataRef; // NOPMD: hold a reference to the data we are listening on
         // so it does not get garbage collected
@@ -301,11 +322,38 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         return new org.openide.util.HelpCtx(JSPKit.class);
     }
     
+    static BracketCompletion getBracketCompletion(Document doc, int offset) {
+        BaseDocument baseDoc = (BaseDocument) doc;
+        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
+        for (Language l : list) {
+            if (l.getBracketCompletion() != null) {
+                return l.getBracketCompletion();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns true if bracket completion is enabled in options.
+     */
+    private static boolean completionSettingEnabled() {
+        //return ((Boolean)Settings.getValue(JSPKit.class, JavaSettingsNames.PAIR_CHARACTERS_COMPLETION)).booleanValue();
+        return true;
+    }
+    
     public static class JspInsertBreakAction extends InsertBreakAction {
 
         public void actionPerformed(ActionEvent e, JTextComponent target) {
             if (target != null) {
-                TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
+                TokenSequence javaTokenSequence;
+                AbstractDocument adoc = (AbstractDocument)target.getDocument();
+                adoc.readLock();
+                try {
+                    javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
+                } finally {
+                    adoc.readUnlock();
+                }
 
                 if (javaTokenSequence != null) {
                     JavaKit jkit = (JavaKit) getKit(JavaKit.class);
@@ -320,13 +368,65 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             }
             super.actionPerformed(e, target);
         }
+        
+        @Override
+        protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
+            if (completionSettingEnabled()) {
+                BracketCompletion bracketCompletion = getBracketCompletion(doc, caret.getDot());
+
+                if (bracketCompletion != null) {
+                    try {
+                        int newOffset = bracketCompletion.beforeBreak(doc, caret.getDot(), target);
+
+                        if (newOffset >= 0) {
+                            return new Integer(newOffset);
+                        }
+                    } catch (BadLocationException ble) {
+                        Exceptions.printStackTrace(ble);
+                    }
+                }
+            }
+
+            // return Boolean.TRUE;
+            return null;
+        }
+
+        @Override
+        protected void afterBreak(JTextComponent target, BaseDocument doc, Caret caret,
+                Object cookie) {
+            if (completionSettingEnabled()) {
+                if (cookie != null) {
+                    if (cookie instanceof Integer) {
+                        // integer
+                        int dotPos = ((Integer) cookie).intValue();
+                        if (dotPos != -1) {
+                            caret.setDot(dotPos);
+                        } else {
+                            int nowDotPos = caret.getDot();
+                            caret.setDot(nowDotPos + 1);
+                        }
+                    }
+                }
+            }
+        }
+        
     }
 
     public static class JspDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
 
+        private JTextComponent currentTarget;
+        
         public void actionPerformed(ActionEvent e, JTextComponent target) {
+            currentTarget = target;
             if (target != null) {
-                TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
+                TokenSequence javaTokenSequence;
+                AbstractDocument adoc = (AbstractDocument)target.getDocument();
+                adoc.readLock();
+                try {
+                    javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
+                } finally {
+                    adoc.readUnlock();
+                }
 
                 if (javaTokenSequence != null) {
                     JavaKit jkit = (JavaKit) getKit(JavaKit.class);
@@ -340,14 +440,82 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                 }
             }
             super.actionPerformed(e, target);
+            currentTarget = null;
         }
         
         @Override
         protected void insertString(BaseDocument doc, int dotPos,
                 Caret caret, String str,
                 boolean overwrite) throws BadLocationException {
+            
+            if (completionSettingEnabled()) {
+                BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+
+                if (bracketCompletion != null) {
+                    // TODO - check if we're in a comment etc. and if so, do nothing
+                    boolean handled =
+                            bracketCompletion.beforeCharInserted(doc, dotPos, currentTarget,
+                            str.charAt(0));
+
+                    if (!handled) {
+                        super.insertString(doc, dotPos, caret, str, overwrite);
+                        handled = bracketCompletion.afterCharInserted(doc, dotPos, currentTarget,
+                                str.charAt(0));
+                    }
+
+                    return;
+                }
+            }
+            
             super.insertString(doc, dotPos, caret, str, overwrite);
             handleTagClosingSymbol(doc, dotPos, str.charAt(0));
+        }
+        
+        @Override
+        protected void replaceSelection(JTextComponent target, int dotPos, Caret caret,
+                String str, boolean overwrite) throws BadLocationException {
+            char insertedChar = str.charAt(0);
+            Document document = target.getDocument();
+
+            if (document instanceof BaseDocument) {
+                BaseDocument doc = (BaseDocument) document;
+
+                if (completionSettingEnabled()) {
+                    BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+
+                    if (bracketCompletion != null) {
+                        try {
+                            int caretPosition = caret.getDot();
+
+                            boolean handled =
+                                    bracketCompletion.beforeCharInserted(doc, caretPosition,
+                                    target, insertedChar);
+
+                            int p0 = Math.min(caret.getDot(), caret.getMark());
+                            int p1 = Math.max(caret.getDot(), caret.getMark());
+
+                            if (p0 != p1) {
+                                doc.remove(p0, p1 - p0);
+                            }
+
+                            if (!handled) {
+                                if ((str != null) && (str.length() > 0)) {
+                                    doc.insertString(p0, str, null);
+                                }
+
+                                bracketCompletion.afterCharInserted(doc, caret.getDot() - 1,
+                                        target, insertedChar);
+                            }
+                        } catch (BadLocationException e) {
+                            e.printStackTrace();
+                        }
+
+                        return;
+                    }
+                }
+            }
+
+            super.replaceSelection(target, dotPos, caret, str, overwrite);
         }
 
         private void handleTagClosingSymbol(BaseDocument doc, int dotPos, char lastChar) throws BadLocationException {
@@ -389,11 +557,14 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     
     public static class JspDeleteCharAction extends ExtDeleteCharAction {
         
+        JTextComponent currentTarget;
+        
         public JspDeleteCharAction(String nm, boolean nextChar) {
             super(nm, nextChar);
         }
         
         public void actionPerformed(ActionEvent e, JTextComponent target) {
+            currentTarget = target;
             if (target!=null){
                 TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(
                         TokenHierarchy.get(target.getDocument()),
@@ -412,7 +583,22 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                 }
             }
             super.actionPerformed(e, target);
+            currentTarget = null;
         }
+        
+         protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException {
+              if (completionSettingEnabled()) {
+                BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+
+                if (bracketCompletion != null) {
+                    boolean success = bracketCompletion.charBackspaced(doc, dotPos, currentTarget, ch);
+                    return;
+                }
+            }
+            
+            super.charBackspaced(doc, dotPos, caret, ch);
+        }
+        
     }
     
 }

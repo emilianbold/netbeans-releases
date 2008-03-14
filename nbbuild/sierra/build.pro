@@ -39,7 +39,7 @@
   Version 2 license, then the option applies only if the new code is
   made subject to such option by the copyright holder.
 -->
-<project name="properties" default="none" basedir=".">
+<project name="sierra-properties" default="none" basedir=".">
     <property environment="env"/>
 
     <!-- dev -->
@@ -80,7 +80,6 @@
         ${test.cvs.path}/clusterSupport/ClusterBPEL
         ${test.cvs.path}/compensation/IterativeScopes
         ${test.cvs.path}/compensation/NestedScope
-        ${test.cvs.path}/correlation/correlationBPEL
         ${test.cvs.path}/correlation/correlationBPEL2
         ${test.cvs.path}/correlation/outoforder
         ${test.cvs.path}/correlation/CorrelationOnePropBPEL
@@ -98,7 +97,6 @@
         ${test.cvs.path}/eventHandlers/onAlarm
         ${test.cvs.path}/eventHandlers/onEvent
         ${test.cvs.path}/exit/ExitBpel
-        ${test.cvs.path}/faulthandling/FaultHandlingBpel
         ${test.cvs.path}/flow/FlowBpel
         ${test.cvs.path}/foreach-bpel20/ForEachBpel
         ${test.cvs.path}/if/ifBpel

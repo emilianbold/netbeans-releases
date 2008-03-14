@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.model.impl;
 
-import java.lang.Object;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,6 +27,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import javax.xml.namespace.QName;
 
+import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
@@ -36,15 +36,16 @@ import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReferenceable;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
-import org.netbeans.modules.bpel.model.api.support.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.bpel.model.api.support.UniqueId;
+import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
+import org.netbeans.modules.bpel.model.ext.ExtBpelAttribute;
 import org.netbeans.modules.bpel.model.impl.events.BuildEvent;
 import org.netbeans.modules.bpel.model.impl.events.CopyEvent;
 import org.netbeans.modules.bpel.model.impl.events.CutEvent;
 import org.netbeans.modules.bpel.model.impl.references.BpelReferenceBuilder;
-import org.netbeans.modules.bpel.model.impl.references.SchemaReferenceBuilder;
 import org.netbeans.modules.bpel.model.impl.references.WSDLReference;
 import org.netbeans.modules.bpel.model.impl.references.WSDLReferenceBuilder;
 import org.netbeans.modules.bpel.model.xam.BpelAttributes;
@@ -113,6 +114,7 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
         return myModel;
     }
 
+    @Override
     public BpelModelImpl getModel() {
         return (BpelModelImpl) super.getModel();
     }
@@ -151,6 +153,7 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
         }
     }
 
+    @Override
     public final BpelContainerImpl getParent() {
         return (BpelContainerImpl) super.getParent();
     }
@@ -292,6 +295,12 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
     public String getAttribute(Attribute attr) {
         readLock();
         try {
+            // Extension attribute requires namespace context to 
+            // provide a prefix. Therefore the implied owner has to be assigned.
+            if (attr instanceof ExtBpelAttribute) {
+                ((ExtBpelAttribute)attr).setOwner(this);
+            }
+            
             /*
              * TODO : there is bug in XAM/XDM.
              * XML entities such as &gt;, &apos;, &quot; is not recognized.
@@ -534,11 +543,11 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
     //##    Next methods are utility methods for model framework. 
     //##
     //#############################################################
-    protected final void readLock() {
+    public final void readLock() {
         getBpelModel().readLock();
     }
 
-    protected final void readUnlock() {
+    public final void readUnlock() {
         getBpelModel().readUnlock();
     }
 
@@ -557,7 +566,7 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
         }
     }
 
-    protected final void checkDeleted() {
+    public final void checkDeleted() {
         if (getBpelModel().isInEventsFiring()) {
             // allow to access to tree structure while handling event. 
             return;
@@ -609,7 +618,7 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
         myCookies = cookieSet;
     }
 
-    final boolean isInTree() {
+    public final boolean isInTree() {
         /*Element element = getPeer();
         assert element instanceof org.netbeans.modules.xml.xdm.nodes.Element;
         
@@ -700,7 +709,6 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
         getBpelModel().postInnerEventNotify(event);
     }
 
-    //#############################################################################
     private static Element createNewComponent(BpelModelImpl model,
             String tagName) {
         return model.getDocument().createElementNS(

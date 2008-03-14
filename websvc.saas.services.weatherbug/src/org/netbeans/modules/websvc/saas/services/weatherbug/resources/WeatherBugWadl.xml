@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+	     xmlns="http://research.sun.com/wadl/2006/10">
+    <grammars/>
+    <resources base="http://api.wxbug.net">	
+        <resource path="getLiveWeatherRSS.aspx">
+            <method name="GET" id="liveWeatherRSS">
+                <doc xml:lang="en">
+                    The LiveWeatherRSS method retrieves weather for a specific U.S. zipcode in either
+                    U.S. customary units  (Farenheit, miles, inches)) or metric units. 
+                    For API documentation, see http://api.wxbug.net/help.html 
+                </doc>
+                <request>
+                    <param name="ACode" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
+                            WeatherBug Application Code, a key you can get by registering 
+                            at http://apireg.weatherbug.com/.
+                        </doc>
+                    </param>
+                    <param name="zipcode" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">5-digit ZipCode, U.S. cities only</doc>
+                    </param>
+                    <param name="unittype" type="xsd:string" style="query" required="false">
+                        <doc xml:lang="en">
+                            Optional. Default value is 1. Values are 0 
+                            (US customary units - miles, degrees Farenheit, etc.) or 
+                            1 (metric units - kms, degrees Celsius, etc).
+                        </doc>
+                    </param>
+                </request>
+                <response>                    
+                </response>
+            </method>
+        </resource>
+    </resources>  
+</application>

@@ -582,7 +582,7 @@ made subject to such option by the copyright holder.
                 <xsl:attribute name="description">Clean build products.</xsl:attribute>
             </target>
             
-            <target name="jbi-clean-config" depends="init,clear-casa,jbi-clean-build" description="Clean application configuration."/>
+            <target name="jbi-clean-config" depends="init,clear-casa,jbi-clean-build" description="Clean service assembly."/>
             <target name="clear-casa">
                 <delete file="${{source.root}}/conf/${{jbi.service-assembly.id}}.casa"/>
                 <delete file="${{src.dir}}/${{jbi.service-assembly.id}}.wsdl"/>
@@ -800,7 +800,9 @@ made subject to such option by the copyright holder.
                         <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/</xsl:text>${<xsl:value-of select="$subproj"/>.su.name}</xsl:attribute>
                         <patternset>
                             <include name="**/*.wsdl"/>
+                            <include name="**/*.WSDL"/>
                             <include name="**/*.xsd"/>
+                            <include name="**/*.XSD"/>
                             <include name="META-INF/jbi.xml"/>
                             <include name="META-INF/catalog.xml"/>
                         </patternset>
@@ -812,30 +814,7 @@ made subject to such option by the copyright holder.
                     <move> 
                         <xsl:attribute name="file">${<xsl:value-of select="$subproj"/><xsl:text>.su.dir}/META-INF/jbi.xml</xsl:text></xsl:attribute>
                         <xsl:attribute name="todir">${<xsl:value-of select="$subproj"/><xsl:text>.su.dir}</xsl:text></xsl:attribute>
-                    </move>
-                    <!--<delete> 
-                        <xsl:attribute name="dir">${<xsl:value-of select="$subproj"/><xsl:text>.su.dir}/META-INF</xsl:text></xsl:attribute>
-                    </delete>
-                    <unzip>
-                        <xsl:attribute name="src">${project.<xsl:value-of select="$subproj"/>}<xsl:text>/build/${se.jar.name}</xsl:text></xsl:attribute>
-                        <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/META-INF/catalogData/<xsl:value-of select="$subproj"/></xsl:text></xsl:attribute>
-                        <patternset>
-                            <include name="META-INF/catalog.xml"/>
-                        </patternset>
-                    </unzip>-->
-                    
-          <!--
-        <unzip src="${project.TestForNBRepro}/build/${se.jar.name}" dest="${src.dir}/../jbiServiceUnits/META-INF/catalogData/TestForNBRepro">
-            <patternset>
-                <include name="META-INF/catalog.xml"/>
-            </patternset>
-        </unzip>
-        
-        <move todir="${src.dir}/../jbiServiceUnits/META-INF/TestForNBRepro">
-            <fileset dir="${TestForNBRepro.su.dir}/META-INF/"/>                
-        </move>
-        -->
-        
+                    </move>        
                     <move>
                         <xsl:attribute name="todir">${src.dir}<xsl:text>/../jbiServiceUnits/META-INF/${</xsl:text><xsl:value-of select="$subproj"/><xsl:text>.su.name}</xsl:text></xsl:attribute>                        
                         <fileset>
@@ -904,13 +883,15 @@ made subject to such option by the copyright holder.
                     <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/</xsl:text>${<xsl:value-of select="$subproj"/>.su.name}</xsl:attribute>
                     <patternset>
                         <include name="**/*.wsdl"/>
+                        <include name="**/*.WSDL"/>
                         <include name="**/*.xsd"/>
+                        <include name="**/*.XSD"/>
                         <include name="META-INF/jbi.xml"/>
                     </patternset>
                 </unzip>  
                 <unzip>
                     <xsl:attribute name="src">${reference.<xsl:value-of select="$subproj"/>.<xsl:value-of select="$subtarget"/>}</xsl:attribute>
-                    <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/META-INF/<xsl:value-of select="$subproj"/></xsl:text></xsl:attribute>
+                    <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/META-INF/</xsl:text><xsl:value-of select="$subproj"/></xsl:attribute>
                     <patternset>
                         <include name="META-INF/catalog.xml"/>
                     </patternset>

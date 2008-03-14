@@ -51,6 +51,17 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testParamWithoutSpace() throws Exception {
+        performTest("main.c", 18, 17, "main.c", 18, 10); // aaa in void foo(char* aaa, char**bbb)
+        performTest("main.c", 18, 28, "main.c", 18, 21); // bbb in void foo(char* aaa, char**bbb)
+    }
+    
+    public void testFileLocalVariable() throws Exception {
+        performTest("main.c", 15, 12, "main.c", 15, 1); // VALUE in const int VALUE = 10;
+        performTest("main.c", 16, 30, "main.c", 15, 1); // VALUE in const int VALUE_2 = 10 + VALUE;
+        performTest("main.c", 16, 12, "main.c", 16, 1); // VALUE_2 in const int VALUE_2 = 10 + VALUE;
+    }
+    
     public void testFuncParamUsage() throws Exception {
         performTest("main.c", 3, 15, "main.c", 2, 9); // aa in 'int kk = aa + bb;'
         performTest("main.c", 3, 20, "main.c", 2, 17); // bb in 'int kk = aa + bb;'
@@ -103,6 +114,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     
     public static class Failed extends HyperlinkBaseTestCase {
 
+        @Override
         protected Class getTestCaseDataClass() {
             return BasicHyperlinkTestCase.class;
         }

@@ -276,6 +276,42 @@ public class CallStackFrameImpl implements CallStackFrame {
         }
     }
     
+    /**
+     * Returns local variable.
+     * @param name The name of the variable
+     * @return local variable
+     */
+    org.netbeans.api.debugger.jpda.LocalVariable getLocalVariable(String name) 
+    throws AbsentInformationException {
+        try {
+            String className = getStackFrame ().location ().declaringType ().name ();
+            com.sun.jdi.LocalVariable lv = getStackFrame ().visibleVariableByName(name);
+            if (lv == null) {
+                return null;
+            }
+            Value v = getStackFrame ().getValue (lv);
+            LocalVariable local = (LocalVariable) debugger.getLocalVariable(lv, v);
+            if (local instanceof Local) {
+                Local localImpl = (Local) local;
+                localImpl.setFrame(this);
+                localImpl.setInnerValue(v);
+                localImpl.setClassName(className);
+            } else {
+                ObjectLocalVariable localImpl = (ObjectLocalVariable) local;
+                localImpl.setFrame(this);
+                localImpl.setInnerValue(v);
+                localImpl.setClassName(className);
+            }
+            return local;
+        } catch (NativeMethodException ex) {
+            throw new AbsentInformationException ("native method");
+        } catch (InvalidStackFrameException ex) {
+            throw new AbsentInformationException ("thread is running");
+        } catch (VMDisconnectedException ex) {
+            return null;
+        }
+    }
+    
     public LocalVariable[] getMethodArguments() {
         StackFrame sf = getStackFrame();
         String url = debugger.getEngineContext().getURL(sf,

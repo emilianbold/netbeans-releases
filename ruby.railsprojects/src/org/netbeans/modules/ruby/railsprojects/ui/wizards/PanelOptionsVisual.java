@@ -60,9 +60,9 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 //    private boolean valid;
     
     public PanelOptionsVisual(PanelConfigureProject panel, int type) {
+        this.panel = panel;
         initComponents();
-        Util.preselectWizardPlatform(platforms);
-
+        
         PlatformComponentFactory.addPlatformChangeListener(platforms, new PlatformComponentFactory.PlatformChangeListener() {
             public void platformChanged() {
                 fireChangeEvent();
@@ -71,7 +71,10 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
             }
         });
 
-        this.panel = panel;
+        Util.preselectWizardPlatform(platforms);
+
+
+
 
         fireChangeEvent();
         switch (type) {
@@ -157,6 +160,8 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         serverLabel = new javax.swing.JLabel();
         serverComboBox = RailsServerManager.getServerComboBox(getPlatform());
 
+        setPreferredSize(new java.awt.Dimension(226, 100));
+
         setAsMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_setAsMainCheckBox")); // NOI18N
 
@@ -174,6 +179,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
             }
         });
 
+        platforms.setMinimumSize(new java.awt.Dimension(27, 19));
         platforms.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 platformsActionPerformed(evt);
@@ -183,6 +189,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         serverLabel.setLabelFor(serverComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(serverLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "PanelOptionsVisual.Server")); // NOI18N
 
+        serverComboBox.setMinimumSize(new java.awt.Dimension(27, 19));
         serverComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 serverComboBoxActionPerformed(evt);
@@ -202,13 +209,14 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
                             .add(serverLabel)
                             .add(rubyPlatformLabel))
                         .add(20, 20, 20)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, serverComboBox, 0, 381, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, platforms, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .add(6, 6, 6)
-                        .add(manageButton))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(serverComboBox, 0, 349, Short.MAX_VALUE)
+                            .add(platforms, 0, 349, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(manageButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                     .add(jrubyUsedLabel))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -217,8 +225,8 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(rubyPlatformLabel)
-                    .add(platforms, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(manageButton))
+                    .add(manageButton)
+                    .add(platforms, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(serverLabel)
@@ -263,7 +271,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         }
     }
     
-    private RubyPlatform getPlatform() {
+    RubyPlatform getPlatform() {
         return PlatformComponentFactory.getPlatform(platforms);
     }
     

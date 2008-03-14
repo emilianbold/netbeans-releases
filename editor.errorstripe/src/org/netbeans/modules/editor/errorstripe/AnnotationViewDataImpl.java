@@ -113,8 +113,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
             document.getAnnotations().addAnnotationsListener(this);
         }
         
-        currentMarks = null;
-        marksMap     = null;
+        clear();
     }
     
     public void unregister() {
@@ -516,7 +515,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         }
     }
 
-    public void clear() {
+    public synchronized void clear() {
         currentMarks = null;
         marksMap = null;
     }

@@ -41,6 +41,8 @@
 package org.netbeans.modules.mercurial.ui.update;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 import java.util.LinkedHashSet;
@@ -49,6 +51,10 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.mercurial.HgProgressSupport;
+import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -63,14 +69,18 @@ public class UpdatePanel extends javax.swing.JPanel {
     private RequestProcessor.Task           refreshViewTask;
     private static final RequestProcessor   rp = new RequestProcessor("MercurialUpdate", 1);  // NOI18N
     private Thread                          refreshViewThread;
-
-    private static final int HG_REVERT_TARGET_LIMIT = 100;
+    private HgLogMessage[] messages;
+    private int fetchRevisionLimit = Mercurial.HG_NUMBER_TO_FETCH_DEFAULT;
+    private boolean bGettingRevisions = false;
+    private File [] roots;
 
     /** Creates new form ReverModificationsPanel */
-     public UpdatePanel(File repo) {
+     public UpdatePanel(File repo, File [] roots) {
         repository = repo;
+        this.roots = roots;
         refreshViewTask = rp.create(new RefreshViewTask());
         initComponents();
+        revisionsComboBox.setMaximumRowCount(Mercurial.HG_MAX_REVISION_COMBO_SIZE);
         refreshViewTask.schedule(0);
     }
 
@@ -105,9 +115,16 @@ public class UpdatePanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         forcedUpdateChxBox = new javax.swing.JCheckBox();
+        changesetPanel1 = new org.netbeans.modules.mercurial.ui.repository.ChangesetPanel();
 
         revisionsLabel.setLabelFor(revisionsComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(revisionsLabel, org.openide.util.NbBundle.getMessage(UpdatePanel.class, "UpdatePanel.revisionsLabel.text")); // NOI18N
+
+        revisionsComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                revisionsComboBoxActionPerformed(evt);
+            }
+        });
 
         jLabel1.setFont(new java.awt.Font("Dialog", 1, 11));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(UpdatePanel.class, "UpdatePanel.infoLabel.text")); // NOI18N
@@ -126,7 +143,7 @@ public class UpdatePanel extends javax.swing.JPanel {
             .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(forcedUpdateChxBox)
-                .addContainerGap(25, Short.MAX_VALUE))
+                .addContainerGap(66, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -142,14 +159,15 @@ public class UpdatePanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(jLabel2)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(36, 36, 36)
+                        .add(30, 30, 30)
                         .add(revisionsLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(revisionsComboBox, 0, 174, Short.MAX_VALUE)))
+                        .add(revisionsComboBox, 0, 221, Short.MAX_VALUE))
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -158,17 +176,56 @@ public class UpdatePanel extends javax.swing.JPanel {
                 .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(4, 4, 4)
                 .add(jLabel2)
-                .add(29, 29, 29)
+                .add(17, 17, 17)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(revisionsLabel)
-                    .add(revisionsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(15, Short.MAX_VALUE))
+                    .add(revisionsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(revisionsLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(changesetPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 152, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
-    
 
+private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revisionsComboBoxActionPerformed
+    int index = revisionsComboBox.getSelectedIndex();
+    if(getMore((String) revisionsComboBox.getSelectedItem())) return;
+    
+    if(messages != null && index >= 0 && index < messages.length ){
+        changesetPanel1.setInfo(messages[index]);
+    }
+}//GEN-LAST:event_revisionsComboBoxActionPerformed
+    
+    private boolean getMore(String revStr) {
+        if (bGettingRevisions) return false;
+        boolean bGetMore = false;
+        int limit = -1;
+
+        if (revStr != null && revStr.equals(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_20_Revisions"))) {
+            bGetMore = true;
+            limit = Mercurial.HG_FETCH_20_REVISIONS;
+        } else if (revStr != null && revStr.equals(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_50_Revisions"))) {
+            bGetMore = true;
+            limit = Mercurial.HG_FETCH_50_REVISIONS;
+        } else if (revStr != null && revStr.equals(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_All_Revisions"))) {
+            bGetMore = true;
+            limit = Mercurial.HG_FETCH_ALL_REVISIONS;
+        }
+        if (bGetMore && !bGettingRevisions) {
+            fetchRevisionLimit = limit;
+            RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
+            HgProgressSupport hgProgressSupport = new HgProgressSupport() {
+                public void perform() {
+                    changesetPanel1.clearInfo();
+                    refreshRevisions();
+                }
+            };
+            hgProgressSupport.start(rp, repository.getAbsolutePath(),
+                    org.openide.util.NbBundle.getMessage(Mercurial.class, "MSG_Fetching_Revisions")); // NOI18N
+        }
+        return bGetMore;
+    }
+    
     /**
      * Must NOT be run from AWT.
      */
@@ -196,21 +253,29 @@ public class UpdatePanel extends javax.swing.JPanel {
     }
 
     private void refreshRevisions() {
-        java.util.List<String> targetRevsList = HgCommand.getRevisions(repository, HG_REVERT_TARGET_LIMIT);
+        bGettingRevisions = true;
+        OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
+        Set<File> setRoots = new HashSet<File>(Arrays.asList(roots));        
+        messages = HgCommand.getLogMessagesNoFileInfo(repository.getAbsolutePath(), setRoots, fetchRevisionLimit, logger);
 
         Set<String>  targetRevsSet = new LinkedHashSet<String>();
 
         int size;
-        if( targetRevsList == null){
+        if( messages == null){
             size = 0;
-            targetRevsSet.add(NbBundle.getMessage(RevertModificationsPanel.class, "MSG_Revision_Default")); // NOI18N
+            targetRevsSet.add(NbBundle.getMessage(Update.class, "MSG_Revision_Default")); // NOI18N
         }else{
-            size = targetRevsList.size();
+            size = messages.length;
             int i = 0 ;
             while(i < size){
-                targetRevsSet.add(targetRevsList.get(i));
+                targetRevsSet.add(messages[i].getRevision() + " (" + messages[i].getCSetShortID() + ")"); // NOI18N
                 i++;
             }
+        }
+        if(targetRevsSet.size() > 0){
+            targetRevsSet.add(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_20_Revisions"));
+            targetRevsSet.add(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_50_Revisions"));
+            targetRevsSet.add(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_All_Revisions"));
         }
         ComboBoxModel targetsModel = new DefaultComboBoxModel(new Vector<String>(targetRevsSet));
         revisionsComboBox.setModel(targetsModel);
@@ -218,6 +283,7 @@ public class UpdatePanel extends javax.swing.JPanel {
         if (targetRevsSet.size() > 0 ) {
             revisionsComboBox.setSelectedIndex(0);
         }
+        bGettingRevisions = false;
     }
 
     private class RefreshViewTask implements Runnable {
@@ -227,6 +293,7 @@ public class UpdatePanel extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private org.netbeans.modules.mercurial.ui.repository.ChangesetPanel changesetPanel1;
     private javax.swing.JCheckBox forcedUpdateChxBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

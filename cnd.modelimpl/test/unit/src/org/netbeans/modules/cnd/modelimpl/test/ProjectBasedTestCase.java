@@ -199,4 +199,10 @@ public abstract class ProjectBasedTestCase extends BaseTestCase {
         return csmFile;
     }
 
+    protected int getOffset(File testSourceFile, int lineIndex, int colIndex) throws Exception {
+        BaseDocument doc = getBaseDocument(testSourceFile);
+        assert doc != null;
+        int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);  
+        return offset;
+    }
 }

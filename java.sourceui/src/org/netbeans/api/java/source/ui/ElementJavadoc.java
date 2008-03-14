@@ -32,27 +32,22 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URL;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import com.sun.javadoc.*;
 import com.sun.javadoc.AnnotationDesc.ElementValuePair;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Locale;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.type.TypeKind;
+import java.util.ArrayList;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -285,22 +280,216 @@ public class ElementJavadoc {
                 sb.append(getPackageHeader(eu, (PackageDoc)doc));
             }
             sb.append("<p>"); //NOI18N
-            if (!useJavadoc && (doc.commentText().length() > 0 || doc.tags().length > 0)) {
-                sb.append(getDeprecatedTag(eu, doc));
-                sb.append(inlineTags(eu, doc, doc.inlineTags()));
-                sb.append("</p><p>"); //NOI18N
-                sb.append(getTags(eu, doc));
-            } else {
-                String jdText = docURL != null ? HTMLJavadocParser.getJavadocText(docURL, false) : null;
-                if (jdText != null)
-                    sb.append(jdText);
-                else
-                    sb.append(NbBundle.getMessage(ElementJavadoc.class, "javadoc_content_not_found")); //NOI18N
+            if (!useJavadoc) {
+                Tag[] inlineTags = doc.inlineTags();
+                if (doc.isMethod()) {
+                    MethodDoc mdoc = (MethodDoc)doc;
+                    List<Tag> inheritedTags = null;
+                    if (inlineTags.length == 0) {
+                        inheritedTags = new ArrayList<Tag>();
+                    } else {
+                        for (Tag tag : inlineTags) {
+                            if (INHERIT_DOC_TAG.equals(tag.kind())) {
+                                if (inheritedTags == null)
+                                    inheritedTags = new ArrayList<Tag>();
+                            }
+                        }
+                    }
+                    Tag[] returnTags = mdoc.tags(RETURN_TAG);
+                    List<Tag> inheritedReturnTags = null;
+                    if (!"void".equals(mdoc.returnType().typeName())) { //NOI18N
+                        if (returnTags.length == 0) {
+                            inheritedReturnTags = new ArrayList<Tag>();
+                        } else {
+                            List<Tag> tags = new ArrayList<Tag>();
+                            for(Tag tag : returnTags) {
+                                for(Tag t : tag.inlineTags()) {
+                                    if (INHERIT_DOC_TAG.equals(t.kind())) {
+                                        if (inheritedReturnTags == null)
+                                            inheritedReturnTags = new ArrayList<Tag>();
+                                    }
+                                    tags.add(t);
+                                }
+                            }
+                            returnTags = tags.toArray(new Tag[tags.size()]);
+                        }
+                    }
+                    Set<Integer> paramPos = new HashSet<Integer>();
+                    Map<Integer, List<Tag>> paramTags = null;
+                    Map<Integer, ParamTag> inheritedParamTags = null;
+                    Map<Integer, List<Tag>> inheritedParamInlineTags = null;
+                    Parameter[] parameters = mdoc.parameters();
+                    if (parameters.length > 0) {
+                        paramTags = new LinkedHashMap<Integer, List<Tag>>();
+                        for (int i = 0; i < parameters.length; i++)
+                            paramPos.add(i);
+                    }
+                    for(ParamTag tag : mdoc.paramTags()) {
+                        Integer pos = paramPos(mdoc, tag);
+                        if (paramPos.remove(pos)) {
+                            List<Tag> tags = new ArrayList<Tag>();
+                            paramTags.put(pos, tags);
+                            for(Tag t : tag.inlineTags()) {
+                                if (INHERIT_DOC_TAG.equals(t.kind())) {
+                                    if (inheritedParamTags == null)
+                                        inheritedParamTags = new LinkedHashMap<Integer,ParamTag>();
+                                    if (inheritedParamInlineTags == null)
+                                        inheritedParamInlineTags = new LinkedHashMap<Integer, List<Tag>>();
+                                    paramPos.add(pos);
+                                } else {
+                                    tags.add(t);
+                                }
+                            }
+                        }
+                    }
+                    if (!paramPos.isEmpty()) {
+                        if (inheritedParamTags == null)
+                            inheritedParamTags = new LinkedHashMap<Integer,ParamTag>();
+                        if (inheritedParamInlineTags == null)
+                            inheritedParamInlineTags = new LinkedHashMap<Integer, List<Tag>>();
+                    }
+                    Set<String> throwsTypes = new HashSet<String>();
+                    List<ThrowsTag> throwsTags = new ArrayList<ThrowsTag>();
+                    Map<String, List<Tag>> throwsInlineTags = new HashMap<String, List<Tag>>();
+                    Map<String, ThrowsTag> inheritedThrowsTags = null;
+                    Map<String, List<Tag>> inheritedThrowsInlineTags = null;
+                    for (Type exc : mdoc.thrownExceptionTypes())
+                        throwsTypes.add(exc.typeName());
+                    for(ThrowsTag tag : mdoc.throwsTags()) {
+                        throwsTypes.remove(tag.exceptionName());
+                        List<Tag> tags = new ArrayList<Tag>();
+                        throwsTags.add(tag);
+                        throwsInlineTags.put(tag.exceptionName(), tags);
+                        for(Tag t : tag.inlineTags()) {
+                            if (INHERIT_DOC_TAG.equals(t.kind())) {
+                                if (inheritedThrowsTags == null)
+                                    inheritedThrowsTags = new LinkedHashMap<String, ThrowsTag>();
+                                if (inheritedThrowsInlineTags == null)
+                                    inheritedThrowsInlineTags = new HashMap<String, List<Tag>>();
+                                throwsTypes.add(tag.exceptionName());
+                            } else {
+                                tags.add(t);
+                            }
+                        }
+                    }
+                    if (!throwsTypes.isEmpty()) {
+                        if (inheritedThrowsTags == null)
+                            inheritedThrowsTags = new LinkedHashMap<String, ThrowsTag>();
+                        if (inheritedThrowsInlineTags == null)
+                            inheritedThrowsInlineTags = new HashMap<String, List<Tag>>();
+                    }
+                    if (inheritedTags != null && inheritedTags.isEmpty() ||
+                            inheritedReturnTags != null && inheritedReturnTags.isEmpty() ||
+                            paramPos != null && !paramPos.isEmpty() ||
+                            throwsTypes != null && !throwsTypes.isEmpty())
+                        inheritedDocFor(mdoc, mdoc.containingClass(), inheritedTags, inheritedReturnTags,
+                                paramPos, inheritedParamTags, inheritedParamInlineTags,
+                                throwsTypes, inheritedThrowsTags, inheritedThrowsInlineTags);
+                    if (inheritedTags != null && !inheritedTags.isEmpty()) {
+                        if (inlineTags.length == 0) {
+                            inlineTags = inheritedTags.toArray(new Tag[inheritedTags.size()]);
+                        } else {
+                            List<Tag> tags = new ArrayList<Tag>();
+                            for (Tag tag : inlineTags) {
+                                if (INHERIT_DOC_TAG.equals(tag.kind()))
+                                    tags.addAll(inheritedTags);
+                                else
+                                    tags.add(tag);
+                            }
+                            inlineTags = tags.toArray(new Tag[tags.size()]);
+                        }
+                    }
+                    if (inheritedReturnTags != null && !inheritedReturnTags.isEmpty()) {
+                        if (returnTags.length == 0) {
+                            returnTags = inheritedReturnTags.toArray(new Tag[inheritedReturnTags.size()]);
+                        } else {
+                            List<Tag> tags = new ArrayList<Tag>();
+                            for(Tag tag : returnTags) {
+                                for(Tag t : tag.inlineTags()) {
+                                    if (INHERIT_DOC_TAG.equals(t.kind()))
+                                        tags.addAll(inheritedReturnTags);
+                                    else
+                                        tags.add(t);
+                                }
+                            }
+                            returnTags = tags.toArray(new Tag[tags.size()]);
+                        }
+                    }
+                    List<Integer> ppos = new ArrayList<Integer>();
+                    if (inheritedParamTags != null && !inheritedParamTags.isEmpty()) {
+                        for (Integer pos : paramTags.keySet()) {
+                            ppos.add(pos);
+                            ParamTag paramTag = inheritedParamTags.remove(pos);
+                            List<Tag> tags = inheritedParamInlineTags.get(pos);
+                            if (tags != null && !tags.isEmpty()) {
+                                List<Tag> inTags = paramTags.get(paramTag.parameterName());
+                                inTags.clear();
+                                for (Tag tag : paramTag.inlineTags()) {
+                                    if (INHERIT_DOC_TAG.equals(tag.kind()))
+                                        inTags.addAll(tags);
+                                    else
+                                        inTags.add(tag);
+                                }
+                            }
+                        }
+                        for (Integer pos : inheritedParamTags.keySet()) {
+                            ppos.add(pos);
+                            List<Tag> tags = inheritedParamInlineTags.get(pos);
+                            if (tags != null && !tags.isEmpty())
+                                paramTags.put(pos, tags);
+                        }
+                    }
+                    if (inheritedThrowsTags != null && !inheritedThrowsTags.isEmpty()) {
+                        for (ThrowsTag throwsTag : throwsTags) {
+                            inheritedThrowsTags.remove(throwsTag.exceptionName());
+                            List<Tag> tags = inheritedThrowsInlineTags.get(throwsTag.exceptionName());
+                            if (tags != null && !tags.isEmpty()) {
+                                List<Tag> inTags = throwsInlineTags.get(throwsTag.exceptionName());
+                                inTags.clear();
+                                for (Tag tag : throwsTag.inlineTags()) {
+                                    if (INHERIT_DOC_TAG.equals(tag.kind()))
+                                        inTags.addAll(tags);
+                                    else
+                                        inTags.add(tag);
+                                }
+                            }
+                        }
+                        for (Map.Entry<String, ThrowsTag> entry : inheritedThrowsTags.entrySet()) {
+                            throwsTags.add(entry.getValue());
+                            List<Tag> tags = inheritedThrowsInlineTags.get(entry.getKey());
+                            if (tags != null && !tags.isEmpty())
+                                throwsInlineTags.put(entry.getKey(), tags);
+                        }
+                    }
+                    if (inlineTags.length > 0 || doc.tags().length > 0) {
+                        sb.append(getDeprecatedTag(eu, doc));
+                        sb.append(inlineTags(eu, doc, inlineTags));
+                        sb.append("</p><p>"); //NOI18N
+                        sb.append(getMethodTags(eu, mdoc, returnTags, paramTags,
+                                throwsTags, throwsInlineTags));
+                        sb.append("</p>"); //NOI18N
+                        return sb.toString();
+                    }
+                } else {
+                    if (inlineTags.length > 0 || doc.tags().length > 0) {
+                        sb.append(getDeprecatedTag(eu, doc));
+                        sb.append(inlineTags(eu, doc, inlineTags));
+                        sb.append("</p><p>"); //NOI18N
+                        sb.append(getTags(eu, doc));
+                        sb.append("</p>"); //NOI18N
+                        return sb.toString();
+                    }
+                }
             }
+            String jdText = docURL != null ? HTMLJavadocParser.getJavadocText(docURL, false) : null;
+            if (jdText != null)
+                sb.append(jdText);
+            else
+                sb.append(NbBundle.getMessage(ElementJavadoc.class, "javadoc_content_not_found")); //NOI18N
             sb.append("</p>"); //NOI18N
-        } else {
-            sb.append(NbBundle.getMessage(ElementJavadoc.class, "javadoc_content_not_found")); //NOI18N
+            return sb.toString();
         }
+        sb.append(NbBundle.getMessage(ElementJavadoc.class, "javadoc_content_not_found")); //NOI18N
         return sb.toString();
     }
     
@@ -526,6 +715,105 @@ public class ElementJavadoc {
         }
     } 
     
+    private CharSequence getMethodTags(ElementUtilities eu, MethodDoc doc, Tag[] returnTags, Map<Integer, List<Tag>> paramInlineTags,
+            List<ThrowsTag> throwsTags, Map<String, List<Tag>> throwsInlineTags) {
+        StringBuilder ret = new StringBuilder();
+        if (returnTags.length > 0) {
+            ret.append(inlineTags(eu, doc, returnTags));
+            ret.append("<br>"); //NOI18N
+        }
+        StringBuilder par = new StringBuilder();
+        if (paramInlineTags != null) {
+            Parameter[] parameters = doc.parameters();
+            for (Integer pos : paramInlineTags.keySet()) {
+                par.append("<code>").append(parameters[pos].name()).append("</code>"); //NOI18N
+                List<Tag> tags = paramInlineTags.get(pos);
+                Tag[] its = tags.toArray(new Tag[tags.size()]);                
+                if (its.length > 0) {
+                    CharSequence cs = inlineTags(eu, doc, its);
+                    if (cs.length() > 0) {
+                        par.append(" - "); //NOI18N
+                        par.append(cs);
+                    }
+                }
+                par.append("<br>"); //NOI18N            
+            }
+        }
+        StringBuilder thr = new StringBuilder();
+        if (throwsTags != null) {
+            for (ThrowsTag throwsTag : throwsTags) {
+                thr.append("<code>"); //NOI18N
+                Type exType = throwsTag.exceptionType();
+                if (exType != null) {
+                    createLink(thr, eu.elementFor(exType.asClassDoc()), exType.simpleTypeName());
+                } else {
+                    thr.append(throwsTag.exceptionName());
+                }
+                thr.append("</code>"); //NOI18N
+                List<Tag> tags = throwsInlineTags.get(throwsTag.exceptionName());
+                Tag[] its = tags == null ? throwsTag.inlineTags() : tags.toArray(new Tag[tags.size()]);                
+                if (its.length > 0) {
+                    CharSequence cs = inlineTags(eu, doc, its);
+                    if (cs.length() > 0) {
+                        thr.append(" - "); //NOI18N
+                        thr.append(cs);
+                    }
+                }
+                thr.append("<br>"); //NOI18N
+            }
+        }
+        StringBuilder see = new StringBuilder();
+        String since = null;
+        for (Tag tag : doc.tags()) {
+            if (SEE_TAG.equals(tag.kind())) {
+                SeeTag stag = (SeeTag)tag;
+                ClassDoc refClass = stag.referencedClass();
+                String className = stag.referencedClassName();
+                String memberName = stag.referencedMemberName();
+                String label = stag.label();
+                if (memberName != null) {
+                    if (refClass != null) {
+                        createLink(see, eu.elementFor(stag.referencedMember()), "<code>" + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + "</code>"); //NOI18N
+                    } else {
+                        see.append(className);
+                        see.append('.'); //NOI18N
+                        see.append(memberName);
+                    }
+                    see.append(", "); //NOI18N
+                } else if (className != null) {
+                    if (refClass != null) {
+                        createLink(see, eu.elementFor(refClass), "<code>" + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + "</code>"); //NOI18N
+                    } else {
+                        see.append(className);
+                    }
+                    see.append(", "); //NOI18N
+                } else {
+                    see.append(stag.text()).append(", "); //NOI18N
+                }
+            } else if (SINCE_TAG.equals(tag.kind())) {
+                since = tag.text();
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        if (par.length() > 0) {
+            sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-params")).append("</b><blockquote>").append(par).append("</blockquote>"); //NOI18N
+        }
+        if (ret.length() > 0) {
+            sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-returns")).append("</b><blockquote>").append(ret).append("</blockquote>"); //NOI18N
+        }
+        if (thr.length() > 0) {
+            sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-throws")).append("</b><blockquote>").append(thr).append("</blockquote>"); //NOI18N
+        }
+        if (since != null) {
+            sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-since")).append("</b><blockquote>").append(since).append("</blockquote>"); //NOI18N
+        }
+        int length = see.length();
+        if (length > 0) {
+            sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-see")).append("</b><blockquote>").append(see.delete(length - 2, length)).append("</blockquote>"); //NOI18N
+        }
+        return sb;
+    }
+    
     private CharSequence getTags(ElementUtilities eu, Doc doc) {
         StringBuilder see = new StringBuilder();
         StringBuilder par = new StringBuilder();
@@ -533,7 +821,7 @@ public class ElementJavadoc {
         StringBuilder ret = new StringBuilder();
         String since = null;
         for (Tag tag : doc.tags()) {
-            if (PARAM_TAG.equals(tag.kind())) {
+            if (PARAM_TAG.equals(tag.kind()) && !doc.isMethod()) {
                 par.append("<code>").append(((ParamTag)tag).parameterName()).append("</code>"); //NOI18N
                 Tag[] its = tag.inlineTags();
                 if (its.length > 0) {
@@ -541,7 +829,7 @@ public class ElementJavadoc {
                     par.append(inlineTags(eu, doc, its));
                 }
                 par.append("<br>"); //NOI18N
-            } else if (THROWS_TAG.equals(tag.kind())) {
+            } else if (THROWS_TAG.equals(tag.kind()) && !doc.isMethod()) {
                 thr.append("<code>"); //NOI18N
                 Type exType = ((ThrowsTag)tag).exceptionType();
                 if (exType != null)
@@ -555,7 +843,7 @@ public class ElementJavadoc {
                     thr.append(inlineTags(eu, doc, its));
                 }
                 thr.append("<br>"); //NOI18N
-            } else if (RETURN_TAG.equals(tag.kind())) {
+            } else if (RETURN_TAG.equals(tag.kind()) && !doc.isMethod()) {
                 ret.append(inlineTags(eu, doc, tag.inlineTags()));
                 ret.append("<br>"); //NOI18N
             } else if (SEE_TAG.equals(tag.kind())) {
@@ -610,8 +898,10 @@ public class ElementJavadoc {
     private CharSequence getDeprecatedTag(ElementUtilities eu, Doc doc) {
         StringBuilder sb = new StringBuilder();
         for (Tag tag : doc.tags()) {
-            if (DEPRECATED_TAG.equals(tag.kind()))
+            if (DEPRECATED_TAG.equals(tag.kind())) {
                 sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-deprecated")).append("</b> <i>").append(inlineTags(eu, doc, tag.inlineTags())).append("</i></p><p>"); //NOI18N
+                break;
+            }
         }
         return sb;
     }
@@ -645,10 +935,6 @@ public class ElementJavadoc {
                     MethodDoc mdoc = ((MethodDoc)doc).overriddenMethod();
                     if (mdoc != null)
                         sb.append(inlineTags(eu, mdoc, mdoc.inlineTags()));
-                } else if (doc.isClass() || doc.isInterface()) {
-                    ClassDoc cdoc = ((ClassDoc)doc).superclass();
-                    if (cdoc != null)
-                        sb.append(inlineTags(eu, cdoc, cdoc.inlineTags()));
                 }
             } else if (CODE_TAG.equals(tag.kind())) {
                 sb.append("<code>"); //NOI18N
@@ -783,5 +1069,303 @@ public class ElementJavadoc {
         return text.length();
     }
     
+    private void inheritedDocFor(MethodDoc mdoc, ClassDoc cdoc, List<Tag> inlineTags, List<Tag> returnTags,
+            Set<Integer> paramPos, Map<Integer, ParamTag> paramTags, Map<Integer, List<Tag>> paramInlineTags,
+            Set<String> throwsTypes, Map<String, ThrowsTag> throwsTags, Map<String, List<Tag>> throwsInlineTags) {
+        for (ClassDoc ifaceDoc : cdoc.interfaces()) {
+            for (MethodDoc methodDoc : ifaceDoc.methods(false)) {
+                if (mdoc.overrides(methodDoc)) {
+                    List<Tag> inheritedInlineTags = null;
+                    if (inlineTags != null && inlineTags.isEmpty()) {
+                        for (Tag tag : methodDoc.inlineTags()) {
+                            if (INHERIT_DOC_TAG.equals(tag.kind())) {
+                                if (inheritedInlineTags == null)
+                                    inheritedInlineTags = new ArrayList<Tag>();
+                            } else {
+                                inlineTags.add(tag);
+                            }
+                        }
+                    }
+                    List<Tag> inheritedReturnTags = null;
+                    if (returnTags != null && returnTags.isEmpty()) {
+                        for(Tag tag : methodDoc.tags(RETURN_TAG)) {
+                            for(Tag t : tag.inlineTags()) {
+                                if (INHERIT_DOC_TAG.equals(t.kind())) {
+                                    if (inheritedReturnTags == null)
+                                        inheritedReturnTags = new ArrayList<Tag>();
+                                } else {
+                                    returnTags.add(t);
+                                }
+                            }
+                        }
+                    }
+                    Set<Integer> inheritedParamPos = null;
+                    Map<Integer, ParamTag> inheritedParamTags = null;
+                    Map<Integer, List<Tag>> inheritedParamInlineTags = null;
+                    if (paramTags != null && paramPos != null && !paramPos.isEmpty()) {
+                        for(ParamTag tag : methodDoc.paramTags()) {
+                            Integer pos = paramPos(methodDoc, tag);
+                            if (paramPos.remove(pos)) {
+                                List<Tag> tags = new ArrayList<Tag>();
+                                paramTags.put(pos, tag);
+                                paramInlineTags.put(pos, tags);
+                                for(Tag t : tag.inlineTags()) {
+                                    if (INHERIT_DOC_TAG.equals(t.kind())) {
+                                        if (inheritedParamPos == null)
+                                            inheritedParamPos = new HashSet<Integer>();
+                                        if (inheritedParamTags == null)
+                                            inheritedParamTags = new LinkedHashMap<Integer,ParamTag>();
+                                        if (inheritedParamInlineTags == null)
+                                            inheritedParamInlineTags = new LinkedHashMap<Integer, List<Tag>>();
+                                        inheritedParamPos.add(pos);
+                                    } else {
+                                        tags.add(t);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Set<String> inheritedThrowsTypes = null;
+                    Map<String, ThrowsTag> inheritedThrowsTags = null;
+                    Map<String, List<Tag>> inheritedThrowsInlineTags = null;
+                    if (throwsTags != null && throwsTypes != null && !throwsTypes.isEmpty()) {
+                        for(ThrowsTag tag : methodDoc.throwsTags()) {
+                            if (throwsTypes.remove(tag.exceptionName())) {
+                                List<Tag> tags = new ArrayList<Tag>();
+                                throwsTags.put(tag.exceptionName(), tag);
+                                throwsInlineTags.put(tag.exceptionName(), tags);
+                                for(Tag t : tag.inlineTags()) {
+                                    if (INHERIT_DOC_TAG.equals(t.kind())) {
+                                        if (inheritedThrowsTypes == null)
+                                            inheritedThrowsTypes = new HashSet<String>();
+                                        if (inheritedThrowsTags == null)
+                                            inheritedThrowsTags = new LinkedHashMap<String, ThrowsTag>();
+                                        if (inheritedThrowsInlineTags == null)
+                                            inheritedThrowsInlineTags = new HashMap<String, List<Tag>>();
+                                        inheritedThrowsTypes.add(tag.exceptionName());
+                                    } else {
+                                        tags.add(t);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (inheritedInlineTags != null || inheritedReturnTags != null ||
+                            inheritedParamPos != null && inheritedParamTags != null)
+                        inheritedDocFor(mdoc, ifaceDoc, inheritedInlineTags, inheritedReturnTags,
+                                inheritedParamPos, inheritedParamTags, inheritedParamInlineTags,
+                                inheritedThrowsTypes, inheritedThrowsTags, inheritedThrowsInlineTags);
+                    if (inheritedInlineTags != null && !inheritedInlineTags.isEmpty()) {
+                        inlineTags.clear();
+                        for (Tag tag : methodDoc.inlineTags()) {
+                            if (INHERIT_DOC_TAG.equals(tag.kind()))
+                                inlineTags.addAll(inheritedInlineTags);
+                            else
+                                inlineTags.add(tag);
+                        }
+                    }
+                    if (inheritedReturnTags != null && !inheritedReturnTags.isEmpty()) {
+                        returnTags.clear();
+                        for(Tag tag : methodDoc.tags(RETURN_TAG)) {
+                            for(Tag t : tag.inlineTags()) {
+                                if (INHERIT_DOC_TAG.equals(t.kind()))
+                                    returnTags.addAll(inheritedReturnTags);
+                                else
+                                    returnTags.add(t);
+                            }
+                        }
+                    }
+                    if (inheritedParamTags != null && !inheritedParamTags.isEmpty()) {
+                        for (Integer pos : inheritedParamTags.keySet()) {
+                            List<Tag> tags = paramInlineTags.get(pos);
+                            tags.clear();
+                            for(Tag t : paramTags.get(pos).inlineTags()) {
+                                if (INHERIT_DOC_TAG.equals(t.kind()))
+                                    tags.addAll(inheritedParamInlineTags.get(pos));
+                                else
+                                    tags.add(t);
+                            }
+                        }
+                    }
+                    if (inheritedThrowsTags != null && !inheritedThrowsTags.isEmpty()) {
+                        for (String param : inheritedThrowsTags.keySet()) {
+                            List<Tag> tags = throwsInlineTags.get(param);
+                            tags.clear();
+                            for(Tag t : throwsTags.get(param).inlineTags()) {
+                                if (INHERIT_DOC_TAG.equals(t.kind()))
+                                    tags.addAll(inheritedParamInlineTags.get(param));
+                                else
+                                    tags.add(t);
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+            if ((inlineTags == null || !inlineTags.isEmpty()) &&
+                    (returnTags == null || !returnTags.isEmpty()) && 
+                    (paramPos == null || paramPos.isEmpty()) &&
+                    (throwsTypes == null || throwsTypes.isEmpty()))
+                return;
+        }
+        for (ClassDoc ifaceDoc : cdoc.interfaces()) {
+            inheritedDocFor(mdoc, ifaceDoc, inlineTags, returnTags,
+                    paramPos, paramTags, paramInlineTags,
+                    throwsTypes, throwsTags, throwsInlineTags);
+            if ((inlineTags == null || !inlineTags.isEmpty()) &&
+                    (returnTags == null || !returnTags.isEmpty()) && 
+                    (paramPos == null || paramPos.isEmpty()) &&
+                    (throwsTypes == null || throwsTypes.isEmpty()))
+                return;
+        }
+        if (cdoc.superclass() != null) { //NOI18N
+            for (MethodDoc methodDoc : cdoc.superclass().methods(false)) {
+                if (mdoc.overrides(methodDoc)) {
+                    List<Tag> inheritedInlineTags = null;
+                    if (inlineTags != null && inlineTags.isEmpty()) {
+                        for (Tag tag : methodDoc.inlineTags()) {
+                            if (INHERIT_DOC_TAG.equals(tag.kind())) {
+                                if (inheritedInlineTags == null)
+                                    inheritedInlineTags = new ArrayList<Tag>();
+                            } else {
+                                inlineTags.add(tag);
+                            }
+                        }
+                    }
+                    List<Tag> inheritedReturnTags = null;
+                    if (returnTags != null && returnTags.isEmpty()) {
+                        for(Tag tag : methodDoc.tags(RETURN_TAG)) {
+                            for(Tag t : tag.inlineTags()) {
+                                if (INHERIT_DOC_TAG.equals(t.kind())) {
+                                    if (inheritedReturnTags == null)
+                                        inheritedReturnTags = new ArrayList<Tag>();
+                                } else {
+                                    returnTags.add(t);
+                                }
+                            }
+                        }
+                    }
+                    Set<Integer> inheritedParamNames = null;
+                    Map<Integer, ParamTag> inheritedParamTags = null;
+                    Map<Integer, List<Tag>> inheritedParamInlineTags = null;
+                    if (paramTags != null && paramPos != null && !paramPos.isEmpty()) {
+                        for(ParamTag tag : methodDoc.paramTags()) {
+                            Integer pos = paramPos(methodDoc, tag);
+                            if (paramPos.remove(pos)) {
+                                List<Tag> tags = new ArrayList<Tag>();
+                                paramTags.put(pos, tag);
+                                paramInlineTags.put(pos, tags);
+                                for(Tag t : tag.inlineTags()) {
+                                    if (INHERIT_DOC_TAG.equals(t.kind())) {
+                                        if (inheritedParamNames == null)
+                                            inheritedParamNames = new HashSet<Integer>();
+                                        if (inheritedParamTags == null)
+                                            inheritedParamTags = new LinkedHashMap<Integer, ParamTag>();
+                                        if (inheritedParamInlineTags == null)
+                                            inheritedParamInlineTags = new LinkedHashMap<Integer, List<Tag>>();
+                                        inheritedParamNames.add(pos);
+                                    } else {
+                                        tags.add(t);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Set<String> inheritedThrowsTypes = null;
+                    Map<String, ThrowsTag> inheritedThrowsTags = null;
+                    Map<String, List<Tag>> inheritedThrowsInlineTags = null;
+                    if (throwsTags != null && throwsTypes != null && !throwsTypes.isEmpty()) {
+                        for(ThrowsTag tag : methodDoc.throwsTags()) {
+                            if (throwsTypes.remove(tag.exceptionName())) {
+                                List<Tag> tags = new ArrayList<Tag>();
+                                throwsTags.put(tag.exceptionName(), tag);
+                                throwsInlineTags.put(tag.exceptionName(), tags);
+                                for(Tag t : tag.inlineTags()) {
+                                    if (INHERIT_DOC_TAG.equals(t.kind())) {
+                                        if (inheritedThrowsTypes == null)
+                                            inheritedThrowsTypes = new HashSet<String>();
+                                        if (inheritedThrowsTags == null)
+                                            inheritedThrowsTags = new LinkedHashMap<String, ThrowsTag>();
+                                        if (inheritedThrowsInlineTags == null)
+                                            inheritedThrowsInlineTags = new HashMap<String, List<Tag>>();
+                                        inheritedThrowsTypes.add(tag.exceptionName());
+                                    } else {
+                                        tags.add(t);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (inheritedInlineTags != null || inheritedReturnTags != null ||
+                            inheritedParamNames != null && inheritedParamTags != null)
+                        inheritedDocFor(mdoc, cdoc.superclass(), inheritedInlineTags, inheritedReturnTags,
+                                inheritedParamNames, inheritedParamTags, inheritedParamInlineTags,
+                                inheritedThrowsTypes, inheritedThrowsTags, inheritedThrowsInlineTags);
+                    if (inheritedInlineTags != null && !inheritedInlineTags.isEmpty()) {
+                        inlineTags.clear();
+                        for (Tag tag : methodDoc.inlineTags()) {
+                            if (INHERIT_DOC_TAG.equals(tag.kind()))
+                                inlineTags.addAll(inheritedInlineTags);
+                            else
+                                inlineTags.add(tag);
+                        }
+                    }
+                    if (inheritedReturnTags != null && !inheritedReturnTags.isEmpty()) {
+                        returnTags.clear();
+                        for(Tag tag : methodDoc.tags(RETURN_TAG)) {
+                            for(Tag t : tag.inlineTags()) {
+                                if (INHERIT_DOC_TAG.equals(t.kind()))
+                                    returnTags.addAll(inheritedReturnTags);
+                                else
+                                    returnTags.add(t);
+                            }
+                        }
+                    }
+                    if (inheritedParamTags != null && !inheritedParamTags.isEmpty()) {
+                        for (Integer pos : inheritedParamTags.keySet()) {
+                            List<Tag> tags = paramInlineTags.get(pos);
+                            tags.clear();
+                            for(Tag t : paramTags.get(pos).inlineTags()) {
+                                if (INHERIT_DOC_TAG.equals(t.kind()))
+                                    tags.addAll(inheritedParamInlineTags.get(pos));
+                                else
+                                    tags.add(t);
+                            }
+                        }
+                    }
+                    if (inheritedThrowsTags != null && !inheritedThrowsTags.isEmpty()) {
+                        for (String param : inheritedThrowsTags.keySet()) {
+                            List<Tag> tags = throwsInlineTags.get(param);
+                            tags.clear();
+                            for(Tag t : throwsTags.get(param).inlineTags()) {
+                                if (INHERIT_DOC_TAG.equals(t.kind()))
+                                    tags.addAll(inheritedParamInlineTags.get(param));
+                                else
+                                    tags.add(t);
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+            if (inlineTags != null && inlineTags.isEmpty() ||
+                    returnTags != null && returnTags.isEmpty() ||
+                    paramPos != null && !paramPos.isEmpty() ||
+                    throwsTypes != null && !throwsTypes.isEmpty())
+                inheritedDocFor(mdoc, cdoc.superclass(), inlineTags, returnTags,
+                        paramPos, paramTags, paramInlineTags,
+                        throwsTypes, throwsTags, throwsInlineTags);
+        }
+    }
     
+    private int paramPos(MethodDoc methodDoc, ParamTag paramTag) {
+        Parameter[] parameters = methodDoc.parameters();
+        for (int i = 0; i < parameters.length; i++) {
+            Parameter parameter = parameters[i];
+            if (parameter.name().equals(paramTag.parameterName()))
+                return i;
+        }
+        return -1;
+
+    }
 }

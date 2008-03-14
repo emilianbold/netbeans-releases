@@ -209,8 +209,7 @@ public abstract class ProjectClassPathModifierImplementation {
             toAdd = classpathRoot;
         }
         File prjRoot = FileUtil.toFile(helper.getProjectDirectory());
-        assert LibrariesSupport.isAbsoluteURL(toAdd);
-        final File file = new File(toAdd.toURI());
+        final File file = PropertyUtils.resolveFile(prjRoot, LibrariesSupport.convertURLToFilePath(toAdd));
         String f;
         if (CollocationQuery.areCollocated(file, prjRoot)) {
             //colocated get always relative path

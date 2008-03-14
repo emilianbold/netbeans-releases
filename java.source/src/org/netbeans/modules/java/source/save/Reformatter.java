@@ -65,7 +65,7 @@ import org.netbeans.modules.editor.indent.spi.ReformatTask;
  */
 public class Reformatter implements ReformatTask {
     
-    private static final Object EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N
+    private static final Object CT_HANDLER_DOC_PROPERTY = "code-template-insert-handler"; // NOI18N
 
     private JavaSource javaSource;
     private Context context;
@@ -125,7 +125,7 @@ public class Reformatter implements ReformatTask {
     }
     
     private void reformatImpl(Context.Region region) throws BadLocationException {
-        boolean templateEdit = Boolean.TRUE.equals(doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY));
+        boolean templateEdit = doc.getProperty(CT_HANDLER_DOC_PROPERTY) != null;
         int startOffset = region.getStartOffset() - shift;
         int endOffset = region.getEndOffset() - shift;
         int originalEndOffset = endOffset;
@@ -174,7 +174,7 @@ public class Reformatter implements ReformatTask {
             int start = diff.getStartOffset();
             int end = diff.getEndOffset();
             String text = diff.getText();
-            if (startOffset > end || endOffset < start || embeddingOffset >= start)
+            if (startOffset > end || endOffset <= start || embeddingOffset >= start)
                 continue;
             if (startOffset > start) {
                 if (text != null && text.length() > 0) {
@@ -1772,9 +1772,9 @@ public class Reformatter implements ReformatTask {
                         accept(LBRACE);
                         break;
                 }
+                boolean oldAfterNewLine = afterNewline;
+                afterNewline = bracePlacement != CodeStyle.BracePlacement.SAME_LINE;
                 if (!inits.isEmpty()) {
-                    boolean oldAfterNewLine = afterNewline;
-                    afterNewline = bracePlacement != CodeStyle.BracePlacement.SAME_LINE;
                     if (afterNewline)
                         newline();
                     else
@@ -1790,35 +1790,39 @@ public class Reformatter implements ReformatTask {
                         newline();
                     else
                         spaces(cs.spaceWithinBraces() ? 1 : 0);
-                    afterNewline = oldAfterNewLine;
+                } else if (afterNewline) {
+                    newline();
                 }
                 indent = halfIndent;
-                Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
-                if (diff != null && diff.end == tokens.offset()) {
-                    if (diff.text != null) {
-                        int idx = diff.text.lastIndexOf('\n'); //NOI18N
-                        if (idx < 0)
-                            diff.text = getIndent();
-                        else
-                            diff.text = diff.text.substring(0, idx + 1) + getIndent();
+                if (afterNewline) {
+                    Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
+                    if (diff != null && diff.end == tokens.offset()) {
+                        if (diff.text != null) {
+                            int idx = diff.text.lastIndexOf('\n'); //NOI18N
+                            if (idx < 0)
+                                diff.text = getIndent();
+                            else
+                                diff.text = diff.text.substring(0, idx + 1) + getIndent();
 
-                    }
-                    String spaces = diff.text != null ? diff.text : getIndent();
-                    if (spaces.equals(fText.substring(diff.start, diff.end)))
-                        diffs.removeFirst();
-                } else if (tokens.movePrevious()) {
-                    if (tokens.token().id() == WHITESPACE) {
-                        String text =  tokens.token().text().toString();
-                        int idx = text.lastIndexOf('\n'); //NOI18N
-                        if (idx >= 0) {
-                            text = text.substring(idx + 1);
-                            String ind = getIndent();
-                            if (!ind.equals(text))
-                                diffs.addFirst(new Diff(tokens.offset() + idx + 1, tokens.offset() + tokens.token().length(), ind));
                         }
+                        String spaces = diff.text != null ? diff.text : getIndent();
+                        if (spaces.equals(fText.substring(diff.start, diff.end)))
+                            diffs.removeFirst();
+                    } else if (tokens.movePrevious()) {
+                        if (tokens.token().id() == WHITESPACE) {
+                            String text =  tokens.token().text().toString();
+                            int idx = text.lastIndexOf('\n'); //NOI18N
+                            if (idx >= 0) {
+                                text = text.substring(idx + 1);
+                                String ind = getIndent();
+                                if (!ind.equals(text))
+                                    diffs.addFirst(new Diff(tokens.offset() + idx + 1, tokens.offset() + tokens.token().length(), ind));
+                            }
+                        }
+                        tokens.moveNext();
                     }
-                    tokens.moveNext();
                 }
+                afterNewline = oldAfterNewLine;
                 accept(RBRACE);
                 indent = oldIndent;
             }
@@ -2027,8 +2031,14 @@ public class Reformatter implements ReformatTask {
             Token<JavaTokenId> lastWSToken = null;
             int after = 0;
             do {
-                if (tokens.offset() >= endPos)
+                if (tokens.offset() >= endPos) {
+                    if (lastWSToken != null) {
+                        lastBlankLines = 0;
+                        lastBlankLinesTokenIndex = tokens.index() - 1;
+                        lastBlankLinesDiff = diffs.isEmpty() ? null : diffs.getFirst();
+                    }
                     return null;
+                }
                 JavaTokenId id = tokens.token().id();
                 if (tokenIds.contains(id)) {
                     String spaces = after == 1 //after line comment
@@ -2466,8 +2476,6 @@ public class Reformatter implements ReformatTask {
                             }
                             lastToken = null;
                         }
-                        if (count != 0)
-                            count--;
                         after = 1;
                         break;
                     default:

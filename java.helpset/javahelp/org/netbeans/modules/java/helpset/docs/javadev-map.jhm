@@ -67,6 +67,7 @@
 <mapID target="proj_process_top" url="project/proj_process.html#top" /> <!--ID added to provide better TOC tracking when the topic is selected in the Getting Started bucket-->
 <mapID target="proj_quickref" url="project/proj_quickref.html" />
 <mapID target="proj_sources_multi" url="project/proj_sources_multi.html" />
+<mapID target="proj_sharing" url="project/proj_sharing.html" />
 <mapID target="proj_templates" url="project/proj_templates.html" />
 <mapID target="proj_stand_about" url="project/proj_stand_about.html" />
 <mapID target="proj_stand_ant_structure" url="project/proj_stand_ant_structure.html" />
@@ -159,6 +160,16 @@
 <mapID target="gui.accessibleform" url="gui/gui_accessibleform.html" />
 <mapID target="gui.testing" url="gui/gui_previewing.html" />
 <mapID target="gui.deploying" url="gui/gui_deploying.html" />
+
+<!--begin Spring Framework section-->
+
+<mapID target="spring.framework.about" url="spring/about.html" />
+<mapID target="spring.framework.add" url="spring/add-support.html" />
+<mapID target="spring.framework.create" url="spring/create-config-file.html" />
+<mapID target="spring.framework.organize" url="spring/organize-files.html" />
+
+<!--Spring CSH IDs:-->
+<mapID target="org.netbeans.modules.spring.beans.ui.customizer.SpringCustomizerPanel" url="spring/organize-files.html" />
 
 
 <!--below entry is also ID for Palette Manager and Add to Palette actions in actions pool, as well as Palette Manager dialog and sub-dialogs:-->
@@ -276,7 +287,7 @@
 <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingWizardPanel" url="project/csh/proj_j2sefree_wiz2.html" />
 <mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersWizardPanel" url="project/csh/proj_j2sefree_wiz3.html" />
 <mapID target="org.netbeans.modules.java.freeform.ui.ClasspathWizardPanel" url="project/csh/proj_j2sefree_wiz4.html" />
-
+<mapID target="org.netbeans.modules.java.freeform.ui.OutputWizardPanel" url="project/csh/proj_j2sefree_wiz5.html" />
 
 <!-- J2SE Desktop App name and location:-->
 <mapID target="org.netbeans.modules.swingapp.templates.ConfigureProjectPanel" url="project/csh/proj_j2se-desktopapp_wiz.html" />

@@ -44,7 +44,7 @@ package org.netbeans.modules.j2ee.common.project.classpath;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -58,12 +58,11 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
- * Support which listens on library changes and classpath property changes
+ * Support which listens on library content changes
  * and generates properties in project.properties for any used library jar.
  * This is needed for Ant to be able to perform library copying without using
  * properietary Ant task.
@@ -86,9 +85,14 @@ public final class LibrariesLocationUpdater implements PropertyChangeListener {
     private String oldValue;
     private String oldAdditionalValue;
     
-    private final PropertyChangeListener listener = WeakListeners.propertyChange(this, null);
+    private final PropertyChangeListener listener;
+    private boolean destroyed = false;
     
     private static final Logger LOG = Logger.getLogger(LibrariesLocationUpdater.class.getName());
+    
+    /** Keep list of libraries which are listened on otherwise the instances
+     *  gets garbage collected and no notifications are received. */
+    private List<Library> libsBeingListenOn = new ArrayList<Library>();
 
     /** Creates a new instance of J2SEProjectClassPathModifier */
     public LibrariesLocationUpdater(final Project project, final UpdateHelper helper, 
@@ -97,6 +101,7 @@ public final class LibrariesLocationUpdater implements PropertyChangeListener {
         assert project != null;
         assert helper != null;
         assert eval != null;
+        this.listener = this;
         this.project = project;
         this.helper = helper;
         this.eval = eval;
@@ -114,8 +119,8 @@ public final class LibrariesLocationUpdater implements PropertyChangeListener {
         }
         
         //#56140
-        eval.addPropertyChangeListener(listener); //listen for changes of libraries list
         registerLibraryListeners();
+        eval.addPropertyChangeListener(listener); //listen for changes of libraries list
     }
     
     private synchronized boolean needsUpdate(String value, String additionalValue) {
@@ -131,69 +136,73 @@ public final class LibrariesLocationUpdater implements PropertyChangeListener {
         return needsUpdate;
     }
     
-    private void reRegisterLibraryListeners() {
-        unregisterLibraryListeners();
-        registerLibraryListeners();
-    }
-    
-    private void unregisterLibraryListeners() {
-        for (LibraryManager man : LibraryManager.getOpenManagers()) {
-            Library libs [] = man.getLibraries();
-            for (int i = 0; i < libs.length; i++) {
-                libs[i].removePropertyChangeListener(listener);
-            }
+    private synchronized void unregisterLibraryListeners() {
+        for (Library lib : libsBeingListenOn) {
+            lib.removePropertyChangeListener(listener);
         }
+        libsBeingListenOn.clear();
     }
     
     /**
      * Destroy this listeners.
      */
-    public void unregister() {
-        unregisterLibraryListeners();
+    public synchronized void destroy() {
+        destroyed = true;
         eval.removePropertyChangeListener(this);
+        unregisterLibraryListeners();
     }
     
-    private void registerLibraryListeners() {
-        RequestProcessor.getDefault().post(new Runnable() {
+    private synchronized void registerLibraryListeners() {
+        if (destroyed) {
+            return;
+        }
+        ProjectManager.mutex().readAccess(new Runnable() {
             public void run() {
-                ProjectManager.mutex().readAccess(new Runnable() {
-                    public void run() {
-                        EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH); //Reread the properties, PathParser changes them
-                        HashSet set = new HashSet();
-                        // intentionally pass null to itemsList() - we do not need additional info to be read
-                        set.addAll(cs.itemsList(props.getProperty(classPathProperty),  null));
-                        if (additionalClassPathProperty != null) {
-                            set.addAll(cs.itemsList(props.getProperty(additionalClassPathProperty),  null));
-                        }
-                        Iterator i = set.iterator();
-                        while (i.hasNext()) {
-                            ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
-                            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken()) {
-                                item.getLibrary().addPropertyChangeListener(listener);
-                            }
-                        }
+                unregisterLibraryListeners();
+                EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH); //Reread the properties, PathParser changes them
+                HashSet set = new HashSet();
+                // intentionally pass null to itemsList() - we do not need additional info to be read
+                set.addAll(cs.itemsList(props.getProperty(classPathProperty),  null));
+                if (additionalClassPathProperty != null) {
+                    set.addAll(cs.itemsList(props.getProperty(additionalClassPathProperty),  null));
+                }
+                Iterator i = set.iterator();
+                while (i.hasNext()) {
+                    ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
+                    if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken()) {
+                        item.getLibrary().addPropertyChangeListener(listener);
+                        libsBeingListenOn.add(item.getLibrary());
                     }
-                });
+                }
             }
         });
     }
     
-    public void propertyChange (PropertyChangeEvent e) {
+    public void propertyChange(final PropertyChangeEvent e) {
         if (!ProjectManager.getDefault().isValid(project)) {
             return;
         }
         if (e.getSource().equals(eval)) {
-            if (e.getPropertyName().equals(classPathProperty) || 
-                (additionalClassPathProperty != null && e.getPropertyName().equals(additionalClassPathProperty))) {
-                EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                if (needsUpdate(props.getProperty(classPathProperty), props.getProperty(additionalClassPathProperty))) {
-                    // if project property changed then update listeners and store locations
-                    reRegisterLibraryListeners();
-                    storeLibLocations();
-                }
+            if (e.getPropertyName().equals(classPathProperty) ||
+                    (additionalClassPathProperty != null && e.getPropertyName().equals(additionalClassPathProperty))) {
+                // use different thread than callers one; method requires PM.readAccess
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        if (needsUpdate(props.getProperty(classPathProperty), props.getProperty(additionalClassPathProperty))) {
+                            // if project property changed then update listeners
+                            registerLibraryListeners();
+                        }
+                    }
+                });
             }
         } else if (e.getPropertyName().equals(Library.PROP_CONTENT)) {
-            storeLibLocations();
+            // use different thread than callers one; method requires PM.writeAccess
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    storeLibLocations();
+                }
+            });
         }
     }
     
@@ -203,40 +212,11 @@ public final class LibrariesLocationUpdater implements PropertyChangeListener {
     }
     
     private void storeLibLocations() {
-        if (!ProjectManager.getDefault().isValid(project)) {
-            return;
-        }
-        // ear and appclient project seems to be doing project modification without write lock
-        // and if code below is executed in parallel there is assert faling at 
-        // org.netbeans.spi.project.support.ant.ProjectProperties$PP.write(ProjectProperties.java:216)
-        // until projcet types are fixed I'm posting this to AWT thread to sort of synchronize with project types
-        // which do their changes in AWT too.
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                ProjectManager.mutex().writeAccess(new Runnable() {
-                    public void run() {
-                        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        List wmLibs = cs.itemsList(props.getProperty(classPathProperty),  projectXMLElement);
-                        cs.encodeToStrings(wmLibs, projectXMLElement);
-                        HashSet set = new HashSet();
-                        set.addAll(wmLibs);
-                        if (additionalClassPathProperty != null) {
-                            List additionalLibs = cs.itemsList(props.getProperty(additionalClassPathProperty),  additionalProjectXMLElement);
-                            cs.encodeToStrings(additionalLibs, additionalProjectXMLElement);
-                            set.addAll(additionalLibs);
-                        }
-                        props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties
-                        ProjectProperties.storeLibrariesLocations(set.iterator(), props, project.getProjectDirectory());
-                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                        try {
-                            ProjectManager.getDefault().saveProject(project);
-                        } catch (IOException e) {
-                            Exceptions.printStackTrace(e);
-                        }
-                    }
-                });
-            }
-        });
+        ProjectProperties.storeLibrariesLocations(project, antHelper, cs, 
+            additionalClassPathProperty != null ? new String[]{classPathProperty, additionalClassPathProperty} : new String[]{classPathProperty},
+            additionalClassPathProperty != null ? new String[]{projectXMLElement, additionalProjectXMLElement} : new String[]{projectXMLElement},
+            true
+            );
     }
 
 }

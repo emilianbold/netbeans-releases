@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -198,7 +199,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
         apiJar = CarFactory.createCar(appClient);
         enterpriseResourceSupport = new JarContainerImpl(this, refHelper, helper);
         cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
-            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), getClassPathUiSupportCallback());
+            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), 
+            getClassPathUiSupportCallback(), new String[]{ProjectProperties.JAVAC_CLASSPATH});
         classPathExtender = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
         librariesLocationUpdater = new LibrariesLocationUpdater(this, updateHelper, eval, cpMod.getClassPathSupport(),
                 ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES, 
@@ -772,6 +774,17 @@ public final class AppClientProject implements Project, AntProjectListener, File
             // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
             WSUtils.setJaxWsEndorsedDirProperty(ep);
 
+            //update lib references in project properties
+            EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
+            l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES));
+            ProjectProperties.storeLibrariesLocations(l.iterator(), props, getProjectDirectory());
+            
+            // #129316
+            ProjectProperties.removeObsoleteLibraryLocations(ep);
+            ProjectProperties.refreshLibraryTotals(props, cpMod.getClassPathSupport(), ProjectProperties.JAVAC_CLASSPATH,  ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
+            updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+            
             updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
             // update a dual build directory project to use a single build directory
@@ -820,6 +833,11 @@ public final class AppClientProject implements Project, AntProjectListener, File
             J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
             if (platform != null) {
                 unregisterJ2eePlatformListener(platform);
+            }
+
+            // unregister the property change listener on the prop evaluator
+            if (librariesLocationUpdater != null) {
+                librariesLocationUpdater.destroy();
             }
 
             // Probably unnecessary, but just in case:

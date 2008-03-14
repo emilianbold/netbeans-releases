@@ -61,6 +61,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -76,6 +77,11 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
     private String appArgs;
     //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
     private String workDir;
+    
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private String libraryPath;
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private File libraryFile;
     
     public J2SEProjectOperations(J2SEProject project) {
         this.project = project;
@@ -94,7 +100,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         List<FileObject> files = new ArrayList<FileObject>();
         
         addFile(projectDirectory, "nbproject", files); // NOI18N
-        addFile(projectDirectory, "build.xml", files); // NOI18N
+        addFile(projectDirectory, J2SEProjectUtil.getBuildXmlName(project), files); // NOI18N
         addFile(projectDirectory, "xml-resources", files); //NOI18N
         addFile(projectDirectory, "catalog.xml", files); //NOI18N
         
@@ -117,7 +123,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         
         Properties p = new Properties();
         String[] targetNames = ap.getTargetNames(ActionProvider.COMMAND_CLEAN, Lookup.EMPTY, p);
-        FileObject buildXML = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+        FileObject buildXML = J2SEProjectUtil.getBuildXml(project);
         
         assert targetNames != null;
         assert targetNames.length > 0;
@@ -130,6 +136,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
     }
     
     public void notifyCopying() {
+        rememberLibraryLocation();
         readPrivateProperties();
     }
     
@@ -138,7 +145,9 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
             //do nothing for the original project.
             return ;
         }
-        fixPrivateProperties(original.getLookup().lookup(J2SEProjectOperations.class));
+        J2SEProjectOperations origOperations = original.getLookup().lookup(J2SEProjectOperations.class);
+        fixLibraryLocation(origOperations);
+        fixPrivateProperties(origOperations);
         fixDistJarProperty (nueName);
         project.getReferenceHelper().fixReferences(originalPath);
         
@@ -150,6 +159,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
             throw new IOException (NbBundle.getMessage(J2SEProjectOperations.class,
                 "MSG_OldProjectMetadata"));
         }
+        rememberLibraryLocation();
         readPrivateProperties ();        
         notifyDeleting();
     }
@@ -159,10 +169,32 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
             project.getAntProjectHelper().notifyDeleted();
             return ;
         }                
-        fixPrivateProperties (original.getLookup().lookup(J2SEProjectOperations.class));
+        J2SEProjectOperations origOperations = original.getLookup().lookup(J2SEProjectOperations.class);
+        fixLibraryLocation(origOperations);
+        fixPrivateProperties (origOperations);
         fixDistJarProperty (nueName);
         project.setName(nueName);        
 	project.getReferenceHelper().fixReferences(originalPath);
+    }
+
+    private void fixLibraryLocation(J2SEProjectOperations original) throws IllegalArgumentException {
+        String libPath = original.libraryPath;
+        if (libPath != null) {
+            if (!new File(libPath).isAbsolute()) {
+                File file = original.libraryFile;
+                if (file == null) {
+                    // could happen in some rare cases, but in that case the original project was already broken, don't fix.
+                    return;
+                }
+                String relativized = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), file);
+                if (relativized != null) {
+                    project.getAntProjectHelper().setLibrariesLocation(relativized);
+                } else {
+                    //cannot relativize, use absolute path
+                    project.getAntProjectHelper().setLibrariesLocation(file.getAbsolutePath());
+                }
+            }
+        }
     }
     
     private void readPrivateProperties () {
@@ -204,6 +236,13 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
                 }
             }
         });
+    }
+
+    private void rememberLibraryLocation() {
+        libraryPath = project.getAntProjectHelper().getLibrariesLocation();
+        if (libraryPath != null) {
+            libraryFile = PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), libraryPath);
+        }
     }
     
 }

@@ -65,7 +65,7 @@ import org.openide.util.Exceptions;
  * 
  * @author Tor Norbye
  */
-public class IndexedElement extends JsElement {
+public abstract class IndexedElement extends JsElement {
 
     protected ElementKind kind;
     protected String name;
@@ -94,7 +94,7 @@ public class IndexedElement extends JsElement {
     static IndexedElement create(String attributes, String fileUrl, String name, String in, int attrIndex, JsIndex index, boolean createPackage) {
         int flags = IndexedElement.decode(attributes, attrIndex, 0);
         if (createPackage) {
-            IndexedPackage func = new IndexedPackage(name, in, index, fileUrl, attributes, flags);
+            IndexedPackage func = new IndexedPackage(name, in, index, fileUrl, attributes, flags, ElementKind.PACKAGE);
             return func;
         }
         if ((flags & FUNCTION) != 0) {
@@ -102,7 +102,8 @@ public class IndexedElement extends JsElement {
             IndexedFunction func = new IndexedFunction(name, in, index, fileUrl, attributes, flags, kind);
             return func;
         } else if ((flags & GLOBAL) != 0) {
-            IndexedProperty property = new IndexedProperty(name, in, index, fileUrl, attributes, flags, ElementKind.GLOBAL);
+            ElementKind kind = Character.isUpperCase(name.charAt(0)) ? ElementKind.CLASS : ElementKind.GLOBAL;
+            IndexedProperty property = new IndexedProperty(name, in, index, fileUrl, attributes, flags, kind);
             return property;
         } else {
             IndexedProperty property = new IndexedProperty(name, in, index, fileUrl, attributes, flags, ElementKind.PROPERTY);
@@ -139,7 +140,7 @@ public class IndexedElement extends JsElement {
             int nextDot = elementName.indexOf('.', name.length());
             if (nextDot != -1) {
                 String pkg = elementName.substring(0, nextDot);
-                IndexedPackage element = new IndexedPackage(pkg, null, index, fileUrl, signature, IndexedElement.decode(signature, inEndIdx, 0));
+                IndexedPackage element = new IndexedPackage(pkg, null, index, fileUrl, signature, IndexedElement.decode(signature, inEndIdx, 0), ElementKind.PACKAGE);
                 return element;
             }
         }
@@ -186,6 +187,9 @@ public class IndexedElement extends JsElement {
 
     @Override
     public Set<Modifier> getModifiers() {
+        if (isStatic()) {
+            return AstElement.STATIC;
+        }
         return Collections.emptySet();
     }
 
@@ -268,7 +272,8 @@ public class IndexedElement extends JsElement {
                         List<String> comments = new ArrayList<String>();
                         for (int i = 0, n = lines.length; i < n; i++) {
                             String line = lines[i];
-                            if (i == n-1 && line.trim().endsWith("*/")) {
+                            line = line.trim();
+                            if (i == n-1 && line.endsWith("*/")) {
                                 line = line.substring(0,line.length()-2);
                             }
                             if (line.startsWith("/**")) {
@@ -376,7 +381,7 @@ public class IndexedElement extends JsElement {
     public static final int NODOC = 1 << 5;
     /** This is a global variable */
     public static final int GLOBAL = 1 << 6;
-    /** This is a function, not a property */
+    /** This is a constructor */
     public static final int CONSTRUCTOR = 1 << 7;
 
     /** Return a string (suitable for persistence) encoding the given flags */
@@ -420,6 +425,9 @@ public class IndexedElement extends JsElement {
             value += FUNCTION;
         } else if (k == ElementKind.GLOBAL) {
             value += GLOBAL;
+        }
+        if (element.getModifiers().contains(Modifier.STATIC)) {
+            value += STATIC;
         }
 
         return value;

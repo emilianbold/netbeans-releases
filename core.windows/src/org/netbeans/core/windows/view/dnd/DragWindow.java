@@ -41,7 +41,6 @@
 
 package org.netbeans.core.windows.view.dnd;
 
-import org.netbeans.swing.tabcontrol.*;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
@@ -61,7 +60,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.core.windows.options.WinSysPrefs;
 import org.netbeans.core.windows.view.ui.Tabbed;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -89,20 +87,14 @@ class DragWindow extends JWindow {
         
         tabImage = createTabImage();
         
-        Runnable imageCreator = new Runnable() {
-            public void run() {
-                contentImage = createContentImage( content, contentSize );
-                if( useFadeEffects ) {
-                    imageBuffer = createImageBuffer( contentImage );
-                    currentEffect = createInitialEffect();
-                    currentEffect.start();
-                } else {
-                    contentAlpha = 1.0f;
-                }
-                repaint();
-            }
-        };
-        RequestProcessor.getDefault().post(imageCreator);
+        contentImage = createContentImage( content, contentSize );
+        if( useFadeEffects ) {
+            imageBuffer = createImageBuffer( contentImage );
+            currentEffect = createInitialEffect();
+            currentEffect.start();
+        } else {
+            contentAlpha = 1.0f;
+        }
     }
     
     private BufferedImage createTabImage() {
@@ -127,6 +119,9 @@ class DragWindow extends JWindow {
 
         BufferedImage res = config.createCompatibleImage(contentSize.width, contentSize.height);
         Graphics2D g = res.createGraphics();
+        //some components may be non-opaque so just black rectangle would be painted then
+        g.setColor( Color.white );
+        g.fillRect(0, 0, contentSize.width, contentSize.height);
         if( WinSysPrefs.HANDLER.getBoolean(WinSysPrefs.DND_SMALLWINDOWS, true) && c.getWidth() > 0 && c.getHeight() > 0 ) {
             double xScale = contentSize.getWidth() / c.getWidth();
             double yScale = contentSize.getHeight() / c.getHeight();
@@ -160,15 +155,13 @@ class DragWindow extends JWindow {
             g2d.drawImage(tabImage, 0, 0, null);
         else
             g2d.drawImage(tabImage, tabRectangle.x, tabRectangle.y, null);
-        if( useFadeEffects ) {
-            if( null != imageBuffer ) {
-                g2d.drawImage( imageBuffer, 1, tabRectangle.height+1, null );
-            }
-        } else {
+        if( !useFadeEffects || null == imageBuffer ) {
             g2d.setColor( Color.black );
             g2d.fillRect(1, tabRectangle.height+1, getWidth()-2, getHeight()-tabRectangle.height-2);
             g2d.setComposite( AlphaComposite.getInstance(AlphaComposite.SRC_OVER, contentAlpha ));
             g2d.drawImage( contentImage, 1, tabRectangle.height+1, null );
+        } else if( null != imageBuffer ) {
+            g2d.drawImage( imageBuffer, 1, tabRectangle.height+1, null );
         }
         g2d.dispose();
     }
@@ -185,6 +178,7 @@ class DragWindow extends JWindow {
                 contentBackground = Color.black;
                 currentEffect = dropEnabled ? createDropEnabledEffect() : createNoDropEffect();
                 currentEffect.start();
+                repaint();
             } else {
                 contentAlpha = dropEnabled ? 1.0f : NO_DROP_ALPHA;
                 repaint();
@@ -198,13 +192,13 @@ class DragWindow extends JWindow {
             public void actionPerformed(ActionEvent e) {
                 if( contentAlpha < 1.0f ) {
                     contentAlpha += ALPHA_INCREMENT;
-                    if( contentAlpha > 1.0f )
-                        contentAlpha = 1.0f;
-                    repaintImageBuffer();
-                    repaint();
                 } else {
                     timer.stop();
                 }
+                if( contentAlpha > 1.0f )
+                    contentAlpha = 1.0f;
+                repaintImageBuffer();
+                repaint();
             }
         });
         timer.setInitialDelay(0);
@@ -224,13 +218,13 @@ class DragWindow extends JWindow {
             public void actionPerformed(ActionEvent e) {
                 if( contentAlpha > NO_DROP_ALPHA ) {
                     contentAlpha -= ALPHA_INCREMENT;
-                    if( contentAlpha < NO_DROP_ALPHA )
-                        contentAlpha = NO_DROP_ALPHA;
-                    repaintImageBuffer();
-                    repaint();
                 } else {
                     timer.stop();
                 }
+                if( contentAlpha < NO_DROP_ALPHA )
+                    contentAlpha = NO_DROP_ALPHA;
+                repaintImageBuffer();
+                repaint();
             }
         });
         timer.setInitialDelay(0);
@@ -240,6 +234,10 @@ class DragWindow extends JWindow {
     private void repaintImageBuffer() {
         if( !useFadeEffects )
             return;
+        // #128324 - image might not be created yet
+        if ( null == imageBuffer ) {
+            return;
+        }
         Graphics2D g2d = imageBuffer.createGraphics();
         g2d.setColor( contentBackground );
         g2d.fillRect(0, 0, imageBuffer.getWidth(), imageBuffer.getHeight() );

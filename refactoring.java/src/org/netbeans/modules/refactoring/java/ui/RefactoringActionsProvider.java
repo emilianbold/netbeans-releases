@@ -385,12 +385,19 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 @Override
                 protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles, CompilationInfo cinfo) {
                     if (renameFile) {
-                        FileObject[] files = new FileObject[handles.size()];
-                        int i=0;
+                        ArrayList<FileObject> filesList = new ArrayList<FileObject>();
+                        ArrayList<TreePathHandle> handlesList = new ArrayList<TreePathHandle>();
                         for (TreePathHandle handle:handles) {
-                            files[i++] = handle.getFileObject();
+                            FileObject fo = handle.getFileObject();
+                            if (fo != null) {
+                                filesList.add(fo);
+                                handlesList.add(handle);
+                            }
                         }
-                        return new SafeDeleteUI(files, handles, b);
+                        if (filesList.isEmpty()) {
+                            return null;
+                        }
+                        return new SafeDeleteUI(filesList.toArray(new FileObject[filesList.size()]), handlesList, b);
                     } else {
                         return new SafeDeleteUI(handles.toArray(new TreePathHandle[handles.size()]), cinfo);
                     }
@@ -898,14 +905,13 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             try {
                 DataObject dobj = DataObject.find(children[x]);
                 FileObject fobj = dobj.getPrimaryFile();
-                if (dobj instanceof DataFolder) {
-                    if (containsJavaFile(fobj)) {
-                        return true;
-                    }
-                } else {
-                    if (RetoucheUtils.isJavaFile(fobj)) {
-                        return true;
-                    }
+//                if (dobj instanceof DataFolder) {
+//                    if (containsJavaFile(fobj)) {
+//                        return true;
+//                    }
+//                } else {
+                if (RetoucheUtils.isJavaFile(fobj)) {
+                    return true;
                 }
             } catch (DataObjectNotFoundException ex) {
             }

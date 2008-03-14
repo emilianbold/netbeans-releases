@@ -52,7 +52,7 @@
 
     <description>Yahoo Traffic Service</description>
     
-    <display-name>YahooTrafficService</display-name>
+    <display-name>Traffic Report Service</display-name>
 
     <saas-metadata>
 
@@ -61,14 +61,15 @@
         <group name="Yahoo">
         </group>
 
-        <authentication profile="Templates/WebServices/profile.properties">
+        <authentication profile="SaaSServices/Yahoo/profile.properties">
             <api-key id="dev_id"/>
         </authentication>
 
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="getTrafficData" href="#yahoo.trafficData"/>
     </methods>
-
+    -->
 </saas-services>

@@ -90,6 +90,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             = new DefaultVertexItemRenderer();
 
     private InplaceEditor inplaceEditor;
+    private boolean printMode = false;
     
     public Canvas(Mapper mapper) {
         super(mapper);
@@ -202,7 +203,47 @@ public class Canvas extends MapperPanel implements VertexCanvas,
     JViewport getViewport() {
         return scrollPane.getViewport();
     }
+    
+    @Override
+    public void print(Graphics g) {
+        LeftTree leftTree = getLeftTree();
 
+        leftTree.setPrintMode(true);
+        printMode = true;
+        super.print(g);
+        printMode = false;
+        leftTree.setPrintMode(false);
+    }
+    @Override
+    protected void printComponent(Graphics g) {
+       // super.paintComponent(g);
+        Mapper mapper = getMapper();
+
+        //mapper.resetRepaintSceduled();
+
+        MapperNode root = getRoot();
+
+        if (root != null) {
+            int step = getStep();
+            int graphX0 = toGraph(0);
+
+            Graphics2D g2 = (Graphics2D) g.create();
+            
+            CanvasRendererContext rendererContext = new DefaultCanvasRendererPrintContext(mapper);
+            paintNodeBackground(root, 0, g2, rendererContext);
+
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+
+            paintNodeLinks(root, false, 0, g2, rendererContext);
+            paintNodeVerteces(root, false, 0, g2, rendererContext);
+            paintNodeLinks(root, true, 0, g2, rendererContext);
+            paintNodeVerteces(root, true, 0, g2, rendererContext);
+
+            g2.dispose();
+        }
+    }
+    
     @Override
     public void setLocation(int x, int y) {
         int step = getStep();
@@ -315,7 +356,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         int maxX = rendererContext.getCanvasVisibleMaxX();
         int graphX = rendererContext.getGraphX();
 
-        if (node.isSelected()) {
+        if (rendererContext.isSelected(node.getTreePath())) {
             VerticalGradient gradient = (hasFocus())
                     ? Mapper.SELECTED_BACKGROUND_IN_FOCUS
                     : Mapper.SELECTED_BACKGROUND_NOT_IN_FOCUS;
@@ -374,14 +415,14 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             g2.translate(graphX, 0);
             grid.paintGrid(this, g2, -graphX, nodeY + topInset + 1, getWidth(),
                     contentHeight - size - 2, step,
-                    !node.isSelected());
+                    !node.isSelected() && !printMode);
             g2.translate(-graphX, 0);
         }
     }
 
     void paintNodeLinks(MapperNode node, boolean selectedFilter,
             int nodeY, Graphics2D g2, CanvasRendererContext rendererContext) {
-        boolean nodeIsSelected = node.isSelected();
+        boolean nodeIsSelected = rendererContext.isSelected(node.getTreePath());
         int step = rendererContext.getStep();
 
         Mapper mapper = getMapper();
@@ -793,6 +834,15 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         return textRenderer;
     }
 
+   @Override
+    public int getY() {
+        if (printMode) {
+            return 0; 
+        }
+        
+        return super.getY();
+    }
+   
     private class CanvasScrollPane extends JScrollPane implements AdjustmentListener {
 
         public CanvasScrollPane() {

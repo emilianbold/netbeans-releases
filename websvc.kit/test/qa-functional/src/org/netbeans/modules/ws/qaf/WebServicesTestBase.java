@@ -54,7 +54,6 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
@@ -366,6 +365,7 @@ public abstract class WebServicesTestBase extends JellyTestCase {
             File projectRoot = new File(getDataDir(), "projects/" + getProjectName()); //NOI18N
             if (projectRoot.exists()) {
                 project = (Project) ProjectSupport.openProject(new File(getDataDir(), "projects/" + getProjectName()));
+                checkMissingServer(getProjectName());
             } else {
                 if (System.getProperty("xtest.tmpdir") != null) { //NOI18N
                     //XTest execution
@@ -460,19 +460,16 @@ public abstract class WebServicesTestBase extends JellyTestCase {
                 jcboVersion.selectItem(javaeeVersion.toString());
             }
         }
-        if (ProjectType.SAMPLE.equals(type) || ProjectType.JAVASE_APPLICATION.equals(type)) {
-            op.finish();
-        } else {
+        if (!(ProjectType.SAMPLE.equals(type) || ProjectType.JAVASE_APPLICATION.equals(type))) {
             //second panel in Web, Ejb and Ear is now mandatory
             op.next();
-            WizardOperator wo = new WizardOperator("New Project");
-            wo.finish();
         }
+        op.finish();
         // Opening Projects
         String openingProjectsTitle = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");
         waitDialogClosed(openingProjectsTitle);
         if (ProjectType.SAMPLE.equals(type)) {
-            checkMissingServer(projectName);
+            checkMissingServer(name);
         }
         // wait project appear in projects view
         ProjectRootNode node = ProjectsTabOperator.invoke().getProjectRootNode(name);
@@ -672,7 +669,7 @@ public abstract class WebServicesTestBase extends JellyTestCase {
         }
     }
 
-    private void checkMissingServer(String project) {
+    protected void checkMissingServer(String project) {
         // check missing target server dialog is shown
         // "Open Project"
         String openProjectTitle = Bundle.getString("org.netbeans.modules.j2ee.common.ui.Bundle", "MSG_Broken_Server_Title");

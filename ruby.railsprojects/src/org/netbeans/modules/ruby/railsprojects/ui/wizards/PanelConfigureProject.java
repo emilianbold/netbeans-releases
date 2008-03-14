@@ -52,6 +52,7 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 
 /**
  * Panel just asking for basic info.
@@ -131,14 +132,13 @@ public final class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
         WizardDescriptor d = (WizardDescriptor)settings;
         component.store(d);
         d.putProperty ("NewProjectWizard_Title", null); // NOI18N
-        d.putProperty( /*XXX Define somewhere */ "setAsMain", Boolean.TRUE); // NOI18N
     }
 
     public boolean isFinishPanel() {
         // Can only finish here if the Rails configuration is okay, otherwise
         // user must move on to the Rails installation panel
-        RubyPlatform platform = WizardUtil.platformFor(wizardDescriptor);
-        return platform.getGemManager().isValidRails(false);
+        RubyPlatform platform = component.getPlatform();
+        return platform == null ? false : RailsInstallationValidator.getRailsInstallation(platform).isValid();
     }
     
     public void validate() throws WizardValidationException {

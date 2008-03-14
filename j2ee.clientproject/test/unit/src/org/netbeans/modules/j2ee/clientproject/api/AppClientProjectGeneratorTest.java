@@ -272,7 +272,7 @@ public class AppClientProjectGeneratorTest extends NbTestCase {
         File srcRoot = new File(importRoot, "src/java");
         File confRoot = new File(importRoot, "src/conf");
         File libDir = new File(root, "libs");
-        libDir.mkdirs();
+        FileUtil.createFolder(libDir);
         AntProjectHelper helper = AppClientProjectGenerator.importProject(proj,
                 "test-project-ext-src2", new File[] {srcRoot}, new File[] {},
                 confRoot, libDir, J2eeModule.JAVA_EE_5, serverID);

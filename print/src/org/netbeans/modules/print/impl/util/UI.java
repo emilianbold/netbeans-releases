@@ -46,6 +46,7 @@ import java.awt.Insets;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Event;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
@@ -99,11 +100,17 @@ public final class UI {
   }
 
   public static boolean isCtrl(int modifiers) {
-    return isModifier(modifiers, KeyEvent.CTRL_MASK);
+    return
+      isModifier(modifiers, KeyEvent.CTRL_MASK) ||
+      isModifier(modifiers, KeyEvent.META_MASK);
   }
 
   private static boolean isModifier(int modifiers, int mask) {
     return (modifiers & mask) != 0;
+  }
+
+  public static MyComboBox createComboBox(Object [] items) {
+    return new MyComboBox(items);
   }
 
   public static JLabel createLabel(String message) {
@@ -112,9 +119,11 @@ public final class UI {
     return label;
   }
 
-  public static JRadioButton createRadioButton(String message) {
+  public static JRadioButton createRadioButton(String text, String toolTip) {
     JRadioButton button = new JRadioButton();
-    Mnemonics.setLocalizedText(button, message);
+    Mnemonics.setLocalizedText(button, text);
+    button.setText(cutMnemonicAndAmpersand(text));
+    button.setToolTipText(toolTip);
     return button;
   }
 
@@ -212,8 +221,16 @@ public final class UI {
   }
 
   public static void a11y(Component component, String a11y) {
-    component.getAccessibleContext().setAccessibleName(a11y);
-    component.getAccessibleContext().setAccessibleDescription(a11y);
+      a11y(component, a11y, a11y);
+  }
+
+  public static void a11y(Component component, String a11yN, String a11yD) {
+    if (a11yN != null) {  
+        component.getAccessibleContext().setAccessibleName(a11yN);
+    }
+    if (a11yD != null) {
+        component.getAccessibleContext().setAccessibleDescription(a11yD);
+    }
   }
 
   public static String i18n(Class clazz, String key) {
@@ -436,6 +453,20 @@ public final class UI {
     }
   }
 
+  public static void stackTrace() {
+    stackTrace(null);
+  }
+
+  public static void stackTrace(Object object) {
+    out();
+    out();
+
+    if (object != null) {
+      out(object);
+    }
+    new Exception("!!!").printStackTrace(); // NOI18N
+  }
+
   public static void out() {
     if (ENABLE_OUT) {
       System.out.println();
@@ -448,6 +479,53 @@ public final class UI {
     }
   }
 
+  // ------------------------------------------------
+  public static class MyComboBox extends JComboBox {
+    public MyComboBox(Object [] items) {
+      super(items);
+      init();
+    }
+
+    @Override
+    public boolean selectWithKeyChar(char key)
+    {
+      processKey(key);
+      setSelectedIndex(myIndex);
+      return true;
+    }
+
+    public void init() {
+//out();
+//out("init");
+      myIndex = 0;
+      myPrefix = ""; // NOI18N
+    }
+
+    private void processKey(char key) {
+//out("select: '" + key);
+      if (((int) key) == Event.BACK_SPACE) {
+        init();
+        return;
+      }
+      myPrefix += key;
+      myPrefix = myPrefix.toLowerCase();
+
+//out("prefix: " + myPrefix);
+      for (int i=myIndex; i < getItemCount(); i++) {
+        String item = getItemAt(i).toString().toLowerCase();
+//out("  see: " + item);
+
+        if (item.startsWith(myPrefix)) {
+          myIndex = i;
+          return;
+        }
+      }
+    }
+
+    private int myIndex;
+    private String myPrefix;
+  }
+
   // -------------------------------------------------------------
   public abstract static class IconAction extends AbstractAction {
 
@@ -455,6 +533,20 @@ public final class UI {
       super(name, icon);
       putValue(SHORT_DESCRIPTION, toolTip);
     }
+
+    protected final Node getLastNode() {
+      Node node = getSelectedNode();
+
+      if (node == null) {
+        node = myLastNode;
+      }
+      else {
+        myLastNode = node;
+      }
+      return node;
+    }
+  
+    private Node myLastNode;
   }
 
   // ---------------------------------------------------------------

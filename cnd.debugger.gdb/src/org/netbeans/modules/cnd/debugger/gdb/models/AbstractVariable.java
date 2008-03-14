@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
 import java.beans.Customizer;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Map;
@@ -62,6 +63,7 @@ import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /*
@@ -69,7 +71,7 @@ import org.openide.util.Utilities;
  *
  * @author Nik Molchanov (copied from Jan Jancura's JPDA implementation)
  */
-public class AbstractVariable implements LocalVariable, Customizer {
+public class AbstractVariable implements LocalVariable, Customizer, PropertyChangeListener {
     
     private GdbDebugger debugger;
     protected String name;
@@ -101,6 +103,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         ovalue = null;
         fields = new Field[0];
         tinfo = TypeInfo.getTypeInfo(getDebugger(), this);
+        getDebugger().addPropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
         
         if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
             this.value = value;
@@ -116,7 +119,9 @@ public class AbstractVariable implements LocalVariable, Customizer {
         }
     }
         
-    protected AbstractVariable() {} // used by AbstractField instantiation...
+    protected AbstractVariable() { // used by AbstractField instantiation...
+        getDebugger().addPropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
+    }
     
     protected TypeInfo getTypeInfo() {
         if (tinfo == null) {
@@ -125,8 +130,11 @@ public class AbstractVariable implements LocalVariable, Customizer {
         return tinfo;
     }
     
-    protected void resetTypeInfo() {
+    protected void resetVariable() {
         tinfo = null;
+        type = "";
+        value = "";
+        fields = new Field[0];
     }
     
     /**
@@ -167,22 +175,17 @@ public class AbstractVariable implements LocalVariable, Customizer {
         this.type = type;
     }
     
-    public void setTypeToError(String msg) {
-        msg = msg.replace("\\\"", "\""); // NOI18N
-        if (msg.charAt(msg.length() - 1) == '.') {
-            msg = msg.substring(0, msg.length() - 1);
-        }
-        setType('>' + msg + '<');
-        log.fine("AV.setTypeToError[" + GdbUtils.threadId() + "]: " + getName()); // NOI18N
-    }
-    
     /**
      * Returns string representation of type of this variable.
      *
      * @return string representation of type of this variable.
      */
     public String getValue() {
-        return value;
+        if (value.startsWith(">") && value.endsWith(".\"<")) { // NOI18N
+            return '>' + value.substring(2, value.length() - 3).replace("\\\"", "\"") + '<'; // NOI18N
+        } else {
+            return value.replace("\\\"", "\""); // NOI18N
+        }
     }
 
     /**
@@ -260,12 +263,30 @@ public class AbstractVariable implements LocalVariable, Customizer {
                     }
                 }
                 ovalue = this.value;
-                value = getDebugger().updateVariable(fullname, value);
+                this.value = getDebugger().updateVariable(fullname, value);
+                if (this instanceof AbstractField) {
+                    // This code transfers changes between Local Variables and Watches
+                    AbstractVariable parent = ((AbstractField) this).parent;
+                    while (parent instanceof AbstractField) {
+                        parent.value = getDebugger().requestValue(parent.getFullName());
+                        getDebugger().variableChanged(parent);
+                        parent = ((AbstractField) parent).parent;
+                    }
+                    parent.value = getDebugger().requestValue(parent.getName());
+                    getDebugger().variableChanged(parent);
+                    
+                    // Special case: If a Watch is changed before the Local Variables view
+                    // is displayed, the AbstractVariable will be created from the GdbVariable.
+                    // For that case, we need to update the GdbVariable!
+                    getDebugger().updateGdbVariable(parent.getName(), parent.value);
+                    getDebugger().fireLocalsRefresh(parent);
+                }
+                getDebugger().variableChanged(this);
             }
         }
         if (msg != null) {
             NotifyDescriptor nd = new NotifyDescriptor.Message(msg);
-            nd.setTitle("TITLE_SetValue_Warning"); // NOI18N
+            nd.setTitle(NbBundle.getMessage(AbstractVariable.class, "TITLE_SetValue_Warning")); // NOI18N
             DialogDisplayer.getDefault().notify(nd);
         }
     }
@@ -279,7 +300,9 @@ public class AbstractVariable implements LocalVariable, Customizer {
         if (fields.length > 0) {
             fields = new Field[0];
             derefValue = null;
-            expandChildren();
+            if (value.length() > 0) {
+                expandChildren();
+            }
         }
     }
     
@@ -889,6 +912,34 @@ public class AbstractVariable implements LocalVariable, Customizer {
         listeners.remove(l);
     }
     
+    public void propertyChange(PropertyChangeEvent ev) {
+        if (ev.getPropertyName().equals(GdbDebugger.PROP_VALUE_CHANGED)) {
+            assert ev.getNewValue() instanceof AbstractVariable;
+            AbstractVariable av = (AbstractVariable) ev.getNewValue();
+            if (av != this && av.getFullName().equals(getFullName())) {
+                if (av instanceof AbstractField) {
+                    final AbstractVariable ancestor = ((AbstractField) this).getAncestor();
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            ancestor.updateVariable();
+                        }
+                    });
+                } else {
+                    setModifiedValue(av.getValue());
+                }
+            }
+        }
+    }
+    
+    private void updateVariable() {
+        value = getDebugger().requestValue("\"" + getName() + "\""); // NOI18N
+        String rt = getTypeInfo().getResolvedType(this);
+        if (GdbUtils.isPointer(rt)) {
+            derefValue = getDebugger().requestValue('*' + getName());
+        }
+        setModifiedValue(value);
+    }
+    
     @Override
     public String toString() {
         return getFullName(false);
@@ -941,6 +992,14 @@ public class AbstractVariable implements LocalVariable, Customizer {
                 this.value = GdbUtils.mackHack(value);
             } else {
                 this.value = value;
+            }
+        }
+    
+        protected AbstractVariable getAncestor() {
+            if (parent instanceof AbstractField) {
+                return ((AbstractField) parent).getAncestor();
+            } else {
+                return parent;
             }
         }
         

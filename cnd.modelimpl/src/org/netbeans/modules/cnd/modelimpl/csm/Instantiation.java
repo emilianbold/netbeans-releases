@@ -54,110 +54,104 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
  *
  * @author eu155513
  */
-public abstract class Instantiation {
-    protected final CsmTemplate template;
-    protected final CsmType instantiation;
-    
-    private Instantiation(CsmTemplate template, CsmType instantiation) {
-        assert template instanceof CsmTemplate : "Instantiated class is not a CsmTemplate"; // NOI18N
-        this.template = template;
-        assert instantiation.isInstantiation() : "Instantiation without parameters"; // NOI18N
-        this.instantiation = instantiation;
+public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, CsmInstantiation {
+    protected final CsmOffsetableDeclaration declaration;
+
+    public Instantiation(CsmOffsetableDeclaration declaration) {
+        this.declaration = declaration;
+    }
+
+    public CsmOffsetableDeclaration getTemplateDeclaration() {
+        return declaration;
     }
     
+    /*
+     * The only public method to create a new instantiation
+     */
     public static CsmObject create(CsmTemplate template, CsmType type) {
         if (template instanceof CsmClass) {
-            return new Class(template, type);
+            return new Class((CsmClass)template, type);
         } else if (template instanceof CsmFunction) {
-            return new Function(template, type);
+            return new Function((CsmFunction)template, type);
         }
         assert true : "Unknown class for template instantiation:" + template; // NOI18N
         return template;
     }
+    
+    public CsmFile getContainingFile() {
+        return getTemplateDeclaration().getContainingFile();
+    }
 
-    protected CsmType getInstantiatedType(CsmType type) {
-        if (CsmKindUtilities.isTemplateParameterType(type)) {
-            CsmTemplateParameterType paramType = (CsmTemplateParameterType)type;
-            int paramIdx = ((CsmTemplate)template).getTemplateParameters().indexOf(paramType.getParameter());
-            if (paramIdx != -1) {
-                try {
-                    return new Type(paramType.getTemplateType(), instantiation.getInstantiationParams().get(paramIdx));
-                } catch (IndexOutOfBoundsException e) {
-                    // parameter does not exist
-                }
-            }
-        }
-        return type;
+    public int getEndOffset() {
+        return getTemplateDeclaration().getEndOffset();
+    }
+
+    public Position getEndPosition() {
+        return getTemplateDeclaration().getEndPosition();
+    }
+
+    public int getStartOffset() {
+        return getTemplateDeclaration().getStartOffset();
+    }
+
+    public Position getStartPosition() {
+        return getTemplateDeclaration().getStartPosition();
+    }
+
+    public CharSequence getText() {
+        return getTemplateDeclaration().getText();
+    }
+
+    public Kind getKind() {
+        return getTemplateDeclaration().getKind();
+    }
+
+    public CharSequence getUniqueName() {
+        return getTemplateDeclaration().getUniqueName();
+    }
+
+    public CharSequence getQualifiedName() {
+        return getTemplateDeclaration().getQualifiedName();
+    }
+
+    public CharSequence getName() {
+        return getTemplateDeclaration().getName();
+    }
+
+    public CsmScope getScope() {
+        return getTemplateDeclaration().getScope();
+    }
+
+    public CsmUID<T> getUID() {
+        assert true : "Getting UID of instantiated class is not supported yet"; // NOI18N
+        return getTemplateDeclaration().getUID();
     }
     
-    private static class Class extends Instantiation implements CsmClass, CsmInstantiation {
-        public Class(CsmTemplate clazz, CsmType type) {
-            super(clazz, type);
+    //////////////////////////////
+    ////////////// STATIC MEMBERS
+    private static class Class extends Instantiation<CsmClass> implements CsmClass {
+        protected final CsmType instantiationType;
+        
+        public Class(CsmClass clazz, CsmType type) {
+            super(clazz);
+            assert type.isInstantiation() : "Instantiation without parameters"; // NOI18N
+            this.instantiationType = type;
         }
 
         public boolean isValid() {
-            return ((CsmClass)template).isValid();
-        }
-
-        public CharSequence getText() {
-            return ((CsmClass)template).getText();
-        }
-
-        public Position getStartPosition() {
-            return ((CsmClass)template).getStartPosition();
-        }
-
-        public int getStartOffset() {
-            return ((CsmClass)template).getStartOffset();
-        }
-
-        public Position getEndPosition() {
-            return ((CsmClass)template).getEndPosition();
-        }
-
-        public int getEndOffset() {
-            return ((CsmClass)template).getEndOffset();
-        }
-
-        public CsmFile getContainingFile() {
-            return ((CsmClass)template).getContainingFile();
+            return ((CsmClass)declaration).isValid();
         }
 
         public Collection<CsmScopeElement> getScopeElements() {
-            return ((CsmClass)template).getScopeElements();
-        }
-
-        public CsmUID<CsmClass> getUID() {
-            assert true : "Getting UID of instantiated class is not supported yet";
-            return ((CsmClass)template).getUID();
-        }
-
-        public CsmScope getScope() {
-            return ((CsmClass)template).getScope();
-        }
-
-        public CharSequence getName() {
-            return ((CsmClass)template).getName();
-        }
-
-        public CharSequence getQualifiedName() {
-            return ((CsmClass)template).getQualifiedName();
-        }
-
-        public CharSequence getUniqueName() {
-            return ((CsmClass)template).getUniqueName();
-        }
-
-        public Kind getKind() {
-            return ((CsmClass)template).getKind();
+            return ((CsmClass)declaration).getScopeElements();
         }
 
         public Collection<CsmTypedef> getEnclosingTypedefs() {
-            return ((CsmClass)template).getEnclosingTypedefs();
+            return ((CsmClass)declaration).getEnclosingTypedefs();
         }
 
         public boolean isTemplate() {
-            return ((CsmClass)template).isTemplate();
+            return ((CsmClass)declaration).isTemplate();
         }
 
         private CsmMember createMember(CsmMember member) {
@@ -165,6 +159,8 @@ public abstract class Instantiation {
                 return new Field((CsmField)member, this);
             } else if (member instanceof CsmMethod) {
                 return new Method((CsmMethod)member, this);
+            } else if (member instanceof ClassImpl.MemberTypedef) {
+                return new Typedef((ClassImpl.MemberTypedef)member, this);
             }
             assert true : "Unknown class for member instantiation:" + member; // NOI18N
             return member;
@@ -172,123 +168,74 @@ public abstract class Instantiation {
 
         public Collection<CsmMember> getMembers() {
             Collection<CsmMember> res = new ArrayList<CsmMember>();
-            for (CsmMember member : ((CsmClass)template).getMembers()) {
+            for (CsmMember member : ((CsmClass)declaration).getMembers()) {
                 res.add(createMember(member));
             }
             return res;
         }
 
         public int getLeftBracketOffset() {
-            return ((CsmClass)template).getLeftBracketOffset();
+            return ((CsmClass)declaration).getLeftBracketOffset();
         }
 
         public Collection<CsmFriend> getFriends() {
-            return ((CsmClass)template).getFriends();
+            return ((CsmClass)declaration).getFriends();
         }
 
         public Collection<CsmInheritance> getBaseClasses() {
-            return ((CsmClass)template).getBaseClasses();
-        }
-
-        public CsmOffsetableDeclaration getTemplateDeclaration() {
-            return (CsmClass)template;
+            return ((CsmClass)declaration).getBaseClasses();
         }
 
         public CsmType getInstantiationType() {
-            return instantiation;
+            return instantiationType;
         }
         
         @Override
         public String toString() {
-            return "INSTANTIATION OF CLASS: " + getTemplateDeclaration() + " with type " + getInstantiationType();
+            return "INSTANTIATION OF CLASS: " + getTemplateDeclaration() + " with type " + getInstantiationType(); // NOI18N
         }
     }
     
-    private static class Function extends Instantiation implements CsmFunction, CsmInstantiation {
+    private static class Function extends Instantiation implements CsmFunction {
+        protected final CsmType instantiationType;
         
-        public Function(CsmTemplate template, CsmType instantiation) {
-            super(template, instantiation);
-        }
-
-        public CharSequence getText() {
-            return ((CsmFunction)template).getText();
-        }
-
-        public Position getStartPosition() {
-            return ((CsmFunction)template).getStartPosition();
-        }
-
-        public int getStartOffset() {
-            return ((CsmFunction)template).getStartOffset();
-        }
-
-        public Position getEndPosition() {
-            return ((CsmFunction)template).getEndPosition();
-        }
-
-        public int getEndOffset() {
-            return ((CsmFunction)template).getEndOffset();
-        }
-
-        public CsmFile getContainingFile() {
-            return ((CsmFunction)template).getContainingFile();
+        public Function(CsmFunction function, CsmType instantiation) {
+            super(function);
+            assert instantiation.isInstantiation() : "Instantiation without parameters"; // NOI18N
+            this.instantiationType = instantiation;
         }
 
         public Collection<CsmScopeElement> getScopeElements() {
-            return ((CsmFunction)template).getScopeElements();
-        }
-
-        public CsmUID getUID() {
-            return ((CsmFunction)template).getUID();
-        }
-
-        public CsmScope getScope() {
-            return ((CsmFunction)template).getScope();
-        }
-
-        public CharSequence getName() {
-            return ((CsmFunction)template).getName();
-        }
-
-        public CharSequence getQualifiedName() {
-            return ((CsmFunction)template).getQualifiedName();
-        }
-
-        public CharSequence getUniqueName() {
-            return ((CsmFunction)template).getUniqueName();
-        }
-
-        public Kind getKind() {
-            return ((CsmFunction)template).getKind();
+            return ((CsmFunction)declaration).getScopeElements();
         }
 
         public boolean isTemplate() {
-            return ((CsmFunction)template).isTemplate();
+            return ((CsmFunction)declaration).isTemplate();
         }
 
         public boolean isInline() {
-            return ((CsmFunction)template).isInline();
+            return ((CsmFunction)declaration).isInline();
         }
 
         public boolean isOperator() {
-            return ((CsmFunction)template).isOperator();
+            return ((CsmFunction)declaration).isOperator();
         }
         
         public OperatorKind getOperatorKind() {
-            return ((CsmFunction)template).getOperatorKind();
+            return ((CsmFunction)declaration).getOperatorKind();
         }
         
         public CharSequence getSignature() {
-            return ((CsmFunction)template).getSignature();
+            return ((CsmFunction)declaration).getSignature();
         }
 
         public CsmType getReturnType() {
-            return ((CsmFunction)template).getReturnType();
+            return ((CsmFunction)declaration).getReturnType();
         }
 
         public Collection getParameters() {
             Collection<CsmParameter> res = new ArrayList<CsmParameter>();
-            Collection<CsmParameter> parameters = ((CsmFunction)template).getParameters();
+            Collection<CsmParameter> parameters = ((CsmFunction)declaration).getParameters();
             for (CsmParameter param : parameters) {
                 res.add(new Parameter(param, this));
             }
@@ -296,93 +243,39 @@ public abstract class Instantiation {
         }
 
         public CsmFunctionDefinition getDefinition() {
-            return ((CsmFunction)template).getDefinition();
+            return ((CsmFunction)declaration).getDefinition();
         }
 
         public CsmFunction getDeclaration() {
-            return ((CsmFunction)template).getDeclaration();
+            return ((CsmFunction)declaration).getDeclaration();
         }
         
         public CharSequence getDeclarationText() {
-            return ((CsmFunction)template).getDeclarationText();
-        }
-
-        public CsmOffsetableDeclaration getTemplateDeclaration() {
-            return (CsmFunction)template;
+            return ((CsmFunction)declaration).getDeclarationText();
         }
 
         public CsmType getInstantiationType() {
-            return instantiation;
+            return instantiationType;
         }
         
         @Override
         public String toString() {
-            return "INSTANTIATION OF FUNCTION: " + getTemplateDeclaration() + " with type " + getInstantiationType();
+            return "INSTANTIATION OF FUNCTION: " + getTemplateDeclaration() + " with type " + getInstantiationType(); // NOI18N
         }
     }
 
-    private static class Field implements CsmField, CsmInstantiation {
-        private final CsmField fieldRef;
-        private final Instantiation clazzRef;
+    private static class Field extends Instantiation<CsmField> implements CsmField {
+        private final CsmInstantiation instantiation;
         private final CsmType type;
 
-        public Field(CsmField field, Instantiation clazz) {
-            this.fieldRef = field;
-            this.clazzRef = clazz;
-            this.type = clazz.getInstantiatedType(field.getType());
-        }
-
-        public CharSequence getText() {
-            return fieldRef.getText();
-        }
-
-        public Position getStartPosition() {
-            return fieldRef.getStartPosition();
-        }
-
-        public int getStartOffset() {
-            return fieldRef.getStartOffset();
-        }
-
-        public Position getEndPosition() {
-            return fieldRef.getEndPosition();
-        }
-
-        public int getEndOffset() {
-            return fieldRef.getEndOffset();
-        }
-
-        public CsmFile getContainingFile() {
-            return fieldRef.getContainingFile();
-        }
-
-        public CsmUID<CsmField> getUID() {
-            assert true : "Getting UID of instantiated class is not supported yet";
-            return fieldRef.getUID();
-        }
-
-        public CsmScope getScope() {
-            return fieldRef.getScope();
-        }
-
-        public CharSequence getName() {
-            return fieldRef.getName();
-        }
-
-        public CharSequence getQualifiedName() {
-            return fieldRef.getQualifiedName();
-        }
-
-        public CharSequence getUniqueName() {
-            return fieldRef.getUniqueName();
-        }
-
-        public Kind getKind() {
-            return fieldRef.getKind();
+        public Field(CsmField field, CsmInstantiation instantiation) {
+            super(field);
+            this.instantiation = instantiation;
+            this.type = new Type(field.getType(), instantiation);
         }
 
         public boolean isExtern() {
-            return fieldRef.isExtern();
+            return ((CsmField)declaration).isExtern();
         }
 
         public CsmType getType() {
@@ -390,133 +283,119 @@ public abstract class Instantiation {
         }
 
         public CsmExpression getInitialValue() {
-            return fieldRef.getInitialValue();
+            return ((CsmField)declaration).getInitialValue();
         }
 
         public CharSequence getDisplayText() {
-            return fieldRef.getDisplayText();
+            return ((CsmField)declaration).getDisplayText();
         }
 
         public CsmVariableDefinition getDefinition() {
-            return fieldRef.getDefinition();
+            return ((CsmField)declaration).getDefinition();
         }
 
         public CharSequence getDeclarationText() {
-            return fieldRef.getDeclarationText();
+            return ((CsmField)declaration).getDeclarationText();
         }
 
         public boolean isStatic() {
-            return fieldRef.isStatic();
+            return ((CsmField)declaration).isStatic();
         }
 
         public CsmVisibility getVisibility() {
-            return fieldRef.getVisibility();
+            return ((CsmField)declaration).getVisibility();
         }
 
         public CsmClass getContainingClass() {
-            return fieldRef.getContainingClass();
-        }
-
-        public CsmOffsetableDeclaration getTemplateDeclaration() {
-            return fieldRef;
+            return ((CsmField)declaration).getContainingClass();
         }
 
         public CsmType getInstantiationType() {
-            return clazzRef.instantiation;
+            return instantiation.getInstantiationType();
         }
         
         @Override
         public String toString() {
-            return "INSTANTIATION OF FIELD: " + getTemplateDeclaration() + " with type " + getInstantiationType();
+            return "INSTANTIATION OF FIELD: " + getTemplateDeclaration() + " with type " + getInstantiationType(); // NOI18N
         }
     }
     
-    private static class Method implements CsmMethod, CsmFunctionDefinition, CsmInstantiation {
-        private final CsmMethod methodRef;
-        private final Class clazzRef;
-        private final CsmType retType;
+    private static class Typedef extends Instantiation<CsmTypedef> implements CsmTypedef, CsmMember<CsmTypedef> {
+        private final CsmInstantiation instantiation;
+        private final CsmType type;
 
-        public Method(CsmMethod method, Class clazz) {
-            this.methodRef = method;
-            this.clazzRef = clazz;
-            this.retType = clazz.getInstantiatedType(method.getReturnType());
+        public Typedef(ClassImpl.MemberTypedef typedef, CsmInstantiation instantiation) {
+            super(typedef);
+            this.instantiation = instantiation;
+            this.type = new Type(typedef.getType(), instantiation);
         }
 
-        public CharSequence getText() {
-            return methodRef.getText();
+        public boolean isTypeUnnamed() {
+            return ((ClassImpl.MemberTypedef)declaration).isTypeUnnamed();
         }
 
-        public Position getStartPosition() {
-            return methodRef.getStartPosition();
-        }
-
-        public int getStartOffset() {
-            return methodRef.getStartOffset();
-        }
-
-        public Position getEndPosition() {
-            return methodRef.getEndPosition();
-        }
-
-        public int getEndOffset() {
-            return methodRef.getEndOffset();
-        }
-
-        public CsmFile getContainingFile() {
-            return methodRef.getContainingFile();
-        }
-
-        public Collection<CsmScopeElement> getScopeElements() {
-            return methodRef.getScopeElements();
-        }
-
-        public CsmUID getUID() {
-            assert true : "Getting UID of instantiated class is not supported yet";
-            return methodRef.getUID();
-        }
-
-        public CsmScope getScope() {
-            return methodRef.getScope();
-        }
-
-        public CharSequence getName() {
-            return methodRef.getName();
-        }
-
-        public CharSequence getQualifiedName() {
-            return methodRef.getQualifiedName();
-        }
-
-        public CharSequence getUniqueName() {
-            return methodRef.getUniqueName();
-        }
-
-        public Kind getKind() {
-            return methodRef.getKind();
-        }
-
-        public boolean isStatic() {
-            return methodRef.isStatic();
-        }
-
-        public CsmVisibility getVisibility() {
-            return methodRef.getVisibility();
+        public CsmType getType() {
+            return type;
         }
 
         public CsmClass getContainingClass() {
-            return methodRef.getContainingClass();
+            return ((ClassImpl.MemberTypedef)declaration).getContainingClass();
+        }
+
+        public CsmVisibility getVisibility() {
+            return ((ClassImpl.MemberTypedef)declaration).getVisibility();
+        }
+
+        public boolean isStatic() {
+            return ((ClassImpl.MemberTypedef)declaration).isStatic();
+        }
+
+        public CsmType getInstantiationType() {
+            return instantiation.getInstantiationType();
+        }
+        
+        @Override
+        public String toString() {
+            return "INSTANTIATION OF TYPEDEF: " + getTemplateDeclaration() + " with type " + getInstantiationType(); // NOI18N
+        }
+    }
+    
+    private static class Method extends Instantiation implements CsmMethod, CsmFunctionDefinition {
+        private final CsmInstantiation instantiation;
+        private final CsmType retType;
+
+        public Method(CsmMethod method, CsmInstantiation instantiation) {
+            super(method);
+            this.instantiation = instantiation;
+            this.retType = new Type(method.getReturnType(), instantiation);
+        }
+
+        public Collection<CsmScopeElement> getScopeElements() {
+            return ((CsmMethod)declaration).getScopeElements();
+        }
+
+        public boolean isStatic() {
+            return ((CsmMethod)declaration).isStatic();
+        }
+
+        public CsmVisibility getVisibility() {
+            return ((CsmMethod)declaration).getVisibility();
+        }
+
+        public CsmClass getContainingClass() {
+            return ((CsmMethod)declaration).getContainingClass();
         }
 
         public boolean isTemplate() {
-            return methodRef.isTemplate();
+            return ((CsmMethod)declaration).isTemplate();
         }
 
         public boolean isInline() {
-            return methodRef.isInline();
+            return ((CsmMethod)declaration).isInline();
         }
 
         public CharSequence getSignature() {
-            return methodRef.getSignature();
+            return ((CsmMethod)declaration).getSignature();
         }
 
         public CsmType getReturnType() {
@@ -525,129 +404,75 @@ public abstract class Instantiation {
 
         public Collection<CsmParameter> getParameters() {
             Collection<CsmParameter> res = new ArrayList<CsmParameter>();
-            Collection<CsmParameter> parameters = methodRef.getParameters();
+            Collection<CsmParameter> parameters = ((CsmMethod)declaration).getParameters();
             for (CsmParameter param : parameters) {
-                res.add(new Parameter(param, clazzRef));
+                res.add(new Parameter(param, instantiation));
             }
             return res;
         }
 
         public CsmFunctionDefinition getDefinition() {
-            return methodRef.getDefinition();
+            return ((CsmMethod)declaration).getDefinition();
         }
 
         public CharSequence getDeclarationText() {
-            return methodRef.getDeclarationText();
+            return ((CsmMethod)declaration).getDeclarationText();
         }
 
         public boolean isVirtual() {
-            return methodRef.isVirtual();
+            return ((CsmMethod)declaration).isVirtual();
         }
 
         public boolean isExplicit() {
-            return methodRef.isExplicit();
+            return ((CsmMethod)declaration).isExplicit();
         }
 
         public boolean isConst() {
-            return methodRef.isConst();
+            return ((CsmMethod)declaration).isConst();
         }
 
         public boolean isAbstract() {
-            return methodRef.isAbstract();
+            return ((CsmMethod)declaration).isAbstract();
         }
 
         public boolean isOperator() {
-            return methodRef.isOperator();
+            return ((CsmMethod)declaration).isOperator();
         }
 
         public OperatorKind getOperatorKind() {
-            return methodRef.getOperatorKind();
+            return ((CsmMethod)declaration).getOperatorKind();
         }
         
         public CsmCompoundStatement getBody() {
-            return ((CsmFunctionDefinition)methodRef).getBody();
+            return ((CsmFunctionDefinition)declaration).getBody();
         }
 
         public CsmFunction getDeclaration() {
-            return ((CsmFunctionDefinition)methodRef).getDeclaration();
+            return ((CsmFunctionDefinition)declaration).getDeclaration();
         }
         
-        public CsmOffsetableDeclaration getTemplateDeclaration() {
-            return methodRef;
-        }
-
         public CsmType getInstantiationType() {
-            return clazzRef.getInstantiationType();
+            return instantiation.getInstantiationType();
         }
         
         @Override
         public String toString() {
-            return "INSTANTIATION OF METHOD: " + getTemplateDeclaration() + " with type " + getInstantiationType();
+            return "INSTANTIATION OF METHOD: " + getTemplateDeclaration() + " with type " + getInstantiationType(); // NOI18N
         }
     }
     
-    private static class Parameter implements CsmParameter, CsmInstantiation {
-        private final CsmParameter parameterRef;
-        private final Instantiation clazzRef;
+    private static class Parameter extends Instantiation<CsmParameter> implements CsmParameter {
+        private final CsmInstantiation instantiation;
         private final CsmType type;
 
-        public Parameter(CsmParameter parameter, Instantiation clazz) {
-            this.parameterRef = parameter;
-            this.clazzRef = clazz;
-            this.type = clazz.getInstantiatedType(parameter.getType());
-        }
-        
-        public CharSequence getText() {
-            return parameterRef.getText();
-        }
-
-        public Position getStartPosition() {
-            return parameterRef.getStartPosition();
-        }
-
-        public int getStartOffset() {
-            return parameterRef.getStartOffset();
-        }
-
-        public Position getEndPosition() {
-            return parameterRef.getEndPosition();
-        }
-
-        public int getEndOffset() {
-            return parameterRef.getEndOffset();
-        }
-
-        public CsmFile getContainingFile() {
-            return parameterRef.getContainingFile();
-        }
-
-        public CsmUID<CsmParameter> getUID() {
-            assert true : "Getting UID of instantiated class is not supported yet";
-            return parameterRef.getUID();
-        }
-
-        public CsmScope getScope() {
-            return parameterRef.getScope();
-        }
-
-        public CharSequence getName() {
-            return parameterRef.getName();
-        }
-
-        public CharSequence getQualifiedName() {
-            return parameterRef.getQualifiedName();
-        }
-
-        public CharSequence getUniqueName() {
-            return parameterRef.getUniqueName();
-        }
-
-        public Kind getKind() {
-            return parameterRef.getKind();
+        public Parameter(CsmParameter parameter, CsmInstantiation instantiation) {
+            super(parameter);
+            this.instantiation = instantiation;
+            this.type = new Type(parameter.getType(), instantiation);
         }
 
         public boolean isExtern() {
-            return parameterRef.isExtern();
+            return ((CsmParameter)declaration).isExtern();
         }
 
         public CsmType getType() {
@@ -655,117 +480,154 @@ public abstract class Instantiation {
         }
 
         public CsmExpression getInitialValue() {
-            return parameterRef.getInitialValue();
+            return ((CsmParameter)declaration).getInitialValue();
         }
 
         public CharSequence getDisplayText() {
-            return parameterRef.getDisplayText();
+            return ((CsmParameter)declaration).getDisplayText();
         }
 
         public CsmVariableDefinition getDefinition() {
-            return parameterRef.getDefinition();
+            return ((CsmParameter)declaration).getDefinition();
         }
 
         public CharSequence getDeclarationText() {
-            return parameterRef.getDeclarationText();
+            return ((CsmParameter)declaration).getDeclarationText();
         }
 
         public boolean isVarArgs() {
-            return parameterRef.isVarArgs();
-        }
-
-        public CsmOffsetableDeclaration getTemplateDeclaration() {
-            return parameterRef;
+            return ((CsmParameter)declaration).isVarArgs();
         }
 
         public CsmType getInstantiationType() {
-            return clazzRef.instantiation;
+            return instantiation.getInstantiationType();
         }
 
         @Override
         public String toString() {
-            return "INSTANTIATION OF FUN PARAM: " + getTemplateDeclaration() + " with type " + getInstantiationType();
+            return "INSTANTIATION OF FUN PARAM: " + getTemplateDeclaration() + " with type " + getInstantiationType(); // NOI18N
         }
     }
     
     private static class Type implements CsmType {
-        private final CsmType template;
-        private final CsmType instantiation;
+        private final CsmType originalType;
+        private final CsmInstantiation instantiation;
+        private final CsmType instantiatedType;
 
-        public Type(CsmType template, CsmType instance) {
-            this.template = template;
-            this.instantiation = instance;
+        public Type(CsmType type, CsmInstantiation instantiation) {
+            this.instantiation = instantiation;
+            CsmType origType = type;
+            CsmType newType = type;
+            if (CsmKindUtilities.isTemplateParameterType(type)) {
+                CsmTemplateParameterType paramType = (CsmTemplateParameterType)type;
+                newType = paramType.getTemplateType();
+                origType = paramType.getTemplateType();
+                int paramIdx = ((CsmTemplate)instantiation.getTemplateDeclaration()).getTemplateParameters().indexOf(paramType.getParameter());
+                if (paramIdx != -1) {
+                    try {
+                        newType = instantiation.getInstantiationType().getInstantiationParams().get(paramIdx);
+                    } catch (IndexOutOfBoundsException e) {
+                        // parameter does not exist
+                    }
+                }
+            }
+            this.originalType = origType;
+            this.instantiatedType = newType;
+        }
+        
+        private boolean instantiationHappened() {
+            return originalType != instantiatedType;
         }
 
         public CharSequence getClassifierText() {
-            return instantiation.getClassifierText();
+            return instantiatedType.getClassifierText();
         }
 
         public CharSequence getText() {
-            if (template instanceof TypeImpl) {
-                return ((TypeImpl)template).decorateText(instantiation.getClassifierText(), this, false, null);
+            if (originalType instanceof TypeImpl) {
+                return ((TypeImpl)originalType).decorateText(instantiatedType.getClassifierText(), this, false, null);
             }
-            return template.getText();
+            return originalType.getText();
         }
 
         public Position getStartPosition() {
-            return instantiation.getStartPosition();
+            return instantiatedType.getStartPosition();
         }
 
         public int getStartOffset() {
-            return instantiation.getStartOffset();
+            return instantiatedType.getStartOffset();
         }
 
         public Position getEndPosition() {
-            return instantiation.getEndPosition();
+            return instantiatedType.getEndPosition();
         }
 
         public int getEndOffset() {
-            return instantiation.getEndOffset();
+            return instantiatedType.getEndOffset();
         }
 
         public CsmFile getContainingFile() {
-            return instantiation.getContainingFile();
+            return instantiatedType.getContainingFile();
         }
 
         public boolean isInstantiation() {
-            return instantiation.isInstantiation();
+            return instantiatedType.isInstantiation();
         }
 
         public boolean isReference() {
-            return template.isReference() || instantiation.isReference();
+            return originalType.isReference() || instantiatedType.isReference();
         }
 
         public boolean isPointer() {
-            return template.isPointer() || instantiation.isPointer();
+            return originalType.isPointer() || instantiatedType.isPointer();
         }
 
         public boolean isConst() {
-            return template.isConst() || instantiation.isConst();
+            return originalType.isConst() || instantiatedType.isConst();
         }
 
         public boolean isBuiltInBased(boolean resolveTypeChain) {
-            return instantiation.isBuiltInBased(resolveTypeChain);
+            return instantiatedType.isBuiltInBased(resolveTypeChain);
         }
 
         public List<CsmType> getInstantiationParams() {
-            return instantiation.getInstantiationParams();
+            return instantiatedType.getInstantiationParams();
         }
 
         public int getPointerDepth() {
-            return template.getPointerDepth() + instantiation.getPointerDepth();
+            if (instantiationHappened()) {
+                return originalType.getPointerDepth() + instantiatedType.getPointerDepth();
+            } else {
+                return originalType.getPointerDepth();
+            }
         }
 
         public CsmClassifier getClassifier() {
-            return instantiation.getClassifier();
+            CsmClassifier res = instantiatedType.getClassifier();
+            if (CsmKindUtilities.isTypedef(res) && CsmKindUtilities.isClassMember(res)) {
+                CsmMember tdMember = (CsmMember)res;
+                if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
+                    return new Typedef((ClassImpl.MemberTypedef)res, instantiation);
+                }
+            }
+            return res;
         }
 
         public CharSequence getCanonicalText() {
-            return template.getCanonicalText();
+            return originalType.getCanonicalText();
         }
 
         public int getArrayDepth() {
-            return template.getArrayDepth() + instantiation.getArrayDepth();
+            if (instantiationHappened()) {
+                return originalType.getArrayDepth() + instantiatedType.getArrayDepth();
+            } else {
+                return originalType.getArrayDepth();
+            }
+        }
+        
+        @Override
+        public String toString() {
+            return "INSTANTIATION OF TYPE: " + originalType + " with type " + instantiatedType; // NOI18N
         }
     }
 }

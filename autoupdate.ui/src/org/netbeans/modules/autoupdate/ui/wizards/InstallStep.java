@@ -42,6 +42,7 @@
 package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.awt.Dialog;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -76,6 +77,7 @@ import org.netbeans.modules.autoupdate.ui.NetworkProblemPanel;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
 import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.netbeans.modules.autoupdate.ui.actions.BalloonManager;
+import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -91,6 +93,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private OperationPanel panel;
     private PanelBodyContainer component;
     private InstallUnitWizardModel model = null;
+    private boolean clearLazyUnits = false;
     private WizardDescriptor wd = null;
     private Restarter restarter = null;
     private ProgressHandle systemHandle = null;
@@ -124,7 +127,11 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     
     /** Creates a new instance of OperationDescriptionStep */
     public InstallStep (InstallUnitWizardModel model) {
+        this (model, false);
+    }
+    public InstallStep (InstallUnitWizardModel model, boolean clearLazyUnits) {
         this.model = model;
+        this.clearLazyUnits = clearLazyUnits;
     }
     
     public boolean isFinishPanel() {
@@ -205,8 +212,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         }
         runInBg = inBackground;
         if (inBackground) {
-            if (getComponent ().getRootPane () != null) {
-                getComponent ().getRootPane ().setVisible (false);
+            assert SwingUtilities.isEventDispatchThread () : "In AWT queue only.";
+            Window w = SwingUtilities.getWindowAncestor (getComponent ());
+            if (w != null) {
+                w.setVisible (false);
             }
             if (model.getPluginManager () != null) {
                 model.getPluginManager ().close ();
@@ -646,6 +655,9 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             assert support != null : "OperationSupport cannot be null because OperationContainer " +
                     "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
             if (panel.restartNow ()) {
+                if (clearLazyUnits) {
+                    LazyUnit.storeLazyUnits (model.getOperation (), null);
+                }
                 try {
                     support.doRestart (restarter, null);
                 } catch (OperationException x) {

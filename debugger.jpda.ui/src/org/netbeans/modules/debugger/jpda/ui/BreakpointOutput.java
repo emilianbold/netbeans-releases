@@ -91,10 +91,9 @@ PropertyChangeListener {
     
     public BreakpointOutput (ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
-        this.debugger = (JPDADebugger) contextProvider.lookupFirst 
-            (null, JPDADebugger.class);
+        this.debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
         debugger.addPropertyChangeListener (
-            debugger.PROP_STATE,
+            JPDADebugger.PROP_STATE,
             this
         );
         hookBreakpoints ();
@@ -128,7 +127,9 @@ PropertyChangeListener {
         }
         if (event.getConditionResult () == event.CONDITION_FALSE) return;
         JPDABreakpoint breakpoint = (JPDABreakpoint) event.getSource ();
-        getBreakpointsNodeModel ().setCurrentBreakpoint (breakpoint);
+        if (breakpoint.getSuspend() != JPDABreakpoint.SUSPEND_NONE) {
+            getBreakpointsNodeModel ().setCurrentBreakpoint (breakpoint);
+        }
         synchronized (lock) {
             if (ioManager == null) {
                 lookupIOManager ();

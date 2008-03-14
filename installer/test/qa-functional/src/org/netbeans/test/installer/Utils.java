@@ -57,6 +57,7 @@ public class Utils {
     public static final long MAX_INSTALATION_WAIT = 60000000;
     public static final int DELAY = 50;
     public static final String NEWLINE_REGEXP = "(?:\n\r|\r\n|\n|\r)";
+    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
     private static final Pattern PATTERN = Pattern.compile("(20[0-9]{10})");
     public static final String NB_DIR_NAME = "NetBeans";
     public static final String GF_DIR_NAME = "GlassFish";
@@ -283,8 +284,9 @@ public class Utils {
         System.setProperty("nbi.utils.log.to.console", "false");
         System.setProperty("user.home", data.getWorkDirCanonicalPath());
         //there is no build nuber for RC1
-        //NbTestCase.assertNotNull("Determine build number", Utils.determineBuildNumber(data));
-        data.setBuildNumber(null);
+        if (Boolean.valueOf(System.getProperty("test.use.build.number")))
+            NbTestCase.assertNotNull("Determine build number", Utils.determineBuildNumber(data));
+        //data.setBuildNumber(null);
     }
 
     public static void phaseOnePTwo(TestData data) {
@@ -360,7 +362,9 @@ public class Utils {
         JDialogOperator customizeInstallation = new JDialogOperator("Customize Installation");
         JListOperator featureList = new JListOperator(customizeInstallation);
         featureList.selectItem(name);
-        featureList.pressKey(KeyEvent.VK_SPACE);
+
+        //cuz behaviour of feature list is changed
+        //featureList.pressKey(KeyEvent.VK_SPACE);
         new JButtonOperator(customizeInstallation, "OK").push();
     }
 
@@ -453,7 +457,7 @@ public class Utils {
 
         for (int attempt = 0; attempt < 5; attempt++) {
             try {
-                URL downloadPage = new URL(data.getNetbeansDownloadPage());
+                URL downloadPage = new URL(data.getNetbeansDownloadPage() + "/js/build_info.js");
                 InputStream in = downloadPage.openConnection(data.getProxy()).getInputStream();
                 StringBuilder pageContent = new StringBuilder();
 
@@ -463,7 +467,7 @@ public class Utils {
 
                     String readString = new String(buffer, 0, read);
                     for (String string : readString.split(NEWLINE_REGEXP)) {
-                        pageContent.append(string).append(File.separator);
+                        pageContent.append(string).append(LINE_SEPARATOR);
                     }
                     wait(data, 100);
                 }
@@ -533,7 +537,10 @@ public class Utils {
             bundleType = "-" + bundleType;
         }
 
-        String build_number = (Boolean.valueOf(System.getProperty("test.use.build.number"))) ? data.getBuildNumber() : "";
-        return prefix + bundleType + "-" + data.getPlatformName() + "." + data.getPlatformExt();
+        String build_number = (Boolean.valueOf(System.getProperty("test.use.build.number"))) ? "-" + data.getBuildNumber() : "";
+        return prefix + "/" + "bundles" + 
+                "/" + "netbeans-trunk-nightly" +  
+                build_number + bundleType + "-" + 
+                data.getPlatformName() + "." + data.getPlatformExt();
     }
 }

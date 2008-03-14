@@ -52,7 +52,6 @@ import net.java.hulp.i18n.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
@@ -65,7 +64,7 @@ import org.netbeans.modules.sql.framework.common.utils.DBURL;
  * @author Ahimanikya Satapathy
  */
 public class SelectDatabaseVisualPanel extends javax.swing.JPanel {
-    private static transient final Logger mLogger = LogUtil.getLogger(SelectDatabaseVisualPanel.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SelectDatabaseVisualPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private boolean populated;
     private SelectDatabasePanel owner;
@@ -99,10 +98,10 @@ public class SelectDatabaseVisualPanel extends javax.swing.JPanel {
         }
     }
 
-    String nbBundle1 = mLoc.t("PRSR001: Choose Mashup Database");
+    String nbBundle1 = mLoc.t("BUND228: Choose Mashup Database");
     @Override
     public String getName() {
-        return Localizer.parse(nbBundle1);
+        return nbBundle1.substring(15);
     }
 
     public String getSelectedDatabase() {
@@ -127,9 +126,12 @@ public class SelectDatabaseVisualPanel extends javax.swing.JPanel {
         }
         
         for (DatabaseConnection model : models) {
-            if (MashupTableWizardIterator.IS_PROJECT_CALL) {
+            //java.util.logging.Logger.getLogger(SelectDatabaseVisualPanel.class.getName()).info("SelectDatabaseVisualPanel "+model.getDatabaseURL());
+            if (MashupTableWizardIterator.IS_PROJECT_CALL) {               
                 String url = model.getDatabaseURL();
+                 //java.util.logging.Logger.getLogger(SelectDatabaseVisualPanel.class.getName()).info("SelectDatabaseVisualPanel url "+url);
                 if (url.contains(ETLEditorSupport.PRJ_NAME.trim())) {
+                   //  java.util.logging.Logger.getLogger(SelectDatabaseVisualPanel.class.getName()).info("SelectDatabaseVisualPanel inside if ");
                     databasesCombo.addItem(new DBURL(url, true));
                 }
             } else {
@@ -141,8 +143,8 @@ public class SelectDatabaseVisualPanel extends javax.swing.JPanel {
         if (databasesCombo.getItemCount() != 0) {
             this.populated = true;
         } else {
-            String nbBundle2 = mLoc.t("PRSR001: No Mashup Database found.");
-            error.setText(Localizer.parse(nbBundle2));
+            String nbBundle2 = mLoc.t("BUND229: No Mashup Database found.");
+            error.setText(nbBundle2.substring(15));
             this.populated = false;
         }
     }

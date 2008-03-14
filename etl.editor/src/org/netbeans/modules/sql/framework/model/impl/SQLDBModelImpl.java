@@ -40,11 +40,6 @@
  */
 package org.netbeans.modules.sql.framework.model.impl;
 
-import com.sun.sql.framework.exception.DBSQLException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,19 +62,16 @@ import org.netbeans.modules.sql.framework.model.SQLModelObjectFactory;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetTable;
-import org.openide.util.Exceptions;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.jdbc.DBConnectionParameters;
-import com.sun.sql.framework.utils.Attribute;
 import java.io.File;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
@@ -95,7 +87,7 @@ import org.openide.awt.StatusDisplayer;
  */
 public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLDBModel {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(SQLDBModelImpl.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SQLDBModelImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(SQLDBModelImpl.class.getName());
     /** Initial buffer size for StringBuilder used in marshaling Databases to XML */
@@ -507,7 +499,7 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
      */
     public DBConnectionDefinition getETLDBConnectionDefinition() throws BaseException {
         if (connectionDefinition == null) {
-            mLogger.infoNoloc(mLoc.t("PRSR114: Lazy loading connection definition for DB model{0}", getDisplayName()));
+            mLogger.infoNoloc(mLoc.t("EDIT114: Lazy loading connection definition for DB model{0}", getDisplayName()));
             connectionDefinition = createETLDBConnectionDefinition();
         }
         return connectionDefinition;
@@ -1103,7 +1095,7 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
             try {
                 etlConnDef.setName(this.getModelName());
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR115: Exception{0}", LOG_CATEGORY), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT107: Exception{0}", LOG_CATEGORY), ex);
             }
         } else {
             etlConnDef = new SQLDBConnectionDefinitionImpl();

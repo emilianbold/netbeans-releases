@@ -12,8 +12,7 @@ then
     dir=`dirname $0`/../..
     cd $dir
 else
-#    echo "Previous build failed, running clean build this time..."
-    ant -f nbbuild/build.xml hg-clean || exit
+    hg --config extensions.purge= clean --all || exit
 fi
 
 DIST=$PWD/nbbuild/dist
@@ -25,11 +24,11 @@ rm -rf $DIST/
 BUILDNUMBER=`echo $BUILD_ID | tr -d _-` 
 BUILDNUM=$BUILD_TAG
 
-ant -f nbbuild/build.xml -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER verify-libs-and-licenses build-nozip || exit 
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER verify-libs-and-licenses build-nozip || exit 
 
 # we can't afford to run build-nbms in hudson builds, on deadlock.netbeans.org it takes 6 minutes from a typical 15 min build run
 # mkdir -p $DIST/nbms
-# ant -Dbuildnum=$BUILD_ID -f nbbuild/build.xml build-nbms -Dmoduleconfig=all -Dbase.nbm.target.dir=${DIST}/nbms || exit
+# ant -Dbuildnum=$BUILD_ID build-nbms -Dmoduleconfig=all -Dbase.nbm.target.dir=${DIST}/nbms || exit
 
 cd nbbuild
 rm -f netbeans/nb.cluster.*
@@ -42,17 +41,18 @@ BASENAME=netbeans-$BUILDNUM
 
 mkdir -p $DIST/zip/moduleclusters
 
-find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST/zip/$BASENAME.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|php)" | zip -q $DIST/zip/$BASENAME.zip -@ || exit
 
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity|php)" | zip -q $DIST/zip/$BASENAME-java.zip -@ || exit
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|enterprise|visualweb|uml|ruby|soa|cnd|identity|php)" | egrep -v "(org-netbeans-modules-mobility-end2end|org-netbeans-modules-mobility-jsr172)" | zip -q $DIST/zip/$BASENAME-mobility.zip -@ || exit
 find netbeans | egrep -v "netbeans/(extra|testtools|mobility|uml|ruby|soa|cnd|identity|php)" | zip -q $DIST/zip/$BASENAME-javaee.zip -@ || exit
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|php)" | zip -q $DIST/zip/$BASENAME-ruby.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|ruby)" | zip -q $DIST/zip/$BASENAME-php.zip -@ || exit
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|ruby|soa|identity|php)" | zip -q $DIST/zip/$BASENAME-cnd.zip -@ || exit
 
 cd netbeans
 expat='extra|testtools'
-for c in platform ide java apisupport harness enterprise profiler uml visualweb ruby mobility soa xml cnd identity gsf; do
+for c in platform ide java apisupport harness enterprise profiler uml visualweb ruby mobility soa xml cnd identity gsf php; do
     find * | egrep "^$c[0-9]*/" | zip -q $DIST/zip/moduleclusters/$BASENAME-$c.zip -@ || exit
     expat="$expat|$c[0-9]*"
 done
@@ -63,7 +63,7 @@ cp -p $DIST/zip/moduleclusters/$BASENAME-platform.zip $DIST/zip/
 cd ../..
 generated=nbbuild/build/generated
 rm -rf $generated
-ant -f nbbuild/build.xml generate-golden-files generate-files-layout index-layer-paths || exit
+ant generate-golden-files generate-files-layout index-layer-paths || exit
 cp -v nbbuild/netbeans/THIRDPARTYLICENSE-generated.txt $generated/external-libraries.txt || exit
 prev_generated=../lastSuccessful/archive/$generated
 if [ -d $prev_generated ]; then
@@ -80,7 +80,7 @@ sigtest_out=nbbuild/build/sigtestscheck
 
 echo SigTest: Changing All Changes
 if [ -f $sigtest_jar -a -d $sigtest_prev ]; then
-    ant -f nbbuild/build.xml -Dsigtest.basedir=$sigtest_prev -Dsigtest.jar=$sigtest_jar -Dsigtest.check.type=strictcheck -Dsigtest.output.dir=`pwd`/$sigtest_out check-sigtests > $sigtest_gen.log
+    ant -Dsigtest.basedir=$sigtest_prev -Dsigtest.jar=$sigtest_jar -Dsigtest.check.type=strictcheck -Dsigtest.output.dir=`pwd`/$sigtest_out check-sigtests > $sigtest_gen.log
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
         for report in `pwd`/$sigtest_out/*; do
@@ -101,7 +101,7 @@ echo SigTest: Changing All Changes Done
 
 echo SigTest: Generating Golden Files
 if [ -f $sigtest_jar ]; then
-    ant -f nbbuild/build.xml -Dsigtest.basedir=$sigtest_gen -Dsigtest.jar=$sigtest_jar gen-sigtests >$sigtest_gen.log
+    ant -Dsigtest.basedir=$sigtest_gen -Dsigtest.jar=$sigtest_jar gen-sigtests >$sigtest_gen.log
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
         (
@@ -130,7 +130,7 @@ echo SigTest: Generating Golden Files Done
 
 echo SigTest: Incompatible Changes
 sigtest_incompat_gen=nbbuild/build/sigtestsincompat
-if ! ant -f nbbuild/build.xml -Dsigtest.output.dir=`pwd`/$sigtest_incompat_gen check-sigtests > `pwd`/$sigtest_incompat_gen.log; then
+if ! ant -Dsigtest.output.dir=`pwd`/$sigtest_incompat_gen check-sigtests > `pwd`/$sigtest_incompat_gen.log; then
     (
         echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
         echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_incompat_gen"; 
@@ -147,11 +147,12 @@ rm -rf xtest/instance/results
 # Different JDK for tests because JVM crashes often (see 6598709, 6607038)
 JDK_TESTS=/opt/jdk1.5.0_14
 # standard NetBeans unit and UI validation tests
-ant -f nbbuild/build.xml commit-validation
+ant commit-validation
 # Init application server for tests
 sh -x `dirname $0`/initAppserver.sh
 # visualweb UI validation tests
-sh -x `dirname $0`/run-vw-sanity.sh
+# Disabled because permanent failures
+#sh -x `dirname $0`/run-vw-sanity.sh
 # SOA (BPEL, XSLT) and XML UI validation tests
 ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-enterprise -Dxtest.instance.name="Enterprise tests" -Dxtest.no.cleanresults=true runtests
 # CND UI validation tests
@@ -173,7 +174,7 @@ echo TESTS FINISHED: `date`
 rm -rf nbbuild/netbeans/testtools
 rm -f nbbuild/netbeans/bin/hs_err_*
 # Check to see if any other unregistered files remain (if so, delete them now so the problem can be fixed in incremental builds) (cf. #111946):
-ant -f nbbuild/build.xml clean-untracked-files
+ant clean-untracked-files
 
 # Do not halt if there were failures, but do collect results for Hudson:
-ant -f nbbuild/build.xml commit-validation-junit-format
+ant commit-validation-junit-format

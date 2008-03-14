@@ -238,27 +238,44 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
     public boolean canConnect(TreePath treePath, SourcePin source, 
             TargetPin target, TreePath oldTreePath, Link oldLink) 
     {
+    
         if (oldTreePath != null && !oldTreePath.equals(treePath)) {
             // Reconnect
             // link to another graph is not allowed for a while
-            return false;
-        }
-        
-        if (target instanceof Graph) {
-            if (!mRightTreeModel.isConnectable(treePath)) {
+            if (!(oldLink.getSource() instanceof TreeSourcePin)) {
                 return false;
             }
+        }
+        Boolean result = true;
+        SourcePin oldSource = null;
+        TargetPin oldTarget = null;
+         if (oldLink != null) {
+//          oldGraph = oldLink.getGraph();
+            oldSource = oldLink.getSource();
+            oldTarget = oldLink.getTarget();
+ //           oldLink.disconnect();
+            oldLink.setSource(null);
+            oldLink.setTarget(null);
+        }
+       
+        if (target instanceof Graph) {
+       
+            if (!mRightTreeModel.isConnectable(treePath)) {
+                result = false;
+            }
+       
             //
             if (((Graph) target).hasOutgoingLinks()) {
                 // The target tree node already has a connected link
-                return false;
+                result = false;
             }
+       
         }
         //
         if (source instanceof TreeSourcePin) {
             TreePath sourceTreePath = ((TreeSourcePin) source).getTreePath();
             if (!mLeftTreeModel.isConnectable(sourceTreePath)) {
-                return false;
+                result = false;
             }
         }
         //
@@ -266,22 +283,22 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         if (source instanceof Vertex) {
             Link outgoingLink = ((Vertex) source).getOutgoingLink();
             if (outgoingLink != null) {
-                return false;
+                result = false;
             }
         }
         //
         if (target instanceof VertexItem) {
             //
             // Check if the target vertex item has a value
-            Object value = ((VertexItem) target).getValue();
-            if (value != null) {
-                return false;
-            }
+//            Object value = ((VertexItem) target).getValue();
+//            if (value != null) {
+//                return false;
+//            }
             //
             // Check the item doesn't have incoming link yet
             Link ingoingLink = ((VertexItem) target).getIngoingLink();
             if (ingoingLink != null) {
-                return false;
+                result = false;
             }
             //
             // Check connection 2 vertexes 
@@ -290,16 +307,21 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
                 // Trying connect the vertex to itself isn't allowed
                 Vertex targetVertex = ((VertexItem) target).getVertex();
                 if (targetVertex == source) {
-                    return false;
+                    result = false;
                 }
                 // Check cyclic dependences
                 if (BpelMapperUtils.areVertexDependent((Vertex) source, targetVertex)) {
-                    return false;
+                    result = false;
                 }
             }
         }
         //
-        return true;
+        if (oldLink != null) {
+//            oldGraph.addLink(oldLink);
+            oldLink.setSource(oldSource);
+            oldLink.setTarget(oldTarget);
+        }
+        return result;
     }
 
     public boolean canCopy(TreePath treePath, GraphSubset graphSubset) {
@@ -313,7 +335,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
     public void connect(TreePath treePath, SourcePin source, TargetPin target,
             TreePath oldTreePath, Link oldLink) 
     {
-        if (oldLink != null) return;
+//        if (oldLink != null) return;
         
         Graph graph = getGraph(treePath);
         //
@@ -385,6 +407,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
                     }
                 }
             }
+            vItem.setValue(null);
         }
         //
         if (oldLink == null) {
@@ -393,6 +416,11 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         } else {
             oldLink.setSource(source);
             oldLink.setTarget(target);
+            if (oldTreePath != treePath) {
+                resultGraph.addLink(oldLink);
+                fireGraphChanged(oldTreePath);
+                mRightTreeModel.fireTreeChanged(this, oldTreePath);
+            }
         }
         //
         fireGraphChanged(treePath);
@@ -435,7 +463,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
     public GraphSubset add(TreePath treePath, ItemHandler handler, int x, int y) {
         myHandler = handler;
         return doCopy(treePath, null, x, y);
-    }
+     }
 
     public GraphSubset copy(TreePath treePath, GraphSubset graphSubset, int x, int y) {
         return doCopy(treePath, graphSubset, x, y);
@@ -445,13 +473,12 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         if ( !isConnectable(treePath)) {
             return null;
         }
-        if (graphSubset == null) {
-            if (myHandler != null) {
-                if (myHandler.canAddGraphSubset()) {
-                    graphSubset = myHandler.createGraphSubset();
-                } else {
-                    graphSubset = null;
-                }
+        if (myHandler != null) {
+            if (myHandler.canAddGraphSubset()) {
+                graphSubset = myHandler.createGraphSubset();
+                myHandler = null;
+            } else {
+                graphSubset = null;
             }
         } else {
             graphSubset = new GraphSubset(graphSubset);
@@ -563,6 +590,12 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
             }
         }
         //
+        TreePath oldTreePath = graphSubset.getTreePath();
+        if (oldTreePath != treePath) {
+            fireGraphChanged(oldTreePath);
+            mRightTreeModel.fireTreeChanged(this, oldTreePath);
+        }
+        
         fireGraphChanged(treePath);
         mRightTreeModel.fireTreeChanged(this, treePath);
     }
@@ -620,6 +653,10 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
     {
         if (newValue != null) {
             vertexItem.setValue(newValue);
+            Link link = vertexItem.getIngoingLink(); 
+            if (link != null) {
+                link.disconnect();
+            }
             fireGraphChanged(treePath);
             mRightTreeModel.fireTreeChanged(this, treePath);
         }
@@ -689,6 +726,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
     }
 
     public boolean canEditInplace(VertexItem vItem) {
-        return vItem.getIngoingLink() == null;
+        //return vItem.getIngoingLink() == null;
+        return true;
     }
 }

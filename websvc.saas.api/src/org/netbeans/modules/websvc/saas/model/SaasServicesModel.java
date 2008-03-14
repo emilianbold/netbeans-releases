@@ -106,9 +106,10 @@ public class SaasServicesModel {
             return;
         }
         setState(State.INITIALIZING);
-        loadUserDefinedGroups();
+        getInitialRootGroup();
         loadFromDefaultFileSystem();
         loadFromWebServicesHome();
+        WsdlUtil.ensureImportExisting60Services();
         setState(State.READY);
     }
 
@@ -153,7 +154,7 @@ public class SaasServicesModel {
         }
     }
 
-    private void saveRootGroup() {
+    public void saveRootGroup() {
         try {
             SaasUtil.saveSaasGroup(rootGroup, new File(WEBSVC_HOME, SERVICE_GROUP_XML));
         } catch (Exception ex) {
@@ -187,41 +188,48 @@ public class SaasServicesModel {
         }
     }
 
+    private Saas createService(SaasGroup parent, SaasServices jaxbServiceObject) {
+        if (Saas.NS_WADL.equals(jaxbServiceObject.getType())) {
+            return new WadlSaas(parent, jaxbServiceObject);
+        } else if (Saas.NS_WSDL.equals(jaxbServiceObject.getType())) {
+            return new WsdlSaas(parent, jaxbServiceObject);
+        } else {
+            return new CustomSaas(parent, jaxbServiceObject); //custom
+        }
+    }
+    
     private void loadSaasServiceFile(FileObject saasFile, boolean userDefined) {
         try {
             SaasServices ss = SaasUtil.loadSaasServices(saasFile);
             Group g = ss.getSaasMetadata().getGroup();
             SaasGroup parent = rootGroup;
-            SaasGroup topGroup = new SaasGroup(parent, g);
-            while (g != null) {
-                SaasGroup child = parent.getChildGroup(g.getName());
-                if (child == null) {
-                    child = new SaasGroup(parent, g);
-                    parent.addChildGroup(child);
-                }
-                child.setUserDefined(userDefined);
+            
+            Saas service = null;
+            if (g == null || g.getName() == null || g.getName().trim().length() == 0) {
+                service = createService(parent, ss);
+                service.setUserDefined(userDefined);
+                parent.addService(service);
+            } else {
+                while (g != null) {
+                    SaasGroup child = parent.getChildGroup(g.getName());
+                    if (child == null) {
+                        child = new SaasGroup(parent, g);
+                        parent.addChildGroup(child);
+                    }
+                    
+                    child.setUserDefined(userDefined);
 
-                if (child.getChildrenGroups().size() == 0) {
-                    Saas service;
-                    if (Saas.NS_WADL.equals(ss.getType())) {
-                        service = new WadlSaas(parent, ss);
-                    } else if (Saas.NS_WSDL.equals(ss.getType())) {
-                        service = new WsdlSaas(parent, ss);
-                    } else {
-                        service = new CustomSaas(parent, ss);
-                    }
-                    service.setTopLevelGroup(topGroup);
-                    child.addService(service);
-                    service.setUserDefined(userDefined);
-                    break;
-                } else {
-                    if (g.getGroup().size() > 0) {
-                        g = g.getGroup().get(0);
-                    } else {
+                    if (g.getGroup().size() == 0) {
+                        service = createService(child, ss);
+                        service.setUserDefined(userDefined);
+                        child.addService(service);
                         break;
+                    } else {
+                        // 'group' element part of straight path, has only single child
+                        g = g.getGroup().get(0);
+                        parent = child; // march on towards tip
                     }
                 }
-                parent = child;
             }
         } catch (Exception ex) {
             Exceptions.printStackTrace(Exceptions.attachMessage(ex, "Error loading saas file: " + saasFile.getPath()));
@@ -264,12 +272,24 @@ public class SaasServicesModel {
         return getRootGroup().getChildrenGroups();
     }
 
+    public SaasGroup getTopGroup(String name) {
+        return getRootGroup().getChildGroup(name);
+    }
+
+    public Saas getTopService(String name) {
+        return getRootGroup().getChildService(name);
+    }
+    
     /**
      * Model mutation: add group from UI
      * 
      * @param parent
      * @param child
      */
+    public synchronized SaasGroup createTopGroup(String groupName) {
+        return createGroup(getInitialRootGroup(), groupName);
+    }
+    
     public synchronized SaasGroup createGroup(SaasGroup parent, String groupName) {
         initRootGroup();
         SaasGroup group = parent.createGroup(groupName);
@@ -304,7 +324,7 @@ public class SaasServicesModel {
      */
     public synchronized WsdlSaas createWsdlService(SaasGroup parent, String displayName, String url, String packageName) {
         initRootGroup();
-        WsdlSaas service = new WsdlSaas(parent, displayName, url, packageName);
+        WsdlSaas service = new WsdlSaas(parent, url, displayName, packageName);
         service.setUserDefined(true);
         WsdlData data = WsdlUtil.addWsdlData(url, packageName);
         if (data != null) {
@@ -321,6 +341,18 @@ public class SaasServicesModel {
         return createWsdlService(parent, WsdlUtil.getServiceDirName(url), url, packageName);
     }
 
+    public WadlSaas createWadlService(SaasGroup parent, String url, String packageName) {
+        initRootGroup();
+        String displayName = SaasUtil.getWadlServiceDirName(url);
+        WadlSaas service = new WadlSaas(parent, url, displayName, packageName);
+        service.toStateReady(false);
+        service.setUserDefined(true);
+        parent.addService(service);
+        service.save();
+        fireChange(PROP_SERVICES, parent, null, service);
+        return service;
+    }
+
     /**
      * Model mutation: remve service from parent group, delete file, fire event
      * @param service to remove.
@@ -329,20 +361,26 @@ public class SaasServicesModel {
         initRootGroup();
         SaasGroup parent = service.getParentGroup();
         parent.removeService(service);
+        _removeService(service);
+        fireChange(PROP_SERVICES, parent, service, null);
+    }
+    
+    void _removeService(Saas service) {
         try {
             if (service instanceof WsdlSaas) {
                 WsdlSaas saas = (WsdlSaas) service;
-                WsdlUtil.removeWsdlData(saas.getWsdlData());
+                if (saas.getState() == Saas.State.READY) {
+                    WsdlUtil.removeWsdlData(saas.getWsdlData());
+                }
             }
             FileObject saasFolder = service.getSaasFolder();
             if (saasFolder != null) {
                 saasFolder.delete();
             }
-            fireChange(PROP_SERVICES, parent, service, null);
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
-    }
+    } 
     
     public synchronized void renameGroup(SaasGroup group, String newName) {
         String oldName = group.getName();

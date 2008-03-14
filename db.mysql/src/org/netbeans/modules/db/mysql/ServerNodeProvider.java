@@ -72,6 +72,7 @@ public class ServerNodeProvider implements NodeProvider {
 
     public List<Node> getNodes() {
          if ( options.isProviderRegistered() ) {
+            ServerInstance.getDefault().connectAsync(true /* quiet */);
             return nodes;
         } else {
             return emptyNodeList;
@@ -79,14 +80,21 @@ public class ServerNodeProvider implements NodeProvider {
     } 
     
     public synchronized void setRegistered(boolean registered) {
-        boolean old = options.isProviderRegistered();
+        boolean old = isRegistered();
         if ( registered != old ) {
+            ServerInstance instance = ServerInstance.getDefault();
             options.setProviderRegistered(registered);
+            
+            if ( ! registered ) {
+                instance.disconnect();
+            } else {
+                instance.connectAsync(true /* quiet */);
+            }
             notifyChange();
         }
     }
     
-    synchronized boolean isRegistered() {
+    public synchronized boolean isRegistered() {
         return options.isProviderRegistered();
     }
     

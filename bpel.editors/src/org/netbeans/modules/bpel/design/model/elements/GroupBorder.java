@@ -20,7 +20,9 @@
 
 package org.netbeans.modules.bpel.design.model.elements;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import org.netbeans.modules.bpel.design.geometry.FInsets;
@@ -68,6 +70,7 @@ public class GroupBorder extends BorderElement {
     
     public static final FShape SHAPE = new FRectangle(32, 32, 10);
     public static final FInsets INSETS = new FInsets(16, 16, 16, 16);
-
+    
+    private static final Paint STROKE_COLOR = new Color(0xD0D0D0);
     private static FStroke STROKE = new FStroke(1, 3);
 }

@@ -308,15 +308,22 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 	    if (descriptorVersion <= 33) {
 		currentText = currentText.equals("1") ? "GNU" : "Sun"; // NOI18N
             }
-            ((MakeConfiguration) currentConf).getCompilerSet().setValue(currentText);
-        } else if (element.equals(COMPILER_SET_ELEMENT+"2")) {
-            ((MakeConfiguration) currentConf).getCompilerSet2().setValue(currentText);
+            ((MakeConfiguration) currentConf).getCompilerSet().setNameAndFlavor(currentText, descriptorVersion);
         } else if (element.equals(C_REQUIRED_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getCRequired().setValue(currentText.equals(TRUE_VALUE));
+            if (descriptorVersion <= 41) {
+                return; // ignore
+            }
+            ((MakeConfiguration) currentConf).getCRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
         } else if (element.equals(CPP_REQUIRED_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getCppRequired().setValue(currentText.equals(TRUE_VALUE));
+            if (descriptorVersion <= 41) {
+                return; // ignore
+            }
+            ((MakeConfiguration) currentConf).getCppRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
         } else if (element.equals(FORTRAN_REQUIRED_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getFortranRequired().setValue(currentText.equals(TRUE_VALUE));
+            if (descriptorVersion <= 41) {
+                return; // ignore
+            }
+            ((MakeConfiguration) currentConf).getFortranRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
         } else if (element.equals(PLATFORM_ELEMENT)) {
             int set = new Integer(currentText).intValue();
             if (descriptorVersion <= 37 && set == 4) {
@@ -376,6 +383,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             } else {
                 currentFolder = null;
             }
+        } else if (element.equals(SOURCE_ENCODING_ELEMENT)) {
+            ((MakeConfigurationDescriptor)projectDescriptor).setSourceEncoding(currentText);
         } else if (element.equals(PREPROCESSOR_LIST_ELEMENT)) {
             currentList = null;
         } else if (element.equals(ITEM_PATH_ELEMENT)) {

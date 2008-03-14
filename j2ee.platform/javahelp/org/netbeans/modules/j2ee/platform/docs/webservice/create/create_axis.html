@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- * Copyright � 2007 Sun Microsystems,
+Inc.  All rights reserved.  
+Use is subject to license terms.  *--> 
+<html> 
+<head> 
+    <title>Creating Axis2 Web Services</title>
+    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head> 
+<body>
+
+<h2>Creating  Axis2 Web Services</h2>
+
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>        
+<ul class="note">
+    <li>For a full tutorial that shows how to
+        work with Axis2 web services in the NetBeans IDE,
+        see:
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://www.netbeans.org/kb/61/websvc/gs-axis.html">
+            <param name="text" value="<html><u>Getting Started with Apache Axis2 Web Services</u></html>">
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+        </object>
+    </li>
+</ul>
+<p>Apache Axis2 is an open-source architecture for SOAP web services. Axis2 web services are interoperable with Metro web services. The IDE supports the creation of Axis2 web services, which can then be consumed by a JAX-WS client.
+
+<p>Axis2 web services can only be created in Java application or Java class library projects.</p>
+<p><b>To create an Axis web service:</b></p>
+<ol>
+    <li>Use the Plugin Manager under the Tools menu to install the <b>Axis2 Web Services</b> module, which will also install the Axis2 libraries.</li>
+    <li>Open or <a href="../../../../../../../../../java.helpset/javahelp/org/netbeans/modules/java/helpset/docs/project/proj_creating.html">create a Java Application or Java Class Library project</a>. </li>
+    <li>Right-click the project node. The context menu opens.</li>
+    <li>Select New -> Other. The New Files wizard opens. </li>
+    <li>From the Web Services category, select either Axis2 Service from WSDL or Axis2 Service from Java.</li>
+    <li> If you have chosen Axis2 Service from WSDL, enter the WSDL URL or browse to the WSDL location. 
+        <p>If you have chosen Axis2 Service from Java, you can select either to create an empty web service or create a service from an existing Java class in the project. You can also create a local WSDL if you need to edit it (see <a href="../../../../../../../../../xml.wsdlui/javahelp/org/netbeans/modules/xml/wsdlui/docs/wsdl_editor.html">Editing WSDL Files</a>).</p>
+    </li>
+    <li>Click Next. If you are creating an empty web service, give names to the web service and the package that contains its Java class.</li>
+    <li>Click Finish. The web service is created.</li>
+</ol>
+
+<p>The web service appears in the Axis Web Services node. It mirrors a Java class of the same name in Source Packages. The operations of the web service are displayed as sub-nodes of the web service. To alter the web service's behavior, open and edit its associated Java class. When you save your changes to the Java class, the operations of the web service are automatically updated. </p>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="../about/about_ws.html">About Web Services</a></dd>
+    <dd><a href="about_implement_ws.html">About Implementing Web Services</a></dd>
+    <dd><a href="create_ws_from_wsdl.html">Creating a Web Service from a WSDL File</a></dd>
+    <dd><a href="create_wsdl_file.html">Creating a WSDL File</a></dd>
+    <dd><a href="../consume/wsc_create.html">Generating a JAX-WS Web Service Client</a></dd>
+</dl>

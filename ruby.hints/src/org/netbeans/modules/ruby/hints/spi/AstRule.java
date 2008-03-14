@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby.hints.spi;
 
 import java.util.List;
 import java.util.Set;
+import org.jruby.ast.NodeType;
 
 /**
  * Represents a rule to be run on the source file, passing in some
@@ -56,7 +57,7 @@ public interface AstRule extends UserConfigurableRule {
      * Get the ElementKinds this rule should run on.
      * The integers should correspond to values in {@link org.jruby.ast.NodeTypes}
      */
-    public Set<Integer> getKinds();
+    public Set<NodeType> getKinds();
 
     /**
      * Run the test on given CompilationUnit and return list of Errors or

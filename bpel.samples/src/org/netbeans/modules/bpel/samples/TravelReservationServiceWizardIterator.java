@@ -78,12 +78,12 @@ public class TravelReservationServiceWizardIterator extends SampleWizardIterator
       Util.unZipFile(j2eeSamples.getInputStream(), j2eeProjectDir);
       resultSet.add(j2eeProjectDir);
 
-      // # 125456
-      // jdk 5: j2ee.server.type=JavaEEPlusSIP
-      // jdk 6: j2ee.server.type=GlassFishV1
-      if (System.getProperty("java.version").startsWith("1.5")) {
-        Util.renameInProperties(j2eeProjectDir, /* new */ "j2ee.server.type=JavaEEPlusSIP", /* old */ "j2ee.server.type=GlassFishV1");
-      }
+      // # 125456 vlv
+      // jdk5: j2ee.server.type=JavaEEPlusSIP, J2EE
+      // jdk6: j2ee.server.type=GlassFishV1,   J2EE
+//    if (System.getProperty("java.version").startsWith("1.5")) {
+//      Util.renameInProperties(j2eeProjectDir, /* new */ "j2ee.server.type=J2EE", /* old */ "j2ee.server.type=J2EE");
+//    }
       return resultSet;
     }
     

@@ -128,7 +128,9 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
         performer.analyzePatterns();
 
         performer.waitFinished();
-        performer.bia.openSource();
+        if (performer.bia != null) {
+            performer.bia.openSource();
+        }
     }
 
     @Override
@@ -181,7 +183,8 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
             waitFinished();
             checkState(2);
             state = 3;
-            task.schedule(0);
+//            task.schedule(0);
+            run();
         }
         
         public boolean isCancelled() {
@@ -197,7 +200,7 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
         
         public boolean isModelModified() {
             waitFinished();
-            return bia.isModified();
+            return bia != null? bia.isModified(): false;
         }
         
         public void run() {
@@ -268,13 +271,13 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
         }
         
         private void fillBiPanel() {
-            biNode = new BiNode( bia );
+            biNode = BiNode.createBiNode( bia );
             biPanel.setContext( biNode );
             biPanel.expandAll();
         }
         
         private void generateSourcesImpl() {
-            if (!isCancelled()) {
+            if (!isCancelled() && bia != null && !bia.isBeanBroken()) {
                 bia.regenerateSource();
             }
         }

@@ -76,7 +76,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileSystemView;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -123,16 +122,7 @@ public final class FileUtil extends Object {
     private static final Map<FileObject, Boolean> archiveFileCache = new WeakHashMap<FileObject,Boolean>();
     private static FileSystem diskFileSystem;
 
-    private FileUtil() {
-    }
-    
-    /**
-     * Refreshes all necessary filesystems. Not all instances of <code>FileObject</code> are refreshed
-     * but just those that represent passed <code>files</code> and their children recursively.
-     * @param files
-     * @since 7.6
-     */
-    public static void refreshFor(File... files) {
+    private static FileSystem getDiskFileSystemFor(File... files) {
         FileSystem fs = getDiskFileSystem();
         if (fs == null) {
             for (File file : files) {
@@ -143,6 +133,20 @@ public final class FileUtil extends Object {
                 }
             }
         }
+        return fs;
+    }
+
+    private FileUtil() {
+    }
+    
+    /**
+     * Refreshes all necessary filesystems. Not all instances of <code>FileObject</code> are refreshed
+     * but just those that represent passed <code>files</code> and their children recursively.
+     * @param files
+     * @since 7.6
+     */
+    public static void refreshFor(File... files) {
+        FileSystem fs = getDiskFileSystemFor(files);
         if (fs != null) {
             try {
                 fs.getRoot().setAttribute("request_for_refreshing_files_be_aware_this_is_not_public_api", files);
@@ -151,6 +155,48 @@ public final class FileUtil extends Object {
             }
         } 
     }         
+
+    /**
+     * Refreshes all <code>FileObject</code> that represent files <code>File.listRoots()</code> 
+     * and their children recursively.
+     * @since 7.7
+     */
+    public static void refreshAll() {
+        refreshFor(File.listRoots());
+    }         
+    
+    /**
+     * Registers <code>listener</code> so that it will receive
+     * <code>FileEvent</code>s from <code>FileSystem</code>s providing instances
+     * of <code>FileObject</code> convertible to <code>java.io.File</code>. 
+     * @param fcl
+     * @see #toFileObject
+     * @since 7.7
+     */
+    public static void addFileChangeListener(FileChangeListener fcl) {
+        FileSystem fs = getDiskFileSystem();
+        if (fs == null) {fs = getDiskFileSystemFor(File.listRoots());}
+        if (fs != null) {
+            fs.addFileChangeListener(fcl);
+        }
+    }
+    
+    /**
+     * Unregisters <code>listener</code> so that it will no longer receive
+     * <code>FileEvent</code>s from <code>FileSystem</code>s providing instances
+     * of <code>FileObject</code> convertible to <code>java.io.File</code>      
+     * @param fcl
+     * @see #toFileObject
+     * @since 7.7
+     */
+    public static void removeFileChangeListener(FileChangeListener fcl) {
+        FileSystem fs = getDiskFileSystem();
+        if (fs == null) {fs = getDiskFileSystemFor(File.listRoots());}
+        if (fs != null) {
+            fs.addFileChangeListener(fcl);
+        }
+    }
+    
     
     /**
      * Executes atomic action. For more info see {@link FileSystem#runAtomicAction}. 
@@ -262,13 +308,6 @@ public final class FileUtil extends Object {
         return retval;
     } 
         
-    private static File getRoot(final File dir) {
-        File retval = dir;
-        for (; retval.getParentFile() != null; retval = retval.getParentFile());
-        assert retval != null;
-        return retval;
-    }
-    
     private static String getRelativePath(final File dir, final File file) {
         Stack<String> stack = new Stack<String>();
         File tempFile = file;
@@ -1749,30 +1788,37 @@ public final class FileUtil extends Object {
             super(uri);
         }
 
+        @Override
         public File getCanonicalFile() throws IOException {
             return wrapFileNoCanonicalize(normalizeFile(super.getAbsoluteFile()));
         }
 
+        @Override
         public String getCanonicalPath() throws IOException {
             return normalizeFile(super.getAbsoluteFile()).getAbsolutePath();
         }
 
+        @Override
         public File getParentFile() {
             return wrapFileNoCanonicalize(super.getParentFile());
         }
 
+        @Override
         public File getAbsoluteFile() {
             return wrapFileNoCanonicalize(super.getAbsoluteFile());
         }
 
+        @Override
         public File[] listFiles() {
             return wrapFilesNoCanonicalize(super.listFiles());
         }
 
+        @Override
         public File[] listFiles(FileFilter filter) {
             return wrapFilesNoCanonicalize(super.listFiles(filter));
         }
 
+        @Override
         public File[] listFiles(FilenameFilter filter) {
             return wrapFilesNoCanonicalize(super.listFiles(filter));
         }
@@ -1784,10 +1830,12 @@ public final class FileUtil extends Object {
         public NonCanonicalizingFileSystemView() {
         }
 
+        @Override
         public boolean isFloppyDrive(File dir) {
             return delegate.isFloppyDrive(dir);
         }
 
+        @Override
         public boolean isComputerNode(File dir) {
             return delegate.isComputerNode(dir);
         }
@@ -1797,26 +1845,32 @@ public final class FileUtil extends Object {
             return wrapFileNoCanonicalize(delegate.createNewFolder(containingDir));
         }
 
+        @Override
         public boolean isDrive(File dir) {
             return delegate.isDrive(dir);
         }
 
+        @Override
         public boolean isFileSystemRoot(File dir) {
             return delegate.isFileSystemRoot(dir);
         }
 
+        @Override
         public File getHomeDirectory() {
             return wrapFileNoCanonicalize(delegate.getHomeDirectory());
         }
 
+        @Override
         public File createFileObject(File dir, String filename) {
             return wrapFileNoCanonicalize(delegate.createFileObject(dir, filename));
         }
 
+        @Override
         public Boolean isTraversable(File f) {
             return delegate.isTraversable(f);
         }
 
+        @Override
         public boolean isFileSystem(File f) {
             return delegate.isFileSystem(f);
         }
@@ -1826,50 +1880,62 @@ public final class FileUtil extends Object {
             return translate(delegate.createFileSystemRoot(f));
         }
          */
+        @Override
         public File getChild(File parent, String fileName) {
             return wrapFileNoCanonicalize(delegate.getChild(parent, fileName));
         }
 
+        @Override
         public File getParentDirectory(File dir) {
             return wrapFileNoCanonicalize(delegate.getParentDirectory(dir));
         }
 
+        @Override
         public Icon getSystemIcon(File f) {
             return delegate.getSystemIcon(f);
         }
 
+        @Override
         public boolean isParent(File folder, File file) {
             return delegate.isParent(folder, file);
         }
 
+        @Override
         public String getSystemTypeDescription(File f) {
             return delegate.getSystemTypeDescription(f);
         }
 
+        @Override
         public File getDefaultDirectory() {
             return wrapFileNoCanonicalize(delegate.getDefaultDirectory());
         }
 
+        @Override
         public String getSystemDisplayName(File f) {
             return delegate.getSystemDisplayName(f);
         }
 
+        @Override
         public File[] getRoots() {
             return wrapFilesNoCanonicalize(delegate.getRoots());
         }
 
+        @Override
         public boolean isHiddenFile(File f) {
             return delegate.isHiddenFile(f);
         }
 
+        @Override
         public File[] getFiles(File dir, boolean useFileHiding) {
             return wrapFilesNoCanonicalize(delegate.getFiles(dir, useFileHiding));
         }
 
+        @Override
         public boolean isRoot(File f) {
             return delegate.isRoot(f);
         }
 
+        @Override
         public File createFileObject(String path) {
             return wrapFileNoCanonicalize(delegate.createFileObject(path));
         }

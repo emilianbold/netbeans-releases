@@ -44,10 +44,10 @@ package org.netbeans.modules.spring.beans.wizards;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -60,7 +60,8 @@ public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
         initComponents();
         groupsTable.getParent().setBackground(groupsTable.getBackground());
         groupsTable.setModel(new ConfigGroupSelectionTableModel(configFileGroups));
-        groupsTable.getColumnModel().getColumn(0).setMaxWidth(60);
+        groupsTable.getColumnModel().getColumn(0).setMaxWidth(0);
+        groupsTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
     
     /** This method is called from within the constructor to
@@ -78,8 +79,7 @@ public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
         groupsTable.setIntercellSpacing(new java.awt.Dimension(0, 0));
         groupsTable.setShowHorizontalLines(false);
         groupsTable.setShowVerticalLines(false);
-        groupsTable.getTableHeader().setResizingAllowed(false);
-        groupsTable.getTableHeader().setReorderingAllowed(false);
+        groupsTable.setTableHeader(null);
         groupsScrollPane.setViewportView(groupsTable);
 
         groupsLabel.setText(org.openide.util.NbBundle.getMessage(SpringXMLConfigGroupVisual.class, "LBL_Config_File_Selection")); // NOI18N
@@ -91,7 +91,7 @@ public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(groupsLabel)
                 .addContainerGap(152, Short.MAX_VALUE))
-            .add(groupsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+            .add(groupsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -133,7 +133,7 @@ public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
         }
 
         public String getColumnName(int columnIndex) {
-            return (columnIndex == 0) ? "" : NbBundle.getMessage(SpringXMLConfigGroupVisual.class, "LBL_Config_File_Group"); // NOI18N
+            return ""; // NOI18N
         }
 
         public Class<?> getColumnClass(int columnIndex) {

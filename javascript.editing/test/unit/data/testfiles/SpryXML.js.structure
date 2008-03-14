@@ -1,10 +1,14 @@
-Spry:GLOBAL:[]:ESCAPED{Spry}:
 schemaNode:GLOBAL:[]:ESCAPED{schemaNode}:
-Spry.XML.Schema:CLASS:[]:ESCAPED{Spry.XML.Schema}:
-  Node:CONSTRUCTOR:[]:ESCAPED{Node}(PARAMETERS{ESCAPED{nodeName}}):
-  mapElementIntoSchemaNode:METHOD:[]:ESCAPED{mapElementIntoSchemaNode}(PARAMETERS{ESCAPED{ele}, ESCAPED{schemaNode}}):
 Spry.XML.Schema.Node:CLASS:[]:ESCAPED{Spry.XML.Schema.Node}:
+  Node:CONSTRUCTOR:[STATIC]:ESCAPED{Node}(PARAMETERS{ESCAPED{nodeName}}):
+  appearsMoreThanOnce:PROPERTY:[]:ESCAPED{appearsMoreThanOnce}:
+  children:PROPERTY:[]:ESCAPED{children}:
+  isAttribute:PROPERTY:[]:ESCAPED{isAttribute}:
+  nodeName:PROPERTY:[]:ESCAPED{nodeName}:
   toString:METHOD:[]:ESCAPED{toString}(PARAMETERS{ESCAPED{indentStr}}):
+Spry.XML.Schema:CLASS:[]:ESCAPED{Spry.XML.Schema}:
+  mapElementIntoSchemaNode:METHOD:[STATIC]:ESCAPED{mapElementIntoSchemaNode}(PARAMETERS{ESCAPED{ele}, ESCAPED{schemaNode}}):
 Spry.XML:CLASS:[]:ESCAPED{Spry.XML}:
-  getSchema:METHOD:[]:ESCAPED{getSchema}(PARAMETERS{ESCAPED{xmlDoc}}):
-  getSchemaForElement:METHOD:[]:ESCAPED{getSchemaForElement}(PARAMETERS{ESCAPED{ele}}):
+  getSchema:METHOD:[STATIC]:ESCAPED{getSchema}(PARAMETERS{ESCAPED{xmlDoc}}):
+  getSchemaForElement:METHOD:[STATIC]:ESCAPED{getSchemaForElement}(PARAMETERS{ESCAPED{ele}}):
+Spry:CLASS:[]:ESCAPED{Spry}:

@@ -7,8 +7,8 @@ package org.netbeans.modules.etlbulkloader.packager;
 import java.io.File;
 import java.io.IOException;
 import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+import org.netbeans.modules.etl.project.Localizer;
+
 
 /**
  *
@@ -18,10 +18,16 @@ public class ETLBLPkgConstants {
 
     // File System Constants
     public static final String USER_DIR = System.getProperty("user.dir");
-    public static final String fs = System.getProperty("file.separator"); //File Separator
+    public static final String fs = File.separator;
     //eTL Bulk Loader Source Constants
-    public static final String srclibs = getCWD() + fs + "../etl.editor" + fs + "external";//+fs+"modules"+fs+"ext"+fs+"etlpro";    
-    public static final String srctriggertempl = srclibs + fs + "triggertemplates";
+    public static final String sourcePath1 = getCWD() + fs + "netbeans" + fs +"extra"+fs + "modules"+fs+"ext";    
+    public static final String sourcePath = getCWD() +fs+".."+ fs+"extra"+fs + "modules"+fs+"ext";  
+    public static final String srclibs1 = sourcePath1+fs+"bulkloader";    
+    public static final String srclibs = sourcePath+fs+"bulkloader";    
+    public static final String etlEnginePath1 = sourcePath1+fs+"etl";    
+    public static final String etlEnginePath = sourcePath+fs+"etl";    
+    public static final String srctriggertempl = srclibs;// + fs + "bulkloader";
+    public static final String srctriggertempl1 = srclibs1;// + fs + "bulkloader";
     //eTL Bulk Loader Package Construction Constants
     public static final String toplevelrt = "ETLProcess";
     public static final String toplevelpkg = "ETLLoader";
@@ -32,7 +38,7 @@ public class ETLBLPkgConstants {
     public static final String modelFileSuffix = ".etl";
     public static final String engineFileSuffix = "_engine.xml";
     
-    private static transient final Logger mLogger = LogUtil.getLogger(ETLBLPkgConstants.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ETLBLPkgConstants.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     //Current Working dir
@@ -40,7 +46,7 @@ public class ETLBLPkgConstants {
         try {
             return new File(".").getCanonicalPath();
         } catch (IOException ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR041: Exception :{0}",ex.getMessage()),ex);
+            mLogger.errorNoloc(mLoc.t("PRJS041: Exception :{0}",ex.getMessage()),ex);
         }
         return null;
     }

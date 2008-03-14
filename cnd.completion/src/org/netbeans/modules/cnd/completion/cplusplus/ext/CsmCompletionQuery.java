@@ -72,7 +72,6 @@ import org.netbeans.editor.TokenID;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
-import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
@@ -112,6 +111,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
     abstract protected CsmFinder getFinder();
 
+    abstract protected QueryScope getCompletionQueryScope();
+    
+    public static enum QueryScope {
+        LOCAL_QUERY,
+        SMART_QUERY,
+        GLOBAL_QUERY,
+    };
     
     public CsmCompletionQuery(){
         super();
@@ -534,7 +540,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     private static CsmClassifier getClassifier(CsmType type, boolean resolveArrow) {
         CsmClassifier cls = type.getClassifier();
         cls = cls != null ? CsmBaseUtilities.getOriginalClassifier(cls) : cls;
-        if (resolveArrow) {
+        if (resolveArrow && CsmKindUtilities.isClass(cls)) {
             CsmFunction op = CsmBaseUtilities.getOperator((CsmClass)cls, CsmFunction.OperatorKind.ARROW);
             if (op != null) {
                 CsmType opType = op.getReturnType();
@@ -977,7 +983,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     }
                                     lastNamespace = kind != ExprKind.SCOPE ? null : finder.getExactNamespace(var); // try package
                                     if (lastNamespace == null) { // not package, let's try class name
-                                        CsmClass cls = sup.getClassFromName(var, true);
+                                        CsmClassifier cls = sup.getClassFromName(var, true);
                                         if (cls == null) { // class not found
                                             // try now resolver
                                             if (kind == ExprKind.SCOPE) {
@@ -1333,7 +1339,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                }
                 
                 if (isConstructor) { // Help for the constructor
-                    CsmClass cls = null;
+                    CsmClassifier cls = null;
                     if (first) {
                         cls = sup.getClassFromName(mtdName, true);
                     } else { // not first
@@ -1656,208 +1662,6 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         
         protected int getClassDisplayOffset(){
             return classDisplayOffset;
-        }
-        
-        /** Get the text that is normally filled into the text if enter is pressed. */
-        protected String getMainText(Object dataItem) {
-            String text = null;
-            if (dataItem instanceof CsmResultItem) {
-                dataItem = ((CsmResultItem)dataItem).getAssociatedObject();
-            }
-            if (CsmKindUtilities.isCsmObject(dataItem)) { 
-                CsmObject csmObj = (CsmObject)dataItem;
-                if (CsmKindUtilities.isClass(csmObj)) {
-                    text = ((CsmClass)csmObj).getName().toString();
-                    if (classDisplayOffset > 0 && classDisplayOffset < text.length()) { // Only the last name for inner classes
-                        text = text.substring(classDisplayOffset);
-                    }
-                } else if (CsmKindUtilities.isVariable(csmObj)) {
-                    text = ((CsmVariable)csmObj).getName().toString();
-                } else if (CsmKindUtilities.isFunctionDeclaration(csmObj)) {
-                    CsmFunction mtd = (CsmFunction)csmObj;
-                    text = mtd.getName().toString();
-                }
-            }
-            return text;
-        }
-
-        /** Get the text that is common to all the entries in the query-result */
-        protected String getCommonText(String prefix) {
-            List data = getData();
-            int cnt = data.size();
-            int prefixLen = prefix.length();
-            String commonText = null;
-            for (int i = 0; i < cnt; i++) {
-                String mainText = getMainText(data.get(i));
-                if (mainText != null && mainText.startsWith(prefix)) {
-                    mainText = mainText.substring(prefixLen);
-                    if (commonText == null) {
-                        commonText = mainText;
-                    }
-                    // Get largest common part
-                    int minLen = Math.min(mainText.length(), commonText.length());
-                    int commonInd;
-                    for (commonInd = 0; commonInd < minLen; commonInd++) {
-                        if (mainText.charAt(commonInd) != commonText.charAt(commonInd)) {
-                            break;
-                        }
-                    }
-                    if (commonInd != 0) {
-                        commonText = commonText.substring(0, commonInd);
-                    } else {
-                        return null; // no common text
-                    }
-                }
-            }
-            return prefix + ((commonText != null) ? commonText : ""); // NOI18N
-        }
-
-        /** Update the text in response to pressing TAB key.
-        * @return whether the text was successfully updated
-        */
-        @Override
-        public boolean substituteCommonText(int dataIndex) {
-            
-            List data = getData();
-            if( data.size() == 0 ) return false;
-
-            Object obj = getData().get( dataIndex );
-            if (obj instanceof CompletionQuery.ResultItem){
-                //return super.substituteCommonText(dataIndex); [PENDING] 
-                // how to get getCommonText to CompletionQuery.ResultItem ???
-            }
-            
-            BaseDocument doc = baseDocument;
-            try {
-                String prefix = doc.getText(substituteOffset, substituteLength);
-                String commonText = getCommonText(prefix);
-                if (commonText != null) {
-                    if(substituteExp!=null){
-                        if( (substituteExp.getExpID()==CsmCompletionExpression.METHOD_OPEN) || (substituteExp.getExpID()==CsmCompletionExpression.METHOD) ) 
-                            return true;
-                    }
-                    doc.atomicLock();
-                    try {
-                        doc.remove(substituteOffset, substituteLength);
-                        doc.insertString(substituteOffset, commonText, null);
-                    } finally {
-                        doc.atomicUnlock();
-                    }
-                }
-            } catch (BadLocationException e) {
-                // no updating
-            }
-            return true;
-        }
-
-        /** Update the text in response to pressing ENTER.
-        * @return whether the text was successfully updated
-        */
-        @Override
-        public boolean substituteText(int dataIndex, boolean shift ) {
-            Object actData = getData().get( dataIndex );
-            if (actData instanceof CompletionQuery.ResultItem){
-                return super.substituteText(dataIndex, shift);
-            }
-            
-            // the rest part of code is here only for backward compatibility...
-            // it should be removed later if all data will be CompletionQuery.ResultItem
-            
-
-            BaseDocument doc = baseDocument;
-            String text = null;
-            int selectionStartOffset = -1;
-            int selectionEndOffset = -1;
-            Object replacement = getData().get(dataIndex);
-
-            if (CsmKindUtilities.isCsmObject(replacement)) {
-                CsmObject csmRepl = (CsmObject)replacement;
-                if (CsmKindUtilities.isClass(csmRepl)) {
-                    text = ((CsmClass)csmRepl).getName().toString();
-                    if (classDisplayOffset > 0
-                            && classDisplayOffset < text.length()
-                       ) { // Only the last name for inner classes
-                        text = text.substring(classDisplayOffset);
-                    }
-
-                } else if (CsmKindUtilities.isVariable(csmRepl)) {
-                    text = ((CsmVariable)csmRepl).getName().toString();
-
-                } else if (CsmKindUtilities.isFunctionDeclaration(csmRepl)) {
-                    CsmFunction mtd = (CsmFunction)csmRepl;
-                    switch ((substituteExp != null) ? substituteExp.getExpID() : -1) {
-                    case CsmCompletionExpression.METHOD:
-                        // no substitution
-                        break;
-
-                    case CsmCompletionExpression.METHOD_OPEN:
-                        CsmParameter[] parms = (CsmParameter[]) mtd.getParameters().toArray(new CsmParameter[0]);
-                        if (parms.length == 0) {
-                            text = ")"; // NOI18N
-                        } else { // one or more parameters
-                            int ind = substituteExp.getParameterCount();
-                            boolean addSpace = CodeStyle.getDefault(doc).spaceAfterComma();
-                            try {
-                                if (addSpace && (ind == 0 || (substituteOffset > 0
-                                                              && Character.isWhitespace(doc.getText(substituteOffset - 1, 1).charAt(0))))
-                                   ) {
-                                    addSpace = false;
-                                }
-                            } catch (BadLocationException e) {
-                            }
-
-                            if (ind < parms.length) {
-                                text = addSpace ? " " : ""; // NOI18N
-                                selectionStartOffset = text.length();
-                                text += parms[ind].getName();
-                                selectionEndOffset = text.length();
-                            }
-                        }
-                        break;
-
-                    default:
-                        text = getMainText(csmRepl);
-                        boolean addSpace = CodeStyle.getDefault(doc).spaceBeforeMethodCallParen();//getFormatSpaceBeforeParenthesis();
-                        if (addSpace) {
-                            text += ' ';
-                        }
-                        text += '(';
-
-                        parms = (CsmParameter[])mtd.getParameters().toArray(new CsmParameter[0]);
-                        if (parms.length > 0) {
-                            selectionStartOffset = text.length();
-                            text += parms[0].getName();
-                            selectionEndOffset = text.length();
-                        } else {
-                            text += ")"; // NOI18N
-                        }
-                        break;
-                    }
-                }
-            }
-
-            if (text != null) {
-                // Update the text
-                doc.atomicLock();
-                try {
-                    // bugfix of #41492
-                    String textToReplace = doc.getText(substituteOffset, substituteLength);
-                    if (text.equals(textToReplace)) return false;
-                    doc.remove(substituteOffset, substituteLength);
-                    doc.insertString(substituteOffset, text, null);
-                    if (selectionStartOffset >= 0 && component != null) { // component could be null in non-UI tests
-                        component.select(substituteOffset + selectionStartOffset,
-                                         substituteOffset + selectionEndOffset);
-                    }
-                } catch (BadLocationException e) {
-                    // Can't update
-                } finally {
-                    doc.atomicUnlock();
-                }
-            }
-
-            return true;
-             
         }
         
         private boolean simpleVariableExpression;

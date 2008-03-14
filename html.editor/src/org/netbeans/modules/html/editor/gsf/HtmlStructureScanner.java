@@ -41,13 +41,13 @@ package org.netbeans.modules.html.editor.gsf;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -91,7 +91,7 @@ public class HtmlStructureScanner implements StructureScanner {
 
         //return the root children
         List<StructureItem> elements = new  ArrayList<StructureItem>(1);
-        elements.addAll(new CSSStructureItem(root, source).getNestedItems());
+        elements.addAll(new HtmlStructureItem(new HtmlElementHandle(root, info), source).getNestedItems());
         
         return elements;
         
@@ -144,40 +144,26 @@ public class HtmlStructureScanner implements StructureScanner {
         return source == null ? astOffset : source.getLexicalOffset(astOffset);
     }
     
-    private static final class CSSStructureItem implements StructureItem {
+    private static final class HtmlStructureItem implements StructureItem {
 
         private TranslatedSource source;
-        private AstNode node;
+        private HtmlElementHandle handle;
 
-        private CSSStructureItem(AstNode node, TranslatedSource source) {
-            this.node = node;
+        private HtmlStructureItem(HtmlElementHandle handle, TranslatedSource source) {
+            this.handle = handle;
             this.source= source;
-            //find selectors and generate item name
-//            final StringBuffer selectors = new StringBuffer();
-//            NodeVisitor selectorSearch = new NodeVisitor() {
-//
-//                public void visit(SimpleNode node2) {
-//                    if (node2.kind() == CSSParserTreeConstants.JJTSELECTOR) {
-//                        String selectorName = node2.jjtGetFirstToken().image;
-//                        selectors.append(selectorName);
-//                        selectors.append(',');
-//                        selectors.append(' ');
-//                    }
-//                }
-//            };
-//            selectorsList.visitChildren(selectorSearch);
-//            name = selectors.toString();
-//            //cut off the last ", "
-//            if(name.length() > 0) {
-//                name = name.substring(0, name.length() - 2);
-//            }
-
-//            name = node.image();
 
         }
 
         public String getName() {
-            return node.name();
+            return handle.getName();
+        }
+
+        public String getSortText() {
+            //return getName();
+            // Use position-based sorting text instead; alphabetical sorting in the
+            // outline (the default) doesn't really make sense for HTML tag names
+            return Integer.toHexString(10000+(int)getPosition());
         }
 
         public String getHtml() {
@@ -185,9 +171,31 @@ public class HtmlStructureScanner implements StructureScanner {
         }
 
         public ElementHandle getElementHandle() {
-            return null;
+            return handle;
         }
 
+        //>>> such equals and hashCode implementation
+        //is necessary since the ElementNode class from
+        // gsf navigator requires it
+        @Override
+        public boolean equals(Object o) {
+            if(!(o instanceof HtmlStructureItem)) {
+                return false;
+            }
+            
+            HtmlStructureItem compared = (HtmlStructureItem)o;
+            
+            return getName().equals(compared.getName())
+                    && getKind() == compared.getKind();
+        }
+        
+        @Override
+        public int hashCode() {
+            return getName().hashCode() + getKind().hashCode();
+            
+        }
+        //<<<
+        
         public ElementKind getKind() {
             return ElementKind.TAG;
         }
@@ -197,26 +205,40 @@ public class HtmlStructureScanner implements StructureScanner {
         }
 
         public boolean isLeaf() {
-            return node.children().isEmpty();
+            //potentialy incorrect workaround for ElementNode.updateRecursively(StructureItem) method.
+            //If the StructureItem says it is a leaf then if a new node is created inside
+            //the navigator representation - ElementNode still holds empty children list 
+            //which is not an instance of ElementChildren and then the subnodes are not refreshed.
+            //possible fix would be to modify the ElementNode constructor to always create 
+            //ElementChildren even if the node is a leaf, but I am not sure whether it may 
+            //have some bad influence on other things.
+            return false;
+            
+            //return handle.node().children().isEmpty();
         }
 
         public List<? extends StructureItem> getNestedItems() {
-            List<StructureItem> list = new  ArrayList<StructureItem>(node.children().size());
-            for(AstNode child : node.children()) {
+            List<StructureItem> list = new  ArrayList<StructureItem>(handle.node().children().size());
+            for(AstNode child : handle.node().children()) {
                 if(child.type() == AstNode.NodeType.TAG 
                         || child.type() == AstNode.NodeType.UNMATCHED_TAG) {
-                    list.add(new CSSStructureItem(child, source));
+                    HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.compilationInfo());
+                    list.add(new HtmlStructureItem(childHandle, source));
                 }
             }
             return list;
         }
 
         public long getPosition() {
-            return HtmlStructureScanner.documentPosition(node.startOffset(), source);
+            return HtmlStructureScanner.documentPosition(handle.node().startOffset(), source);
         }
 
         public long getEndPosition() {
-            return HtmlStructureScanner.documentPosition(node.endOffset(), source);
+            return HtmlStructureScanner.documentPosition(handle.node().endOffset(), source);
+        }
+
+        public ImageIcon getCustomIcon() {
+            return null;
         }
 
     }

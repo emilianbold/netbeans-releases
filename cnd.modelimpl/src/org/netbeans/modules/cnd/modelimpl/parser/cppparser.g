@@ -1769,7 +1769,7 @@ restrict_declarator
 		(ptr_operator)=> ptr_operator // AMPERSAND or STAR
 		restrict_declarator
 	|	
-		(LITERAL___restrict!)? direct_declarator
+		(literal_restrict!)? direct_declarator
         ;
 
 direct_declarator
@@ -2169,7 +2169,7 @@ type_name // aka type_id
  */
 abstract_declarator
 	:	//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
-		ptr_operator (LITERAL___restrict!)? abstract_declarator 
+		ptr_operator (literal_restrict!)? abstract_declarator 
 	|	
 		LPAREN abstract_declarator RPAREN
 		(abstract_declarator_suffix)*
@@ -3383,13 +3383,13 @@ post_cast_unambig_unary_optor : (TILDE | NOT);
 // it's better to have them alphabetically ordered...
 
 protected
-literal_asm : LITERAL__asm|LITERAL___asm|LITERAL___asm__;
+literal_asm : LITERAL_asm|LITERAL__asm|LITERAL___asm|LITERAL___asm__;
 
 protected
 literal_cdecl : LITERAL__cdecl|LITERAL___cdecl;
 
 protected
-literal_const : LITERAL_const | LITERAL___const;
+literal_const : LITERAL_const|LITERAL___const|LITERAL___const__;
 
 protected
 literal_declspec : LITERAL__declspec|LITERAL___declspec;
@@ -3404,10 +3404,10 @@ protected
 literal_int64 : LITERAL__int64|LITERAL___int64;
 
 protected
-literal_signed: LITERAL___signed__ | LITERAL_signed;
+literal_signed: LITERAL_signed|LITERAL___signed|LITERAL___signed__;
 
 protected
-literal_unsigned: LITERAL___unsigned__ | LITERAL_unsigned;
+literal_unsigned: LITERAL_unsigned|LITERAL___unsigned__;
 
 protected
 literal_near : LITERAL__near|LITERAL___near;
@@ -3419,7 +3419,10 @@ protected
 literal_stdcall : LITERAL__stdcall|LITERAL___stdcall;
 
 protected
-literal_volatile : LITERAL_volatile|LITERAL___volatile__;
+literal_volatile : LITERAL_volatile|LITERAL___volatile|LITERAL___volatile__;
 
 protected
 literal_typeof : LITERAL_typeof | LITERAL___typeof | LITERAL___typeof__ ;
+
+protected
+literal_restrict : LITERAL_restrict | LITERAL___restrict;

@@ -98,10 +98,8 @@ public class SourcePathImpl implements SourcePath {
      */
     public SourcePathImpl(ContextProvider lookupProvider) {
         myLookupProvider = lookupProvider;
-        myDebugger = (BpelDebugger) lookupProvider.lookupFirst
-                (null, BpelDebugger.class);
-        mySourcesRegistry = (BpelSourcesRegistry)Lookup.
-                getDefault().lookup(BpelSourcesRegistry.class);
+        myDebugger = lookupProvider.lookupFirst(null, BpelDebugger.class);
+        mySourcesRegistry = Lookup.getDefault().lookup(BpelSourcesRegistry.class);
         updateAvailableSources();
     }
     
@@ -252,16 +250,14 @@ public class SourcePathImpl implements SourcePath {
     
     private synchronized SessionCookie getSessionCookie() {
         if (mySessionCookie == null) {
-            mySessionCookie = (SessionCookie) myLookupProvider.lookupFirst(
-                    null, SessionCookie.class);
+            mySessionCookie = myLookupProvider.lookupFirst(null, SessionCookie.class);
         }
         return mySessionCookie;
     }
     
     private synchronized SourcePathSelectionProvider getSelectionProvider() {
         if (mySelectionProvider == null) {
-            mySelectionProvider = (SourcePathSelectionProvider) myLookupProvider.lookupFirst(
-                    null, SourcePathSelectionProvider.class);
+            mySelectionProvider = myLookupProvider.lookupFirst(null, SourcePathSelectionProvider.class);
         }
         return mySelectionProvider;
     }

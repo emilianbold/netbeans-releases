@@ -41,7 +41,6 @@
 package org.netbeans.modules.bpel.validation.reference;
 
 import java.util.List;
-
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.Referenceable;
 

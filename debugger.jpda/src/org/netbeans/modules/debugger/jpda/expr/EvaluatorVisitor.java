@@ -199,6 +199,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             MemberSelectTree mst = (MemberSelectTree) expression;
             object = mst.getExpression().accept(this, evaluationContext);
             methodName = mst.getIdentifier().toString();
+            if (object == null) {
+                Assert2.error(arg0, "methodCallOnNull", methodName);
+            }
             if (currentPath != null) {
                 TreePath memberSelectPath = TreePath.getPath(currentPath, mst);
                 if (memberSelectPath == null) memberSelectPath = currentPath;
@@ -218,6 +221,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
         }
         List<? extends TypeMirror> paramTypes = null;
+        String enclosingClass = null;
         if (elm != null) {
             TypeMirror typeMirror = elm.asType();
             TypeKind kind = typeMirror.getKind();
@@ -231,6 +235,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 ExecutableType execTypeMirror = (ExecutableType) typeMirror;
                 paramTypes = execTypeMirror.getParameterTypes();
                 isStatic = methodElement.getModifiers().contains(Modifier.STATIC);
+                Element enclosing = methodElement.getEnclosingElement();
+                if (enclosing.getKind() == ElementKind.CLASS) {
+                    TypeElement enclosingClassElement = (TypeElement) enclosing;
+                    enclosingClass = ElementUtilities.getBinaryName(enclosingClassElement);
+                }
             }
         }
         
@@ -276,17 +285,26 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 type = (ReferenceType) ((ObjectReference) object).type();
             } else {
                 type = evaluationContext.getFrame().location().declaringType();
+                if (enclosingClass != null) {
+                    ReferenceType dt = findEnclosingType(type, enclosingClass);
+                    if (dt != null) type = dt;
+                }
             }
         } else {
             if (object != null) {
                 objectReference = (ObjectReference) object;
+                type = objectReference.referenceType();
             } else {
                 objectReference = evaluationContext.getFrame().thisObject();
+                type = evaluationContext.getFrame().location().declaringType();
+                if (enclosingClass != null) {
+                    ReferenceType dt = findEnclosingType(type, enclosingClass);
+                    if (dt != null) type = dt;
+                }
             }
             if (objectReference == null) {
                 Assert2.error(arg0, "methodCallOnNull", methodName);
             }
-            type = objectReference.referenceType();
         }
         ClassType cType;
         if (type instanceof ArrayType) {
@@ -1122,6 +1140,18 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (name.equals("this")) {
             return evaluationContext.getFrame().thisObject();
         }
+        if (name.equals("super")) {
+            ReferenceType thisType = evaluationContext.getFrame().location().declaringType();
+            if (thisType instanceof ClassType) {
+                ClassType superClass = ((ClassType) thisType).superclass();
+                ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+                if (thisObject == null) {
+                    return superClass;
+                } else {
+                    return thisObject;
+                }
+            }
+        }
         Field field = evaluationContext.getFrame().location().declaringType().fieldByName(name);
         if (field != null) {
             if (field.isStatic()) {
@@ -1174,26 +1204,55 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
                 Assert2.error(arg0, "unknownType", className);
             case ENUM_CONSTANT:
-                VariableElement ve = (VariableElement) elm;
-                String constantName = ve.getSimpleName().toString();
-                ve.asType().toString();
-                break;
+                return getEnumConstant(arg0, (VariableElement) elm, evaluationContext);
             case FIELD:
-                ve = (VariableElement) elm;
+                VariableElement ve = (VariableElement) elm;
                 String fieldName = ve.getSimpleName().toString();
                 if (fieldName.equals("this")) {
                     return evaluationContext.getFrame().thisObject();
                 }
-                Field field = evaluationContext.getFrame().location().declaringType().fieldByName(fieldName);
+                if (fieldName.equals("super")) {
+                    ReferenceType thisType = evaluationContext.getFrame().location().declaringType();
+                    if (thisType instanceof ClassType) {
+                        ClassType superClass = ((ClassType) thisType).superclass();
+                        ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+                        if (thisObject == null) {
+                            return superClass;
+                        } else {
+                            return thisObject;
+                        }
+                    }
+                }
+                Element enclosing = ve.getEnclosingElement();
+                String enclosingClass = null;
+                if (enclosing.getKind() == ElementKind.CLASS) {
+                    TypeElement enclosingClassElement = (TypeElement) enclosing;
+                    enclosingClass = ElementUtilities.getBinaryName(enclosingClassElement);
+                }
+                ReferenceType declaringType = evaluationContext.getFrame().location().declaringType();
+                if (enclosingClass != null) {
+                    ReferenceType dt = findEnclosingType(declaringType, enclosingClass);
+                    if (dt != null) declaringType = dt;
+                }
+                Field field = declaringType.fieldByName(fieldName);
                 if (field == null) {
                     Assert2.error(arg0, "unknownVariable", fieldName);
                 }
                 if (field.isStatic()) {
                     evaluationContext.getVariables().put(arg0, new VariableInfo(field));
-                    return field.declaringType().getValue(field);
+                    return declaringType.getValue(field);
                 }
                 ObjectReference thisObject = evaluationContext.getFrame().thisObject();
                 if (thisObject != null) {
+                    if (field.isPrivate()) {
+                        ObjectReference to = findEnclosedObject(thisObject, declaringType);
+                        if (to != null) thisObject = to;
+                    } else {
+                        if (!instanceOf(thisObject.referenceType(), declaringType)) {
+                            ObjectReference to = findEnclosedObject(thisObject, declaringType);
+                            if (to != null) thisObject = to;
+                        }
+                    }
                     evaluationContext.getVariables().put(arg0, new VariableInfo(field, thisObject));
                     return thisObject.getValue(field);
                 } else {
@@ -1246,8 +1305,44 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             default:
                 throw new UnsupportedOperationException("Not supported element kind:"+elm.getKind()+" Tree = '"+arg0+"'");
         }
-        arg0.getName();
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+    }
+    
+    private ReferenceType findEnclosingType(ReferenceType type, String name) {
+        if (type.name().equals(name)) {
+            return type;
+        }
+        List<ReferenceType> classes = type.virtualMachine().classesByName(name);
+        if (classes.size() == 1) {
+            return classes.get(0);
+        }
+        for (ReferenceType clazz : classes) {
+            if (isNestedOf(clazz, type)) {
+                return clazz;
+            }
+        }
+        return null;
+    }
+    
+    private boolean isNestedOf(ReferenceType nested, ReferenceType type) {
+        if (nested.equals(type)) {
+            return true;
+        }
+        for (ReferenceType n : nested.nestedTypes()) {
+            if (isNestedOf(n, type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private ObjectReference findEnclosedObject(ObjectReference object, ReferenceType type) {
+        if (object.referenceType().equals(type)) {
+            return object;
+        }
+        Field outerRef = object.referenceType().fieldByName("this$0");
+        if (outerRef == null) return null;
+        object = (ObjectReference) object.getValue(outerRef);
+        return findEnclosedObject(object, type);
     }
 
     @Override
@@ -1265,8 +1360,18 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     @Override
     public Mirror visitArrayAccess(ArrayAccessTree arg0, EvaluationContext evaluationContext) {
         Mirror array = arg0.getExpression().accept(this, evaluationContext);
+        if (array == null) {
+            Assert2.error(arg0, "arrayIsNull", arg0.getExpression());
+        }
         Mirror index = arg0.getIndex().accept(this, evaluationContext);
-        return ((ArrayReference) array).getValue(((PrimitiveValue) index).intValue());
+        if (!(index instanceof PrimitiveValue)) {
+            Assert2.error(arg0, "arraySizeBadType", index);
+        }
+        int i = ((PrimitiveValue) index).intValue();
+        if (i >= ((ArrayReference) array).length()) {
+            Assert2.error(arg0, "arrayIndexOutOfBounds", array, i);
+        }
+        return ((ArrayReference) array).getValue(i);
     }
 
     @Override
@@ -1597,6 +1702,17 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         return null;
     }
 
+    private Value getEnumConstant(Tree arg0, VariableElement ve, EvaluationContext evaluationContext) {
+        String constantName = ve.getSimpleName().toString();
+        ReferenceType enumType = getClassType(arg0, ve.asType(), evaluationContext);
+        Method valueOfMethod = enumType.methodsByName("valueOf").get(0);
+        VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        StringReference constantNameRef = vm.mirrorOf(constantName);
+        Value enumValue = invokeMethod(arg0, valueOfMethod, true, (ClassType) enumType, null,
+                     Collections.singletonList((Value) constantNameRef), evaluationContext);
+        return enumValue;
+    }
+    
     @Override
     public Mirror visitMemberSelect(MemberSelectTree arg0, EvaluationContext evaluationContext) {
         TreePath currentPath = getCurrentPath();
@@ -1668,17 +1784,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         // We have the path and resolved elements
         switch(elm.getKind()) {
             case ENUM_CONSTANT:
-                VariableElement ve = (VariableElement) elm;
-                String constantName = ve.getSimpleName().toString();
-                ReferenceType enumType = getClassType(arg0, ve.asType(), evaluationContext);
-                Method valueOfMethod = enumType.methodsByName("valueOf").get(0);
-                VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
-                StringReference constantNameRef = vm.mirrorOf(constantName);
-                Value enumValue = invokeMethod(arg0, valueOfMethod, true, (ClassType) enumType, null,
-                             Collections.singletonList((Value) constantNameRef), evaluationContext);
-                return enumValue;
+                return getEnumConstant(arg0, (VariableElement) elm, evaluationContext);
             case FIELD:
-                ve = (VariableElement) elm;
+                VariableElement ve = (VariableElement) elm;
                 String fieldName = ve.getSimpleName().toString();
                 Mirror expression = arg0.getExpression().accept(this, evaluationContext);
                 if (expression instanceof ClassType) {
@@ -1745,7 +1853,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             case INTERFACE:
                 TypeElement te = (TypeElement) elm;
                 String className = ElementUtilities.getBinaryName(te);
-                vm = evaluationContext.getDebugger().getVirtualMachine();
+                VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
                 List<ReferenceType> classes = vm.classesByName(className);
                 if (classes.size() == 0) {
                     Assert2.error(arg0, "unknownType", className);
@@ -2175,6 +2283,17 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 value = type.invokeMethod(evaluationThread, method, argVals,
                                           ObjectReference.INVOKE_SINGLE_THREADED);
             } else {
+                if (type != null) {
+                    if (method.isPrivate()) {
+                        ObjectReference to = findEnclosedObject(objectReference, type);
+                        if (to != null) objectReference = to;
+                    } else {
+                        if (!instanceOf(objectReference.referenceType(), type)) {
+                            ObjectReference to = findEnclosedObject(objectReference, type);
+                            if (to != null) objectReference = to;
+                        }
+                    }
+                }
                 value = objectReference.invokeMethod(evaluationThread, method,
                                                      argVals,
                                                      ObjectReference.INVOKE_SINGLE_THREADED);

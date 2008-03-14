@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.net.URL;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlDataManager;
 import org.openide.util.Exceptions;
@@ -135,7 +136,29 @@ public class WsdlUtil {
             return urlPath.substring(start).replace('.', '-'); // NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            return "";
+            return SaasUtil.ensureUniqueServiceDirName(SaasUtil.DEFAULT_SERVICE_NAME); //NOI18N
+        }
+    }
+
+    private static final String IMPORTED_MARK = ".imported";
+    
+    public static boolean hasProcessedImport() {
+        return SaasServicesModel.getWebServiceHome().getFileObject(IMPORTED_MARK) != null;
+    }
+    
+    public static void markImportProcessed() {
+        if (!hasProcessedImport()) {
+            try {
+                SaasServicesModel.getWebServiceHome().createData(IMPORTED_MARK);
+            } catch(IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
+    public static void ensureImportExisting60Services() {
+        if (!hasProcessedImport()) {
+            findWsdlData("/foo", "bar");
         }
     }
 }

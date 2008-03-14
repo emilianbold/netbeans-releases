@@ -42,11 +42,11 @@
 package org.netbeans.modules.beans.beaninfo;
 
 import java.beans.PropertyEditor;
-import java.beans.PropertyEditorSupport;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.Action;
 import javax.swing.GrayFilter;
 import org.netbeans.api.java.source.SourceUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -70,7 +70,8 @@ public final class BiNode extends AbstractNode {
 
     private static String ICON_BASE = "org/netbeans/modules/beans/resources/beanInfo.gif"; // NOI18N
     private static String ICON_BASE_PATTERNS = "org/netbeans/modules/beans/resources/patternGroup.gif"; // NOI18N
-    private static String WAIT_ICON_BASE = "org/openide/src/resources/wait.gif"; // NOI18N
+    private static String WAIT_ICON_BASE = "org/netbeans/modules/beans/resources/wait.gif"; // NOI18N
+    private static String WARNING_ICON_BASE = "org/netbeans/modules/beans/resources/warning.gif"; // NOI18N
 
     private static String PROP_NULL_DESCRIPTOR = "nullDescriptor"; // NOI18N
     private static String PROP_NULL_PROPERTIES = "nullProperties"; // NOI18N
@@ -283,20 +284,16 @@ public final class BiNode extends AbstractNode {
                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_ICON_C16 ),
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_ICON_C16 )
                 ) {
-                    public String getValue () throws
+                    public BiIconEditor.BiImageIcon getValue () throws
                             IllegalAccessException, InvocationTargetException {
-                        if( biAnalyser.getIconC16() != null ) 
-                            ie.setAsText(biAnalyser.getIconC16());
-                        else
-                            ie.setAsText("null"); //NOI18N    
-                            
-                        return biAnalyser.getIconC16();                        
+                        return biAnalyser.getIconC16() != null
+                                ? ie.iconFromText(biAnalyser.getIconC16())
+                                : null;
                     }
                     
-                    public void setValue (String value) throws
+                    public void setValue (BiIconEditor.BiImageIcon value) throws
                             IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                        
-                        biAnalyser.setIconC16(value);
+                        biAnalyser.setIconC16(ie.textFromIcon(value));
                     }                                
                 }
               );
@@ -305,19 +302,17 @@ public final class BiNode extends AbstractNode {
                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_ICON_M16 ),
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_ICON_M16 )
                 ) {
-                    public String getValue () throws
+                    public BiIconEditor.BiImageIcon getValue () throws
                             IllegalAccessException, InvocationTargetException {
-                        if( biAnalyser.getIconM16() != null ) 
-                            ie.setAsText(biAnalyser.getIconM16());
-                        else
-                            ie.setAsText("null"); //NOI18N    
-                        return biAnalyser.getIconM16();                        
+                        return biAnalyser.getIconM16() != null
+                                ? ie.iconFromText(biAnalyser.getIconM16())
+                                : null;
                     }
                     
-                    public void setValue (String value) throws
+                    public void setValue (BiIconEditor.BiImageIcon value) throws
                             IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                         
-                        biAnalyser.setIconM16(value);
+                        biAnalyser.setIconM16(ie.textFromIcon(value));
                     }
                 }
               );
@@ -326,20 +321,17 @@ public final class BiNode extends AbstractNode {
                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_ICON_C32 ),
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_ICON_C32 )
                 ) {
-                    public String getValue () throws
+                    public BiIconEditor.BiImageIcon getValue () throws
                             IllegalAccessException, InvocationTargetException {
-                        if( biAnalyser.getIconC32() != null ) 
-                            ie.setAsText(biAnalyser.getIconC32());
-                        else
-                            ie.setAsText("null"); //NOI18N    
-                        
-                        return biAnalyser.getIconC32();
+                        return biAnalyser.getIconC32() != null
+                                ? ie.iconFromText(biAnalyser.getIconC32())
+                                : null;
                     }
                     
-                    public void setValue (String value) throws
+                    public void setValue (BiIconEditor.BiImageIcon value) throws
                             IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                         
-                        biAnalyser.setIconC32( value );
+                        biAnalyser.setIconC32(ie.textFromIcon(value));
                     }                    
                 }
               );
@@ -348,19 +340,16 @@ public final class BiNode extends AbstractNode {
                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_ICON_M32 ),
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_ICON_M32 )
                 ) {
-                    public String getValue () throws
+                    public BiIconEditor.BiImageIcon getValue () throws
                             IllegalAccessException, InvocationTargetException {
-                        if( biAnalyser.getIconM32() != null ) 
-                            ie.setAsText(biAnalyser.getIconM32());
-                        else
-                            ie.setAsText("null"); //NOI18N    
-                        
-                        return biAnalyser.getIconM32();
+                        return biAnalyser.getIconM32() != null
+                                ? ie.iconFromText(biAnalyser.getIconM32())
+                                : null;
                     }
                     
-                    public void setValue (String value) throws
+                    public void setValue (BiIconEditor.BiImageIcon value) throws
                             IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                        biAnalyser.setIconM32( value );
+                        biAnalyser.setIconM32(ie.textFromIcon(value));
                     }                    
                 }
               );
@@ -534,35 +523,59 @@ public final class BiNode extends AbstractNode {
 
         }
     }
+
+    private static final class Error extends AbstractNode {
+
+        Error (String name) {
+
+            super( Children.LEAF );
+            setDisplayName(name);
+            setIconBaseWithExtension( WARNING_ICON_BASE );
+
+        }
+    }
     
-    abstract class ImagePropertySupportRW extends PropertySupport.ReadWrite<String>
-    {
+    public static Node createNoSourceNode(FileObject bi) {
+        String name = bi.getName();
+        name = name.substring(0, name.length() - "BeanInfo".length()); // NOI18N
+        String ext = bi.getExt();
+        if (ext.length() > 0) {
+            name += '.' + ext;
+        }
+        String msg = NbBundle.getMessage(BiNode.class, "CTL_NODE_MissingBeanFile", name);
+        return new Error(msg);
+    }
+    
+    public static Node createBiNode(BiAnalyser bia) {
+        if (bia == null) {
+            String msg = NbBundle.getMessage(BiNode.class, "CTL_NODE_UnknownBeanInfoState");
+            return new Error(msg);
+        } else if (bia.isBeanBroken()) {
+            String msg = NbBundle.getMessage(
+                    BiNode.class, "MSG_BrokenBean",
+                    bia.bis.getSourceDataObject().getPrimaryFile().getNameExt());
+            return new Error(msg);
+        } else if (!bia.bis.isNbBeanInfo()) {
+            String msg = NbBundle.getMessage(BiNode.class, "CTL_NODE_UnknownBeanInfoFormat");
+            return new Error(msg);
+        } else if (bia.bis.getSourceDataObject() == null) {
+            return createNoSourceNode(bia.bis.getDataObject().getPrimaryFile());
+        } else {
+            return new BiNode(bia);
+        }
+    }
+    
+    abstract class ImagePropertySupportRW extends PropertySupport.ReadWrite<BiIconEditor.BiImageIcon> {
         BiIconEditor ie = null;
         
         ImagePropertySupportRW(String name, String displayName, String shortDescription) {
-            super(name, String.class, displayName, shortDescription);
+            super(name, BiIconEditor.BiImageIcon.class, displayName, shortDescription);
             ie = new BiIconEditor( biAnalyser.bis.getSourceDataObject().getPrimaryFile() );            
         }
 
         @Override
         public PropertyEditor getPropertyEditor() {
-            return new PropertyEditorSupport() {
-                @Override
-                public java.awt.Component getCustomEditor() {
-                    return ie.getCustomEditor();
-                }
-                    
-                @Override
-                public boolean supportsCustomEditor() {
-                    return true;
-                }
-                
-                @Override
-                public void setAsText(String text) throws java.lang.IllegalArgumentException {
-                    ie.setAsText(text);
-                    setValue(ie.getSourceName());
-                }
-            };
+            return ie;
         }
     }    
 

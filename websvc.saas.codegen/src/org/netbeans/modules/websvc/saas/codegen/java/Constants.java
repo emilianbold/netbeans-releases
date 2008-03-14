@@ -225,9 +225,12 @@ public class Constants {
     }
     
     public enum SaasAuthenticationType {
+        PLAIN("plain"),
         HTTP_BASIC("http-basic"), 
         API_KEY("api-key"),
-        CUSTOM("custom");
+        CUSTOM("custom"),
+        SIGNED_URL("singed-url"),
+        SESSION_KEY("session-key");
         
         private String value;
         

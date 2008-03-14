@@ -62,9 +62,14 @@
 	<mapID target="framework_jsf_create" url="web/create/tag/framework/framework_jsf_create.html"/>
 	<mapID target="framework_jsf_datatable" url="web/create/tag/framework/framework_jsf_datatable.html"/>
 	<mapID target="framework_jsf_form" url="web/create/tag/framework/framework_jsf_form.html"/>
+	<mapID target="framework_jsf_crud" url="web/create/tag/framework/framework_jsf_aboutcrud.html"/>
+	<mapID target="framework_jsf_fromentity" url="web/create/tag/framework/framework_jsf_fromentity.html"/>
 	<mapID target="framework_struts_add" url="web/create/tag/framework/framework_struts_add.html"/>
 	<mapID target="framework_struts_create" url="web/create/tag/framework/framework_struts_create.html"/>
-	<mapID target="html_create" url="web/create/html/html_create.html"/>
+        <mapID target="framework_spring_about" url="web/create/tag/framework/spring/about.html"/>
+	<mapID target="framework_spring_create" url="web/create/tag/framework/spring/create.html"/>
+	<mapID target="framework_spring_add" url="web/create/tag/framework/spring/add.html"/>	
+        <mapID target="html_create" url="web/create/html/html_create.html"/>
 	<mapID target="jsp_compile" url="web/create/jsp/jsp_compile.html"/>
 	<mapID target="jsp_create" url="web/create/jsp/jsp_create.html"/>
 	<mapID target="jsp_edit" url="web/create/jsp/jsp_edit.html"/>
@@ -90,6 +95,7 @@
 	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" url="web/create/tag/framework/jsf/AddNavigationRuleDialog.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel" url="web/create/tag/framework/jsf/file_ManagedBeanPanel.html"/>
+        <mapID target="org.netbeans.modules.web.jsf.wizards.PersistenceClientIterator$PersistenceClientEntitySelection" url="web/create/tag/framework/jsf/file_jsffromentity.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerCompile" url="web/csh/dbox_projprops/WebCustomizerCompile.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerFrameworks" url="web/csh/dbox_projprops/CustomizerFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerJavadoc" url="web/csh/dbox_projprops/WebCustomizerJavadoc.html"/>
@@ -460,10 +466,13 @@
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1_2_propsheets_common_tasks_group_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/common_tasks_group_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1_2_propsheets_common_tasks_section_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/common_tasks_section_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1_2_propsheets_progress_bar_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/progress_bar_props.html"/>
+	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_accordion" url="ui_elements/palette/wdstk-jsf1_2/accordion.html"/>
+	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_accordiontab" url="ui_elements/palette/wdstk-jsf1_2/accordiontab.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_add_remove_list" url="ui_elements/palette/wdstk-jsf1_2/add_remove_list.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_alert" url="ui_elements/palette/wdstk-jsf1_2/alert.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_anchor" url="ui_elements/palette/wdstk-jsf1_2/anchor.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_breadcrumbs" url="ui_elements/palette/wdstk-jsf1_2/breadcrumbs.html"/>
+	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_bubble" url="ui_elements/palette/wdstk-jsf1_2/bubble.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_button" url="ui_elements/palette/wdstk-jsf1_2/button.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_calendar" url="ui_elements/palette/wdstk-jsf1_2/calendar.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_checkbox" url="ui_elements/palette/wdstk-jsf1_2/checkbox.html"/>
@@ -493,10 +502,13 @@
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_property_sheet" url="ui_elements/palette/wdstk-jsf1_2/property_sheet.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_property_sheet_graphic" url="ui_elements/palette/wdstk-jsf1_2/property_sheet_graphic.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_property_sheet_section" url="ui_elements/palette/wdstk-jsf1_2/property_sheet_section.html"/>
+        <mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_accordion_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/accordion_props.html"/>
+	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_accordiontab_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/accordiontab_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_addremovelist_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/addremovelist_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_alert_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/alert_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_anchor_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/anchor_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_breadcrumbs_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/breadcrumbs_props.html"/>
+        <mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_bubble_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/bubble_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_button_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/button_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_calendar_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/calendar_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_checkbox_group_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/checkbox_group_props.html"/>
@@ -537,7 +549,7 @@
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_text_field_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/text_field_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_tree_node_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/tree_node_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_tree_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/tree_props.html"/>
-	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_radiobutton" url="ui_elements/palette/wdstk-jsf1_2/radiobutton.html"/>
+        <mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_radiobutton" url="ui_elements/palette/wdstk-jsf1_2/radiobutton.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_radiobutton_group" url="ui_elements/palette/wdstk-jsf1_2/radiobutton_group.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_row_group" url="ui_elements/palette/wdstk-jsf1_2/row_group.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_script" url="ui_elements/palette/wdstk-jsf1_2/script.html"/>
@@ -550,7 +562,7 @@
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_text_field" url="ui_elements/palette/wdstk-jsf1_2/text_field.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_tree" url="ui_elements/palette/wdstk-jsf1_2/tree.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_tree_node" url="ui_elements/palette/wdstk-jsf1_2/tree_node.html"/>
-	<mapID target="projrave_ui_elements_project_nav_portfoliofilesystem" url="ui_elements/project_nav/projectfilesystem.html"/>
+        <mapID target="projrave_ui_elements_project_nav_portfoliofilesystem" url="ui_elements/project_nav/projectfilesystem.html"/>
 	<mapID target="projrave_ui_elements_project_nav_portfoliological" url="ui_elements/project_nav/projectlogical.html"/>
 	<mapID target="projrave_ui_elements_project_nav_project_props_build" url="ui_elements/project_nav/project_props_build.html"/>
 	<mapID target="projrave_ui_elements_project_nav_project_props_libraries" url="ui_elements/project_nav/project_props_libraries.html"/>
@@ -629,10 +641,5 @@
 	<mapID target="webapps_techsupport" url="web/about/webapps_techsupport.html"/>
 	<mapID target="org.netbeans.modules.web.wizards.ServletIterator.servlet" url="web/csh/servletwiz/PanelConfigureServlet.html"/>
 	<mapID target="org.netbeans.modules.web.wizards.DeployDataPanel.servlet" url="web/csh/servletwiz/PanelConfigureServletDeploy.html"/>
-	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_accordion" url="ui_elements/palette/wdstk-jsf1_2/accordion.html"/>
-	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_accordiontab" url="ui_elements/palette/wdstk-jsf1_2/accordiontab.html"/>
-	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_bubble" url="ui_elements/palette/wdstk-jsf1_2/bubble.html"/>
-	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_accordion_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/accordion_props.html"/>
-	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_accordiontab_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/accordiontab_props.html"/>
-	<mapID target="bubble_props" url="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_ui_elements/palette/wdstk-jsf1_2/propsheets/bubble_props.html"/>
+	
 </map>

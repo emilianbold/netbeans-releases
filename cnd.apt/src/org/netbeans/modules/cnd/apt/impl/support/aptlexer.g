@@ -95,8 +95,8 @@ tokens {
     LITERAL_alignof="alignof"; // NOI18N
     LITERAL___alignof__="__alignof__"; // NOI18N
     LITERAL_typeof="typeof"; // NOI18N
-    LITERAL___typeof="__typeof"; // NOI18N
     LITERAL___typeof__="__typeof__"; // NOI18N
+    LITERAL___typeof="__typeof"; // NOI18N
     LITERAL_template="template"; // NOI18N
     LITERAL_typedef="typedef"; // NOI18N
     LITERAL_enum="enum"; // NOI18N
@@ -104,8 +104,8 @@ tokens {
     LITERAL_extern="extern"; // NOI18N
     LITERAL_inline="inline"; // NOI18N
     LITERAL__inline="_inline"; // NOI18N
-    LITERAL___inline="__inline"; // NOI18N
     LITERAL___inline__="__inline__"; // NOI18N
+    LITERAL___inline="__inline"; // NOI18N
     LITERAL_virtual="virtual"; // NOI18N
     LITERAL_explicit="explicit"; // NOI18N
     LITERAL_friend="friend"; // NOI18N
@@ -117,10 +117,12 @@ tokens {
     LITERAL_static="static"; // NOI18N
     LITERAL_mutable="mutable"; // NOI18N
     LITERAL_const="const"; // NOI18N
+    LITERAL___const__="__const__"; // NOI18N
     LITERAL___const="__const"; // NOI18N
     LITERAL_const_cast="const_cast"; // NOI18N
     LITERAL_volatile="volatile"; // NOI18N
     LITERAL___volatile__="__volatile__"; // NOI18N
+    LITERAL___volatile="__volatile"; // NOI18N
     LITERAL_char="char"; // NOI18N
     LITERAL_wchar_t="wchar_t"; // NOI18N
     LITERAL_bool="bool"; // NOI18N
@@ -129,6 +131,7 @@ tokens {
     LITERAL_long="long"; // NOI18N
     LITERAL_signed="signed"; // NOI18N
     LITERAL___signed__="__signed__"; // NOI18N
+    LITERAL___signed="__signed"; // NOI18N
     LITERAL_unsigned="unsigned"; // NOI18N
     LITERAL___unsigned__="__unsigned__"; // NOI18N
     LITERAL_float="float"; // NOI18N
@@ -164,8 +167,8 @@ tokens {
     LITERAL_export="export"; // NOI18N
     LITERAL_asm="asm"; // NOI18N
     LITERAL__asm="_asm"; // NOI18N
-    LITERAL___asm="__asm"; // NOI18N
     LITERAL___asm__="__asm__"; // NOI18N
+    LITERAL___asm="__asm"; // NOI18N
     LITERAL_sizeof="sizeof"; // NOI18N
     LITERAL_dynamic_cast="dynamic_cast"; // NOI18N
     LITERAL_static_cast="static_cast"; // NOI18N
@@ -187,6 +190,7 @@ tokens {
     LITERAL___w64="__w64"; // NOI18N
     LITERAL___extension__="__extension__"; // NOI18N
     LITERAL___attribute__="__attribute__"; // NOI18N
+    LITERAL_restrict="restrict"; // NOI18N
     LITERAL___restrict="__restrict"; // NOI18N
     LITERAL___complex="__complex__"; // NOI18N
     LITERAL___imag="__imag__"; // NOI18N
@@ -933,8 +937,8 @@ Identifier
             // I think this check should have been done before
             //{ LA(1)!='L' || (LA(2)!='\'' && LA(2) != '\"') }? // L"" and L'' are StringLiterals/CharLiterals, not ID
             (
-		(options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_')
-		(options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_'|'0'..'9')*
+                (options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_') 
+		(options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_'|'0'..'9'|'$')* // '$' added for gcc support
             )
         ;
 

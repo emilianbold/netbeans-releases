@@ -42,21 +42,26 @@
 package org.netbeans.modules.j2ee.common.project.ui;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import javax.swing.ImageIcon;
 import javax.swing.ListCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 
@@ -123,6 +128,13 @@ public final class ProjectProperties {
      * <br>
      * It removes all properties that match this format that were in the {@link #properties}
      * but are not in the {@link #classpath}.
+     * 
+     * Note: method does not save changes.
+     * 
+     * @param classpath list of classpath items to go through and create special properties for
+     * @param projProps project properties
+     * @param privateProps private properties
+     * @param projectFolder project folder
      */
     public static void storeLibrariesLocations (Iterator<ClassPathSupport.Item> classpath, EditableProperties props, FileObject projectFolder) {
         ArrayList exLibs = new ArrayList ();
@@ -163,6 +175,84 @@ public final class ProjectProperties {
         while (unused.hasNext()) {
             props.remove(unused.next());
         }
+    }
+    
+    /**
+     * Refresh total number of jars being used in project.xml.
+     * 
+     * @param projProps project properties
+     * @param cs classpath support
+     * @param property Ant property to update; e.g. for web project classpath or additional jar content
+     * @param element project.xml element corresponding to Ant property and keeping additional classpath information
+     */
+    public static void refreshLibraryTotals(EditableProperties projProps,
+            ClassPathSupport cs, String property, String element) {
+        List wmLibs = cs.itemsList(projProps.getProperty(property),  element);
+        cs.encodeToStrings(wmLibs, element);
+    }
+    
+    /**
+     * Remove obsolete properties from private properties.
+     * @param privateProps private properties
+     */
+    public static void removeObsoleteLibraryLocations(EditableProperties privateProps) {
+        // remove special properties from private.properties:
+        Iterator<String> propKeys = privateProps.keySet().iterator();
+        while (propKeys.hasNext()) {
+            String key = propKeys.next();
+            if (key.endsWith(".libdirs") || key.endsWith(".libfiles") || //NOI18N
+                    (key.indexOf(".libdir.") > 0) || (key.indexOf(".libfile.") > 0)) { //NOI18N
+                propKeys.remove();
+            }
+        }
+    }
+            
+    
+    /**
+     * See {@link storeLibrariesLocations(Iterator<ClassPathSupport.Item>, 
+     * EditableProperties, EditableProperties, FileObject)} for more details.
+     * This method perform changes under project write lock and saves them.
+     * 
+     * @param project project
+     * @param helper Ant project helper
+     * @param cs classpath support
+     * @param properties array of project properties to go through and generate
+     *  special properties for; for example for web project it would be classpath ("javac.classpath")
+     *  and additional WAR content ("war.content.additional")
+     * @param elements array of project.xml element names to use to store additional classpath information;
+     *  items in this array pair with items from properties array; can be null if refreshLibraryTotals is false;
+     *  for example for web project it would be two project.xml tags: "web-module-libraries" 
+     *  and "web-module-additional-libraries"
+     * @param refreshLibraryTotals update project.xml or not; that is should total number
+     *  of library jars be updated or not
+     */
+    public static void storeLibrariesLocations (final Project project, final AntProjectHelper helper,
+            final ClassPathSupport cs, final String[] properties, 
+            final String[] elements, final boolean refreshLibraryTotals) {
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+                EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                // intentionally pass null to itemsList() - we do not need additional info to be read
+                HashSet set = new HashSet();
+                for (String property : properties) {
+                    List wmLibs = cs.itemsList(projectProps.getProperty(property),  null);
+                    set.addAll(wmLibs);
+                }
+                ProjectProperties.storeLibrariesLocations(set.iterator(), projectProps, project.getProjectDirectory());
+                if (refreshLibraryTotals) {
+                    // see issue #129316 for more details
+                    for (int i = 0; i < properties.length; i++) {
+                        refreshLibraryTotals(projectProps, cs, properties[i], elements[i]);
+                    }
+                }
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
+                try {
+                    ProjectManager.getDefault().saveProject(project);
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+        });
     }
     
     public static final void getFilesForItem (ClassPathSupport.Item item, List<String> files, List<String> dirs, FileObject projectFolder) {

@@ -69,35 +69,26 @@
                      partnerLinkType="ns0:cancelPOLinkType"
                      myRole="cancelPORole"/>
     </partnerLinks>
+
     <variables>
-        <variable name="purchaseOrderRequest"
-                  messageType="pos:POMessage"></variable>
-        <variable name="purchaseOrderReply"
-                  messageType="pos:POMessage"></variable>
-        <variable name="purchaseOrderFault"
-                  messageType="pos:orderFaultType"></variable>
-        <variable name="inventoryServiceRequest"
-                  messageType="invs:POMessage"></variable>
-        <variable name="inventoryServiceReply"
-                  messageType="invs:InventoryMessage"></variable>
-        <variable name="inventoryServiceFault"
-                  messageType="invs:inventoryFault"></variable>
-        <variable name="confirmPORequest"
-                  messageType="ns0:POConfirmMesg"></variable>
-        <variable name="POStatusReply"
-                  messageType="ns0:POStatusMesg"></variable>
-        <variable name="confirmPO_Fault"
-                  messageType="pos:orderFaultType"></variable>
-        <variable name="cancelPORequest"
-                  messageType="ns0:POCancelMesg"></variable>
-        <variable name="cancelPO_Fault"
-                  messageType="pos:orderFaultType"></variable>
+        <variable name="purchaseOrderRequest" messageType="pos:POMessage"></variable>
+        <variable name="purchaseOrderReply" messageType="pos:POMessage"></variable>
+        <variable name="purchaseOrderFault" messageType="pos:orderFaultType"></variable>
+        <variable name="inventoryServiceRequest" messageType="invs:POMessage"></variable>
+        <variable name="inventoryServiceReply" messageType="invs:InventoryMessage"></variable>
+        <variable name="inventoryServiceFault" messageType="invs:inventoryFault"></variable>
+        <variable name="confirmPORequest" messageType="ns0:POConfirmMesg"></variable>
+        <variable name="POStatusReply" messageType="ns0:POStatusMesg"></variable>
+        <variable name="confirmPO_Fault" messageType="pos:orderFaultType"></variable>
+        <variable name="cancelPORequest" messageType="ns0:POCancelMesg"></variable>
+        <variable name="cancelPO_Fault" messageType="pos:orderFaultType"></variable>
     </variables>
+
     <correlationSets>
-        <bpws:correlationSet name="CorrelationSet" properties="pos:clrorla"/>
-        <correlationSet name="POConfirmationSet"
-                        properties="ns0:OrderID"/>
+        <correlationSet name="CorrelationSet" properties="pos:clrorla"/>
+        <correlationSet name="POConfirmationSet" properties="ns0:OrderID"/>
     </correlationSets>
+    
     <sequence>
         <receive name="sendPurchaseOrder"
                  partnerLink="POServicePLink"
@@ -105,9 +96,10 @@
                  operation="sendPurchaseOrder"
                  variable="purchaseOrderRequest"
                  createInstance="yes">
-            <bpws:correlations>
-                <bpws:correlation set="CorrelationSet" initiate="no"/>
-            </bpws:correlations>
+            <correlations>
+                <correlation set="CorrelationSet" initiate="yes"/>
+                <correlation set="POConfirmationSet" initiate="yes"/>
+            </correlations>
         </receive>
         <assign name="Assign_1">
             <copy>
@@ -144,8 +136,7 @@
                        operation="sendPurchaseOrder"
                        variable="purchaseOrderRequest">
                     <correlations>
-                        <correlation set="POConfirmationSet"
-                                     initiate="yes"/>
+                        <correlation set="POConfirmationSet" initiate="yes"/>
                     </correlations>
                 </reply>
             </sequence>
@@ -173,8 +164,7 @@
                        operation="confirmPO"
                        variable="confirmPORequest">
                 <correlations>
-                    <correlation set="POConfirmationSet"
-                                 initiate="no"/>
+                    <correlation set="POConfirmationSet" initiate="no"/>
                 </correlations>
                 <sequence>
                     <assign name="Assign_5">
@@ -196,8 +186,7 @@
                        operation="cancelPO"
                        variable="cancelPORequest">
                 <correlations>
-                    <correlation set="POConfirmationSet"
-                                 initiate="no"/>
+                    <correlation set="POConfirmationSet" initiate="no"/>
                 </correlations>
                 <sequence>
                     <assign name="Assign">

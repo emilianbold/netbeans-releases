@@ -42,6 +42,7 @@
 package org.netbeans.modules.mercurial.util;
 
 import java.awt.EventQueue;
+import javax.swing.JOptionPane;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -49,6 +50,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -138,10 +140,14 @@ public class HgCommand {
     private static final String HG_LOG_TEMPLATE_LONG_CMD = "--template={rev}\\n{desc}\\n{date|hgdate}\\n{node|short}\\n"; // NOI18N
 
     private static final String HG_LOG_NO_MERGES_CMD = "-M";
-    private static final String HG_LOG_DEBUG_CMD = "--debug";
+    private static final String HG_LOG_DEBUG_CMD = "--debug";  
     private static final String HG_LOG_TEMPLATE_HISTORY_CMD = 
             "--template=rev:{rev}\\nauth:{author}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\n" + // NOI18N
             "file_mods:{files}\\nfile_adds:{file_adds}\\nfile_dels:{file_dels}\\nfile_copies:\\nendCS:\\n"; // NOI18N
+    private static final String HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD = 
+            "--template=rev:{rev}\\nauth:{author}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\n" + // NOI18N
+            "\\nendCS:\\n"; // NOI18N
+    private static final String HG_LOG_REV_TIP_RANGE = "tip:0"; // NOI18N
     private static final String HG_LOG_REVISION_OUT = "rev:"; // NOI18N
     private static final String HG_LOG_AUTHOR_OUT = "auth:"; // NOI18N
     private static final String HG_LOG_DESCRIPTION_OUT = "desc:"; // NOI18N
@@ -152,6 +158,10 @@ public class HgCommand {
     private static final String HG_LOG_FILEDELS_OUT = "file_dels:"; // NOI18N
     private static final String HG_LOG_FILECOPIESS_OUT = "file_copies:"; // NOI18N
     private static final String HG_LOG_ENDCS_OUT = "endCS:"; // NOI18N
+
+    private static final String HG_LOG_PATCH_CMD = "-p";
+    private static final String HG_LOG_TEMPLATE_EXPORT_FILE_CMD =
+        "--template=# Mercurial Export File Diff\\n# changeset: \\t{rev}:{node|short}\\n# user:\\t\\t{author}\\n# date:\\t\\t{date|isodate}\\n# summary:\\t{desc}\\n\\n";
 
     private static final String HG_CSET_TEMPLATE_CMD = "--template={rev}:{node|short}\\n"; // NOI18N
     private static final String HG_REV_TEMPLATE_CMD = "--template={rev}\\n"; // NOI18N
@@ -199,7 +209,7 @@ public class HgCommand {
     private static final String HG_BACKOUT_CMD = "backout"; // NOI18N
     private static final String HG_BACKOUT_MERGE_CMD = "--merge"; // NOI18N
     private static final String HG_BACKOUT_COMMIT_MSG_CMD = "-m"; // NOI18N
-    private static final String HG_BACKOUT_REV_CMD = "-r"; // NOI18N
+    private static final String HG_REV_CMD = "-r"; // NOI18N
  
     private static final String HG_STRIP_CMD = "strip"; // NOI18N
     private static final String HG_STRIP_EXT_CMD = "extensions.mq="; // NOI18N
@@ -402,7 +412,7 @@ public class HgCommand {
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         if (revision != null){
-            command.add(HG_BACKOUT_REV_CMD);            
+            command.add(HG_REV_CMD);            
             command.add(revision);
         }
         
@@ -871,9 +881,35 @@ public class HgCommand {
         
         return messages.toArray(new HgLogMessage[0]);
     }       
-   
     public static HgLogMessage[] getLogMessages(final String rootUrl, 
-            final Set<File> files, String fromRevision, String toRevision, boolean bShowMerges,  OutputLogger logger) {
+            final Set<File> files, String fromRevision, String toRevision, 
+            boolean bShowMerges, OutputLogger logger) {
+         return getLogMessages(rootUrl, files, fromRevision, toRevision, 
+                                bShowMerges, true, -1, logger);
+    }
+
+    public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, int limit, OutputLogger logger) {
+         return getLogMessages(rootUrl, null, null, null, true, false, limit, logger);
+    }
+    public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, int limit, OutputLogger logger) {
+         return getLogMessages(rootUrl, files, null, null, true, false, limit, logger);
+    }
+
+    public static HgLogMessage[] getLogMessages(final String rootUrl, int limit, OutputLogger logger) {
+         return getLogMessages(rootUrl, null, null, null, true, true, limit, logger);
+    }
+    
+    public static HgLogMessage[] getLogMessages(final String rootUrl, final Set<File> files, int limit, OutputLogger logger) {
+         return getLogMessages(rootUrl, files, null, null, true, true, limit, logger);
+    }
+    
+    public static HgLogMessage[] getLogMessages(final String rootUrl, final Set<File> files,  OutputLogger logger) {
+         return getLogMessages(rootUrl, files, null, null, true, true, -1, logger);
+    }
+
+     public static HgLogMessage[] getLogMessages(final String rootUrl, 
+            final Set<File> files, String fromRevision, String toRevision, 
+            boolean bShowMerges,  boolean bGetFileInfo, int limit, OutputLogger logger) {
         final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);  
         final File root = new File(rootUrl);
         
@@ -886,7 +922,7 @@ public class HgCommand {
             List<String> list = new LinkedList<String>();
             list = HgCommand.doLogForHistory(root, 
                     files != null ? new ArrayList<File>(files) : null,
-                    fromRevision, toRevision, headRev, bShowMerges, logger);
+                    fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, logger);
             processLogMessages(list, messages);
             
         } catch (HgException ex) {
@@ -1127,7 +1163,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static List<String> doLogForHistory(File repository, List<File> files, 
-            String from, String to, String headRev, boolean bShowMerges, OutputLogger logger) throws HgException {
+            String from, String to, String headRev, boolean bShowMerges, boolean bGetFileInfo, int limit, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         if (files != null && files.isEmpty()) return null;
         
@@ -1136,6 +1172,10 @@ public class HgCommand {
         command.add(getHgCommand());
         command.add(HG_VERBOSE_CMD);
         command.add(HG_LOG_CMD);
+        if (limit >= 0) {
+                command.add(HG_LOG_LIMIT_CMD);
+                command.add(Integer.toString(limit));
+        }
         boolean doFollow = true;
         if( files != null){
             for (File f : files) {
@@ -1164,8 +1204,19 @@ public class HgCommand {
         if(dateStr == null && revStr != null){
             command.add(HG_FLAG_REV_CMD);
             command.add(revStr);
-        }        
-        command.add(HG_LOG_TEMPLATE_HISTORY_CMD);
+        }    
+        
+        // Make sure revsions listed from "tip" down to "tip - limit"
+        if(limit >= 0 && dateStr == null && revStr == null){
+            command.add(HG_FLAG_REV_CMD);
+            command.add(HG_LOG_REV_TIP_RANGE);
+        }    
+        
+        if(bGetFileInfo){
+            command.add(HG_LOG_TEMPLATE_HISTORY_CMD);
+        }else{
+            command.add(HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD);            
+        }
 
         if( files != null){
             for (File f : files) {
@@ -1587,6 +1638,8 @@ public class HgCommand {
         command.add(HG_COMMIT_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
 
         String projectUserName = new HgConfigFiles(repository).getUserName(false);
         String globalUsername = HgConfigFiles.getInstance().getUserName();
@@ -1618,8 +1671,33 @@ public class HgCommand {
             command.add(HG_COMMIT_OPT_LOGFILE_CMD);
             command.add(tempfile.getAbsolutePath());
 
+            List<String> saveCommand = null;
+            if(Utilities.isWindows()) {
+                saveCommand = new ArrayList<String>(command);
+            }
             for(File f: commitFiles){
-                command.add(f.getAbsolutePath());
+                command.add(f.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));            
+            }
+            if(Utilities.isWindows()) {   
+                // Count size of command
+                int size = 0;
+                for (String line : command) {
+                    size += line.length();
+                }
+                int maxSize = 32767; // Assume CreateProcess is used
+                if (size > maxSize) {
+                    NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(HgCommand.class, "MSG_LONG_COMMAND_QUERY")); // NOI18N
+                    descriptor.setTitle(NbBundle.getMessage(HgCommand.class, "MSG_LONG_COMMAND_TITLE")); // NOI18N
+                    descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
+                    descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+
+                    Object res = DialogDisplayer.getDefault().notify(descriptor)
+;
+                    if (res == NotifyDescriptor.NO_OPTION) {
+                        return;
+                    }
+                    command = saveCommand;
+                }
             }
             List<String> list = exec(command);
             
@@ -2384,7 +2462,68 @@ public class HgCommand {
         }
         return list;
     }
-    
+
+        /**
+     * Export the diffs for the specified revision to the specified output file
+    /**
+     * Export the diffs for the specified revision to the specified output file
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @param revStr the revision whose diffs are to be exported
+     * @param outputFileName path of the output file
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static List<String> doExportFileDiff(File repository, File file, String revStr, String outputFileName, OutputLogger logger)  throws HgException {
+        // Ensure that parent directory of target exists, creating if necessary
+        File fileTarget = new File (outputFileName);
+        File parentTarget = fileTarget.getParentFile();
+        try {
+            if (!parentTarget.mkdir()) {
+                if (!parentTarget.isDirectory()) {
+                    Mercurial.LOG.log(Level.WARNING, "File.mkdir() failed for : " + parentTarget.getAbsolutePath()); // NOI18N
+                    throw (new HgException (NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_TO_CREATE_PARENT_DIR"))); // NOI18N
+                }
+            }
+        } catch (SecurityException e) {
+            Mercurial.LOG.log(Level.WARNING, "File.mkdir() for : " + parentTarget.getAbsolutePath() + " threw SecurityException " + e.getMessage()); // NOI18N
+            throw (new HgException (NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_TO_CREATE_PARENT_DIR"))); // NOI18N
+        }
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_LOG_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_REV_CMD);
+        command.add(revStr);
+        command.add(HG_LOG_TEMPLATE_EXPORT_FILE_CMD);
+        command.add(HG_LOG_PATCH_CMD);
+        command.add(file.getAbsolutePath());
+
+        List<String> list = exec(command);
+        if (!list.isEmpty() &&
+             isErrorAbort(list.get(list.size() -1))) {
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_EXPORT_FAILED"), logger);
+        }else{
+            writeOutputFileDiff(list, outputFileName);
+        }
+        return list;
+    }
+    private static void writeOutputFileDiff(List<String> list, String outputFileName) {
+        PrintWriter pw = null;        
+        try {
+            pw = new PrintWriter(new FileWriter(outputFileName));
+            for(String s: list){
+                pw.println(s);
+                pw.flush();
+            }
+        } catch (IOException ex) {
+            // Ignore
+        } finally {
+            if(pw != null) pw.close();
+        }
+    }
+
     /**
      * Imports the diffs from the specified file
      *

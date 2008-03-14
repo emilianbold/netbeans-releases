@@ -1,57 +1,63 @@
 setupHighlight:METHOD:[]:ESCAPED{setupHighlight}(PARAMETERS{ESCAPED{element}, ESCAPED{effect}}):
 finishHighlight:METHOD:[]:ESCAPED{finishHighlight}(PARAMETERS{ESCAPED{element}, ESCAPED{effect}}):
-Spry:GLOBAL:[]:ESCAPED{Spry}:
-SpryRegistry:GLOBAL:[]:ESCAPED{SpryRegistry}:
 compositeColorHex:GLOBAL:[]:ESCAPED{compositeColorHex}:
 dimensions:GLOBAL:[]:ESCAPED{dimensions}:
-Spry.Effect:CLASS:[]:ESCAPED{Spry.Effect}:
-  AnimatedElement:CONSTRUCTOR:[]:ESCAPED{AnimatedElement}(PARAMETERS{ESCAPED{element}}):
-  Animator:CONSTRUCTOR:[]:ESCAPED{Animator}(PARAMETERS{ESCAPED{options}}):
-  AppearFade:CONSTRUCTOR:[]:ESCAPED{AppearFade}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Blind:CONSTRUCTOR:[]:ESCAPED{Blind}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Cluster:CONSTRUCTOR:[]:ESCAPED{Cluster}:
-  ClusteredEffect:CONSTRUCTOR:[]:ESCAPED{ClusteredEffect}(PARAMETERS{ESCAPED{effect}, ESCAPED{kind}}):
-  Color:CONSTRUCTOR:[]:ESCAPED{Color}(PARAMETERS{ESCAPED{element}, ESCAPED{startColor}, ESCAPED{stopColor}, ESCAPED{options}}):
-  DropOut:CONSTRUCTOR:[]:ESCAPED{DropOut}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Fold:CONSTRUCTOR:[]:ESCAPED{Fold}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  GrowShrink:CONSTRUCTOR:[]:ESCAPED{GrowShrink}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Highlight:CONSTRUCTOR:[]:ESCAPED{Highlight}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Move:CONSTRUCTOR:[]:ESCAPED{Move}(PARAMETERS{ESCAPED{element}, ESCAPED{fromPos}, ESCAPED{toPos}, ESCAPED{options}}):
-  MoveSlide:CONSTRUCTOR:[]:ESCAPED{MoveSlide}(PARAMETERS{ESCAPED{element}, ESCAPED{fromPos}, ESCAPED{toPos}, ESCAPED{options}}):
-  Opacity:CONSTRUCTOR:[]:ESCAPED{Opacity}(PARAMETERS{ESCAPED{element}, ESCAPED{startOpacity}, ESCAPED{stopOpacity}, ESCAPED{options}}):
-  Puff:CONSTRUCTOR:[]:ESCAPED{Puff}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Pulsate:CONSTRUCTOR:[]:ESCAPED{Pulsate}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Registry:CONSTRUCTOR:[]:ESCAPED{Registry}:
-  Shake:CONSTRUCTOR:[]:ESCAPED{Shake}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Size:CONSTRUCTOR:[]:ESCAPED{Size}(PARAMETERS{ESCAPED{element}, ESCAPED{fromRect}, ESCAPED{toRect}, ESCAPED{options}}):
-  Slide:CONSTRUCTOR:[]:ESCAPED{Slide}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Squish:CONSTRUCTOR:[]:ESCAPED{Squish}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  cleanWhitespace:METHOD:[]:ESCAPED{cleanWhitespace}(PARAMETERS{ESCAPED{element}}):
-  enforceVisible:METHOD:[]:ESCAPED{enforceVisible}(PARAMETERS{ESCAPED{element}}):
-  getDimensions:METHOD:[]:ESCAPED{getDimensions}(PARAMETERS{ESCAPED{element}}):
-  getElement:METHOD:[]:ESCAPED{getElement}(PARAMETERS{ESCAPED{ele}}):
-  getOffsetPosition:METHOD:[]:ESCAPED{getOffsetPosition}(PARAMETERS{ESCAPED{element}}):
-  getStyleProp:METHOD:[]:ESCAPED{getStyleProp}(PARAMETERS{ESCAPED{element}, ESCAPED{prop}}):
-  makeClipping:METHOD:[]:ESCAPED{makeClipping}(PARAMETERS{ESCAPED{element}}):
-  makePositioned:METHOD:[]:ESCAPED{makePositioned}(PARAMETERS{ESCAPED{element}}):
-  setStyleProp:METHOD:[]:ESCAPED{setStyleProp}(PARAMETERS{ESCAPED{element}, ESCAPED{prop}, ESCAPED{value}}):
 Spry.Effect.Registry:CLASS:[]:ESCAPED{Spry.Effect.Registry}:
+  Registry:CONSTRUCTOR:[STATIC]:ESCAPED{Registry}:
   effectsAreTheSame:METHOD:[]:ESCAPED{effectsAreTheSame}(PARAMETERS{ESCAPED{effectA}, ESCAPED{effectB}}):
+  elements:PROPERTY:[]:ESCAPED{elements}:
   getIndexOfElement:METHOD:[]:ESCAPED{getIndexOfElement}(PARAMETERS{ESCAPED{element}}):
   getRegisteredEffect:METHOD:[]:ESCAPED{getRegisteredEffect}(PARAMETERS{ESCAPED{element}, ESCAPED{effect}}):
+Spry.Effect.Utils.Position:CLASS:[]:ESCAPED{Spry.Effect.Utils.Position}:
+  Position:CONSTRUCTOR:[STATIC]:ESCAPED{Position}:
+  x:PROPERTY:[]:ESCAPED{x}:
+  y:PROPERTY:[]:ESCAPED{y}:
+Spry.Effect.Utils.Rectangle:CLASS:[]:ESCAPED{Spry.Effect.Utils.Rectangle}:
+  Rectangle:CONSTRUCTOR:[STATIC]:ESCAPED{Rectangle}:
+  height:PROPERTY:[]:ESCAPED{height}:
+  width:PROPERTY:[]:ESCAPED{width}:
+Spry.Effect.Utils.PositionedRectangle:CLASS:[]:ESCAPED{Spry.Effect.Utils.PositionedRectangle}:
+  PositionedRectangle:CONSTRUCTOR:[STATIC]:ESCAPED{PositionedRectangle}:
+  position:PROPERTY:[]:ESCAPED{position}:
+  rectangle:PROPERTY:[]:ESCAPED{rectangle}:
 Spry.Effect.Utils:CLASS:[]:ESCAPED{Spry.Effect.Utils}:
-  Position:CONSTRUCTOR:[]:ESCAPED{Position}:
-  PositionedRectangle:CONSTRUCTOR:[]:ESCAPED{PositionedRectangle}:
-  Rectangle:CONSTRUCTOR:[]:ESCAPED{Rectangle}:
-  camelize:METHOD:[]:ESCAPED{camelize}(PARAMETERS{ESCAPED{stringToCamelize}}):
-  getFirstChildElement:METHOD:[]:ESCAPED{getFirstChildElement}(PARAMETERS{ESCAPED{node}}):
-  getPercentValue:METHOD:[]:ESCAPED{getPercentValue}(PARAMETERS{ESCAPED{value}}):
-  getPixelValue:METHOD:[]:ESCAPED{getPixelValue}(PARAMETERS{ESCAPED{value}}):
-  hexToInt:METHOD:[]:ESCAPED{hexToInt}(PARAMETERS{ESCAPED{hexStr}}):
-  intToHex:METHOD:[]:ESCAPED{intToHex}(PARAMETERS{ESCAPED{integerNum}}):
-  isPercentValue:METHOD:[]:ESCAPED{isPercentValue}(PARAMETERS{ESCAPED{value}}):
-  optionsAreIdentical:METHOD:[]:ESCAPED{optionsAreIdentical}(PARAMETERS{ESCAPED{optionsA}, ESCAPED{optionsB}}):
-  rgb:METHOD:[]:ESCAPED{rgb}(PARAMETERS{ESCAPED{redInt}, ESCAPED{greenInt}, ESCAPED{blueInt}}):
+  camelize:METHOD:[STATIC]:ESCAPED{camelize}(PARAMETERS{ESCAPED{stringToCamelize}}):
+  getFirstChildElement:METHOD:[STATIC]:ESCAPED{getFirstChildElement}(PARAMETERS{ESCAPED{node}}):
+  getPercentValue:METHOD:[STATIC]:ESCAPED{getPercentValue}(PARAMETERS{ESCAPED{value}}):
+  getPixelValue:METHOD:[STATIC]:ESCAPED{getPixelValue}(PARAMETERS{ESCAPED{value}}):
+  hexToInt:METHOD:[STATIC]:ESCAPED{hexToInt}(PARAMETERS{ESCAPED{hexStr}}):
+  intToHex:METHOD:[STATIC]:ESCAPED{intToHex}(PARAMETERS{ESCAPED{integerNum}}):
+  isPercentValue:METHOD:[STATIC]:ESCAPED{isPercentValue}(PARAMETERS{ESCAPED{value}}):
+  optionsAreIdentical:METHOD:[STATIC]:ESCAPED{optionsAreIdentical}(PARAMETERS{ESCAPED{optionsA}, ESCAPED{optionsB}}):
+  rgb:METHOD:[STATIC]:ESCAPED{rgb}(PARAMETERS{ESCAPED{redInt}, ESCAPED{greenInt}, ESCAPED{blueInt}}):
+Spry.Effect:CLASS:[]:ESCAPED{Spry.Effect}:
+  cleanWhitespace:METHOD:[STATIC]:ESCAPED{cleanWhitespace}(PARAMETERS{ESCAPED{element}}):
+  enforceVisible:METHOD:[STATIC]:ESCAPED{enforceVisible}(PARAMETERS{ESCAPED{element}}):
+  getDimensions:METHOD:[STATIC]:ESCAPED{getDimensions}(PARAMETERS{ESCAPED{element}}):
+  getElement:METHOD:[STATIC]:ESCAPED{getElement}(PARAMETERS{ESCAPED{ele}}):
+  getOffsetPosition:METHOD:[STATIC]:ESCAPED{getOffsetPosition}(PARAMETERS{ESCAPED{element}}):
+  getStyleProp:METHOD:[STATIC]:ESCAPED{getStyleProp}(PARAMETERS{ESCAPED{element}, ESCAPED{prop}}):
+  makeClipping:METHOD:[STATIC]:ESCAPED{makeClipping}(PARAMETERS{ESCAPED{element}}):
+  makePositioned:METHOD:[STATIC]:ESCAPED{makePositioned}(PARAMETERS{ESCAPED{element}}):
+  setStyleProp:METHOD:[STATIC]:ESCAPED{setStyleProp}(PARAMETERS{ESCAPED{element}, ESCAPED{prop}, ESCAPED{value}}):
+Spry.Effect.Animator:CLASS:[]:ESCAPED{Spry.Effect.Animator}:
+  Animator:CONSTRUCTOR:[STATIC]:ESCAPED{Animator}(PARAMETERS{ESCAPED{options}}):
+  animate:METHOD:[]:ESCAPED{animate}(PARAMETERS{ESCAPED{position}}):
+  cancel:METHOD:[]:ESCAPED{cancel}:
+  direction:PROPERTY:[]:ESCAPED{direction}:
+  doToggle:METHOD:[]:ESCAPED{doToggle}:
+  drawEffect:METHOD:[]:ESCAPED{drawEffect}:
+  getElapsedMilliseconds:METHOD:[]:ESCAPED{getElapsedMilliseconds}:
+  interval:PROPERTY:[]:ESCAPED{interval}:
+  isFinished:PROPERTY:[]:ESCAPED{isFinished}:
+  nextEffect:PROPERTY:[]:ESCAPED{nextEffect}:
+  options:PROPERTY:[]:ESCAPED{options}:
+  repeat:PROPERTY:[]:ESCAPED{repeat}:
+  setOptions:METHOD:[]:ESCAPED{setOptions}(PARAMETERS{ESCAPED{options}}):
+  start:METHOD:[]:ESCAPED{start}(PARAMETERS{ESCAPED{queue}}):
+  startMilliseconds:PROPERTY:[]:ESCAPED{startMilliseconds}:
+  stop:METHOD:[]:ESCAPED{stop}:
+  timer:PROPERTY:[]:ESCAPED{timer}:
 options:CLASS:[]:ESCAPED{options}:
   duration:PROPERTY:[]:ESCAPED{duration}:
   duration:PROPERTY:[]:ESCAPED{duration}:
@@ -140,41 +146,122 @@ options:CLASS:[]:ESCAPED{options}:
   transition:PROPERTY:[]:ESCAPED{transition}:
   transition:PROPERTY:[]:ESCAPED{transition}:
   transition:PROPERTY:[]:ESCAPED{transition}:
-Spry.Effect.Animator:CLASS:[]:ESCAPED{Spry.Effect.Animator}:
-  animate:METHOD:[]:ESCAPED{animate}(PARAMETERS{ESCAPED{position}}):
-  cancel:METHOD:[]:ESCAPED{cancel}:
-  doToggle:METHOD:[]:ESCAPED{doToggle}:
-  drawEffect:METHOD:[]:ESCAPED{drawEffect}:
-  getElapsedMilliseconds:METHOD:[]:ESCAPED{getElapsedMilliseconds}:
-  setOptions:METHOD:[]:ESCAPED{setOptions}(PARAMETERS{ESCAPED{options}}):
-  start:METHOD:[]:ESCAPED{start}(PARAMETERS{ESCAPED{queue}}):
-  stop:METHOD:[]:ESCAPED{stop}:
 Spry.Effect.Move:CLASS:[]:ESCAPED{Spry.Effect.Move}:
+  Move:CONSTRUCTOR:[STATIC]:ESCAPED{Move}(PARAMETERS{ESCAPED{element}, ESCAPED{fromPos}, ESCAPED{toPos}, ESCAPED{options}}):
   animate:METHOD:[]:ESCAPED{animate}(PARAMETERS{ESCAPED{position}}):
+  element:PROPERTY:[]:ESCAPED{element}:
+  name:PROPERTY:[]:ESCAPED{name}:
+  rangeMoveX:PROPERTY:[]:ESCAPED{rangeMoveX}:
+  rangeMoveY:PROPERTY:[]:ESCAPED{rangeMoveY}:
   reset:METHOD:[]:ESCAPED{reset}:
+  startX:PROPERTY:[]:ESCAPED{startX}:
+  startY:PROPERTY:[]:ESCAPED{startY}:
+  stopX:PROPERTY:[]:ESCAPED{stopX}:
+  stopY:PROPERTY:[]:ESCAPED{stopY}:
 Spry.Effect.MoveSlide:CLASS:[]:ESCAPED{Spry.Effect.MoveSlide}:
+  MoveSlide:CONSTRUCTOR:[STATIC]:ESCAPED{MoveSlide}(PARAMETERS{ESCAPED{element}, ESCAPED{fromPos}, ESCAPED{toPos}, ESCAPED{options}}):
   animate:METHOD:[]:ESCAPED{animate}(PARAMETERS{ESCAPED{position}}):
+  element:PROPERTY:[]:ESCAPED{element}:
+  firstChildElement:PROPERTY:[]:ESCAPED{firstChildElement}:
+  name:PROPERTY:[]:ESCAPED{name}:
+  rangeMoveX:PROPERTY:[]:ESCAPED{rangeMoveX}:
+  rangeMoveY:PROPERTY:[]:ESCAPED{rangeMoveY}:
   reset:METHOD:[]:ESCAPED{reset}:
+  startHeight:PROPERTY:[]:ESCAPED{startHeight}:
+  startX:PROPERTY:[]:ESCAPED{startX}:
+  startY:PROPERTY:[]:ESCAPED{startY}:
+  stopX:PROPERTY:[]:ESCAPED{stopX}:
+  stopY:PROPERTY:[]:ESCAPED{stopY}:
 Spry.Effect.Size:CLASS:[]:ESCAPED{Spry.Effect.Size}:
+  Size:CONSTRUCTOR:[STATIC]:ESCAPED{Size}(PARAMETERS{ESCAPED{element}, ESCAPED{fromRect}, ESCAPED{toRect}, ESCAPED{options}}):
   animate:METHOD:[]:ESCAPED{animate}(PARAMETERS{ESCAPED{position}}):
+  element:PROPERTY:[]:ESCAPED{element}:
+  heightRange:PROPERTY:[]:ESCAPED{heightRange}:
+  name:PROPERTY:[]:ESCAPED{name}:
+  originalWidth:PROPERTY:[]:ESCAPED{originalWidth}:
   reset:METHOD:[]:ESCAPED{reset}:
+  startHeight:PROPERTY:[]:ESCAPED{startHeight}:
+  startWidth:PROPERTY:[]:ESCAPED{startWidth}:
+  stopHeight:PROPERTY:[]:ESCAPED{stopHeight}:
+  stopWidth:PROPERTY:[]:ESCAPED{stopWidth}:
+  widthRange:PROPERTY:[]:ESCAPED{widthRange}:
 Spry.Effect.Opacity:CLASS:[]:ESCAPED{Spry.Effect.Opacity}:
+  Opacity:CONSTRUCTOR:[STATIC]:ESCAPED{Opacity}(PARAMETERS{ESCAPED{element}, ESCAPED{startOpacity}, ESCAPED{stopOpacity}, ESCAPED{options}}):
   animate:METHOD:[]:ESCAPED{animate}(PARAMETERS{ESCAPED{position}}):
+  element:PROPERTY:[]:ESCAPED{element}:
+  name:PROPERTY:[]:ESCAPED{name}:
+  opacityRange:PROPERTY:[]:ESCAPED{opacityRange}:
   reset:METHOD:[]:ESCAPED{reset}:
+  startOpacity:PROPERTY:[]:ESCAPED{startOpacity}:
+  stopOpacity:PROPERTY:[]:ESCAPED{stopOpacity}:
 Spry.Effect.Color:CLASS:[]:ESCAPED{Spry.Effect.Color}:
+  Color:CONSTRUCTOR:[STATIC]:ESCAPED{Color}(PARAMETERS{ESCAPED{element}, ESCAPED{startColor}, ESCAPED{stopColor}, ESCAPED{options}}):
   animate:METHOD:[]:ESCAPED{animate}(PARAMETERS{ESCAPED{position}}):
+  blueColorRange:PROPERTY:[]:ESCAPED{blueColorRange}:
+  element:PROPERTY:[]:ESCAPED{element}:
+  greenColorRange:PROPERTY:[]:ESCAPED{greenColorRange}:
+  name:PROPERTY:[]:ESCAPED{name}:
+  redColorRange:PROPERTY:[]:ESCAPED{redColorRange}:
   reset:METHOD:[]:ESCAPED{reset}:
+  startBlueColor:PROPERTY:[]:ESCAPED{startBlueColor}:
+  startColor:PROPERTY:[]:ESCAPED{startColor}:
+  startGreenColor:PROPERTY:[]:ESCAPED{startGreenColor}:
+  startRedColor:PROPERTY:[]:ESCAPED{startRedColor}:
+  stopBlueColor:PROPERTY:[]:ESCAPED{stopBlueColor}:
+  stopColor:PROPERTY:[]:ESCAPED{stopColor}:
+  stopGreenColor:PROPERTY:[]:ESCAPED{stopGreenColor}:
+  stopRedColor:PROPERTY:[]:ESCAPED{stopRedColor}:
+Spry.Effect.ClusteredEffect:CLASS:[]:ESCAPED{Spry.Effect.ClusteredEffect}:
+  ClusteredEffect:CONSTRUCTOR:[STATIC]:ESCAPED{ClusteredEffect}(PARAMETERS{ESCAPED{effect}, ESCAPED{kind}}):
+  effect:PROPERTY:[]:ESCAPED{effect}:
+  kind:PROPERTY:[]:ESCAPED{kind}:
 Spry.Effect.Cluster:CLASS:[]:ESCAPED{Spry.Effect.Cluster}:
+  Cluster:CONSTRUCTOR:[STATIC]:ESCAPED{Cluster}:
   addNextEffect:METHOD:[]:ESCAPED{addNextEffect}(PARAMETERS{ESCAPED{effect}}):
   addParallelEffect:METHOD:[]:ESCAPED{addParallelEffect}(PARAMETERS{ESCAPED{effect}}):
   cancel:METHOD:[]:ESCAPED{cancel}:
+  clusterIsFinished:PROPERTY:[]:ESCAPED{clusterIsFinished}:
+  currIdx:PROPERTY:[]:ESCAPED{currIdx}:
+  direction:PROPERTY:[]:ESCAPED{direction}:
   doToggle:METHOD:[]:ESCAPED{doToggle}:
+  effectsArray:PROPERTY:[]:ESCAPED{effectsArray}:
   getNextEffect:METHOD:[]:ESCAPED{getNextEffect}:
+  name:PROPERTY:[]:ESCAPED{name}:
+  options:PROPERTY:[]:ESCAPED{options}:
   reset:METHOD:[]:ESCAPED{reset}:
   resetIndex:METHOD:[]:ESCAPED{resetIndex}:
   setToggle:METHOD:[]:ESCAPED{setToggle}(PARAMETERS{ESCAPED{doToggle}}):
   start:METHOD:[]:ESCAPED{start}:
   startNextEffect:METHOD:[]:ESCAPED{startNextEffect}:
+Spry.Effect.AnimatedElement:CLASS:[]:ESCAPED{Spry.Effect.AnimatedElement}:
+  AnimatedElement:CONSTRUCTOR:[STATIC]:ESCAPED{AnimatedElement}(PARAMETERS{ESCAPED{element}}):
+  currentEffect:PROPERTY:[]:ESCAPED{currentEffect}:
+  effectArray:PROPERTY:[]:ESCAPED{effectArray}:
+  element:PROPERTY:[]:ESCAPED{element}:
+Spry.Effect.AppearFade:CLASS:[]:ESCAPED{Spry.Effect.AppearFade}:
+  AppearFade:CONSTRUCTOR:[STATIC]:ESCAPED{AppearFade}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+Spry.Effect.Blind:CLASS:[]:ESCAPED{Spry.Effect.Blind}:
+  Blind:CONSTRUCTOR:[STATIC]:ESCAPED{Blind}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+Spry.Effect.Highlight:CLASS:[]:ESCAPED{Spry.Effect.Highlight}:
+  Highlight:CONSTRUCTOR:[STATIC]:ESCAPED{Highlight}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+Spry.Effect.Slide:CLASS:[]:ESCAPED{Spry.Effect.Slide}:
+  Slide:CONSTRUCTOR:[STATIC]:ESCAPED{Slide}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+Spry.Effect.GrowShrink:CLASS:[]:ESCAPED{Spry.Effect.GrowShrink}:
+  GrowShrink:CONSTRUCTOR:[STATIC]:ESCAPED{GrowShrink}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
 initialProps2:CLASS:[]:ESCAPED{initialProps2}:
   left:PROPERTY:[]:ESCAPED{left}:
   top:PROPERTY:[]:ESCAPED{top}:
+Spry.Effect.Shake:CLASS:[]:ESCAPED{Spry.Effect.Shake}:
+  Shake:CONSTRUCTOR:[STATIC]:ESCAPED{Shake}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+Spry.Effect.Squish:CLASS:[]:ESCAPED{Spry.Effect.Squish}:
+  Squish:CONSTRUCTOR:[STATIC]:ESCAPED{Squish}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+Spry.Effect.Pulsate:CLASS:[]:ESCAPED{Spry.Effect.Pulsate}:
+  Pulsate:CONSTRUCTOR:[STATIC]:ESCAPED{Pulsate}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+Spry.Effect.Puff:CLASS:[]:ESCAPED{Spry.Effect.Puff}:
+  Puff:CONSTRUCTOR:[STATIC]:ESCAPED{Puff}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+Spry.Effect.DropOut:CLASS:[]:ESCAPED{Spry.Effect.DropOut}:
+  DropOut:CONSTRUCTOR:[STATIC]:ESCAPED{DropOut}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+Spry.Effect.Fold:CLASS:[]:ESCAPED{Spry.Effect.Fold}:
+  Fold:CONSTRUCTOR:[STATIC]:ESCAPED{Fold}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+Spry:CLASS:[]:ESCAPED{Spry}:
+SpryRegistry:CLASS:[]:ESCAPED{SpryRegistry}:

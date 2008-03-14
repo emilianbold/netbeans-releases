@@ -299,8 +299,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }
         long revision = Long.parseLong(container.getLog().getRevision());
 
-        final boolean rollbackToEnabled = !missingFile && !revisionSelected && oneRevisionMultiselected;
-        final boolean rollbackChangeEnabled = !missingFile && oneRevisionMultiselected && (drev.length == 0); // drev.length == 0 => the whole revision was selected
+        final boolean revertToEnabled = !missingFile && !revisionSelected && oneRevisionMultiselected;
+        final boolean backoutChangeEnabled = !missingFile && oneRevisionMultiselected && (drev.length == 0); // drev.length == 0 => the whole revision was selected
         final boolean viewEnabled = selection.length == 1 && !revisionSelected && drev[0].getFile() != null && drev[0].getFile().exists() &&  !drev[0].getFile().isDirectory();
         final boolean diffToPrevEnabled = selection.length == 1;
         
@@ -315,28 +315,21 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }));
         }
 
-        /* TBD - Support Rollback Changes:
-         * Need to figure out how to implement SVN functionality to allow you to rollback a change
-         * currently for svn this cmd runs: merge -R <revX>:<revY> it basically diffs the two revs
-         * and creates a patch which is then applied ot the file in the working dir, effectively removing
-         * the change applied between revX and revY
-         * In hg we'd need to do a hg diff -r revX -r revY, generate a patch and then apply it to the working dir copy
-         */
         if (revisionSelected) {
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackChange")) { // NOI18N
 
                 {
-                    setEnabled(rollbackChangeEnabled);
+                    setEnabled(backoutChangeEnabled);
                 }
 
                 public void actionPerformed(ActionEvent e) {
-                    rollback(selection[0]);
+                    backout(selection[0]);
                 }
             }));
         }else{
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", "" + revision)) { // NOI18N
                 {                    
-                    setEnabled(rollbackToEnabled);
+                    setEnabled(revertToEnabled);
                 }
                 public void actionPerformed(ActionEvent e) {
                     revertModifications(selection);
@@ -355,25 +348,48 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     });
                 }
             }));
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ExportFileDiff")) { // NOI18N
+                {
+                    setEnabled(viewEnabled);
+                }
+                public void actionPerformed(ActionEvent e) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            exportFileDiff(selection[0]);
+                        }
+                    });
+                }
+            }));
         }
 
         menu.show(resultsList, p.x, p.y);
     }
     
     /**
-     * Rollback this changeset
+     * Rollback this changeset only
      *
      * @param event
      */
-    private void rollback(int idx) {
+    private void backout(int idx) {
         Object o = dispResults.get(idx);
         if (o instanceof RepositoryRevision) {
             RepositoryRevision repoRev = (RepositoryRevision) o;
             BackoutAction.backout(repoRev);
         }        
     }
+    
+    static void backout(final RepositoryRevision.Event event) {
+        RepositoryRevision repoRev = event.getLogInfoHeader();
+        BackoutAction.backout(repoRev);
+    }
 
-    private void revertModifications(int[] selection) {
+    static void revertModifications(final RepositoryRevision.Event event) {
+        Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
+        events.add(event);
+        revert(null, (RepositoryRevision.Event[]) events.toArray(new RepositoryRevision.Event[events.size()]));
+    }
+
+    public void revertModifications(int[] selection) {
         Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
         Set<RepositoryRevision> revisions = new HashSet<RepositoryRevision>();
         for (int idx : selection) {
@@ -384,39 +400,43 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 events.add((RepositoryRevision.Event) o);
             }
         }
-        revert(master, revisions.toArray(new RepositoryRevision[revisions.size()]), (RepositoryRevision.Event[]) events.toArray(new RepositoryRevision.Event[events.size()]));
+        revert(revisions.toArray(new RepositoryRevision[revisions.size()]), (RepositoryRevision.Event[]) events.toArray(new RepositoryRevision.Event[events.size()]));
     }
 
-    static void revert(final SearchHistoryPanel master, final RepositoryRevision [] revisions, final RepositoryRevision.Event [] events) {
-        String url;
-        try {
-            url = master.getSearchRepositoryRootUrl();        
-        } catch (HgException ex) {
-            ExceptionHandler eh = new ExceptionHandler(ex);
-            eh.notifyException();                
-            return;
-        }                   
+    static void revert(final RepositoryRevision [] revisions, final RepositoryRevision.Event [] events) {
+        String url;        
+        if(revisions == null || revisions.length == 0){
+            if(events == null || events.length == 0 || events[0].getLogInfoHeader() == null) return;
+            url = events[0].getLogInfoHeader().getRepositoryRootUrl();             
+        }else{
+            url = revisions[0].getRepositoryRootUrl(); 
+        }
+        
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(url);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
-                revertImpl(master, revisions, events, this);
+                revertImpl(revisions, events, this);
             }
         };
         support.start(rp, url, NbBundle.getMessage(SummaryView.class, "MSG_Revert_Progress")); // NOI18N
     }
 
-    private static void revertImpl(SearchHistoryPanel master, RepositoryRevision[] revisions, RepositoryRevision.Event[] events, HgProgressSupport progress) {
+    private static void revertImpl(RepositoryRevision[] revisions, RepositoryRevision.Event[] events, HgProgressSupport progress) {
         List<File> revertFiles = new ArrayList<File>();
         boolean doBackup = HgModuleConfig.getDefault().getBackupOnRevertModifications();
-        for (RepositoryRevision revision : revisions) {
-            File root = new File(revision.getRepositoryRootUrl());
-            for(RepositoryRevision.Event event: revision.getEvents()){
-                if (event.getFile() == null) continue;
-                revertFiles.add(event.getFile());
-            }
-            RevertModificationsAction.performRevert(
+        if (revisions != null) {
+            for (RepositoryRevision revision : revisions) {
+                File root = new File(revision.getRepositoryRootUrl());
+                for (RepositoryRevision.Event event : revision.getEvents()) {
+                    if (event.getFile() == null) {
+                        continue;
+                    }
+                    revertFiles.add(event.getFile());
+                }
+                RevertModificationsAction.performRevert(
                         root, revision.getLog().getRevision(), revertFiles, doBackup, progress.getLogger());
-            revertFiles.clear();
+                revertFiles.clear();
+            }
         }
         
         Map<File, List<RepositoryRevision.Event>> revertMap = new HashMap<File, List<RepositoryRevision.Event>>();
@@ -481,10 +501,17 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         Object o = dispResults.get(idx);
         if (o instanceof RepositoryRevision) {
             RepositoryRevision repoRev = (RepositoryRevision) o;
-            ExportDiffAction.exportDiffRevision(repoRev);
+            ExportDiffAction.exportDiffRevision(repoRev, master.getRoots());
         }        
     }
-
+    
+    private void exportFileDiff(int idx) {
+        Object o = dispResults.get(idx);
+        if (o instanceof RepositoryRevision.Event) {
+            RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
+            ExportDiffAction.exportDiffFileRevision(drev);
+        }
+    }
 
     public JComponent getComponent() {
         return scrollPane;

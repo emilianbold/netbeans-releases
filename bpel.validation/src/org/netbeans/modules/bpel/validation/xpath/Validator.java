@@ -40,12 +40,7 @@
  */
 package org.netbeans.modules.bpel.validation.xpath;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Iterator;
 import java.util.Collection;
-import java.util.Set;
 
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.BooleanExpr;
@@ -68,10 +63,9 @@ import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
-import org.netbeans.modules.xml.schema.model.Import;
-import org.netbeans.modules.bpel.model.api.support.ExNamespaceContext;
+import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
-import org.netbeans.modules.bpel.model.impl.references.SchemaReferenceBuilder;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -89,27 +83,21 @@ import org.netbeans.modules.bpel.model.api.support.BpelXpathExtFunctionResolver;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.schema.model.SimpleType;
-import org.netbeans.modules.xml.schema.model.TypeContainer;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
-import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
-import org.netbeans.modules.xml.schema.model.LocalSimpleType;
-import org.netbeans.modules.xml.schema.model.LocalComplexType;
-import org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor;
-import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
+import org.netbeans.modules.bpel.model.api.support.ValidationVisitor;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2008.02.08
  */
-public final class Validator extends BpelValidator {
+public final class Validator extends BpelValidator implements ValidationVisitor {
 
   @Override
   public void visit(Copy copy) {
@@ -130,14 +118,8 @@ public final class Validator extends BpelValidator {
     if (fromName != null && fromName.equals(toName)) {
       return;
     }
-    if (fromName.equals("anyURI") || toName.equals("anyURI")) {
-      return;
-    }
-    if (fromType instanceof GlobalSimpleType && toType instanceof GlobalSimpleType) {
-      return;
-    }
-    if (fromType != toType) {
-      addError("FIX_TYPE_IN_COPY", copy, getTypeName(fromType), getTypeName(toType));
+    if (ValidationUtil.getBasedSimpleType(fromType) != ValidationUtil.getBasedSimpleType(toType)) {
+      addWarning("FIX_TYPE_IN_COPY", copy, getTypeName(fromType), getTypeName(toType)); // NOI18N
     }
   }
 

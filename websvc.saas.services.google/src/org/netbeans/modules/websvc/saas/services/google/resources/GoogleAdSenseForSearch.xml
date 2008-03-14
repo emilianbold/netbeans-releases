@@ -15,7 +15,7 @@
         ads are displayed.  When a user clicks through, Google credits a payment.
     </description>
     
-    <display-name>GoogleAdSenseForSearch</display-name>
+    <display-name>AdSenseForSearch Service</display-name>
 
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.components.google.Bundle</localizing-bundle>
@@ -24,7 +24,7 @@
             <artifacts targets="java,servlet"/>
         </code-gen>
         <!-- http-basic, api-key, custom -->
-        <authentication profile="Templates/WebServices/profile.properties">
+        <authentication profile="SaaSServices/Google/profile.properties">
             <api-key id="zwsid"/>
         </authentication>
     </saas-metadata>

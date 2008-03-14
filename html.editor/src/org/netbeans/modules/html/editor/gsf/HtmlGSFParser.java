@@ -42,31 +42,46 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.editor.ext.html.dtd.DTD;
+import org.netbeans.editor.ext.html.dtd.DTD.Element;
+import org.netbeans.editor.ext.html.parser.AstNode;
+import org.netbeans.editor.ext.html.parser.AstNodeUtils;
+import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
+import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParseEvent;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.PositionManager;
+import org.netbeans.modules.gsf.api.Severity;
+import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.gsf.spi.DefaultError;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author marek
  */
-public class HtmlGSFParser implements Parser {
+public class HtmlGSFParser implements Parser, PositionManager {
 
+    private static final String FALLBACK_DOCTYPE = "-//W3C//DTD HTML 4.01 Transitional//EN";  // NOI18N
     private static final Logger LOGGER = Logger.getLogger(HtmlGSFParser.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
-    public void parseFiles(Job job) {
-        for (ParserFile file : job.files) {
+    public void parseFiles(final Job job) {
+        for (final ParserFile file : job.files) {
             try {
                 ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
                 job.listener.started(beginEvent);
 
-                ParserResult result = null;
+                HtmlParserResult result = null;
 
                 CharSequence buffer = job.reader.read(file);
                 int caretOffset = job.reader.getCaretOffset(file);
@@ -82,38 +97,52 @@ public class HtmlGSFParser implements Parser {
 
                 result = new HtmlParserResult(this, file, elements);
 
-//                //delete last results - shared instance
-//                //TODO fix this in the parser
-//                parser().errors().clear();
-//                
-//                parser().ReInit(new ASCII_CharStream(new StringReader(source), 0, 0));
-//
-//                SimpleNode node = parser().styleSheet();
-//                
-//                node.dump("");
-//
-//                for (ParseException pe : (List<ParseException>) parser().errors()) {
-//
-//                    System.out.println(pe.getMessage());
-//                    
-//                    Token lastSuccessToken = pe.currentToken;
-//                    Token errorToken = lastSuccessToken.next;
-//                    int from = errorToken.offset;
-//                    int to = from + errorToken.image.length();
-//                    
-//                    Error error =
-//                            new DefaultError(pe.getMessage(), pe.getLocalizedMessage(), null, file.getFileObject(),
-//                            from, from, Severity.ERROR);
-//
-//                    job.listener.error(error);
-//
-//                }
+                //highlight unpaired tags
+                AstNode root = result.root();
 
-//                result = new CSSParserResult(this, file, node);
+                final DTD[] dtds = new DTD[]{org.netbeans.editor.ext.html.dtd.Registry.getDTD(FALLBACK_DOCTYPE, null)};
+                //find document type declaration
+                AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
-//                Context context = new Context(file, listener, source, caretOffset);
-//                result = parseBuffer(context, Sanitize.NONE);
-                //result = new HtmlParserResult(this, file);
+                    public void visit(AstNode node) {
+                        if (node.type() == AstNode.NodeType.DECLARATION) {
+                            SyntaxElement.Declaration declaration = (SyntaxElement.Declaration) node.element();
+                            String publicID = declaration.getPublicIdentifier();
+                            if (publicID != null) {
+                                DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(publicID, null);
+                                if (dtd != null) {
+                                    dtds[0] = dtd;
+                                }
+                            }
+                        }
+                    }
+                });
+
+                AstNodeUtils.visitChildren(root,
+                        new AstNodeVisitor() {
+
+                            public void visit(AstNode node) {
+                                if (node.type() == AstNode.NodeType.UNMATCHED_TAG) {
+                                    AstNode unmatched = node.children().get(0);
+                                    if (dtds[0] != null) {
+                                        //check the unmatched tag according to the DTD
+                                        Element element = dtds[0].getElement(node.name().toUpperCase());
+                                        if (element != null) {
+                                            if (unmatched.type() == AstNode.NodeType.OPEN_TAG && element.hasOptionalEnd() || unmatched.type() == AstNode.NodeType.ENDTAG && element.hasOptionalStart()) {
+                                                return;
+                                            }
+                                        }
+                                    }
+
+                                    Error error =
+                                            new DefaultError("unmatched_tag", NbBundle.getMessage(this.getClass(), "MSG_Unmatched_Tag"), null, file.getFileObject(),
+                                            node.startOffset(), node.endOffset(), Severity.WARNING); //NOI18N
+                                    job.listener.error(error);
+
+                                }
+                            }
+                        });
+
                 ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
                 job.listener.finished(doneEvent);
             } catch (IOException ex) {
@@ -125,23 +154,19 @@ public class HtmlGSFParser implements Parser {
     }
 
     public PositionManager getPositionManager() {
-//        return new CSSPositionManager();
-        return null;
+        return this;
     }
 
-//    public SemanticAnalyzer getSemanticAnalysisTask() {
-//        return new CSSSemanticAnalyzer();
-//    }
-//
-//    public OccurrencesFinder getMarkOccurrencesTask(int caretPosition) {
-//        return new CSSOccurancesFinder();
-//    }
-//
-//    public <T extends Element> ElementHandle<T> createHandle(CompilationInfo info, T element) {
-//        return null;
-//    }
-//
-//    public <T extends Element> T resolveHandle(CompilationInfo info, ElementHandle<T> handle) {
-//        return null;
-//    }
+    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle object) {
+        if (object instanceof HtmlElementHandle) {
+            ParserResult presult = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator().next();
+            final TranslatedSource source = presult.getTranslatedSource();
+            AstNode node = ((HtmlElementHandle) object).node();
+            return new OffsetRange(AstUtils.documentPosition(node.startOffset(), source), AstUtils.documentPosition(node.endOffset(), source));
+
+        } else {
+            throw new IllegalArgumentException((("Foreign element: " + object + " of type " +
+                    object) != null) ? object.getClass().getName() : "null"); //NOI18N
+        }
+    }
 }

@@ -39,9 +39,9 @@
 
 package org.netbeans.modules.spring.beans.wizards;
 
+import java.util.List;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.spring.api.beans.ConfigFileManager;
+import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -52,24 +52,23 @@ import org.openide.util.HelpCtx;
 public class SpringXMLConfigGroupPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
     public static final String CONFIG_FILE_GROUPS = "configFileGroups"; // NOI18N
-    
-    private SpringXMLConfigGroupVisual component;
-    private Project p;
 
-    public SpringXMLConfigGroupPanel(Project p) {
-        this.p = p;
+    private SpringXMLConfigGroupVisual component;
+    private List<ConfigFileGroup> configFileGroups;
+
+    public SpringXMLConfigGroupPanel(List<ConfigFileGroup> configFileGroups) {
+        this.configFileGroups = configFileGroups;
     }
 
     public SpringXMLConfigGroupVisual getComponent() {
         if (component == null) {
-            ConfigFileManager manager = NewSpringXMLConfigWizardIterator.getConfigFileManager(p);
-            component = new SpringXMLConfigGroupVisual(manager.getConfigFileGroups());
+            component = new SpringXMLConfigGroupVisual(configFileGroups);
         }
         return component;
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(SpringXMLConfigGroupPanel.class);
+        return null;
     }
 
     public void readSettings(WizardDescriptor settings) {

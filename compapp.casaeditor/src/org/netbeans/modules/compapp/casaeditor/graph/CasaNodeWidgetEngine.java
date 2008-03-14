@@ -47,21 +47,18 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.*;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.border.LineBorder;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.model.StateModel;
-import org.netbeans.api.visual.widget.LabelWidget.Alignment;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularPainter;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularProvider;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.InnerGlowBorderDrawer;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.Painter;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.PainterWidget;
-import org.netbeans.modules.compapp.casaeditor.nodes.actions.GoToSourceAction;
-import org.openide.util.actions.SystemAction;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 
 /**
  *
@@ -181,12 +178,14 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
         return getBounds().width - 15;
     }
 
+    @Override
     protected void notifyAdded() {
         super.notifyAdded();
 
         notifyStateChanged(ObjectState.createNormal(), ObjectState.createNormal());
     }
 
+    @Override
     public Rectangle getEntireBounds() {
         Dimension d = getBounds().getSize();
         return new Rectangle(getLocation(), new Dimension(d.width, d.height + TRAILING_VERTICAL_GAP));
@@ -194,30 +193,48 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
 
     /**
      * Sets all node properties at once.
+     * 
+     * @param unitName  service unit name
+     * @param compName  component name, e.x., sun-bpel-engine
      */
-    public void setNodeProperties(String nodeName, String nodeType) {
-        boolean hasNodeName = nodeName != null && nodeName.length() >= 0;
-        boolean hasNodeType = nodeType != null && nodeType.length() > 0;
-        if (hasNodeType && hasNodeName) {
-            mTitleWidget.setLabel("(" + nodeType + ") " + nodeName); // NOI18N
-        } else if (hasNodeType) {
-            mTitleWidget.setLabel("(" + nodeType + ")"); // NOI18N
-        } else if (hasNodeName) {
-            mTitleWidget.setLabel(nodeName); // NOI18N
-        }
+    public void setNodeProperties(String unitName, String compName) {
+        mTitleWidget.setLabel(unitName);  
+        mTitleWidget.setComponentName(compName);
         readjustBounds();
     }
 
     public void stateChanged() {
         setMinimized(mStateModel.getBooleanState());
     }
+    
+    public void updatePinImage() {
+         for (Widget child : mContainerWidget.getChildren()) {          
+            if (child instanceof CasaPinWidget) {
+                ((CasaPinWidget) child).updatePinImage();
+            }
+        }
+    }
 
     public void setMinimized(boolean isMinimized) {
+        ObjectScene scene = (ObjectScene) getScene();
+        
         for (Widget child : mContainerWidget.getChildren()) {
             if (child instanceof CasaMinimizable) {
                 ((CasaMinimizable) child).setMinimized(isMinimized);
             }
+            
+            if (child instanceof CasaPinWidget) {
+                CasaPinWidget pinWidget = (CasaPinWidget) child;
+                for (CasaComponent connection : pinWidget.getConnections()) {
+                    CasaConnectionWidget connectionWidget = 
+                            (CasaConnectionWidget) scene.findWidget(connection);
+                    if (connectionWidget instanceof CasaMinimizable) {
+                        ((CasaMinimizable)connectionWidget).setMinimized(isMinimized);
+                    }
+                }
+            }
         }
+        
         mContainerWidget.setPreferredBounds(isMinimized ? mTitleWidget.getPreferredBounds() : null);
         getScene().validate();
     }
@@ -251,9 +268,11 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
         mTitleWidget.setTitleColor(color);
     }
 
+    @Override
     public void initializeGlassLayer(LayerWidget layer) {
     }
 
+    @Override
     protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
         super.notifyStateChanged(previousState, state);
         if ((previousState.isSelected() != state.isSelected()) ||
@@ -306,6 +325,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
     /**
      * If no pin anchor is found, return the node anchor.
      */
+    @Override
     public Anchor getPinAnchor(Widget pinMainWidget) {
         Anchor anchor = super.getPinAnchor(pinMainWidget);
         if (anchor == null) {
@@ -322,6 +342,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
         mTitleWidget.setConfigurationStatus(bConfStatus);
     }
 
+    @Override
     public void setEditable(boolean bValue) {
         super.setEditable(bValue);
         mTitleWidget.setEditable(bValue);

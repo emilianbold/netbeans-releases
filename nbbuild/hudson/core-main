@@ -15,8 +15,14 @@ rm -rf real.workspace
 hg clone . real.workspace || exit 1
 cd real.workspace
 
+RESULT=`pwd`/test-results.txt
+export RESULT
+rm $RESULT
+
 testmodule() {
-    ant -f $1/build.xml test -Dtest-unit-sys-prop.ignore.random.failures=true
+    if ! ant -f $1/build.xml test -Dtest-unit-sys-prop.ignore.random.failures=true; then
+        echo $1 >>$RESULT
+    fi
 }
 
 if [ "$action" = "build" ]; then
@@ -30,21 +36,65 @@ if [ "$action" = "build" ]; then
 #       hg ci -m 'Automated merge' || exit 8
 #    fi
 
-    ant -f nbbuild/build.xml build || exit 2
-    ant -f nbbuild/build.xml commit-validation # || exit 3
-    ant -f nbbuild/build.xml commit-validation-junit-format # || exit 3
+    ant build || exit 2
+    ant commit-validation # || exit 3
+    ant commit-validation-junit-format # || exit 3
     testmodule openide.util  || exit 4
     testmodule openide.modules || exit 4
     testmodule openide.filesystems || exit 4
-# masterfs is currently broken, Radek wants me to disable it until 6.1M2:
-#    ant -f masterfs|| exit 4
+    testmodule masterfs  # || exit 4
     testmodule openide.nodes|| exit 4
     testmodule openide.options || exit 4
     testmodule openide.dialogs || exit 4
     testmodule openide.awt || exit 4
     testmodule openide.windows || exit 4
-    testmodule core.startup # || exit 4
-#    testmodule openide.io || exit 4
+    testmodule core.startup  || exit 4
+    testmodule api.progress  # || exit 4
+    testmodule api.visual  # || exit 4
+    testmodule applemenu  # || exit 4
+    testmodule autoupdate.services  # || exit 4
+    testmodule autoupdate.ui  # || exit 4
+    testmodule core.execution  # || exit 4
+    testmodule core.kit  # || exit 4
+    testmodule core.multiview  # || exit 4
+    testmodule core.nativeaccess  # || exit 4
+    testmodule core.output2  # || exit 4
+    testmodule core.ui  # || exit 4
+    testmodule core.windows  # || exit 4
+    testmodule editor.mimelookup  # || exit 4
+    testmodule editor.mimelookup.impl  # || exit 4
+    testmodule favorites  # || exit 4
+    testmodule javahelp  # || exit 4
+    testmodule libs.jna  # || exit 4
+    testmodule libs.jsr223  # || exit 4
+    testmodule masterfs  # || exit 4
+    testmodule o.jdesktop.layout  # || exit 4
+    testmodule o.n.bootstrap  # || exit 4
+    testmodule o.n.core  # || exit 4
+    testmodule o.n.swing.plaf  # || exit 4
+    testmodule o.n.swing.tabcontrol  # || exit 4
+    testmodule openide.actions  # || exit 4
+    testmodule openide.compat  # || exit 4
+    testmodule openide.dialogs  # || exit 4
+    testmodule openide.execution  # || exit 4
+    testmodule openide.explorer  # || exit 4
+    testmodule openide.io  # || exit 4
+    testmodule openide.loaders  # || exit 4
+    testmodule openide.modules || exit 4
+    testmodule openide.nodes || exit 4
+    testmodule openide.options  # || exit 4
+    testmodule openide.text  # || exit 4
+    testmodule openide.util  || exit 4
+    testmodule openide.util.enumerations  # || exit 4
+    testmodule options.api  # || exit 4
+    testmodule options.keymap  # || exit 4
+    testmodule progress.ui  # || exit 4
+    testmodule queries  # || exit 4
+    testmodule sendopts  # || exit 4
+    testmodule settings  # || exit 4
+    testmodule templates # || exit 4
+
+
     if [ `hg out --template '{node|short}\n' http://hg.netbeans.org/main | wc -l` > 0 ]; then
         echo No outgoing changes
 #        exit 0
