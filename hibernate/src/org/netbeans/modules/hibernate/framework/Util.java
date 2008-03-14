@@ -36,55 +36,29 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.hibernate.framework;
 
-import java.io.File;
-import java.util.ArrayList;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.hibernate.util.HibernateUtil;
-import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
-import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 
 /**
- *
+ * This class provides utility methods such as getting the project from a 
+ * WebModule to be used in Hibernate Framework Provider classes.
+ * 
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
-public class HibernateFrameworkProvider extends WebFrameworkProvider {
+public class Util {
 
-    public HibernateFrameworkProvider() {
-        super(NbBundle.getMessage(HibernateFrameworkProvider.class, "HibernateFramework_Name"), 
-                NbBundle.getMessage(HibernateFrameworkProvider.class, "HibernateFramework_Description")); 
-    }
-
-    @Override
-    public boolean isInWebModule(WebModule wm) {
-        if (getConfigurationFiles(wm).length == 0) {
-            // There are no Hibernate configuration files found in this project.
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    @Override
-    public WebModuleExtender createWebModuleExtender(WebModule wm, ExtenderController controller) {
-        HibernateWebModuleExtender webModuleExtender = new HibernateWebModuleExtender();
-        return webModuleExtender;
-    }
-
-    @Override
-    public File[] getConfigurationFiles(WebModule wm) {
-        ArrayList<File> configFiles = new ArrayList<File>();
-        Project enclosingProject = Util.getEnclosingProjectFromWebModule(wm);
-        ArrayList<FileObject> configFileObjects = HibernateUtil.getAllHibernateConfigFileObjects(enclosingProject);
-        for(FileObject fo : configFileObjects) {
-            configFiles.add(FileUtil.toFile(fo));
-        }
-        return configFiles.toArray(new File[]{});
+    /**
+     * Returns the enclosing project that this web module is in.
+     * @param webModule the web module for which the project needs to be determined.
+     * @return the enclosing project or null of there is no project found.
+     */
+    public static Project getEnclosingProjectFromWebModule(WebModule webModule) {
+        FileObject documentBase = webModule.getDocumentBase();
+        return FileOwnerQuery.getOwner(documentBase);
     }
 }
