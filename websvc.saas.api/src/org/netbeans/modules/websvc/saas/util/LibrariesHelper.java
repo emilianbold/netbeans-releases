@@ -70,13 +70,15 @@ public class LibrariesHelper {
     public static void addDefaultJaxWsClientJars(Project project, FileObject targetSource, WsdlSaas saas) {
         List<String> jarPaths = getDefaultJaxWsClientJars(saas, WsdlServiceProxyDescriptor.JarEntry.PROXY_JAR_TYPE);
         addArchiveRefsToProject(project, targetSource, jarPaths, ClassPath.COMPILE);
-        List<String> sourceJarPaths = getDefaultJaxWsClientJars(saas, WsdlServiceProxyDescriptor.JarEntry.SRC_JAR_TYPE);
-        addArchiveRefsToProject(project, targetSource, sourceJarPaths, ClassPath.SOURCE);
+        // NOT SUPPORTED by current ProjectClassPathModifier
+        /*List<String> sourceJarPaths = getDefaultJaxWsClientJars(saas, WsdlServiceProxyDescriptor.JarEntry.SRC_JAR_TYPE);
+        addArchiveRefsToProject(project, targetSource, sourceJarPaths, ClassPath.SOURCE);*/
     }
     
     public static void addClientJars(Project project, FileObject targetSource, WadlSaas saas) {
         addArchivesToProject(project, targetSource, saas.getLibraryJars(), ClassPath.COMPILE);
-        addArchivesToProject(project, targetSource, saas.getJaxbSourceJars(), ClassPath.SOURCE);
+        /* NOT SUPPORTED by current ProjectClassPathModifier
+        addArchivesToProject(project, targetSource, saas.getJaxbSourceJars(), ClassPath.SOURCE);*/
     }
     
     /**
