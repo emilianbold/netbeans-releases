@@ -606,4 +606,23 @@ public class SaasUtil {
         }
         return null;
     }
+    
+    public static String toValidJavaName(String name) {
+        StringBuilder sb = new StringBuilder(name.length());
+        if (Character.isJavaIdentifierStart(name.charAt(0))) {
+            sb.append(name.charAt(0));
+        }
+        for (int i=1; i<name.length(); i++) {
+            if (Character.isJavaIdentifierPart(name.charAt(i))) {
+                sb.append(name.charAt(i));
+            }
+        }
+        return sb.toString();
+    }
+    
+    public static String deriveDefaultPackageName(Saas saas) {
+        String pack1 = toValidJavaName(saas.getTopLevelGroup().getName());
+        String pack2 = toValidJavaName(saas.getDisplayName());
+        return pack1 + "." + pack2;
+    }
 }
