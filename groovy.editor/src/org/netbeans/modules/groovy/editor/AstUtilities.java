@@ -219,15 +219,18 @@ public class AstUtilities {
                 columnNumber = 1;
             }
             
-            int start = getOffset(doc, lineNumber, columnNumber) + "class".length(); // NOI18N
-            try {
-                start = Utilities.getFirstNonWhiteFwd(doc, start);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            // happens in some cases when groovy source uses some non-imported java class
+            if (doc != null) {
+                int start = getOffset(doc, lineNumber, columnNumber) + "class".length(); // NOI18N
+                try {
+                    start = Utilities.getFirstNonWhiteFwd(doc, start);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
 
-            ClassNode classNode = (ClassNode) node;
-            return new OffsetRange(start, start + classNode.getNameWithoutPackage().length());
+                ClassNode classNode = (ClassNode) node;
+                return new OffsetRange(start, start + classNode.getNameWithoutPackage().length());
+            }
         } else if (node instanceof ConstructorNode) {
             int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
             if (start < 0) {
