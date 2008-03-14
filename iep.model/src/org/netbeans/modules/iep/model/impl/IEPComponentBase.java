@@ -26,8 +26,10 @@ import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.util.Util;
 
+import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -117,4 +119,14 @@ public abstract class IEPComponentBase extends
         public void removeChild(IEPComponent child) {
             super.removeChild("", child);
         }
+        
+//        public <T extends ReferenceableWSDLComponent> NamedComponentReference<T> createReferenceTo(T target, Class<T> type) {
+//            return new GlobalReferenceImpl<T>(target, type, this);
+//        }
+//        
+//        protected <T extends ReferenceableWSDLComponent> NamedComponentReference<T> resolveGlobalReference(
+//            Class<T> c, Attribute attrName) {
+//            String v = getAttribute(attrName);
+//            return v == null ? null : new GlobalReferenceImpl<T>(c, this, v);
+//        }
 }

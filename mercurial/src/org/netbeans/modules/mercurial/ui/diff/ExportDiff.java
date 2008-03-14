@@ -66,10 +66,10 @@ public class ExportDiff implements PropertyChangeListener {
 
     
     /** Creates a new instance of ExportDiff */
-    public ExportDiff(File repository, RepositoryRevision repoRev, File fileToDiff) {
+    public ExportDiff(File repository, RepositoryRevision repoRev, File [] roots, File fileToDiff) {
         this.fileToDiff = fileToDiff;
         this.repoRev = repoRev;
-        panel = new ExportDiffPanel(repository, repoRev, fileToDiff);
+        panel = new ExportDiffPanel(repository, repoRev, roots, fileToDiff);
         okButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(okButton, org.openide.util.NbBundle.getMessage(ExportDiff.class, "CTL_ExportForm_Action_Export")); // NOI18N
         okButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ExportDiff.class, "ACSN_ExportForm_Action_Export")); // NOI18N
@@ -86,12 +86,12 @@ public class ExportDiff implements PropertyChangeListener {
         panel.outputFileTextField.getDocument().addDocumentListener(listener);
     } 
     
-    public ExportDiff(File repository, RepositoryRevision repoRev) {
-        this(repository, repoRev, null);
+    public ExportDiff(File repository, RepositoryRevision repoRev, File [] roots) {
+        this(repository, repoRev, roots, null);
     }
     
-    public ExportDiff(File repository) {
-        this(repository, null, null);
+    public ExportDiff(File repository, File [] roots) {
+        this(repository, null, roots, null);
     }
     
     public boolean showDialog() {

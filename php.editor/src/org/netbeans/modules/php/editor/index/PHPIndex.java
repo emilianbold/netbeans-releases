@@ -36,25 +36,28 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.index;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -64,20 +67,18 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class PHPIndex {
+
     /** Set property to true to find ALL functions regardless of file includes */
     //private static final boolean ALL_REACHABLE = Boolean.getBoolean("javascript.findall");
     private static final boolean ALL_REACHABLE = !Boolean.getBoolean("javascript.checkincludes");
-
     private static String clusterUrl = null;
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
 
     static final Set<SearchScope> ALL_SCOPE = EnumSet.allOf(SearchScope.class);
     static final Set<SearchScope> SOURCE_SCOPE = EnumSet.of(SearchScope.SOURCE);
-    
     private static final Set<String> TERMS_FQN = Collections.singleton(PHPIndexer.FIELD_FQN);
     private static final Set<String> TERMS_BASE = Collections.singleton(PHPIndexer.FIELD_BASE);
     private static final Set<String> TERMS_EXTEND = Collections.singleton(PHPIndexer.FIELD_EXTEND);
-    
     private final Index index;
 
     /** Creates a new instance of JsIndex */
@@ -90,7 +91,7 @@ public class PHPIndex {
     }
 
     private boolean search(String key, String name, NameKind kind, Set<SearchResult> result,
-        Set<SearchScope> scope, Set<String> terms) {
+            Set<SearchScope> scope, Set<String> terms) {
         try {
             index.search(key, name, kind, scope, result, terms);
 
@@ -102,7 +103,6 @@ public class PHPIndex {
         }
     }
 
-    
     static void setClusterUrl(String url) {
         clusterUrl = url;
     }
@@ -122,6 +122,7 @@ public class PHPIndex {
         try {
             if (url.startsWith(CLUSTER_URL)) {
                 url = getClusterUrl() + url.substring(CLUSTER_URL.length()); // NOI18N
+
             }
 
             return URLMapper.findFileObject(new URL(url));
@@ -135,8 +136,7 @@ public class PHPIndex {
     static String getClusterUrl() {
         if (clusterUrl == null) {
             File f =
-                InstalledFileLocator.getDefault()
-                                    .locate("modules/org-netbeans-modules-javascript-editing.jar", null, false); // NOI18N
+                    InstalledFileLocator.getDefault().locate("modules/org-netbeans-modules-javascript-editing.jar", null, false); // NOI18N
 
             if (f == null) {
                 throw new RuntimeException("Can't find cluster");
@@ -154,7 +154,7 @@ public class PHPIndex {
 
         return clusterUrl;
     }
-    
+
 //    @SuppressWarnings("unchecked")
 //    public Set<IndexedElement> getConstructors(final String name, NameKind kind,
 //        Set<Index.SearchScope> scope) {
@@ -332,7 +332,31 @@ public class PHPIndex {
 //        
 //        return elements;
 //    }
-    
+    public Collection<IndexedFunction> getFunctions(PHPParseResult context, String name, NameKind kind) {
+        final Set<SearchResult> result = new HashSet<SearchResult>();
+        Collection<IndexedFunction> functions = new ArrayList<IndexedFunction>();
+        search(name, name, kind, result, ALL_SCOPE, TERMS_FQN);
+
+        for (SearchResult map : result) {
+            if (map.getPersistentUrl() != null && isReachable(context, map.getPersistentUrl())) {
+                String[] signatures = map.getValues(PHPIndexer.FIELD_FQN);
+
+                if (signatures == null) {
+                    continue;
+                }
+
+                for (String signature : signatures) {
+
+                    IndexedFunction func = (IndexedFunction) IndexedElement.create(signature,
+                            map.getPersistentUrl(), signature, "", 0, this, false);
+
+                    functions.add(func);
+                }
+            }
+        }
+        return functions;
+    }
+
 //    private Set<IndexedElement> getByFqn(String name, String type, NameKind kind,
 //        Set<Index.SearchScope> scope, boolean onlyConstructors, JsParseResult context,
 //        boolean includeMethods, boolean includeProperties) {
@@ -522,11 +546,10 @@ public class PHPIndex {
 //        
 //        return elements;
 //    }
-    
     /** Try to find the type of a symbol and return it */
     public String getType(String symbol) {
         //assert in != null && in.length() > 0;
-        
+
         final Set<SearchResult> result = new HashSet<SearchResult>();
 
         String field = PHPIndexer.FIELD_FQN;
@@ -546,7 +569,7 @@ public class PHPIndex {
 
         for (SearchResult map : result) {
             String[] signatures = map.getValues(field);
-            
+
             if (signatures != null) {
 //                // Check if this file even applies
 //                if (context != null) {
@@ -558,7 +581,7 @@ public class PHPIndex {
 //                        }
 //                    }
 //                }
-                
+
                 for (String signature : signatures) {
                     // Lucene returns some inexact matches, TODO investigate why this is necessary
                     // Make sure the name matches exactly
@@ -584,7 +607,7 @@ public class PHPIndex {
                     String funcIn = null;
                     int inEndIdx = signature.indexOf(';', nameEndIdx);
                     assert inEndIdx != -1;
-                    if (inEndIdx > nameEndIdx+1) {
+                    if (inEndIdx > nameEndIdx + 1) {
                         funcIn = signature.substring(nameEndIdx, inEndIdx);
                     }
                     inEndIdx++;
@@ -597,14 +620,14 @@ public class PHPIndex {
 //                        elementName = signature.substring(startCs, inEndIdx);
 //                    }
                     inEndIdx++;
-                    
+
                     // Filter out methods on other classes
 //                    if (!includeMethods && (funcIn != null)) {
 //                        continue;
 //                    } else if (in != null && (funcIn == null || !funcIn.equals(in))) {
 //                        continue;
 //                    }
-                    
+
                     IndexedElement element = IndexedElement.create(signature, map.getPersistentUrl(), elementName, funcIn, inEndIdx, this, false);
 //                    boolean isFunction = element instanceof IndexedFunction;
 //                    if (isFunction && !includeMethods) {
@@ -616,7 +639,7 @@ public class PHPIndex {
 //                        continue;
 //                    }
 //                    elements.add(element);
-                    
+
                     String type = element.getType();
                     if (type != null) {
                         return type;
@@ -624,7 +647,7 @@ public class PHPIndex {
                 }
             }
         }
-        
+
         return null;
     }
 
@@ -634,37 +657,36 @@ public class PHPIndex {
      * This will typically return true for all library files, and false for
      * all source level files unless that file is reachable through include-mechanisms
      * from the current file.
-     * 
-     * @todo Add some smarts here to correlate remote URLs (http:// pointers to dojo etc)
-     *   with local copies of these.
-     * @todo Do some kind of transitive check? Probably not - there isn't a way to do
-     *    includes of files that contain other files (you can import a .js file, but that
-     *    js file can't include other files)
      */
-//    public boolean isReachable(JsParseResult result, String url) {
-//        if (ALL_REACHABLE) {
-//            return true;
-//        }
-//        List<String> imports = result.getStructure().getImports();
-//        if (imports.size() > 0) {
-//            // TODO - do some heuristics to deal with relative paths here,
-//            // e.g.   <script src="../../foo.js"></script>
-//
-//            for (int i = 0, n = imports.size(); i < n; i++) {
-//                String imp = imports.get(i);
-//                if (imp.indexOf("../") != -1) {
-//                    int lastIndex = imp.lastIndexOf("../");
-//                    imp = imp.substring(lastIndex+3);
-//                    if (imp.length() == 0) {
-//                        continue;
-//                    }
-//                }
-//                if (url.endsWith(imp)) {
-//                    return true;
-//                }
-//            }
-//        }
-//
-//        return false;
-//    }
+    public boolean isReachable(PHPParseResult result, String url) {
+        Collection<String> includes = new ArrayList<String>();
+        
+        for (Statement statement : result.getProgram().getStatements()) {
+            if (statement instanceof ExpressionStatement) {
+                ExpressionStatement expressionStatement = (ExpressionStatement) statement;
+                if (expressionStatement.getExpression() instanceof Include){
+                    Include include = (Include)expressionStatement.getExpression();
+                    if (include.getExpression() instanceof Scalar){
+                        Scalar scalar = (Scalar)include.getExpression();
+                        includes.add(scalar.getStringValue());
+                    }
+                }
+            }
+        }
+        
+        for (String includeInQuotes : includes){
+            // start of provisional code
+            //TODO: a more sophisticated check here,
+            // currently only basic, same dir includes are support
+            String incl = includeInQuotes.substring(1, includeInQuotes.length() - 1);
+            
+            if (url.endsWith(incl)){
+                return true;
+            }
+            
+            // end of provisional code
+        }
+
+        return false;
+    }
 }

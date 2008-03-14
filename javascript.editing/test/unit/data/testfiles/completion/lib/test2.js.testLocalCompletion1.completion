@@ -190,186 +190,6 @@ VARIABLE   element1
 VARIABLE   foo1                                       
 VARIABLE   options1                                   
 VARIABLE   update1                                    
-GLOBAL     AbstractView                               DOM
-GLOBAL     Arguments                                  Core JS
-GLOBAL     Array                                      Core JS
-GLOBAL     Attr                                       DOM
-GLOBAL     Boolean                                    Core JS
-GLOBAL     CDATASection                               DOM
-GLOBAL     CSS                                        DOM
-GLOBAL     CSS2Properties                             DOM
-GLOBAL     CSSCharsetRule                             DOM
-GLOBAL     CSSFontFaceRule                            DOM
-GLOBAL     CSSImportRule                              DOM
-GLOBAL     CSSMediaRule                               DOM
-GLOBAL     CSSPageRule                                DOM
-GLOBAL     CSSPrimitiveValue                          DOM
-GLOBAL     CSSRule                                    DOM
-GLOBAL     CSSRuleList                                DOM
-GLOBAL     CSSStyleDeclaration                        DOM
-GLOBAL     CSSStyleRule                               DOM
-GLOBAL     CSSStyleSheet                              DOM
-GLOBAL     CSSUnknownRule                             DOM
-GLOBAL     CSSValue                                   DOM
-GLOBAL     CSSValueList                               DOM
-GLOBAL     CharacterData                              DOM
-GLOBAL     Comment                                    DOM
-GLOBAL     Counter                                    DOM
-GLOBAL     DOMConfiguration                           DOM
-GLOBAL     DOMError                                   DOM
-GLOBAL     DOMErrorHandler                            DOM
-GLOBAL     DOMException                               DOM
-GLOBAL     DOMImplementation                          DOM
-GLOBAL     DOMImplementationCSS                       DOM
-GLOBAL     DOMImplementationList                      DOM
-GLOBAL     DOMImplementationRegistry                  DOM
-GLOBAL     DOMImplementationSource                    DOM
-GLOBAL     DOMLocator                                 DOM
-GLOBAL     DOMStringList                              DOM
-GLOBAL     Date                                       Core JS
-GLOBAL     DecodeURI                                  Core JS
-GLOBAL     DecodeURIComponent                         Core JS
-GLOBAL     Document                                   DOM
-GLOBAL     DocumentCSS                                DOM
-GLOBAL     DocumentEvent                              DOM
-GLOBAL     DocumentFragment                           DOM
-GLOBAL     DocumentRange                              DOM
-GLOBAL     DocumentStyle                              DOM
-GLOBAL     DocumentTraversal                          DOM
-GLOBAL     DocumentType                               DOM
-GLOBAL     DocumentView                               DOM
-GLOBAL     Element                                    DOM
-GLOBAL     ElementCSSInlineStyle                      DOM
-GLOBAL     EncodeURI                                  Core JS
-GLOBAL     EncodeURIComponent                         Core JS
-GLOBAL     Entity                                     DOM
-GLOBAL     EntityReference                            DOM
-GLOBAL     Error                                      Core JS
-GLOBAL     Eval                                       Core JS
-GLOBAL     EvalError                                  Core JS
-GLOBAL     Event                                      DOM
-GLOBAL     EventException                             DOM
-GLOBAL     EventListener                              DOM
-GLOBAL     EventTarget                                DOM
-GLOBAL     ExceptionCode                              DOM
-GLOBAL     Form                                       DOM
-GLOBAL     Function                                   Core JS
-GLOBAL     HTMLAnchorElement                          DOM
-GLOBAL     HTMLAppletElement                          DOM
-GLOBAL     HTMLAreaElement                            DOM
-GLOBAL     HTMLBRElement                              DOM
-GLOBAL     HTMLBaseElement                            DOM
-GLOBAL     HTMLBaseFontElement                        DOM
-GLOBAL     HTMLBlockquoteElement                      DOM
-GLOBAL     HTMLBodyElement                            DOM
-GLOBAL     HTMLButtonElement                          DOM
-GLOBAL     HTMLCollection                             DOM
-GLOBAL     HTMLDListElement                           DOM
-GLOBAL     HTMLDirectoryElement                       DOM
-GLOBAL     HTMLDivElement                             DOM
-GLOBAL     HTMLDocument                               DOM
-GLOBAL     HTMLElement                                DOM
-GLOBAL     HTMLFieldSetElement                        DOM
-GLOBAL     HTMLFontElement                            DOM
-GLOBAL     HTMLFormElement                            DOM
-GLOBAL     HTMLFrameElement                           DOM
-GLOBAL     HTMLFrameSetElement                        DOM
-GLOBAL     HTMLHRElement                              DOM
-GLOBAL     HTMLHeadElement                            DOM
-GLOBAL     HTMLHeadingElement                         DOM
-GLOBAL     HTMLHtmlElement                            DOM
-GLOBAL     HTMLIFrameElement                          DOM
-GLOBAL     HTMLImageElement                           DOM
-GLOBAL     HTMLInputElement                           DOM
-GLOBAL     HTMLIsIndexElement                         DOM
-GLOBAL     HTMLLIElement                              DOM
-GLOBAL     HTMLLabelElement                           DOM
-GLOBAL     HTMLLegendElement                          DOM
-GLOBAL     HTMLLinkElement                            DOM
-GLOBAL     HTMLMapElement                             DOM
-GLOBAL     HTMLMenuElement                            DOM
-GLOBAL     HTMLMetaElement                            DOM
-GLOBAL     HTMLModElement                             DOM
-GLOBAL     HTMLOListElement                           DOM
-GLOBAL     HTMLObjectElement                          DOM
-GLOBAL     HTMLOptGroupElement                        DOM
-GLOBAL     HTMLOptionElement                          DOM
-GLOBAL     HTMLOptionsCollection                      DOM
-GLOBAL     HTMLParagraphElement                       DOM
-GLOBAL     HTMLParamElement                           DOM
-GLOBAL     HTMLPreElement                             DOM
-GLOBAL     HTMLQuoteElement                           DOM
-GLOBAL     HTMLScriptElement                          DOM
-GLOBAL     HTMLSelectElement                          DOM
-GLOBAL     HTMLStyleElement                           DOM
-GLOBAL     HTMLTableCaptionElement                    DOM
-GLOBAL     HTMLTableCellElement                       DOM
-GLOBAL     HTMLTableColElement                        DOM
-GLOBAL     HTMLTableElement                           DOM
-GLOBAL     HTMLTableRowElement                        DOM
-GLOBAL     HTMLTableSectionElement                    DOM
-GLOBAL     HTMLTextAreaElement                        DOM
-GLOBAL     HTMLTitleElement                           DOM
-GLOBAL     HTMLUListElement                           DOM
-GLOBAL     Infinity                                   Core JS
-GLOBAL     IsFinite                                   Core JS
-GLOBAL     IsNaN                                      Core JS
-GLOBAL     Java                                       Core JS
-GLOBAL     JavaArray                                  Core JS
-GLOBAL     JavaClass                                  Core JS
-GLOBAL     JavaObject                                 Core JS
-GLOBAL     JavaPackage                                Core JS
-GLOBAL     LinkStyle                                  DOM
-GLOBAL     Math                                       Core JS
-GLOBAL     MediaList                                  DOM
-GLOBAL     MouseEvent                                 DOM
-GLOBAL     MutationEvent                              DOM
-GLOBAL     NaN                                        Core JS
-GLOBAL     NameList                                   DOM
-GLOBAL     NamedNodeMap                               DOM
-GLOBAL     Navigator                                  DOM
-GLOBAL     Netscape                                   Core JS
-GLOBAL     Node                                       DOM
-GLOBAL     NodeFilter                                 DOM
-GLOBAL     NodeIterator                               DOM
-GLOBAL     NodeList                                   DOM
-GLOBAL     Notation                                   DOM
-GLOBAL     Number                                     Core JS
-GLOBAL     Object                                     Core JS
-GLOBAL     Packages                                   Core JS
-GLOBAL     ParseFloat                                 Core JS
-GLOBAL     ParseInt                                   Core JS
-GLOBAL     ProcessingInstruction                      DOM
-GLOBAL     RGBColor                                   DOM
-GLOBAL     Range                                      DOM
-GLOBAL     RangeError                                 Core JS
-GLOBAL     RangeException                             DOM
-GLOBAL     Rect                                       DOM
-GLOBAL     ReferenceError                             Core JS
-GLOBAL     RegExp                                     Core JS
-GLOBAL     Screen                                     DOM
-GLOBAL     Selection                                  DOM
-GLOBAL     Storage                                    DOM
-GLOBAL     String                                     Core JS
-GLOBAL     Style                                      DOM
-GLOBAL     StyleSheet                                 DOM
-GLOBAL     StyleSheetList                             DOM
-GLOBAL     Stylesheet                                 DOM
-GLOBAL     Sun                                        Core JS
-GLOBAL     SyntaxError                                Core JS
-GLOBAL     Table                                      DOM
-GLOBAL     TableRow                                   DOM
-GLOBAL     Text                                       DOM
-GLOBAL     TreeWalker                                 DOM
-GLOBAL     TypeError                                  Core JS
-GLOBAL     TypeInfo                                   DOM
-GLOBAL     UIEvent                                    DOM
-GLOBAL     URIError                                   Core JS
-GLOBAL     Undefined                                  Core JS
-GLOBAL     UserDataHandler                            DOM
-GLOBAL     ViewCSS                                    DOM
-GLOBAL     Window                                     DOM
-GLOBAL     XMLHttpRequest                             DOM
 GLOBAL     cssRule                                    DOM
 GLOBAL     form                                       DOM
 GLOBAL     navigator                                  DOM
@@ -380,6 +200,186 @@ GLOBAL     stylesheet                                 DOM
 GLOBAL     table                                      DOM
 GLOBAL     tableRow                                   DOM
 GLOBAL     window                                     DOM
+PROPERTY   AbstractView                               DOM
+PROPERTY   Arguments                                  Core JS
+PROPERTY   Array                                      Core JS
+PROPERTY   Attr                                       DOM
+PROPERTY   Boolean                                    Core JS
+PROPERTY   CDATASection                               DOM
+PROPERTY   CSS                                        DOM
+PROPERTY   CSS2Properties                             DOM
+PROPERTY   CSSCharsetRule                             DOM
+PROPERTY   CSSFontFaceRule                            DOM
+PROPERTY   CSSImportRule                              DOM
+PROPERTY   CSSMediaRule                               DOM
+PROPERTY   CSSPageRule                                DOM
+PROPERTY   CSSPrimitiveValue                          DOM
+PROPERTY   CSSRule                                    DOM
+PROPERTY   CSSRuleList                                DOM
+PROPERTY   CSSStyleDeclaration                        DOM
+PROPERTY   CSSStyleRule                               DOM
+PROPERTY   CSSStyleSheet                              DOM
+PROPERTY   CSSUnknownRule                             DOM
+PROPERTY   CSSValue                                   DOM
+PROPERTY   CSSValueList                               DOM
+PROPERTY   CharacterData                              DOM
+PROPERTY   Comment                                    DOM
+PROPERTY   Counter                                    DOM
+PROPERTY   DOMConfiguration                           DOM
+PROPERTY   DOMError                                   DOM
+PROPERTY   DOMErrorHandler                            DOM
+PROPERTY   DOMException                               DOM
+PROPERTY   DOMImplementation                          DOM
+PROPERTY   DOMImplementationCSS                       DOM
+PROPERTY   DOMImplementationList                      DOM
+PROPERTY   DOMImplementationRegistry                  DOM
+PROPERTY   DOMImplementationSource                    DOM
+PROPERTY   DOMLocator                                 DOM
+PROPERTY   DOMStringList                              DOM
+PROPERTY   Date                                       Core JS
+PROPERTY   DecodeURI                                  Core JS
+PROPERTY   DecodeURIComponent                         Core JS
+PROPERTY   Document                                   DOM
+PROPERTY   DocumentCSS                                DOM
+PROPERTY   DocumentEvent                              DOM
+PROPERTY   DocumentFragment                           DOM
+PROPERTY   DocumentRange                              DOM
+PROPERTY   DocumentStyle                              DOM
+PROPERTY   DocumentTraversal                          DOM
+PROPERTY   DocumentType                               DOM
+PROPERTY   DocumentView                               DOM
+PROPERTY   Element                                    DOM
+PROPERTY   ElementCSSInlineStyle                      DOM
+PROPERTY   EncodeURI                                  Core JS
+PROPERTY   EncodeURIComponent                         Core JS
+PROPERTY   Entity                                     DOM
+PROPERTY   EntityReference                            DOM
+PROPERTY   Error                                      Core JS
+PROPERTY   Eval                                       Core JS
+PROPERTY   EvalError                                  Core JS
+PROPERTY   Event                                      DOM
+PROPERTY   EventException                             DOM
+PROPERTY   EventListener                              DOM
+PROPERTY   EventTarget                                DOM
+PROPERTY   ExceptionCode                              DOM
+PROPERTY   Form                                       DOM
+PROPERTY   Function                                   Core JS
+PROPERTY   HTMLAnchorElement                          DOM
+PROPERTY   HTMLAppletElement                          DOM
+PROPERTY   HTMLAreaElement                            DOM
+PROPERTY   HTMLBRElement                              DOM
+PROPERTY   HTMLBaseElement                            DOM
+PROPERTY   HTMLBaseFontElement                        DOM
+PROPERTY   HTMLBlockquoteElement                      DOM
+PROPERTY   HTMLBodyElement                            DOM
+PROPERTY   HTMLButtonElement                          DOM
+PROPERTY   HTMLCollection                             DOM
+PROPERTY   HTMLDListElement                           DOM
+PROPERTY   HTMLDirectoryElement                       DOM
+PROPERTY   HTMLDivElement                             DOM
+PROPERTY   HTMLDocument                               DOM
+PROPERTY   HTMLElement                                DOM
+PROPERTY   HTMLFieldSetElement                        DOM
+PROPERTY   HTMLFontElement                            DOM
+PROPERTY   HTMLFormElement                            DOM
+PROPERTY   HTMLFrameElement                           DOM
+PROPERTY   HTMLFrameSetElement                        DOM
+PROPERTY   HTMLHRElement                              DOM
+PROPERTY   HTMLHeadElement                            DOM
+PROPERTY   HTMLHeadingElement                         DOM
+PROPERTY   HTMLHtmlElement                            DOM
+PROPERTY   HTMLIFrameElement                          DOM
+PROPERTY   HTMLImageElement                           DOM
+PROPERTY   HTMLInputElement                           DOM
+PROPERTY   HTMLIsIndexElement                         DOM
+PROPERTY   HTMLLIElement                              DOM
+PROPERTY   HTMLLabelElement                           DOM
+PROPERTY   HTMLLegendElement                          DOM
+PROPERTY   HTMLLinkElement                            DOM
+PROPERTY   HTMLMapElement                             DOM
+PROPERTY   HTMLMenuElement                            DOM
+PROPERTY   HTMLMetaElement                            DOM
+PROPERTY   HTMLModElement                             DOM
+PROPERTY   HTMLOListElement                           DOM
+PROPERTY   HTMLObjectElement                          DOM
+PROPERTY   HTMLOptGroupElement                        DOM
+PROPERTY   HTMLOptionElement                          DOM
+PROPERTY   HTMLOptionsCollection                      DOM
+PROPERTY   HTMLParagraphElement                       DOM
+PROPERTY   HTMLParamElement                           DOM
+PROPERTY   HTMLPreElement                             DOM
+PROPERTY   HTMLQuoteElement                           DOM
+PROPERTY   HTMLScriptElement                          DOM
+PROPERTY   HTMLSelectElement                          DOM
+PROPERTY   HTMLStyleElement                           DOM
+PROPERTY   HTMLTableCaptionElement                    DOM
+PROPERTY   HTMLTableCellElement                       DOM
+PROPERTY   HTMLTableColElement                        DOM
+PROPERTY   HTMLTableElement                           DOM
+PROPERTY   HTMLTableRowElement                        DOM
+PROPERTY   HTMLTableSectionElement                    DOM
+PROPERTY   HTMLTextAreaElement                        DOM
+PROPERTY   HTMLTitleElement                           DOM
+PROPERTY   HTMLUListElement                           DOM
+PROPERTY   Infinity                                   Core JS
+PROPERTY   IsFinite                                   Core JS
+PROPERTY   IsNaN                                      Core JS
+PROPERTY   Java                                       Core JS
+PROPERTY   JavaArray                                  Core JS
+PROPERTY   JavaClass                                  Core JS
+PROPERTY   JavaObject                                 Core JS
+PROPERTY   JavaPackage                                Core JS
+PROPERTY   LinkStyle                                  DOM
+PROPERTY   Math                                       Core JS
+PROPERTY   MediaList                                  DOM
+PROPERTY   MouseEvent                                 DOM
+PROPERTY   MutationEvent                              DOM
+PROPERTY   NaN                                        Core JS
+PROPERTY   NameList                                   DOM
+PROPERTY   NamedNodeMap                               DOM
+PROPERTY   Navigator                                  DOM
+PROPERTY   Netscape                                   Core JS
+PROPERTY   Node                                       DOM
+PROPERTY   NodeFilter                                 DOM
+PROPERTY   NodeIterator                               DOM
+PROPERTY   NodeList                                   DOM
+PROPERTY   Notation                                   DOM
+PROPERTY   Number                                     Core JS
+PROPERTY   Object                                     Core JS
+PROPERTY   Packages                                   Core JS
+PROPERTY   ParseFloat                                 Core JS
+PROPERTY   ParseInt                                   Core JS
+PROPERTY   ProcessingInstruction                      DOM
+PROPERTY   RGBColor                                   DOM
+PROPERTY   Range                                      DOM
+PROPERTY   RangeError                                 Core JS
+PROPERTY   RangeException                             DOM
+PROPERTY   Rect                                       DOM
+PROPERTY   ReferenceError                             Core JS
+PROPERTY   RegExp                                     Core JS
+PROPERTY   Screen                                     DOM
+PROPERTY   Selection                                  DOM
+PROPERTY   Storage                                    DOM
+PROPERTY   String                                     Core JS
+PROPERTY   Style                                      DOM
+PROPERTY   StyleSheet                                 DOM
+PROPERTY   StyleSheetList                             DOM
+PROPERTY   Stylesheet                                 DOM
+PROPERTY   Sun                                        Core JS
+PROPERTY   SyntaxError                                Core JS
+PROPERTY   Table                                      DOM
+PROPERTY   TableRow                                   DOM
+PROPERTY   Text                                       DOM
+PROPERTY   TreeWalker                                 DOM
+PROPERTY   TypeError                                  Core JS
+PROPERTY   TypeInfo                                   DOM
+PROPERTY   UIEvent                                    DOM
+PROPERTY   URIError                                   Core JS
+PROPERTY   Undefined                                  Core JS
+PROPERTY   UserDataHandler                            DOM
+PROPERTY   ViewCSS                                    DOM
+PROPERTY   Window                                     DOM
+PROPERTY   XMLHttpRequest                             DOM
 ------------------------------------
 METHOD     eval(string)                               Object
 METHOD     hasOwnProperty(prop)                       Object

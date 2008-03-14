@@ -9,7 +9,7 @@
 
 package o.n.m.qa.test;
 
-import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.Path;
@@ -23,7 +23,7 @@ import javax.ws.rs.GET;
 
 @Path("/items")
 public class ItemsResource {
-    @HttpContext
+    @Context
     private UriInfo context;
 
     /** Creates a new instance of ItemsResource */

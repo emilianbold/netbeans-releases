@@ -35,7 +35,7 @@
  */
 package org.netbeans.installer.wizard.components.actions.netbeans;
 
-import com.sun.servicetag.ServiceTag;
+import org.netbeans.modules.servicetag.ServiceTag;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;

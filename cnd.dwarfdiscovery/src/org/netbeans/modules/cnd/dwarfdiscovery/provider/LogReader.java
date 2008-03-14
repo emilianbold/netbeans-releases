@@ -96,11 +96,11 @@ public class LogReader {
                         if (oneMoreLine == null) {
                             break;
                         }
-                        line = line.substring(0, line.length()-2) + " " + oneMoreLine.trim(); //NOI18Na
+                        line = line.substring(0, line.length()-2) + " " + oneMoreLine.trim(); //NOI18N
                     }
                     line = trimBackApostropheCalls(line);
 
-                    String[] cmds = line.split(";|\\|\\||&&"); // ||, &&
+                    String[] cmds = line.split(";|\\|\\||&&"); // ||, && //NOI18N
                     for (int i = 0; i < cmds.length; i++) {
                         if (parseLine(cmds[i])){
                             nFoundFiles++;
@@ -127,24 +127,44 @@ public class LogReader {
     }
     
     private static final String CURRENT_DIRECTORY = "Current working directory"; //NOI18N
-    private static final String LABEL_CD = "cd "; //NOI18N
-    private static final String INVOKE_SUN_C = "cc "; //NOI18N
-    private static final String INVOKE_SUN_CC = "CC "; //NOI18N
-    private static final String INVOKE_GNU_C = "gcc "; //NOI18N
-    private static final String INVOKE_GNU_CC = "g++ "; //NOI18N
-    private static final String MAKE_DELIMITER = ";"; //NOI18N
-    
+    private static final String ENTERING_DIRECTORY = "Entering directory"; //NOI18N
+
     private boolean checkDirectoryChange(String line) {
-       if (line.startsWith(CURRENT_DIRECTORY)) {
-           setWorkingDir( line.substring(CURRENT_DIRECTORY.length()+1).trim() );
-           return true;
-       }
-       if (line.startsWith(LABEL_CD)) {
-           int end = line.indexOf(MAKE_DELIMITER);
-           setWorkingDir( (end == -1 ? line : line.substring(0, end)).substring(LABEL_CD.length()).trim() );
-           return true;
-       }
-       return false;
+        String workDir = null, message = null;
+
+        if (line.startsWith(CURRENT_DIRECTORY)) {
+            workDir = line.substring(CURRENT_DIRECTORY.length() + 1).trim();
+            if (TRACE) message = "**>> by [" + CURRENT_DIRECTORY + "] "; //NOI18N
+        } else if (line.indexOf(ENTERING_DIRECTORY) >= 0) {
+            String dirMessage = line.substring(line.indexOf(ENTERING_DIRECTORY) + ENTERING_DIRECTORY.length() + 1).trim();
+            workDir = dirMessage.replaceAll("`|'|\"", "");
+            if (TRACE) message = "**>> by [" + ENTERING_DIRECTORY + "] "; //NOI18N
+        } else if (line.startsWith(LABEL_CD)) {
+            int end = line.indexOf(MAKE_DELIMITER);
+            workDir = (end == -1 ? line : line.substring(0, end)).substring(LABEL_CD.length()).trim();
+            if (TRACE) message = "**>> by [ " + LABEL_CD + "] "; //NOI18N
+        } else if (line.startsWith("/") && line.indexOf(" ") < 0) {  //NOI18N
+            workDir = line.trim();
+            if (TRACE) message = "**>> by [just path string] "; //NOI18N
+        }
+
+        if (workDir == null) {
+            return false;
+        }
+
+        if (new File(workDir).exists()) {
+            if (TRACE) System.err.print(message);
+            setWorkingDir(workDir);
+            return true;
+        } else {
+            workDir = workingDir + File.separator + workDir;
+            if (new File(workDir).exists()) {
+                if (TRACE) System.err.print(message);
+                setWorkingDir(workDir);
+                return true;
+            }
+        }
+        return false;
     }
     
     private enum CompilerType {
@@ -160,13 +180,31 @@ public class LogReader {
         }
     }
     
+    private static final String LABEL_CD = "cd "; //NOI18N
+    private static final String INVOKE_SUN_C = "cc "; //NOI18N
+    private static final String INVOKE_SUN_CC = "CC "; //NOI18N
+    private static final String INVOKE_GNU_C = "gcc "; //NOI18N
+    //private static final String INVOKE_GNU_XC = "xgcc "; //NOI18N
+    private static final String INVOKE_GNU_CC = "g++ "; //NOI18N
+    private static final String MAKE_DELIMITER = ";"; //NOI18N
+    
     private LineInfo testCompilerInvocation(String line) {
         LineInfo li = new LineInfo(line);
-        int start = line.indexOf(INVOKE_GNU_C), end = -1;
-        if (start>=0) {
-            li.compilerType = CompilerType.C;
-            end = start + INVOKE_GNU_C.length();
-        }
+        int start = 0, end = -1;
+//        if (li.compilerType == CompilerType.UNKNOWN) {
+//            start = line.indexOf(INVOKE_GNU_XC);
+//            if (start>=0) {
+//                li.compilerType = CompilerType.C;
+//                end = start + INVOKE_GNU_XC.length();
+//            }
+//        } 
+        if (li.compilerType == CompilerType.UNKNOWN) {
+            start = line.indexOf(INVOKE_GNU_C);
+            if (start>=0) {
+                li.compilerType = CompilerType.C;
+                end = start + INVOKE_GNU_C.length();
+            }
+        } 
         if (li.compilerType == CompilerType.UNKNOWN) {
             start = line.indexOf(INVOKE_GNU_CC);
             if (start>=0) {
@@ -194,14 +232,27 @@ public class LogReader {
             while(end < line.length() && (line.charAt(end) == ' ' || line.charAt(end) == '\t'))
                 end++;
             if (end >= line.length() || line.charAt(end)!='-') {
-                // suspected compiler invocation has no options?? -- noway
+                // suspected compiler invocation has no options or a part of a path?? -- noway
                 li.compilerType =  CompilerType.UNKNOWN;
             } 
             
-            else if (start > 0 && line.charAt(start-1)!='/'  && 
-                !( line.charAt(start-1)==' ' &&  line.substring(0, start-1).trim().equals("if"))) { //NOI18N
+            else if (start > 0 && line.charAt(start-1)!='/') {
                 // suspected compiler invocation is not first command in line?? -- noway
-                li.compilerType =  CompilerType.UNKNOWN;
+                String prefix = line.substring(0, start - 1).trim();
+                // wait! maybe it's called in condition?
+                if (!(line.charAt(start - 1) == ' ' && 
+                        ( prefix.equals("if") || prefix.equals("then") || prefix.equals("else") ))) { //NOI18N
+                    // or it's a lib compiled by libtool? 
+                    int ltStart = line.substring(0, start).indexOf("libtool");
+                    if (!(ltStart >= 0 && line.substring(ltStart, start).indexOf("compile") >= 0)) {
+                        // no, it's not a compile line
+                        li.compilerType = CompilerType.UNKNOWN;
+                        // I hope
+                        if (TRACE) {
+                            System.err.println("Suspicious line: " + line);
+                        }
+                    }
+                }
             }
         }
         return li;
@@ -222,14 +273,6 @@ public class LogReader {
 //           workingDir= line.substring(CURRENT_DIRECTORY.length()+1).trim();
 //           return false;
 //       }
-       if (line.startsWith("/")){  //NOI18N
-           if (line.indexOf(" ")<0){  //NOI18N
-               if (new File(line).exists()){
-                   setWorkingDir( line.trim() );
-                   return false;
-               }
-           }
-       }
        if (workingDir == null) {
            return false;
        }
@@ -247,6 +290,9 @@ public class LogReader {
 
     private static String trimBackApostropheCalls(String line) {
         int i = line.indexOf('`');
+        if (line.lastIndexOf('`') == i) { // do not trim unclosed `quotes`
+            return line;
+        }
         if (i < 0 || i == line.length() - 1) {
             return line;
         } else {
@@ -559,7 +605,11 @@ public class LogReader {
         List<SourceFileProperties> list = clrf.getResults();
         System.err.print("\n*** Results: ");
         for (SourceFileProperties sourceFileProperties : list) {
-            System.err.print(sourceFileProperties.getItemName() + " ");
+            String fileName = sourceFileProperties.getItemName();
+            while (fileName.indexOf("../") == 0) {
+                fileName = fileName.substring(3);
+            }
+            System.err.print(fileName + " ");
         }
         System.err.println();
     }
