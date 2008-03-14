@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import org.netbeans.modules.autoupdate.ui.wizards.UninstallUnitWizard;
+import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizard;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Point;
@@ -300,7 +302,11 @@ public class UnitTab extends javax.swing.JPanel {
             tfSearch.removeFocusListener(flForSearch);
         }
         flForSearch = null;
-        
+        Preferences p = NbPreferences.root().node("/org/netbeans/modules/autoupdate");//NOI18N
+        if (preferenceChangeListener != null) {
+            p.removePreferenceChangeListener (preferenceChangeListener);
+            preferenceChangeListener = null;
+        }
     }
     
     
@@ -1063,7 +1069,9 @@ public class UnitTab extends javax.swing.JPanel {
             try {
                 wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.INSTALL, manager);
             } finally {
-                fireUpdataUnitChange ();
+                if (manager != null) {
+                    fireUpdataUnitChange ();
+                }
                 if (!wizardFinished) {
                     UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
                 }

@@ -371,7 +371,7 @@ public class FacesModel extends Model {
     
 
     //--------------------------------------------------------------------------------- Construction
-    private static final Logger TIMERS = Logger.getLogger("TIMER.facesModels"); // NOI18N
+    private static final Logger TIMERS = Logger.getLogger("TIMER.visualweb"); // NOI18N
     
     /**
      * Creates a new instance of FacesModel
@@ -1822,30 +1822,30 @@ public class FacesModel extends Model {
         clearHtml();
     }
 
-    void refreshUnits() {
-        SourceUnit markupUnit = getMarkupUnit();
-        SourceUnit javaUnit = getJavaUnit();
+    void refreshUnits(boolean immediate) {
+        SourceUnit mu = getMarkupUnit();
+        SourceUnit ju = getJavaUnit();
         
         // flush
-        if ((markupUnit != null && markupUnit.getState() == Unit.State.MODELDIRTY) || 
-            (javaUnit != null && javaUnit.getState() == Unit.State.MODELDIRTY)) {
+        if ((mu != null && mu.getState() == Unit.State.MODELDIRTY) || 
+            (ju != null && ju.getState() == Unit.State.MODELDIRTY)) {
             flush();
         }
         
         boolean doSync = false;
         
         // clean
-        if (markupUnit != null && markupUnit.getState() == Unit.State.CLEAN) {
-            markupUnit.setSourceDirty();
+        if (mu != null && mu.getState() == Unit.State.CLEAN) {
+            mu.setSourceDirty();
             doSync = true;
         }
-        if (javaUnit != null && javaUnit.getState() == Unit.State.CLEAN) {
-            javaUnit.setSourceDirty();
+        if (ju != null && ju.getState() == Unit.State.CLEAN) {
+            ju.setSourceDirty();
             doSync = true;
         }
         
         // sync
-        if (doSync) {       
+        if (doSync && immediate) {       
             sync();
         }
     }

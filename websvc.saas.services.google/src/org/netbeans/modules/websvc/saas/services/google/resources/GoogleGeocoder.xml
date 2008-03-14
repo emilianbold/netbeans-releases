@@ -48,29 +48,29 @@
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://www.google.com/apis/maps/documentation/services.html#Geocoding"
-               url="nbres:/org/netbeans/modules/websvc/saas/services/google/resources/GoogleGeocoderWadl.xml">
+               url="org/netbeans/modules/websvc/saas/services/google/resources/GoogleGeocoderWadl.xml">
 
     <description>Google Service</description>
     
-    <display-name>Google</display-name>
+    <display-name>Geocoding Service</display-name>
 
     <saas-metadata>
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.google.Bundle</localizing-bundle>
 
-        <icon16>org/netbeans/modules/websvc/saas/services/google/resources/google16.png</icon16>
-
         <group name="Google">
         </group>
 
-        <authentication profile="Templates/WebServices/profile.properties">
-            <api-key id="dev_id"/>
+        <authentication profile="SaaSServices/Google/profile.properties">
+            <api-key id="key"/>
         </authentication>
 
     </saas-metadata>
 
+    <!--
     <methods>
-        <method name="getComps" href="//resource[@path='geo']/method[@id='google.Geocode']"/>
+        <method name="getGeocode" href="#google.Geocode"/>
     </methods>
+    -->
 
 </saas-services>

@@ -29,7 +29,6 @@ package org.netbeans.test.java.hints;
 
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.EventTool;
 
 /**
  *
@@ -41,13 +40,14 @@ public class AddImportTest extends HintsTestCase{
         super(name);
     }
     
+    
     public void testAddImport1() {
-        String file = "Imports";
-        openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
-        editor = new EditorOperator(file);
-        editor.setCaretPosition(8,1);        
-        String pattern = ".*import java.util.List;.*";
-        useHint("Add import for java.util",new String[]{"Add import for java.util","Add import for java.awt","Create class \"List\"","Add import for com.sun.xml.internal.bind.v2.schemagen.xmlschema.List"},pattern);
+	String file = "Imports";
+	openSourceFile("org.netbeans.test.java.hints.HintsTest",file);
+	editor = new EditorOperator(file);
+	editor.setCaretPosition(8,1);
+	String pattern = ".*import java.net.URL;.*";
+	useHint("Add import for java.net",new String[]{"Add import for java.net.URL","Add import for javax.print.DocFlavor.URL","Create class \"URL\""},pattern);
     }
     
     public void testAddImport2() {

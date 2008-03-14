@@ -1,7 +1,7 @@
 /*
  *  ItemsResource
  *
- * Created on December 12, 2007, 1:31 AM
+ * Created on March 11, 2008, 10:41 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -9,7 +9,7 @@
 
 package o.n.m.ws.qaf.rest.patterns;
 
-import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
@@ -26,7 +26,7 @@ import javax.ws.rs.ConsumeMime;
 
 @Path("/Items")
 public class ItemsResource {
-    @HttpContext
+    @Context
     private UriInfo context;
     
     /** Creates a new instance of ItemsResource */

@@ -20,6 +20,7 @@
 package org.netbeans.modules.xml.xpath.ext;
 
 import javax.xml.namespace.NamespaceContext;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.spi.ExtensionFunctionResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.VariableResolver;
@@ -67,7 +68,7 @@ public interface XPathModel extends XPathSchemaContextHolder {
     void discardResolvedStatus();
     
     /**
-     * Tries to resolve all external references: variable, schema elements 
+     * Tries resolving all external references: variable, schema elements 
      * and attributes. Assigns schema contexts for all context holders.
      * 
      * Only the model's root expression is processed here. 
@@ -87,6 +88,15 @@ public interface XPathModel extends XPathSchemaContextHolder {
     
     
     /**
+     * This method does almost the same as the resolveExtReferences but 
+     * it is intended to process expressions, which aren't connected to
+     * the model root. 
+     * The model root is assigned automatically when the parseExpression() 
+     * is used. But it is not if you create an expression with the help of 
+     * the factory methods. So there are two choise: 
+     *  - specify the expression as a root (method setRootExpression) and 
+     * call the resolveExtReferences().
+     *  - call this method (without specifying the expression as a root).
      * 
      * Be aware that the implementation method is synchronized. So the 
      * second thread will be locked until the method is not finished in 
@@ -125,6 +135,14 @@ public interface XPathModel extends XPathSchemaContextHolder {
      */  
     NamespaceContext getNamespaceContext();
     
+    /**
+     * Specifies a namespace context to the model. 
+     * 
+     * Namespace prefixes will be declared automatically if ExNamespaceContext 
+     * is specified instead of simple NamespaceContext.
+     * 
+     * @param newContext
+     */
     void setNamespaceContext(NamespaceContext newContext);
     
     /**
@@ -142,4 +160,5 @@ public interface XPathModel extends XPathSchemaContextHolder {
     
     void setExtensionFunctionResolver(ExtensionFunctionResolver extFuncResolver);
         
+    SchemaComponent getLastSchemaComponent();
 }

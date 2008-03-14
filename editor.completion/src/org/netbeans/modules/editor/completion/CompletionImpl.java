@@ -77,6 +77,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.spi.editor.completion.*;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -211,6 +212,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                 }
                 if (localCompletionResult != null && !localCompletionResult.isQueryInvoked()) {
                     pleaseWaitTimer.restart();
+                    CompletionImpl.this.refreshedQuery = false;
                     queryResultSets(localCompletionResult.getResultSets());
                     localCompletionResult.queryInvoked();
                 }
@@ -244,7 +246,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                     }
                 }
                 layout.showCompletion(Collections.singletonList(waitText),
-                        null, -1, CompletionImpl.this, null, 0);
+                        null, -1, CompletionImpl.this, null, null, 0);
                 pleaseWaitDisplayed = true;                
             }
         });
@@ -291,7 +293,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                             CompletionSettings.INSTANCE.completionAutoPopup()) {
                         autoModEndOffset = modEndOffset;
                         if (completionResultNull)
-                            showCompletion(false, true, CompletionProvider.COMPLETION_QUERY_TYPE);
+                            showCompletion(false, false, true, CompletionProvider.COMPLETION_QUERY_TYPE);
                     }
 
                     boolean tooltipResultNull;
@@ -363,6 +365,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         hideAll();
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         hideAll();
     }
@@ -537,9 +540,13 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                     if (guardedPos) {
                         Toolkit.getDefaultToolkit().beep();
                     } else if (compEditable) {
+                        // Consuming completion
+                        if ((e.getModifiers() & InputEvent.CTRL_MASK) > 0) { // CTRL+ENTER
+                            consumeIdentifier();
+                        }
                         LogRecord r = new LogRecord(Level.FINE, "COMPL_KEY_SELECT_DEFAULT"); // NOI18N
-                        r.setParameters(new Object[] {'\n', layout.getSelectedIndex(), item.getClass().getSimpleName()});
-                            item.defaultAction(getActiveComponent());
+                        r.setParameters(new Object[]{'\n', layout.getSelectedIndex(), item.getClass().getSimpleName()});
+                        item.defaultAction(getActiveComponent());
                         uilog(r);
                     }
                     return;
@@ -561,9 +568,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         layout.processKeyEvent(e);
     }
     
-    private void completionQuery(boolean delayQuery, int queryType) {
-        refreshedQuery = false;
-        
+    private void completionQuery(boolean refreshedQuery, boolean delayQuery, int queryType) {
         Result newCompletionResult = new Result(activeProviders.length);
         synchronized (this) {
             assert (completionResult == null);
@@ -588,12 +593,14 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                 restartCompletionAutoPopupTimer();
             } else {
                 pleaseWaitTimer.restart();
+                this.refreshedQuery = refreshedQuery;
                 queryResultSets(completionResultSets);
                 newCompletionResult.queryInvoked();
             }
         } else {
             completionCancel();
-            layout.showCompletion(Collections.singletonList(NO_SUGGESTIONS), null, -1, CompletionImpl.this, null, 0);
+            if (explicitQuery)
+                layout.showCompletion(Collections.singletonList(NO_SUGGESTIONS), null, -1, CompletionImpl.this, null, null, 0);
             pleaseWaitDisplayed = false;
         }
     }
@@ -626,6 +633,31 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         }
         if (oldCompletionResult != null) {
             oldCompletionResult.cancel();
+        }
+    }
+
+    /** 
+     * Consumes identifier part of text behind caret upto first non-identifier
+     * char.
+     */
+    private void consumeIdentifier() {
+        JTextComponent comp = getActiveComponent();
+        BaseDocument doc = (BaseDocument) comp.getDocument();
+        int initCarPos = comp.getCaretPosition();
+        int carPos = initCarPos;
+        boolean nonChar = false;
+        char c;
+        try {
+            while(nonChar == false) {
+                c = doc.getChars(carPos, 1)[0];
+                if(!Character.isJavaIdentifierPart(c)) {
+                    nonChar = true;
+                }
+                carPos++;
+            }
+            doc.remove(initCarPos, carPos - initCarPos -1);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -713,10 +745,10 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      * May be called from any thread but it will be rescheduled into AWT.
      */
     public void showCompletion() {
-        showCompletion(true, false, CompletionProvider.COMPLETION_QUERY_TYPE);
+        showCompletion(true, false, false, CompletionProvider.COMPLETION_QUERY_TYPE);
     }
 
-    private void showCompletion(boolean explicitQuery, boolean delayQuery, int queryType) {
+    private void showCompletion(boolean explicitQuery, boolean refreshedQuery, boolean delayQuery, int queryType) {
         if (!SwingUtilities.isEventDispatchThread()) {
             // Re-call this method in AWT if necessary
             SwingUtilities.invokeLater(new ParamRunnable(ParamRunnable.SHOW_COMPLETION, explicitQuery, delayQuery, queryType));
@@ -743,7 +775,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 }
             }
             completionCancel(); // cancel possibly pending query
-            completionQuery(delayQuery, queryType);
+            completionQuery(refreshedQuery, delayQuery, queryType);
         }
     }
 
@@ -758,18 +790,25 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         // Compute total count of the result sets
         int size = 0;
         int qType = 0;
+        boolean hasAdditionalItems = false;
+        final StringBuilder hasAdditionalItemsText = new StringBuilder();
         List<CompletionResultSetImpl> completionResultSets = result.getResultSets();
         for (int i = completionResultSets.size() - 1; i >= 0; i--) {
             CompletionResultSetImpl resultSet = completionResultSets.get(i);
             size += resultSet.getItems().size();
             qType = resultSet.getQueryType();
+            if (resultSet.hasAdditionalItems()) {
+                hasAdditionalItems = true;
+                String s = resultSet.getHasAdditionalItemsText();
+                if (s != null)
+                    hasAdditionalItemsText.append(s);
+            }
         }
         
         // Collect and sort the gathered completion items
         List<CompletionItem> resultItems = new ArrayList<CompletionItem>(size);
         String title = null;
         int anchorOffset = -1;
-        boolean hasAdditionalItems = false;
         if (size > 0) {
             for (int i = 0; i < completionResultSets.size(); i++) {
                 CompletionResultSetImpl resultSet = completionResultSets.get(i);
@@ -778,8 +817,6 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                     resultItems.addAll(items);
                     if (title == null)
                         title = resultSet.getTitle();
-                    if (!hasAdditionalItems)
-                        hasAdditionalItems = resultSet.hasAdditionalItems();
                     if (anchorOffset == -1)
                         anchorOffset = resultSet.getAnchorOffset();
                 }
@@ -806,9 +843,15 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         }
 
         final boolean noSuggestions = sortedResultItems.size() == 0;
-        if (noSuggestions && qType == CompletionProvider.COMPLETION_QUERY_TYPE) {
-            showCompletion(this.explicitQuery, false, CompletionProvider.COMPLETION_ALL_QUERY_TYPE);
-            return;
+        if (noSuggestions) {
+            if (hasAdditionalItems && qType == CompletionProvider.COMPLETION_QUERY_TYPE) {
+                showCompletion(this.explicitQuery, this.refreshedQuery, false, CompletionProvider.COMPLETION_ALL_QUERY_TYPE);
+                return;
+            }
+            if (!explicitQuery && !refreshedQuery) {                
+                hideAll();
+                return;
+            }
         }
        
         // Request displaying of the completion pane in AWT thread
@@ -837,7 +880,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 
                 int selectedIndex = getCompletionPreSelectionIndex(sortedResultItems);
                 getActiveComponent().putClientProperty("completion-visible", Boolean.TRUE);
-                layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, displayAdditionalItems ? completionShortcut : null, selectedIndex);
+                layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, displayAdditionalItems ? hasAdditionalItemsText.toString() : null, displayAdditionalItems ? completionShortcut : null, selectedIndex);
                 pleaseWaitDisplayed = false;
 
                 // Show documentation as well if set by default
@@ -1375,7 +1418,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         }
 
         public void actionPerformed(ActionEvent e) {
-            showCompletion(true, false, queryType);
+            showCompletion(true, false, false, queryType);
         }
     }
 
@@ -1423,7 +1466,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         public void run() {
             switch (opCode) {
                 case SHOW_COMPLETION:
-                    showCompletion(explicitQuery, delayQuery, type);
+                    showCompletion(explicitQuery, false, delayQuery, type);
                     break;
 
                 case SHOW_DOCUMENTATION:

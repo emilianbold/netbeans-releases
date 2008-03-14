@@ -42,6 +42,7 @@
 package gui.action;
 
 import gui.Projects;
+import gui.ScriptingUtilities;
 import java.awt.Font;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -49,6 +50,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.performance.test.guitracker.LoggingRepaintManager;
 
 /**
  *
@@ -96,7 +98,7 @@ public class TypingInScriptingEditor extends org.netbeans.performance.test.utili
         
         editorOperator.txtEditorPane().getCaret().setBlinkRate(0);
         editorOperator.setCaretPosition(8, 1);        
-        //repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
         waitNoEvent(2000);        
     }
 
@@ -109,13 +111,13 @@ public class TypingInScriptingEditor extends org.netbeans.performance.test.utili
     @Override
     public void close() {
         editorOperator.txtEditorPane().getCaret().setBlinkRate(caretBlinkRate);
-        //repaintManager().resetRegionFilters();        
+        repaintManager().resetRegionFilters();        
         EditorOperator.closeDiscardAll();
         
     }
     protected Node getProjectNode(String projectName) {
         if(projectsTab==null)
-            projectsTab = new ProjectsTabOperator();
+            projectsTab = ScriptingUtilities.invokePTO();
         
         return projectsTab.getProjectRootNode(projectName);
     }
@@ -123,19 +125,19 @@ public class TypingInScriptingEditor extends org.netbeans.performance.test.utili
     public void test_RB_EditorTyping() {
         testProject = Projects.RUBY_PROJECT;
         fileName = "ruby20kb.rb";
-        nodePath = "Source Files"+"|";
+        nodePath = "Source Files";
         doMeasurement();
     }
     public void test_RHTML_EditorTyping() {
         testProject = Projects.RAILS_PROJECT;
         fileName = "rhtml20kb.rhtml";
-        nodePath = "Views"+"|";
+        nodePath = "Views";
         doMeasurement();
     }
     public void test_JScript_EditorTyping() {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "javascript20kb.js";
-        nodePath = "Web Pages"+"|";
+        nodePath = "Web Pages";
         doMeasurement();        
     }
     /*

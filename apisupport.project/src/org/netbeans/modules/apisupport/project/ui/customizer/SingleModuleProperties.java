@@ -696,19 +696,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         DependencyListModel dependencyModel = getDependenciesListModel();
         if (dependencyModel.isChanged()) {
             Set<ModuleDependency> depsToSave = new TreeSet<ModuleDependency>(dependencyModel.getDependencies());
-            
-            // process removed modules
-            depsToSave.removeAll(dependencyModel.getRemovedDependencies());
-            
-            // process added modules
-            depsToSave.addAll(dependencyModel.getAddedDependencies());
-            
-            // process edited modules
-            for (Map.Entry<ModuleDependency,ModuleDependency> entry : dependencyModel.getEditedDependencies().entrySet()) {
-                depsToSave.remove(entry.getKey());
-                depsToSave.add(entry.getValue());
-            }
-            
+
             logNetBeansAPIUsage("DEPENDENCIES", dependencyModel.getDependencies()); // NOI18N
             
             getProjectXMLManager().replaceDependencies(depsToSave);
@@ -894,7 +882,8 @@ public final class SingleModuleProperties extends ModuleProperties {
             } catch (IOException x) {
                 // #69029: maybe invalidated platform? Try the default platform instead.
                 Logger.getLogger(SingleModuleProperties.class.getName()).log(Level.FINE, null, x);
-                return ModuleList.getModuleList(getProjectDirectoryFile(), NbPlatform.getDefaultPlatform().getDestDir());
+                NbPlatform p = NbPlatform.getDefaultPlatform();
+                return ModuleList.getModuleList(getProjectDirectoryFile(), p != null ? p.getDestDir() : null);
             }
         } else {
             return ModuleList.getModuleList(getProjectDirectoryFile());

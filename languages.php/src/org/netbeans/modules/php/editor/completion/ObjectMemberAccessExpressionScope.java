@@ -44,7 +44,7 @@ package org.netbeans.modules.php.editor.completion;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.gsf.CompletionProposal;
+import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.languages.php.lang.Operators;
 import org.netbeans.modules.php.model.SourceElement;
 
@@ -68,7 +68,7 @@ public class ObjectMemberAccessExpressionScope
     public boolean isApplicable(CodeCompletionContext context) {
         init(context);
         SourceElement e = myContext.getSourceElement();
-        // This provider is applicble iif it possible to find referencedClass.
+        // This provider is applicable iif it possible to find referencedClass.
         if(referencedClass == null) {
             LOG.log(Level.INFO, 
                     "{0} provider is NOT applicable. referencedClass == null", 

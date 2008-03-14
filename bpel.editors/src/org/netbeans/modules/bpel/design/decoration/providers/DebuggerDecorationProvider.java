@@ -82,6 +82,7 @@ import org.netbeans.modules.xml.xam.Model;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -357,9 +358,13 @@ public class DebuggerDecorationProvider extends DecorationProvider
         @Override
         public String getToolTipText() {
             if (myIcon == ENABLED_BREAKPOINT_ICON) {
-                return "Disable breakpoint";
+                return NbBundle.getMessage(
+                        DebuggerDecorationProvider.class, 
+                        "LBL_Disable_Breakpoint"); // NOI18N
             } else {
-                return "Enable breakpoint";
+                return NbBundle.getMessage(
+                        DebuggerDecorationProvider.class, 
+                        "LBL_Enable_Breakpoint"); // NOI18N
             }
         }
         

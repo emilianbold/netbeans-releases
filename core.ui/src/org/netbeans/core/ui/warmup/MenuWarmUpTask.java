@@ -140,49 +140,11 @@ public final class MenuWarmUpTask implements Runnable {
         }
 
         public void run() {         
-            FileSystem[] all = getFileSystems();
-            for (int i = 0; i < all.length; i++) {
-                FileSystem fileSystem = all[i];
-                fileSystem.refresh(false);
-            }
-            
+            FileUtil.refreshAll();
             synchronized (rp) {
                 task = null;
             }
         }        
-        
-        //copy - paste programming
-        //http://ant.netbeans.org/source/browse/ant/src-bridge/org/apache/tools/ant/module/bridge/impl/BridgeImpl.java.diff?r1=1.15&r2=1.16
-        //http:/java.netbeans.org/source/browse/java/javacore/src/org/netbeans/modules/javacore/Util.java    
-        //http://core.netbeans.org/source/browse/core/ui/src/org/netbeans/core/ui/MenuWarmUpTask.java
-        //http://core.netbeans.org/source/browse/core/src/org/netbeans/core/actions/RefreshAllFilesystemsAction.java
-        //http://java.netbeans.org/source/browse/java/api/src/org/netbeans/api/java/classpath/ClassPath.java
-        
-        private static FileSystem[] getFileSystems() {
-            File[] roots = File.listRoots();
-            Set<FileSystem> allRoots = new LinkedHashSet<FileSystem>();
-            assert roots != null && roots.length > 0 : "Could not list file roots"; // NOI18N
-            
-            for (int i = 0; i < roots.length; i++) {
-                File root = roots[i];
-                FileObject random = FileUtil.toFileObject(root);
-                if (random == null) continue;
-                
-                FileSystem fs;
-                try {
-                    fs = random.getFileSystem();
-                    allRoots.add(fs);
-                } catch (FileStateInvalidException e) {
-                    throw new AssertionError(e);
-                }
-            }
-            FileSystem[] retVal = new FileSystem [allRoots.size()];
-            allRoots.toArray(retVal);
-//            assert retVal.length > 0 : "Could not get any filesystem"; // NOI18N
-            
-            return retVal;
-        }
-        
     }
     
 }

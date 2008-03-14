@@ -44,28 +44,29 @@ package org.netbeans.modules.mercurial.ui.ignore;
 import java.util.*;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.*;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.*;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
-import org.openide.nodes.Node;
 import java.io.File;
 import java.io.IOException;
-import java.lang.String;
 import java.awt.event.ActionEvent;
 import javax.swing.*;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.SharabilityQuery;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Adds/removes files to repository .hgignore.
  *
  * @author Maros Sandor
  */
-public class IgnoreAction extends AbstractAction {
+public class IgnoreAction extends ContextAction {
     
     private final VCSContext context;
-
+    private int mActionStatus;
     public static final int UNDEFINED  = 0;
     public static final int IGNORING   = 1;
     public static final int UNIGNORING = 2;
@@ -82,13 +83,15 @@ public class IgnoreAction extends AbstractAction {
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
-    
+   
     public int getActionStatus(File [] files) {
         int actionStatus = -1;
         if (files.length == 0) return UNDEFINED; 
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         for (int i = 0; i < files.length; i++) {
-            if (files[i].getName().equals(".hg")) { // NOI18N
+            if (files[i].getName().equals(".hg") || // NOI18N
+                    files[i].isDirectory() ||
+                    SharabilityQuery.getSharability(files[i])== SharabilityQuery.NOT_SHARABLE) { 
                 actionStatus = UNDEFINED;
                 break;
             }
@@ -114,65 +117,61 @@ public class IgnoreAction extends AbstractAction {
     }
     
     public boolean isEnabled() {
-        File[] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
-        return getActionStatus(files) != UNDEFINED;
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        final File repository = HgUtils.getRootFile(context);
+        if(repository == null || ctxFiles == null || ctxFiles.size() == 0) 
+            return false;
+        return true; 
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
-        final File[] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
-        final int actionStatus = getActionStatus(files);
-
-        if (actionStatus != IGNORING && actionStatus != UNIGNORING) {
-            throw new RuntimeException("Invalid action status: " + actionStatus); // NOI18N
-        }
-        
+    public void performAction(ActionEvent e) {
         final File repository = HgUtils.getRootFile(context);
-        if (repository == null) return;
-        String projName = HgProjectUtils.getProjectName(repository);
-        if (projName == null) {
-            File projFile = HgUtils.getProjectFile(context);
-            projName = HgProjectUtils.getProjectName(projFile);
-        }
-        final String prjName = projName;
+        if(repository == null) return;        
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(ctxFiles == null || ctxFiles.size() == 0) return;        
+        final File[] files = ctxFiles.toArray(new File[context.getRootFiles().size()]);
+
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository.getAbsolutePath());
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
+                OutputLogger logger = getLogger();
                 try {
-                    if (actionStatus == IGNORING) {
+                    mActionStatus = getActionStatus(files);
+                    if (mActionStatus == UNDEFINED) {
+                        logger.outputInRed(
+                                NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_TITLE")); // NOI18N
+                        logger.outputInRed(
+                                NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_TITLE_SEP")); // NOI18N
+                        logger.output(
+                                NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_ONLY_LOCALLY_NEW")); // NOI18N
+                        logger.outputInRed(
+                                NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_DONE")); // NOI18N
+                        logger.output(""); // NOI18N
+                        return;
+                    }
+        
+                    if (mActionStatus == IGNORING) {
                         HgUtils.addIgnored(repository, files);
-                        HgUtils.outputMercurialTabInRed(
+                        logger.outputInRed(
                                 NbBundle.getMessage(IgnoreAction.class,
                                 "MSG_IGNORE_TITLE")); // NOI18N
-                        HgUtils.outputMercurialTabInRed(
+                        logger.outputInRed(
                                 NbBundle.getMessage(IgnoreAction.class,
                                 "MSG_IGNORE_TITLE_SEP")); // NOI18N
-                        if (files.length == 1) {
-                            HgUtils.outputMercurialTab(
-                                    NbBundle.getMessage(IgnoreAction.class,
-                                    "MSG_IGNORE_INIT_SEP_ONE", files.length, prjName)); // NOI18N
-                         } else {
-                            HgUtils.outputMercurialTab(
-                                    NbBundle.getMessage(IgnoreAction.class,
-                                    "MSG_IGNORE_INIT_SEP", files.length, prjName)); // NOI18N
-                          }
+                        logger.output(
+                                NbBundle.getMessage(IgnoreAction.class,
+                                "MSG_IGNORE_INIT_SEP", repository.getName())); // NOI18N                          
                     } else {
                         HgUtils.removeIgnored(repository, files);
-                        HgUtils.outputMercurialTabInRed(
+                        logger.outputInRed(
                                 NbBundle.getMessage(IgnoreAction.class,
                                 "MSG_UNIGNORE_TITLE")); // NOI18N
-                        HgUtils.outputMercurialTabInRed(
+                        logger.outputInRed(
                                 NbBundle.getMessage(IgnoreAction.class,
                                 "MSG_UNIGNORE_TITLE_SEP")); // NOI18N
-                        if (files.length == 1) {
-                            HgUtils.outputMercurialTab(
-                                    NbBundle.getMessage(IgnoreAction.class,
-                                    "MSG_UNIGNORE_INIT_SEP_ONE", files.length, prjName)); // NOI18N
-                         } else {
-                            HgUtils.outputMercurialTab(
-                                    NbBundle.getMessage(IgnoreAction.class,
-                                    "MSG_UNIGNORE_INIT_SEP", files.length, prjName)); // NOI18N
-                          }
+                        logger.output(
+                                NbBundle.getMessage(IgnoreAction.class,
+                                "MSG_UNIGNORE_INIT_SEP", repository.getName())); // NOI18N
                     }
                 } catch (IOException ex) {
                    Mercurial.LOG.log(Level.FINE, "IgnoreAction(): File {0} - {1}", // NOI18N
@@ -181,18 +180,18 @@ public class IgnoreAction extends AbstractAction {
                 // refresh files manually
                 for (File file : files) {
                     Mercurial.getInstance().getFileStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                    HgUtils.outputMercurialTab("\t" + file.getAbsolutePath()); // NOI18N
+                    logger.output("\t" + file.getAbsolutePath()); // NOI18N
                 }
-                if (actionStatus == IGNORING) {
-                    HgUtils.outputMercurialTabInRed(
+                if (mActionStatus == IGNORING) {
+                    logger.outputInRed(
                             NbBundle.getMessage(IgnoreAction.class,
                             "MSG_IGNORE_DONE")); // NOI18N
                 } else {
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                             NbBundle.getMessage(IgnoreAction.class,
                             "MSG_UNIGNORE_DONE")); // NOI18N
                 }
-                // HgUtils.outputMercurialTab(""); // NOI18N
+                logger.output(""); // NOI18N
             }
         };
         support.start(rp, repository.getAbsolutePath(), org.openide.util.NbBundle.getMessage(IgnoreAction.class, "LBL_Ignore_Progress")); // NOI18N

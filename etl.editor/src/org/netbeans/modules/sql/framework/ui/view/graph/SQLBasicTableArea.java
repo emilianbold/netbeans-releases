@@ -94,8 +94,9 @@ import com.nwoods.jgo.JGoLink;
 import com.nwoods.jgo.JGoPort;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.StringUtil;
+import java.awt.event.InputEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.ForeignKey;
 
@@ -118,7 +119,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
     private int tableType;
     private JMenuItem selectColumnsItem;
     private JMenuItem removeItem;
-    private static transient final Logger mLogger = LogUtil.getLogger(SQLBasicTableArea.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SQLBasicTableArea.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public SQLBasicTableArea() {
@@ -193,18 +194,20 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
     }
 
     protected void addSelectVisibleColumnsPopUpMenu(ActionListener aListener) {
-        String nbBundle1 = mLoc.t("PRSR001: Select Columns...");
-        String lbl = Localizer.parse(nbBundle1);
+        String nbBundle1 = mLoc.t("BUND426: Select Columns...");
+        String lbl = nbBundle1.substring(15);
         selectColumnsItem = new JMenuItem(lbl, new ImageIcon(selectColumnsUrl));
+        selectColumnsItem.setAccelerator(KeyStroke.getKeyStroke('E',InputEvent.CTRL_MASK));
         selectColumnsItem.addActionListener(aListener);
         popUpMenu.add(selectColumnsItem);
     }
 
     protected void addRemovePopUpMenu(ActionListener aListener) {
         //remove menu
-        String nbBundle2 = mLoc.t("PRSR001: Remove");
-        String lbl = Localizer.parse(nbBundle2);
+        String nbBundle2 = mLoc.t("BUND152: Remove");
+        String lbl = nbBundle2.substring(15);
         removeItem = new JMenuItem(lbl, new ImageIcon(removeUrl));
+        removeItem.setAccelerator(KeyStroke.getKeyStroke('O',InputEvent.CTRL_MASK));
         removeItem.addActionListener(aListener);
         popUpMenu.add(removeItem);
     }
@@ -566,9 +569,10 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
         gbc.weighty = 0.0;
-        String nbBundle3 = mLoc.t("PRSR001: Select columns to display for this table.");
-        String dlgLabel = Localizer.parse(nbBundle3);
+        String nbBundle3 = mLoc.t("BUND428: Select columns to display for this table.");
+        String dlgLabel = nbBundle3.substring(15);
         JLabel lbl = new JLabel(dlgLabel);
+        lbl.getAccessibleContext().setAccessibleName(dlgLabel);
         lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
         panel.add(lbl, gbc);
 
@@ -591,8 +595,8 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
         gbc.weighty = 1.0;
         panel.add(columnPanel, gbc);
 
-        String nbBundle4 = mLoc.t("PRSR001: Select Columns");
-        String dlgTitle = Localizer.parse(nbBundle4);
+        String nbBundle4 = mLoc.t("BUND429: Select Columns");
+        String dlgTitle = nbBundle4.substring(15);
         int response = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), panel, dlgTitle, JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE);
 
@@ -679,7 +683,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
             try {
                 setConditionFlag(BasicCellArea.IMAGE_EXTRACTION, metTabMod, extractionPredicate);
             } catch (BaseException ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR168: Error setting filter icon for ({0})", table.getDisplayName()), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT168: Error setting filter icon for ({0})", table.getDisplayName()), ex);
 
                 return;
             }
@@ -695,7 +699,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
             try {
                 setConditionFlag(BasicCellArea.IMAGE_VALIDATION, metTabMod, validationPredicate);
             } catch (BaseException ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR169: Error setting validation icon for ({0})", table.getDisplayName()), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT169: Error setting validation icon for ({0})", table.getDisplayName()), ex);
 
                 return;
             }
@@ -773,8 +777,8 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
 
     private List getForeignKeyList(DBColumn column) {
         ArrayList optionList = new ArrayList();
-        String nbBundle5 = mLoc.t("PRSR001: -->");
-        String refString = column.getName() + Localizer.parse(nbBundle5);
+        String nbBundle5 = mLoc.t("BUND430: -->");
+        String refString = column.getName() + nbBundle5.substring(15);
 
         List list = table.getForeignKeys();
         Iterator it = list.iterator();
@@ -850,8 +854,8 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
 
         public String getDisplayString() {
             if (pkVec.isEmpty()) {
-                String nbBundle6 = mLoc.t("PRSR001: None");
-                return Localizer.parse(nbBundle6);
+                String nbBundle6 = mLoc.t("BUND431: None");
+                return nbBundle6.substring(15);
             }
 
             StringBuilder strBuf = null;

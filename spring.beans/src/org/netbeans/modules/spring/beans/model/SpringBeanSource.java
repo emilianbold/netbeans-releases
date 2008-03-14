@@ -53,5 +53,7 @@ public interface SpringBeanSource {
 
     List<SpringBean> getBeans();
 
-    SpringBean findBean(String name);
+    SpringBean findBeanByID(String id);
+
+    SpringBean findBeanByIDOrName(String name);
 }

@@ -1,0 +1,39 @@
+/*
+ * RefConverter.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package Templates.Classes;
+
+import java.io.IOException;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ *
+ * @author __USER__
+ */
+public class __NAME__ {
+
+    private static String apiKey;
+    
+    static {
+        try {
+            Properties props = new Properties();
+            props.load(__NAME__.class.getResourceAsStream(
+                    "profile.properties"));
+            apiKey = props.getProperty("api_key");
+        } catch (IOException ex) {
+            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public static String getApiKey() {
+        return apiKey;
+    }
+}

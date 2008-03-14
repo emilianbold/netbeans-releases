@@ -48,8 +48,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JComponent;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -63,7 +61,6 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,7 +81,7 @@ public class StaticAccess extends AbstractHint {
         return EnumSet.of(Kind.MEMBER_SELECT);
     }
 
-    protected List<Fix> computeFixes(CompilationInfo info, TreePath treePath, Document doc, int[] bounds, int[] kind, String[] simpleName) {
+    protected List<Fix> computeFixes(CompilationInfo info, TreePath treePath, int[] bounds, int[] kind, String[] simpleName) {
         if (treePath.getLeaf().getKind() != Kind.MEMBER_SELECT) {
             return null;
         }
@@ -190,38 +187,24 @@ public class StaticAccess extends AbstractHint {
     public List<ErrorDescription> run(CompilationInfo compilationInfo,
                                       TreePath treePath) {
         stop = false;
-        try {
-            Document doc = compilationInfo.getDocument();
-            
-            if (doc == null) {
-                return null;
-            }
-        
-            int[] span = new int[2];
-            int[] kind = new int[1];
-            String[] simpleName = new String[1];
-            List<Fix> fixes = computeFixes(compilationInfo, treePath, doc, span, kind, simpleName);
-            if (fixes == null) {
-                return null;
-            }
-
-            ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
-                getSeverity().toEditorSeverity(),
-                NbBundle.getMessage(StaticAccess.class, "MSG_StaticAccess", kind[0], simpleName[0]), // NOI18N
-                fixes,
-                doc,
-                doc.createPosition(span[0]),
-                doc.createPosition(span[1]) // NOI18N
-            );
-
-            return Collections.singletonList(ed);
-        } catch (BadLocationException e) {
-            Exceptions.printStackTrace(e);
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
+        int[] span = new int[2];
+        int[] kind = new int[1];
+        String[] simpleName = new String[1];
+        List<Fix> fixes = computeFixes(compilationInfo, treePath, span, kind, simpleName);
+        if (fixes == null) {
+            return null;
         }
-        
-        return null;
+
+        ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
+            getSeverity().toEditorSeverity(),
+            NbBundle.getMessage(StaticAccess.class, "MSG_StaticAccess", kind[0], simpleName[0]), // NOI18N
+            fixes,
+            compilationInfo.getFileObject(),
+            span[0],
+            span[1] // NOI18N
+        );
+
+        return Collections.singletonList(ed);
     }
 
     public String getId() {

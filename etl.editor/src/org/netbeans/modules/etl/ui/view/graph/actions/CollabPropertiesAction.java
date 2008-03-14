@@ -51,7 +51,6 @@ import javax.swing.KeyStroke;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.openide.windows.WindowManager;
 
@@ -65,24 +64,23 @@ import org.openide.windows.WindowManager;
 public class CollabPropertiesAction extends GraphAction {
 
     private static final URL propertiesUrl = CollabPropertiesAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/properties.png");
-    private static transient final Logger mLogger = LogUtil.getLogger(CollabPropertiesAction.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(CollabPropertiesAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     
     public CollabPropertiesAction() {
         //action name
-        String nbBundle1 = mLoc.t("PRSR001: Properties...");
-        this.putValue(Action.NAME, Localizer.parse(nbBundle1));
+        String nbBundle1 = mLoc.t("BUND015: Properties...");
+        this.putValue(Action.NAME, nbBundle1.substring(15));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(propertiesUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("PRSR001: Collaboration Properties");
-        this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
+        String nbBundle2 = mLoc.t("BUND016: Collaboration Properties (Shift-Z)");
+        this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
 
-        // Acceleratot Cntl-Shift-P
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('P', InputEvent.CTRL_MASK
-                                                                    + InputEvent.SHIFT_DOWN_MASK));
+        // Acceleratot Shift-Z
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('Z', InputEvent.SHIFT_DOWN_MASK));
 
     }
 

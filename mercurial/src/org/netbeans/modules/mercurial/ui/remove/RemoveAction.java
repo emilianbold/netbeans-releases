@@ -44,6 +44,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 
 /**
  * Remove action for mercurial: 
@@ -51,7 +52,7 @@ import java.awt.event.ActionEvent;
  * 
  * @author John Rice
  */
-public class RemoveAction extends AbstractAction {
+public class RemoveAction extends ContextAction {
     
     private final VCSContext context;
 
@@ -60,7 +61,7 @@ public class RemoveAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent e) {
+    public void performAction(ActionEvent e) {
         // TODO: Remove action 
     }
     

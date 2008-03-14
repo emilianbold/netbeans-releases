@@ -46,7 +46,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
@@ -214,4 +213,20 @@ public class ColoringStorageTest extends NbTestCase {
         assertEquals("Wrong DisplayName", name2, c2.getAttribute(EditorStyleConstants.DisplayName));
     }
     
+    public void testLegacyFilesWithNoDTD_Issue113137() {
+        ColoringStorage cs = new ColoringStorage(true);
+        Map<String, AttributeSet> colorings = cs.load(MimePath.parse("text/x-legacy"), "NetBeans", false); //NOI18N
+        assertNotNull("Colorings map should not be null", colorings);
+        assertEquals("Wrong number of colorings", 2, colorings.size());
+        {
+        AttributeSet c = colorings.get("pp-active-block");
+        assertNotNull("Should have pp-active-block coloring", c);
+        assertEquals("Wrong bgColor", new Color(0xfffae1f0), c.getAttribute(StyleConstants.Background));
+        }
+        {
+        AttributeSet c = colorings.get("pp-inactive-block");
+        assertNotNull("Should have pp-inactive-block coloring", c);
+        assertEquals("Wrong bgColor", new Color(0xffebe1fa), c.getAttribute(StyleConstants.Background));
+        }
+    }
 }

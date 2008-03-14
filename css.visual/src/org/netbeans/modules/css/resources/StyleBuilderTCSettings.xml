@@ -44,6 +44,6 @@ made subject to such option by the copyright holder.
 <settings version="1.0">
     <module name="org.netbeans.modules.css.visual" spec="2.0"/>
     <instanceof class="org.openide.windows.TopComponent"/>
-    <instanceof class="org.netbeans.modules.css.visual.ui.StyleBuilderTopComponent"/>
-    <instance class="org.netbeans.modules.css.visual.ui.StyleBuilderTopComponent" method="getDefault"/>
+    <instanceof class="org.netbeans.modules.css.visual.api.StyleBuilderTopComponent"/>
+    <instance class="org.netbeans.modules.css.visual.api.StyleBuilderTopComponent" method="getDefault"/>
 </settings>

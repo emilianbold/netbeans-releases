@@ -72,7 +72,7 @@ public class SurroundWithTryCatchLog extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
 
         exceptions.setSelected(true);
-        exceptions.setText(org.openide.util.NbBundle.getBundle(SurroundWithTryCatchLog.class).getString("SurroundWithTryCatchLog.exceptions.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(exceptions, org.openide.util.NbBundle.getBundle(SurroundWithTryCatchLog.class).getString("SurroundWithTryCatchLog.exceptions.text")); // NOI18N
         exceptions.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exceptionsActionPerformed(evt);
@@ -80,7 +80,7 @@ public class SurroundWithTryCatchLog extends javax.swing.JPanel {
         });
 
         logger.setSelected(true);
-        logger.setText(org.openide.util.NbBundle.getBundle(SurroundWithTryCatchLog.class).getString("SurroundWithTryCatchLog.logger.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(logger, org.openide.util.NbBundle.getBundle(SurroundWithTryCatchLog.class).getString("SurroundWithTryCatchLog.logger.text")); // NOI18N
         logger.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loggerActionPerformed(evt);
@@ -88,7 +88,7 @@ public class SurroundWithTryCatchLog extends javax.swing.JPanel {
         });
 
         printStackTrace.setSelected(true);
-        printStackTrace.setText(org.openide.util.NbBundle.getBundle(SurroundWithTryCatchLog.class).getString("SurroundWithTryCatchLog.printStackTrace.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(printStackTrace, org.openide.util.NbBundle.getBundle(SurroundWithTryCatchLog.class).getString("SurroundWithTryCatchLog.printStackTrace.text")); // NOI18N
         printStackTrace.setEnabled(false);
 
         jLabel1.setText(org.openide.util.NbBundle.getBundle(SurroundWithTryCatchLog.class).getString("SurroundWithTryCatchLog.jLabel1.text")); // NOI18N
@@ -125,11 +125,11 @@ public class SurroundWithTryCatchLog extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void loggerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loggerActionPerformed
-    ErrorFixesFakeHint.setUseLogger(logger.isSelected());
+    ErrorFixesFakeHint.setUseLogger(p, logger.isSelected());
 }//GEN-LAST:event_loggerActionPerformed
 
 private void exceptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exceptionsActionPerformed
-    ErrorFixesFakeHint.setUseExceptions(logger.isSelected());
+    ErrorFixesFakeHint.setUseExceptions(p, exceptions.isSelected());
 }//GEN-LAST:event_exceptionsActionPerformed
 
 

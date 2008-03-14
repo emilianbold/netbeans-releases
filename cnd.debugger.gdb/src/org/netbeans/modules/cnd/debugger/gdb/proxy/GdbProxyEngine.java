@@ -53,8 +53,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -78,6 +79,7 @@ public class GdbProxyEngine {
     private int nextToken = MIN_TOKEN;
     private int currentToken = MIN_TOKEN;
     private boolean active;
+    private boolean timerOn = Boolean.getBoolean("gdb.proxy.timer"); // NOI18N
     
     private Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
     
@@ -124,7 +126,7 @@ public class GdbProxyEngine {
                 env.put(key, value);
             }
         }
-        env.put("PATH", CppSettings.getDefault().getPath()); // NOI18N
+        env.put("PATH", Path.getPathAsString()); // NOI18N
         pb.directory(new File(workingDirectory));
         pb.redirectErrorStream(true);
         
@@ -178,12 +180,25 @@ public class GdbProxyEngine {
      * @param cmd - a command to be sent to the debugger
      */
     int sendCommand(String cmd) {
-        return sendCommand(cmd, false);
+        return sendCommand(null, cmd, false);
     }
     
-    int sendCommand(String cmd, boolean consoleCommand) {
+    int sendCommand(CommandBuffer cb, String cmd) {
+        return sendCommand(cb, cmd, false);
+    }
+    
+    int sendCommand(CommandBuffer cb, String cmd, boolean consoleCommand) {
         if (active) {
+            String time;
+            if (timerOn) {
+                time = Long.toString(System.currentTimeMillis()) + ':';
+            } else {
+                time = "";
+            }
             int token = nextToken();
+            if (cb != null) {
+                cb.setID(token);
+            }
             if (consoleCommand) {
                 token += 10000;
             } else if (cmd.charAt(0) != '-') {
@@ -192,7 +207,7 @@ public class GdbProxyEngine {
             StringBuilder fullcmd = new StringBuilder(String.valueOf(token));
             fullcmd.append(cmd);
             fullcmd.append('\n');
-            gdbProxy.getLogger().logMessage(fullcmd.toString());
+            gdbProxy.getLogger().logMessage(time + fullcmd.toString());
             toGdb.print(fullcmd.toString());
             return token;
         } else {
@@ -201,7 +216,7 @@ public class GdbProxyEngine {
     }
     
     int sendConsoleCommand(String cmd) {
-        return sendCommand(cmd, true);
+        return sendCommand(null, cmd, true);
     }
     
     void stopSending() {
@@ -214,6 +229,12 @@ public class GdbProxyEngine {
      * @return null if the reply is not recognized, otherwise return reply
      */
     private void processMessage(String msg) {
+        String time;
+        if (timerOn) {
+            time = Long.toString(System.currentTimeMillis()) + ':';
+        } else {
+            time = "";
+        }
         if (msg.equals("(gdb)")) { // NOI18N
             return; // skip prompts
         }
@@ -221,12 +242,12 @@ public class GdbProxyEngine {
         if (token < 0) {
             token = getCurrentToken(msg);
             if (token != -1) {
-                gdbProxy.getLogger().logMessage(token + msg);
+                gdbProxy.getLogger().logMessage(time + token + msg);
             } else {
-                gdbProxy.getLogger().logMessage(msg);
+                gdbProxy.getLogger().logMessage(time + msg);
             }
         } else {
-            gdbProxy.getLogger().logMessage(msg);
+            gdbProxy.getLogger().logMessage(time + msg);
         }
         msg = stripToken(msg);
         if (msg.length() == 0) {
@@ -236,7 +257,7 @@ public class GdbProxyEngine {
         
         switch (msg.charAt(0)) {
             case '^': // result-record
-                if (token == currentToken && msg.equals("^done")) {
+                if (token == currentToken && msg.equals("^done")) { // NOI18N
                     currentToken = -1;
                 }
                 debugger.resultRecord(token, msg);
@@ -263,7 +284,7 @@ public class GdbProxyEngine {
                 break;
                 
             case '&': // log-stream-output
-                debugger.logStreamOutput(token, msg);
+                debugger.logStreamOutput(msg);
                 break;
                 
             default:
@@ -329,15 +350,16 @@ public class GdbProxyEngine {
                 break;
             }
         }
-        return msg.substring(i);
+        char ch = i < msg.length() ? msg.charAt(i) : 0;
+        if ((ch == '^' || ch == '*' || ch == '+' || ch == '=') && ch != 0) {
+            return msg.substring(i);
+        } else {
+            return msg;
+        }
     }
     
     private GdbLogger getLogger() {
         return gdbProxy.getLogger();
-    }
-    
-    class TokenList extends LinkedList {
-        
     }
     
     private static class CommandInfo {

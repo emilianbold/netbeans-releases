@@ -41,14 +41,21 @@
 
 package org.netbeans.spi.java.project.classpath;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.java.project.classpath.ProjectClassPathModifierAccessor;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * An SPI for project's classpaths modification.
@@ -184,7 +191,93 @@ public abstract class ProjectClassPathModifierImplementation {
      * removing of an artifact from the classpath of the given type.
      */
     protected abstract boolean removeAntArtifacts (AntArtifact[] artifacts, URI[] artifactElements, SourceGroup sourceGroup, String type) throws IOException, UnsupportedOperationException;
-
+    
+    /**
+     * Takes a classpath root and tries to figure the best way to reference that file for that particular project.
+     * The possible actions include relativization of path, copying to sharable libraries folder etc.
+     * @param classpathRoot passed in through the <code>addRoots()</code> and <code>removeRoots()</code> methods
+     * @param helper
+     * @return a relative or absolute path to the original jar/folder or to a copy of it.
+     * @throws java.net.URISyntaxException
+     * @since org.netbeans.modules.java.project/1 1.15
+     */
+    protected final String performSharabilityHeuristics(URL classpathRoot, AntProjectHelper helper) throws URISyntaxException, IOException {
+        assert classpathRoot != null;
+        assert classpathRoot.toExternalForm().endsWith("/");    //NOI18N
+        URL toAdd = FileUtil.getArchiveFile(classpathRoot);
+        if (toAdd == null) {
+            toAdd = classpathRoot;
+        }
+        File prjRoot = FileUtil.toFile(helper.getProjectDirectory());
+        final File file = PropertyUtils.resolveFile(prjRoot, LibrariesSupport.convertURLToFilePath(toAdd));
+        String f;
+        if (CollocationQuery.areCollocated(file, prjRoot)) {
+            //colocated get always relative path
+            f = PropertyUtils.relativizeFile(prjRoot, file);
+        } else {
+            if (helper.isSharableProject()) {
+                //library location is not collocated..
+                //-> use absolute path
+                // sort of heuristics to have the
+                File library = PropertyUtils.resolveFile(prjRoot, helper.getLibrariesLocation());
+                boolean fileLibraryCol = CollocationQuery.areCollocated(library.getParentFile(), file);
+                boolean libraryAbsolute = LibrariesSupport.isAbsoluteURL(LibrariesSupport.convertFilePathToURL(helper.getLibrariesLocation()));
+                // when library location is absolute, we are most probably dealing with the famous X: drive location
+                // since the library is absolute, it shoudl be safe to reference everything under it as absolute as well.
+                if (libraryAbsolute && fileLibraryCol) {
+                    f = file.getAbsolutePath();
+                } else if (libraryAbsolute && !fileLibraryCol) {
+                    File fl = copyFile(file, FileUtil.toFileObject(library.getParentFile()));
+                    f = fl.getAbsolutePath();
+                } else if (!libraryAbsolute && fileLibraryCol) {
+                    f = PropertyUtils.relativizeFile(prjRoot, file);
+                } else { // if (!libraryAbsolute && !fileLibraryCol)
+                    File fl = copyFile(file, FileUtil.toFileObject(library.getParentFile()));
+                    f = PropertyUtils.relativizeFile(prjRoot, fl);
+                }
+            } else {
+                //nonsharable project are ok with absolute path
+                f = file.getAbsolutePath();
+            }
+        }
+        return f;
+    }
+    
+    private File copyFile(File file, FileObject newRoot) throws IOException {
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo.isFolder()) {
+            return FileUtil.toFile(copyFolderRecursively(fo, newRoot));
+        } else {
+            FileObject foExists = newRoot.getFileObject(fo.getName(), fo.getExt());
+            if (foExists != null) {
+                foExists.delete();
+            }
+            return FileUtil.toFile(FileUtil.copyFile(fo, newRoot, fo.getName(), fo.getExt()));
+        }
+    }
+    
+    
+    //copied from FileChooserAccessory
+    private FileObject copyFolderRecursively(FileObject sourceFolder, FileObject destination) throws IOException {
+        assert sourceFolder.isFolder() : sourceFolder;
+        assert destination.isFolder() : destination;
+        FileObject destinationSubFolder = destination.getFileObject(sourceFolder.getName());
+        if (destinationSubFolder == null) {
+            destinationSubFolder = destination.createFolder(sourceFolder.getName());
+        }
+        for (FileObject fo : sourceFolder.getChildren()) {
+            if (fo.isFolder()) {
+                copyFolderRecursively(fo, destinationSubFolder);
+            } else {
+                FileObject foExists = destinationSubFolder.getFileObject(fo.getName(), fo.getExt());
+                if (foExists != null) {
+                    foExists.delete();
+                }
+                FileUtil.copyFile(fo, destinationSubFolder, fo.getName(), fo.getExt());
+            }
+        }
+        return destinationSubFolder;
+    }
     
     private static class Accessor extends ProjectClassPathModifierAccessor {        
         

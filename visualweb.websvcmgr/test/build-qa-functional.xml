@@ -76,7 +76,7 @@ made subject to such option by the copyright holder.
     <target name="runidetest" depends="init-cp">
         <path id="httpunit.jars">
             <pathelement location="${nb_all}/testtools/external/httpunit.jar"/>
-            <pathelement location="${netbeans.dest.dir}/visualweb1/modules/ext/tidy-mod.jar"/>
+            <pathelement location="${netbeans.dest.dir}/visualweb2/modules/ext/tidy-mod.jar"/>
         </path>
         <property name="coverage.lib.path" refid="httpunit.jars"/>
         <executeTests  pluginName="ide">

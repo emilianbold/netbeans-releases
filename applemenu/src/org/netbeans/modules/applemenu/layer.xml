@@ -62,11 +62,9 @@ made subject to such option by the copyright holder.
     
     <folder name="Shortcuts">
         
-        <!-- mkleint: #57300 commenting out this entry, not sure what it's good for 
-                             and it's causing bad behaviour when renaming nodes and elsewhere.
-          file name="BACK_SPACE.instance">
+        <file name="M-BACK_SPACE.instance">
 	    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
-        </file-->
+        </file>
 
         <!-- On the mac, alt left-right is select, etc. next/prev word-->
         <file name="C-LEFT.instance">
@@ -101,6 +99,10 @@ made subject to such option by the copyright holder.
 
         <file name="MD-F5.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
+        </file>
+
+        <file name="M-M.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.applemenu.MinimizeWindowAction"/>
         </file>
     </folder>
 

@@ -82,11 +82,11 @@ import org.openide.util.Lookup;
  */
   public abstract class TestBase extends NbTestCase {
 
-    public static final String CLUSTER_IDE = "ide8";
-    public static final String CLUSTER_PLATFORM = "platform7";
-    public static final String CLUSTER_ENTERPRISE = "enterprise4";
+    public static final String CLUSTER_IDE = "ide9";
+    public static final String CLUSTER_PLATFORM = "platform8";
+    public static final String CLUSTER_ENTERPRISE = "enterprise5";
     public static final String CLUSTER_APISUPPORT = "apisupport1";
-    public static final String CLUSTER_JAVA = "java1";
+    public static final String CLUSTER_JAVA = "java2";
 
     protected TestBase(String name) {
         super(name);
@@ -95,16 +95,16 @@ import org.openide.util.Lookup;
     private static String EEP = "example-external-projects";
     
     /**
-     * Tells whether NB CVS tree is available (which is not the case with e.g.
+     * Tells whether NB source tree is available (which is not the case with e.g.
      * within binary distribution).
      */
-    private boolean cvsAvailable;
+    private boolean sourceAvailable;
     
-    /** Represents netbeans.org CVS tree this test is run in if {@link #cvsAvailable}. */
-    private File nbcvsrootF;
+    /** Represents netbeans.org source tree this test is run in if {@link #sourceAvailable}. */
+    private File nbrootF;
     
-    /** Represents netbeans.org CVS tree this test is run in if {@link #cvsAvailable}. */
-    private FileObject nbcvsroot;
+    /** Represents netbeans.org source tree this test is run in if {@link #sourceAvailable}. */
+    private FileObject nbroot;
     
     /** Represents destination directory with NetBeans (always available). */
     protected File destDirF;
@@ -118,12 +118,12 @@ import org.openide.util.Lookup;
     protected @Override void setUp() throws Exception {
         super.setUp();
         Lookup.getDefault().lookup(ModuleInfo.class);
-        cvsAvailable = isCVSAvailable();
-        if (cvsAvailable) {
-            nbcvsrootF = FileUtil.normalizeFile(getTestNBRoot());
-            nbcvsroot = FileUtil.toFileObject(nbcvsrootF);
-            assertNotNull("have a file object for nbcvsroot when using " + System.getProperty("java.class.path"), nbcvsroot);
-            destDirF = file(nbcvsrootF, "nbbuild/netbeans").getAbsoluteFile();
+        sourceAvailable = isSourceAvailable();
+        if (sourceAvailable) {
+            nbrootF = FileUtil.normalizeFile(getTestNBRoot());
+            nbroot = FileUtil.toFileObject(nbrootF);
+            assertNotNull("have a file object for nbroot when using " + System.getProperty("java.class.path"), nbroot);
+            destDirF = file(nbrootF, "nbbuild/netbeans").getAbsoluteFile();
             File extexamplesF = file(getDataDir(), EEP);
             if (!noDataDir) {
                 assertTrue("there is a dir " + extexamplesF, extexamplesF.isDirectory());
@@ -185,12 +185,12 @@ import org.openide.util.Lookup;
     }
     
     private static File initializeBuildProperties(File workDir, File dataDir, File apisZip,boolean noDataDir) throws Exception {
-        File nbcvsrootF = getTestNBRoot();
-        boolean cvsAvailable = isCVSAvailable();
+        File nbrootF = getTestNBRoot();
+        boolean sourceAvailable = isSourceAvailable();
         System.setProperty("netbeans.user", workDir.getAbsolutePath());
         File userPropertiesFile = new File(workDir, "build.properties");
         Properties p = new Properties();
-        File defaultPlatform = cvsAvailable ? file(nbcvsrootF, "nbbuild/netbeans") : getXTestNBDestDir();
+        File defaultPlatform = sourceAvailable ? file(nbrootF, "nbbuild/netbeans") : getXTestNBDestDir();
         assertTrue("default platform available (" + defaultPlatform + ')', defaultPlatform.isDirectory());
         p.setProperty("nbplatform.default.netbeans.dest.dir", defaultPlatform.getAbsolutePath());
         p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness");
@@ -201,9 +201,9 @@ import org.openide.util.Lookup;
             if (apisZip != null) {
                 p.setProperty("nbplatform.default.javadoc", apisZip.getAbsolutePath());
             }
-            if (cvsAvailable) {
+            if (sourceAvailable) {
                 // Make source association work to find misc-project from its binary:
-                p.setProperty("nbplatform.default.sources", nbcvsrootF.getAbsolutePath() + ":" + file(file(dataDir, EEP), "/suite2").getAbsolutePath());
+                p.setProperty("nbplatform.default.sources", nbrootF.getAbsolutePath() + ":" + file(file(dataDir, EEP), "/suite2").getAbsolutePath());
             }
         }
         OutputStream os = new FileOutputStream(userPropertiesFile);
@@ -223,19 +223,19 @@ import org.openide.util.Lookup;
         return new File(root, path.replace('/', File.separatorChar));
     }
     
-    private static boolean isCVSAvailable() {
+    private static boolean isSourceAvailable() {
         return new File(getTestNBRoot(), "nbbuild/netbeans/" + CLUSTER_APISUPPORT
                 + "/modules/org-netbeans-modules-apisupport-project.jar").isFile();
     }
     
-    protected File nbCVSRootFile() {
-        assertTrue("NB CVS tree is available", cvsAvailable);
-        return nbcvsrootF;
+    protected File nbRootFile() {
+        assertTrue("NB source tree is available", sourceAvailable);
+        return nbrootF;
     }
     
-    protected FileObject nbCVSRoot() {
-        assertTrue("NB CVS tree is available", cvsAvailable);
-        return nbcvsroot;
+    protected FileObject nbRoot() {
+        assertTrue("NB source tree is available", sourceAvailable);
+        return nbroot;
     }
     
     protected File resolveEEPFile(final String relativePath) {
@@ -255,12 +255,12 @@ import org.openide.util.Lookup;
     }
     
     /**
-     * Calls in turn {@link #file(File, String)} with {@link #nbcvsrootF} as the
+     * Calls in turn {@link #file(File, String)} with {@link #nbrootF} as the
      * first parameter. So the returned path will be actually relative to the
-     * netbeans.org CVS tree this test is run in.
+     * netbeans.org source tree this test is run in.
      */
     protected File file(String path) {
-        return file(nbcvsrootF, path);
+        return file(nbrootF, path);
     }
     
     /**
@@ -282,9 +282,6 @@ import org.openide.util.Lookup;
     
     private static void doCopy(File from, File to) throws IOException {
         if (from.isDirectory()) {
-            if (from.getName().equals("CVS")) {
-                return;
-            }
             to.mkdir();
             String[] kids = from.list();
             for (int i = 0; i < kids.length; i++) {
@@ -529,6 +526,7 @@ import org.openide.util.Lookup;
         mani.getMainAttributes().putValue("OpenIDE-Module", "org.netbeans.modules.apisupport.harness");
         mani.getMainAttributes().putValue("OpenIDE-Module-Specification-Version", "1.6.1"); // like 5.0
         TestBase.createJar(new File(new File(new File(d, "harness"), "modules"), "org-netbeans-modules-apisupport-harness.jar"), Collections.EMPTY_MAP, mani);
+        FileUtil.refreshFor(d);
     }
     
     public static void delete(File f) throws IOException {
@@ -544,9 +542,9 @@ import org.openide.util.Lookup;
     }
     
     private static File getTestNBRoot() {
-        String nbcvsroot = System.getProperty("test.nbcvsroot");
-        assertNotNull("test.nbcvsroot property has to be set", nbcvsroot);
-        return new File(nbcvsroot);
+        String nbroot = System.getProperty("test.nbroot");
+        assertNotNull("test.nbroot property has to be set", nbroot);
+        return new File(nbroot);
     }
     
     private static File getXTestNBDestDir() {

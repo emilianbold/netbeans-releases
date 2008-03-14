@@ -45,20 +45,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Map;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.WebModule;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 
 /**
  * @author pj97932
@@ -76,8 +69,6 @@ public class ParseTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-
-        clearWorkDir();
         TestUtil.setup(this);
     }
 
@@ -112,7 +103,7 @@ public class ParseTest extends NbTestCase {
     public void testAnalysisXMLTextRotate_1_6() throws Exception {
         String javaVersion = System.getProperty("java.version");
 
-        if (javaVersion.startsWith("1.6")){
+        if (javaVersion.startsWith("1.6")) {
             parserTestInProject("project3", "/web/jsp2/jspx/textRotate.jspx");
         }
     }
@@ -120,7 +111,7 @@ public class ParseTest extends NbTestCase {
     public void testAnalysisXMLTextRotate_1_5() throws Exception {
         String javaVersion = System.getProperty("java.version");
 
-        if (javaVersion.startsWith("1.5")){
+        if (javaVersion.startsWith("1.5")) {
             parserTestInProject("project3", "/web/jsp2/jspx/textRotate.jspx");
         }
 
@@ -129,21 +120,21 @@ public class ParseTest extends NbTestCase {
     public void testAnalysisXMLTextRotate_1_4() throws Exception {
         String javaVersion = System.getProperty("java.version");
 
-        if (javaVersion.startsWith("1.4")){
+        if (javaVersion.startsWith("1.4")) {
             parserTestInProject("project3", "/web/jsp2/jspx/textRotate.jspx");
         }
     }
 
     public void testAnalysisTagLibFromTagFiles() throws Exception {
         String javaVersion = System.getProperty("java.version");
-        if (!javaVersion.startsWith("1.6")){
+        if (!javaVersion.startsWith("1.6")) {
             parserTestInProject("project2", "/web/testTagLibs.jsp");
         }
     }
 
     public void testAnalysisTagLibFromTagFiles_1_6() throws Exception {
         String javaVersion = System.getProperty("java.version");
-        if (javaVersion.startsWith("1.6")){
+        if (javaVersion.startsWith("1.6")) {
             parserTestInProject("project2", "/web/testTagLibs.jsp");
         }
     }
@@ -168,43 +159,18 @@ public class ParseTest extends NbTestCase {
         parserTestInProject("project3", "/web/WEB-INF/tags/displayProducts.tag");
     }
 
-    // test for issue #70426
-    public void testGetTagLibMap70426() throws Exception{
-        File projectFile = new File(getDataDir(), "emptyWebProject");
-        Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(projectFile));
-        FileObject jspFo = project.getProjectDirectory().getFileObject("web/index.jsp");
-        JspParserAPI.WebModule wm = TestUtil.getWebModule(jspFo);
-        Map library = JspParserFactory.getJspParser().getTaglibMap(wm);
-        System.out.println("map->" + library);
-        Library jstlLibrary = LibraryManager.getDefault().getLibrary("jstl11");
-        assertNotNull("Library has to be found", jstlLibrary);
-        ProjectClassPathExtender cpExtender = project.getLookup().lookup(ProjectClassPathExtender.class);
-        cpExtender.addLibrary(jstlLibrary);
-        library = JspParserFactory.getJspParser().getTaglibMap(wm);
-        System.out.println("map->" + library);
-        assertTrue("The JSTL/core library was not returned.", (library.get("http://java.sun.com/jsp/jstl/core")) != null);
-    }
-
-    public JspParserAPI.ParseResult parserTestInProject(String projectFolderName, String pagePath) throws Exception{
-        log("Parsing test of page  " + pagePath + " in project " + projectFolderName + " started.");
-        FileObject projectPath = FileUtil.toFileObject(new File(getDataDir(), projectFolderName));
-        Project project = ProjectManager.getDefault().findProject(projectPath);
-        assertNotNull("Project should exist", project);
-        FileObject jspFo = projectPath.getFileObject(pagePath);
-        assertNotNull("JSP file should exist", jspFo);
-        log("Parsing page " + pagePath);
-
+    public JspParserAPI.ParseResult parserTestInProject(String projectFolderName, String pagePath) throws Exception {
+        FileObject jspFo = TestUtil.getProjectFile(this, projectFolderName, pagePath);
         WebModule webModule = TestUtil.getWebModule(jspFo);
         JspParserAPI jspParser = JspParserFactory.getJspParser();
         JspParserAPI.ParseResult result = jspParser.analyzePage(jspFo, webModule, JspParserAPI.ERROR_IGNORE);
         assertNotNull("The result from the parser was not obtained.", result);
-        
+
         File goldenF = null;
         File outFile = null;
         try {
             goldenF = getGoldenFile();
-        }
-        finally {
+        } finally {
             String fName = (goldenF == null) ? ("temp" + fileNr++ + ".result") : getBrotherFile(goldenF, "result");
             outFile = new File(getWorkDir(), fName);
             writeOutResult(result, outFile);
@@ -214,39 +180,14 @@ public class ParseTest extends NbTestCase {
         try {
             assertFile(outFile, goldenF, getWorkDir());
         } catch (Error e) {
-            System.out.println("golden: " + goldenF);
-            System.out.println("outFile: " + outFile);
+            System.out.println("diff -u " + goldenF + " " + outFile);
             fail(e.getMessage());
         }
-        
+
         return result;
     }
 
     private static int fileNr = 1;
-
-    /*private void analyzeIt(FileObject root, FileObject jspFile) throws Exception {
-        log("calling parseIt, root: " + root + "  file: " + jspFile);
-        JspParserAPI api = JspParserFactory.getJspParser();
-        JspParserAPI.ParseResult result = api.analyzePage(jspFile, TestUtil.getWebModule(root, jspFile), JspParserAPI.ERROR_IGNORE);
-
-        File goldenF = null;
-        File outFile = null;
-        try {
-            //log(convertNBFSURL(getClass().getResource("/org/netbeans/modules/web/jspparser/data/goldenfiles/ParseTest/testAnalysisMain.pass")));
-            goldenF = getGoldenFile();
-            log("golden file exists 1: " + goldenF.exists());
-        }
-        finally {
-            String fName = (goldenF == null) ? ("temp" + fileNr++ + ".result") : getBrotherFile(goldenF, "result");
-            outFile = new File(getWorkDir(), fName);
-            writeOutResult(result, outFile);
-        }
-        log("golden file: " + goldenF);
-        log("golden file exists 2: " + goldenF.exists());
-        assertNotNull(outFile);
-        assertFile(outFile, goldenF, getWorkDir());
-    }*/
-
 
     private void writeOutResult(JspParserAPI.ParseResult result, File outFile) throws IOException {
         PrintWriter pw = new PrintWriter(new FileWriter(outFile));
@@ -262,5 +203,4 @@ public class ParseTest extends NbTestCase {
         }
         return goldenFile.substring(0, i) + "." + ext;
     }
-
 }

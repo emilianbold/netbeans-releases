@@ -119,6 +119,8 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
+import org.netbeans.xtest.plugin.ide.BlacklistedClassesHandler;
+
 /**
  * Overall validation suite for IDE.
  *
@@ -1137,6 +1139,9 @@ public class IDEValidation extends JellyTestCase {
      * - wait until dtd is opened in editor and close it
      * - call "Check DTD" on dtd node
      * - find and close output tab
+     * - call "Generate DOM Tree Scanner" on dtd node
+     * - set name and confirm the dialog
+     * - wait until scanner is opened in editor and close it
      */
     public void testXML() {
         // check XML Entity Catalogs
@@ -1227,15 +1232,13 @@ public class IDEValidation extends JellyTestCase {
         new OutputTabOperator(xmlCheckTitle).close();
 
         // "Generate DOM Tree Scanner"
-        /* Not available because of http://www.netbeans.org/issues/show_bug.cgi?id=90174
         String generateScannerItem = Bundle.getStringTrimmed("org.netbeans.modules.xml.tools.generator.Bundle", "PROP_GenerateDOMScanner");
         new ActionNoBlock(null, generateScannerItem).perform(dtdNode);
         selectDialog = new NbDialogOperator(selectTitle);
         new JButtonOperator(selectDialog, oKLabel).push();
         // wait Scanner is open in editor
         new EditorOperator("DTDScanner.java").close();  // NOI18N
-        Node scannerNode = new Node(xmlNode, "DTDScanner.java"); // NOI18N
-        */
+        new Node(xmlNode, "DTDScanner.java"); // NOI18N
     }
 
     /** Test Window System 
@@ -1399,6 +1402,16 @@ public class IDEValidation extends JellyTestCase {
         WatchProjects.assertProjects();
     }
 
+    public void testBlacklistedClassesHandler() throws Exception {
+        BlacklistedClassesHandler bcHandler = BlacklistedClassesHandler.getBlacklistedClassesHandler();
+        assertNotNull("BlacklistedClassesHandler should be available", bcHandler);
+        try {
+            assertTrue(bcHandler.listViolations(), bcHandler.noViolations());
+        } finally {
+            bcHandler.remove();
+        }        
+    }
+    
     /** Closes help window if any. It should not stay open between test cases.
      *  Otherwise it can break next tests.
      */

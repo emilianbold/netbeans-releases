@@ -43,18 +43,15 @@ package org.netbeans.modules.java.j2seplatform.libraries;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.event.MouseEvent;
 import java.beans.Customizer;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -67,11 +64,8 @@ import org.netbeans.api.project.ant.FileChooser;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
@@ -347,6 +341,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             chooser.setApproveButtonMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_SelectCP").charAt(0));
         }
         else if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC)) {
+            chooser.setMultiSelectionEnabled (true);
             chooser.setDialogTitle(NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_OpenJavadoc"));
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             chooser.setFileFilter (new SimpleFileFilter(NbBundle.getMessage(
@@ -371,7 +366,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             try {
                 lastFolder = chooser.getCurrentDirectory();
-                addFiles (chooser.getFiles(), area != null ? area.getLocation() : null);
+                addFiles (chooser.getSelectedPaths(), area != null ? area.getLocation() : null);
             } catch (MalformedURLException mue) {
                 ErrorManager.getDefault().notify(mue);
             } catch (IOException ex) {
@@ -402,20 +397,21 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
 //    }
 
 
-    private void addFiles (File[] files, URL libraryLocation) throws MalformedURLException {
+    private void addFiles (String[] files, URL libraryLocation) throws MalformedURLException {
         int firstIndex = this.model.getSize();
         for (int i = 0; i < files.length; i++) {
-            File f = files[i];
-            //XXX: JFileChooser workaround (JDK bug #5075580), double click on folder returns wrong file
-            // E.g. for /foo/src it returns /foo/src/src
-            // Try to convert it back by removing last invalid name component
-            if (!f.exists()) {
-                File parent = f.getParentFile();
-                if (parent != null && f.getName().equals(parent.getName()) && parent.exists()) {
-                    f = parent;
-                }
-            }
-            URL url = LibrariesSupport.convertFileToURL(f);
+            File f = new File(files[i]);
+            //mkleint: issue 5075580 was fixed in 1.4 and 5.0u7(b01).
+//            //XXX: JFileChooser workaround (JDK bug #5075580), double click on folder returns wrong file
+//            // E.g. for /foo/src it returns /foo/src/src
+//            // Try to convert it back by removing last invalid name component
+//            if (!f.exists()) {
+//                File parent = f.getParentFile();
+//                if (parent != null && f.getName().equals(parent.getName()) && parent.exists()) {
+//                    f = parent;
+//                }
+//            }
+            URL url = LibrariesSupport.convertFilePathToURL(files[i]);
             File realFile = f;
             if (!f.isAbsolute()) {
                 assert area != null;
@@ -538,9 +534,16 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 LibraryStorageArea area = model.getArea();
                 FileObject fo = LibrariesSupport.resolveLibraryEntryFileObject(area != null ? area.getLocation() : null, url);
                 if (fo == null) {
-                    broken = true;
+                    String path = LibrariesSupport.convertURLToFilePath(url);
+                    if (path.startsWith("${")) { // NOI18N
+                        // if URL starts with an Ant property name assume it is OK.
+                        // url cannot be resolved because customizer does not have necessary context.
+                        // for example in case of hand written library entry ${MAVEN_REPO}/struts/struts.jar
+                    } else {
+                        broken = true;
+                    }
                     if ("file".equals(url.getProtocol())) { //NOI18N
-                        displayName = LibrariesSupport.convertURLToFile(url).getPath();
+                        displayName = LibrariesSupport.convertURLToFilePath(url);
                     } else {
                         displayName = url.toExternalForm();
                     }
@@ -548,7 +551,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                     if (LibrariesSupport.isAbsoluteURL(url)) {
                         displayName = FileUtil.getFileDisplayName(fo);
                     } else {
-                        displayName = LibrariesSupport.convertURLToFile(url).getPath();
+                        displayName = LibrariesSupport.convertURLToFilePath(url);
                         toolTip = FileUtil.getFileDisplayName(fo);
                     }
                 }

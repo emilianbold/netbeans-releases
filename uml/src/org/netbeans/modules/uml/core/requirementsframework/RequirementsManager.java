@@ -48,14 +48,11 @@
 
 package org.netbeans.modules.uml.core.requirementsframework;
 
-//import org.netbeans.modules.uml.core.addinframework.AddInManagerImpl;
-//import org.netbeans.modules.uml.core.addinframework.IAddIn;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -65,7 +62,6 @@ import org.dom4j.Branch;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Node;
-import org.dom4j.ProcessingInstruction;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -374,15 +370,7 @@ public class RequirementsManager /*extends AddInManagerImpl*/ implements IRequir
                }
             }
          }
-
-         try
-         {
-            XMLManip.save(m_ReqProxyDoc,m_ReqProxyFile);
-         }
-         catch(IOException ex)
-         {
-            ex.printStackTrace();
-         }
+         XMLManip.save(m_ReqProxyDoc,m_ReqProxyFile);
       }
    }
 
@@ -454,14 +442,7 @@ public class RequirementsManager /*extends AddInManagerImpl*/ implements IRequir
                         satisfierNode.detach();
 
                         // Save the Proxy XML file.   
-                        try
-                        {
-                           XMLManip.save(m_ReqProxyDoc,m_ReqProxyFile);
-                        }
-                        catch(IOException ex)
-                        {
-                           ex.printStackTrace();
-                        }
+                        XMLManip.save(m_ReqProxyDoc,m_ReqProxyFile);
                      }
                   }
                }
@@ -838,14 +819,7 @@ public class RequirementsManager /*extends AddInManagerImpl*/ implements IRequir
          String strReqFile = getReqSourcesFile();
          if (strReqFile.length() > 0)
          {
-            try
-            {
-               XMLManip.save(m_ReqSourcesDoc,strReqFile);
-            }
-            catch(IOException ex)
-            {
-               ex.printStackTrace();
-            }
+            XMLManip.save(m_ReqSourcesDoc,strReqFile);
          }
       }
    }

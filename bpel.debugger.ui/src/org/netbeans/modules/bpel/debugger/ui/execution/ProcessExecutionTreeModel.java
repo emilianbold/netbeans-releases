@@ -42,14 +42,13 @@ import org.openide.util.RequestProcessor;
  * @author Kirill Sorokin
  */
 public class ProcessExecutionTreeModel implements TreeModel {
-    private ContextProvider myContextProvider;
-    private BpelDebugger myDebugger;
     
+    private BpelDebugger myDebugger;
     private ProcessExecutionModel myPem;
     
     private Listener myListener;
     private Vector myListeners = new Vector();
-
+    
     /**
      * Creates a new instance of ProcessExecutionTreeModel.
      *
@@ -57,21 +56,34 @@ public class ProcessExecutionTreeModel implements TreeModel {
      */
     public ProcessExecutionTreeModel(
             final ContextProvider contextProvider) {
-        myContextProvider = contextProvider;
-        myDebugger = (BpelDebugger) contextProvider.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
     }
-
+    
     /**{@inheritDoc}*/
     public Object getRoot() {
         return ROOT;
     }
-
+    
     /**{@inheritDoc}*/
     public Object[] getChildren(
             final Object object, 
             final int from, 
             final int to) throws UnknownTypeException {
+        
+        if (myPem == null) {
+            if (object.equals(ROOT)) {
+                return new Object[] {
+                    new Dummy()
+                };
+            }
+            
+            if (object instanceof Dummy) {
+                return new Object[0];
+            }
+            
+            throw new UnknownTypeException(object);
+        }
+        
         if (object.equals(ROOT)) {
             final Object root = getPemRoot();
             
@@ -92,6 +104,19 @@ public class ProcessExecutionTreeModel implements TreeModel {
     /**{@inheritDoc}*/
     public int getChildrenCount(
             final Object object) throws UnknownTypeException {
+        
+        if (myPem == null) {
+            if (object.equals(ROOT)) {
+                return 1;
+            }
+            
+            if (object instanceof Dummy) {
+                return 0;
+            }
+            
+            throw new UnknownTypeException(object);
+        }
+        
         if (object.equals(ROOT)) {
             return getPemRoot() != null ? 1 : 0;
         }
@@ -110,15 +135,32 @@ public class ProcessExecutionTreeModel implements TreeModel {
     /**{@inheritDoc}*/
     public boolean isLeaf(
             final Object object) throws UnknownTypeException {
-        if (object.equals(ROOT)) {
-            return false;
-        } else if (object instanceof PsmEntity) {
-            return !((PsmEntity)object).hasChildren();
-        } else if (object instanceof PemEntity) {
-            return isPemEntityLeaf((PemEntity)object);
-        } else {
+        
+        if (myPem == null) {
+            if (object.equals(ROOT)) {
+                return false;
+            }
+            
+            if (object instanceof Dummy) {
+                return true;
+            }
+            
             throw new UnknownTypeException(object);
         }
+        
+        if (object.equals(ROOT)) {
+            return false;
+        }
+        
+        if (object instanceof PsmEntity) {
+            return !((PsmEntity)object).hasChildren();
+        }
+        
+        if (object instanceof PemEntity) {
+            return isPemEntityLeaf((PemEntity) object);
+        }
+        
+        throw new UnknownTypeException(object);
     }
 
     /**{@inheritDoc}*/
@@ -126,7 +168,7 @@ public class ProcessExecutionTreeModel implements TreeModel {
             final ModelListener listener) {
         myListeners.add(listener);
         
-        if (myListener == null) {
+        if ((myListener == null) && (myDebugger != null)) {
             myListener = new Listener(this, myDebugger);
         }
     }
@@ -136,7 +178,7 @@ public class ProcessExecutionTreeModel implements TreeModel {
             final ModelListener listener) {
         myListeners.remove(listener);
         
-        if (myListeners.size() == 0) {
+        if ((myListeners.size() == 0) && (myListener != null)) {
             myListener.destroy();
             myListener = null;
         }
@@ -324,5 +366,9 @@ public class ProcessExecutionTreeModel implements TreeModel {
                 }
             }, 500);
         }
+    }
+    
+    static class Dummy {
+        // Empty, stub class
     }
 }

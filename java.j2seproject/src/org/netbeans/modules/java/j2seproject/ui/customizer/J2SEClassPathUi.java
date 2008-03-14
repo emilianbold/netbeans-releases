@@ -200,7 +200,7 @@ public class J2SEClassPathUi {
                         return NbBundle.getMessage( J2SEClassPathUi.class, "LBL_MISSING_FILE", getFileRefName( item ) );
                     }
                     else {
-                        return item.getFile().getPath();
+                        return item.getFilePath();
                     }
             }
             
@@ -244,12 +244,14 @@ public class J2SEClassPathUi {
                         return ICON_BROKEN_JAR;
                     }
                     else {
-                        File file = item.getFile();
-                        ImageIcon icn = file.isDirectory() ? getFolderIcon() : ICON_JAR;
-                        if (item.getSourceFile() != null) {
+                        String file = item.getFilePath();
+//                        File f = PropertyUtils.resolveFile(FileUtil.toFile(item.projectFolder), file);
+                        
+                        ImageIcon icn = /*TODO f.isDirectory()*/ false ? getFolderIcon() : ICON_JAR;
+                        if (item.getSourceFilePath() != null) {
                             icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ICON_SOURCE_BADGE.getImage(), 8, 8 ));
                         }
-                        if (item.getJavadocFile() != null) {
+                        if (item.getJavadocFilePath() != null) {
                             icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ICON_JAVADOC_BADGE.getImage(), 8, 0 ));
                         }
                         return icn;
@@ -270,9 +272,10 @@ public class J2SEClassPathUi {
             }
             switch ( item.getType() ) {
                 case ClassPathSupport.Item.TYPE_JAR:
-                    File f = item.getFile();
+                    String path = item.getFilePath();
+                    File f = new File(path);
                     if (!f.isAbsolute()) {
-                        f = FileUtil.normalizeFile(new File(FileUtil.toFile(projectFolder), f.getPath()));
+                        f = PropertyUtils.resolveFile(FileUtil.toFile(projectFolder), path);
                         return f.getAbsolutePath();
                     }
             }
@@ -444,9 +447,9 @@ public class J2SEClassPathUi {
                 int option = chooser.showOpenDialog( SwingUtilities.getWindowAncestor( list ) ); // Sow the chooser
                 
                 if ( option == JFileChooser.APPROVE_OPTION ) {
-                    File files[];
+                    String[] files;
                     try {
-                        files = chooser.getFiles();
+                        files = chooser.getSelectedPaths();
                     } catch (IOException ex) {
                         // TODO: add localized message
                         Exceptions.printStackTrace(ex);

@@ -71,27 +71,25 @@
                     <xsd:restriction base="xsd:string"/>
                 </xsd:simpleType> 
             </xsd:element>
-            <xsd:element name="display-name" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="display-name" minOccurs="1" maxOccurs="1" type="xsd:string"/>
             <xsd:element ref="saas:saas-metadata" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="header" minOccurs="0" maxOccurs="1">
                 <xsd:complexType>
                     <xsd:sequence>
-                        <xsd:element name="params" type="saas:Params"/>
+                        <xsd:element name="params" type="saas:Params" minOccurs="0" maxOccurs="1"/>
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element>
             <xsd:element name="methods" type="saas:Methods"/>
         </xsd:sequence>
         <xsd:attribute name="type" type="xsd:string" use="required"/>
-        <xsd:attribute name="url" type="xsd:string" use="required"/>
+        <xsd:attribute name="url" type="xsd:string" use="optional"/>
         <xsd:attribute name="api-doc" type="xsd:string" use="required"/>
     </xsd:complexType>
         
     <xsd:complexType name="SaasMetadata">
         <xsd:sequence>
-            <xsd:element name="localizing-bundle" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="icon16" minOccurs="1" maxOccurs="1"/>
-            <xsd:element name="icon32" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="localizing-bundle" type="xsd:string" minOccurs="0" maxOccurs="1"/>
             <xsd:element ref="saas:group"  minOccurs="1" maxOccurs="1"/>
             <xsd:element name="code-gen" minOccurs="0">
                 <xsd:complexType>
@@ -110,9 +108,60 @@
                                 <xsd:attribute name="id" type="xsd:string"/>
                             </xsd:complexType>
                         </xsd:element>
+                        <xsd:element name="signed-url" minOccurs="0" maxOccurs="unbounded">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element name="sign" type="saas:Sign" minOccurs="0" maxOccurs="1"/>
+                                </xsd:sequence>
+                                <xsd:attribute name="sig-id" type="xsd:string" use="required"/>
+                                <xsd:attribute name="id" type="xsd:string" use="optional"/>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:element name="session-key">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element name="sign" type="saas:Sign" minOccurs="0" maxOccurs="1"/>
+                                    <xsd:element name="login" minOccurs="0" maxOccurs="1">
+                                        <xsd:complexType>
+                                            <xsd:sequence>
+                                                <xsd:element name="sign" type="saas:Sign" minOccurs="0" maxOccurs="1"/>
+                                                <xsd:element name="method" type="saas:Method" minOccurs="1" maxOccurs="1"/>
+                                            </xsd:sequence>
+                                        </xsd:complexType>
+                                    </xsd:element>
+                                    <xsd:element name="token" minOccurs="0" maxOccurs="1">
+                                        <xsd:complexType>
+                                            <xsd:sequence>
+                                                <xsd:element name="sign" type="saas:Sign" minOccurs="0" maxOccurs="1"/>
+                                                <xsd:element name="method" type="saas:Method" minOccurs="1" maxOccurs="1"/>
+                                                <xsd:element name="frame" minOccurs="0" maxOccurs="1">
+                                                    <xsd:complexType>
+                                                        <xsd:sequence>
+                                                            <xsd:element name="sign" type="saas:Sign" minOccurs="0" maxOccurs="1"/>
+                                                            <xsd:element name="fault" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                                                        </xsd:sequence>
+                                                        <xsd:attribute name="url" type="xsd:string"/>
+                                                    </xsd:complexType>
+                                                </xsd:element>
+                                            </xsd:sequence>
+                                        </xsd:complexType>
+                                    </xsd:element>
+                                    <xsd:element name="logout" minOccurs="0" maxOccurs="1">
+                                        <xsd:complexType>
+                                            <xsd:sequence>
+                                                <xsd:element name="sign" type="saas:Sign" minOccurs="0" maxOccurs="1"/>
+                                            </xsd:sequence>
+                                        </xsd:complexType>
+                                    </xsd:element>
+                                </xsd:sequence>
+                                <xsd:attribute name="session-id" type="xsd:string" use="optional"/>
+                                <xsd:attribute name="api-id" type="xsd:string" use="required"/>
+                                <xsd:attribute name="sig-id" type="xsd:string" use="optional"/>
+                            </xsd:complexType>
+                            </xsd:element>
                         <xsd:element name="custom"/>
                     </xsd:choice>
-                    <xsd:attribute name="profile" type="xsd:string" default="Templates/WebServices/profile.properties"/>
+                    <xsd:attribute name="profile" type="xsd:string" default="Templates/SaaSServices/apikey.properties"/>
                 </xsd:complexType>
             </xsd:element>
         </xsd:sequence>
@@ -160,7 +209,7 @@
                 </xsd:annotation>
                 <xsd:complexType>
                     <xsd:sequence>
-                        <xsd:element name="params" type="saas:Params"/>
+                        <xsd:element name="params" type="saas:Params" minOccurs="0" maxOccurs="1"/>
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element> 
@@ -183,6 +232,7 @@
                 </xsd:complexType>
             </xsd:element> 
         </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:string" use="optional"/>
         <xsd:attribute name="name" type="xsd:string" use="required">
             <xsd:annotation>
                 <xsd:documentation>
@@ -196,7 +246,10 @@
                     'url' defines the url of the WSDL or WADL document
                 </xsd:documentation>
             </xsd:annotation>                                 
-        </xsd:attribute>                                       
+        </xsd:attribute>
+        <xsd:attribute name="serviceName" type="xsd:string"/>
+        <xsd:attribute name="portName" type="xsd:string"/>
+        <xsd:attribute name="operationName" type="xsd:string"/>
     </xsd:complexType>
     
     <xsd:complexType name="Params">
@@ -212,10 +265,12 @@
                             </xsd:complexType>
                         </xsd:element>
                     </xsd:sequence>
+                    <xsd:attribute name="id" type="xsd:string" use="optional"/>
                     <xsd:attribute name="name" type="xsd:string" use="required"/>
                     <xsd:attribute name="type" type="xsd:string" use="required"/>
                     <xsd:attribute name="default" type="xsd:string" use="optional"/>
                     <xsd:attribute name="fixed" type="xsd:string"/>
+                    <xsd:attribute name="required" type="xsd:boolean" use="optional"/>
                 </xsd:complexType>
             </xsd:element>  
         </xsd:sequence>
@@ -226,6 +281,12 @@
             <xsd:element name="group" type="saas:Group" minOccurs="0" maxOccurs="unbounded"></xsd:element>
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string"/>
+    </xsd:complexType>
+    
+    <xsd:complexType name="Sign">
+        <xsd:sequence>
+            <xsd:element name="params" type="saas:Params" minOccurs="0" maxOccurs="1"/>  
+        </xsd:sequence>
     </xsd:complexType>
     
 </xsd:schema>

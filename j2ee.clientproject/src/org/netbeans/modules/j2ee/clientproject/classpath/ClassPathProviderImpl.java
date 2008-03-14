@@ -48,13 +48,15 @@ import java.util.Map;
 import java.util.HashMap;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.modules.j2ee.clientproject.SourceRoots;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
@@ -178,15 +180,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if ( cp == null) {
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "${javac.classpath}:${" //NOI18N
-                        + AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH 
-                        + "}", evaluator, false));  //NOI18N
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"javac.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH})); // NOI18N
             }
             else {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "${javac.test.classpath}:${" // NOI18N
-                        + AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH
-                        + "}", evaluator, false)); // NOI18N
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"javac.test.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH})); // NOI18N
             }
             cache[2+type] = cp;
         }
@@ -225,7 +225,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 cp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
                     projectDirectory, evaluator, new String[] {DIST_JAR})); // NOI18N
-            }
+            } 
             cache[4+type] = cp;
         }
         return cp;
@@ -247,7 +247,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                     cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots, helper, evaluator));
                     break;
                 case 1:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots));
+                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots, helper, evaluator));
                     break;
             }
         }
@@ -323,5 +323,38 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         dirCache.remove(evt.getPropertyName());
     }
     
+    public String getPropertyName (SourceGroup sg, String type) {
+        FileObject root = sg.getRootFolder();
+        FileObject[] path = getPrimarySrcPath();
+        for (int i=0; i<path.length; i++) {
+            if (root.equals(path[i])) {
+                if (ClassPath.COMPILE.equals(type)) {
+                    return ProjectProperties.JAVAC_CLASSPATH;
+                }
+                else if (ClassPath.EXECUTE.equals(type)) {
+                    return AppClientProjectProperties.DEBUG_CLASSPATH;
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+        path = getTestSrcDir();
+        for (int i=0; i<path.length; i++) {
+            if (root.equals(path[i])) {
+                if (ClassPath.COMPILE.equals(type)) {
+                    return ProjectProperties.JAVAC_TEST_CLASSPATH;
+                }
+                else if (ClassPath.EXECUTE.equals(type)) {
+                    return ProjectProperties.RUN_TEST_CLASSPATH;
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
 }
 

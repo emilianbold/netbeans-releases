@@ -1,0 +1,16 @@
+    if (elementClassName.length == 0) return false;
+                                      ------------
+HINT:Return statement is inconsistent with previous usage (click on "function" to see exits)
+FIX:Show more information about this warning
+    return element;
+    --------------
+HINT:Return statement is inconsistent with previous usage (click on "function" to see exits)
+FIX:Show more information about this warning
+    return element;
+    --------------
+HINT:Return statement is inconsistent with previous usage (click on "function" to see exits)
+FIX:Show more information about this warning
+    return element;
+    --------------
+HINT:Return statement is inconsistent with previous usage (click on "function" to see exits)
+FIX:Show more information about this warning

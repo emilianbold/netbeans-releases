@@ -229,7 +229,7 @@ public class ErrorAnnotations extends JellyTestCase {
     /**
      * Simple annotations tests - tries a simple error.
      */
-    public void testAnnotationsSimple3() {
+    public void testAnnotationsSimple3() {        
         Node pn = new ProjectsTabOperator().getProjectRootNode(TEST_PROJECT_NAME);
         pn.select();
 

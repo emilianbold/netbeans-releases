@@ -280,7 +280,9 @@ public class Registry implements PropertyContainer {
         }
         
         applyRegistryFilters();
-        changeStatuses();
+	if (System.getProperty(SOURCE_STATE_FILE_PATH_PROPERTY) == null) {
+            changeStatuses();
+	}
         
         LogManager.logExit("... product registry initialization complete");
     }
@@ -800,7 +802,8 @@ public class Registry implements PropertyContainer {
                             product.getDisplayName(),
                             message ,
                             product.getDisplayName(),
-                            StringUtils.asString(inavoidableDependents)));
+                            StringUtils.asString(inavoidableDependents)),
+                            true);
                     
                     if (result) {
                         product.setStatus(Status.NOT_INSTALLED);

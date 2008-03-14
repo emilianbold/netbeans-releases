@@ -87,11 +87,11 @@ public class NavigationRuleImpl extends DescriptionGroupImpl implements Navigati
     }
     
     public String getFromViewId() {
-        return getChildElementText(JSFConfigQNames.FROM_VIEW_ID.getQName(getModel().getVersion()));
+        return getChildElementText(JSFConfigQNames.FROM_VIEW_ID.getQName(getNamespaceURI()));
     }
     
     public void setFromViewId(String fromView) {
-        setChildElementText(FROM_VIEW_ID, fromView, JSFConfigQNames.FROM_VIEW_ID.getQName(getModel().getVersion()));
+        setChildElementText(FROM_VIEW_ID, fromView, JSFConfigQNames.FROM_VIEW_ID.getQName(getNamespaceURI()));
     }
     
     protected List<String> getSortedListOfLocalNames() {

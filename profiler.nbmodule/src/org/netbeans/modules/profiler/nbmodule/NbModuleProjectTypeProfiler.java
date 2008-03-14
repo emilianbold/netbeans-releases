@@ -49,11 +49,9 @@ import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.marker.CompositeMarker;
 import org.netbeans.lib.profiler.marker.Marker;
 import org.netbeans.lib.profiler.marker.MethodMarker;
-import org.netbeans.lib.profiler.marker.PackageMarker;
 import org.netbeans.lib.profiler.results.cpu.marking.HierarchicalMark;
 import org.netbeans.lib.profiler.results.cpu.marking.Mark;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
-import org.netbeans.modules.profiler.utils.SourceUtils;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
@@ -62,6 +60,7 @@ import org.w3c.dom.Element;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 
 
 /**

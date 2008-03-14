@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 import java.text.DateFormat;
@@ -70,7 +69,7 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
         super(representationClassName);
     }
 
-    protected final void createExtentions(String[] extensions) {
+    protected void createExtentions(String[] extensions) {
         ExtensionList extensionList = new ExtensionList();
         for (int i = 0; i < extensions.length; i++) {
             extensionList.addExtension(extensions[i]);
@@ -105,15 +104,6 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
             super(obj, primaryFile);
         }
 
-        @Override
-        public FileObject createFromTemplate(FileObject f, String name) throws IOException {
-            FileObject fo = super.createFromTemplate(f, name);
-            if (fo.getAttribute(TemplateExtensionUtils.NAME_ATTRIBUTE) != null) {
-                fo.setAttribute(TemplateExtensionUtils.NAME_ATTRIBUTE, null);
-            }
-            return fo;
-        }
-
         protected java.text.Format createFormat(FileObject target, String name, String ext) {
 
             Map map = (CppSettings.findObject(CppSettings.class, true)).getReplaceableStringsProps();
@@ -126,7 +116,7 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
             map.put("PACKAGE_AND_NAME", packageName + name); // NOI18N
             map.put("NAME", name); // NOI18N
             map.put("EXTENSION", ext); // NOI18N
-            String guardName = name.replace('-', '_').replace('.', '_'); // NOI18N
+            String guardName = (name + "_" + ext).replace('-', '_').replace('.', '_'); // NOI18N
             map.put("GUARD_NAME", guardName.toUpperCase()); // NOI18N
             /*
             This is a ugly hack but I don't have a choice. That's because

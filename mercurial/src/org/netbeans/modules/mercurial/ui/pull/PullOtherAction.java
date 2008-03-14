@@ -52,6 +52,7 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.wizards.CloneRepositoryWizardPanel;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -65,7 +66,7 @@ import org.openide.util.HelpCtx;
  * 
  * @author John Rice
  */
-public class PullOtherAction extends AbstractAction implements PropertyChangeListener {
+public class PullOtherAction extends ContextAction implements PropertyChangeListener {
     
     private final VCSContext context;
     private Repository repository = null;
@@ -77,15 +78,14 @@ public class PullOtherAction extends AbstractAction implements PropertyChangeLis
         putValue(Action.NAME, name);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         final File root = HgUtils.getRootFile(context);
         if (root == null) return;
 
         if (repository == null) {
             int repositoryModeMask = Repository.FLAG_URL_EDITABLE | Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
             String title = org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Location");       // NOI18N
-            repository = new Repository(repositoryModeMask, title);
+            repository = new Repository(repositoryModeMask, title, true);
             repository.addPropertyChangeListener(this);
         }
 
@@ -126,17 +126,13 @@ public class PullOtherAction extends AbstractAction implements PropertyChangeLis
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
                         public void perform() { 
-                            PullAction.performPull(PullAction.PullType.OTHER, ctx, root, pullPath, fromPrjName, toPrjName); } };
+                            PullAction.performPull(PullAction.PullType.OTHER, ctx, root, pullPath, fromPrjName, toPrjName, this.getLogger()); } };
 
         support.start(rp, repository, 
                 org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")); // NOI18N
     }
     
     public boolean isEnabled() {
-        File root = HgUtils.getRootFile(context);
-        if(root == null)
-            return false;
-        else
-            return true;
+        return HgUtils.getRootFile(context) != null;
     }
 }

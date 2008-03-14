@@ -545,14 +545,11 @@ class MapperNode implements GraphListener {
         return isGraphExpanded();
     }
     
-    boolean isVisible() {
-        return isVisible(this);
-    }
   //////////////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-    private boolean isVisible(MapperNode node) {
-        if (node == getMapper().getRoot()) return true;
-        if (node.getParent().isCollapsed()) return false;
-        return isVisible(node.getParent());
+    private boolean isVisible() {
+        if (this == getMapper().getRoot()) return true;
+        if (getParent().isCollapsed()) return false;
+        return getParent().isVisible();
     }
     
     int getGraphHeight() {
@@ -561,14 +558,15 @@ class MapperNode implements GraphListener {
         int topInset = size / 2;
         int bottomInset = size - topInset;
 
-        return (isVisibleGraph()) 
+        return (isVisibleGraph() && !getGraph().isEmptyOrOneLink()) 
                 ? Math.max(2, graph.getHeight()) * step + size + 2
                 : 0;
     }
 
 
     Dimension getLabelSize() {
-        return getRightTree().getCellRendererComponent(this).getPreferredSize();
+        Dimension d = getRightTree().getCellRendererComponent(this).getPreferredSize();
+        return new Dimension(Math.max(16, d.width), Math.max(16, d.height));
     }
     
     
@@ -590,10 +588,10 @@ class MapperNode implements GraphListener {
     
     public boolean mustDrawLine() {
         MapperNode nextNode = getNextVisibleNode(this);
-        // graph or nextGraph is not Empty
-        if (this.getGraph() != null && !this.getGraph().isEmpty() ||
+        // graph or nextGraph is not Empty or One Link
+        if (this.getGraph() != null && !this.getGraph().isEmptyOrOneLink() ||
                     (nextNode != null && nextNode.getGraph() != null &&
-                    !nextNode.getGraph().isEmpty() )) 
+                    !nextNode.getGraph().isEmptyOrOneLink() )) 
         {
             return true; 
         }
@@ -666,16 +664,14 @@ class MapperNode implements GraphListener {
             } else {
                 result = getNextVisibleNode(node.getParent());
             }
-        } else {
-            if (node == this) {
+        } else if (node == this && node.getChildCount() > 0) {
             result = node.getChild(0);
+        } else {
+            int index = node.getParent().getChildIndex(node);
+            if (index + 1 < node.getParent().getChildCount()) {
+                result = node.getParent().getChild(index + 1);
             } else {
-                int index = node.parent.children.indexOf(node);
-                if (index + 1 < node.parent.getChildCount()) {
-                    result = node.parent.getChild(index + 1);
-                } else {
-                    result = getNextVisibleNode(node.parent);    
-                }  
+                result = getNextVisibleNode(node.getParent());
             }
         }
         return result;
@@ -688,6 +684,7 @@ class MapperNode implements GraphListener {
     
 
     public void graphLinksChanged(Graph graph) {
+        getRightTree().getLeftTree().repaint();
         repaint();
     }
 

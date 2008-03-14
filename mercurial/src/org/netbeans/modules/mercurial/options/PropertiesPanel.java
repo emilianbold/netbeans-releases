@@ -120,7 +120,7 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
         jLabel1 = new javax.swing.JLabel();
         propsPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jLabel3 = new javax.swing.JLabel();
+        labelForTable = new javax.swing.JLabel();
 
         jLabel2.setLabelFor(comboName);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.jLabel2.text")); // NOI18N
@@ -132,7 +132,7 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
         propsPanel.setLayout(propsPanelLayout);
         propsPanelLayout.setHorizontalGroup(
             propsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 420, Short.MAX_VALUE)
+            .add(0, 427, Short.MAX_VALUE)
         );
         propsPanelLayout.setVerticalGroup(
             propsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -142,6 +142,7 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
         txtAreaValue.setColumns(20);
         txtAreaValue.setRows(5);
         jScrollPane1.setViewportView(txtAreaValue);
+        txtAreaValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "ACSD_txtAreaValue")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(btnRemove, org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.btnRemove.text")); // NOI18N
 
@@ -149,7 +150,7 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
         btnAdd.setMaximumSize(new java.awt.Dimension(75, 23));
         btnAdd.setMinimumSize(new java.awt.Dimension(75, 23));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "jLabel3.txt")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(labelForTable, org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "jLabel3.txt")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -163,7 +164,7 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel2)
                             .add(btnAdd, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jLabel3)
+                            .add(labelForTable)
                             .add(jLabel1))
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -193,12 +194,14 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
                             .add(btnAdd, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(btnRemove))
                         .add(26, 26, 26)
-                        .add(jLabel3)
-                        .add(12, 12, 12))
+                        .add(labelForTable))
                     .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 13, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 25, Short.MAX_VALUE)
                 .add(propsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
+
+        btnRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "ACSD_btnRemove")); // NOI18N
+        btnAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "ACSD_btnAdd")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -208,8 +211,8 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
     final javax.swing.JComboBox comboName = new javax.swing.JComboBox();
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
+    public javax.swing.JLabel labelForTable;
     public javax.swing.JPanel propsPanel;
     final javax.swing.JTextArea txtAreaValue = new javax.swing.JTextArea();
     // End of variables declaration//GEN-END:variables

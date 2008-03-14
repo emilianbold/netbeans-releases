@@ -19,13 +19,15 @@
 package org.netbeans.modules.bpel.model.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 
+import java.util.WeakHashMap;
 import javax.xml.namespace.QName;
 
+import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
@@ -34,15 +36,16 @@ import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReferenceable;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
-import org.netbeans.modules.bpel.model.api.support.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.bpel.model.api.support.UniqueId;
+import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
+import org.netbeans.modules.bpel.model.ext.ExtBpelAttribute;
 import org.netbeans.modules.bpel.model.impl.events.BuildEvent;
 import org.netbeans.modules.bpel.model.impl.events.CopyEvent;
 import org.netbeans.modules.bpel.model.impl.events.CutEvent;
 import org.netbeans.modules.bpel.model.impl.references.BpelReferenceBuilder;
-import org.netbeans.modules.bpel.model.impl.references.SchemaReferenceBuilder;
 import org.netbeans.modules.bpel.model.impl.references.WSDLReference;
 import org.netbeans.modules.bpel.model.impl.references.WSDLReferenceBuilder;
 import org.netbeans.modules.bpel.model.xam.BpelAttributes;
@@ -62,14 +65,13 @@ import org.w3c.dom.Text;
 /**
  * @author ads
  */
-public abstract class BpelEntityImpl extends
-        AbstractDocumentComponent<BpelEntity> implements
-        BpelEntity
-{
-    BpelEntityImpl( BpelModelImpl model, Element e ) {
-        super(model, e);     
+public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntity> implements
+        BpelEntity {
+
+    BpelEntityImpl(BpelModelImpl model, Element e) {
+        super(model, e);
         myModel = model;
-        myAccess = new AttributeAccess( this );
+        myAccess = new AttributeAccess(this);
     }
 
     /**
@@ -77,28 +79,26 @@ public abstract class BpelEntityImpl extends
      * Here some inner events will be generated when new element is created via
      * builder.
      */
-    BpelEntityImpl( BpelBuilderImpl builder, String tagName ) {
+    BpelEntityImpl(BpelBuilderImpl builder, String tagName) {
         this(builder.getModel(),
                 createNewComponent(builder.getModel(), tagName));
         writeLock();
-        try {            
+        try {
             BuildEvent<? extends BpelEntity> event = preCreated(this);
             postEvent(event);
-        }
-        finally {
+        } finally {
             writeUnlock();
         }
     }
 
-    public BpelEntityImpl( BpelBuilderImpl builder, BpelElements elem ) {
+    public BpelEntityImpl(BpelBuilderImpl builder, BpelElements elem) {
         this(builder.getModel(),
-                createNewComponent(builder.getModel(), elem ));
+                createNewComponent(builder.getModel(), elem));
         writeLock();
-        try {            
+        try {
             BuildEvent<? extends BpelEntity> event = preCreated(this);
             postEvent(event);
-        }
-        finally {
+        } finally {
             writeUnlock();
         }
     }
@@ -113,7 +113,8 @@ public abstract class BpelEntityImpl extends
     public BpelModelImpl getBpelModel() {
         return myModel;
     }
-    
+
+    @Override
     public BpelModelImpl getModel() {
         return (BpelModelImpl) super.getModel();
     }
@@ -130,7 +131,7 @@ public abstract class BpelEntityImpl extends
      * 
      * @see org.netbeans.modules.soa.model.bpel.api.BpelEntity#copy(java.util.HashMap)
      */
-    public BpelEntity copy( HashMap<UniqueId, UniqueId> uniqueMap ) {
+    public BpelEntity copy(HashMap<UniqueId, UniqueId> uniqueMap) {
         writeLock();
         try {
             checkDeleted();
@@ -147,14 +148,14 @@ public abstract class BpelEntityImpl extends
 
             entity.removeCookie(IdMapKey.class);
             return entity;
-        }
-        finally {
+        } finally {
             writeUnlock();
         }
     }
-    
+
+    @Override
     public final BpelContainerImpl getParent() {
-        return (BpelContainerImpl)super.getParent();
+        return (BpelContainerImpl) super.getParent();
     }
 
     /*
@@ -172,28 +173,25 @@ public abstract class BpelEntityImpl extends
             BpelEntity entity = copy(getParent());
             if (getParent() != null) {
                 assert getParent() instanceof BpelContainer;
-                ((BpelContainer)getParent()).remove(this);
+                ((BpelContainer) getParent()).remove(this);
             }
 
             event.setOutOfModelEntity(entity);
             postEvent(event);
 
             return entity;
-        }
-        finally {
+        } finally {
             writeUnlock();
         }
     }
 
     @Override
-    public BpelEntity copy( BpelEntity parent )
-    {
+    public BpelEntity copy(BpelEntity parent) {
         writeLock();
         try {
-            BpelEntity entity = (BpelEntity)super.copy( parent );
+            BpelEntity entity = (BpelEntity) super.copy(parent);
             return entity;
-        }
-        finally {
+        } finally {
             writeUnlock();
         }
     }
@@ -216,13 +214,13 @@ public abstract class BpelEntityImpl extends
     public ExNamespaceContext getNamespaceContext() {
         return new ExNamespaceContextImpl(this);
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.soa.model.bpel20.api.BpelEntity#accept(org.netbeans.modules.soa.model.bpel20.api.support.BpelModelVisitor)
      */
-    public final void accept( SimpleBpelModelVisitor visitor ){
-        accept( (BpelModelVisitor)visitor );
-        acceptChildren( visitor );
+    public final void accept(SimpleBpelModelVisitor visitor) {
+        accept((BpelModelVisitor) visitor);
+        acceptChildren(visitor);
     }
 
     /*
@@ -230,14 +228,9 @@ public abstract class BpelEntityImpl extends
      * 
      * @see org.netbeans.modules.soa.model.bpel.api.BpelEntity#getCookie(java.lang.Class)
      */
-    public Object getCookie( Object key ) {
-        readLock();
-        try {
-            return myCookies.get(key);
-        }
-        finally {
-            readUnlock();
-        }
+    public Object getCookie(Object key) {
+        return myCookies.get(key);
+
     }
 
     /*
@@ -245,14 +238,9 @@ public abstract class BpelEntityImpl extends
      * 
      * @see org.netbeans.modules.soa.model.bpel.api.BpelEntity#setCookie(java.lang.Object)
      */
-    public void setCookie( Object key, Object obj ) {
-        writeLock();
-        try {
-            myCookies.put(key, obj);
-        }
-        finally {
-            writeUnlock();
-        }
+    public void setCookie(Object key, Object obj) {
+
+        myCookies.put(key, obj);
     }
 
     /*
@@ -260,67 +248,59 @@ public abstract class BpelEntityImpl extends
      * 
      * @see org.netbeans.modules.soa.model.bpel.api.BpelEntity#removeCookie(java.lang.Object)
      */
-    public void removeCookie( Object obj ) {
-        writeLock();
-        try {
-            myCookies.remove(obj);
-        }
-        finally {
-            writeUnlock();
-        }
+    public void removeCookie(Object obj) {
+
+        myCookies.remove(obj);
+
     }
-    
+
     //############################################################################
     //##
     //##    Methods for creation references to other model and inside BPEL model.  
     //##    Default implementation.
     //##
     //############################################################################
-    
-    public <T extends ReferenceableSchemaComponent> SchemaReference<T> 
-        createSchemaReference( T target , Class<T> type ) 
-    {
+    public <T extends ReferenceableSchemaComponent> SchemaReference<T> createSchemaReference(T target, Class<T> type) {
         readLock();
         try {
-            return SchemaReferenceBuilder.getInstance().build( target , type , 
-                    this );
-        }
-        finally {
+            return SchemaReferenceBuilder.getInstance().build(target, type,
+                    this);
+        } finally {
             readUnlock();
         }
     }
-    
-    public <T extends BpelReferenceable> BpelReference<T> createReference( T target, 
-            Class<T>  type ) 
-    {
+
+    public <T extends BpelReferenceable> BpelReference<T> createReference(T target,
+            Class<T> type) {
         readLock();
         try {
-            return BpelReferenceBuilder.getInstance().build( target , type , 
-                    this );
-        }
-        finally {
+            return BpelReferenceBuilder.getInstance().build(target, type,
+                    this);
+        } finally {
             readUnlock();
         }
     }
-    
-    public <T extends ReferenceableWSDLComponent> WSDLReference<T> 
-        createWSDLReference( T target, Class<T> type ) 
-    {
+
+    public <T extends ReferenceableWSDLComponent> WSDLReference<T> createWSDLReference(T target, Class<T> type) {
         readLock();
         try {
-            return WSDLReferenceBuilder.getInstance().build( target , type , 
-                    this );
-        }
-        finally {
+            return WSDLReferenceBuilder.getInstance().build(target, type,
+                    this);
+        } finally {
             readUnlock();
-        }   
+        }
     }
-    
+
     @Override
-    public String getAttribute( Attribute attr )
-    {
+    public String getAttribute(Attribute attr) {
         readLock();
         try {
+            // Extension attribute requires namespace context to 
+            // provide a prefix. Therefore the implied owner has to be assigned.
+            if (attr instanceof ExtBpelAttribute) {
+                ((ExtBpelAttribute)attr).setOwner(this);
+            }
+            
             /*
              * TODO : there is bug in XAM/XDM.
              * XML entities such as &gt;, &apos;, &quot; is not recognized.
@@ -329,98 +309,81 @@ public abstract class BpelEntityImpl extends
              * Usage of this method possibly should be removed
              * when bug in XAM/XDM will be fixed.  
              */
-            return Utils.hackXmlEntities( super.getAttribute( attr ));
-        }
-        finally {
+            return Utils.hackXmlEntities(super.getAttribute(attr));
+        } finally {
             readUnlock();
         }
     }
-    
-    
+
     @Override
-    public void setAttribute( String propName, Attribute attr , Object value){
+    public void setAttribute(String propName, Attribute attr, Object value) {
         writeLock();
         try {
-            super.setAttribute( propName , attr,  value );
-        }
-        finally {
+            super.setAttribute(propName, attr, value);
+        } finally {
             writeUnlock();
         }
     }
-    
-    //############################################################################
 
+    //############################################################################
     /**
      * @param visitor
      */
-    protected void acceptChildren( SimpleBpelModelVisitor visitor ) {
+    protected void acceptChildren(SimpleBpelModelVisitor visitor) {
         List<BpelEntity> children = getChildren();
         for (BpelEntity entity : children) {
-            entity.accept( visitor );
+            entity.accept(visitor);
         }
     }
-    
-    protected TBoolean getBooleanAttribute(Attribute attr ){
-        return getAttributeAccess().getBooleanAttribute( attr );
-    }
-    
-    protected <T extends BpelReferenceable> List<BpelReference<T>> 
-        getBpelReferenceList( Attribute attr , Class<T>  type)
-    {
-        return getAttributeAccess().getBpelReferenceList( attr , type );
-    }
-    
-    protected <T extends ReferenceableWSDLComponent> 
-        List<org.netbeans.modules.bpel.model.api.references.WSDLReference<T>> 
-            getWSDLReferenceList( Attribute attr, Class<T> type )
-    {
-        return getAttributeAccess().getWSDLReferenceList( attr , type );
-    }
-    
-    protected <T extends ReferenceableSchemaComponent> List<SchemaReference<T>> 
-        getSchemaReferenceList(
-            Attribute attr, Class<T> type )
-    {
-        return getAttributeAccess().getSchemaReferenceList( attr , type );
-    }
-    
-    protected <T extends BpelReferenceable> void setBpelReferenceList( 
-            Attribute attr, Class<T> type , List<BpelReference<T>> list  )
-    {
-        getAttributeAccess().setBpelReferenceList( attr, type , list );
-    }
-    
-    protected <T extends ReferenceableWSDLComponent> void setWSDLReferenceList( 
-            Attribute attr, Class<T> type , 
-            List<org.netbeans.modules.bpel.model.api.references.WSDLReference<T>> 
-            list  )
-    {
-        getAttributeAccess().setWSDLReferenceList( attr , type , list );
+
+    protected TBoolean getBooleanAttribute(Attribute attr) {
+        return getAttributeAccess().getBooleanAttribute(attr);
     }
 
-    protected void setBpelAttribute(  Attribute attr, String value ) 
-        throws VetoException
-    {
-        getAttributeAccess().setBpelAttribute( attr , value );
+    protected <T extends BpelReferenceable> List<BpelReference<T>> getBpelReferenceList(Attribute attr, Class<T> type) {
+        return getAttributeAccess().getBpelReferenceList(attr, type);
     }
 
-    protected void setBpelAttribute(  Attribute attr, Enum value ) {
-        getAttributeAccess().setBpelAttribute( attr, value );
+    protected <T extends ReferenceableWSDLComponent> List<org.netbeans.modules.bpel.model.api.references.WSDLReference<T>> getWSDLReferenceList(Attribute attr, Class<T> type) {
+        return getAttributeAccess().getWSDLReferenceList(attr, type);
     }
 
-
-    protected void setBpelAttribute( Attribute attr, QName qName ) 
-            throws VetoException 
-    {
-        getAttributeAccess().setBpelAttribute( attr, qName );
+    protected <T extends ReferenceableSchemaComponent> List<SchemaReference<T>> getSchemaReferenceList(
+            Attribute attr, Class<T> type) {
+        return getAttributeAccess().getSchemaReferenceList(attr, type);
     }
-    
-    protected QName getQNameAttribute( Attribute attr ){
-        return getAttributeAccess().getQNameAttribute( attr );
+
+    protected <T extends BpelReferenceable> void setBpelReferenceList(
+            Attribute attr, Class<T> type, List<BpelReference<T>> list) {
+        getAttributeAccess().setBpelReferenceList(attr, type, list);
+    }
+
+    protected <T extends ReferenceableWSDLComponent> void setWSDLReferenceList(
+            Attribute attr, Class<T> type,
+            List<org.netbeans.modules.bpel.model.api.references.WSDLReference<T>> list) {
+        getAttributeAccess().setWSDLReferenceList(attr, type, list);
+    }
+
+    protected void setBpelAttribute(Attribute attr, String value)
+            throws VetoException {
+        getAttributeAccess().setBpelAttribute(attr, value);
+    }
+
+    protected void setBpelAttribute(Attribute attr, Enum value) {
+        getAttributeAccess().setBpelAttribute(attr, value);
+    }
+
+    protected void setBpelAttribute(Attribute attr, QName qName)
+            throws VetoException {
+        getAttributeAccess().setBpelAttribute(attr, qName);
+    }
+
+    protected QName getQNameAttribute(Attribute attr) {
+        return getAttributeAccess().getQNameAttribute(attr);
     }
 
     @Override
-    protected void setText( String propName, String text ) {
+    protected void setText(String propName, String text) {
         writeLock();
         try {
             StringBuilder oldValue = new StringBuilder();
@@ -433,85 +396,73 @@ public abstract class BpelEntityImpl extends
                 if (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
                     ref = (Element) node;
                 }
-                if (node instanceof Text &&  
-                        node.getNodeType() != Node.COMMENT_NODE) 
-                {
+                if (node instanceof Text &&
+                        node.getNodeType() != Node.COMMENT_NODE) {
                     toRemove.add(node);
                     oldValue.append(node.getNodeValue());
                 }
             }
-            
+
             getModel().getAccess().removeChildren(getPeer(), toRemove, this);
-            if ( text != null) {
-                 Text newNode = getModel().getDocument().createTextNode(text);
-                 if (ref != null) {
-                    getModel().getAccess().insertBefore(getPeer(), newNode, ref, 
+            if (text != null) {
+                Text newNode = getModel().getDocument().createTextNode(text);
+                if (ref != null) {
+                    getModel().getAccess().insertBefore(getPeer(), newNode, ref,
                             this);
-                 } else {
-                    getModel().getAccess().appendChild(getPeer(), newNode, this); 
-                 }
+                } else {
+                    getModel().getAccess().appendChild(getPeer(), newNode, this);
+                }
             }
-            
-            firePropertyChange( propName , 
-                    oldValue == null ? null : oldValue.toString(), text );
+
+            firePropertyChange(propName,
+                    oldValue == null ? null : oldValue.toString(), text);
             fireValueChanged();
-        }
-        finally {
+        } finally {
             writeUnlock();
         }
     }
-    
-    protected void setText( String text ) throws VetoException {
-        getAttributeAccess().setText( text );
+
+    protected void setText(String text) throws VetoException {
+        getAttributeAccess().setText(text);
     }
 
-    protected void removeAttribute( Attribute attr ) {
-        getAttributeAccess().removeAttribute( attr );
+    protected void removeAttribute(Attribute attr) {
+        getAttributeAccess().removeAttribute(attr);
     }
-    
 
-    protected <T extends BpelReferenceable> BpelReference<T> getBpelReference( 
-            Attribute attr , Class<T> clazz )
-    {
-        return getAttributeAccess().getBpelReference( attr , clazz );
+    protected <T extends BpelReferenceable> BpelReference<T> getBpelReference(
+            Attribute attr, Class<T> clazz) {
+        return getAttributeAccess().getBpelReference(attr, clazz);
     }
-    
-    protected <T extends ReferenceableWSDLComponent> WSDLReference<T> 
-        getWSDLReference( Attribute attr , Class<T> clazz )
-    {
-        return getAttributeAccess().getWSDLReference( attr , clazz );
+
+    protected <T extends ReferenceableWSDLComponent> WSDLReference<T> getWSDLReference(Attribute attr, Class<T> clazz) {
+        return getAttributeAccess().getWSDLReference(attr, clazz);
     }
-    
-    protected <T extends ReferenceableSchemaComponent> SchemaReference<T> 
-        getSchemaReference( Attribute attr , Class<T> clazz )
-    {
-        return getAttributeAccess().getSchemaReference( attr , clazz );
+
+    protected <T extends ReferenceableSchemaComponent> SchemaReference<T> getSchemaReference(Attribute attr, Class<T> clazz) {
+        return getAttributeAccess().getSchemaReference(attr, clazz);
     }
-    
+
     protected <T extends BpelReferenceable> void setBpelReference(
-            Attribute attr, BpelReference<T> ref )
-    {
-        getAttributeAccess().setBpelReference( attr , ref );
+            Attribute attr, BpelReference<T> ref) {
+        getAttributeAccess().setBpelReference(attr, ref);
     }
 
-    protected <T extends ReferenceableWSDLComponent> void setWSDLReference( 
-            Attribute attr , 
-            org.netbeans.modules.bpel.model.api.references.WSDLReference<T> ref )
-    {
-        getAttributeAccess().setWSDLReference( attr , ref );
-    }
-    
-    protected <T extends ReferenceableSchemaComponent> void setSchemaReference( 
-            Attribute attr , SchemaReference<T> ref )
-    {
-        getAttributeAccess().setSchemaReference( attr , ref );
-    }
-    
-    protected void removeReference( BpelAttributes attr ){
-        getAttributeAccess().removeAttribute( attr );
+    protected <T extends ReferenceableWSDLComponent> void setWSDLReference(
+            Attribute attr,
+            org.netbeans.modules.bpel.model.api.references.WSDLReference<T> ref) {
+        getAttributeAccess().setWSDLReference(attr, ref);
     }
 
-    
+    protected <T extends ReferenceableSchemaComponent> void setSchemaReference(
+            Attribute attr, SchemaReference<T> ref) {
+        getAttributeAccess().setSchemaReference(attr, ref);
+    }
+
+    protected void removeReference(BpelAttributes attr) {
+        getAttributeAccess().removeAttribute(attr);
+    }
+
     /**
      * This method is return corrected Text content without XML
      * comments. See the problem appeared in getText() method.
@@ -524,7 +475,7 @@ public abstract class BpelEntityImpl extends
             NodeList nodeList = getPeer().getChildNodes();
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
-                if (node instanceof Text && ! ( node  instanceof Comment ) ) {
+                if (node instanceof Text && !(node instanceof Comment)) {
                     text.append(node.getNodeValue());
                 }
             }
@@ -537,13 +488,12 @@ public abstract class BpelEntityImpl extends
              * when bug in XAM/XDM will be fixed.  
              * Fix for #84651
              */
-            return Utils.hackXmlEntities( text.toString() );
-        }
-        finally {
+            return Utils.hackXmlEntities(text.toString());
+        } finally {
             readUnlock();
         }
     }
-    
+
     /*
      * This method has some problems.
      * It return XML comments that are found inside current XML element.
@@ -567,28 +517,25 @@ public abstract class BpelEntityImpl extends
              * Usage of this method possibly should be removed
              * when bug in XAM/XDM will be fixed.  
              */
-            return Utils.hackXmlEntities( super.getText() );
-        }
-        finally {
+            return Utils.hackXmlEntities(super.getText());
+        } finally {
             readUnlock();
         }
     }
 
     @Override
-    protected void populateChildren( List<BpelEntity> children )
-    {
+    protected void populateChildren(List<BpelEntity> children) {
         // bpelentity is not container
     }
 
     /*@Override
     protected String getNamespaceURI()
     {
-        return BUSINESS_PROCESS_NS_URI;
+    return BUSINESS_PROCESS_NS_URI;
     }*/
-
     @Override
-    protected Object getAttributeValueOf( Attribute attr, String stringValue ) {
-        return getAttributeAccess().getAttributeValueOf( attr , stringValue );
+    protected Object getAttributeValueOf(Attribute attr, String stringValue) {
+        return getAttributeAccess().getAttributeValueOf(attr, stringValue);
     }
 
     //#############################################################
@@ -596,15 +543,15 @@ public abstract class BpelEntityImpl extends
     //##    Next methods are utility methods for model framework. 
     //##
     //#############################################################
-    protected final void readLock() {
+    public final void readLock() {
         getBpelModel().readLock();
     }
 
-    protected final void readUnlock() {
+    public final void readUnlock() {
         getBpelModel().readUnlock();
     }
 
-    protected final  void writeLock() {
+    protected final void writeLock() {
         getBpelModel().writeLock();
     }
 
@@ -619,8 +566,8 @@ public abstract class BpelEntityImpl extends
         }
     }
 
-    protected final void checkDeleted() {
-        if ( getBpelModel().isInEventsFiring() ){
+    public final void checkDeleted() {
+        if (getBpelModel().isInEventsFiring()) {
             // allow to access to tree structure while handling event. 
             return;
         }
@@ -629,39 +576,37 @@ public abstract class BpelEntityImpl extends
                     + "already was deleted"); // NOI18N
         }
     }
-    
-    protected final String getEntityName(){
+
+    protected final String getEntityName() {
         return getPeer().getLocalName();
     }
-    
-    protected final void setInTree(){
+
+    protected final void setInTree() {
         isInTree = true;
     }
-    
-    protected final void setInTreeRecursively(){
+
+    protected final void setInTreeRecursively() {
         setInTree();
         List<BpelEntityImpl> list = getChildren(BpelEntityImpl.class);
         for (BpelEntityImpl child : list) {
             child.setInTreeRecursively();
         }
     }
-    
-    
+
     /**
      * This method changes old reference <code>reference</code>
      * to new reference with referenceable object <code>subject</code>
      */
-    @SuppressWarnings("unchecked") 
-    void updateReference( Reference reference, BpelReferenceable subject ) 
-    {
-        getAttributeAccess().updateReference( reference , subject );
-    }
-    
-    void handleAttributeChange( Node oldAttr, Node newAttr ) {
-        getAttributeAccess().handleAttributeChange( oldAttr , newAttr );
+    @SuppressWarnings("unchecked")
+    void updateReference( Reference reference, BpelReferenceable subject) {
+        getAttributeAccess().updateReference(reference, subject);
     }
 
-    void setUID( UniqueId id ) {
+    void handleAttributeChange(Node oldAttr, Node newAttr) {
+        getAttributeAccess().handleAttributeChange(oldAttr, newAttr);
+    }
+
+    void setUID(UniqueId id) {
         myUid = id;
     }
 
@@ -669,16 +614,16 @@ public abstract class BpelEntityImpl extends
         return myCookies;
     }
 
-    void setCookies( Map<Object, Object> cookieSet ) {
+    void setCookies(Map<Object, Object> cookieSet) {
         myCookies = cookieSet;
     }
 
-    final boolean isInTree() {
+    public final boolean isInTree() {
         /*Element element = getPeer();
         assert element instanceof org.netbeans.modules.xml.xdm.nodes.Element;
-
+        
         return ((org.netbeans.modules.xml.xdm.nodes.Element) element)
-                .isInTree();*/
+        .isInTree();*/
         return isInTree;
     }
 
@@ -689,30 +634,27 @@ public abstract class BpelEntityImpl extends
     final void setDeleted() {
         isDeleted = true;
     }
-    
+
     class IdMapKey {
     };
-    
+
     //#############################################################
     //##
     //##    These are methods for firing event in model.
     //##
     //#############################################################
-
-    protected void postGlobalEvent( ChangeEvent event , boolean propogateToModel ) {
+    protected void postGlobalEvent(ChangeEvent event, boolean propogateToModel) {
         checkDeleted();
-        
+
         try {
             if (isInTree()) {
-                if ( propogateToModel ){
-                    getModel().fireChangeEvent(event );
+                if (propogateToModel) {
+                    getModel().fireChangeEvent(event);
                 }
-            }
-            else {
+            } else {
                 getModel().getBuilder().fireChangeEvent(event);
             }
-        }
-        finally {
+        } finally {
             /* 
              * Real firing of event will be performed only after unlocking.
              * So this is the safe to perfrom dispatching events by inner listeners
@@ -720,90 +662,74 @@ public abstract class BpelEntityImpl extends
              * But dispatching by inner listeners will be perfromed right now.
              * So external listeners will be notified when inner already 
              * have ended its work. 
-             */  
+             */
             getModel().postInnerEventNotify(event);
         }
     }
-    
-    protected void postGlobalEvent( ChangeEvent event ){
-        postGlobalEvent( event , true );
+
+    protected void postGlobalEvent(ChangeEvent event) {
+        postGlobalEvent(event, true);
     }
-    
-    private <T extends BpelEntity> CutEvent<T> preCut( T entity ) {
+
+    private <T extends BpelEntity> CutEvent<T> preCut(T entity) {
         CutEvent<T> event = new CutEvent<T>(entity);
         try {
             getModel().preInnerEventNotify(event);
-        }
-        catch (VetoException e) {
+        } catch (VetoException e) {
             assert false;
         }
         return event;
     }
-    
-    final AttributeAccess getAttributeAccess(){
+
+    final AttributeAccess getAttributeAccess() {
         return myAccess;
     }
 
-    private <T extends BpelEntity> CopyEvent<T> preCopy( T entity ) {
+    private <T extends BpelEntity> CopyEvent<T> preCopy(T entity) {
         CopyEvent<T> event = new CopyEvent<T>(entity);
         try {
             getModel().preInnerEventNotify(event);
-        }
-        catch (VetoException e) {
+        } catch (VetoException e) {
             assert false;
         }
         return event;
     }
 
-    private <T extends BpelEntity> BuildEvent<T> preCreated( T entity ) {
+    private <T extends BpelEntity> BuildEvent<T> preCreated(T entity) {
         BuildEvent<T> event = new BuildEvent<T>(entity, getEntityName());
         try {
             getModel().preInnerEventNotify(event);
-        }
-        catch (VetoException e) {
+        } catch (VetoException e) {
             assert false;
         }
         return event;
     }
 
-    private <T extends BpelEntity> void postEvent( ChangeEvent event ) {
+    private <T extends BpelEntity> void postEvent(ChangeEvent event) {
         getBpelModel().postInnerEventNotify(event);
     }
-    
-    //#############################################################################
-    
-    private static Element createNewComponent( BpelModelImpl model,
-            String tagName )
-    {
+
+    private static Element createNewComponent(BpelModelImpl model,
+            String tagName) {
         return model.getDocument().createElementNS(
                 BpelEntity.BUSINESS_PROCESS_NS_URI, tagName);
     }
-    
-    private static Element createNewComponent( BpelModelImpl model,
-            BpelElements elem  )
-    {
-        if ( elem.getNamespace() == null ) {
-            return createNewComponent(model, elem.getName() );
-        }
-        else {
+
+    private static Element createNewComponent(BpelModelImpl model,
+            BpelElements elem) {
+        if (elem.getNamespace() == null) {
+            return createNewComponent(model, elem.getName());
+        } else {
             return model.getDocument().createElementNS(
-                    elem.getNamespace(), elem.getName() );
+                    elem.getNamespace(), elem.getName());
         }
     }
-
     private static final byte INIT_COOKIE_CAPACITY = 8; // we don't need big capaicty. This is degree of 2.  
-
-    private Map<Object, Object> myCookies = 
-        new WeakHashMap<Object, Object>(INIT_COOKIE_CAPACITY);
-
+    private Map<Object, Object> myCookies =
+            Collections.synchronizedMap(new WeakHashMap<Object, Object>(INIT_COOKIE_CAPACITY));
     private UniqueId myUid;
-
     private boolean isDeleted;
-    
     private BpelModelImpl myModel;
-    
     private AttributeAccess myAccess;
-    
     private boolean isInTree;
-
 }

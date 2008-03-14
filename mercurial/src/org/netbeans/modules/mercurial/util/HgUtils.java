@@ -46,10 +46,11 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -76,12 +77,11 @@ import org.openide.nodes.Node;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
 import javax.swing.JOptionPane;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
@@ -94,7 +94,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
-import org.openide.awt.HtmlBrowser;
 import org.openide.util.Utilities;
 import org.openide.windows.OutputListener;
 
@@ -103,20 +102,55 @@ import org.openide.windows.OutputListener;
  * @author jrice
  */
 public class HgUtils {    
+    private static final Pattern httpPasswordPattern = Pattern.compile("(https*://)(\\w+\\b):(\\b\\S*)@"); //NOI18N
+    private static final String httpPasswordReplacementStr = "$1$2:\\*\\*\\*\\*@"; //NOI18N
+    
     private static final Pattern metadataPattern = Pattern.compile(".*\\" + File.separatorChar + "(\\.)hg(\\" + File.separatorChar + ".*|$)"); // NOI18N
     
     // IGNORE SUPPORT HG: following file patterns are added to {Hg repos}/.hgignore and Hg will ignore any files
     // that match these patterns, reporting "I"status for them // NOI18N
-    private static final String [] HG_IGNORE_FILES = { "\\.orig$", "\\.orig\\..*$", "\\.chg\\..*$", "\\.rej$"}; // NOI18N
+    private static final String [] HG_IGNORE_FILES = { "\\.orig$", "\\.orig\\..*$", "\\.chg\\..*$", "\\.rej$", "\\.conflict\\~$"}; // NOI18N
+    private static final String HG_IGNORE_ORIG_FILES = "\\.orig$"; // NOI18N
+    private static final String HG_IGNORE_ORIG_ANY_FILES = "\\.orig\\..*$"; // NOI18N
+    private static final String HG_IGNORE_CHG_ANY_FILES = "\\.chg\\..*$"; // NOI18N
+    private static final String HG_IGNORE_REJ_ANY_FILES = "\\.rej$"; // NOI18N
+    private static final String HG_IGNORE_CONFLICT_ANY_FILES = "\\.conflict\\~$"; // NOI18N
     
     private static final String FILENAME_HGIGNORE = ".hgignore"; // NOI18N
 
-    public static final int MAX_LINES_TO_PRINT = 500;
-
-    private static final String MSG_TOO_MANY_LINES = "The number of output lines is greater than 500; see message log for complete output";
-
     private static HashMap<String, Set<Pattern>> ignorePatterns;
 
+    /**
+     * addDaysToDate - add days (+days) or subtract (-days) from the given date
+     *
+     * @param int days to add or substract
+     * @return Date new date that has been calculated
+     */
+    public static Date addDaysToDate(Date date, int days) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        c.add(Calendar.DATE, days);
+        return c.getTime();
+    }   
+    /**
+     * getTodaysDateStr - return todays date as a YYYY-MM-DD string
+     *
+     * @return String todays date YYYY-MM-DD string
+     */
+    public static String getTodaysDateStr() {
+        Date todaysDate = new Date();
+        return new SimpleDateFormat("yyyy-MM-dd").format(todaysDate); // NOI18N
+    }   
+    /**
+     * getLastWeeksDateStr - return last weeks date as a YYYY-MM-DD string
+     *
+     * @return String last weeks YYYY-MM-DD date string
+     */
+    public static String getLastWeeksDateStr() {
+        Date lastWeeksDate = HgUtils.addDaysToDate(new Date(), -7);
+        return new SimpleDateFormat("yyyy-MM-dd").format(lastWeeksDate); // NOI18N
+    }   
+    
     /**
      * isSolaris - check you are running onthe Solaris OS
      *
@@ -124,6 +158,31 @@ public class HgUtils {
      */
     public static boolean isSolaris(){
         return System.getProperty("os.name").equals("SunOS"); // NOI18N
+    }
+
+    /**
+     * replaceHttpPassword - replace any http or https passwords in the string
+     *
+     * @return String modified string with **** instead of passwords
+     */
+    public static String replaceHttpPassword(String s){
+        Matcher m = httpPasswordPattern.matcher(s);
+        return m.replaceAll(httpPasswordReplacementStr); 
+    }
+    
+    /**
+     * replaceHttpPassword - replace any http or https passwords in the List<String>
+     *
+     * @return List<String> containing modified strings with **** instead of passwords
+     */
+    public static List<String> replaceHttpPassword(List<String> list){
+        if(list == null) return null;
+
+        List<String> out = new ArrayList<String>(list.size());
+        for(String s: list){
+            out.add(replaceHttpPassword(s));
+        } 
+        return out;
     }
 
     /**
@@ -246,7 +305,8 @@ public class HgUtils {
 
     public static boolean isIgnored(File file, boolean checkSharability){
         if (file == null) return false;
-        String name = file.getPath();
+        String path = file.getPath();
+        String name = file.getName();
         File topFile = Mercurial.getInstance().getTopmostManagedParent(file);
         
         // We assume that the toplevel directory should not be ignored.
@@ -257,7 +317,8 @@ public class HgUtils {
         // We assume that the Project should not be ignored.
         if(file.isDirectory()){
             ProjectManager projectManager = ProjectManager.getDefault();
-            if (projectManager.isProject(FileUtil.toFileObject(file))) {
+            FileObject fileObj =  FileUtil.toFileObject(file);
+            if (fileObj != null && projectManager.isProject(fileObj)) {
                 return false;
             }
         }
@@ -266,7 +327,7 @@ public class HgUtils {
 
         for (Iterator i = patterns.iterator(); i.hasNext();) {
             Pattern pattern = (Pattern) i.next();
-            if (pattern.matcher(name).find()) {
+            if (pattern.matcher(path).find()) {
                 return true;
             }
         }
@@ -275,7 +336,7 @@ public class HgUtils {
         if (checkSharability) {
             int sharability = SharabilityQuery.getSharability(file);
             if (sharability == SharabilityQuery.NOT_SHARABLE) return true;
-        }
+            }
         return false;
     }
 
@@ -293,28 +354,115 @@ public class HgUtils {
         File root = hg.getTopmostManagedParent(path);
         if( root == null) return;
         File ignore = new File(root, FILENAME_HGIGNORE);
-        if (ignore.exists()) {
-            if (!confirmDialog(HgUtils.class, "MSG_IGNORE_FILES_TITLE", "MSG_IGNORE_FILES")) { // NOI18N 
-                return;
-            }
-        }
-           
+        
         try     {
-            fileWriter = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(ignore, true)));
-            for (String name : HG_IGNORE_FILES) {
-                fileWriter.write(name + "\n"); // NOI18N
+            if (!ignore.exists()) {
+                fileWriter = new BufferedWriter(
+                        new OutputStreamWriter(new FileOutputStream(ignore)));
+                for (String name : HG_IGNORE_FILES) {
+                    fileWriter.write(name + "\n"); // NOI18N
+                }
+            }else{
+                addToExistingIgnoredFile(ignore);
             }
         } catch (IOException ex) {
             Mercurial.LOG.log(Level.FINE, "createIgnored(): File {0} - {1}",  // NOI18N
                     new Object[] {ignore.getAbsolutePath(), ex.toString()});
         }finally {
             try {
-                fileWriter.close();
+                if(fileWriter != null) fileWriter.close();
                 hg.getFileStatusCache().refresh(ignore, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             } catch (IOException ex) {
                 Mercurial.LOG.log(Level.FINE, "createIgnored(): File {0} - {1}",  // NOI18N
                         new Object[] {ignore.getAbsolutePath(), ex.toString()});
+            }
+        }
+    }
+    
+    private static int HG_NUM_PATTERNS_TO_CHECK = 5;
+    private static void addToExistingIgnoredFile(File hgignoreFile) {
+        if(hgignoreFile == null || !hgignoreFile.exists() || !hgignoreFile.canWrite()) return;
+        File tempFile = null;
+        BufferedReader br = null;
+        PrintWriter pw = null;
+        boolean bOrigAnyPresent = false;
+        boolean bOrigPresent = false;
+        boolean bChgAnyPresent = false;
+        boolean bRejAnyPresent = false;
+        boolean bConflictAnyPresent = false;
+        
+        // If new patterns are added to HG_IGNORE_FILES, following code needs to
+        // check for these new patterns
+        assert( HG_IGNORE_FILES.length == HG_NUM_PATTERNS_TO_CHECK);
+        
+        try {
+            tempFile = new File(hgignoreFile.getAbsolutePath() + ".tmp"); // NOI18N
+            if (tempFile == null) return;
+            
+            br = new BufferedReader(new FileReader(hgignoreFile));
+            pw = new PrintWriter(new FileWriter(tempFile));
+
+            String line = null;            
+            while ((line = br.readLine()) != null) {
+                if(!bOrigAnyPresent && line.equals(HG_IGNORE_ORIG_ANY_FILES)){
+                    bOrigAnyPresent = true;
+                }else if (!bOrigPresent && line.equals(HG_IGNORE_ORIG_FILES)){
+                    bOrigPresent = true;
+                }else if (!bChgAnyPresent && line.equals(HG_IGNORE_CHG_ANY_FILES)){
+                    bChgAnyPresent = true;
+                }else if (!bRejAnyPresent && line.equals(HG_IGNORE_REJ_ANY_FILES)){
+                    bRejAnyPresent = true;
+                }else if (!bConflictAnyPresent && line.equals(HG_IGNORE_CONFLICT_ANY_FILES)){
+                    bConflictAnyPresent = true;
+                }
+                pw.println(line);
+                pw.flush();
+            }
+            // If not found add as required
+            if (!bOrigAnyPresent) {
+                pw.println(HG_IGNORE_ORIG_ANY_FILES );
+                pw.flush();
+            }
+            if (!bOrigPresent) {
+                pw.println(HG_IGNORE_ORIG_FILES );
+                pw.flush();
+            }
+            if (!bChgAnyPresent) {
+                pw.println(HG_IGNORE_CHG_ANY_FILES );
+                pw.flush();
+            }
+            if (!bRejAnyPresent) {
+                pw.println(HG_IGNORE_REJ_ANY_FILES );
+                pw.flush();
+            }     
+            if (!bConflictAnyPresent) {
+                pw.println(HG_IGNORE_CONFLICT_ANY_FILES );
+                pw.flush();
+            }     
+            
+        } catch (IOException ex) {
+            // Ignore
+        } finally {
+            try {
+                if(pw != null) pw.close();
+                if(br != null) br.close();
+
+                boolean bAnyAdditions = !bOrigAnyPresent || !bOrigPresent  || 
+                        !bChgAnyPresent || !bRejAnyPresent || !bConflictAnyPresent;               
+                if(bAnyAdditions){
+                    if (!confirmDialog(HgUtils.class, "MSG_IGNORE_FILES_TITLE", "MSG_IGNORE_FILES")) { // NOI18N 
+                        tempFile.delete();
+                        return;
+                    }
+                    if(tempFile != null && tempFile.isFile() && tempFile.canWrite() && hgignoreFile != null){ 
+                        hgignoreFile.delete();
+                        tempFile.renameTo(hgignoreFile);
+                    }
+                }else{
+                    tempFile.delete();
+                }
+            } catch (IOException ex) {
+            // Ignore
             }
         }
     }
@@ -594,6 +742,9 @@ itor tabs #66700).
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
 
         for (File file : files) {
+            /* We may be committing a LocallyDeleted file */
+            if (!file.exists()) file = file.getParentFile();
+
             Project p = FileOwnerQuery.getOwner(FileUtil.toFileObject(file));
             if (p != null) {
                 return p;
@@ -914,127 +1065,6 @@ itor tabs #66700).
         }
     }
 
-
-    /**
-     * Print contents of list to Mercurial Output Tab
-     *
-     * @param list to print out
-     * 
-     */
-     public static void outputMercurialTab(List<String> list){
-        if( list.isEmpty()) return;
-
-        InputOutput io = IOProvider.getDefault().getIO(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
-        io.select();
-        OutputWriter out = io.getOut();
-        
-        int lines = list.size();
-        if (lines > MAX_LINES_TO_PRINT) {
-            out.println(list.get(1));
-            out.println(list.get(2));
-            out.println(list.get(3));
-            out.println("...");
-            out.println(list.get(list.size() -1));
-            out.println(MSG_TOO_MANY_LINES);
-            for (String s : list){
-                Mercurial.LOG.log(Level.WARNING, s);
-            }
-        } else {
-            for (String s : list){
-                out.println(s);
-
-            }
-        }
-        out.close();
-    }
-
-     /**
-     * Print msg to Mercurial Output Tab
-     *
-     * @param String msg to print out
-     * 
-     */
-     public static void outputMercurialTab(String msg){
-        if( msg == null) return;
-
-        InputOutput io = IOProvider.getDefault().getIO(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
-        io.select();
-        OutputWriter out = io.getOut();
-        
-        out.println(msg);
-        out.close();
-    }
-
-    /**
-     * Print msg to Mercurial Output Tab in Red
-     *
-     * @param String msg to print out
-     * 
-     */
-     public static void outputMercurialTabInRed(String msg){
-        if( msg == null) return;
-
-        InputOutput io = IOProvider.getDefault().getIO(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
-        io.select();
-        OutputWriter out = io.getErr();
-        
-        out.println(msg);
-        out.close();
-    }
-
-    /**
-     * Print URL to Mercurial Output Tab as an active Hyperlink
-     *
-     * @param String sURL to print out
-     * 
-     */
-     public static void outputMercurialTabLink(final String sURL){
-         if (sURL == null) return;
-         
-         try {
-             InputOutput io = IOProvider.getDefault().getIO(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
-             io.select();
-             OutputWriter out = io.getOut();
-
-             OutputListener listener = new OutputListener() {
-                         public void outputLineAction(OutputEvent ev) {
-                             try {
-                                 HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(sURL));
-                             } catch (IOException ex) {
-                             // Ignore
-                             }
-                         }
-                         public void outputLineSelected(OutputEvent ev) {}
-                         public void outputLineCleared(OutputEvent ev) {}
-                     };
-             out.println(sURL, listener, true);
-             out.close();
-         } catch (IOException ex) {
-         // Ignore
-         }
-     }
-
-    /**
-     * Select and Clear Mercurial Output Tab
-     *
-     * @param list to print out
-     * 
-     */
-     public static void clearOutputMercurialTab(){
-         InputOutput io = IOProvider.getDefault().getIO(
-                 Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
-         
-         io.select();
-         OutputWriter out = io.getOut();
-         
-         try {
-             out.reset();
-         } catch (IOException ex) {
-             // Ignore Exception
-         }
-         out.close();
-    }
-     
     /**
      * This utility class should not be instantiated anywhere.
      */

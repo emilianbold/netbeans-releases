@@ -106,25 +106,16 @@ public abstract class AbstractMapperEventHandler extends MapperPropertyAccess
         if (!processed) {
             processed = getMoveTool().drop(component, dtde);
         }
+        getMapper().setSelectedDndPath(null);
+      
         removeTimer();
-        
-        Canvas canvas = getCanvas();
-        RightTree rightTree = getRightTree();
-        if (component == canvas || component == rightTree) {
-            canvas.getMapper().setSelectedDndPath(null);
-        }
     }
 
     public void dragDone(JComponent component, DragSourceDropEvent dsde) {
         getLinkTool().done();
         getMoveTool().dragDone();
+        getMapper().setSelectedDndPath(null);
         removeTimer();
-        
-        Canvas canvas = getCanvas();
-        RightTree rightTree = getRightTree();
-        if (component == canvas || component == rightTree) {
-            canvas.getMapper().setSelectedDndPath(null);
-        }
     }
 
     protected void startDrag(MouseEvent event, Transferable transferable,

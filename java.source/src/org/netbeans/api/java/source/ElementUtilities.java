@@ -55,10 +55,16 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ClassType;
+import com.sun.tools.javac.code.Type.MethodType;
+import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Enter;
+import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.comp.Resolve;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.util.Context;
@@ -67,17 +73,23 @@ import com.sun.tools.javadoc.DocEnv;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
@@ -228,9 +240,21 @@ public final class ElementUtilities {
             Elements elements = JavacElements.instance(ctx);
             switch (type.getKind()) {
                 case DECLARED:
+                    HashMap<CharSequence, ArrayList<Element>> hiders = new HashMap<CharSequence, ArrayList<Element>>();
+                    Types types = JavacTypes.instance(ctx);
                     for (Element member : elements.getAllMembers((TypeElement)((DeclaredType)type).asElement())) {
-                        if (acceptor == null || acceptor.accept(member, type))
-                            members.add(member);
+                        if (acceptor == null || acceptor.accept(member, type)) {
+                            CharSequence name = member.getSimpleName();
+                            ArrayList<Element> h = hiders.get(name);
+                            if (!isHidden(member, h, types)) {
+                                members.add(member);
+                                if (h == null) {
+                                    h = new ArrayList<Element>();
+                                    hiders.put(name, h);
+                                }
+                                h.add(member);
+                            }
+                        }
                     }
                 case BOOLEAN:
                 case BYTE:
@@ -426,7 +450,7 @@ public final class ElementUtilities {
          */
         boolean accept(Element e, TypeMirror type);
     }
-    
+
     private boolean isHidden(Element member, Iterable<Element> hiders, Types types) {
         if (hiders != null) {
             for (Element hider : hiders) {
@@ -508,24 +532,152 @@ public final class ElementUtilities {
         Types types = JavacTypes.instance(ctx);
         DeclaredType implType = (DeclaredType)impl.asType();
         for (TypeMirror t : types.directSupertypes(element.asType())) {
-            for (ExecutableElement ee : findUnimplementedMethods(impl, (TypeElement)((DeclaredType)t).asElement())) {
+            for (ExecutableElement ee : findUnimplementedMethods(impl, (TypeElement) ((DeclaredType) t).asElement())) {
                 //check if "the same" method has already been added:
                 boolean exists = false;
-                TypeMirror eeType = types.asMemberOf(implType, ee);
+                ExecutableType eeType = (ExecutableType)types.asMemberOf(implType, ee);
                 for (ExecutableElement existing : undef) {
                     if (existing.getSimpleName().contentEquals(ee.getSimpleName())) {
-                        TypeMirror existingType = types.asMemberOf(implType, existing);
-                        if (types.isSameType(eeType, existingType)) {
+                        ExecutableType existingType = (ExecutableType)types.asMemberOf(implType, existing);
+                        if (types.isSubsignature(existingType, eeType)) {
+                            TypeMirror existingReturnType = existingType.getReturnType();
+                            TypeMirror eeReturnType = eeType.getReturnType();
+                            if (!types.isSubtype(existingReturnType, eeReturnType)) {
+                                if (types.isSubtype(eeReturnType, existingReturnType)) {
+                                    undef.remove(existing);
+                                    undef.add(ee);
+                                } else if (existingReturnType.getKind() == TypeKind.DECLARED && eeReturnType.getKind() == TypeKind.DECLARED) {
+                                    Env<AttrContext> env = Enter.instance(ctx).getClassEnv((TypeSymbol)impl);
+                                    DeclaredType subType = env != null ? findCommonSubtype((DeclaredType)existingReturnType, (DeclaredType)eeReturnType, env) : null;
+                                    if (subType != null) {
+                                        undef.remove(existing);
+                                        MethodSymbol ms = ((MethodSymbol)existing).clone((Symbol)impl);
+                                        MethodType mt = (MethodType)ms.type.clone();
+                                        mt.restype = (Type)subType;
+                                        ms.type = mt;
+                                        undef.add(ms);
+                                    }
+                                }
+                            }
                             exists = true;
                             break;
                         }
                     }
                 }
-                if (!exists)
+                if (!exists) {
                     undef.add(ee);
+                }
             }
         }
         return undef;
     }
+    
+    private DeclaredType findCommonSubtype(DeclaredType type1, DeclaredType type2, Env<AttrContext> env) {
+        List<DeclaredType> subtypes1 = getSubtypes(type1, env);
+        List<DeclaredType> subtypes2 = getSubtypes(type2, env);
+        Types types = info.getTypes();
+        for (DeclaredType subtype1 : subtypes1) {
+            for (DeclaredType subtype2 : subtypes2) {
+                if (types.isSubtype(subtype1, subtype2))
+                    return subtype1;
+                if (types.isSubtype(subtype2, subtype1))
+                    return subtype2;
+            }
+        }
+        return null;
+    }
+    
+    private List<DeclaredType> getSubtypes(DeclaredType baseType, Env<AttrContext> env) {
+        LinkedList<DeclaredType> subtypes = new LinkedList<DeclaredType>();
+        HashSet<TypeElement> elems = new HashSet<TypeElement>();
+        LinkedList<DeclaredType> bases = new LinkedList<DeclaredType>();
+        bases.add(baseType);
+        ClassIndex index = info.getClasspathInfo().getClassIndex();
+        Trees trees = info.getTrees();
+        Types types = info.getTypes();
+        Resolve resolve = Resolve.instance(ctx);
+        while(!bases.isEmpty()) {
+            DeclaredType head = bases.remove();
+            TypeElement elem = (TypeElement)head.asElement();
+            if (!elems.add(elem))
+                continue;
+            subtypes.add(head);
+            List<? extends TypeMirror> tas = head.getTypeArguments();
+            boolean isRaw = !tas.iterator().hasNext();
+            subtypes:
+            for (ElementHandle<TypeElement> eh : index.getElements(ElementHandle.create(elem), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.allOf(ClassIndex.SearchScope.class))) {
+                TypeElement e = eh.resolve(info);
+                if (e != null) {
+                    if (resolve.isAccessible(env, (TypeSymbol)e)) {
+                        if (isRaw) {
+                            DeclaredType dt = types.getDeclaredType(e);
+                            bases.add(dt);
+                        } else {
+                            HashMap<Element, TypeMirror> map = new HashMap<Element, TypeMirror>();
+                            TypeMirror sup = e.getSuperclass();
+                            if (sup.getKind() == TypeKind.DECLARED && ((DeclaredType)sup).asElement() == elem) {
+                                DeclaredType dt = (DeclaredType)sup;
+                                Iterator<? extends TypeMirror> ittas = tas.iterator();
+                                Iterator<? extends TypeMirror> it = dt.getTypeArguments().iterator();
+                                while(it.hasNext() && ittas.hasNext()) {
+                                    TypeMirror basetm = ittas.next();
+                                    TypeMirror stm = it.next();
+                                    if (basetm != stm) {
+                                        if (stm.getKind() == TypeKind.TYPEVAR) {
+                                            map.put(((TypeVariable)stm).asElement(), basetm);
+                                        } else {
+                                            continue subtypes;
+                                        }
+                                    }
+                                }
+                                if (it.hasNext() != ittas.hasNext()) {
+                                    continue subtypes;
+                                }
+                            } else {
+                                for (TypeMirror tm : e.getInterfaces()) {
+                                    if (((DeclaredType)tm).asElement() == elem) {
+                                        DeclaredType dt = (DeclaredType)tm;
+                                        Iterator<? extends TypeMirror> ittas = tas.iterator();
+                                        Iterator<? extends TypeMirror> it = dt.getTypeArguments().iterator();
+                                        while(it.hasNext() && ittas.hasNext()) {
+                                            TypeMirror basetm = ittas.next();
+                                            TypeMirror stm = it.next();
+                                            if (basetm != stm) {
+                                                if (stm.getKind() == TypeKind.TYPEVAR) {
+                                                    map.put(((TypeVariable)stm).asElement(), basetm);
+                                                } else {
+                                                    continue subtypes;
+                                                }
+                                            }
+                                        }
+                                        if (it.hasNext() != ittas.hasNext()) {
+                                            continue subtypes;
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                            bases.add(getDeclaredType(e, map, types));
+                        }
+                    }
+                }
+            }
+        }
+        return subtypes;
+    }
 
+    private DeclaredType getDeclaredType(TypeElement e, HashMap<? extends Element, ? extends TypeMirror> map, Types types) {
+        List<? extends TypeParameterElement> tpes = e.getTypeParameters();
+        TypeMirror[] targs = new TypeMirror[tpes.size()];
+        int i = 0;
+        for (Iterator<? extends TypeParameterElement> it = tpes.iterator(); it.hasNext();) {
+            TypeParameterElement tpe = it.next();
+            TypeMirror t = map.get(tpe);
+            targs[i++] = t != null ? t : tpe.asType();
+        }
+        Element encl = e.getEnclosingElement();
+        if ((encl.getKind().isClass() || encl.getKind().isInterface()) && !((TypeElement)encl).getTypeParameters().isEmpty())
+                return types.getDeclaredType(getDeclaredType((TypeElement)encl, map, types), e, targs);
+        return types.getDeclaredType(e, targs);
+    }
 }

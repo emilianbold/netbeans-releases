@@ -40,12 +40,25 @@
 package org.netbeans.modules.websvc.saas.model;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import javax.xml.bind.JAXBException;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
+import org.netbeans.modules.websvc.saas.model.wadl.Include;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
+import org.netbeans.modules.websvc.saas.util.Xsd2Java;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -54,24 +67,228 @@ import org.openide.filesystems.FileObject;
 public class WadlSaas extends Saas {
 
     private Application wadlModel;
+    private List<WadlSaasResource> resources;
+    private FileObject wadlFile;
+    private List<FileObject> schemaFiles;
+    private List<FileObject> jaxbJars;
+    private List<FileObject> jaxbSourceJars;
     
     public WadlSaas(SaasGroup parentGroup, SaasServices services) {
         super(parentGroup, services);
     }
     
+    public WadlSaas(SaasGroup parent, String url, String displayName, String packageName) {
+        super(parent, url, displayName, packageName);
+        getDelegate().setType(NS_WADL);
+    }
+    
     public Application getWadlModel() throws IOException {
         if (wadlModel == null) {
-            wadlModel = SaasUtil.loadWadl(getLocalWadlFile());
+            InputStream in = null;
+            if (isUserDefined() ) {
+                if (getLocalWadlFile() != null) {
+                    in = getLocalWadlFile().getInputStream();
+                }
+            } else {
+                in = Thread.currentThread().getContextClassLoader().getResourceAsStream(getUrl());
+            }
+            
+            try {
+                if (in != null) {
+                    wadlModel = SaasUtil.loadWadl(in);
+                }
+            } catch (JAXBException ex) {
+                String msg = NbBundle.getMessage(WadlSaas.class, "MSG_ErrorLoadingWadl", getUrl());
+                IOException ioe = new IOException(msg);
+                ioe.initCause(ex);
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
+            }
         }
         return wadlModel;
     }
     
-    public List<Resource> getResources() throws IOException {
-        return getWadlModel().getResources().getResource();
+    public List<WadlSaasResource> getResources() {
+        if (resources == null) {
+            resources = new ArrayList<WadlSaasResource>();
+            try {
+                for (Resource r : getWadlModel().getResources().getResource()) {
+                    resources.add(new WadlSaasResource(this, null, r));
+                }
+            } catch(Exception ex) {
+                Exceptions.printStackTrace(ex);
+                return Collections.EMPTY_LIST;
+            }
+        }
+        return Collections.unmodifiableList(resources);
     } 
     
     public FileObject getLocalWadlFile() {
-        //TODO
-        return null;
+        if (wadlFile == null) {
+            try {
+                if (isUserDefined()) {
+                    String path = getProperty(PROP_LOCAL_SERVICE_FILE);
+                    if (path != null) {
+                        wadlFile = getSaasFolder().getFileObject(path);
+                    }
+                    if (wadlFile == null) {
+                        wadlFile = SaasUtil.retrieveWadlFile(this);
+                        if (wadlFile != null) {
+                            path = FileUtil.getRelativePath(saasFolder, wadlFile);
+                            setProperty(PROP_LOCAL_SERVICE_FILE, path);
+                            save();
+                        } else {
+                            throw new IllegalStateException("Failed to retrieved " + getUrl());
+                        }
+                    }
+                } else {
+                    wadlFile = SaasUtil.extractWadlFile(this);
+                }
+            } catch(IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+        return wadlFile;
+    }
+    
+    @Override
+    protected WadlSaasMethod createSaasMethod(Method m) {
+        return new WadlSaasMethod(this, m);
+    }
+    
+    @Override
+    public void toStateReady(boolean synchronous) {
+        if (wadlModel == null) {
+            setState(State.INITIALIZING);
+            if (synchronous) {
+                toStateReady();
+            } else {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        toStateReady();
+                    }
+                });
+            }
+        }
+    }
+    
+    private void toStateReady() {
+        try {
+            getWadlModel();
+            setState(State.RETRIEVED);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+            setState(State.UNINITIALIZED);
+            return;
+        }
+        
+        try {
+            compileSchemas();
+            setState(State.READY);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+    }
+
+    /**
+     * Returns either a list of resources defined by associated WADL model or
+     * a list of filtered resource methods.
+     * @return
+     */
+    public List getResourcesOrMethods() {
+        if (getMethods() != null && getMethods().size() > 0) {
+            return getMethods();
+        }
+        return getResources();
+    }
+
+    public String getBaseURL() {
+        try {
+            return getWadlModel().getResources().getBase();
+        } catch(IOException ioe) {
+            // should not happen at this point
+            return NbBundle.getMessage(WadlSaas.class, "LBL_BAD_WADL");
+        }
+    }
+    
+    @Override
+    public void refresh() {
+        super.refresh();
+        if (wadlFile != null) {
+            try {
+                wadlFile.delete();
+            } catch(Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        wadlFile = null;
+        wadlModel = null;
+        resources = null;
+        toStateReady(false);
+    }
+    
+    private boolean compileSchemas() throws IOException {
+        assert wadlModel != null;
+        jaxbJars = new ArrayList<FileObject>();
+        jaxbSourceJars = new ArrayList<FileObject>();
+        for (FileObject xsdFile : getLocalSchemaFiles()) {
+            Xsd2Java xjCompiler = new Xsd2Java(xsdFile, getPackageName());
+            if (! xjCompiler.compile()) {
+                return false;
+            }
+            jaxbJars.add(xjCompiler.getJaxbJarFile());
+            jaxbSourceJars.add(xjCompiler.getJaxbSourceJarFile());
+        }
+        
+        return true;
+    }
+    
+    public List<FileObject> getLocalSchemaFiles() throws IOException {
+        if (wadlModel == null) {
+            throw new IllegalStateException("Should transition state to at least RETRIEVED");
+        }
+        FileObject wadlDir = getLocalWadlFile().getParent();
+        schemaFiles = new ArrayList<FileObject>();
+        for (Include include : wadlModel.getGrammars().getInclude()) {
+            String uri = include.getHref();
+            FileObject schemaFile = wadlDir.getFileObject(uri);
+            if (schemaFile == null) {
+                try {
+                    URI xsdUri = new URI(getUrl()).resolve(uri);
+                    String dirPath = SaasUtil.dirOnlyPath(uri);
+                    schemaFile = SaasUtil.saveResourceAsFile(wadlDir, dirPath, xsdUri.getPath());
+                } catch(URISyntaxException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+        }
+        return schemaFiles;
+    }
+
+    public List<FileObject> getLibraryJars() {
+        List<FileObject> result = new ArrayList(super.getLibraryJars());
+        if (jaxbJars == null) {
+            try {
+                compileSchemas();
+                result.addAll(jaxbJars);
+            } catch(IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return result;
+    }
+    
+    public List<FileObject> getJaxbSourceJars() {
+        if (jaxbSourceJars == null) {
+            try {
+                compileSchemas();
+                return Collections.unmodifiableList(jaxbSourceJars);
+            } catch(IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return Collections.emptyList();
     }
 }

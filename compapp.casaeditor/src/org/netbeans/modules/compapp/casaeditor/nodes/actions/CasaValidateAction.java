@@ -43,6 +43,7 @@ package org.netbeans.modules.compapp.casaeditor.nodes.actions;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.xml.validation.ValidateAction;
 import org.netbeans.modules.xml.validation.ui.ValidationOutputWindow;
@@ -55,7 +56,8 @@ import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
 /**
- *
+ * Action to validate CASA.
+ * 
  * @author jqian
  */
 public class CasaValidateAction extends ValidateAction {
@@ -71,6 +73,7 @@ public class CasaValidateAction extends ValidateAction {
     @Override
     public void actionPerformed(ActionEvent event) {
         RequestProcessor.getDefault().post(new Runnable() {
+
             public void run() {
                 RunAction runAction = new RunAction();
                 runAction.run();
@@ -99,29 +102,35 @@ public class CasaValidateAction extends ValidateAction {
         private List<ResultItem> validationResults;
 
         public void run() {
-            InputOutput io = IOProvider.getDefault().getIO(NbBundle.getMessage(ValidateAction.class,
-                    "TITLE_XML_check_window"), false); // NOI18N
-            OutputWriter writer = io.getOut();
-            try {
-                writer.reset();
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            }
-            writer.println(NbBundle.getMessage(ValidateAction.class,
-                    "MSG_XML_valid_start")); // NOI18N
-            io.select();
+            
+            assert ! SwingUtilities.isEventDispatchThread();
+            validationResults = model.validate(); 
 
-            //            ValidationOutputWindowController validationController =
-//                    new ValidationOutputWindowController();
-//            validationResults = validationController.validate(model);
-            validationResults = model.validate();
+            SwingUtilities.invokeLater(new Runnable() {
 
-            ValidationOutputWindow outputWindow = new ValidationOutputWindow();
-            outputWindow.displayValidationInformation(validationResults);
+                public void run() {
 
-            writer.print(NbBundle.getMessage(ValidateAction.class,
-                    "MSG_XML_valid_end")); // NOI18N
-            io.select();
+                    InputOutput io = IOProvider.getDefault().getIO(
+                            NbBundle.getMessage(ValidateAction.class,
+                            "TITLE_XML_check_window"), false); // NOI18N
+                    io.select();
+                    
+                    OutputWriter writer = io.getOut();
+                    try {
+                        writer.reset();
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
+                    writer.println(NbBundle.getMessage(ValidateAction.class,
+                            "MSG_XML_valid_start")); // NOI18N
+
+                    ValidationOutputWindow outputWindow = new ValidationOutputWindow();
+                    outputWindow.displayValidationInformation(validationResults);
+
+                    writer.print(NbBundle.getMessage(ValidateAction.class,
+                            "MSG_XML_valid_end")); // NOI18N
+                }
+            });
         }
 
         public List<ResultItem> getValidationResults() {

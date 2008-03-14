@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.reglib;
 
-import com.sun.servicetag.RegistrationData;
-import com.sun.servicetag.ServiceTag;
-import com.sun.servicetag.Registry;
+import org.netbeans.modules.servicetag.RegistrationData;
+import org.netbeans.modules.servicetag.ServiceTag;
+import org.netbeans.modules.servicetag.Registry;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -341,7 +341,7 @@ public class NbServiceTagSupport {
     
     /**
      * Returns the NetBeans registration data located in
-     * the NB_INST_DIR/nb6.0/servicetag/registration.xml by default. 
+     * the NB_INST_DIR/nb6.x/servicetag/registration.xml by default. 
      *
      * @throws IllegalArgumentException if the registration data
      *         is of invalid format.

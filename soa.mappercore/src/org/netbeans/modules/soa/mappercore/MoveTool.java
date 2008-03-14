@@ -27,8 +27,8 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.io.IOException;
 import javax.swing.JComponent;
+import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.model.Graph;
-import org.netbeans.modules.soa.mappercore.model.GraphItem;
 import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 
@@ -38,21 +38,30 @@ import org.netbeans.modules.soa.mappercore.model.MapperModel;
  */
 public class MoveTool extends AbstractMapperDnDTool {
 
-    private Transferable transferable;
+    //private Transferable transferable;
     private GraphSubset graphSubSet;
-    private Point startPoint;
-
+    
     public MoveTool(Mapper mapper) {
         super(mapper);
     }
 
-    Transferable getMoveTransferable(GraphSubset graphSubSet) {
+    Transferable getMoveTransferable(GraphSubset graphSubSet, Point location) {
         this.graphSubSet = graphSubSet;
-        return new MoveTransferable(graphSubSet);
+         Point delta;
+         if (graphSubSet.getGraph() != null && graphSubSet.getVertexCount() > 0) {
+                int dx = graphSubSet.getVertex(0).getX();
+                int dy = graphSubSet.getVertex(0).getY();
+                dx = getCanvas().toCanvas(dx * getCanvas().getStep());
+                MapperNode node = getCanvas().getNodeAt(location.y);
+                dy = node.yToView(dy * getCanvas().getStep());
+                delta = new Point(location.x - dx, location.y - dy);
+            } else {
+                delta = new Point();
+            }
+        return new MoveTransferable(graphSubSet, delta);
     }
 
     private void reset() {
-        transferable = null;
         graphSubSet = null;
     }
 
@@ -68,16 +77,9 @@ public class MoveTool extends AbstractMapperDnDTool {
             return false;
         }
 
-        if (transferable != this.transferable) {
-            this.transferable = transferable;
-            this.graphSubSet = getGraphSubset(transferable);
-            this.startPoint = (graphSubSet.getGraph() != null) ? 
-                    dtde.getLocation() : new Point(0, 0);
-                
-        
-        }
+        this.graphSubSet = getGraphSubset(transferable);
 
-        if (this.transferable != null && this.graphSubSet == null) {
+        if (this.graphSubSet == null) {
             return false;
         }
         
@@ -106,16 +108,13 @@ public class MoveTool extends AbstractMapperDnDTool {
     }
 
     public void drawDnDImage() {
-        if (transferable != null) {
-
-        }
     }
 
     private GraphSubset getGraphSubset(Transferable transferable) {
-        if (transferable.isDataFlavorSupported(MOVE_DATA_FLAVOR)) {
+        if (transferable.isDataFlavorSupported(MOVE_GRAPHSUBSET_FLAVOR)) {
             try {
                 return (GraphSubset) transferable.getTransferData(
-                        MOVE_DATA_FLAVOR);
+                        MOVE_GRAPHSUBSET_FLAVOR);
             } catch (IOException ex) {
                 return null;
             } catch (UnsupportedFlavorException ex) {
@@ -125,6 +124,19 @@ public class MoveTool extends AbstractMapperDnDTool {
 
         MapperModel model = getMapperModel();
         return model.getGraphSubset(transferable);
+    }
+    
+    private Point getDelta(Transferable transferable) {
+        if (transferable.isDataFlavorSupported(MOVE_DELTA_FLAVOR)) {
+            try {
+                return (Point) transferable.getTransferData(MOVE_DELTA_FLAVOR);
+            } catch (UnsupportedFlavorException ex) {
+                return new Point();
+            } catch (IOException ex) {
+                return new Point();
+            }
+        }
+        return new Point();
     }
 
     public boolean drop(JComponent component, DropTargetDropEvent dtde) {
@@ -140,23 +152,31 @@ public class MoveTool extends AbstractMapperDnDTool {
 
         MapperNode node = canvas.getNodeAt(point.y);
         
+        Point delta = getDelta(dtde.getTransferable());
+        
         if (node != null) {
             int step = getMapper().getStepSize();
-            if (dtde.getDropAction() == DnDConstants.ACTION_COPY  || graphSubSet.getGraph() == null) {
-                int graphY = node.yToNode(point.y) - step;
-                int graphX = canvas.toGraph(point.x);
-
-
-    
-                model.copy(node.getTreePath(), graphSubSet, 
-                        (graphX + step / 2) / step,
-                        Math.max(0, (graphY + step / 2) / step));
-        } else {
-                model.move(node.getTreePath(), graphSubSet, 
-                        (point.x - startPoint.x) / step, 
-                        (point.y - startPoint.y) / step);
+            int graphY = node.yToNode(point.y - delta.y);
+            int graphX = canvas.toGraph(point.x - delta.x);
+            if (dtde.getDropAction() == DnDConstants.ACTION_COPY || graphSubSet.getGraph() == null) {
+                graphSubSet = model.copy(node.getTreePath(), graphSubSet,
+                        (int) (Math.round(((double) (graphX)) / step)),
+                        Math.max(0, (int) (Math.round(((double) (graphY)) / step))));
+            } else {
+                model.move(node.getTreePath(), graphSubSet,
+                        (int) (Math.round(((double) (graphX)) / step)),
+                        Math.max(0, (int) (Math.round(((double) (graphY)) / step))));
             }
-        }
+            
+            getCanvas().requestFocusInWindow();
+            SelectionModel selectionModel = getSelectionModel();
+            TreePath treePath = node.getTreePath();
+            if (graphSubSet != null && graphSubSet.getVertexCount() > 0 &&
+                    !selectionModel.isSelected(treePath, graphSubSet.getVertex(0)))
+            {
+                selectionModel.setSelected(treePath, graphSubSet.getVertex(0));
+            }
+         }
 
         reset();
 
@@ -164,30 +184,46 @@ public class MoveTool extends AbstractMapperDnDTool {
     }
 
 
-
+    public void startDrag(Transferable transferable){
+    
+    }
+    
     public void dragDone() {
     }
 
     private static class MoveTransferable implements Transferable {
 
+        private Point delta;
         private GraphSubset group;
 
         public MoveTransferable(GraphSubset group) {
             this.group = group;
+            this.delta = new Point();
+        }
+        
+        public MoveTransferable(GraphSubset group, Point delta) {
+            this.group = group;
+            this.delta = delta;
         }
 
         public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[]{MOVE_DATA_FLAVOR};
-        }
-
+             return new DataFlavor[] {MOVE_GRAPHSUBSET_FLAVOR, 
+             MOVE_DELTA_FLAVOR
+             };
+         } 
+  
         public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return flavor == MOVE_DATA_FLAVOR;
+            return flavor == MOVE_GRAPHSUBSET_FLAVOR ||
+                    flavor == MOVE_DELTA_FLAVOR;
         }
 
         public Object getTransferData(DataFlavor flavor)
                 throws UnsupportedFlavorException, IOException {
-            if (flavor == MOVE_DATA_FLAVOR) {
+            if (flavor == MOVE_GRAPHSUBSET_FLAVOR) {
                 return group;
+            }
+            if (flavor == MOVE_DELTA_FLAVOR) {
+                return delta;
             }
             throw new UnsupportedFlavorException(flavor);
         }
@@ -214,8 +250,11 @@ public class MoveTool extends AbstractMapperDnDTool {
 //            throw new UnsupportedFlavorException(flavor);
 //        }
 //    }
-    private static final DataFlavor MOVE_DATA_FLAVOR = new DataFlavor(
+    private static final DataFlavor MOVE_GRAPHSUBSET_FLAVOR = new DataFlavor(
             MoveTransferable.class, "MapperDataFlavor");
+    
+    private static final DataFlavor MOVE_DELTA_FLAVOR = new DataFlavor(
+            Point.class, "MapperDeltaFlavor");
 
     private static synchronized long createUID() {
         return UID++;

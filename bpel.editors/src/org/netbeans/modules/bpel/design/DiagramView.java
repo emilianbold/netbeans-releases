@@ -4,12 +4,14 @@
  */
 package org.netbeans.modules.bpel.design;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.dnd.Autoscroll;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.List;
@@ -48,8 +50,8 @@ import org.openide.util.NbBundle;
  *
  * @author Alexey
  */
-public abstract class DiagramView extends JPanel {
-
+public abstract class DiagramView extends JPanel implements Autoscroll {
+    
     private DesignView designView;
     private PlaceHolderManager placeholderManager;
     private NameEditor nameEditor;
@@ -58,7 +60,7 @@ public abstract class DiagramView extends JPanel {
     public DiagramView(DesignView designView) {
         super(new DiagramViewLayout());
         this.designView = designView;
-
+        setBackground(BACKGROUND_COLOR);
 
         placeholderManager =
                 new PlaceHolderManager(this);
@@ -94,7 +96,19 @@ public abstract class DiagramView extends JPanel {
        // System.out.println("Paint (" + (System.currentTimeMillis() - start) + " ms):" + this );
     }
 
-   
+     @Override
+    public void print(Graphics g) {
+        designView.setPrintMode(true);
+        super.print(g);
+        designView.setPrintMode(false);
+    }
+    
+    
+    @Override
+    protected void printComponent(Graphics g) {
+        paintContent(g, getDesignView().getCorrectedZoom(), true);
+    }
+    
     private void paintContent(Graphics g, double zoom, boolean printMode) {
 
         Pattern root = getDesignView().getModel().getRootPattern();
@@ -246,6 +260,9 @@ public abstract class DiagramView extends JPanel {
 
     public Point convertPointToParent(FPoint point) {
         Point result = convertDiagramToScreen(point);
+        if (designView.getPrintMode()) {
+            return result;
+        }
         Component c = this;
         while (c != getDesignView()) {
             result.x += c.getX();
@@ -258,6 +275,9 @@ public abstract class DiagramView extends JPanel {
     public FPoint convertPointFromParent(Point point) {
         Component c = this;
         Point result = new Point(point);
+        if (designView.getPrintMode()) {
+            return this.convertScreenToDiagram(result);
+        }
         while (c != getDesignView()) {
             result.x -= c.getX();
             result.y -= c.getY();
@@ -265,7 +285,6 @@ public abstract class DiagramView extends JPanel {
         }
 
         return this.convertScreenToDiagram(result);
-
     }
 
     public Insets getAutoscrollInsets() {
@@ -422,5 +441,7 @@ public abstract class DiagramView extends JPanel {
         return null;
 
     }
+    
+    private static final Color BACKGROUND_COLOR = new Color(0xFCFAF5);
     private static int AUTOSCROLL_INSETS = 20;
 }

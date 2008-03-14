@@ -29,6 +29,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.decoration.components.DecorationComponent;
 import org.netbeans.modules.bpel.design.decoration.components.ZoomableDecorationComponent;
+import org.netbeans.modules.bpel.design.model.patterns.CompositePattern;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.xml.xam.Model;
@@ -96,9 +97,7 @@ public class DecorationManager {
     
     
 
-    public void repositionComponentsRecursive() {
-        repositionComponentsRecursive(designView.getBPELModel().getProcess());
-    }
+
 
     private void updateResult(BpelEntity entity) {
         Decoration newDecoration = new Decoration();
@@ -109,76 +108,17 @@ public class DecorationManager {
                 newDecoration.combineWith(d);
             }
         }
-
-        Decoration oldDecoration = (Decoration) entity.getCookie(cacheKey);
-
         entity.setCookie(cacheKey, newDecoration);
 
 
-
-    }
-
-    private void updateResultRecursive(BpelEntity entity) {
-        updateResult(entity);
         for (BpelEntity e : entity.getChildren()) {
-            updateResultRecursive(e);
+            updateResult(e);
         }
     }
 
-    private void repositionComponentsRecursive(BpelEntity entity) {
-        repositionComponents(entity);
-        for (BpelEntity e : entity.getChildren()) {
-            repositionComponentsRecursive(e);
-        }
-    }
 
-    private void repositionComponents(BpelEntity entity) {
-        Decoration decoration = (Decoration) entity.getCookie(cacheKey);
 
-        if ((decoration == null) || !decoration.hasComponents()) {
-            return;
-        }
-
-        Pattern pattern = designView.getModel().getPattern(entity);
-
-        if (pattern == null) {
-            return;
-        }
-
-        double zoom = designView.getCorrectedZoom();
-
-        //group components by positioneer
-        HashMap<Positioner, List<Component>> positionerComponents =
-                new HashMap<Positioner, List<Component>>();
-
-        ComponentsDescriptor components = decoration.getComponents();
-        int componentsCount = components.getComponentCount();
-
-        for (int i = 0; i < componentsCount; i++) {
-            Component c = components.getComponent(i);
-            Positioner p = components.getPositioner(i);
-
-            List<Component> list = positionerComponents.get(p);
-
-            if (list == null) {
-                list = new ArrayList<Component>(componentsCount);
-                positionerComponents.put(p, list);
-            }
-
-            list.add(c);
-
-            if (c instanceof ZoomableDecorationComponent) {
-                //apply zoom
-                ((ZoomableDecorationComponent) c).setZoom(zoom);
-            }
-        }
-
-        //call positioners for each group
-        for (Positioner p : positionerComponents.keySet()) {
-            p.position(pattern, positionerComponents.get(p), zoom);
-        }
-
-    }
+   
     private class DecorationUpdater implements Runnable {
         private boolean activated = false;
         public void start(){
@@ -198,14 +138,10 @@ public class DecorationManager {
             }
 
             //re-query all providers to get updated decorations
-            updateResultRecursive(designView.getBPELModel().getProcess());
+            updateResult(designView.getBPELModel().getProcess());
 
             //add/remove decoration components to awt container
             new ComponentDecorationsUpdater(designView).update();
-
-            //reposition all components
-            repositionComponentsRecursive();
-
             //repaint view
             designView.revalidate();
             designView.repaint();

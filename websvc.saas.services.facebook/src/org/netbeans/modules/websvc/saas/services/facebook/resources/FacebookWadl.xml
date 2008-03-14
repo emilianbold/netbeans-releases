@@ -8,7 +8,7 @@
   <grammars/>
   <resources base="http://api.facebook.com">
     <resource path="restserver.php">
-      <method id="facebook.admin_getAppProperties" name="POST">
+      <method id="admin_getAppProperties" name="POST">
         <doc xml:lang="en">Gets property values previously set for an application on either the Facebook Developer application or the with the admin.setAppProperties call.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -29,7 +29,7 @@
         <response/>
         
       </method>
-      <method id="facebook.admin_setAppProperties" name="POST">
+      <method id="admin_setAppProperties" name="POST">
         <doc xml:lang="en">Sets (several) property values for an application. These values previously were only accessible through the Developer application.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -50,7 +50,7 @@
         <response/>
         
       </method>
-      <method id="facebook.auth_createToken" name="POST">
+      <method id="auth_createToken" name="POST">
         <doc xml:lang="en">Creates an auth_token to be passed in as a parameter to login.php and then to auth.getSession after the user has logged in. The user must log in soon after you create this token.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -60,15 +60,36 @@
             <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
           </param>
           <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
-          <param name="format" required="false" style="query" type="xsd:string">
+          <!--<param name="format" required="false" style="query" type="xsd:string">
             <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
-          </param>
+          </param>-->
           <param fixed="facebook.auth.createToken" name="method" required="true" style="query" type="xsd:string"/>
         </request>
         <response/>
         
       </method>
-      <method id="facebook.data_getCookies" name="POST">
+      
+      <method id="auth_getSession" name="POST">
+        <doc xml:lang="en">Creates an auth_token to be passed in as a parameter to login.php and then to auth.getSession after the user has logged in. The user must log in soon after you create this token.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <!--<param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>-->
+          <param fixed="facebook.auth.getSession" name="method" required="true" style="query" type="xsd:string"/>
+          <param name="auth_token" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      
+      <method id="data_getCookies" name="POST">
         <doc xml:lang="en">This method returns all cookies for a given user and application.</doc>
         <request>
           <param name="uid" required="true" style="query" type="xsd:integer">
@@ -82,7 +103,7 @@
         <response/>
         
       </method>
-      <method id="facebook.data_setCookie" name="POST">
+      <method id="data_setCookie" name="POST">
         <doc xml:lang="en">This method sets a cookie for a given user and application.</doc>
         <request>
           <param name="uid" required="true" style="query" type="xsd:integer">
@@ -105,7 +126,7 @@
         <response/>
         
       </method>
-      <method id="facebook.events_get" name="POST">
+      <method id="events_get" name="POST">
         <doc xml:lang="en">Returns all visible events according to the filters specified. You can use this method to find all events for a user, or to query a specific set of events by a list of event IDs (eids).
 
 If both the uid and eids parameters are provided, the method returns all events in the set of eids that are associated with the user. If no eids parameter are specified, the method returns all events associated with the specified user.
@@ -156,7 +177,7 @@ start_time and end_time parameters specify a (possibly open-ended) window in whi
         <response/>
         
       </method>
-      <method id="facebook.events_getMembers" name="POST">
+      <method id="events_getMembers" name="POST">
         <doc xml:lang="en">Returns membership list data associated with an event.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -183,7 +204,7 @@ start_time and end_time parameters specify a (possibly open-ended) window in whi
         <response/>
         
       </method>
-      <method id="facebook.fbml_refreshImgSrc" name="POST">
+      <method id="fbml_refreshImgSrc" name="POST">
         <doc xml:lang="en">Fetches and re-caches the image stored at the given URL, for use in images published to non-canvas pages via the API (e.g. to user profiles via profile.setFBML, or to news feed via feed.publishActionOfUser). See the FBML documentation for a description of the markup and its role in various contexts.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -210,7 +231,7 @@ start_time and end_time parameters specify a (possibly open-ended) window in whi
         <response/>
         
       </method>
-      <method id="facebook.fbml_refreshRefUrl" name="POST">
+      <method id="fbml_refreshRefUrl" name="POST">
         <doc xml:lang="en">Fetches and re-caches the content stored at the given URL, for use in a fb:ref FBML tag. See the FBML documentation for a description of the markup and its role in various contexts.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -237,7 +258,7 @@ start_time and end_time parameters specify a (possibly open-ended) window in whi
         <response/>
         
       </method>
-      <method id="facebook.fbml_setRefHandle" name="POST">
+      <method id="fbml_setRefHandle" name="POST">
         <doc xml:lang="en">Associates a given "handle" with FBML markup so that the handle can be used within the fb:ref FBML tag. A handle is unique within an application and allows an application to publish identical FBML to many user profiles and do subsequent updates without having to republish FBML on behalf of each user. See the FBML documentation for a description of the markup and its role in various contexts.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -267,7 +288,7 @@ start_time and end_time parameters specify a (possibly open-ended) window in whi
         <response/>
         
       </method>
-      <method id="facebook.feed_publishActionOfUser" name="POST">
+      <method id="feed_publishActionOfUser" name="POST">
         <doc xml:lang="en">Publishes a Mini-Feed story to the user corresponding to the session_key parameter, and publishes News Feed stories to the friends of that user who have added the application.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -321,7 +342,7 @@ start_time and end_time parameters specify a (possibly open-ended) window in whi
         <response/>
         
       </method>
-      <method id="facebook.feed_publishStoryToUser" name="POST">
+      <method id="feed_publishStoryToUser" name="POST">
         <doc xml:lang="en">Publishes a News Feed story '''to''' the user corresponding to the session_key parameter.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -378,7 +399,7 @@ start_time and end_time parameters specify a (possibly open-ended) window in whi
         <response/>
         
       </method>
-      <method id="facebook.feed_publishTemplatizedAction" name="POST">
+      <method id="feed_publishTemplatizedAction" name="POST">
         <doc xml:lang="en">Publishes a Mini-Feed story to the user or Page corresponding to the session_key or page_actor_id parameter. For user stories, this function publishes News Feed stories to the friends of that user.  The likelihood of the story showing up in the user's friends' News Feeds depends upon a variety of factors, such as the closeness of the relationship between the users, the interaction data we have about that particular story type, and the quality of the content in the story/on the linked page.  '''Note that you should not be using a session_key for a user who is not ''actively'' using your application when calling this method; for example, publishing a story like "John received a present" is not allowed''' - for more information, see the http://developers.facebook.com/news.php?blog=1&amp;story=69 announcement of this policy.
 
 For PHP users the function can be found in '''facebookapi_php5_restlib.php''' (for people using PHP5) or '''facebookapi_php4_restlib.php''' (for PHP4).</doc>
@@ -449,7 +470,7 @@ For PHP users the function can be found in '''facebookapi_php5_restlib.php''' (f
         <response/>
         
       </method>
-      <method id="facebook.fql_query" name="POST">
+      <method id="fql_query" name="POST">
         <doc xml:lang="en">Evaluates an FQL (Facebook Query Language) query.
 
 '''Warning:''' If you use JSON as the output format, you may run into problems when selecting multiple fields with the same name or with selecting multiple "anonymous" fields (for example, SELECT 1+2, 3+4 ...).</doc>
@@ -478,7 +499,7 @@ For PHP users the function can be found in '''facebookapi_php5_restlib.php''' (f
         <response/>
         
       </method>
-      <method id="facebook.friends_areFriends" name="POST">
+      <method id="friends_areFriends" name="POST">
         <doc xml:lang="en">Returns whether or not two specified users are friends with each other. The first array specifies one half of each pair, the second array the other half; therefore, they must be of equal size.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -508,7 +529,7 @@ For PHP users the function can be found in '''facebookapi_php5_restlib.php''' (f
         <response/>
         
       </method>
-      <method id="facebook.friends_get" name="POST">
+      <method id="friends_get" name="POST">
         <doc xml:lang="en">Returns the identifiers of the current user's Facebook friends. The current user is determined from the session_key parameter. The values returned from this call are '''not''' storable.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -535,7 +556,7 @@ For PHP users the function can be found in '''facebookapi_php5_restlib.php''' (f
         <response/>
         
       </method>
-      <method id="facebook.friends_getAppUsers" name="POST">
+      <method id="friends_getAppUsers" name="POST">
         <doc xml:lang="en">Returns the identifiers of the current user's Facebook friends who are signed up for the specific calling application. The current user is determined from the session_key parameter. The values returned from this call are '''not''' storable.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -559,7 +580,7 @@ For PHP users the function can be found in '''facebookapi_php5_restlib.php''' (f
         <response/>
         
       </method>
-      <method id="facebook.friends_getLists" name="POST">
+      <method id="friends_getLists" name="POST">
         <doc xml:lang="en">Returns the names and identifiers of any friend lists that the user has created. The current user is determined from the session_key parameter. 
 
 The values returned from this call are storable. You can store the ID of a friend list that the user has elected for use in some feature of your application, but you should verify the ID periodically, as users may delete or modify lists at any time. Friend lists are private on Facebook, so you '''cannot''' republish this information to anyone other than the logged in user. Members of lists may be obtained using friends.get with an flid parameter.</doc>
@@ -585,7 +606,7 @@ The values returned from this call are storable. You can store the ID of a frien
         <response/>
         
       </method>
-      <method id="facebook.groups_get" name="POST">
+      <method id="groups_get" name="POST">
         <doc xml:lang="en">Returns all visible groups according to the filters specified. You can use this method to return all groups associated with a user, or query a specific set of groups by a list of GIDs.
 
 If both the uid and gids parameters are provided, the method returns all groups in the set of gids with which the user is associated. If the gids parameter is omitted, the method returns all groups associated with the provided user.
@@ -621,7 +642,7 @@ If both parameters are omitted, the method returns all groups of the session use
         <response/>
         
       </method>
-      <method id="facebook.groups_getMembers" name="POST">
+      <method id="groups_getMembers" name="POST">
         <doc xml:lang="en">Returns membership list data associated with a group.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -648,7 +669,7 @@ If both parameters are omitted, the method returns all groups of the session use
         <response/>
         
       </method>
-      <method id="facebook.marketplace_createListing" name="POST">
+      <method id="marketplace_createListing" name="POST">
         <doc xml:lang="en">Create or modify a listing in Marketplace. You may only create and modify a listing for the logged-in user, and then only if the logged-in user has granted the application the extended permission create_listing.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -681,7 +702,7 @@ If both parameters are omitted, the method returns all groups of the session use
         <response/>
         
       </method>
-      <method id="facebook.marketplace_getCategories" name="POST">
+      <method id="marketplace_getCategories" name="POST">
         <doc xml:lang="en">Returns all the Marketplace categories.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -705,7 +726,7 @@ If both parameters are omitted, the method returns all groups of the session use
         <response/>
         
       </method>
-      <method id="facebook.marketplace_getListings" name="POST">
+      <method id="marketplace_getListings" name="POST">
         <doc xml:lang="en">Return all Marketplace listings either by listing ID or by user.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -735,7 +756,7 @@ If both parameters are omitted, the method returns all groups of the session use
         <response/>
         
       </method>
-      <method id="facebook.marketplace_getSubCategories" name="POST">
+      <method id="marketplace_getSubCategories" name="POST">
         <doc xml:lang="en">Returns the Marketplace subcategories for a particular category.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -762,7 +783,7 @@ If both parameters are omitted, the method returns all groups of the session use
         <response/>
         
       </method>
-      <method id="facebook.marketplace_removeListing" name="POST">
+      <method id="marketplace_removeListing" name="POST">
         <doc xml:lang="en">Remove a listing from Marketplace.
 
 '''Note:''' You may remove only the logged-in user's listings.</doc>
@@ -794,7 +815,7 @@ If both parameters are omitted, the method returns all groups of the session use
         <response/>
         
       </method>
-      <method id="facebook.marketplace_search" name="POST">
+      <method id="marketplace_search" name="POST">
         <doc xml:lang="en">Search Marketplace for listings filtering by category, subcategory, and a query string.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -827,7 +848,7 @@ If both parameters are omitted, the method returns all groups of the session use
         <response/>
         
       </method>
-      <method id="facebook.notifications_get" name="POST">
+      <method id="notifications_get" name="POST">
         <doc xml:lang="en">Returns information on outstanding Facebook notifications for current session user.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -851,7 +872,7 @@ If both parameters are omitted, the method returns all groups of the session use
         <response/>
         
       </method>
-      <method id="facebook.notifications_send" name="POST">
+      <method id="notifications_send" name="POST">
         <doc xml:lang="en">Send a notification to a set of users.  You can also send messages to the logged-in user's notification page.  Your application can send up to 40 notifications to the notifications page per user per day -- this number includes invites.  Notifications sent to the notifications page for non-application users are subject to spam control.  Read http://www.facebook.com/topic.php?uid=2205007948&amp;topic=13262&amp;start=30&amp;hash=0ce1d00dde55ae7fc1d6f206621bdfc4#post71908 more information about how spamminess is measured. Additionally, any notification that you send on behalf of a user appears on that user's notifications page as a "sent notification."</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -881,7 +902,7 @@ If both parameters are omitted, the method returns all groups of the session use
         <response/>
         
       </method>
-      <method id="facebook.notifications_sendEmail" name="POST">
+      <method id="notifications_sendEmail" name="POST">
         <doc xml:lang="en">Sends an email to the specified users, who must have added your application. You can  send five (5) emails to a user per day. Requires a session key for desktop applications, which may only send email to the person whose session it is. This method does not require a session for Web applications.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -911,7 +932,7 @@ If both parameters are omitted, the method returns all groups of the session use
         <response/>
         
       </method>
-      <method id="facebook.pages_getinfo" name="POST">
+      <method id="pages_getinfo" name="POST">
         <doc xml:lang="en">Returns all visible pages to the filters specified.  This may be used to find all pages of which a user is a fan, or to query specific page_ids.  The session_key parameter is optional.  When the session_key parameter is not passed, you can only get information for pages that have added your application.  The uid parameter is not even considered.  With a session_key, normal privacy rules are put into place.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -941,7 +962,7 @@ If both parameters are omitted, the method returns all groups of the session use
         <response/>
         
       </method>
-      <method id="facebook.pages_isAdmin" name="POST">
+      <method id="pages_isAdmin" name="POST">
         <doc xml:lang="en">Checks whether the logged-in user is the admin for a given page.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -968,7 +989,7 @@ If both parameters are omitted, the method returns all groups of the session use
         <response/>
         
       </method>
-      <method id="facebook.pages_isAppAdded" name="POST">
+      <method id="pages_isAppAdded" name="POST">
         <doc xml:lang="en">Checks whether the page has added the application.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -995,7 +1016,7 @@ If both parameters are omitted, the method returns all groups of the session use
         <response/>
         
       </method>
-      <method id="facebook.pages_isFan" name="POST">
+      <method id="pages_isFan" name="POST">
         <doc xml:lang="en">Checks whether a user is a fan of a given page.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1025,7 +1046,7 @@ If both parameters are omitted, the method returns all groups of the session use
         <response/>
         
       </method>
-      <method id="facebook.photos_addTag" name="POST">
+      <method id="photos_addTag" name="POST">
         <doc xml:lang="en">Adds a tag with the given information to a photo. See photo uploads for a description of the upload workflow.
 
 For regular applications, tags can only be added to pending photos owned by the current session user – once a photo has been approved or rejected, it can no longer be tagged with this method. Applications with the photo_upload extended permission can add tags to any photo owned by the user. There is a limit of 20 tags per pending photo.</doc>
@@ -1070,7 +1091,7 @@ For regular applications, tags can only be added to pending photos owned by the 
         <response/>
         
       </method>
-      <method id="facebook.photos_createAlbum" name="POST">
+      <method id="photos_createAlbum" name="POST">
         <doc xml:lang="en">Creates and returns a new album owned by the current session user. See photo uploads for a description of the upload workflow. The only storable values returned from this call are aid and owner.  No relationships between them are storable.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1103,7 +1124,7 @@ For regular applications, tags can only be added to pending photos owned by the 
         <response/>
         
       </method>
-      <method id="facebook.photos_get" name="POST">
+      <method id="photos_get" name="POST">
         <doc xml:lang="en">Returns all visible photos according to the filters specified. You can use this method to find all photos that are:
 * Tagged with the specified uid
 * Contained within the album specified by aid
@@ -1140,7 +1161,7 @@ For regular applications, tags can only be added to pending photos owned by the 
         <response/>
         
       </method>
-      <method id="facebook.photos_getAlbums" name="POST">
+      <method id="photos_getAlbums" name="POST">
         <doc xml:lang="en">Returns metadata about all of the photo albums uploaded by the specified user. 
 
 This method returns information from all visible albums satisfying the filters specified. The method can be used to return all photo albums created by a user, query a specific set of albums by a list of aids, or filter on any combination of these two.
@@ -1174,7 +1195,7 @@ The values returned from this call are '''cannot''' be stored.</doc>
         <response/>
         
       </method>
-      <method id="facebook.photos_getTags" name="POST">
+      <method id="photos_getTags" name="POST">
         <doc xml:lang="en">Returns the set of user tags for all photos specified.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1201,7 +1222,7 @@ The values returned from this call are '''cannot''' be stored.</doc>
         <response/>
         
       </method>
-      <method id="facebook.profile_getFBML" name="POST">
+      <method id="profile_getFBML" name="POST">
         <doc xml:lang="en">Gets the FBML that is currently set for a user's profile. See the FBML documentation for a description of the markup and its role in various contexts.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1228,7 +1249,7 @@ The values returned from this call are '''cannot''' be stored.</doc>
         <response/>
         
       </method>
-      <method id="facebook.profile_setFBML" name="POST">
+      <method id="profile_setFBML" name="POST">
         <doc xml:lang="en">Sets the FBML for a user's profile, including the content for both the profile box and the profile actions. See the FBML documentation for a description of the markup and its role in various contexts. Note that this method can also be used to set fb:profile-actions for users.
 
 The FBML is cached on Facebook's server for that particular user and that particular application. To change it, profile.setFBML must be called through a canvas page.</doc>
@@ -1269,7 +1290,7 @@ The FBML is cached on Facebook's server for that particular user and that partic
         <response/>
         
       </method>
-      <method id="facebook.users_getinfo" name="POST">
+      <method id="users_getinfo" name="POST">
         <doc xml:lang="en">Returns a wide array of user-specific information for each user identifier passed, limited by the view of the current user. The current user is determined from the session_key parameter. The only storable values returned from this call are the those under the affiliations element, the notes_count value, and the contents of the profile_update_time element.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1299,7 +1320,7 @@ The FBML is cached on Facebook's server for that particular user and that partic
         <response/>
         
       </method>
-      <method id="facebook.users_getLoggedInUser" name="POST">
+      <method id="users_getLoggedInUser" name="POST">
         <doc xml:lang="en">Gets the user ID (uid) associated with the current session. This value should be stored for the duration of the session, to avoid unnecessary subsequent calls to this method.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1323,7 +1344,7 @@ The FBML is cached on Facebook's server for that particular user and that partic
         <response/>
         
       </method>
-      <method id="facebook.users_hasAppPermission" name="POST">
+      <method id="users_hasAppPermission" name="POST">
         <doc xml:lang="en">Checks whether the user has opted in to an extended application permission.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1350,7 +1371,7 @@ The FBML is cached on Facebook's server for that particular user and that partic
         <response/>
         
       </method>
-      <method id="facebook.users_isAppAdded" name="POST">
+      <method id="users_isAppAdded" name="POST">
         <doc xml:lang="en">Returns whether the logged-in user has added the calling application.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1374,7 +1395,7 @@ The FBML is cached on Facebook's server for that particular user and that partic
         <response/>
         
       </method>
-      <method id="facebook.users_setStatus" name="POST">
+      <method id="users_setStatus" name="POST">
         <doc xml:lang="en">Updates a user's Facebook status. This method requires the extended permission status_update, which the user must opt into via the Extended Permissions system. You can test for this permission by checking for the error code listed below (250), or via the users.hasAppPermission method.</doc>
         <request>
           <param name="api_key" required="true" style="query" type="xsd:string">

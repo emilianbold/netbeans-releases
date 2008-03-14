@@ -73,8 +73,8 @@
                  bundle="org.netbeans.modules.websvc.rest.component.Bundle"/>
     
     <icons>
-        <icon url="org/netbeans/modules/websvc/rest/component/resources/yahoo.png" size="16"/>
-        <icon url="org/netbeans/modules/websvc/rest/component/resources/yahoo.png" size="32"/>
+        <icon url="org/netbeans/modules/websvc/manager/resources/webservice.png" size="16"/>
+        <icon url="org/netbeans/modules/websvc/manager/resources/webservice.png" size="32"/>
     </icons>
     
     <service name="newsSearch">

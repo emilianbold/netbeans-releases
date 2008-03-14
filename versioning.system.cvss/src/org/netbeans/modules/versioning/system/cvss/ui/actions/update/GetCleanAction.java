@@ -59,6 +59,7 @@ import org.openide.filesystems.FileLock;
 
 import java.io.*;
 import java.util.logging.Logger;
+import java.util.*;
 
 /**
  * Revert modifications action.
@@ -178,32 +179,36 @@ public class GetCleanAction extends AbstractSystemAction {
                     } else {
                         target = FileUtil.toFileObject(file);
                     }
-                    InputStream in = null;
-                    OutputStream out = null;
-                    FileLock lock = null;
-                    try {
-                        in = new FileInputStream(cleanFile);
-                        lock = target.lock();
-                        out = target.getOutputStream(lock);
-                        copyStream(in, out);
-                    } finally {
-                        if (in != null) {
-                            try {
-                                in.close();
-                            } catch (IOException alreadyClosed) {
+                    if (target == null) {
+                        org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(file), new FileInputStream(cleanFile));
+                        FileUtil.refreshFor(file);
+                    } else {
+                        InputStream in = null;
+                        OutputStream out = null;
+                        FileLock lock = null;
+                        try {
+                            in = new FileInputStream(cleanFile);
+                            lock = target.lock();
+                            out = target.getOutputStream(lock);
+                            copyStream(in, out);
+                        } finally {
+                            if (in != null) {
+                                try {
+                                    in.close();
+                                } catch (IOException alreadyClosed) {
+                                }
+                            }
+                            if (out != null) {
+                                try {
+                                    out.close();
+                                } catch (IOException alreadyClosed) {
+                                }
+                            }
+                            if (lock != null) {
+                                lock.releaseLock();
                             }
                         }
-                        if (out != null) {
-                            try {
-                                out.close();
-                            } catch (IOException alreadyClosed) {
-                            }
-                        }
-                        if (lock != null) {
-                            lock.releaseLock();
-                        }
-                    }
-
+                    }                   
                 } finally {
 //                    CvsVersioningSystem.ignoreFilesystemEvents(false);
                 }
@@ -211,7 +216,19 @@ public class GetCleanAction extends AbstractSystemAction {
                     entry.setRevision(entry.getRevision().substring(1));
                     ah.setEntry(file, entry);
                 }
-                cache.refresh(file, revision == VersionsCache.REVISION_BASE ? FileStatusCache.REPOSITORY_STATUS_UPTODATE : FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                if (revision == VersionsCache.REVISION_BASE) {
+                    // set Entry so that cache marks this file as having no local modifications after revert
+                    if (entry.getLastModified() != null) {
+                        file.setLastModified(entry.getLastModified().getTime());
+                    }
+                    entry.setConflict(Entry.getLastModifiedDateFormatter().format(new Date(file.lastModified())));
+                    try {
+                        ah.setEntry(file, entry);
+                    } catch (IOException e) {
+                        org.netbeans.modules.versioning.util.Utils.logError(GetCleanAction.class, e);
+                    }
+                }
+                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                 // 'atomic' action  <<<
             } else {
                 if (group.isCancelled()) {

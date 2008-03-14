@@ -396,20 +396,23 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             // be used for downloading data) is enough to keep all the installation
             // data and configuration logic (plus some margin for safety)
             try {
-                final File localDirectory = Installer.getInstance().getLocalDirectory();
-                final long availableSize = SystemUtils.getFreeSpace(localDirectory);
-                
-                long requiredSize = 0;
-                for (Product product: toInstall) {
-                    requiredSize += product.getDownloadSize();
-                }
-                requiredSize += REQUIRED_SPACE_ADDITION;
-                
-                if (availableSize < requiredSize) {
-                    return StringUtils.format(
-                            template,
-                            localDirectory,
-                            StringUtils.formatSize(requiredSize - availableSize));
+                if (!Boolean.getBoolean(SystemUtils.NO_SPACE_CHECK_PROPERTY)) {
+                    
+                    final File localDirectory = Installer.getInstance().getLocalDirectory();
+                    final long availableSize = SystemUtils.getFreeSpace(localDirectory);
+
+                    long requiredSize = 0;
+                    for (Product product : toInstall) {
+                        requiredSize += product.getDownloadSize();
+                    }
+                    requiredSize += REQUIRED_SPACE_ADDITION;
+
+                    if (availableSize < requiredSize) {
+                        return StringUtils.format(
+                                template,
+                                localDirectory,
+                                StringUtils.formatSize(requiredSize - availableSize));
+                    }
                 }
             } catch (NativeException e) {
                 ErrorManager.notifyError(

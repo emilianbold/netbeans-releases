@@ -60,7 +60,6 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
-import org.netbeans.modules.ruby.platform.DebuggerPreferences;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.openide.filesystems.FileObject;
@@ -73,15 +72,12 @@ import org.rubyforge.debugcommons.RubyDebugEventListener;
 import org.rubyforge.debugcommons.RubyDebuggerException;
 import org.rubyforge.debugcommons.RubyDebuggerProxy;
 
-/**
- * @author Martin Krauskopf
- */
 public abstract class TestBase extends RubyTestBase {
 
     static {
         RubySession.TEST = true;
     }
-    
+
     private enum Engine { CLASSIC, RDEBUG_IDE }
     
     protected static boolean watchStepping = false;
@@ -100,8 +96,11 @@ public abstract class TestBase extends RubyTestBase {
     
     @Override
     protected void setUp() throws Exception {
+        MockServices.setServices(DialogDisplayerImpl.class, IFL.class);
+        touch(getWorkDir(), "config/Services/org-netbeans-modules-debugger-Settings.properties");
         super.setUp();
         platform = RubyPlatformManager.addPlatform(TestBase.getFile("ruby.executable", true));
+        assertFalse("is native Ruby", platform.isJRuby());
         assertTrue(platform.getInterpreter() + " has RubyGems installed", platform.hasRubyGemsInstalled());
         String problems = platform.getFastDebuggerProblemsInHTML();
         assertNull("fast debugger installed: " + problems, problems);
@@ -130,8 +129,15 @@ public abstract class TestBase extends RubyTestBase {
         return startDebugging(f, true);
     }
     
+    protected Process startDebugging(final File toTest, final RubyPlatform platform) throws RubyDebuggerException, IOException, InterruptedException {
+        return startDebugging(toTest, true, platform);
+    }
+    
     protected Process startDebugging(final File toTest, final boolean waitForSuspension) throws RubyDebuggerException, IOException, InterruptedException {
-        MockServices.setServices(DialogDisplayerImpl.class, IFL.class);
+        return startDebugging(toTest, waitForSuspension, platform);
+    }
+    
+    private Process startDebugging(final File toTest, final boolean waitForSuspension, final RubyPlatform platform) throws RubyDebuggerException, IOException, InterruptedException {
         ExecutionDescriptor desc = new ExecutionDescriptor(platform,
                 toTest.getName(), toTest.getParentFile(), toTest.getAbsolutePath());
         desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(toTest.getParentFile())));
@@ -157,10 +163,10 @@ public abstract class TestBase extends RubyTestBase {
         Engine engine = engines.pop();
         switch (engine) {
             case CLASSIC:
-                DebuggerPreferences.getInstance().setUseClassicDebugger(platform, true);
+                forceClassicDebugger(true);
                 break;
             case RDEBUG_IDE:
-                switchToRDebugIDE();
+                forceClassicDebugger(false);
                 break;
             default:
                 fail("Unknown engine type: " + engine);
@@ -172,16 +178,11 @@ public abstract class TestBase extends RubyTestBase {
         assertFalse("JRuby Fast debugger not supported yet", platform.isJRuby());
         boolean available = isRDebugExecutableCorrectlySet();
         if (available) {
-            switchToRDebugIDE();
+            forceClassicDebugger(false);
         }
         return available;
     }
     
-    protected void switchToRDebugIDE() {
-        assertFalse("JRuby Fast debugger not supported yet", platform.isJRuby());
-        DebuggerPreferences.getInstance().setUseClassicDebugger(platform, false);
-    }
-
     protected void switchToJRuby() {
         platform = RubyPlatformManager.getDefaultPlatform();
     }
@@ -273,8 +274,13 @@ public abstract class TestBase extends RubyTestBase {
             public void unmarkCurrentLine() { throw new UnsupportedOperationException("Not supported."); }
         };
     }
-    
+
+    protected void forceClassicDebugger(boolean force) {
+        RubyDebugger.FORCE_CLASSIC = force;
+    }
+
     public static final class IFL extends InstalledFileLocator {
+
         public IFL() {}
         @Override
         public File locate(String relativePath, String codeNameBase, boolean localized) {
@@ -283,7 +289,7 @@ public abstract class TestBase extends RubyTestBase {
                 File cd = new File(rubydebugDir, "classic-debug.rb");
                 assertTrue("classic-debug found in " + rubydebugDir, cd.isFile());
                 return cd;
-            } else if (relativePath.equals("jruby-1.1RC1")) {
+            } else if (relativePath.equals("jruby-1.1RC2")) {
                 return TestUtil.getXTestJRubyHome();
             } else {
                 return null;

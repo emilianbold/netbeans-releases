@@ -54,6 +54,6 @@ chmod a+w logs
 
 "$script_dir"/perm.sh
 
-if [ -d "/Library/Receipts/apache-tomcat-6.0.14.pkg" ] ; then
-    rm -rf "/Library/Receipts/apache-tomcat-6.0.14.pkg"
+if [ -d "/Library/Receipts/apache-tomcat-6.0.16.pkg" ] ; then
+    rm -rf "/Library/Receipts/apache-tomcat-6.0.16.pkg"
 fi

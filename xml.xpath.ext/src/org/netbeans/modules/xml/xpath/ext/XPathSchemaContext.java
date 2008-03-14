@@ -330,7 +330,7 @@ public interface XPathSchemaContext {
             for (int index = 0; index < goToParentCount; index++) {
                 LocationStep goToParent = factory.newLocationStep(
                         XPathAxis.PARENT, 
-                        new StepNodeTypeTest(StepNodeTestType.NODETYPE_NODE), 
+                        new StepNodeTypeTest(StepNodeTestType.NODETYPE_NODE, null), 
                         null);
                 goToParent.setSchemaContext(parentContext);
                 stepsList.add(goToParent);
@@ -354,7 +354,7 @@ public interface XPathSchemaContext {
                 if (lastStepContext.equalsChain(context)) {
                     LocationStep selfStep = factory.newLocationStep(
                             XPathAxis.SELF, 
-                            new StepNodeTypeTest(StepNodeTestType.NODETYPE_NODE), 
+                            new StepNodeTypeTest(StepNodeTestType.NODETYPE_NODE, null), 
                             null);
                     stepsList.add(selfStep);
                 }

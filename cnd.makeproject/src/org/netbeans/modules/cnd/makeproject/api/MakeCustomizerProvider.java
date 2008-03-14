@@ -48,6 +48,9 @@ import java.text.MessageFormat;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Vector;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.WeakHashMap;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
@@ -59,6 +62,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor.ProjectItemChangeEvent;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
 import org.netbeans.spi.project.ui.CustomizerProvider;
@@ -87,6 +91,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     private DialogDescriptor dialogDescriptor;
     private Map customizerPerProject = new WeakHashMap (); // Is is weak needed here?
     private ConfigurationDescriptorProvider projectDescriptorProvider;
+    private Set<ActionListener> actionListenerList = new HashSet<ActionListener>();
     
     public MakeCustomizerProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
         this.project = project;
@@ -137,6 +142,9 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                 folder.getFolderConfiguration(configurations[i]);
             }
         }
+        
+        // Make sure all languages are update
+        ((MakeConfigurationDescriptor)projectDescriptorProvider.getConfigurationDescriptor()).refreshRequiredLanguages();
 
         // Create options
         JButton options[] = new JButton[] { 
@@ -195,7 +203,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
     
     /** Listens to the actions on the Customizer's option buttons */
-    private static class OptionListener implements ActionListener {
+    private class OptionListener implements ActionListener {
     
         private Project project;
 	private ConfigurationDescriptor projectDescriptor;
@@ -235,18 +243,38 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
 		((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();// FIXUP: should be moved into ProjectDescriptorHelper...
                 
-//                // And save the project
-//                try {
-//                    ProjectManager.getDefault().saveProject(project);
-//                }
-//                catch ( IOException ex ) {
-//                    ErrorManager.getDefault().notify( ex );
-//                }
+                fireActionEvent(e);
+                
             }
             if (command.equals(COMMAND_APPLY)) {
 		makeCustomizer.refresh();
 	    }
+            if (command.equals(COMMAND_OK) || command.equals(COMMAND_CANCEL))
+                actionListenerList.clear();
         }        
+    }
+    
+    public void addActionListener(ActionListener cl) {
+        synchronized (actionListenerList) {
+            actionListenerList.add(cl);
+        }
+    }
+    
+    public void removeActionListener(ActionListener cl) {
+        synchronized (actionListenerList) {
+            actionListenerList.remove(cl);
+        }
+    }
+    
+    public void fireActionEvent(ActionEvent e) {
+        Iterator it;
+        
+        synchronized (actionListenerList) {
+            it = new HashSet(actionListenerList).iterator();
+        }
+        while (it.hasNext()) {
+            ((ActionListener)it.next()).actionPerformed(e);
+        }
     }
     
     

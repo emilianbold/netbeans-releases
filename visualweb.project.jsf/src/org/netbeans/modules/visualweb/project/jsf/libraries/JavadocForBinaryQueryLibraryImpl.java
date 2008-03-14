@@ -70,6 +70,7 @@ import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 // <RAVE>
 // import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 
 
 
@@ -105,6 +106,7 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
                     List result = new ArrayList ();
                     for (Iterator it = l.iterator(); it.hasNext();) {
                         URL u = (URL) it.next ();
+                        u = LibrariesSupport.resolveLibraryEntryURL(lib.getManager().getLocation(), u);
                         result.add (getIndexFolder(u));
                     }
                     this.cachedRoots =  (URL[])result.toArray(new URL[result.size()]);
@@ -153,33 +155,35 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
         }
 
         boolean isNormalizedURL = isNormalizedURL(b);
-        LibraryManager lm = LibraryManager.getDefault();
-        Library[] libs = lm.getLibraries();
-        for (int i=0; i<libs.length; i++) {
-            String type = libs[i].getType();
-            if (!ComponentLibraryTypeProvider.LIBRARY_TYPE.equalsIgnoreCase(type)) {
-                continue;
-            }
-            // <RAVE> Only search the one that has 'javadoc' volume defined
-            List javadoc = libs[i].getContent(ComponentLibraryTypeProvider.VOLUME_TYPE_JAVADOC);
-            if (javadoc.size() == 0) {
-                continue;
-            }
-            // </RAVE>
-            List jars = libs[i].getContent(ComponentLibraryTypeProvider.VOLUME_TYPE_CLASSPATH);    //NOI18N
-            Iterator it = jars.iterator();
-            while (it.hasNext()) {
-                URL entry = (URL)it.next();
-                URL normalizedEntry;
-                if (isNormalizedURL) {
-                    normalizedEntry = getNormalizedURL(entry);
+        for (LibraryManager lm : LibraryManager.getOpenManagers()) {
+            Library[] libs = lm.getLibraries();
+            for (int i=0; i<libs.length; i++) {
+                String type = libs[i].getType();
+                if (!ComponentLibraryTypeProvider.LIBRARY_TYPE.equalsIgnoreCase(type)) {
+                    continue;
                 }
-                else {
-                    normalizedEntry = entry;
+                // <RAVE> Only search the one that has 'javadoc' volume defined
+                List javadoc = libs[i].getContent(ComponentLibraryTypeProvider.VOLUME_TYPE_JAVADOC);
+                if (javadoc.size() == 0) {
+                    continue;
                 }
-                if (normalizedEntry != null && normalizedEntry.equals(b)) {
-                    return new R(libs[i]);
-                }                
+                // </RAVE>
+                List jars = libs[i].getContent(ComponentLibraryTypeProvider.VOLUME_TYPE_CLASSPATH);    //NOI18N
+                Iterator it = jars.iterator();
+                while (it.hasNext()) {
+                    URL entry = (URL)it.next();
+                    entry = LibrariesSupport.resolveLibraryEntryURL(lm.getLocation(), entry);
+                    URL normalizedEntry;
+                    if (isNormalizedURL) {
+                        normalizedEntry = getNormalizedURL(entry);
+                    }
+                    else {
+                        normalizedEntry = entry;
+                    }
+                    if (normalizedEntry != null && normalizedEntry.equals(b)) {
+                        return new R(libs[i]);
+                    }                
+                }
             }
         }
         return null;

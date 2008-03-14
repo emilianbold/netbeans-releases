@@ -27,6 +27,7 @@ import org.netbeans.modules.bpel.properties.Util;
 import org.netbeans.modules.bpel.properties.editors.controls.AbstractTreeChooserPanel;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.netbeans.modules.bpel.properties.props.PropertyVetoError;
+import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
@@ -44,7 +45,7 @@ public abstract class TreeChooserPropertyCustomizer<T extends AbstractTreeChoose
         pnlChooser.createContent();
         //
         Util.attachDefaultDblClickAction(pnlChooser, pnlChooser);
-        Util.activateInlineMnemonics(this);
+        SoaUiUtil.activateInlineMnemonics(this);
     }
     
     protected synchronized T getChooserPanel() {

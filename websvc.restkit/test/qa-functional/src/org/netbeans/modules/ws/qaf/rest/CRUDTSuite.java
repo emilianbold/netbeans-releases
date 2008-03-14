@@ -39,12 +39,8 @@
 
 package org.netbeans.modules.ws.qaf.rest;
 
-import com.meterware.httpunit.WebResponse;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -60,6 +56,7 @@ import org.openide.filesystems.FileUtil;
 import org.xml.sax.SAXException;
 
 /**
+ * Tests for New REST web services from Entity Classes wizard
  *
  * @author lukas
  */
@@ -75,13 +72,14 @@ public class CRUDTSuite extends RestTestBase {
     /** Creates suite from particular test cases. You can define order of testcases here. */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CRUDTSuite("testRfE"));
-        suite.addTest(new CRUDTSuite("testDeploy"));
-        suite.addTest(new CRUDTSuite("testGet"));
-        suite.addTest(new CRUDTSuite("testPost"));
-        suite.addTest(new CRUDTSuite("testPut"));
-        suite.addTest(new CRUDTSuite("testDelete"));
-        suite.addTest(new CRUDTSuite("testUndeploy"));
+        suite.addTest(new CRUDTSuite("testRfE")); //NOI18N
+        suite.addTest(new CRUDTSuite("testDeploy")); //NOI18N
+//        suite.addTest(new CRUDTSuite("testGet")); //NOI18N
+//        suite.addTest(new CRUDTSuite("testPost")); //NOI18N
+//        suite.addTest(new CRUDTSuite("testPut")); //NOI18N
+//        suite.addTest(new CRUDTSuite("testDelete")); //NOI18N
+        suite.addTest(new CRUDTSuite("testCreateRestClient")); //NOI18N
+        suite.addTest(new CRUDTSuite("testUndeploy")); //NOI18N
         return suite;
     }
 
@@ -99,6 +97,11 @@ public class CRUDTSuite extends RestTestBase {
         return "o.n.m.ws.qaf.rest.crud"; //NOI18N
     }
 
+    /**
+     * Create new web project with entity classes from sample database
+     * (jdbc/sample), create new RESTful web services from created entities
+     * and deploy the project
+     */
     public void testRfE() {
         prepareEntityClasses();
         //RESTful Web Services from Entity Classes
@@ -111,7 +114,6 @@ public class CRUDTSuite extends RestTestBase {
         new JButtonOperator(wo, 4).pushNoBlock();
         wo.next();
         wo = new WizardOperator(restLabel);
-        System.out.println("project: " + getProject());
         //Resource Package
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, 2);
         jcbo.clearText();
@@ -128,75 +130,81 @@ public class CRUDTSuite extends RestTestBase {
         files.addAll(getFiles(getRestPackage() + ".converter")); //NOI18N
         assertEquals("Some files were not generated", 37, files.size()); //NOI18N
         checkFiles(files);
+        //make sure all REST services nodes are visible in project log. view
+        assertEquals("missing nodes?", 14, getRestNode().getChildren().length);
     }
 
     /**
      * Test HTTP Get method
      */
     public void testGet() throws SAXException, IOException {
-        WebResponse wr = doGet(
-                getResourcesURL() + "/microMarkets/?max=30", //NOI18N
-                MimeType.APPLICATION_XML);
-        int i = wr.getDOM().getDocumentElement().getChildNodes().getLength();
-        int j = 0;
-        try {
-            ResultSet rs = doQuery("select * from \"APP\".\"MICRO_MARKET\""); //NOI18N
-            while (rs.next()) {
-                j++;
-            }
-        } catch (SQLException ex) {
-        }
-        assertEquals(i, j);
+//        WebResponse wr = doGet(
+//                getResourcesURL() + "/microMarkets/?max=30", //NOI18N
+//                MimeType.APPLICATION_XML);
+//        int i = wr.getDOM().getDocumentElement().getChildNodes().getLength();
+//        int j = 0;
+//        try {
+//            ResultSet rs = doQuery("select * from \"APP\".\"MICRO_MARKET\""); //NOI18N
+//            while (rs.next()) {
+//                j++;
+//            }
+//        } catch (SQLException ex) {
+//        }
+//        assertEquals(i, j);
     }
 
     /**
      * Test HTTP Post method (add new purchaseOrder and check its stored into DB)
      */
     public void testPost() throws IOException, SAXException {
-        WebResponse wr = doPost(
-                getResourcesURL() + "/purchaseOrders/", //NOI18N
-                new FileInputStream(new File(getRestDataDir(), "purchaseOrder-new.xml")), //NOI18N
-                MimeType.APPLICATION_XML);
-        int quantity = 0;
-        try {
-            ResultSet rs = doQuery("select * from \"APP\".\"PURCHASE_ORDER\" where order_num = 99999999"); //NOI18N
-            rs.next();
-            quantity = rs.getInt("quantity"); //NOI18N
-        } catch (SQLException ex) {
-        }
-        assertEquals(75, quantity);
+//        WebResponse wr = doPost(
+//                getResourcesURL() + "/purchaseOrders/", //NOI18N
+//                new FileInputStream(new File(getRestDataDir(), "purchaseOrder-new.xml")), //NOI18N
+//                MimeType.APPLICATION_XML);
+//        int quantity = 0;
+//        try {
+//            ResultSet rs = doQuery("select * from \"APP\".\"PURCHASE_ORDER\" where order_num = 99999999"); //NOI18N
+//            rs.next();
+//            quantity = rs.getInt("quantity"); //NOI18N
+//        } catch (SQLException ex) {
+//        }
+//        assertEquals(75, quantity);
     }
 
     /**
      * Test HTTP Put method (modify new purchaseOrder and check changes in DB)
      */
     public void testPut() throws IOException, SAXException {
-        WebResponse wr = doPut(
-                getResourcesURL() + "/purchaseOrders/99999999/", //NOI18N
-                new FileInputStream(new File(getRestDataDir(), "purchaseOrder-update.xml")), //NOI18N
-                MimeType.APPLICATION_XML);
-        int quantity = 0;
-        try {
-            ResultSet rs = doQuery("select * from \"APP\".\"PURCHASE_ORDER\" where order_num = 99999999"); //NOI18N
-            rs.next();
-            quantity = rs.getInt("quantity"); //NOI18N
-        } catch (SQLException ex) {
-        }
-        assertEquals(199, quantity);
+//        WebResponse wr = doPut(
+//                getResourcesURL() + "/purchaseOrders/99999999/", //NOI18N
+//                new FileInputStream(new File(getRestDataDir(), "purchaseOrder-update.xml")), //NOI18N
+//                MimeType.APPLICATION_XML);
+//        int quantity = 0;
+//        try {
+//            ResultSet rs = doQuery("select * from \"APP\".\"PURCHASE_ORDER\" where order_num = 99999999"); //NOI18N
+//            rs.next();
+//            quantity = rs.getInt("quantity"); //NOI18N
+//        } catch (SQLException ex) {
+//        }
+//        assertEquals(199, quantity);
     }
 
     /**
      * Test HTTP Delete method (remove new purchaseOrder and check changes in DB)
      */
     public void testDelete() throws IOException, SAXException {
-        WebResponse wr = doDelete(
-                getResourcesURL() + "/purchaseOrders/99999999/", //NOI18N
-                MimeType.APPLICATION_XML);
-        try {
-            ResultSet rs = doQuery("select * from \"APP\".\"PURCHASE_ORDER\" where order_num = 99999999"); //NOI18N
-            assertFalse(rs.next());
-        } catch (SQLException ex) {
-        }
+//        WebResponse wr = doDelete(
+//                getResourcesURL() + "/purchaseOrders/99999999/", //NOI18N
+//                MimeType.APPLICATION_XML);
+//        try {
+//            ResultSet rs = doQuery("select * from \"APP\".\"PURCHASE_ORDER\" where order_num = 99999999"); //NOI18N
+//            assertFalse(rs.next());
+//        } catch (SQLException ex) {
+//        }
+    }
+
+    public void testCreateRestClient() throws IOException {
+        prepareRestClient();
     }
 
     private void prepareEntityClasses() {

@@ -46,11 +46,14 @@ import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointAnnotationListener;
+import org.netbeans.modules.cnd.MIMENames;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.util.NbBundle;
@@ -60,8 +63,6 @@ import org.openide.util.NbBundle;
  * @author gordonp
  */
 public class ToggleBreakpointActionProvider extends ActionsProviderSupport implements PropertyChangeListener {
-    
-    private BreakpointAnnotationListener breakpointAnnotationListener;
     
     /** Creates a new instance of ToggleBreakpointActionProvider */
     public ToggleBreakpointActionProvider() {
@@ -84,26 +85,50 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
         }
         
         // 2) find and remove existing line breakpoint
-        GdbBreakpoint lb = getBreakpointAnnotationListener().findBreakpoint(url, ln);
+        GdbBreakpoint lb = findBreakpoint(url, ln);
         if (lb != null) {
             d.removeBreakpoint(lb);
             return;
         }
         
+        if (Disassembly.isDisasm(url)) {
+            Disassembly dis = Disassembly.getCurrent();
+            if (dis == null) {
+                return;
+            }
+            lb = AddressBreakpoint.create(dis.getLineAddress(ln));
+            lb.setPrintText(
+                NbBundle.getBundle(ToggleBreakpointActionProvider.class).getString("CTL_Line_Breakpoint_Print_Text")
+            );
+            d.addBreakpoint(lb);
+            return;
+        }
+        
         // 3) create a new line breakpoint
         lb = LineBreakpoint.create(url, ln);
-        lb.setPrintText(
-            NbBundle.getBundle(ToggleBreakpointActionProvider.class).getString("CTL_Line_Breakpoint_Print_Text")
-        );
+        lb.setPrintText(NbBundle.getBundle(
+                ToggleBreakpointActionProvider.class).getString("CTL_Line_Breakpoint_Print_Text")); // NOI18N
         d.addBreakpoint(lb);
     }
     
-    private BreakpointAnnotationListener getBreakpointAnnotationListener() {
-        if (breakpointAnnotationListener == null) {
-            breakpointAnnotationListener = (BreakpointAnnotationListener) 
-                DebuggerManager.getDebuggerManager().lookupFirst(null, BreakpointAnnotationListener.class);
+    static GdbBreakpoint findBreakpoint(String url, int lineNumber) {
+        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
+        Disassembly dis = Disassembly.getCurrent();
+        boolean inDis = Disassembly.isDisasm(url);
+        for (Breakpoint b : breakpoints) {
+            if (b instanceof LineBreakpoint) {
+                LineBreakpoint lb = (LineBreakpoint) b;
+                if (lb.getURL().equals(url) && lb.getLineNumber() == lineNumber) {
+                    return lb;
+                }
+            } else if (inDis && b instanceof AddressBreakpoint && (dis != null)) {
+                AddressBreakpoint ab = (AddressBreakpoint)b;
+                if (dis.getAddressLine(ab.getAddress()) == lineNumber) {
+                    return ab;
+                }
+            }
         }
-        return breakpointAnnotationListener;
+        return null;
     }
     
     public Set getActions() {
@@ -113,8 +138,9 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
     public void propertyChange(PropertyChangeEvent evt) {
         int lnum = EditorContextBridge.getContext().getCurrentLineNumber();
         String mimeType = EditorContextBridge.getContext().getCurrentMIMEType();
-	boolean isValid = (mimeType.equals("text/x-c") // NOI18N
-                        || mimeType.equals("text/x-c++")) // NOI18N
+	boolean isValid = (mimeType.equals(MIMENames.C_MIME_TYPE)
+                        || mimeType.equals(MIMENames.CPLUSPLUS_MIME_TYPE)
+                        || mimeType.equals("text/x-asm")) // NOI18N
                         && lnum > 0;
         setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, isValid);
     }

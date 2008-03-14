@@ -44,19 +44,20 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
 public class DocOffsetableImpl implements CsmOffsetable {
-    private final CsmFile file;
+    private final CsmUID<CsmFile> uidFile;
     private final DocOffsPositionImpl pos;
     
     public DocOffsetableImpl(BaseDocument doc, CsmFile file, int offset) {
         this.pos = new DocOffsPositionImpl(doc, offset);
         assert file != null : "null file for document " + doc + " on offset " + offset;
-        this.file = file;
+        this.uidFile = file.getUID();
     }
 
     protected BaseDocument getDocument() {
@@ -64,7 +65,7 @@ public class DocOffsetableImpl implements CsmOffsetable {
     }
     
     public CsmFile getContainingFile() {
-        return this.file;
+        return this.uidFile.getObject();
     }
 
     public int getStartOffset() {
@@ -87,4 +88,8 @@ public class DocOffsetableImpl implements CsmOffsetable {
         return "";
     }
     
+    protected final boolean isValid() {
+        CsmFile file = getContainingFile();
+        return file != null && file.isValid();
+    }
 }

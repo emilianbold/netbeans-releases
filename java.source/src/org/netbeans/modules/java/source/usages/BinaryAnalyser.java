@@ -61,6 +61,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -288,14 +289,20 @@ public class BinaryAnalyser implements LowMemoryListener {
                 String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos));
                 if (this.accepts(file.getName()) && !isUpToDate (relativePath, fileMTime)) {
                     this.toDelete.add(Pair.<String,String>of (relativePath,null));
-                    InputStream in = new BufferedInputStream (new FileInputStream (file));
                     try {
-                        analyse (in);
-                    } catch (InvalidClassFormatException icf) {
-                        LOGGER.warning("Invalid class file format: "+file.getAbsolutePath());      //NOI18N
-                    }
-                    finally {
-                        in.close();
+                        InputStream in = new BufferedInputStream(new FileInputStream(file));
+                        try {
+                            analyse(in);
+                        } catch (InvalidClassFormatException icf) {
+                            LOGGER.warning("Invalid class file format: " + file.getAbsolutePath());      //NOI18N
+
+                        } finally {
+                            in.close();
+                        }
+                    } catch (IOException ex) {
+                        //unreadable file?
+                        LOGGER.warning("Cannot read file: " + file.getAbsolutePath());      //NOI18N
+                        LOGGER.log(Level.FINE, null, ex);
                     }
                     if (this.lowMemory.getAndSet(false)) {
                         this.store();
@@ -632,7 +639,7 @@ public class BinaryAnalyser implements LowMemoryListener {
             ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[]{archiveUrl}),
                 ClassPathSupport.createClassPath(new URL[0]),
                 ClassPathSupport.createClassPath(new URL[0]));
-            final JavacTaskImpl jt = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, null, null);            
+            final JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, null, null);            
             TreeLoader.preRegister(jt.getContext(), cpInfo);
             TypeElement jc = jt.getElements().getTypeElement(javax.swing.JComponent.class.getName());
             if (jc != null) {

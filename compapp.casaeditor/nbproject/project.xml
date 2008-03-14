@@ -91,6 +91,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.compapp.manager.jbi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.compapp.projects.jbi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -243,6 +251,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.soa.libs.jbiadmincommon</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.spi.navigator</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -357,7 +373,12 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.compapp.configextension</friend>
+                <package>org.netbeans.modules.compapp.casaeditor.model.casa</package>
+                <package>org.netbeans.modules.compapp.casaeditor.nodes</package>
+                <package>org.netbeans.modules.compapp.casaeditor.properties.spi</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

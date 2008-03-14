@@ -712,16 +712,7 @@ public class GenerateCodePanel extends javax.swing.JPanel
             return false;
         
         FileObject fo = null;
-        
-        try
-        {
-            fo = FileUtil.toFileObject(new File(new File(path).getCanonicalPath()));
-        }
-        
-        catch (IOException ex)
-        {
-            return false;
-        }
+        fo = FileUtil.toFileObject(new File(path));
         
         if (fo == null)
             return false;

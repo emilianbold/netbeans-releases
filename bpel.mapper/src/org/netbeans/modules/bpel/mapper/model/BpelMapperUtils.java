@@ -131,39 +131,6 @@ public final class BpelMapperUtils {
         // Return the first item.
         return itemsList.get(0);
     }
-    
-    /**
-     * Determines if a namespace prefix is required for the specified schema component. 
-     * @param sComp
-     * @return
-     */
-    public static boolean isPrefixRequired(SchemaComponent sComp) {
-        if (sComp instanceof LocalElement) {
-            Form form = ((LocalElement)sComp).getFormEffective();
-            if (form == Form.QUALIFIED) {
-                return true;
-            } else {
-                return false;
-            }
-        } else if (sComp instanceof GlobalElement) {
-            return true;
-        } else if (sComp instanceof LocalAttribute) {
-            Form form = ((LocalAttribute)sComp).getFormEffective();
-            if (form == Form.QUALIFIED) {
-                return true;
-            } else {
-                return false;
-            }
-        } else if (sComp instanceof GlobalElement || 
-                sComp instanceof ElementReference || 
-                sComp instanceof GlobalAttribute) {
-            // all global objects have to be with a prefix
-            return true;
-        }
-        //
-        assert true : "Unsupported schema component in the BPEL mapper tree!"; // NOI18N
-        return false;
-    }
  
     /**
      * Calculates if the specified schema component is repeating or not.

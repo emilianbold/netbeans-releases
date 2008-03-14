@@ -63,6 +63,8 @@ import org.netbeans.modules.j2ee.websphere6.*;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 // Dileep - Start compile fix
+import org.netbeans.modules.xml.multiview.Utils;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  * A sub-class of the J2eePlatformFactory that is set up to return the
@@ -207,6 +209,7 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
          * @return an array of libraries
          */
         public LibraryImplementation[] getLibraries() {
+            // TODO cache this
             // init the resulting array
             LibraryImplementation[] libraries = new LibraryImplementation[1];
             
@@ -227,10 +230,17 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
                 
                 library.setContent(J2eeLibraryTypeProvider.
                         VOLUME_TYPE_CLASSPATH, list);
+                
+                File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee5-doc-api.zip", null, false); // NOI18N
+                if (j2eeDoc != null) {
+                    list = new ArrayList();
+                    list.add(fileToUrl(j2eeDoc));
+                    library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
+                }                
             } catch (MalformedURLException e) {
                 Logger.getLogger("global").log(Level.WARNING, null, e);
             }
-            
+
             // add the created library to the array
             libraries[0] = library;
             

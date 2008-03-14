@@ -39,12 +39,26 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Properties;
+import java.net.URL;
+import org.netbeans.modules.websvc.saas.model.jaxb.Artifact;
+import org.netbeans.modules.websvc.saas.model.jaxb.Artifacts;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices.Header;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.CodeGen;
+import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -52,17 +66,56 @@ import org.openide.filesystems.FileObject;
  */
 public class Saas {
     public static final String PROP_PARENT_GROUP = "parentGroup";
+    public static final String PROP_STATE = "saasState";
+
+    public static enum State { 
+        UNINITIALIZED, 
+        INITIALIZING, 
+        RETRIEVED,
+        READY
+     
+    }
+    
     public static final String NS_SAAS = "http://xml.netbeans.org/websvc/saas/services/1.0";
     public static final String NS_WSDL = "http://schemas.xmlsoap.org/wsdl/";
     public static final String NS_WADL = "http://research.sun.com/wadl/2006/10";
     //private static final String CUSTOM = "custom";
-    private final SaasServices delegate;
+    
+    public static final String ARTIFACT_TYPE_LIBRARY = "library";
+    
+    protected final SaasServices delegate;
     private SaasGroup parentGroup;
-    private FileObject saasFile;
+    private SaasGroup topGroup;
+    private List<SaasMethod> saasMethods;
+    
+    private State state = State.UNINITIALIZED;
+    protected FileObject saasFolder; // userdir folder to store customization and consumer artifacts
+    private boolean userDefined = true;
+    private List<FileObject> libraryJars; // library artifacts to add to consumer project classpath
 
     public Saas(SaasGroup parentGroup, SaasServices services) {
         this.delegate = services;
         this.parentGroup = parentGroup;
+    }
+    
+    public Saas(SaasGroup parent, String url, String displayName, String packageName) {
+        delegate = new SaasServices();
+        delegate.setUrl(url);
+        delegate.setDisplayName(displayName);
+        
+        SaasMetadata m = delegate.getSaasMetadata();
+        if (m == null) {
+            m = new SaasMetadata();
+            this.getDelegate().setSaasMetadata(m);
+        }
+        CodeGen cg = m.getCodeGen();
+        if (cg == null) {
+            cg = new CodeGen();
+            m.setCodeGen(cg);
+        }
+        cg.setPackageName(packageName);
+        setParentGroup(parent);
+        computePathFromRoot();
     }
 
     public SaasServices getDelegate() {
@@ -73,30 +126,112 @@ public class Saas {
         return parentGroup;
     }
 
-    public void setParentGroup(SaasGroup parentGroup) {
+    protected void setParentGroup(SaasGroup parentGroup) {
         this.parentGroup = parentGroup;
     }
+    
+    public SaasGroup getTopLevelGroup() {
+        if (topGroup == null && parentGroup != null) {
+            topGroup = parentGroup;
+            while (topGroup.getParent() != SaasServicesModel.getInstance().getRootGroup()) {
+                topGroup = topGroup.getParent();
+            }
+        }
+        return topGroup;
+    }
+    
+    protected void computePathFromRoot() {
+        delegate.getSaasMetadata().setGroup(parentGroup.getPathFromRoot());
+    }
+    
+    protected FileObject saasFile;
+    public FileObject getSaasFile() throws IOException {
+        if (saasFile == null) {
+            FileObject folder = getSaasFolder();
+            String filename = folder.getName() + "-saas.xml"; //NOI18N
+            saasFile = folder.getFileObject(filename);
+            if (saasFile == null) {
+                saasFile = getSaasFolder().createData(filename);
+            }
+        }
+        return saasFile;
+    }
+    
+    public void save() {
+        try {
+            SaasUtil.saveSaas(this, getSaasFile());
+            java.io.OutputStream out = null;
+            try {
+                out = getPropFile().getOutputStream();
+                getProperties().store(out, null);
+            } finally {
+                if (out != null) { out.close(); }
+            }
+        } catch(Exception e) {
+            Exceptions.printStackTrace(e);
+        }
+    }
 
+    public boolean isUserDefined() {
+        return userDefined;
+    }
+    
+    protected void setUserDefined(boolean v) {
+        if (userDefined) {
+            userDefined = v;
+        }
+    }
+    
     public String getUrl() {
         return delegate.getUrl();
     }
-
-    public FileObject getSaasFile() {
-        return saasFile;
+    
+    public State getState() {
+        return state;
     }
 
-    protected void setSaasFile(FileObject saasFile) {
-        this.saasFile = saasFile;
+    protected synchronized void setState(State v) {
+        State old = state;
+        state = v;
+        SaasServicesModel.getInstance().fireChange(PROP_STATE, this, old, state);
     }
-        
+    
+    /**
+     * Asynchronous call to transition Saas to READY state; mainly for UI usage
+     * Sub-class need to completely override as needed, without calling super().
+     */
+    public void toStateReady(boolean synchronous) {
+        if (synchronous) {
+            setState(state);
+        } else {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    setState(State.READY);
+                }
+            });
+        }
+    }
+    
     public SaasMetadata getSaasMetadata() {
         return delegate.getSaasMetadata();
     }
 
-    public List<Method> getMethods() {
-        return delegate.getMethods().getMethod();
+    public List<SaasMethod> getMethods() {
+        if (saasMethods == null) {
+            saasMethods = new ArrayList<SaasMethod>();
+            if (delegate.getMethods() != null && delegate.getMethods().getMethod() != null) {
+                for (Method m : delegate.getMethods().getMethod()) {
+                    saasMethods.add(createSaasMethod(m));
+                }
+            }
+        }
+        return Collections.unmodifiableList(saasMethods);
     }
 
+    protected SaasMethod createSaasMethod(Method method) {
+        return new SaasMethod(this, method);
+    }
+    
     public Header getHeader() {
         return delegate.getHeader();
     }
@@ -111,5 +246,116 @@ public class Saas {
 
     public String getApiDoc() {
         return delegate.getApiDoc();
+    }
+    
+    public FileObject getSaasFolder() {
+        return getSaasFolder(true);
+    }
+    
+    public FileObject getSaasFolder(boolean create) {
+        if (saasFolder == null) {
+            saasFolder = SaasServicesModel.getWebServiceHome().getFileObject(getDisplayName());
+            if (saasFolder == null && create) {
+                try {
+                    saasFolder = SaasServicesModel.getWebServiceHome().createFolder(getDisplayName());
+                } catch(Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return saasFolder;
+    }
+    
+    @Override
+    public String toString() {
+        return getDisplayName();
+    }
+    
+    protected void refresh() {
+        setState(State.INITIALIZING);
+        saasMethods = null;
+    }
+
+    private Properties props;
+    public static final String SAAS_PROPERTIES = "saas.properties";
+    
+    private Properties getProperties() throws IOException {
+        if (props == null) {
+            props = new Properties();
+            InputStream in = getPropFile().getInputStream();
+            try {
+                props.load(in);
+            } finally {
+                in.close();
+            }
+        }
+        return props;
+    }
+
+
+    public static final String PROP_LOCAL_SERVICE_FILE = "local.service.file";
+    
+    private FileObject propFile;
+    private FileObject getPropFile() throws IOException {
+        if (propFile == null) {
+            propFile = getSaasFolder().getFileObject(SAAS_PROPERTIES);
+            if (propFile == null) {
+                propFile = getSaasFolder().createData(SAAS_PROPERTIES);
+            }
+        }
+        return propFile;
+    }
+    
+    protected String getProperty(String name) {
+        try {
+            return getProperties().getProperty(name);
+        } catch(IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+        return null;
+    }
+    
+    protected void setProperty(String name, String value) {
+        try {
+            getProperties().setProperty(name, value);
+        } catch(IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+    }
+    
+    /**
+     * @eturns absolute paths to all library jars, generated or 
+     * provided by vendor module.  Generated
+     */
+    public List<FileObject> getLibraryJars() {
+        if (getState() != State.READY) {
+            throw new IllegalStateException("Should only access libraries when in ready state");
+        }
+        
+        if (libraryJars == null) {
+            libraryJars = new ArrayList<FileObject>();
+            if (getSaasMetadata() != null && getSaasMetadata().getCodeGen() != null) {
+                for (Artifacts arts : getSaasMetadata().getCodeGen().getArtifacts()) {
+                    for (Artifact art : arts.getArtifact()) {
+                        if (ARTIFACT_TYPE_LIBRARY.equals(art.getType())) {
+                            try {
+                                URL url = new URL(art.getUrl());
+                                libraryJars.add(FileUtil.toFileObject(new File(url.toURI())));
+                            } catch(Exception ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return Collections.unmodifiableList(libraryJars);
+    }
+    
+    public String getPackageName() {
+        if (getSaasMetadata() != null && getSaasMetadata().getCodeGen() != null) {
+            return getSaasMetadata().getCodeGen().getPackageName();
+        }
+        return null;
     }
 }

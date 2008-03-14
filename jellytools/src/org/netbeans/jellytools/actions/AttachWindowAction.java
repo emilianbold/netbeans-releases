@@ -69,35 +69,6 @@ import org.openide.windows.TopComponent;
  * @author Jiri.Skrivanek@sun.com
  */
 public class AttachWindowAction extends Action {
-    /* Attach action is currently hidden in menus. If it is enabled in some
-     * next release, only uncomment apropriate methods.
-     *
-     * // former class javadoc:
-     * Used to call "Attach to" popup menu item, "Window|Attach "MyWindow" to" main menu item.
-     * It also defines constants used for attaching.
-     * @see Action
-     */
-    
-    /** Constants used in "Attach to" menu items. */
-    /* As a Last Tab */
-    private static final String AS_LAST_TAB_LABEL = Bundle.getString(
-                                        "org.netbeans.core.windows.actions.Bundle",
-                                        "CTL_SideAsLastTab");
-    private static final String RIGHT_LABEL = Bundle.getString(
-                                        "org.netbeans.core.windows.actions.Bundle",
-                                        "CTL_SideRight");
-    private static final String LEFT_LABEL = Bundle.getString(
-                                        "org.netbeans.core.windows.actions.Bundle",
-                                        "CTL_SideLeft");
-    private static final String TOP_LABEL = Bundle.getString(
-                                        "org.netbeans.core.windows.actions.Bundle",
-                                        "CTL_SideTop");
-    private static final String BOTTOM_LABEL = Bundle.getString(
-                                        "org.netbeans.core.windows.actions.Bundle",
-                                        "CTL_SideBottom");
-    public static final String DOCUMENTS = Bundle.getString(
-                                        "org.netbeans.core.windows.actions.Bundle",
-                                        "CTL_Documents");
     
     public static final String BOTTOM = Constants.BOTTOM;
     public static final String TOP = Constants.TOP;
@@ -109,8 +80,6 @@ public class AttachWindowAction extends Action {
     private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle",
                                                                      "Menu/Window");
 
-    /** Parameter used in menu operations. E.g. "As a Last Tab", "Top", "Right", ... */
-    private String sideItem;
     /** Parameter used in API operations. */
     private String sideConstant;
 
@@ -167,51 +136,21 @@ public class AttachWindowAction extends Action {
     /** Set sideItem and sideConstant from given parameter.
      */
     private void mapSide(String side) {
-        if(side == null || side == AS_LAST_TAB || getComparator().equals(AS_LAST_TAB_LABEL, side)) {
-            sideItem = AS_LAST_TAB_LABEL;
+        if(side == null || side == AS_LAST_TAB) {
             sideConstant = AS_LAST_TAB;
-        } else if(side == RIGHT || getComparator().equals(RIGHT_LABEL, side)) {
-            sideItem = RIGHT_LABEL;
+        } else if(side == RIGHT) {
             sideConstant = RIGHT;
-        } else if(side == LEFT || getComparator().equals(LEFT_LABEL, side)) {
-            sideItem = LEFT_LABEL;
+        } else if(side == LEFT) {
             sideConstant = LEFT;
-        } else if(side == TOP || getComparator().equals(TOP_LABEL, side)) {
-            sideItem = TOP_LABEL;
+        } else if(side == TOP) {
             sideConstant = TOP;
-        } else if(side == BOTTOM || getComparator().equals(BOTTOM_LABEL, side)) {
-            sideItem = BOTTOM_LABEL;
+        } else if(side == BOTTOM) {
             sideConstant = BOTTOM;
         } else {
             throw new JemmyException("Cannot attach to position \""+side+"\".");
         }
     }
 
-    /** Currently hidden
-    public void performMenu(ComponentOperator compOperator) {
-        if(compOperator instanceof TopComponentOperator) {
-            performMenu((TopComponentOperator)compOperator);
-        } else {
-            throw new UnsupportedOperationException(
-                "AttachWindowAction can only be called on TopComponentOperator.");
-        }
-    }
-     */
-
-    /** Currently hidden.
-    public void performMenu(TopComponentOperator tco) {
-        // Window|Attach "tco.name" to|target.name|Top
-        menuPath = windowItem+"|"+
-                   Bundle.getString("org.netbeans.core.windows.actions.Bundle",
-                                    "CTL_AttachWindowAction", 
-                                    new String[] {tco.getName()})+
-                    "|"+getTargetTopComponentName()+"|"+sideItem;
-        getTargetTopComponentOperator().makeComponentVisible();
-        tco.makeComponentVisible();
-        performMenu();
-    }
-     */
-    
     /** Perform popup action on given TopComponent's tab.
      * @param tco TopComponentOperator instance on which perform
      * the action

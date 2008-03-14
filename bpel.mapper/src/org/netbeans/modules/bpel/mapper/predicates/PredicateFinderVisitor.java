@@ -30,6 +30,8 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xpath.ext.AbstractLocationPath;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
+import org.netbeans.modules.xml.xpath.ext.StepNodeTest;
+import org.netbeans.modules.xml.xpath.ext.StepNodeTypeTest;
 import org.netbeans.modules.xml.xpath.ext.XPathCoreFunction;
 import org.netbeans.modules.xml.xpath.ext.XPathCoreOperation;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
@@ -37,6 +39,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
 import org.netbeans.modules.xml.xpath.ext.XPathExtensionFunction;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
@@ -51,11 +54,14 @@ import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitorAdapter;
 public class PredicateFinderVisitor extends XPathVisitorAdapter {
     
     private PredicateManager mPredManager;
+    private SpecialStepManager mSStepManager;
     private XPathBpelVariable mXPathVariable;
 
             
-    public PredicateFinderVisitor(PredicateManager predManager) {
+    public PredicateFinderVisitor(PredicateManager predManager, 
+            SpecialStepManager sStepManager) {
         mPredManager = predManager;
+        mSStepManager = sStepManager;
     }
     
     //---------------------------------------------------
@@ -147,6 +153,12 @@ public class PredicateFinderVisitor extends XPathVisitorAdapter {
         }
         
         private void processStep(LocationStep step) {
+            //
+            // Registure special location step to the Special Step manager
+            StepNodeTest stepNodeTest = step.getNodeTest();
+            if (mSStepManager != null && stepNodeTest instanceof StepNodeTypeTest) {
+                mSStepManager.addStep(objLocationPath, step);
+            }
             //
             XPathSchemaContext xPathContext = step.getSchemaContext();
             if (xPathContext == null) {

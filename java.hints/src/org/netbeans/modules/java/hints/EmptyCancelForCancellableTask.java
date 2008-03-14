@@ -30,7 +30,6 @@ package org.netbeans.modules.java.hints;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -46,14 +45,10 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -130,24 +125,13 @@ public class EmptyCancelForCancellableTask extends AbstractHint {
             return null;
         }
         
-        try {
-            Document doc = compilationInfo.getDocument();
-            
-            if (doc == null)
-                return null;
-            
-            int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo, doc);
-            
-            if (span[0] != (-1) && span[1] != (-1)) {
-                String message = NbBundle.getMessage(EmptyCancelForCancellableTask.class, "MSG_EmptyCancel");
-                ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), message, doc, doc.createPosition(span[0]), doc.createPosition(span[1]));
-                
-                return Collections.singletonList(ed);
-            }
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        int[] span = compilationInfo.getTreeUtilities().findNameSpan((MethodTree) treePath.getLeaf());
+
+        if (span != null) {
+            String message = NbBundle.getMessage(EmptyCancelForCancellableTask.class, "MSG_EmptyCancel");
+            ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), message, compilationInfo.getFileObject(), span[0], span[1]);
+
+            return Collections.singletonList(ed);
         }
         
         return null;

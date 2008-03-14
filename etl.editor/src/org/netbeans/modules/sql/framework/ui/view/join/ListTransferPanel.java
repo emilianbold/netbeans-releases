@@ -83,7 +83,6 @@ import org.openide.NotifyDescriptor;
 import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 
@@ -135,7 +134,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
     private ListTransferModel listModel;
     private JoinMainPanel jmPanel;
     private ArrayList<SourceTable> newTables = new ArrayList<SourceTable>();
-    private static transient final Logger mLogger = LogUtil.getLogger(ListTransferPanel.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ListTransferPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public ListTransferPanel(JoinMainPanel jMainPanel, String sLabelStr, String dLabelStr, Collection sCollection, Collection dCollection) {
@@ -202,6 +201,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         JPanel searchPanel = new JPanel();
         searchPanel.setLayout(new BorderLayout());
         srcLabel = new JLabel(srcLabelStr);
+        srcLabel.getAccessibleContext().setAccessibleName(srcLabelStr);
         srcLabel.setLabelFor(sourceList);
 
         searchPanel.add(srcLabel, BorderLayout.NORTH);
@@ -257,6 +257,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
 
         JPanel destPanel = new JPanel();
         destLabel = new JLabel(destLabelStr);
+        destLabel.getAccessibleContext().setAccessibleName(destLabelStr);
         // destLabel.setDisplayedMnemonic('o');
         destLabel.setLabelFor(destList);
 
@@ -578,7 +579,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             }
         } catch (BaseException ex) {
             String tableName = sTable != null ? sTable.getName() : "";
-            mLogger.errorNoloc(mLoc.t("PRSR190: Error Occured while removing the table{0}which user has added using more table dialog", tableName), ex);
+            mLogger.errorNoloc(mLoc.t("EDIT190: Error Occured while removing the table{0}which user has added using more table dialog", tableName), ex);
             NotifyDescriptor d = new NotifyDescriptor.Message("Table " + tableName + " which was added using more table dialog, can not be deleted from the model.", NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
             return false;
@@ -672,10 +673,9 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             }
         } catch (BaseException ex) {
             String tableName = sTable != null ? sTable.getName() : "";
-            mLogger.errorNoloc(mLoc.t("PRSR191: Error Occured while adding the table {0}to model, which user has added using more table dialog", tableName), ex);
+            mLogger.errorNoloc(mLoc.t("EDIT191: Error Occured while adding the table {0}to model, which user has added using more table dialog", tableName), ex);
             NotifyDescriptor d = new NotifyDescriptor.Message("Table " + tableName + " which was added using more table dialog, can not be added to the model.", NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
-
             return false;
         }
 
@@ -1214,7 +1214,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
                 }
             } catch (BaseException ex) {
                 String tableName = sTable != null ? sTable.getName() : "";
-                mLogger.errorNoloc(mLoc.t("PRSR192: Error Occured while removing the table {0}which user has added using more table dialog", tableName), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT192: Error Occured while removing the table {0}which user has added using more table dialog", tableName), ex);
                 NotifyDescriptor d = new NotifyDescriptor.Message("Table " + tableName + " which was added using more table dialog, can not be deleted from the model.", NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
             }

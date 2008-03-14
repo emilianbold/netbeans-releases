@@ -60,6 +60,8 @@ made subject to such option by the copyright holder.
                 <!-- Used in OpenCreateProjectTest. -->
                 <pathelement location="${netbeans.dest.dir}/ide9/modules/org-netbeans-modules-projectapi.jar"/>
                 <pathelement location="${netbeans.dest.dir}/ide9/modules/org-netbeans-modules-projectui.jar"/>
+                <!-- Used in BlacklistedClassesHandlerTest. -->
+                <pathelement location="${xtest.home}/plugins/ide/lib/xtest-ide-main.jar"/>
             </classpath>
         </buildTests>
     </target>
@@ -72,6 +74,8 @@ made subject to such option by the copyright holder.
     <target name="run-jvm">
         <executeTests  pluginName="jvm">
             <classpath>
+                <!-- Used in BlacklistedClassesHandlerTest. -->
+                <pathelement location="${xtest.home}/plugins/ide/lib/xtest-ide-main.jar"/>
             </classpath>
         </executeTests>
     </target>

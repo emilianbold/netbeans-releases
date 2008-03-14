@@ -41,7 +41,12 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
+import java.sql.Connection;
 import java.util.*;
+import java.util.logging.Logger;
+import javax.swing.Action;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -51,27 +56,41 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.ConnectionList;
+import org.netbeans.modules.db.explorer.DbActionLoaderSupport;
+import org.netbeans.modules.db.explorer.DbNodeLoader;
+import org.netbeans.modules.db.explorer.DbNodeLoaderSupport;
 import org.netbeans.modules.db.explorer.nodes.*;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
-public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOperations {
+public class RootNodeInfo extends DatabaseNodeInfo implements 
+        ConnectionOwnerOperations, ChangeListener  {
     static final long serialVersionUID =-8079386805046070315L;
     
     static RootNodeInfo rootInfo = null;
+    
+    private Collection<DbNodeLoader> nodeLoaders;
+    
+    private static Logger LOGGER = 
+            Logger.getLogger(RootNodeInfo.class.getName());
+    
     public static RootNodeInfo getInstance() throws DatabaseException {
         if (rootInfo == null) {
             rootInfo = (RootNodeInfo) DatabaseNodeInfo.createNodeInfo(null, "root"); //NOI18N
         }
         return rootInfo;
-    }
+    }  
     public void initChildren(Vector children) throws DatabaseException {
         try {
+            children.addAll(getRegisteredNodes());
+            
             DatabaseConnection[] cinfos = ConnectionList.getDefault().getConnections();
             for (int i = 0; i < cinfos.length; i++) {
                 DatabaseConnection cinfo = cinfos[i];
                 ConnectionNodeInfo ninfo = createConnectionNodeInfo(cinfo);
                 children.add(ninfo);
             }
-
+            
             Repository r = Repository.getDefault();
             FileSystem rfs = r.getDefaultFileSystem();
             FileObject rootFolder = rfs.getRoot();
@@ -88,6 +107,49 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
         }
     }
 
+    private synchronized List<Node> getRegisteredNodes() {
+        boolean registerListener = false;
+        if ( nodeLoaders == null ) {
+            nodeLoaders = DbNodeLoaderSupport.getLoaders();
+            registerListener = true;
+        }
+        
+        ArrayList<Node> nodes = new ArrayList<Node>();
+        
+        for ( DbNodeLoader loader : nodeLoaders ) {
+            if ( registerListener ) {
+                loader.addChangeListener(this);
+            }
+            nodes.addAll(loader.getAllNodes());
+        }    
+        
+        return nodes;
+    }
+
+    @Override
+    @SuppressWarnings("checked")
+    public Vector getActions() {
+        Vector<Action> actions = super.getActions();
+        
+        List<Action> loadedActions = DbActionLoaderSupport.getAllActions();
+        
+        Vector<Action> allActions = new Vector<Action>();
+        
+        
+        // TODO - it would be nice to enable ordering of actions, but this
+        // is going to require some thought.  For now, put the actions in
+        // just before the divider
+        for ( Action action : actions ) {
+            if ( action == null ) {
+                allActions.addAll(loadedActions);
+            }
+            
+            allActions.add(action);
+        }
+        
+        return allActions;
+    }
+
     private ConnectionNodeInfo createConnectionNodeInfo(DatabaseConnection dbconn) throws DatabaseException {
         ConnectionNodeInfo ninfo = (ConnectionNodeInfo)createNodeInfo(this, DatabaseNode.CONNECTION);
         ninfo.setUser(dbconn.getUser());
@@ -97,11 +159,35 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
         ninfo.setDatabaseConnection(dbconn);
         return ninfo;
     }
-
+    
+    @Override
     public void refreshChildren() throws DatabaseException {
         // refresh action is empty
     }
-
+    
+    private void updateRegisteredNodes() throws DatabaseException {
+        getChildren();
+        
+        final DatabaseNodeChildren children = 
+                (DatabaseNodeChildren)getNode().getChildren();
+        
+        Node[] nodes = children.getNodes();
+        
+        final List<Node> newNodes = getRegisteredNodes();
+        
+        for (Node node : nodes ) {
+            if ( ! (node instanceof DatabaseNode) ) {
+                // Remove the old registered nodes
+                children.removeSubNode(node);
+            }
+        }
+        
+        for ( Node node : newNodes ) {
+            // Add the new registered nodes
+            children.addSubNode(node);
+        }        
+    }
+    
     public void addConnectionNoConnect(DatabaseConnection dbconn) throws DatabaseException {
         getChildren(); // force restore
         
@@ -114,6 +200,29 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
         ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
         ConnectionList.getDefault().add(dbconn);
         children.createSubnode(ninfo, true);
+    }
+    
+    public void removeConnection(DatabaseConnection dbconn) throws DatabaseException {
+        if ( dbconn == null ) {
+            throw new NullPointerException();
+        }
+        
+        DatabaseNode node = getNode();
+        DatabaseNodeChildren children = (DatabaseNodeChildren)node.getChildren();
+        Node[] nodes = children.getNodes();
+        
+        for ( Node childNode : nodes ) {
+            if ( childNode instanceof ConnectionNode ) {
+                ConnectionNode connNode = (ConnectionNode)childNode;
+                if ( connNode.getInfo().getDatabaseConnection().equals(dbconn)) {
+                    connNode.deleteNode();
+                }
+                
+                dbconn.disconnect();
+            }
+        }
+        
+        ConnectionList.getDefault().remove(dbconn);
     }
     
     public void addConnection(DBConnection cinfo) throws DatabaseException {
@@ -141,4 +250,15 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
         else
             ((ConnectionNodeInfo) cnode.getInfo()).connect(dbconn);
     }
+
+    public void stateChanged(ChangeEvent evt) {
+        // One of the node loader's underlying nodes have changed, so let's
+        // do a refresh of our nodes
+        try {
+            updateRegisteredNodes();
+        } catch ( DatabaseException dbe ) {
+            Exceptions.printStackTrace(dbe);
+        }
+    }
+
 }

@@ -396,6 +396,24 @@ public class LayoutDesigner implements LayoutConstants {
         return draggable;
     }
 
+    /**
+     * Checks whether given component is "unplaced" - i.e. in other than default
+     * layer. Result of adding without mouse positioning (e.g. copying). In
+     * current model such a component needs to be moved additionally by the user
+     * to be placed in the default layer among other components.
+     * @param compId id of the component
+     * @return true if the component is placed in an additional layer
+     */
+    public boolean isUnplacedComponent(String compId) {
+        LayoutComponent comp = layoutModel.getLayoutComponent(compId);
+        if (comp != null) {
+            LayoutComponent cont = comp.getParent();
+            return cont != null && comp.getParentRoots()[HORIZONTAL]
+                                     != cont.getDefaultLayoutRoot(HORIZONTAL);
+        }
+        return false;
+    }
+
     public void startAdding(LayoutComponent[] comps,
                             Rectangle[] bounds,
                             Point hotspot,
@@ -417,7 +435,7 @@ public class LayoutDesigner implements LayoutConstants {
             testCode.add("}");										    //NOI18N
         }
         if (defaultContId != null) {
-            setDragTarget(layoutModel.getLayoutComponent(defaultContId));
+            setDragTarget(layoutModel.getLayoutComponent(defaultContId), comps, false);
         }
         if (logTestCode()) {
             testCode.add("// < START ADDING"); //NOI18N
@@ -445,7 +463,7 @@ public class LayoutDesigner implements LayoutConstants {
             testCode.add("}"); //NOI18N
         }
         
-        setDragTarget(comps[0].getParent());
+        setDragTarget(comps[0].getParent(), comps, false);
 
         if (logTestCode()) {
             testCode.add("// < START MOVING"); //NOI18N
@@ -488,7 +506,11 @@ public class LayoutDesigner implements LayoutConstants {
             testCode.add("}"); //NOI18N
         }
 
-        setDragTarget(inLayout ? comps[0].getParent() : null);
+        if (inLayout) {
+            setDragTarget(comps[0].getParent(), comps, true);
+        } else {
+            setDragTarget(null, null, true);
+        }
 
         if (logTestCode()) {
             testCode.add("// < START RESIZING"); //NOI18N
@@ -568,7 +590,7 @@ public class LayoutDesigner implements LayoutConstants {
         }
 
         if (!dragger.isResizing() && (!lockDimension || dragger.getTargetContainer() == null)) {
-            setDragTarget(layoutModel.getLayoutComponent(containerId));
+            setDragTarget(layoutModel.getLayoutComponent(containerId), dragger.getMovingComponents(), false);
         }
 
         cursorPos[HORIZONTAL] = p.x;
@@ -599,27 +621,30 @@ public class LayoutDesigner implements LayoutConstants {
         }
     }
 
-    private void setDragTarget(LayoutComponent targetContainer) {
+    private void setDragTarget(LayoutComponent targetContainer, LayoutComponent[] movingComps, boolean resizing) {
         LayoutComponent prevContainer = dragger.getTargetContainer();
         LayoutInterval[] roots;
         if (targetContainer != null) {
-            roots = getActiveLayoutRoots(targetContainer);
+            roots = resizing && movingComps.length > 0
+                    ? movingComps[0].getParentRoots()
+                    : getActiveLayoutRoots(targetContainer);
         } else {
             roots = null;
         }
         dragger.setTargetContainer(targetContainer, roots);
 
         if (prevContainer != targetContainer) {
-            updateDraggingVisibility(prevContainer, false);
-            updateDraggingVisibility(targetContainer, true);
+            updateDraggingVisibility(prevContainer, movingComps, resizing, false);
+            updateDraggingVisibility(targetContainer, movingComps, resizing, true);
         }
     }
 
     // temporarily hide components from other layers when dragging in a container
-    private void updateDraggingVisibility(LayoutComponent container, boolean draggingIn) {
+    private void updateDraggingVisibility(LayoutComponent container, LayoutComponent[] movingComps, boolean resizing, boolean draggingIn) {
         if (container != null) {
-            LayoutComponent[] movingComps = dragger.getMovingComponents();
-            LayoutInterval[] targetRoots = getActiveLayoutRoots(container);
+            LayoutInterval[] targetRoots = resizing && movingComps.length > 0
+                    ? movingComps[0].getParentRoots()
+                    : getActiveLayoutRoots(container);
             for (LayoutComponent comp : container.getSubcomponents()) {
                 for (LayoutComponent m : movingComps) {
                     if (m == comp) {
@@ -627,7 +652,7 @@ public class LayoutDesigner implements LayoutConstants {
                         break;
                     }
                 }
-                if (comp != null && container.getLayoutRoots(comp.getLayoutInterval(HORIZONTAL)) != targetRoots) {
+                if (comp != null && LayoutInterval.getRoot(comp.getLayoutInterval(HORIZONTAL)) != targetRoots[HORIZONTAL]) {
                     visualMapper.setComponentVisibility(comp.getId(), !draggingIn);
                 }
             }
@@ -651,11 +676,10 @@ public class LayoutDesigner implements LayoutConstants {
         }
         try {
             LayoutComponent targetContainer = dragger.getTargetContainer();
-            updateDraggingVisibility(targetContainer, false);
+            LayoutComponent[] components = dragger.getMovingComponents();
+            updateDraggingVisibility(targetContainer, components, dragger.isResizing(), false);
 
             if (committed) {
-                LayoutComponent[] components = dragger.getMovingComponents();
-
                 if (targetContainer != null) {
                     boolean newComponents = components[0].getParent() == null;
                     // determine the interval to add in each dimension
@@ -2211,12 +2235,16 @@ public class LayoutDesigner implements LayoutConstants {
                                 dim);
                 LayoutComponent container = comp.getParent();
                 if (container != null && root.getSubIntervalCount() == 0) {
-                    // empty root - keep if it is default (eliminate if additional
-                    // or if default with just one additional - will become default)
+                    // Empty root - eliminate if it is an additional layer or
+                    // default layer with just one additional (which then
+                    // becomes default).
+                    // Hack #127988: don't remove layout roots during resizing
+                    // (resized component stays in additional layer - unlike moved).
+                    boolean resizing = (dragger != null && dragger.isResizing());
                     if (root == getActiveLayoutRoots(container)[dim]
-                            && container.getLayoutRootCount() != 2) {
+                            && (container.getLayoutRootCount() != 2 || resizing)) {
                         propEmptyContainer(root, dim);
-                    } else {
+                    } else if (!resizing) {
                         layoutModel.removeLayoutRoots(container, root);
                     }
                 }
@@ -2375,6 +2403,8 @@ public class LayoutDesigner implements LayoutConstants {
      * (canBeChangedToTrailing ? 2 : 0) as the second item.
      */
     public int[] getAdjustableComponentAlignment(LayoutComponent comp, int dimension) {
+        // Desperate workaround for issue 121243 - do not throw exception if something went wrong
+        if (comp == null) return new int[] {-1, 0};
         LayoutInterval interval = comp.getLayoutInterval(dimension);
         boolean leadingFixed = true;
         boolean trailingFixed = true;

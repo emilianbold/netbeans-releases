@@ -68,7 +68,6 @@ import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.XmlUtil;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.awt.StatusDisplayer;
 
 /**
@@ -80,7 +79,7 @@ public final class ConfigureParametersAction extends CookieAction {
 
     private final String PATH_SUFFIX = "\\..\\..\\nbproject\\config\\";
     private final String CONF_FILE = ".conf";
-    private static transient final Logger mLogger = LogUtil.getLogger(ConfigureParametersAction.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ConfigureParametersAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private File configFile;
     ETLDataObject mObj;
@@ -132,8 +131,8 @@ public final class ConfigureParametersAction extends CookieAction {
     }
 
     public String getName() {
-        String nbBundle1 = mLoc.t("PRSR001: Configure Parameters");
-        return Localizer.parse(nbBundle1);
+        String nbBundle1 = mLoc.t("BUND017: Configure Parameters");
+        return nbBundle1.substring(15);
     }
 
     protected Class[] cookieClasses() {
@@ -161,7 +160,10 @@ public final class ConfigureParametersAction extends CookieAction {
      *
      */
     public void showConfigPanel() {
-        JLabel panelTitle = new JLabel("Configure Deployment Parameters");
+        String nbBundle2 = mLoc.t("BUND018: Configure Deployment Parameters");
+        JLabel panelTitle = new JLabel(nbBundle2.substring(15));
+        panelTitle.getAccessibleContext().setAccessibleName(nbBundle2.substring(15));
+        panelTitle.setDisplayedMnemonic(nbBundle2.substring(15).charAt(0));
         panelTitle.setFont(panelTitle.getFont().deriveFont(Font.BOLD));
         panelTitle.setFocusable(false);
         panelTitle.setHorizontalAlignment(SwingConstants.LEADING);
@@ -177,6 +179,7 @@ public final class ConfigureParametersAction extends CookieAction {
 
         DialogDescriptor dd = new DialogDescriptor(contentPane, "Configure Deployment Parameters");
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        dlg.getAccessibleContext().setAccessibleDescription("This is a dialog to configure Deployment Parameters");
         dlg.setSize(new Dimension(600, 450));
         dlg.setVisible(true);
         if (NotifyDescriptor.OK_OPTION.equals(dd.getValue())) {
@@ -217,7 +220,7 @@ public final class ConfigureParametersAction extends CookieAction {
             // write new config data into config file.
             writeToConfigFile(configFile, confDefn);
         } catch (Exception ex) {
-            mLogger.infoNoloc(mLoc.t("PRSR022: ConfigureParametersAction.class.getName(){0}", ex.getMessage()));
+            mLogger.infoNoloc(mLoc.t("EDIT022: ConfigureParametersAction.class.getName(){0}", ex.getMessage()));
         }
     }
 
@@ -293,14 +296,14 @@ public final class ConfigureParametersAction extends CookieAction {
             Element element = XmlUtil.loadXMLFile(new BufferedReader(new FileReader(configFile)));
             rootNode = (org.w3c.dom.Node) element;
         } catch (Exception ex) {
-            mLogger.infoNoloc(mLoc.t("PRSR023: ConfigureParametersAction.class.getName(){0}", ex.getMessage()));
+            mLogger.infoNoloc(mLoc.t("EDIT022: ConfigureParametersAction.class.getName(){0}", ex.getMessage()));
         }
         if (rootNode != null) {
             org.w3c.dom.Node sqlNode = rootNode.getFirstChild();
             try {
                 sqlDefn = new SQLDefinitionImpl((Element) sqlNode);
             } catch (Exception ex) {
-                mLogger.infoNoloc(mLoc.t("PRSR024: ConfigureParametersAction.class.getName(){0}", ex.getMessage()));
+                mLogger.infoNoloc(mLoc.t("EDIT022: ConfigureParametersAction.class.getName(){0}", ex.getMessage()));
             }
         }
         return sqlDefn;

@@ -44,6 +44,7 @@ import java.awt.Dialog;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.Action;
@@ -52,7 +53,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
@@ -77,13 +77,13 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
-import org.openide.actions.OpenLocalExplorerAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
@@ -93,11 +93,15 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 
 public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRefreshCookie,
         ConfigureHandlerCookie{
@@ -134,6 +138,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
             });
         }
         content.add(new EditWSAttributesCookieImpl(this, jaxWsModel));
+        setValue("wsdl-url",client.getWsdlUrl());
     }
     
     @Override
@@ -143,7 +148,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
     
     private static final String WAITING_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/waiting.png"; // NOI18N
     private static final String ERROR_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/error-badge.gif"; //NOI18N
-    private static final String SERVICE_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif"; //NOI18N
+    private static final String SERVICE_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.png"; //NOI18N
 
     private java.awt.Image cachedWaitingBadge;
     private java.awt.Image cachedErrorBadge;
@@ -229,7 +234,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
     // Create the popup menu:
     @Override
     public Action[] getActions(boolean context) {
-        return new SystemAction[] {
+        ArrayList<Action> actions = new ArrayList<Action>(Arrays.asList(
             SystemAction.get(OpenAction.class),
             SystemAction.get(JaxWsRefreshClientAction.class),
             null,
@@ -239,10 +244,22 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
             null,
             SystemAction.get(DeleteAction.class),
             null,
-            SystemAction.get(PropertiesAction.class),
-        };
+            SystemAction.get(PropertiesAction.class)));
+        addFromLayers(actions, "WebServices/Clients/Actions");
+        return actions.toArray(new Action[actions.size()]);
     }
     
+    private void addFromLayers(ArrayList<Action> actions, String path) {
+        Lookup look = Lookups.forPath(path);
+        for (Object next : look.lookupAll(Object.class)) {
+            if (next instanceof Action) {
+                actions.add((Action) next);
+            } else if (next instanceof javax.swing.JSeparator) {
+                actions.add(null);
+            }
+        }
+    }
+
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
@@ -499,4 +516,6 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
         }
         return null;
     }
+    
+ 
 }

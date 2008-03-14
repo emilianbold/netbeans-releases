@@ -70,7 +70,6 @@ import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.DefaultSimilarity;
 import org.apache.lucene.search.Hit;
 import org.apache.lucene.search.Hits;
@@ -92,6 +91,7 @@ import org.netbeans.modules.java.source.util.LowMemoryNotifier;
  *
  * @author Tomas Zezula
  */
+//@NotTreadSafe
 class LuceneIndex extends Index {
     
     private static final boolean debugIndexMerging = Boolean.getBoolean("LuceneIndex.debugIndexMerge");     // NOI18N
@@ -102,6 +102,7 @@ class LuceneIndex extends Index {
     private final Directory directory;
     private Long rootTimeStamp;
     
+    //@GuardedBy (this)
     private IndexReader reader; //Cache, do not use this dirrectly, use getReader
     private Set<String> rootPkgCache;   //Cache, do not use this dirrectly
     

@@ -75,11 +75,11 @@ public class VersionsCache {
     public File getFileRevision(File base, String revision) throws IOException {
         if(revision.equals("-1")) return null; // NOI18N
         
+        File repository = Mercurial.getInstance().getTopmostManagedParent(base);
         if (Setup.REVISION_BASE.equals(revision)) {
             try {
-                File tempFile = File.createTempFile(base.getName(), null);
-                File repository = Mercurial.getInstance().getTopmostManagedParent(base);
-                HgCommand.doCat(repository, base, tempFile);
+                File tempFile = File.createTempFile("tmp", "-" + base.getName()); //NOI18N
+                HgCommand.doCat(repository, base, tempFile, null);
                 if (tempFile.length() == 0) return null;
                 return tempFile;
             } catch (HgException e) {
@@ -91,9 +91,8 @@ public class VersionsCache {
             return base;
         } else {
             try {
-                File tempFile = File.createTempFile(base.getName(), null);
-                File repository = Mercurial.getInstance().getTopmostManagedParent(base);
-                HgCommand.doCat(repository, base, tempFile, revision);
+                File tempFile = File.createTempFile("tmp", "-" + base.getName()); //NOI18N
+                HgCommand.doCat(repository, base, tempFile, revision, null);
                 if (tempFile.length() == 0) return null;
                 return tempFile;
             } catch (HgException e) {

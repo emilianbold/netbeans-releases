@@ -105,6 +105,24 @@ is the proper place.
 
     <changes>
         
+        <change id="observe-opening-closing">
+            <api name="general"/>
+            <summary>Added ways to track projects opening and closing</summary>
+            <version major="1" minor="27"/>
+            <date day="6" month="2" year="2008"/>
+            <author login="mkubec"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                Added a method to track progress of projects opening and closing. As the
+                opening of a project may take long time, and as there can be multiple
+                projects open at once, it may be necessary to be notified that the process
+                of open project list modification started or that it has
+                finished.
+            </description>
+            <class package="org.netbeans.api.project.ui" name="OpenProjects"/>
+            <issue number="124980"/>
+        </change>
+        
         <change id="store-listener-added">
             <api name="general"/>
             <summary>Added methods for creating customizer UI with additional listener for saving outside of AWT EQ</summary>

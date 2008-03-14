@@ -97,7 +97,7 @@ public class AppserverJBIMgmtController {
     public AppserverJBIMgmtController(MBeanServerConnection mBeanServerConnection) {
         this.mBeanServerConnection = mBeanServerConnection;
         init();
-        managementClient = new ManagementClient(myMBeanServerConnection);
+        managementClient = new ManagementClient(myMBeanServerConnection, true);
     }
 
     public boolean isJBIFrameworkEnabled() {

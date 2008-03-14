@@ -47,30 +47,30 @@
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://amazon.com/dev_api_ref"
-               url="nbres:/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonECSWadl.xml">
+               api-doc="http://developer.amazonwebservices.com/connect/kbcategory.jspa?categoryID=5"
+               url="org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonECSWadl.xml">
 
     <description>Amazon Electronic Commerce Service</description>
     
-    <display-name>AmazonECS</display-name>
+    <display-name>Associates Service</display-name>
 
     <saas-metadata>
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
 
-        <icon16>org/netbeans/modules/websvc/saas/services/amazon/resources/amazon16.png</icon16>
-
-        <group name="AmazonECS">
+        <group name="Amazon">
         </group>
 
-        <authentication profile="Templates/WebServices/profile.properties">
+        <authentication profile="SaaSServices/Amazon/profile.properties">
             <api-key id="dev_id"/>
         </authentication>
 
     </saas-metadata>
 
+    <!--
     <methods>
-        <method name="getComps" href="//resource[@path='xml']/method[@id='amazonecs.ItemSearch']"/>
+        <method name="searchItem" href="#amazonecs.ItemSearch"/>
     </methods>
+    -->
 
 </saas-services>

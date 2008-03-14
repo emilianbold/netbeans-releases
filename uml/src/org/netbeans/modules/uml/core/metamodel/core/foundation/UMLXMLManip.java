@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.uml.core.metamodel.core.foundation;
 
-import org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType;
-import javax.xml.transform.TransformerException;
 import java.io.*;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -50,32 +48,27 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.util.Vector;
-import org.dom4j.Attribute;
 import org.dom4j.Branch;
 import org.dom4j.Document;
 import org.dom4j.DocumentFactory;
-import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.w3c.dom.NamedNodeMap;
+import org.openide.util.Exceptions;
 import org.dom4j.Node;
 import org.dom4j.dom.DOMDocumentFactory;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchRetriever;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
-import org.netbeans.modules.uml.core.metamodel.dynamics.IInteraction;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Classifier;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.preferenceframework.IPreferenceAccessor;
 import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
+import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.netbeans.modules.uml.core.support.umlsupport.FileSysManip;
 import org.netbeans.modules.uml.core.support.umlsupport.PathManip;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
@@ -87,6 +80,8 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * <p>Title: </p>
@@ -2722,8 +2717,12 @@ public class UMLXMLManip
                String homeLocation = configManager.getDefaultConfigLocation();
                if (homeLocation != null && homeLocation.length() > 0)
                {
-                  File dtdLocation = new File(homeLocation, PROJECT_DTD_FILE);
-                  exists = copyFile(dtdLocation.toString(), curFile);
+                    try {
+                        File dtdLocation = new File(homeLocation, PROJECT_DTD_FILE);
+                        exists = copyFile(dtdLocation.getCanonicalPath(), curFile);
+                    } catch (IOException ex) {
+                        UMLLogger.logException(ex, Level.WARNING);
+                    }
                }
             }
          }
@@ -2744,34 +2743,55 @@ public class UMLXMLManip
       int bytesRead = 0;
       int bufferSize = 8000;
 
+      BufferedInputStream in = null;
+      BufferedOutputStream out = null;
       try
       {
          File sourceFile = new File(source);
          File targetFile = new File(target);
+         
          if (sourceFile != null && targetFile != null)
          {
-            BufferedInputStream in = new BufferedInputStream(new FileInputStream(sourceFile));
-            BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(targetFile));
-
-            if (in.available() < bufferSize)
-               bufferSize = in.available();
-
-            byte[] buf = new byte[bufferSize];
-            while (in.available() != 0)
+            FileObject sourceFO = FileUtil.toFileObject(sourceFile);
+            FileObject targetFO = FileUtil.createData(targetFile);
+            
+            if ( sourceFO != null)
             {
-               bytesRead = in.read(buf, 0, bufferSize);
-               out.write(buf, 0, bytesRead);
-            }
-            out.flush();
+    //            BufferedInputStream in = new BufferedInputStream(new FileInputStream(sourceFile));
+    //            BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(targetFile));
+                
+                in = new BufferedInputStream(sourceFO.getInputStream());
+                out = new BufferedOutputStream(targetFO.getOutputStream());
 
-            in.close();
-            out.close();
-            bCopy = true;
+                if (in.available() < bufferSize)
+                   bufferSize = in.available();
+
+                byte[] buf = new byte[bufferSize];
+                while (in.available() != 0)
+                {
+                   bytesRead = in.read(buf, 0, bufferSize);
+                   out.write(buf, 0, bytesRead);
+                }
+                out.flush();
+                bCopy = true;
+            }
          }
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-         e.printStackTrace();
+         UMLLogger.logException(ex, Level.WARNING);
+      }
+      finally {
+           try {
+               if (in != null) {
+                   in.close();
+               }
+               if (out != null) {
+                   out.close();
+               }
+           } catch (IOException ex) {
+               UMLLogger.logMessage( ex.getMessage(), Level.WARNING);
+           }
       }
       return bCopy;
    }

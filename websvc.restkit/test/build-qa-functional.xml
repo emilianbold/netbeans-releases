@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -44,60 +44,51 @@ made subject to such option by the copyright holder.
 
     <property file="../nbproject/private/private.properties"/>
 
+    <!-- turn off jMaki tests for now -->
+    <property name="plugins.jmaki.skip" value="true"/>
+
     <!-- Imports default qa-functional-compiler and runidetest executor.
         jemmy and jellytools jars are on classpath for both. -->
     <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
-
-    <target name="-init-props">
-        <property name="build.dir" value="${nb_all}/websvc.restkit/build" />
-        <mkdir dir="${build.dir}" />
-        <property name="lib.dir" value="${build.dir}/libs"/>
-        <mkdir dir="${lib.dir}" />
-
-        <condition property="skip-download-httpunit" >
-            <and>
-                <available file="${lib.dir}/httpunit-1.6.2.jar" />
-                <available file="${lib.dir}/jtidy-4aug2000r7-dev.jar" />
-                <available file="${lib.dir}/js-1.6R7.jar" />
-            </and>
-        </condition>
-    </target>
-
-    <target name="-httpunit" unless="skip-download-httpunit" depends="-setup-proxy" >
-        <echo message="Going to download httpunit. If it fails download it from http://www.httpunit.org/" />
-        <echo message="(and unpack httpunit, js and jtidy jars into ${lib.dir})"/>
-        <echo message="or invoke with -Dproxy.host='host' -Dproxy.port='port'" />
-        <get src="http://mirrors.ibiblio.org/pub/mirrors/maven2/httpunit/httpunit/1.6.2/httpunit-1.6.2.jar" dest="${lib.dir}/httpunit-1.6.2.jar"/>
-        <get src="http://mirrors.ibiblio.org/pub/mirrors/maven2/jtidy/jtidy/4aug2000r7-dev/jtidy-4aug2000r7-dev.jar" dest="${lib.dir}/jtidy-4aug2000r7-dev.jar"/>
-        <get src="http://mirrors.ibiblio.org/pub/mirrors/maven2/rhino/js/1.6R7/js-1.6R7.jar" dest="${lib.dir}/js-1.6R7.jar"/>
-    </target>
 
     <target name="-setup-proxy" if="proxy.host" >
         <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" />
     </target>
 
-    <target name="-clean-httpunit" depends="-init-props">
-        <delete dir="${lib.dir}" />
-    </target>
-
-    <target name="-init-httpunit" depends="-init-props, -httpunit"/>
-
-    <target name="qa-functional-compiler" depends="-init-httpunit">
-        <ant inheritAll="false" antfile="../../websvc.kit/test/build.xml" target="buildtests"/>
-        <antcall target="xtest-qa-functional.qa-functional-compiler"/>
-    </target>
-
     <!--
-      XXX make sure httpunit.jar (and related jars) is loaded first
-      to avoid conflict with httunit module (SOA) and jtidy (visualweb)
-     -->
-    <target name="-init-cp-wa" depends="-init-props">
-         <path id="httpunit.libs">
-             <fileset dir="${lib.dir}">
-                 <include name="*.jar"/>
-             </fileset>
-         </path>
-        <property name="coverage.lib.path" refid="httpunit.libs"/>
+
+    -->
+    <target name="-init-jmaki">
+        <property name="plugins.jmaki.nbm.dir" value="${java.io.tmpdir}"/>
+        <property name="plugins.jmaki.nbm.name" value="org-netbeans-modules-sun-jmaki.nbm"/>
+        <condition property="plugins.jmaki.nbm.tmp" value="${plugins.jmaki.nbm}" else="${plugins.jmaki.nbm.dir}/${plugins.jmaki.nbm.name}">
+            <and>
+                <isset property="plugins.jmaki.nbm"/>
+                <available file="${plugins.jmaki.nbm}"/>
+            </and>
+        </condition>
+        <condition property="plugins.jmaki.do.download">
+            <and>
+                <isfalse value="${plugins.jmaki.skip}"/>
+                <not><available file="${plugins.jmaki.nbm.tmp}"/></not>
+            </and>
+        </condition>
+    </target>
+
+    <target name="-download-jmaki" if="plugins.jmaki.do.download" depends="-setup-proxy">
+        <echo message="Going to download ${plugins.jmaki.nbm.name}. If it fails download it from http://ajax.dev.java.net" />
+        <echo message="(and put it into ${java.io.tmpdir})"/>
+        <echo message="or invoke with -Dproxy.host='host' -Dproxy.port='port'" />
+        <get src="https://ajax.dev.java.net/files/documents/3115/79242/org-netbeans-modules-sun-jmaki.nbm" dest="${plugins.jmaki.nbm.tmp}"/>
+    </target>
+
+    <target name="setup-jmaki-nbm" depends="-init-jmaki, -download-jmaki">
+        <condition property="xtest.userdata|plugins.jmaki.skip" value="true" else="false">
+            <istrue value="${plugins.jmaki.skip}"/>
+        </condition>
+        <condition property="xtest.userdata|plugins.jmaki.nbm" value="${plugins.jmaki.nbm.tmp}">
+            <available file="${plugins.jmaki.nbm.tmp}"/>
+        </condition>
     </target>
 
     <!-- Run tests on Apache Tomcat server -->
@@ -124,7 +115,7 @@ made subject to such option by the copyright holder.
             </and>
         </condition>
     </target>
-     
+
     <target name="-runidetest-with-glassfish" if="use.appserver" depends="set-gf">
         <antcall target="set-appserver-path"/>
         <echo>Running tests on GlassFish (using: ${j2ee.appserver.path})</echo>
@@ -132,7 +123,6 @@ made subject to such option by the copyright holder.
     </target>
 
     <!-- Override to run tests on more servers at once -->
-    <target name="runidetest-with-appserver" depends="-init-cp-wa, -runidetest-with-glassfish, -runidetest-with-tomcat, -runidetest-with-jboss"/>
+    <target name="runidetest-with-appserver" depends="setup-jmaki-nbm, -runidetest-with-glassfish, -runidetest-with-tomcat, -runidetest-with-jboss"/>
 
 </project>
-

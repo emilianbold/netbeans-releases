@@ -44,6 +44,7 @@ package org.netbeans.modules.project.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
@@ -117,5 +118,9 @@ public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline,
     public void setMainProject(Project project) {
         OpenProjectList.getDefault().setMainProject(project);
     }
+    
+    public Future<Project[]> openProjectsAPI() {
+        return OpenProjectList.getDefault().openProjectsAPI();
+}
     
 }

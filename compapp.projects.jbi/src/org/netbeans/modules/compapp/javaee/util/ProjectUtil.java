@@ -66,6 +66,7 @@ import java.util.zip.ZipFile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.compapp.javaee.codegen.model.EndpointCfg;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -79,7 +80,7 @@ import org.openide.filesystems.FileUtil;
 public class ProjectUtil {
     public static final String DEPLOY_THRU_CA = ".deployThruCa" ; // No I18N   
     
-    private static final String DEFAULT_SRC_PATH = "src/java"; // No I18N
+    private static final String CONFIG_DIR = "src/conf/"; // No I18N    
     private static final String PROJECT_PROP_FILE = "nbproject/project.properties"; // No I18N
     private static final String JAVA_EE_CONFIG_FILE = "javaee_config.properties"; // No I18N
     private static final String PROP_JAR_NAME = "jar.name"; // EJB and EAR - No I18N
@@ -305,6 +306,7 @@ public class ProjectUtil {
         }
         proj.isDeployThruCA(deployThruCA);
         proj.setResourceFolder(resourceFolder);
+        
         return proj;
     }
     
@@ -453,6 +455,32 @@ public class ProjectUtil {
         Properties prop = readProperties(javaEEConfigFile);
         return prop;
     }
+    
+    public static List<EndpointCfg> getEndpointCfgs(JbiProject proj, String javaeeProjName){
+        FileObject fo = proj.getProjectDirectory();
+        File projDir = FileUtil.toFile(fo);
+        File configDir = new File(projDir, CONFIG_DIR);
+        List<EndpointCfg> ret = EndpointCfgReaderWriter.readConfigs(configDir, javaeeProjName);
+        return ret;
+    }
+
+    public static List<EndpointCfg> getEndpointCfgs(File configDir, String javaeeProjName){
+        List<EndpointCfg> ret = EndpointCfgReaderWriter.readConfigs(configDir, javaeeProjName);
+        return ret;
+    }
+    
+    public static void saveEndpointCfgs(JbiProject proj, String javaeeProjName, 
+            List<EndpointCfg> epCfgs){
+        FileObject fo = proj.getProjectDirectory();
+        File projDir = FileUtil.toFile(fo);
+        File configDir = new File(projDir, CONFIG_DIR);
+        EndpointCfgReaderWriter.writeConfigs(configDir, javaeeProjName, epCfgs);
+    }   
+
+    public static void saveEndpointCfgs(File configDir, String javaeeProjName, 
+            List<EndpointCfg> epCfgs){
+        EndpointCfgReaderWriter.writeConfigs(configDir, javaeeProjName, epCfgs);
+    }   
     
     public static void close(Closeable clb){
         if (clb != null){

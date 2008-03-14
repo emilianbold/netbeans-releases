@@ -361,7 +361,6 @@ public final class ModuleUpdater extends Thread {
                             if (! entry.isDirectory ()) {
                                 if (AUTOUPDATE_UPDATER_JAR_PATH.equals (entry.getName ())) {
                                     // skip updater.jar
-                                    System.out.println ("######## SKIP ENTRY " + entry);
                                     continue;
                                 }
                                 String pathTo = entry.getName ().substring (UPDATE_NETBEANS_DIR.length () + 1);
@@ -437,13 +436,7 @@ public final class ModuleUpdater extends Thread {
             }
             
             if (installedNBMs > 0) {
-                try {
-                    File stamp = new File(cluster, ".lastModified"); // NOI18N
-                    stamp.createNewFile();
-                    stamp.setLastModified(System.currentTimeMillis());
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+                UpdaterDispatcher.touchLastModified (cluster);
             }
         }
         

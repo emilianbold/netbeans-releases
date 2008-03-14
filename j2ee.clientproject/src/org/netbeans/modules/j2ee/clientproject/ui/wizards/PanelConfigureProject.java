@@ -122,7 +122,7 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
     }
     
     public boolean isFinishPanel() {
-        return true;
+        return false;
     }
     
     public void validate() throws WizardValidationException {

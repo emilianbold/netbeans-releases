@@ -59,8 +59,7 @@ public class PLinksTableModel implements TableModel, Constants {
     public PLinksTableModel(
             final ContextProvider contextProvider) {
         
-        myDebugger = (BpelDebugger) contextProvider.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
     }
     
     /**{@inheritDoc}*/
@@ -69,6 +68,10 @@ public class PLinksTableModel implements TableModel, Constants {
             final String column) throws UnknownTypeException {
         
         if (object == TreeModel.ROOT) {
+            return "";
+        }
+        
+        if (object instanceof PLinksTreeModel.Dummy) {
             return "";
         }
         

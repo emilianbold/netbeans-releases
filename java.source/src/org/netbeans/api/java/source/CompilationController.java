@@ -43,7 +43,6 @@ package org.netbeans.api.java.source;
 
 
 import java.io.IOException;
-import static org.netbeans.api.java.source.JavaSource.Phase.*;
 
 /** Class for explicit invocation of compilation phases on a java source.
  *  The implementation delegates to the {@link CompilationInfo} to get the data,

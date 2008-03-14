@@ -69,6 +69,7 @@ import org.netbeans.modules.mercurial.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.diff.ImportDiffAction;
 import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
+import org.netbeans.modules.mercurial.ui.log.IncomingAction;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
 import org.netbeans.modules.mercurial.ui.log.OutAction;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
@@ -78,7 +79,9 @@ import org.netbeans.modules.mercurial.ui.pull.PullAction;
 import org.netbeans.modules.mercurial.ui.pull.PullOtherAction;
 import org.netbeans.modules.mercurial.ui.push.PushAction;
 import org.netbeans.modules.mercurial.ui.push.PushOtherAction;
+import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
 import org.netbeans.modules.mercurial.ui.rollback.RollbackAction;
+import org.netbeans.modules.mercurial.ui.rollback.StripAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.mercurial.ui.status.StatusAction;
 import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
@@ -216,7 +219,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         boolean folderAnnotation = false;
         
         for (final File file : context.getRootFiles()) {
-            FileInformation info = cache.getCachedStatus(file);
+            FileInformation info = cache.getCachedStatus(file, true);
             if (info == null) {
                 File parentFile = file.getParentFile();
                 Mercurial.LOG.log(Level.FINE, "null cached status for: {0} {1} {2}", new Object[] {file, folderToScan, parentFile});
@@ -267,7 +270,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             // There is an assumption here that annotateName was already 
             // called and FileStatusCache.getStatus was scheduled if
             // FileStatusCache.getCachedStatus returned null.
-            FileInformation info = cache.getCachedStatus(file);
+            FileInformation info = cache.getCachedStatus(file, true);
             if ((info != null && (info.getStatus() & STATUS_BADGEABLE) != 0)) {
                 isVersioned = true;
                 break;
@@ -359,29 +362,29 @@ public class MercurialAnnotator extends VCSAnnotator {
                         root.getName()), ctx));
             }
             actions.add(new CloneExternalAction(loc.getString("CTL_PopupMenuItem_CloneOther"), ctx));     // NOI18N        
-            actions.add(null);
-            actions.add(new OutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"), ctx)); // NOI18N
             actions.add(new FetchAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_FetchLocal"), ctx)); // NOI18N
+            actions.add(new ShareMenu(ctx)); 
+            actions.add(new MergeMenu(ctx, false));                 
             actions.add(null);
-            actions.add(new PushAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PushLocal"), ctx)); // NOI18N
-            actions.add(new PushOtherAction(loc.getString("CTL_PopupMenuItem_PushOther"), ctx)); // NOI18N
-            actions.add(new PullAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PullLocal"), ctx)); // NOI18N
-            actions.add(new PullOtherAction(loc.getString("CTL_PopupMenuItem_PullOther"), ctx)); // NOI18N
-            actions.add(new MergeAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Merge"), ctx)); // NOI18N
-            actions.add(null);
-            AnnotateAction tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_ShowAnnotations"), ctx); // NOI18N
-            if (tempA.visible(nodes)) {
-                tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_HideAnnotations"), ctx); // NOI18N
-            }
-            actions.add(tempA);
             actions.add(new LogAction(loc.getString("CTL_PopupMenuItem_Log"), ctx)); // NOI18N
-            actions.add(new ViewAction(loc.getString("CTL_PopupMenuItem_View"), ctx)); // NOI18N
+            if (!onlyProjects  && !onlyFolders) {
+                AnnotateAction tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_ShowAnnotations"), ctx); // NOI18N
+
+                if (tempA.visible(nodes)) {
+                    actions.add(new ShowMenu(ctx, true, true));
+                } else {
+                    actions.add(new ShowMenu(ctx, true, false));
+                }
+            }else{
+                actions.add(new ShowMenu(ctx, false, false));
+            }
             actions.add(null);
-            actions.add(new RollbackAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Rollback"), ctx)); // NOI18N
             actions.add(new RevertModificationsAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Revert"), ctx)); // NOI18N
-            actions.add(new ResolveConflictsAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Resolve"), ctx)); // NOI18N
-            IgnoreAction tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Ignore"), ctx); // NOI18N
-            actions.add(tempIA);
+            actions.add(new RecoverMenu(ctx)); 
+            if (!onlyProjects && !onlyFolders) {
+                IgnoreAction tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Ignore"), ctx); // NOI18N
+                actions.add(tempIA);
+            }
             actions.add(null);
             actions.add(new PropertiesAction(loc.getString("CTL_PopupMenuItem_Properties"), ctx)); // NOI18N
         } else {
@@ -393,25 +396,17 @@ public class MercurialAnnotator extends VCSAnnotator {
                 actions.add(new UpdateAction(loc.getString("CTL_PopupMenuItem_Update"), ctx)); // NOI18N
                 actions.add(new CommitAction(loc.getString("CTL_PopupMenuItem_Commit"), ctx)); // NOI18N
                 actions.add(null);
-                if (root != null) {
-                    actions.add(new CloneAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_CloneLocal",  // NOI18N
-                            root.getName()), ctx));
-                }
-
-                actions.add(null);                
-                actions.add(new OutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"), ctx)); // NOI18N
-                actions.add(new FetchAction(NbBundle.getMessage(MercurialAnnotator.class, 
-                        "CTL_PopupMenuItem_FetchLocal"), ctx)); // NOI18N
-                actions.add(null);                
-                actions.add(new PushAction(NbBundle.getMessage(MercurialAnnotator.class, 
-                        "CTL_PopupMenuItem_PushLocal"), ctx)); // NOI18N
-                actions.add(new PullAction(NbBundle.getMessage(MercurialAnnotator.class, 
-                        "CTL_PopupMenuItem_PullLocal"), ctx)); // NOI18N
                 actions.add(new MergeAction(NbBundle.getMessage(MercurialAnnotator.class, 
                         "CTL_PopupMenuItem_Merge"), ctx)); // NOI18N
+                actions.add(new ResolveConflictsAction(NbBundle.getMessage(MercurialAnnotator.class,
+                        "CTL_PopupMenuItem_Resolve"), ctx)); // NOI18N
+                if (!onlyProjects  && !onlyFolders) {
+                    actions.add(new ConflictResolvedAction(NbBundle.getMessage(MercurialAnnotator.class,
+                        "CTL_PopupMenuItem_MarkResolved"), ctx)); // NOI18N
+                }
                 actions.add(null);                
 
-                if (!onlyFolders) {
+                if (!onlyProjects  && !onlyFolders) {
                     AnnotateAction tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_ShowAnnotations"), ctx);  // NOI18N
                     if (tempA.visible(nodes)) {
                         tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_HideAnnotations"), ctx);  // NOI18N
@@ -419,18 +414,12 @@ public class MercurialAnnotator extends VCSAnnotator {
                     actions.add(tempA);
                 }
                 actions.add(new LogAction(loc.getString("CTL_PopupMenuItem_Log"), ctx)); // NOI18N
-                actions.add(new ViewAction(loc.getString("CTL_PopupMenuItem_View"), ctx)); // NOI18N
+                actions.add(new IncomingAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowIncoming"), ctx)); // NOI18N
+                actions.add(new OutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"), ctx)); // NOI18N
                 actions.add(null);
-                actions.add(new RollbackAction(NbBundle.getMessage(MercurialAnnotator.class,
-                        "CTL_PopupMenuItem_Rollback"), ctx)); // NOI18N
                 actions.add(new RevertModificationsAction(NbBundle.getMessage(MercurialAnnotator.class,
                         "CTL_PopupMenuItem_Revert"), ctx)); // NOI18N
-                actions.add(new ResolveConflictsAction(NbBundle.getMessage(MercurialAnnotator.class,
-                        "CTL_PopupMenuItem_Resolve"), ctx)); // NOI18N
-                if (!onlyProjects) {
-                    actions.add(new ConflictResolvedAction(NbBundle.getMessage(MercurialAnnotator.class,
-                        "CTL_PopupMenuItem_MarkResolved"), ctx)); // NOI18N
-                    
+                if (!onlyProjects  && !onlyFolders) {
                     IgnoreAction tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Ignore"), ctx);  // NOI18N
                     actions.add(tempIA);
                 }
@@ -588,9 +577,9 @@ public class MercurialAnnotator extends VCSAnnotator {
             }          
         }
         if (fileName != null)
-            return uptodateFormat.format(new Object [] { name, " [" + fileName + "]" }); // NOI18N
+            return uptodateFormat.format(new Object [] { nameHtml, " [" + fileName + "]" }); // NOI18N
         else
-            return uptodateFormat.format(new Object [] { name, "" }); // NOI18N
+            return uptodateFormat.format(new Object [] { nameHtml, "" }); // NOI18N
     }
     
     private boolean isMoreImportant(FileInformation a, FileInformation b) {

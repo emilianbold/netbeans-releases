@@ -51,7 +51,7 @@
 
   <import file="${basedir}/../template_mac.xml"/>
 
-  <target name="clean-impl">
+  <target name="clean-impl" depends="clean-getport">
     <delete dir="glassfish"/>
     <delete file="glassfish_image.zip"/>
     <delete file="pkg/scripts/add_gf.sh"/>
@@ -74,10 +74,20 @@
     </exec>
   </target>
 
-  <target name="pre-build-pkg">
+  <target name="pre-build-pkg" depends="build-getport">
     <copy file="${basedir}/../pkg/scripts/add_gf.sh" tofile="${basedir}/pkg/scripts/add_gf.sh"/>
     <copy file="${basedir}/../pkg/scripts/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>
     <copy file="${basedir}/../pkg/scripts/env.sh" tofile="${basedir}/pkg/scripts/env.sh"/>
     <copy file="${basedir}/../pkg/scripts/perm.sh" tofile="${basedir}/pkg/scripts/perm.sh"/>
+    <copy file="${basedir}/getport/dist/getport.jar" tofile="${basedir}/pkg/scripts/getport.jar"/>
+  </target>
+
+  <target name="build-getport">
+      <ant dir="${basedir}/getport" target="jar"/>
+  </target>
+
+  <target name="clean-getport">
+      <ant dir="${basedir}/getport" target="clean"/>
+      <delete file="pkg/scripts/getport.jar"/>
   </target>
 </project>

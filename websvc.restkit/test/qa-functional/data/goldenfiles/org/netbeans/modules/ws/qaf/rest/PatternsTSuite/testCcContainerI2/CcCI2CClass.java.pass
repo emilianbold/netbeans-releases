@@ -1,7 +1,7 @@
 /*
  *  CcCI2CClass
  *
- * Created on December 12, 2007, 1:32 AM
+ * Created on March 11, 2008, 10:43 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -9,7 +9,8 @@
 
 package o.n.m.ws.qaf.rest.patterns;
 
-import javax.ws.rs.core.HttpContext;
+import java.util.Properties;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
@@ -23,7 +24,7 @@ import javax.ws.rs.ProduceMime;
 
 @Path("/CcCI2ContainerURI")
 public class CcCI2CClass {
-    @HttpContext
+    @Context
     private UriInfo context;
     
     /** Creates a new instance of CcCI2CClass */
@@ -32,11 +33,11 @@ public class CcCI2CClass {
 
     /**
      * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.CcCI2CClass
-     * @return an instance of java.lang.String
+     * @return an instance of java.util.Properties
      */
     @GET
     @ProduceMime("text/plain")
-    public String getText() {
+    public Properties getText() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
     }

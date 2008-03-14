@@ -45,10 +45,14 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Image;
 import java.awt.Window;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.AbstractButton;
+import javax.swing.JLabel;
 import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
 import org.openide.filesystems.FileObject;
@@ -59,10 +63,13 @@ import org.openide.cookies.EditorCookie;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
+import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
+import org.openide.awt.Mnemonics;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.HelpCtx;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -77,6 +84,8 @@ public class SoaUiUtil {
     
     private static String GRAY_COLOR = "#999999";
     
+    private SoaUiUtil() {}
+
     public static String getGrayString(String message) {
         return getGrayString("", message);
     }
@@ -352,5 +361,41 @@ public class SoaUiUtil {
         }
         
         return tc;
+    }
+
+    public static void activateInlineMnemonics(Container owner) {
+        for (Component comp : owner.getComponents()) {
+            if (comp instanceof JLabel) {
+                JLabel label = (JLabel)comp;
+                Mnemonics.setLocalizedText(label, label.getText());
+            } else if (comp instanceof AbstractButton) {
+                AbstractButton button = (AbstractButton)comp;
+                Mnemonics.setLocalizedText(button, button.getText());
+            } else if (comp instanceof Container) {
+                activateInlineMnemonics((Container)comp);
+            }
+        }
+    }
+    
+    public static void fireHelpContextChange(Component comp, HelpCtx newHelpCtx) {
+        Container parent = comp.getParent();
+        if (parent != null) {
+            PropertyChangeEvent event = new PropertyChangeEvent(
+                    comp, DialogDescriptor.PROP_HELP_CTX,
+                    null, newHelpCtx);
+            //
+            // notify all parents that the help context is changed
+            while (true) {
+                if (parent instanceof PropertyChangeListener) {
+                    ((PropertyChangeListener) parent).propertyChange(event);
+                }
+                //
+                Container newParent = parent.getParent();
+                if (newParent == null || newParent == parent) {
+                    break;
+                }
+                parent = newParent;
+            }
+        }
     }
 }

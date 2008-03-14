@@ -40,11 +40,11 @@
 
 <project name="tomcat" basedir="." default="build-pkg">
 
-  <property name="appname" value="apache-tomcat-6.0.14"/>
+  <property name="appname" value="apache-tomcat-6.0.16"/>
   <property name="appdir" value="build/app"/>
   <property name="zipname" value="tomcat-macosx.zip"/>
-  <property name="appversion" value="6.0.14"/>
-  <property name="version" value="6.0.14"/>
+  <property name="appversion" value="6.0.16"/>
+  <property name="version" value="6.0.16"/>
   <property name="exename" value=""/>
   <property name="icon" value=""/>
   <property name="pmproj" value="pkg/tomcat.pmproj"/>
@@ -75,6 +75,11 @@
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
       <arg value="cd ${appdir} ; mv apache-tomcat-*/* . ; rmdir apache-tomcat-*"/>
+    </exec>
+    <!-- make sure all bin/*.sh files has executable permissions-->
+    <exec executable="sh" failonerror="yes">
+      <arg value="-c"/>
+      <arg value="cd ${appdir} ; chmod a+x bin/*.sh"/>
     </exec>
   </target>
 

@@ -45,6 +45,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
 
 /**
@@ -56,6 +57,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     private CsmObject target = null;
     private CsmObject owner = null;
     private final int offset;
+    private CsmReferenceKind kind;
     
     public ReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token token) {
         super(doc, file, offset);
@@ -64,14 +66,14 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     }
 
     public CsmObject getReferencedObject() {
-        if (target == null) {
+        if (isValid() && target == null) {
             target = ReferencesSupport.findReferencedObject(super.getContainingFile(), super.getDocument(), this.offset, token);
         }
         return target;
     }
 
     public CsmObject getOwner() {
-        if (owner == null) {
+        if (isValid() && owner == null) {
             owner = ReferencesSupport.findOwnerObject(super.getContainingFile(), super.getDocument(), this.offset, token);
         }
         return owner;
@@ -103,5 +105,15 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     
     /*package*/ final Token getToken() {
         return this.token;
+    }
+
+    public CsmReferenceKind getKind() {
+        if (this.kind == null) {
+            CsmReferenceKind curKind = ReferencesSupport.getReferenceKind(this);
+            if (curKind != CsmReferenceKind.UNKNOWN) {
+                this.kind = curKind;
+            }
+        }
+        return this.kind;
     }
 }

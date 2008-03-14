@@ -47,16 +47,18 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Image;
+import java.beans.PropertyEditor;
+import java.util.List;
+import javax.swing.Action;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.ClearConfigExtensionsAction;
+import org.netbeans.modules.compapp.casaeditor.properties.NamespaceEditor;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -70,15 +72,15 @@ import org.openide.util.Utilities;
  * @author Josh Sandusky
  */
 public class ConnectionNode extends CasaNode {
-    
+
     private static final Image ICON = Utilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/ConnectionNode.png");  // NOI18N
-    
+
     public ConnectionNode(CasaConnection component, CasaNodeFactory factory) {
         super(component, Children.LEAF, factory);
     }
-    
-    
+
+    @Override
     protected void setupPropertySheet(Sheet sheet) {
         final CasaConnection casaConnection = (CasaConnection) getData();
         if (casaConnection == null) {
@@ -86,16 +88,26 @@ public class ConnectionNode extends CasaNode {
         }
         final CasaEndpoint casaConsumes = casaConnection.getConsumer().get();
         final CasaEndpoint casaProvides = casaConnection.getProvider().get();
-        
+
         Sheet.Set consumerProperties =
                 getPropertySet(sheet, PropertyUtils.PropertiesGroups.CONSUMER_SET);
         Node.Property<QName> consumerServiceNameSupport = new PropertySupport.ReadOnly<QName>(
-                "serviceName",  // NOI18N
+                "serviceName", // NOI18N
                 QName.class,
-                NbBundle.getMessage(getClass(), "PROP_ServiceName"),    // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_ServiceName"), // NOI18N
                 Constants.EMPTY_STRING) {
+
             public QName getValue() {
                 return casaConsumes.getServiceQName();
+            }
+      
+            @Override
+            public PropertyEditor getPropertyEditor() {
+                return new NamespaceEditor(
+                        getModel(),
+                        getValue(),
+                        getDisplayName(),
+                        false);
             }
         };
         Node.Property<String> consumerEndpointNameSupport = new PropertySupport.ReadOnly<String>(
@@ -103,13 +115,14 @@ public class ConnectionNode extends CasaNode {
                 String.class,
                 NbBundle.getMessage(getClass(), "PROP_EndpointName"), // NOI18N
                 Constants.EMPTY_STRING) {
+
             public String getValue() {
                 return casaConsumes.getEndpointName();
             }
         };
         consumerProperties.put(consumerServiceNameSupport);
         consumerProperties.put(consumerEndpointNameSupport);
-        
+
         Sheet.Set providerProperties =
                 getPropertySet(sheet, PropertyUtils.PropertiesGroups.PROVIDER_SET);
         Node.Property<QName> providerServiceNameSupport = new PropertySupport.ReadOnly<QName>(
@@ -117,35 +130,47 @@ public class ConnectionNode extends CasaNode {
                 QName.class,
                 NbBundle.getMessage(getClass(), "PROP_ServiceName"), // NOI18N
                 Constants.EMPTY_STRING) {
+
             public QName getValue() {
                 return casaProvides.getServiceQName();
+            }
+            
+            @Override
+            public PropertyEditor getPropertyEditor() {
+                return new NamespaceEditor(
+                        getModel(),
+                        getValue(),
+                        getDisplayName(),
+                        false);
             }
         };
         Node.Property<String> providerEndpointNameSupport = new PropertySupport.ReadOnly<String>(
                 "endpointName", // NOI18N
                 String.class,
-                NbBundle.getMessage(getClass(), "PROP_EndpointName"),   // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_EndpointName"), // NOI18N
                 Constants.EMPTY_STRING) {
+
             public String getValue() {
                 return casaProvides.getEndpointName();
             }
         };
         providerProperties.put(providerServiceNameSupport);
         providerProperties.put(providerEndpointNameSupport);
-        
-         
+
+
         // Add JBI extensions on connection
         ExtensionPropertyHelper.setupExtensionPropertySheet(this,
-                casaConnection, sheet, "connection", "all");
+                casaConnection, sheet, "connection", "all"); // NOI18N
+        
     }
-    
+
     //The navigator title is unable to decode HTML text and showing the encoded chars (&#60;-&#62;) as is...
     @Override
     public String getName() {
         CasaConnection casaConnection = (CasaConnection) getData();
         if (casaConnection != null) {
             try {
-                return casaConnection.getConsumer().get().getEndpointName() + 
+                return casaConnection.getConsumer().get().getEndpointName() +
                         "<->" + casaConnection.getProvider().get().getEndpointName();   // NOI18N
             } catch (Throwable t) {
                 // getName MUST recover gracefully.
@@ -154,16 +179,16 @@ public class ConnectionNode extends CasaNode {
         }
         return super.getName();
     }
-    
+
     private String getEncodingName() {
         CasaConnection casaConnection = (CasaConnection) getData();
         if (casaConnection != null) {
-            return casaConnection.getConsumer().get().getEndpointName() + 
+            return casaConnection.getConsumer().get().getEndpointName() +
                     "&#60;-&#62;" + casaConnection.getProvider().get().getEndpointName();   // NOI18N
         }
         return super.getName();
     }
-    
+
     @Override
     public String getHtmlDisplayName() {
         try {
@@ -173,7 +198,7 @@ public class ConnectionNode extends CasaNode {
             if (casaConnection != null) {
                 String attr = casaConnection.getState();
                 if ((attr != null) && (attr.equalsIgnoreCase("deleted"))) {         // NOI18N
-                    decoration = "<font color='#999999'><DEL>"+htmlDisplayName+"</DEL></font>"; // NOI18N
+                    decoration = "<font color='#999999'><DEL>" + htmlDisplayName + "</DEL></font>"; // NOI18N
                 }
             }
             if (decoration == null) {
@@ -185,15 +210,18 @@ public class ConnectionNode extends CasaNode {
             return getBadName();
         }
     }
-    
+
+    @Override
     public Image getIcon(int type) {
         return ICON;
     }
-    
+
+    @Override
     public Image getOpenedIcon(int type) {
         return ICON;
     }
-    
+
+    @Override
     public boolean isDeletable() {
         CasaConnection connection = (CasaConnection) getData();
         if (connection != null) {
@@ -201,14 +229,29 @@ public class ConnectionNode extends CasaNode {
         }
         return false;
     }
-    
+
     @Override
     public boolean isEditable(String propertyType) {
-        if (propertyType.equals(ALWAYS_WRITABLE_PROPERTY)) { 
+        if (propertyType.equals(ALWAYS_WRITABLE_PROPERTY)) {
             return true;
         }
-        
+
         return false;
     }
-    
+
+    @Override
+    protected void addCustomActions(List<Action> actions) {
+        CasaConnection casaConnection = (CasaConnection) getData();
+
+        if (isConnectionConfiguredWithQoS(casaConnection)) {
+            actions.add(new ClearConfigExtensionsAction(
+                    NbBundle.getMessage(ConnectionNode.class,
+                    "CLEAR_QOS_CONFIG"), this));  // NOI18N
+        }
+    }
+
+    private boolean isConnectionConfiguredWithQoS(CasaConnection casaConnection) {
+        return casaConnection.getChildren().size() != 0;
+    }
 }
+

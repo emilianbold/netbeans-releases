@@ -368,9 +368,31 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
                 pe.getCustomEditor (),
                 loc ("CTL_Font_Chooser")                          // NOI18N
             );
+            dd.setOptions (new Object[] {
+                DialogDescriptor.OK_OPTION, 
+                loc ("CTL_Font_Inherited"),                          // NOI18N
+                DialogDescriptor.CANCEL_OPTION
+            });
             DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
             if (dd.getValue () == DialogDescriptor.OK_OPTION) {
                 f = (Font) pe.getValue ();
+                category = modifyFont (category, f);
+                replaceCurrrentCategory (category);
+                setToBeSaved (currentProfile, currentLanguage);
+                refreshUI (); // refresh font viewer
+            } else
+            if (dd.getValue ().equals (loc ("CTL_Font_Inherited"))) {
+                String fontName = (String) getDefault (currentLanguage, category, StyleConstants.FontFamily);
+                int style = 0;
+                if (Boolean.TRUE.equals(getDefault (currentLanguage, category, StyleConstants.Bold))) {
+                    style += Font.BOLD;
+                }
+                if (Boolean.TRUE.equals(getDefault (currentLanguage, category, StyleConstants.Italic))) {
+                    style += Font.ITALIC;
+                }
+                Integer size = (Integer) getDefault (currentLanguage, category, StyleConstants.FontSize);
+                
+                f = new Font (fontName, style, size == null ? getDefaultFontSize() : size);
                 category = modifyFont (category, f);
                 replaceCurrrentCategory (category);
                 setToBeSaved (currentProfile, currentLanguage);
@@ -415,8 +437,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     public void update (ColorModel colorModel) {
         this.colorModel = colorModel;
         currentProfile = colorModel.getCurrentProfile ();
-        currentLanguage = (String) colorModel.getLanguages ().
-            iterator ().next ();
+        currentLanguage = ColorModel.ALL_LANGUAGES;
         if (preview != null) 
             preview.removePropertyChangeListener 
                 (Preview.PROP_CURRENT_ELEMENT, this);
@@ -431,11 +452,15 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         List<String> languages = new ArrayList<String>(colorModel.getLanguages ());
         Collections.sort (languages, new LanguagesComparator ());
         Iterator it = languages.iterator ();
+        Object lastLanguage = cbLanguage.getSelectedItem ();
         cbLanguage.removeAllItems ();
         while (it.hasNext ())
             cbLanguage.addItem (it.next ());
         listen = true;
-        cbLanguage.setSelectedIndex (0);
+        if (lastLanguage != null)
+            cbLanguage.setSelectedItem (lastLanguage);
+        if (cbLanguage.getSelectedItem () == null)
+            cbLanguage.setSelectedIndex (0);
     }
     
     public void cancel () {
@@ -467,7 +492,9 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     public void setCurrentProfile (String currentProfile) {
         String oldProfile = this.currentProfile;
         this.currentProfile = currentProfile;
-        if (!colorModel.getProfiles ().contains (currentProfile))
+        if (!colorModel.getProfiles ().contains (currentProfile) && 
+            !profiles.containsKey (currentProfile)
+        )
             cloneScheme (oldProfile, currentProfile);
         Vector categories = getCategories (currentProfile, currentLanguage);
         lCategories.setListData (categories);
@@ -504,7 +531,13 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         Map<String, Vector<AttributeSet>> m = new HashMap<String, Vector<AttributeSet>>();
         for(String language : colorModel.getLanguages()) {
             Vector<AttributeSet> v = getCategories(oldScheme, language);
-            m.put(language, new Vector<AttributeSet>(v));
+            Vector<AttributeSet> newV = new Vector<AttributeSet> ();
+            Iterator<AttributeSet> it = v.iterator ();
+            while (it.hasNext ()) {
+                AttributeSet attributeSet = it.next ();
+                newV.add(new SimpleAttributeSet (attributeSet));
+            }
+            m.put(language, new Vector<AttributeSet>(newV));
             setToBeSaved(newScheme, language);
         }
         profiles.put(newScheme, m);

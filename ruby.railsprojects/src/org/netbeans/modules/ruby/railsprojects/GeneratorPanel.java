@@ -306,37 +306,37 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         }
         
         GemManager gemManager = RubyPlatform.gemManagerFor(project);
-        assert gemManager != null : "Invalid platform for project [" + project + ']';
-        
-        // 3. Add in RubyGem generators
-        File gemDir = new File(gemManager.getGemHome() + File.separator + "gems"); // NOI18N
-        if (gemDir.exists()) {
-            Set<String> gems = gemManager.getInstalledGemsFiles();
-            for (String gem : gems) {
-                if (added.contains(gem)) {
-                    continue;
-                }
+        if (gemManager != null) {
+            // 3. Add in RubyGem generators
+            for (File repo : gemManager.getRepositories()) {
+                File gemDir = new File(repo, "gems"); // NOI18N
+                if (gemDir.exists()) {
+                    Set<String> gems = gemManager.getInstalledGemsFiles();
+                    for (String gem : gems) {
+                        if (added.contains(gem)) {
+                            continue;
+                        }
 
-                if (gem.endsWith("_generator")) { // NOI18N
-                    String version = gemManager.getVersion(gem);
-                    if (version != null) {
-                        File f = new File(gemDir, gem + "-" + version); // NOI18N
-                        if (f.exists()) {
-                            FileObject fo = FileUtil.toFileObject(f);
-                            // The generator is named "gem"
-                            int argsRequired = 0; // I could look at the usage files here to determine # of required arguments...
-                            // Chop off _generator suffix
-                            String name = gem.substring(0, gem.length()-"_generator".length()); // NOI18N
-                            Generator generator = new Generator(name, fo, argsRequired);
-                            generators.add(generator);
-                            added.add(generator.getName());
+                        if (gem.endsWith("_generator")) { // NOI18N
+                            String version = gemManager.getVersion(gem);
+                            if (version != null) {
+                                File f = new File(gemDir, gem + "-" + version); // NOI18N
+                                if (f.exists()) {
+                                    FileObject fo = FileUtil.toFileObject(f);
+                                    // The generator is named "gem"
+                                    int argsRequired = 0; // I could look at the usage files here to determine # of required arguments...
+                                    // Chop off _generator suffix
+                                    String name = gem.substring(0, gem.length()-"_generator".length()); // NOI18N
+                                    Generator generator = new Generator(name, fo, argsRequired);
+                                    generators.add(generator);
+                                    added.add(generator.getName());
+                                }
+                            }
+
                         }
                     }
-                    
                 }
             }
-        } else {
-            gemDir = null;
         }
 
         // 4. Finally add in the built-in generators.
@@ -359,15 +359,21 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         if (railsInstall != null) {
             scan(generators, railsInstall, 
                 "lib/rails_generator/generators/components", null, added); // NOI18N
-        } else if (gemDir != null) {
+        } else if (gemManager != null) {
             railsVersion = gemManager.getVersion("rails"); // NOI18N
             if (railsVersion != null) {
-                File railsDir = new File(gemDir, "rails" + "-" + railsVersion); // NOI18N
-                assert railsDir.exists();
-                railsInstall = FileUtil.toFileObject(railsDir);
-                if (railsInstall != null) {
-                    scan(generators, railsInstall, 
-                        "lib/rails_generator/generators/components", null, added); // NOI18N
+                for (File repo : gemManager.getRepositories()) {
+                    File gemDir = new File(repo, "gems"); // NOI18N
+                    if (gemDir.exists()) {
+                        File railsDir = new File(gemDir, "rails" + "-" + railsVersion); // NOI18N
+                        if (railsDir.exists()) {
+                            railsInstall = FileUtil.toFileObject(railsDir);
+                            if (railsInstall != null) {
+                                scan(generators, railsInstall, 
+                                    "lib/rails_generator/generators/components", null, added); // NOI18N
+                            }
+                        }
+                    }
                 }
             }
         }

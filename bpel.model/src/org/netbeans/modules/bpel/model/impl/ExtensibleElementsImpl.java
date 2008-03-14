@@ -70,17 +70,23 @@ public abstract class ExtensibleElementsImpl extends BpelContainerImpl implement
       
       if (content == null) {
         if (sizeOfDocumentations() != 0) {
+//System.out.println(" remove");
           removeDocumentation(0);
         }
       }
       else {
-        Documentation documentation = getBpelModel().getBuilder().createDocumentation();
-        documentation.setContent(content);
+        Documentation documentation;
 
-        if (sizeOfDocumentations() != 0) {
-          removeDocumentation(0);
+        if (sizeOfDocumentations() == 0) {
+          documentation = getBpelModel().getBuilder().createDocumentation();
+          documentation.setContent(content);
+//System.out.println(" insert");
+          insertDocumentation(documentation, 0);
         }
-        insertDocumentation(documentation, 0);
+        else {
+          documentation = getDocumentation(0);
+          documentation.setContent(content);
+        }
       }
     }
 
@@ -88,12 +94,26 @@ public abstract class ExtensibleElementsImpl extends BpelContainerImpl implement
       if (value == null) {
         return null;
       }
-      value = value.trim();
-
-      if (value.length() == 0) {
+      if (isEmpty(value)) {
         return null;
       }
       return value;
+    }
+
+    private boolean isEmpty(String value) {
+      for (int i=0; i < value.length(); i++) {
+        if (value.charAt(i) == ' ') {
+          continue;
+        }
+        if (value.charAt(i) == '\r') {
+          continue;
+        }
+        if (value.charAt(i) == '\n') {
+          continue;
+        }
+        return false;
+      }
+      return true;
     }
 
     public void removeDocumentation() throws VetoException {

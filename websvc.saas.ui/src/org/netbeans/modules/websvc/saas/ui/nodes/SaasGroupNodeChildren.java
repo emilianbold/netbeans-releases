@@ -45,16 +45,18 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.netbeans.modules.websvc.saas.model.CustomSaas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.netbeans.modules.websvc.saas.model.WadlSaas;
+import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
 
 public class SaasGroupNodeChildren extends Children.Keys<Object> implements PropertyChangeListener {
     
-    private SaasGroup group;
-    private boolean errorNotify = false;
+    protected SaasGroup group;
     
     public SaasGroupNodeChildren(SaasGroup group) {
         this.group = group;
@@ -62,10 +64,14 @@ public class SaasGroupNodeChildren extends Children.Keys<Object> implements Prop
         model.addPropertyChangeListener(WeakListeners.propertyChange(this, model));
     }
     
+    protected void setGroup(SaasGroup g) {
+        group = g;
+    }
+    
     @Override
     protected void addNotify() {
-        super.addNotify();
         updateKeys();
+        super.addNotify();
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -79,9 +85,9 @@ public class SaasGroupNodeChildren extends Children.Keys<Object> implements Prop
         }
     }
     
-    private void updateKeys() {
-        errorNotify = false;
+    protected void updateKeys() {
         ArrayList<Object> keys = new ArrayList<Object>();
+        keys.addAll(group.getChildrenGroups());
         keys.addAll(group.getServices());
         setKeys(keys.toArray());
     }
@@ -94,7 +100,16 @@ public class SaasGroupNodeChildren extends Children.Keys<Object> implements Prop
     }
     
     protected Node[] createNodes(Object key) {
-        //TODO review original
+        if (key instanceof SaasGroup) {
+            SaasGroupNode node = new SaasGroupNode((SaasGroup) key);
+            return new Node[] { node };
+        } else if (key instanceof WadlSaas) {
+            return new Node[] { new WadlSaasNode((WadlSaas)key) };
+        } else if (key instanceof WsdlSaas) {
+            return new Node[] { new WsdlSaasNode((WsdlSaas) key) };
+        } else if (key instanceof CustomSaas) {
+            return new Node[] { new CustomSaasNode((CustomSaas) key) };
+        }
         return new Node[0];
     }
 }

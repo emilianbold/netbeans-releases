@@ -207,8 +207,14 @@ public class ServerPropertiesPanel extends JPanel
                     "ERR_INVALID_PORT"));                              // NOI18N
         }
         
+        if (((Instance) localInstancesCombo.getSelectedItem()).isSecurityEnabled()) {
+            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(ServerPropertiesPanel.class,
+                    "ERR_SECURITY_ENABLED"));                              // NOI18N
+            return false;
+        }
         // no checks for username & password as they may be intentionally blank
-        
+
         // save the data to the parent instantiating iterator
         instantiatingIterator.setDomainRoot(domainPathField.getText());
         instantiatingIterator.setHost(hostField.getText());
@@ -247,7 +253,6 @@ public class ServerPropertiesPanel extends JPanel
     private JTextField hostField;
     private JTextField portField;
     private JTextField usernameField;
-    private JPanel formattingPanel;
     private JComboBox serverTypeCombo;
     private JComboBox localInstancesCombo;
     private JLabel localInstanceLabel;
@@ -277,7 +282,6 @@ public class ServerPropertiesPanel extends JPanel
         usernameField = new JTextField();
         passwordLabel = new JLabel();
         passwordField = new JPasswordField();
-        formattingPanel = new JPanel();
         serverTypeLabel = new JLabel();
         serverTypeCombo = new JComboBox(new Object[] {NbBundle.getMessage(
                 Customizer.class, "TXT_ServerTypeLocal")/*,
@@ -330,6 +334,11 @@ public class ServerPropertiesPanel extends JPanel
         // add local instances combobox
         localInstancesCombo.addActionListener(
                 wizardServerProperties.getInstanceSelectionListener());
+        localInstancesCombo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                fireChangeEvent();
+            }
+        });
         
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -540,7 +549,7 @@ public class ServerPropertiesPanel extends JPanel
     /**
      * The registrered listeners vector
      */
-    private Vector listeners = new Vector();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     
     /**
      * Removes a registered listener
@@ -548,11 +557,7 @@ public class ServerPropertiesPanel extends JPanel
      * @param listener the listener to be removed
      */
     public void removeChangeListener(ChangeListener listener) {
-        if (listeners != null) {
-            synchronized (listeners) {
-                listeners.remove(listener);
-            }
-        }
+        changeSupport.removeChangeListener(listener);
     }
     
     /**
@@ -561,35 +566,14 @@ public class ServerPropertiesPanel extends JPanel
      * @param listener the listener to be added
      */
     public void addChangeListener(ChangeListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
+        changeSupport.addChangeListener(listener);
     }
     
     /**
      * Fires a change event originating from this panel
      */
     private void fireChangeEvent() {
-        ChangeEvent event = new ChangeEvent(this);
-        fireChangeEvent(event);
-    }
-    
-    /**
-     * Fires a custom change event
-     *
-     * @param event the event
-     */
-    private void fireChangeEvent(ChangeEvent event) {
-        Vector targetListeners;
-        synchronized (listeners) {
-            targetListeners = (Vector) listeners.clone();
-        }
-        
-        for (int i = 0; i < targetListeners.size(); i++) {
-            ChangeListener listener =
-                    (ChangeListener) targetListeners.elementAt(i);
-            listener.stateChanged(event);
-        }
+        changeSupport.fireChange();
     }
     
     ////////////////////////////////////////////////////////////////////////////

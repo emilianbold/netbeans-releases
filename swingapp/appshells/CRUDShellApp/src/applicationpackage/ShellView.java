@@ -268,6 +268,9 @@ public class ShellView extends FrameView {
 
                 setMessage("Fetching new data...");
                 java.util.Collection data = query.getResultList();
+                for (Object entity : data) {
+                    entityManager.refresh(entity);
+                }
                 Thread.sleep(1300L); // remove for real app
                 setProgress(4, 0, 4);
 

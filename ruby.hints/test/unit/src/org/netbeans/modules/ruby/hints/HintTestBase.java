@@ -28,12 +28,7 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.Collections;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.RubyTestBase;
-import java.util.Map;
-import org.netbeans.api.gsf.CompilationInfo;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -44,8 +39,10 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.jruby.ast.Node;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
+import org.jruby.ast.NodeType;
+import org.jruby.common.IRubyWarnings.ID;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -64,7 +61,6 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -87,12 +83,12 @@ public abstract class HintTestBase extends RubyTestBase {
         "lib/ruby/1.8/cgi.rb",
         "lib/ruby/1.8/net/imap.rb",
          // Biggest files in Rails
-        "lib/ruby/gems/1.8/gems/activerecord-1.15.5/test/associations_test.rb",
-        "lib/ruby/gems/1.8/gems/actionmailer-1.3.5/lib/action_mailer/vendor/text/format.rb",
-        "lib/ruby/gems/1.8/gems/actionpack-1.13.5/test/controller/routing_test.rb",
-        "lib/ruby/gems/1.8/gems/activerecord-1.15.5/lib/active_record/associations.rb",
-        "lib/ruby/gems/1.8/gems/activerecord-1.15.5/lib/active_record/base.rb",
-        "lib/ruby/gems/1.8/gems/actionpack-1.13.5/test/template/date_helper_test.rb",
+        "lib/ruby/gems/1.8/gems/activerecord-2.0.2/test/associations_test.rb",
+        "lib/ruby/gems/1.8/gems/actionmailer-2.0.2/lib/action_mailer/vendor/text-format-0.6.3/text/format.rb",
+        "lib/ruby/gems/1.8/gems/actionpack-2.0.2/test/controller/routing_test.rb",
+        "lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/associations.rb",
+        "lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/base.rb",
+        "lib/ruby/gems/1.8/gems/actionpack-2.0.2/test/template/date_helper_test.rb",
     };
     
     protected List<FileObject> getBigSourceFiles() {
@@ -233,7 +229,7 @@ public abstract class HintTestBase extends RubyTestBase {
             }
             assertNotNull("Unexpected parse error in test case " + 
                     FileUtil.getFileDisplayName(info.getFileObject()) + "\nErrors = " + 
-                    info.getDiagnostics(), root);
+                    info.getErrors(), root);
         }
 
         String text = info.getText();
@@ -256,10 +252,10 @@ public abstract class HintTestBase extends RubyTestBase {
             // It's an error!
             // Create a hint registry which contains ONLY our hint (so other registered
             // hints don't interfere with the test)
-            Map<String, List<ErrorRule>> testHints = new HashMap<String, List<ErrorRule>>();
+            Map<ID, List<ErrorRule>> testHints = new HashMap<ID, List<ErrorRule>>();
             if (hint.appliesTo(info)) {
                 ErrorRule errorRule = (ErrorRule)hint;
-                for (String key : errorRule.getCodes()) {
+                for (ID key : errorRule.getCodes()) {
                     testHints.put(key, Collections.singletonList(errorRule));
                 }
             }
@@ -282,9 +278,9 @@ public abstract class HintTestBase extends RubyTestBase {
             AstRule astRule = (AstRule)hint;
             // Create a hint registry which contains ONLY our hint (so other registered
             // hints don't interfere with the test)
-            Map<Integer, List<AstRule>> testHints = new HashMap<Integer, List<AstRule>>();
+            Map<NodeType, List<AstRule>> testHints = new HashMap<NodeType, List<AstRule>>();
             if (hint.appliesTo(info)) {
-                for (int nodeId : astRule.getKinds()) {
+                for (NodeType nodeId : astRule.getKinds()) {
                     testHints.put(nodeId, Collections.singletonList(astRule));
                 }
             }
@@ -312,12 +308,12 @@ public abstract class HintTestBase extends RubyTestBase {
             int caretOffset = r.caretOffset;
             if (hint.getDefaultSeverity() == HintSeverity.CURRENT_LINE_WARNING && hint instanceof AstRule) {
                 result = new ArrayList<ErrorDescription>(result);
-                Set<Integer> nodeTypes = ((AstRule)hint).getKinds();
+                Set<NodeType> nodeTypes = ((AstRule)hint).getKinds();
                 Node root = AstUtilities.getRoot(info);
                 List<Node> nodes = new ArrayList<Node>();
-                int[] nodeIds = new int[nodeTypes.size()];
+                NodeType[] nodeIds = new NodeType[nodeTypes.size()];
                 int index = 0;
-                for (int id : nodeTypes) {
+                for (NodeType id : nodeTypes) {
                     nodeIds[index++] = id;
                 }
                 AstUtilities.addNodesByType(root, nodeIds, nodes);
@@ -442,12 +438,12 @@ public abstract class HintTestBase extends RubyTestBase {
 
     protected void applyHint(NbTestCase test, Rule hint, String relFilePath,
             String caretLine, String fixDesc) throws Exception {
+        initializeRegistry();
         ComputedHints r = getHints(test, hint, relFilePath, null, caretLine);
         CompilationInfo info = r.info;
         
         Fix fix = findApplicableFix(r, fixDesc);
         assertNotNull(fix);
-        
         fix.implement();
         
         Document doc = info.getDocument();
@@ -457,9 +453,9 @@ public abstract class HintTestBase extends RubyTestBase {
     }
     
     public void ensureRegistered(AstRule hint) throws Exception {
-        Map<Integer, List<AstRule>> hints = RulesManager.getInstance().getHints();
-        Set<Integer> kinds = hint.getKinds();
-        for (int nodeType : kinds) {
+        Map<NodeType, List<AstRule>> hints = RulesManager.getInstance().getHints();
+        Set<NodeType> kinds = hint.getKinds();
+        for (NodeType nodeType : kinds) {
             List<AstRule> rules = hints.get(nodeType);
             assertNotNull(rules);
             boolean found = false;

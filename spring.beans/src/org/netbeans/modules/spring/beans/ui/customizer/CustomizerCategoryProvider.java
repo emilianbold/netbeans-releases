@@ -47,13 +47,17 @@ import java.io.File;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.spring.api.SpringUtilities;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.ConfigFileManager;
 import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -64,52 +68,81 @@ import org.openide.util.NbBundle;
 public class CustomizerCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
     public Category createCategory(Lookup context) {
+        Project project = getProject(context);
+        ConfigFileManager manager = getConfigFileManager(project);
+        // Do not display the customizer if there are no Spring config files
+        // and the Spring library is not on the classpath.
+        if (manager.getConfigFiles().size() <= 0) {
+            if (!hasSpringOnClassPath(project)) {
+                return null;
+            }
+        }
         String categoryName = NbBundle.getMessage(CustomizerCategoryProvider.class, "LBL_SpringFramework");
         return Category.create("SpringFramework", categoryName, null); // NOI18N
     }
 
     public JComponent createComponent(Category category, Lookup context) {
-        Project project = context.lookup(Project.class);
-        if (project == null) {
-            throw new IllegalStateException("The lookup " + context + " does not contain a Project");
-        }
-        ProjectSpringScopeProvider scopeProvider = project.getLookup().lookup(ProjectSpringScopeProvider.class);
-        // The following should pass, since we only register the customizer for
-        // projects for which we also extend the lookup with a ProjectSpringScopeProvider.
-        assert scopeProvider != null;
-        ConfigFileManager manager = scopeProvider.getSpringScope().getConfigFileManager();
-        File projectDir = FileUtil.toFile(project.getProjectDirectory());
-        if (projectDir == null) {
-            throw new IllegalStateException("The directory of project " + project + " is null");
-        }
-        ConfigFileGroupsPanel panel = new ConfigFileGroupsPanel(manager.getConfigFileGroups(), projectDir);
+        Project project = getProject(context);
+        ConfigFileManager manager = getConfigFileManager(project);
+        SpringCustomizerPanel panel = new SpringCustomizerPanel(project, manager.getConfigFiles(), manager.getConfigFileGroups());
         CategoryListener listener = new CategoryListener(manager, panel);
         category.setOkButtonListener(listener);
         category.setStoreListener(listener);
         return panel;
     }
 
+    private static Project getProject(Lookup context) {
+        Project project = context.lookup(Project.class);
+        if (project == null) {
+            throw new IllegalStateException("The lookup " + context + " does not contain a Project");
+        }
+        return project;
+    }
+
+    private static ConfigFileManager getConfigFileManager(Project project) {
+        ProjectSpringScopeProvider scopeProvider = project.getLookup().lookup(ProjectSpringScopeProvider.class);
+        // The following should pass, since we only register the customizer for
+        // projects for which we also extend the lookup with a ProjectSpringScopeProvider.
+        assert scopeProvider != null;
+        return scopeProvider.getSpringScope().getConfigFileManager();
+    }
+
+    private static boolean hasSpringOnClassPath(Project project) {
+        SourceGroup[] javaSources = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (SourceGroup javaSource : javaSources) {
+            ClassPath compileCp = ClassPath.getClassPath(javaSource.getRootFolder(), ClassPath.COMPILE);
+            if (compileCp != null) {
+                if (SpringUtilities.containsSpring(compileCp)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private static final class CategoryListener implements ActionListener {
 
         private final ConfigFileManager manager;
-        private final ConfigFileGroupsPanel panel;
+        private final SpringCustomizerPanel panel;
+        private volatile List<File> files;
         private volatile List<ConfigFileGroup> groups;
 
-        public CategoryListener(ConfigFileManager manager, ConfigFileGroupsPanel panel) {
+        public CategoryListener(ConfigFileManager manager, SpringCustomizerPanel panel) {
             this.manager = manager;
             this.panel = panel;
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (groups == null) {
+            if (files == null || groups == null) {
                 // OK button listener called.
                 assert SwingUtilities.isEventDispatchThread();
+                files = panel.getConfigFiles();
                 groups = panel.getConfigFileGroups();
             } else {
                 // Store listener called.
                 manager.mutex().writeAccess(new Runnable() {
                     public void run() {
-                        manager.putConfigFileGroups(groups);
+                        manager.putConfigFilesAndGroups(files, groups);
                         // No need to save the project explicitly, the
                         // customizer dialog will.
                     }

@@ -28,6 +28,10 @@ import java.awt.Dimension;
 import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import javax.accessibility.AccessibleContext;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -89,11 +93,15 @@ import org.netbeans.modules.bpel.design.actions.FindUsagesAction;
 import org.netbeans.modules.bpel.design.actions.GoToLoggingAction;
 import org.netbeans.modules.bpel.design.actions.GoToMapperAction;
 import org.netbeans.modules.bpel.design.actions.GoToSourceAction;
+import org.netbeans.modules.bpel.design.actions.ShowContextMenuAction;
+import org.netbeans.modules.bpel.design.actions.TabToNextComponentAction;
 import org.netbeans.modules.bpel.design.model.PartnerRole;
+import org.netbeans.modules.bpel.nodes.actions.GoToAction;
 import org.netbeans.modules.bpel.nodes.actions.ShowBpelMapperAction;
 import org.netbeans.modules.bpel.properties.NodeUtils;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 public class DesignView extends JPanel implements
@@ -142,14 +150,23 @@ public class DesignView extends JPanel implements
     private OverlayPanel overlayView;
 
     private TriScrollPane scrollPane;
-
+    private boolean printMode = false;
+    
+    // Memory leak probing
+    private static final Logger TIMERS = Logger.getLogger("TIMER.bpel"); // NOI18N
 
 
     public DesignView(Lookup lookup) {
         super();
+        
+        if (TIMERS.isLoggable(Level.FINE)) {
+            LogRecord rec = new LogRecord(Level.FINE, "BPEL DesignView"); // NOI18N
+            rec.setParameters(new Object[] {this});
+            TIMERS.log(rec);
+        }
+
 
         zoomManager = new ZoomManager(this);
-        navigationTools = new NavigationTools(this);
         rightStripe = new RightStripe(this);
 
         setBackground(new Color(0xFCFAF5));
@@ -161,18 +178,29 @@ public class DesignView extends JPanel implements
 
         overlayView = new OverlayPanel(this);
 
-
-        this.add(overlayView, 0);
-
         consumersView = new PartnerlinksView(this, PartnerRole.CONSUMER);
+        consumersView.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(DesignView.class, "ACSN_ConsumersPLPanel"));
+        consumersView.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(DesignView.class, "ACSD_ConsumersPLPanel"));
+        
         providersView = new PartnerlinksView(this, PartnerRole.PROVIDER);
+        providersView.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(DesignView.class, "ACSN_ProvidersPLPanel"));
+        providersView.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(DesignView.class, "ACSD_ProvidersPLPanel"));
+
         processView = new ProcessView(this);
-
-
-        scrollPane = new TriScrollPane(processView, consumersView, providersView);
-        this.add(scrollPane, 1);
-
-
+        processView.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(DesignView.class, "ACSN_ProcessPanel"));
+        processView.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(DesignView.class, "ACSD_ProcessPanel"));
+ 
+        navigationTools = new NavigationTools(this);
+ 
+        scrollPane = new TriScrollPane(processView, consumersView, 
+                providersView, navigationTools, overlayView);
+        this.add(scrollPane, 0);
 
         dndHandler = new DnDHandler(this);
 
@@ -198,12 +226,21 @@ public class DesignView extends JPanel implements
 
         reloadModel();
         diagramChanged();
-        scrollPane.addScrollListener(new TriScrollPane.ScrollListener() {
+    }
 
-            public void viewScrolled(JComponent view) {
-                //getDecorationManager().repositionComponentsRecursive();
-            }
-        });
+    @Override
+    public AccessibleContext getAccessibleContext() {
+        EntitySelectionModel selModel = getSelectionModel();
+        Pattern selPattern = null;
+        if (selModel != null) {
+            selPattern = selModel.getSelectedPattern();
+        }
+        
+        DiagramView dView = null;
+        if (selPattern != null) {
+            dView = selPattern.getView();
+        }
+        return dView != null ? dView.getAccessibleContext() : super.getAccessibleContext();
     }
 
     public DiagramView getConsumersView() {
@@ -233,7 +270,15 @@ public class DesignView extends JPanel implements
     public RightStripe getRightStripe() {
         return rightStripe;
     }
-
+    
+    public boolean getPrintMode() {
+        return printMode;
+    }
+    
+    public void setPrintMode(boolean printMode) {
+        this.printMode = printMode;
+    }
+    
     @Override
     public void doLayout() {
         int w = getWidth();
@@ -282,8 +327,7 @@ public class DesignView extends JPanel implements
     }
 
     public BPELValidationController getValidationController() {
-        return (BPELValidationController) getLookup()
-        .lookup(BPELValidationController.class);
+        return getLookup().lookup(BPELValidationController.class);
     }
 
     public EntitySelectionModel getSelectionModel() {
@@ -315,7 +359,7 @@ public class DesignView extends JPanel implements
     }
 
     public BpelModel getBPELModel(){
-        return (BpelModel)getLookup().lookup(BpelModel.class);
+        return getLookup().lookup(BpelModel.class);
     }
 
     /**
@@ -339,7 +383,7 @@ public class DesignView extends JPanel implements
     }
 
     public BusinessProcessHelper getProcessHelper() {
-        return (BusinessProcessHelper) lookup.lookup(BusinessProcessHelper.class);
+        return lookup.lookup(BusinessProcessHelper.class);
     }
 
     public Node getNodeForPattern(Pattern pattern){
@@ -416,9 +460,26 @@ public class DesignView extends JPanel implements
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "rename-something"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete-something"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel-something"); // NOI18N
-        im1.put(org.netbeans.modules.bpel.nodes.actions.GoToSourceAction.GOTOSOURCE_KEYSTROKE, "gotosource-something"); // NOI18N
-        im1.put(ShowBpelMapperAction.GOTOMAPPER_KEYSTROKE, "gotomapper-something"); // NOI18N
-        im1.put(org.netbeans.modules.bpel.nodes.actions.GoToLoggingAction.GOTOLOGGING_KEYSTROKE, "gotologging-something"); // NOI18N
+
+        KeyStroke gotoSourceKey = GoToAction.getKeyStroke(org.netbeans.modules.bpel.nodes.actions.GoToSourceAction.class);
+        KeyStroke gotoMapperKey = GoToAction.getKeyStroke(ShowBpelMapperAction.class);
+        KeyStroke gotoLoggingKey = GoToAction.getKeyStroke(org.netbeans.modules.bpel.nodes.actions.GoToLoggingAction.class);
+
+        if (gotoSourceKey != null) {
+//            im1.put(org.netbeans.modules.bpel.nodes.actions.GoToSourceAction.GOTOSOURCE_KEYSTROKE, "gotosource-something"); // NOI18N
+            im1.put(gotoSourceKey, "gotosource-something"); // NOI18N
+            im2.put(gotoSourceKey, "gotosource-something"); // NOI18N
+        }
+        if (gotoMapperKey != null) {
+//            im1.put(ShowBpelMapperAction.GOTOMAPPER_KEYSTROKE, "gotomapper-something"); // NOI18N
+            im1.put(gotoMapperKey, "gotomapper-something"); // NOI18N
+            im2.put(gotoMapperKey, "gotomapper-something"); // NOI18N
+        }
+        if (gotoLoggingKey != null) {
+//            im1.put(org.netbeans.modules.bpel.nodes.actions.GoToLoggingAction.GOTOLOGGING_KEYSTROKE, "gotologging-something"); // NOI18N
+            im1.put(gotoLoggingKey, "gotologging-something"); // NOI18N
+            im2.put(gotoLoggingKey, "gotologging-something"); // NOI18N
+        }
 //        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_DOWN_MASK), "gotosource-something"); // NOI18N
 //        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_DOWN_MASK), "gotomapper-something"); // NOI18N
 //        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_DOWN_MASK), "gotologging-something"); // NOI18N
@@ -439,9 +500,9 @@ public class DesignView extends JPanel implements
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "rename-something"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete-something"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel-something"); // NOI18N
-        im2.put(org.netbeans.modules.bpel.nodes.actions.GoToSourceAction.GOTOSOURCE_KEYSTROKE, "gotosource-something"); // NOI18N
-        im2.put(ShowBpelMapperAction.GOTOMAPPER_KEYSTROKE, "gotomapper-something"); // NOI18N
-        im2.put(org.netbeans.modules.bpel.nodes.actions.GoToLoggingAction.GOTOLOGGING_KEYSTROKE, "gotologging-something"); // NOI18N
+//        im2.put(org.netbeans.modules.bpel.nodes.actions.GoToSourceAction.GOTOSOURCE_KEYSTROKE, "gotosource-something"); // NOI18N
+//        im2.put(ShowBpelMapperAction.GOTOMAPPER_KEYSTROKE, "gotomapper-something"); // NOI18N
+//        im2.put(org.netbeans.modules.bpel.nodes.actions.GoToLoggingAction.GOTOLOGGING_KEYSTROKE, "gotologging-something"); // NOI18N
 //        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_DOWN_MASK), "gotosource-something"); // NOI18N
 //        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_F7, KeyEvent.ALT_DOWN_MASK), "findusages-something"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK), "find_next_mex_peer"); // NOI18N
@@ -478,9 +539,9 @@ public class DesignView extends JPanel implements
         am.put("gotologging-something", new GoToLoggingAction(this)); // NOI18N
         am.put("findusages-something", new FindUsagesAction(this)); // NOI18N
 //        am.put("find_next_mex_peer", new CycleMexAction()); // NOI18N
-//        am.put("show_context_menu", new ShowContextMenu()); // NOI18N
-//        am.put("go_next_hierarchy_component", new GoNextHieComponentAction()); // NOI18N
-//        am.put("go_previous_hierarchy_component", new GoPrevHieComponentAction()); // NOI18N
+        am.put("show_context_menu", new ShowContextMenuAction(this)); // NOI18N
+        am.put("go_next_hierarchy_component", new TabToNextComponentAction(this, true)); // NOI18N
+        am.put("go_previous_hierarchy_component", new TabToNextComponentAction(this, false)); // NOI18N
 //
 //        am.put("go_nearest_right_component", new GoRightNearestComponentAction()); // NOI18N
 //        am.put("go_nearest_left_component", new GoLeftNearestComponentAction()); // NOI18N
@@ -563,14 +624,16 @@ public class DesignView extends JPanel implements
 
             putClientProperty(Dimension.class, new Dimension(printWidth, printHeight));
 
-            getDecorationManager().repositionComponentsRecursive();
 
 
             processView.revalidate();
             consumersView.revalidate();
             providersView.revalidate();
+
             repaint();
+
             errorPanel.uninstall();
+
             rightStripe.repaint();
         } else {
             setToolBarEnabled(false);
@@ -952,6 +1015,7 @@ public class DesignView extends JPanel implements
         }
     }
 
+   
     public DnDHandler getDndHandler() {
         return dndHandler;
     }

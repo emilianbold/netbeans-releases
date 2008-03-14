@@ -1,7 +1,7 @@
 /*
  *  Item1Cl
  *
- * Created on December 12, 2007, 1:31 AM
+ * Created on March 11, 2008, 10:41 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -9,14 +9,14 @@
 
 package o.n.m.ws.qaf.rest.patterns;
 
-import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.UriParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.PathParam;
 
 /**
  * REST Web Service
@@ -25,7 +25,7 @@ import javax.ws.rs.ConsumeMime;
  */
 
 public class Item1Cl {
-    @HttpContext
+    @Context
     private UriInfo context;
     
     /** Creates a new instance of Item1Cl */
@@ -39,7 +39,7 @@ public class Item1Cl {
      */
     @GET
     @ProduceMime("application/xml")
-    public String getXml(@UriParam("Item1URI")
+    public String getXml(@PathParam("Item1URI")
     String Item1URI) {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
@@ -53,7 +53,7 @@ public class Item1Cl {
      */
     @PUT
     @ConsumeMime("application/xml")
-    public void putXml(@UriParam("Item1URI")
+    public void putXml(@PathParam("Item1URI")
     String Item1URI, String content) {
     }
 
@@ -62,7 +62,7 @@ public class Item1Cl {
      * @param Item1URI resource URI parameter
      */
     @DELETE
-    public void delete(@UriParam("Item1URI")
+    public void delete(@PathParam("Item1URI")
     String Item1URI) {
     }
 }

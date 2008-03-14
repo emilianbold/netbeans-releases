@@ -128,7 +128,7 @@ heap_size () {
         mem=`/usr/sbin/prtconf | grep Memory | tr -dc '[0-9]'`
         ;;
     Darwin*)
-        mem=`/usr/sbin/sysctl hw.physmem | tr -d [:alpha:][:space:].:`
+        mem=`/usr/sbin/sysctl hw.memsize | tr -d [:alpha:][:space:].:`
         mem=`expr $mem / 1048576`
         cms_options=""
         ;;
@@ -185,7 +185,7 @@ case "`uname`" in
             --jdkhome '"$netbeans_jdkhome"' \
             -J-Dcom.apple.mrj.application.apple.menu.about.name=NetBeans \
             -J-Xdock:name=NetBeans \
-            '"-J-Xdock:icon=$progdir/../nb6.0/netbeans.icns"' \
+            '"-J-Xdock:icon=$progdir/../nb6.1/netbeans.icns"' \
             --branding nb \
             --clusters '"$netbeans_clusters"' \
             -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \

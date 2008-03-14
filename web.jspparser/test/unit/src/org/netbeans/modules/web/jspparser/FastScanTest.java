@@ -63,7 +63,6 @@ public class FastScanTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        clearWorkDir();
         TestUtil.setup(this);
     }
     

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,7 +39,11 @@
 
 package org.netbeans.modules.ws.qaf.rest;
 
+import java.io.File;
+import java.io.IOException;
+import javax.swing.JButton;
 import javax.swing.ListModel;
+import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
@@ -50,12 +54,14 @@ import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 
 /**
+ * Tests for New REST service client stub wizard
  *
  * @author lukas
  */
@@ -67,14 +73,16 @@ public class CStubsTSuite extends RestTestBase {
 
     @Override
     protected String getProjectName() {
-        return "RESTClient";
+        return "RESTClient"; //NOI18N
     }
 
     /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CStubsTSuite("testWizard"));
-        suite.addTest(new CStubsTSuite("testCreateSimpleStubs"));
+    public static TestSuite suite() {
+        TestSuite suite = new NbTestSuite();
+        suite.addTest(new CStubsTSuite("testWizard")); //NOI18N
+        suite.addTest(new CStubsTSuite("testCreateSimpleStubs")); //NOI18N
+        suite.addTest(new CStubsTSuite("testFromWADL")); //NOI18N
+        suite.addTest(new CStubsTSuite("testCloseProject")); //NOI18N
         return suite;
     }
 
@@ -84,14 +92,19 @@ public class CStubsTSuite extends RestTestBase {
         TestRunner.run(suite());
     }
 
+    /**
+     * Test the wizard - add 2 projects, remove 1 and then Cancel the wizard
+     */
     public void testWizard() {
         //invoke the wizard
         //RESTful Web Service Client Stubs
         String cStubsLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestClientStubs");
+        String path = FileUtil.toFile(getProject("FromEntities").getProjectDirectory()).getAbsolutePath(); //NOI18N
+        String path2 = FileUtil.toFile(getProject("FromPatterns").getProjectDirectory()).getAbsolutePath(); //NOI18N
         createNewWSFile(getProject(), cStubsLabel);
         WizardOperator wo = new WizardOperator(cStubsLabel);
         //add project
-        addProject(wo, "FromEntities");
+        addProject(wo, path);
         JListOperator jlo = new JListOperator(wo, 1);
         ListModel lm = jlo.getModel();
         try {
@@ -101,7 +114,7 @@ public class CStubsTSuite extends RestTestBase {
         assertEquals(1, lm.getSize());
         //add second project
         wo = new WizardOperator(cStubsLabel);
-        addProject(wo, "FromPatterns");
+        addProject(wo, path2);
         try {
             Thread.sleep(1000);
         } catch (InterruptedException ie) {
@@ -121,26 +134,51 @@ public class CStubsTSuite extends RestTestBase {
         wo.cancel();
     }
 
+    /**
+     * Test stubs creation from a foreign project
+     */
     public void testCreateSimpleStubs() {
-        createStubs("FromEntities");
-
+        createStubs("FromEntities"); //NOI18N
     }
 
-    protected void createStubs(String sourceProject) {
+    /**
+     * Test stubs creation from a local WADL file
+     */
+    public void testFromWADL() throws IOException {
         //RESTful Web Service Client Stubs
         String cStubsLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestClientStubs");
         createNewWSFile(getProject(), cStubsLabel);
         WizardOperator wo = new WizardOperator(cStubsLabel);
-        addProject(wo, sourceProject);
+        new JRadioButtonOperator(wo, 1).clickMouse();
+        new JTextFieldOperator(wo, 2).typeText(new File(getRestDataDir(), "testApplication.wadl").getCanonicalFile().getAbsolutePath()); //NOI18N
         //http://www.netbeans.org/issues/show_bug.cgi?id=123573
-        new JCheckBoxOperator(wo, 0).setSelected(false);
+        new JCheckBoxOperator(wo, 0).setSelected(useJMaki());
         wo.finish();
         //Generating Client Stubs From RESTful Web Services...
         String progressLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ClientStubsProgress");
         waitDialogClosed(progressLabel);
     }
 
-    private void addProject(WizardOperator wo, String project) {
+    protected void createStubs(String sourceProject) {
+        String sourcePath = FileUtil.toFile(getProject(sourceProject).getProjectDirectory()).getAbsolutePath();
+        //RESTful Web Service Client Stubs
+        String cStubsLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestClientStubs");
+        createNewWSFile(getProject(), cStubsLabel);
+        WizardOperator wo = new WizardOperator(cStubsLabel);
+        addProject(wo, sourcePath);
+        //http://www.netbeans.org/issues/show_bug.cgi?id=123573
+        new JCheckBoxOperator(wo, 0).setSelected(useJMaki());
+        wo.finish();
+        //Generating Client Stubs From RESTful Web Services...
+        String progressLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ClientStubsProgress");
+        waitDialogClosed(progressLabel);
+    }
+    
+    protected boolean useJMaki() {
+        return false;
+    }
+
+    private void addProject(WizardOperator wo, String path) {
         //Add Project...
         new JButtonOperator(wo, 5).pushNoBlock();
         //Select Project
@@ -148,10 +186,15 @@ public class CStubsTSuite extends RestTestBase {
         NbDialogOperator ndo = new NbDialogOperator(prjDlgTitle);
         JTextFieldOperator jtfo = new JTextFieldOperator(ndo, 0);
         jtfo.clearText();
-        jtfo.typeText(FileUtil.toFile(getProject(project).getProjectDirectory()).getAbsolutePath());
+        jtfo.typeText(path);
         //Open
-        new JButtonOperator(ndo, 4).requestFocus();
-        new JButtonOperator(ndo, 4).pushNoBlock();
+        JButton jb = JButtonOperator.findJButton(ndo.getContentPane(), "Open", false, false); //NOI18N
+        if (jb != null) {
+            JButtonOperator jbo = new JButtonOperator(jb);
+            jbo.pushNoBlock();
+        } else {
+            fail("Open button not found...."); //NOI18N
+        }
     }
 
     private Project getProject(String name) {

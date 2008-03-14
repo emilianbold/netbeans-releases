@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,13 +37,12 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.spring.beans.completion;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
@@ -58,6 +63,7 @@ import org.w3c.dom.Node;
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
 public class CompletionContext {
+    private ArrayList<String> existingAttributes;
 
     public static enum CompletionType {
         TAG,
@@ -96,21 +102,21 @@ public class CompletionContext {
             case XMLDefaultTokenContext.TEXT_ID:
                 String chars = token.getImage().trim();
                 if (chars != null && chars.equals("") &&
-                        token.getPrevious().getImage().trim().equals("/>")) {
+                        token.getPrevious().getImage().trim().equals("/>")) { // NOI18N
                     completionType = CompletionType.NONE;
                     break;
                 }
                 if (chars != null && chars.equals("") &&
-                        token.getPrevious().getImage().trim().equals(">")) {
+                        token.getPrevious().getImage().trim().equals(">")) { // NOI18N
                     completionType = CompletionType.VALUE;
                     break;
                 }
                 if (chars != null && !chars.equals("<") &&
-                        token.getPrevious().getImage().trim().equals(">")) {
+                        token.getPrevious().getImage().trim().equals(">")) { // NOI18N
                     completionType = CompletionType.NONE;
                     break;
                 }
-                if (chars != null && chars.startsWith("<")) {
+                if (chars != null && chars.startsWith("<")) { // NOI18N
                     typedChars = chars.substring(1);
                 }
                 completionType = CompletionType.TAG;
@@ -124,8 +130,14 @@ public class CompletionContext {
                 }
                 if (element instanceof EmptyTag) {
                     if (token != null &&
-                            token.getImage().trim().equals("/>")) {
-                        completionType = CompletionType.NONE;
+                            token.getImage().trim().equals("/>")) { // NOI18N
+                        TokenItem prevToken = token.getPrevious();
+                        if(prevToken != null && prevToken.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID
+                                && caretOffset == token.getOffset()) {
+                            completionType = CompletionType.ATTRIBUTE;
+                        } else {
+                            completionType = CompletionType.NONE;
+                        }
                         break;
                     }
                     EmptyTag tag = (EmptyTag) element;
@@ -140,19 +152,22 @@ public class CompletionContext {
                         break;
                     }
                     completionType = CompletionType.ATTRIBUTE;
-                    typedChars = "";
                     break;
                 }
 
                 if (element instanceof StartTag) {
                     if (token != null &&
-                            token.getImage().trim().equals(">")) {
-                        completionType = CompletionType.NONE;
+                            token.getImage().trim().equals(">")) { // NOI18N
+                        TokenItem prevToken = token.getPrevious();
+                        if(prevToken != null && prevToken.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID
+                                && caretOffset == token.getOffset()) {
+                            completionType = CompletionType.ATTRIBUTE;
+                        } else {
+                            completionType = CompletionType.NONE;
+                        }
                         break;
                     }
-                    if (element.getElementOffset() + 1 == this.caretOffset) {
-                        typedChars = null;
-                    } else {
+                    if (element.getElementOffset() + 1 != this.caretOffset) {
                         StartTag tag = (StartTag) element;
                         typedChars = tag.getTagName();
                     }
@@ -183,22 +198,29 @@ public class CompletionContext {
                     typedChars = token.getImage().substring(1, caretOffset - token.getOffset());
                 } else {
                     completionType = CompletionType.NONE;
-                    typedChars = "";
                 }
                 break;
 
             //user enters white-space character
             case XMLDefaultTokenContext.WS_ID:
                 completionType = CompletionType.NONE;
+                
+                if(token.getOffset() == caretOffset) {
+                    break;
+                }
+                
                 TokenItem prev = token.getPrevious();
                 while (prev != null &&
                         (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID)) {
                     prev = prev.getPrevious();
                 }
-                if ((prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
+                
+                if(prev.getTokenID().getNumericID() == XMLDefaultTokenContext.ARGUMENT_ID) {
+                    typedChars = prev.getImage();
+                    completionType = CompletionType.ATTRIBUTE;
+                } else if ((prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
                         (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID)) {
                     completionType = CompletionType.ATTRIBUTE;
-                    typedChars = "";
                 }
                 break;
 
@@ -220,6 +242,10 @@ public class CompletionContext {
         return this.doc;
     }
     
+    public DocumentContext getDocumentContext() {
+        return this.documentContext;
+    }
+    
     public int getCaretOffset() {
         return caretOffset;
     }
@@ -231,5 +257,23 @@ public class CompletionContext {
     
     public TokenItem getCurrentToken() {
         return documentContext.getCurrentToken();
+    }
+    
+    public List<String> getExistingAttributes() {
+        if(existingAttributes != null)
+            return existingAttributes;
+        existingAttributes = new ArrayList<String>();
+        TokenItem item = documentContext.getCurrentToken().getPrevious();
+        while(item != null) {
+            if(item.getTokenID().getNumericID() ==
+                    XMLDefaultTokenContext.TAG_ID)
+                break;
+            if(item.getTokenID().getNumericID() ==
+                    XMLDefaultTokenContext.ARGUMENT_ID) {
+                existingAttributes.add(item.getImage());
+            }
+            item = item.getPrevious();
+        }
+        return existingAttributes;
     }
 }

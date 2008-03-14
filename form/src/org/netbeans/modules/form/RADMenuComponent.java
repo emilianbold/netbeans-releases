@@ -218,7 +218,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
          */
         public void create() throws java.io.IOException {
             getFormModel().getComponentCreator()
-                .createComponent(new ClassSource(item.getName(), null, null),
+                .createComponent(new ClassSource(item.getName()),
                                  RADMenuComponent.this,
                                  null);
         }

@@ -45,7 +45,9 @@ import java.util.List;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -56,7 +58,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import javax.swing.AbstractAction;
 
 /**
  * Update action for mercurial: 
@@ -64,43 +65,58 @@ import javax.swing.AbstractAction;
  * 
  * @author John Rice
  */
-public class UpdateAction extends AbstractAction {
+public class UpdateAction extends ContextAction {
     
     private final VCSContext context;
+    private static String HG_TIP = "tip"; // NOI18N
 
     public UpdateAction(String name, VCSContext context) {
         this.context = context;
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
-        update(context, null);
+    public void performAction(ActionEvent e) {
+        update(context);
     }
     
-    public static void update(final VCSContext ctx, final String revision){
+    public static void update(final VCSContext ctx){
         final File root = HgUtils.getRootFile(ctx);
         if (root == null) return;
+        File[] files = ctx != null? ctx.getFiles().toArray(new File[0]): null;
         String repository = root.getAbsolutePath();
+        String rev = null;
+
+        final Update update = new Update(root, files);
+        if (!update.showDialog()) {
+            return;
+        }
+        rev = update.getSelectionRevision();
+        if(rev == null) rev = HG_TIP;
+        final boolean doForcedUpdate = update.isForcedUpdateRequested();
+        final String revStr = rev;
         
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
                 boolean bNoUpdates = true;
+                OutputLogger logger = getLogger();
                 try {
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                             NbBundle.getMessage(UpdateAction.class,
                             "MSG_UPDATE_TITLE")); // NOI18N
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                             NbBundle.getMessage(UpdateAction.class,
                             "MSG_UPDATE_TITLE_SEP")); // NOI18N
-                    List<String> list = HgCommand.doUpdateAll(root, false, revision);
+                    logger.output(
+                                NbBundle.getMessage(UpdateAction.class,
+                                "MSG_UPDATE_INFO_SEP", revStr, root.getAbsolutePath())); // NOI18N
+                    List<String> list = HgCommand.doUpdateAll(root, doForcedUpdate, revStr);
                     
                     if (list != null && !list.isEmpty()){
                         bNoUpdates = HgCommand.isNoUpdates(list.get(0));
-                        //HgUtils.clearOutputMercurialTab();
-                        HgUtils.outputMercurialTab(list);
-                        HgUtils.outputMercurialTab(""); // NOI18N
+                        //logger.clearOutput();
+                        logger.output(list);
+                        logger.output(""); // NOI18N
                     }  
                     // refresh filesystem to take account of changes
                     FileObject rootObj = FileUtil.toFileObject(root);
@@ -118,20 +134,16 @@ public class UpdateAction extends AbstractAction {
                 if(!bNoUpdates)
                     HgUtils.forceStatusRefreshProject(ctx);
 
-                HgUtils.outputMercurialTabInRed(
+                logger.outputInRed(
                         NbBundle.getMessage(UpdateAction.class,
                         "MSG_UPDATE_DONE")); // NOI18N
+                logger.output(""); // NOI18N
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
     }
     
     public boolean isEnabled() {
-        // If it's a mercurial managed repository enable Update action
-        File root = HgUtils.getRootFile(context);
-        if (root == null)
-            return false;
-        else
-            return true;
+        return HgUtils.getRootFile(context) != null;
     }     
 }

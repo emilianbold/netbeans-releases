@@ -77,6 +77,7 @@ public class TokenHierarchyTest extends NbTestCase {
         Set<LanguagePath> lps = hi.languagePaths();
         assertNotNull(lps);
         assertEquals(1, lps.size());
+        assertTrue(lps.contains(LanguagePath.get(TestLineTokenId.language())));
         
         TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
@@ -84,6 +85,26 @@ public class TokenHierarchyTest extends NbTestCase {
         ts.createEmbedding(TestPlainTokenId.language(), 0, 0);
         lps = hi.languagePaths();
         assertEquals(2, lps.size());
+    }
+    
+    public void testDocLanguagePaths() throws Exception {
+        Document doc = new ModificationTextDocument();
+        // Assign a language to the document
+        String text = "/**abc*/";
+        doc.insertString(0, text, null);
+        
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        Set<LanguagePath> lps = hi.languagePaths();
+        assertEquals(0, lps.size());
+        
+        // Now put a valid language into document
+        doc.putProperty(Language.class,TestLineTokenId.language());
+        
+        // Re-check language paths again
+        lps = hi.languagePaths();
+        assertNotNull(lps);
+        assertEquals(1, lps.size());
+        assertTrue(lps.contains(LanguagePath.get(TestLineTokenId.language())));
     }
     
     public void testSameEmbeddedToken() throws Exception {

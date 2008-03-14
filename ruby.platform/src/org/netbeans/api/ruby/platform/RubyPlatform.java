@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -22,7 +22,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,12 +44,11 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
-import org.netbeans.api.gsf.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.platform.Util;
@@ -85,9 +84,11 @@ public final class RubyPlatform {
     
     /** Required version of ruby-debug-ide gem. */
     static final String RDEBUG_IDE_VERSION = "0.1.10"; // NOI18N
+    
+    /** Required version of ruby-debug-base gem. */
     static final String RDEBUG_BASE_VERSION = "0.10.0"; // NOI18N
     
-    private Info info;
+    private final Info info;
     
     private final String id;
     private final String interpreter;
@@ -100,6 +101,7 @@ public final class RubyPlatform {
     private boolean indexInitialized;
     
     private String rdoc;
+    private String irb;
 
     private PropertyChangeSupport pcs;
 
@@ -130,6 +132,12 @@ public final class RubyPlatform {
         return platform == null ? null : platform.getGemManager();
     }
 
+    @CheckForNull
+    public static String platformDescriptionFor(Project project) {
+        RubyPlatform platform = platformFor(project);
+        return platform == null ? null : platform.getInfo().getLongDescription();
+    }
+    
     public Info getInfo() {
         return info;
     }
@@ -366,7 +374,7 @@ public final class RubyPlatform {
     }
 
     private static void showWarning(final RubyPlatform platform) {
-        String msg = NbBundle.getMessage(RubyInstallation.class, "InvalidRubyPlatform", platform.getLabel());
+        String msg = NbBundle.getMessage(RubyPlatform.class, "InvalidRubyPlatform", platform.getLabel());
         JButton closeButton = getCloseButton();
 
         Object[] options = new Object[]{closeButton};
@@ -375,14 +383,14 @@ public final class RubyPlatform {
     
     private static void showWarning(final Project project) {
         String msg =
-                NbBundle.getMessage(RubyInstallation.class, "InvalidRubyPlatformForProject",
+                NbBundle.getMessage(RubyPlatform.class, "InvalidRubyPlatformForProject",
                 ProjectUtils.getInformation(project).getDisplayName());
         JButton closeButton = getCloseButton();
 
         CustomizerProvider customizer = project.getLookup().lookup(CustomizerProvider.class);
         Object[] options;
         JButton propertiesButton =
-                new JButton(NbBundle.getMessage(RubyInstallation.class, "Properties"));
+                new JButton(NbBundle.getMessage(RubyPlatform.class, "Properties"));
         if (customizer != null) {
             options = new Object[]{propertiesButton, closeButton};
         } else {
@@ -397,9 +405,9 @@ public final class RubyPlatform {
     private static Object showDialog(String msg, Object[] options) {
         DialogDescriptor descriptor =
                 new DialogDescriptor(msg,
-                NbBundle.getMessage(RubyInstallation.class, "MissingRuby"), true, options,
+                NbBundle.getMessage(RubyPlatform.class, "MissingRuby"), true, options,
                 options[0],
-                DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(RubyInstallation.class), null);
+                DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(RubyPlatform.class), null);
         descriptor.setMessageType(NotifyDescriptor.Message.ERROR_MESSAGE);
         descriptor.setModal(true);
         Dialog dlg = null;
@@ -416,9 +424,9 @@ public final class RubyPlatform {
 
     private static JButton getCloseButton() {
         JButton closeButton =
-                new JButton(NbBundle.getMessage(RubyInstallation.class, "CTL_Close"));
+                new JButton(NbBundle.getMessage(RubyPlatform.class, "CTL_Close"));
         closeButton.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(RubyInstallation.class, "AD_Close"));
+                NbBundle.getMessage(RubyPlatform.class, "AD_Close"));
         return closeButton;
     }
 
@@ -473,7 +481,7 @@ public final class RubyPlatform {
      * Try to find a path to the <tt>toFind</tt> executable in the "Ruby
      * specific" manner.
      *
-     * @param toFind executable to be find, e.g. rails, rake, ...
+     * @param toFind executable to be find, e.g. rails, rake, rdoc, irb ...
      * @return path to the found executable; might be <tt>null</tt> if not
      *         found.
      */
@@ -489,10 +497,8 @@ public final class RubyPlatform {
                 LOGGER.warning("Could not find Ruby interpreter executable when searching for '" + toFind + "'"); // NOI18N
             }
             if (exec == null && hasRubyGemsInstalled()) {
-                List<String> repos = gemManager.getRepositories();
-                repos.add(0, gemManager.getGemHome()); // XXX is not a GEM_HOME always part of GEM_PATH?
-                for (String repo : repos) {
-                    String libGemBinDir = repo + File.separator + "bin"; // NOI18N
+                for (File repo : gemManager.getRepositories()) {
+                    String libGemBinDir = repo.getAbsolutePath() + File.separator + "bin"; // NOI18N
                     exec = RubyPlatform.findExecutable(libGemBinDir, toFind);
                     if (exec != null) {
                         break;
@@ -515,6 +521,29 @@ public final class RubyPlatform {
         return exec;
     }
 
+    /**
+     * The same as {@link #findExecutable(String)}, but if fails and withSuffix
+     * is set to true, it tries to find also executable with the suffix with
+     * which was compiled the interpreter. E.g. for <em>ruby1.8.6-p111</em>
+     * tries to find <em>irb1.8.6-p111</em>.
+     * 
+     * @param toFind see {@link #findExecutable(String)}
+     * @param withSuffix whether to try also suffix version when non-suffix is not found
+     * @return see {@link #findExecutable(String)}
+     */
+    public String findExecutable(final String toFind, final boolean withSuffix) {
+        String exec = findExecutable(toFind);
+        if (exec == null && withSuffix && !isJRuby()) { // JRuby is not compiled with custom suffix
+            String name = new File(getInterpreter(true)).getName();
+            if (name.startsWith("ruby")) { // NOI18N
+                String suffix = name.substring(4);
+                // Try to find with suffix (#120441)
+                exec = findExecutable(toFind + suffix);
+            }
+        }
+        return exec;
+    }
+
     private static String findExecutable(final String dir, final String toFind) {
         String exec = dir + File.separator + toFind;
         if (!new File(exec).isFile()) {
@@ -526,17 +555,16 @@ public final class RubyPlatform {
 
     public String getRDoc() {
         if (rdoc == null) {
-            rdoc = findExecutable("rdoc"); // NOI18N
-            if (rdoc == null && !isJRuby()) {
-                String name = new File(getInterpreter(true)).getName();
-                if (name.startsWith("ruby")) { // NOI18N
-                    String suffix = name.substring(4);
-                    // Try to find with suffix (#120441)
-                    rdoc = findExecutable("rdoc" + suffix); // NOI18N
-                }
-            }
+            rdoc = findExecutable("rdoc", true); // NOI18N
         }
         return rdoc;
+    }
+
+    public String getIRB() {
+        if (irb == null) {
+            irb = findExecutable(isJRuby() ? "jirb" : "irb", true); // NOI18N
+        }
+        return irb;
     }
 
     public FileObject getRubyStubs() {
@@ -594,7 +622,7 @@ public final class RubyPlatform {
 
     public boolean installFastDebugger() {
         assert gemManager != null : "has gemManager when trying to install fast debugger";
-        gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false);
+        gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, RDEBUG_IDE_VERSION);
         return hasFastDebuggerInstalled();
     }
 
@@ -617,7 +645,7 @@ public final class RubyPlatform {
         //        }
 
         while (file != null) {
-            if (file == rubyLibFo || file == rubyStubs || file == gemHome) {
+            if (file.equals(rubyLibFo) || file.equals(rubyStubs) || file.equals(gemHome)) {
                 return file;
             }
 
@@ -701,7 +729,9 @@ public final class RubyPlatform {
      * i.e. a gem was removed or a new gem was installed.
      */
     public void fireGemsChanged() {
-        pcs.firePropertyChange("gems", null, null); //NOI18N
+        if (pcs != null) {
+            pcs.firePropertyChange("gems", null, null); //NOI18N
+        }
     }
     
     @Override
@@ -727,7 +757,7 @@ public final class RubyPlatform {
     }
 
     public @Override String toString() {
-        return "RubyPlatform[id:" + getID() + ", label:" + getLabel() + ", " + getInterpreter() + "]"; // NOI18N
+        return "RubyPlatform[id:" + getID() + ", label:" + getLabel() + ", " + getInterpreter() + ", info: " + info + "]"; // NOI18N
     }
 
     public static class Info {
@@ -743,12 +773,11 @@ public final class RubyPlatform {
         static final String GEM_PATH = "gem_path"; // NOI18N
         static final String GEM_VERSION = "gem_version"; // NOI18N
 
-        private String kind;
-        private String version;
+        private final String kind;
+        private final String version;
         private String jversion;
         private String patchlevel;
         private String releaseDate;
-        private String executable;
         private String platform;
         private String gemHome;
         private String gemPath;
@@ -760,7 +789,6 @@ public final class RubyPlatform {
             this.jversion = props.getProperty(JRUBY_VERSION);
             this.patchlevel = props.getProperty(RUBY_PATCHLEVEL);
             this.releaseDate = props.getProperty(RUBY_RELEASE_DATE);
-            this.executable = props.getProperty(RUBY_EXECUTABLE);
             this.platform = props.getProperty(RUBY_PLATFORM);
             this.gemHome = props.getProperty(GEM_HOME);
             this.gemPath = props.getProperty(GEM_PATH);
@@ -775,13 +803,12 @@ public final class RubyPlatform {
         static Info forDefaultPlatform() {
             // NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel")
             Info info = new Info("JRuby", "1.8.6"); // NOI18N
-            info.jversion = "1.1RC1"; // NOI18N
+            info.jversion = "1.1RC2"; // NOI18N
             info.patchlevel = "5512"; // NOI18N
             info.releaseDate = "2008-01-12"; // NOI18N
-            info.executable = null;
             info.platform = "java"; // NOI18N
             File jrubyHome = InstalledFileLocator.getDefault().locate(
-                    "jruby-1.1RC1", "org.netbeans.modules.ruby.platform", false);  // NOI18N
+                    "jruby-1.1RC2", "org.netbeans.modules.ruby.platform", false);  // NOI18N
             // XXX handle valid case when it is not available, see #124534
             assert (jrubyHome != null && jrubyHome.isDirectory()) : "Default platform available";
             info.gemHome = FileUtil.toFile(FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby/gems/1.8")).getAbsolutePath(); // NOI18N
@@ -791,15 +818,17 @@ public final class RubyPlatform {
         }
         
         public String getLabel(final boolean isDefault) {
+            String ver = isJRuby() ? jversion
+                    : version + (patchlevel != null ? "-p" + patchlevel : ""); // NOI18N
             return (isDefault ? NbBundle.getMessage(RubyPlatform.class, "RubyPlatformManager.CTL_BundledJRubyLabel") : kind)
-                    + " (" + (isJRuby() ? jversion : version) + ')'; // NOI18N
+                    + " (" + ver + ')'; // NOI18N
         }
         
         public String getLongDescription() {
             StringBuilder sb = new StringBuilder(kind + ' ' + version + ' ' + '(' + releaseDate);
             if (patchlevel != null) {
                 sb.append(" patchlevel ").append(patchlevel); // NOI18N
-        }
+            }
             sb.append(") [").append(platform).append(']'); // NOI18N
             return sb.toString();
         }
@@ -807,10 +836,6 @@ public final class RubyPlatform {
         public boolean isJRuby() {
             return "JRuby".equals(kind); // NOI18N
         }
-
-//        public String getExecutable() {
-//            return executable;
-//        }
 
         public void setGemHome(String gemHome) {
             this.gemHome = gemHome;
@@ -854,6 +879,10 @@ public final class RubyPlatform {
         
         public String getVersion() {
             return version;
+        }
+
+        public @Override String toString() {
+            return "RubyPlatform$Info[GEM_HOME:" + getGemHome() + ", GEM_PATH: " + getGemPath() + "]"; // NOI18N
         }
 
     }

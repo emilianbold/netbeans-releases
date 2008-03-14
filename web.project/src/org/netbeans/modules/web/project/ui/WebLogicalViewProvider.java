@@ -96,6 +96,7 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenDatasourceSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -108,9 +109,9 @@ import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
-import org.netbeans.modules.web.project.SourceRoots;
-import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -235,11 +236,11 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
     // Private innerclasses ----------------------------------------------------
 
     private static final String[] BREAKABLE_PROPERTIES = new String[] {
-        WebProjectProperties.JAVAC_CLASSPATH,
+        ProjectProperties.JAVAC_CLASSPATH,
         WebProjectProperties.DEBUG_CLASSPATH,
-        WebProjectProperties.RUN_TEST_CLASSPATH, 
+        ProjectProperties.RUN_TEST_CLASSPATH, 
         WebProjectProperties.DEBUG_TEST_CLASSPATH, 
-        WebProjectProperties.JAVAC_TEST_CLASSPATH,
+        ProjectProperties.JAVAC_TEST_CLASSPATH,
         WebProjectProperties.WAR_CONTENT_ADDITIONAL,
         WebProjectProperties.WEB_DOCBASE_DIR
     };
@@ -260,8 +261,6 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
         System.arraycopy(testRootProps, 0, result, BREAKABLE_PROPERTIES.length + srcRootProps.length, testRootProps.length);
         return result;
     }        
-    
-    private static Image brokenProjectBadge = Utilities.loadImage( "org/netbeans/modules/web/project/ui/resources/brokenProjectBadge.gif" ); // NOI18N
     
     /** Filter node containin additional features for the J2SE physical
      */
@@ -456,12 +455,14 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
         
         public Image getMyIcon( int type ) {
             Image original = super.getIcon( type );                
-            return broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+            return broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? 
+                Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) : original;
         }
 
         public Image getMyOpenedIcon( int type ) {
             Image original = super.getOpenedIcon(type);                
-            return broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;            
+            return broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? 
+                Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) : original;            
         }            
 
         public String getHtmlDisplayName() {
@@ -581,7 +582,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
 
             public void actionPerformed(ActionEvent e) {
                 try {
-                    helper.requestSave();
+                    helper.requestUpdate();
                     BrokenReferencesSupport.showCustomizer(helper.getAntProjectHelper(), resolver, getBreakableProperties(), new String[]{WebProjectProperties.JAVA_PLATFORM});
                     run();
                 } catch (IOException ioe) {

@@ -46,8 +46,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.api.gsf.Index.SearchResult;
-import org.netbeans.api.gsf.NameKind;
+import org.netbeans.modules.gsf.api.Index.SearchResult;
+import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.napi.gsfret.source.ClassIndex;
 import org.netbeans.napi.gsfret.source.Source;
 import org.openide.filesystems.FileObject;
@@ -89,7 +89,7 @@ public abstract class ClassIndexImpl {
     
     public abstract FileObject[] getSourceRoots ();
    
-    public abstract BinaryAnalyser getBinaryAnalyser ();
+//    public abstract BinaryAnalyser getBinaryAnalyser ();
     
     public abstract SourceAnalyser getSourceAnalyser ();
     
@@ -99,11 +99,15 @@ public abstract class ClassIndexImpl {
     
     // BEGIN TOR MODIFICATIONS
     //public abstract void gsfStore(Set<Map<String,String>> fieldToData, Set<String> toDelete) throws IOException;
-    public abstract void gsfSearch(final String primaryField, final String name, final NameKind kind, 
+// For index browser
+    public abstract void search(final String primaryField, final String name, final NameKind kind, 
             final Set<ClassIndex.SearchScope> scope, /*final ResultConvertor<T> convertor,*/ 
-            final Set<SearchResult> result) throws IOException;
+            final Set<SearchResult> result, Set<String> terms) throws IOException;
     public abstract URL getRoot();
     public abstract File getSegment();
+    public abstract Map<String,String> getTimeStamps() throws IOException;
+
+    public abstract void storeEmpty();
     // END TOR MODIFICATIONS
     
 }

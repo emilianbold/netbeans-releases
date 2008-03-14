@@ -271,7 +271,10 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         
         ElementHandle<? extends Element> eh = node.getDescritption().elementHandle;
 
-        JavaSource js = JavaSource.forFileObject( root.getDescritption().fileObject );
+        final JavaSource js = JavaSource.forFileObject( root.getDescritption().fileObject );
+        if (js == null) {
+            return null;
+        }
         JavaDocCalculator calculator = new JavaDocCalculator( eh );
         final CompilationInfo[] ci = new CompilationInfo[1];
         

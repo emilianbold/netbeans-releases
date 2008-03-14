@@ -167,6 +167,9 @@ tokens {
 	CSM_USING_DIRECTIVE<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 	CSM_USING_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 
+        CSM_CTOR_INITIALIZER<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_CTOR_INITIALIZER_LIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+
 	CSM_QUALIFIED_ID<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 
 	////////// STATEMENTS //////////
@@ -2023,13 +2026,17 @@ ctor_body
 
 ctor_initializer
 	:
-	COLON superclass_init (COMMA superclass_init)*
+	COLON! superclass_init (COMMA! superclass_init)*
+
+        {#ctor_initializer = #(#[CSM_CTOR_INITIALIZER_LIST, "CSM_CTOR_INITIALIZER_LIST"], #ctor_initializer);}
 	;
 
 superclass_init
 	{String q;} 
 	: 
-	q = qualified_id LPAREN (expression_list)? RPAREN
+	q = qualified_id LPAREN! (expression_list)? RPAREN!
+
+        {#superclass_init = #(#[CSM_CTOR_INITIALIZER, "CSM_CTOR_INITIALIZER"], #superclass_init);}
 	;
 
 dtor_head[boolean definition]
@@ -2191,7 +2198,7 @@ exception_specification
 	{String so;}
 	:	LITERAL_throw 
 		LPAREN 
-		(exception_type_id (COMMA exception_type_id)? )? 
+		(exception_type_id (COMMA exception_type_id)* )? 
 		RPAREN
 	;
 
@@ -2733,7 +2740,7 @@ remainder_expression
 
 conditional_expression
 	:	
-		logical_or_expression
+		general_logical_expression
 		(QUESTIONMARK expression COLON conditional_expression)?
 	;
 
@@ -2743,6 +2750,15 @@ constant_expression
 		{#constant_expression = #(#[CSM_EXPRESSION, "CSM_EXPRESSION"], #constant_expression);}
 	;
 
+/* Due to problems with stack overflow on expressions like ((((....(((1+1)+1)+...)+1)
+   RepositoryValidationTest started to fail, so we intentionally loose operator precedence here 
+   greatly reducing peak stack size */
+general_logical_expression
+        :
+                relational_expression ((OR | AND | BITWISEOR | BITWISEXOR | AMPERSAND | NOTEQUAL | EQUAL) relational_expression)*
+        ;
+
+/*
 logical_or_expression
 	:	
 		logical_and_expression (OR logical_and_expression)* 
@@ -2772,7 +2788,7 @@ equality_expression
 	:	
 		relational_expression ((NOTEQUAL | EQUAL) relational_expression)*
 	;
-
+*/
 relational_expression
 	:	shift_expression
 		(options {warnWhenFollowAmbig = false;}:
@@ -3367,13 +3383,13 @@ post_cast_unambig_unary_optor : (TILDE | NOT);
 // it's better to have them alphabetically ordered...
 
 protected
-literal_asm : LITERAL__asm|LITERAL___asm|LITERAL___asm__;
+literal_asm : LITERAL_asm|LITERAL__asm|LITERAL___asm|LITERAL___asm__;
 
 protected
 literal_cdecl : LITERAL__cdecl|LITERAL___cdecl;
 
 protected
-literal_const : LITERAL_const | LITERAL___const;
+literal_const : LITERAL_const|LITERAL___const|LITERAL___const__;
 
 protected
 literal_declspec : LITERAL__declspec|LITERAL___declspec;
@@ -3388,10 +3404,10 @@ protected
 literal_int64 : LITERAL__int64|LITERAL___int64;
 
 protected
-literal_signed: LITERAL___signed__ | LITERAL_signed;
+literal_signed: LITERAL_signed|LITERAL___signed|LITERAL___signed__;
 
 protected
-literal_unsigned: LITERAL___unsigned__ | LITERAL_unsigned;
+literal_unsigned: LITERAL_unsigned|LITERAL___unsigned__;
 
 protected
 literal_near : LITERAL__near|LITERAL___near;
@@ -3403,7 +3419,7 @@ protected
 literal_stdcall : LITERAL__stdcall|LITERAL___stdcall;
 
 protected
-literal_volatile : LITERAL_volatile|LITERAL___volatile__;
+literal_volatile : LITERAL_volatile|LITERAL___volatile|LITERAL___volatile__;
 
 protected
 literal_typeof : LITERAL_typeof | LITERAL___typeof | LITERAL___typeof__ ;

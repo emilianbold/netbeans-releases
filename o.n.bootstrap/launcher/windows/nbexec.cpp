@@ -105,16 +105,41 @@ static void normalizePath(char *userdir);
 static bool runAutoUpdater(bool firstStart, const char * root);
 static bool runAutoUpdaterOnClusters(bool firstStart);
 
-static int findHttpProxyFromRegistry(char **proxy, char **nonProxy);
+static int findProxiesFromRegistry(char **proxy, char **nonProxy, char **socksProxy);
 static int findHttpProxyFromEnv(char **proxy, char **nonProxy);
 
 static char* processAUClustersList(char *userdir);
 static int removeAUClustersListFile(char *userdir);
 
 int checkForNewUpdater(const char *basePath);
-int createProcessNoVirt(const char *exePath, char *argv[]);
+int createProcessNoVirt(const char *exePath, char *argv[], DWORD *retCode = 0);
+double getPreciseTime();
+
+#define HELP_STRING \
+"Usage: launcher {options} arguments\n\
+\n\
+General options:\n\
+  --help                show this help\n\
+  --jdkhome <path>      path to JDK\n\
+  -J<jvm_option>        pass <jvm_option> to JVM\n\
+\n\
+  --cp:p <classpath>    prepend <classpath> to classpath\n\
+  --cp:a <classpath>    append <classpath> to classpath\n\
+\n"
 
 int main(int argc, char *argv[]) {
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "-h") == 0
+                || strcmp(argv[i], "-help") == 0
+                || strcmp(argv[i], "--help") == 0
+                || strcmp(argv[i], "/?") == 0)
+        {
+            printf(HELP_STRING);
+            return 0;
+        }
+    }
+    
     char exepath[1024 * 4];
     char buf[1024 * 8], *pc;
   
@@ -328,7 +353,8 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
     addLauncherJarsToClassPath(plathome);
     addJdkJarsToClassPath(jdkhome);
 
-    char *proxy, *nonProxyHosts;
+    char *proxy = 0, *nonProxyHosts = 0;
+    char *socksProxy = 0;
     if (0 == findHttpProxyFromEnv(&proxy, &nonProxyHosts)) {
         sprintf(buf, "-Dnetbeans.system_http_proxy=%s", proxy);
         addOption(buf);
@@ -337,13 +363,25 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
         free(proxy);
         free(nonProxyHosts);
     }
-    else if (0 == findHttpProxyFromRegistry(&proxy, &nonProxyHosts)) {
-        sprintf(buf, "-Dnetbeans.system_http_proxy=%s", proxy);
-        addOption(buf);
-        sprintf(buf, "-Dnetbeans.system_http_non_proxy_hosts=%s", nonProxyHosts);
-        addOption(buf);
-        free(proxy);
-        free(nonProxyHosts);
+    else if (0 == findProxiesFromRegistry(&proxy, &nonProxyHosts, &socksProxy)) {
+        if (proxy)
+        {
+            sprintf(buf, "-Dnetbeans.system_http_proxy=%s", proxy);
+            addOption(buf);
+            free(proxy);
+        }
+        if (nonProxyHosts)
+        {
+            sprintf(buf, "-Dnetbeans.system_http_non_proxy_hosts=%s", nonProxyHosts);
+            addOption(buf);
+            free(nonProxyHosts);
+        }
+        if (socksProxy)
+        {
+            snprintf(buf, 10240, "-Dnetbeans.system_socks_proxy=%s", socksProxy);
+            addOption(buf);            
+            free(socksProxy);
+        }
     }
 
     // see BugTraq #5043070
@@ -400,7 +438,34 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
     fflush(stdout);
 #endif
     //_spawnv(_P_WAIT, javapath, args);
-    createProcessNoVirt(javapath, args);
+    double start = getPreciseTime();
+    DWORD retCode = 0;
+    if (!createProcessNoVirt(javapath, args, &retCode) && retCode == 1 && (getPreciseTime() - start < 2))
+    {
+        // workaround for 64-bit java
+        int i = 0;
+        bool optionClient = false;
+        while (args[i])
+        {
+            if (strcmp(args[i], "-client") == 0 || strcmp(args[i], "\"-client\"") == 0)
+            {
+                optionClient = true;
+                int k = i;
+                while (args[k])
+                {
+                    args[k] = args[k+1];
+                    k++;
+                }
+            }
+            else
+                i++;
+        }
+        if (optionClient)
+        {
+            printf("Rerunnig without \"-client\" option...\n");
+            createProcessNoVirt(javapath, args);
+        }
+    }
 }
 
 //////////
@@ -529,13 +594,13 @@ static int findJdkFromRegistry(const char* keyname, char jdkhome[])
     return rc;
 }
 
-int findHttpProxyFromRegistry(char **proxy, char **nonProxy)
+int findProxiesFromRegistry(char **proxy, char **nonProxy, char **socksProxy)
 {
     HKEY hkey = NULL;
     char *proxyServer = NULL;
     char *proxyOverrides = NULL;
     int rc = 1;
-    *proxy = NULL; *nonProxy = NULL;
+    *proxy = NULL; *nonProxy = NULL; *socksProxy = NULL;
   
     if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Internet settings", 0, KEY_READ, &hkey) == 0) {
         DWORD proxyEnable, size = sizeof proxyEnable;
@@ -550,7 +615,24 @@ int findHttpProxyFromRegistry(char **proxy, char **nonProxy)
                     *proxy = strdup(proxyServer);
                     rc = 0;
                 } else {
-                    char *pc = strstr(proxyServer, "http=");
+                    char *pc = strstr(proxyServer, "socks=");
+                    if (pc)
+                    {
+                        pc += strlen("socks=");
+                        if (*pc != '\0' && *pc != ';')
+                        {
+                            char *end = strchr(pc, ';');
+                            if (end)
+                            {
+                                *socksProxy = (char *) malloc(end - pc + 1);
+                                strncpy(*socksProxy, pc, end - pc);
+                            }
+                            else
+                                *socksProxy = strdup(pc);
+                            rc = 0;
+                        }
+                    }
+                    pc = strstr(proxyServer, "http=");
                     if (pc != NULL) {
                         pc += strlen("http=");
                         char *qc = strstr(pc, ";");
@@ -734,27 +816,7 @@ void parseArgs(int argc, char *argv[]) {
 
 #ifdef DEBUG
             printf("parseArgs - processing %s\n", arg);
-#endif
-
-        if ((strcmp("-h", arg) == 0
-            || strcmp("-help", arg) == 0
-            || strcmp("--help", arg) == 0
-            || strcmp("/?", arg) == 0
-            ) && runnormal) {
-            fprintf(stdout, "Usage: launcher {options} arguments\n\
-\n\
-General options:\n\
-  --help                show this help\n\
-  --jdkhome <path>      path to JDK\n\
-  -J<jvm_option>        pass <jvm_option> to JVM\n\
-\n\
-  --cp:p <classpath>    prepend <classpath> to classpath\n\
-  --cp:a <classpath>    append <classpath> to classpath\n\
-\n");  
-            fflush(stdout);
-            arg = "--help";
-        }
-        
+#endif        
 
         if (0 == strcmp("--userdir", arg)) {
             if (argc > 0) {
@@ -849,34 +911,17 @@ General options:\n\
     }
 }
 
-void normalizePath(char *userdir) {
-    char buf[MAX_PATH], *pc;
-
-    // absolutize userdir
-    if (NULL == _fullpath(buf, userdir, MAX_PATH))
-        return;
-    
-    userdir[0] = '\0';
-
-    if (buf[0] == '\\' && buf[1] == '\\') { // UNC share
-        userdir[0] = '\\';
-        userdir[1] = '\\';
-        userdir[2] = '\0';
-        pc = strtok(buf + 2, "/\\");
-    } else {
-        pc = strtok(buf, "/\\");
+void normalizePath(char *userdir)
+{
+    char tmp[MAX_PATH] = "";
+    int i = 0;
+    while (userdir[i] && i < MAX_PATH - 1)
+    {
+        tmp[i] = userdir[i] == '/' ? '\\' : userdir[i];
+        i++;
     }
-  
-    while (pc != NULL) {
-        if (*pc != '\0') {
-            if (userdir[0] != '\0' && userdir[strlen(userdir) - 1] != '\\')
-                strcat(userdir, "\\");
-            strcat(userdir, pc);
-        }
-        pc = strtok(NULL,  "/\\");
-    }
-    if (userdir[1] == ':' && userdir[2] == '\0')
-        strcat(userdir, "\\");
+    tmp[i] = '\0';
+    _fullpath(userdir, tmp, MAX_PATH);
 }
 
 int fileExists(const char* path) {
@@ -971,7 +1016,7 @@ int checkForNewUpdater(const char *basePath)
 }
 
 // creates process and disable virtualization (Win VISTA fix)
-int createProcessNoVirt(const char *exePath, char *argv[])
+int createProcessNoVirt(const char *exePath, char *argv[], DWORD *retCode)
 {
     const int maxCmdLineLen = 32*1024;
     int filled = 0;
@@ -1003,23 +1048,41 @@ int createProcessNoVirt(const char *exePath, char *argv[])
         MessageBox(NULL, "Failed to create process.", "Error", MB_OK | MB_ICONSTOP);
         return -1;
     }
-    HANDLE hToken;
-    if (OpenProcessToken(pi.hProcess, TOKEN_ALL_ACCESS, &hToken))
+    OSVERSIONINFO osvi = {0};
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    if (GetVersionEx(&osvi) && osvi.dwMajorVersion == 6)    // check it is Win VISTA
     {
-        DWORD tokenInfoVal = 0;
-        if (!SetTokenInformation(hToken, (TOKEN_INFORMATION_CLASS) 24, &tokenInfoVal, sizeof(DWORD)))
+        HANDLE hToken;
+        if (OpenProcessToken(pi.hProcess, TOKEN_ALL_ACCESS, &hToken))
         {
-            // invalid token information class (24) is OK, it means there is no folder virtualization on current system
-            if (GetLastError() != ERROR_INVALID_PARAMETER)
-                MessageBox(NULL, "Failed to set token information.", "Warning", MB_OK | MB_ICONWARNING);
+            DWORD tokenInfoVal = 0;
+            if (!SetTokenInformation(hToken, (TOKEN_INFORMATION_CLASS) 24, &tokenInfoVal, sizeof(DWORD)))
+            {
+                // invalid token information class (24) is OK, it means there is no folder virtualization on current system
+                if (GetLastError() != ERROR_INVALID_PARAMETER)
+                    MessageBox(NULL, "Failed to set token information.", "Warning", MB_OK | MB_ICONWARNING);
+            }
+            CloseHandle(hToken);
         }
-        CloseHandle(hToken);
+        else
+            MessageBox(NULL, "Failed to open process token.", "Warning", MB_OK | MB_ICONWARNING);
     }
-    else
-        MessageBox(NULL, "Failed to open process token.", "Warning", MB_OK | MB_ICONWARNING);
     ResumeThread(pi.hThread);
     WaitForSingleObject(pi.hProcess, INFINITE);
+    if (retCode)
+        GetExitCodeProcess(pi.hProcess, retCode);
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
     return 0;
 }
+
+
+double getPreciseTime()
+{
+    static LARGE_INTEGER perfFrequency = {0};
+    LARGE_INTEGER currentCount;
+    if (perfFrequency.QuadPart == 0)
+        QueryPerformanceFrequency(&perfFrequency);
+    QueryPerformanceCounter(&currentCount);
+    return currentCount.QuadPart / (double) perfFrequency.QuadPart;
+} 

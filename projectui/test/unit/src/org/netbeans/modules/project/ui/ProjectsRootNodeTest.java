@@ -46,9 +46,14 @@ import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.swing.Action;
 import junit.framework.TestCase;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.actions.TestSupport;
@@ -63,6 +68,7 @@ import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /** 
@@ -111,7 +117,7 @@ public class ProjectsRootNodeTest extends NbTestCase {
         super.tearDown();
     }
 
-    public void testBehaviourOfProjectsLogicNode() throws InterruptedException {
+    public void testBehaviourOfProjectsLogicNode() throws Exception {
         Node logicalView = new ProjectsRootNode(ProjectsRootNode.LOGICAL_VIEW);
         L listener = new L();
         logicalView.addNodeListener(listener);
@@ -139,6 +145,10 @@ public class ProjectsRootNodeTest extends NbTestCase {
         }
         
         listener.assertEvents("Goal is to receive no events at all", 0);
+        assertTrue("Finished", OpenProjects.getDefault().openProjects().isDone());
+        assertFalse("Not cancelled, Finished", OpenProjects.getDefault().openProjects().isCancelled());
+        Project[] arr = OpenProjects.getDefault().openProjects().get();
+        assertEquals("30", 30, arr.length);
     }
     
     private static class L implements NodeListener {
@@ -176,7 +186,8 @@ public class ProjectsRootNodeTest extends NbTestCase {
         
     }
     
-    private static class TestProjectOpenedHookImpl extends ProjectOpenedHook {
+    private static class TestProjectOpenedHookImpl extends ProjectOpenedHook 
+    implements Runnable {
         
         public static CountDownLatch toOpen = new CountDownLatch(30);
         public static int opened = 0;
@@ -193,7 +204,24 @@ public class ProjectsRootNodeTest extends NbTestCase {
             closed++;
         }
         
+        Project[] arr;
+        public void run() {
+            try {
+                arr = OpenProjects.getDefault().openProjects().get(50, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException ex) {
+                fail("Wrong exception");
+            } catch (ExecutionException ex) {
+                fail("Wrong exception");
+            } catch (TimeoutException ex) {
+                // OK
+            }
+        }
+        
         protected void projectOpened() {
+            assertFalse("Running", OpenProjects.getDefault().openProjects().isDone());
+            // now verify that other threads do not see results from the Future
+            RequestProcessor.getDefault().post(this).waitFinished();
+            assertNull("TimeoutException thrown", arr);
             if (toWaitOn != null) {
                 try {
                     toWaitOn.await();

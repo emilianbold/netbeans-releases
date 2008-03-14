@@ -39,15 +39,20 @@
 package org.netbeans.jellytools;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.io.File;
+import javax.swing.JRadioButton;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
+import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.JTextAreaOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
@@ -105,7 +110,14 @@ public class PluginsOperator extends NbDialogOperator {
      */
     public static PluginsOperator invoke() {
         new ActionNoBlock(TOOLS_ITEM + "|" + PLUGINS_ITEM, null).perform();
-        return new PluginsOperator();
+        // increase timeout to 120 seconds
+        long oldTime = JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout");
+	JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 120000);
+        try {
+            return new PluginsOperator();
+        } finally {
+            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", oldTime);
+        }
     }
 
     /** Wait for JTabbedPane.
@@ -241,7 +253,7 @@ public class PluginsOperator extends NbDialogOperator {
      * @return JTabbedPaneOperator instance
      */
     public JTabbedPaneOperator selectSettings() {
-        String settingsTitle = org.netbeans.jellytools.Bundle.getStringTrimmed(
+        String settingsTitle = Bundle.getStringTrimmed(
                 "org.netbeans.modules.autoupdate.ui.Bundle",
                 "SettingsTab_displayName");
         return selectTab(settingsTitle);
@@ -382,7 +394,8 @@ public class PluginsOperator extends NbDialogOperator {
      *      <li>in "NetBeans IDE Installer" dialog click Next</li>
      *      <li>click "I accept..." check box</li>
      *      <li>click Install button</li>
-     *      <li>wait until the module is turned on (message in main window status bar)</li>
+     *      <li>wait until message that plugins were successfully installed appears</li>
+     *      <li>if restart is not needed wait until the module is turned on (message in main window status bar)</li>
      *      <li>click Finish button to dismiss the dialog</li>
      * </ul>
      */
@@ -402,14 +415,23 @@ public class PluginsOperator extends NbDialogOperator {
         }
         acceptCheckboxOper.push();
         // "Install"
-        String installInDialogLabel = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.ui.wizards.Bundle", "InstallUnitWizardModel_Buttons_Install");
+        String installInDialogLabel = Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.ui.wizards.Bundle", "InstallUnitWizardModel_Buttons_Install");
         new JButtonOperator(installerOper, installInDialogLabel).push();
-        // check Status line
-        // "Turning on modules...done."
-        String turningOnLabel = Bundle.getString("org.netbeans.core.startup.Bundle", "MSG_finish_enable_modules");
-        // increase timeout to 120 seconds
-        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 120000);
-        MainWindowOperator.getDefault().waitStatusText(turningOnLabel);
+        // "The NetBeans IDE Installer has successfully installed the following plugins:"
+        String installedLabel = Bundle.getString("org.netbeans.modules.autoupdate.ui.wizards.Bundle", "InstallStep_InstallDone_Text");
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 120000);
+        new JTextAreaOperator(installerOper, installedLabel);
+        // "Restart IDE Now"
+        String restartNowLabel = Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.ui.wizards.Bundle", "InstallUnitWizardModel_Buttons_RestartNow");
+        JRadioButton restartButton = JRadioButtonOperator.findJRadioButton((Container)installerOper.getSource(), restartNowLabel, true, true);
+        if(restartButton == null) {
+            // check Status line
+            // "Turning on modules...done."
+            String turningOnLabel = Bundle.getString("org.netbeans.core.startup.Bundle", "MSG_finish_enable_modules");
+            // increase timeout to 120 seconds
+            MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 120000);
+            MainWindowOperator.getDefault().waitStatusText(turningOnLabel);
+        }
         installerOper.finish();
     }
 }

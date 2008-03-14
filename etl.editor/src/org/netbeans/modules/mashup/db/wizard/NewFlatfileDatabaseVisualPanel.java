@@ -12,9 +12,14 @@ import javax.swing.JPanel;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.netbeans.modules.mashup.db.ui.AxionDBConfiguration;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+
 
 public final class NewFlatfileDatabaseVisualPanel extends JPanel {
-
+    private static transient final Logger mLogger = Logger.getLogger(NewFFDBAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    public String nbBundle1 = mLoc.t("BUND265: Create Mashup Database");
     class NameFieldKeyAdapter extends KeyAdapter {
 
         /**
@@ -52,7 +57,7 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
 
     @Override
     public String getName() {
-        return "Create Mashup Database";
+        return nbBundle1.substring(15);
     }
 
     public void clearText() {
@@ -113,16 +118,20 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
 
         setMaximumSize(new java.awt.Dimension(10000, 4000));
         setPreferredSize(new java.awt.Dimension(10, 4));
+        String nbBundle7 = mLoc.t("BUND266: Database Name");
+        jLabel1.setDisplayedMnemonic(nbBundle7.substring(15).charAt(0));
+        jLabel1.getAccessibleContext().setAccessibleName(nbBundle7.substring(15));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "Database Name");
-
-        dbName.setToolTipText("Database name should start with an alphabet.");
+        String nbBundle2 = mLoc.t("BUND267: Database name should start with an alphabet.");
+        dbName.setToolTipText(nbBundle2.substring(15));
         dbName.addKeyListener(new NameFieldKeyAdapter());
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, "Location");
-
-        org.openide.awt.Mnemonics.setLocalizedText(driver, "Driver Class");
-
+        String nbBundle3 = mLoc.t("BUND268: Location");
+        String nbBundle4 = mLoc.t("BUND269: Driver Class");
+        jLabel2.setDisplayedMnemonic(nbBundle3.substring(15).charAt(0));
+        jLabel2.getAccessibleContext().setAccessibleName(nbBundle3.substring(15));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, nbBundle3.substring(15));
+        driver.getAccessibleContext().setAccessibleName(nbBundle4.substring(15));
+        org.openide.awt.Mnemonics.setLocalizedText(driver, nbBundle4.substring(15));
         org.openide.awt.Mnemonics.setLocalizedText(driverClass, "org.axiondb.jdbc.AxionDriver");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -130,7 +139,7 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
         layout.setHorizontalGroup(
                 layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().addContainerGap().add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).add(jLabel1).add(layout.createSequentialGroup().add(driver).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(driverClass).addContainerGap()).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(dbName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 161, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(190, 190, 190)).add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup().add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING).add(org.jdesktop.layout.GroupLayout.LEADING, dbLoc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE).add(errorMsg, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)).addContainerGap())))));
         layout.setVerticalGroup(
-                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(40, 40, 40).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE).add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(dbName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(errorMsg, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(14, 14, 14).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE).add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(dbLoc, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).add(32, 32, 32).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE).add(driver).add(driverClass, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
+                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(40, 40, 40).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE).add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(dbName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(errorMsg, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(14, 14, 14).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE).add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(dbLoc, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).add(32, 32, 32).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE).add(driver).add(driverClass, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
     }
 
     private void checkDBName() {
@@ -149,10 +158,12 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
         char[] ch = name.toCharArray();
         if (ch.length != 0) {
             if (f.exists()) {
-                errorMsg.setText("Database '" + name + "' already exists.");
+                String nbBundle5 = mLoc.t("BUND270: Database {0} already exists. ",name);
+                errorMsg.setText(nbBundle5.substring(15));
                 canProceed = false;
             } else if (Character.isDigit(ch[0])) {
-                errorMsg.setText("Database name should start with an alphabet.");
+                String nbBundle6 = mLoc.t("BUND267: Database name should start with an alphabet.");
+                errorMsg.setText(nbBundle6.substring(15));
                 canProceed = false;
             } else {
                 errorMsg.setText("");

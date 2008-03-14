@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+import javax.xml.namespace.QName;
 import org.apache.tools.ant.BuildException;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.PtConnection;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
@@ -112,6 +113,10 @@ public class wsdlRepository {
     private static final String WSDL_FILE_EXTENSION = "wsdl";
     //private static final WSDLFileFilter WSDL_FILE_FILTER = new WSDLFileFilter();
     
+    private static QName SOAP_ADDRESS_QNAME =
+            new QName("http://schemas.xmlsoap.org/wsdl/soap/", "address");
+    
+    private String DUMMY_SOAP_LOCATION = "REPLACE_WITH_ACTUAL_URL";
     
     public wsdlRepository(Project project, Task task) {
         
@@ -192,7 +197,11 @@ public class wsdlRepository {
         for (File file : jbiASADir.listFiles()) {
             jbiASAChildNames.add(file.getName());
         }
-                
+
+        // 02/12/08, add all CompApp wsdls first...
+        // Add all the WSDLs defined in JBI project (under src/jbiasa/).
+        ret.addAll(MyFileUtil.listFiles(jbiASADir, filter, true));
+
         // Add all WSDLs coming from SU projects
         for (File file : serviceUnitsDir.listFiles()) {
             String fileName = file.getName();
@@ -202,10 +211,7 @@ public class wsdlRepository {
                 ret.addAll(MyFileUtil.listFiles(file, filter, true));
             }
         }
-        
-        // Add all the WSDLs defined in JBI project (under src/jbiasa/).
-        ret.addAll(MyFileUtil.listFiles(jbiASADir, filter, true));
-        
+
         return ret;
     }
     
@@ -369,23 +375,22 @@ public class wsdlRepository {
                         if (ports.get(key) != null) {
                             System.out.println("Duplicate Port: " + key);
                         } else {
-                            ports.put(key, p);
-                            
-                            Binding binding = p.getBinding().get();
-                            if (binding == null) {
-                                throw new BuildException(
-                                    "ERROR: Missing binding for WSDL port " + key);
-                            }
-                            String ptQName = binding.getType().getQName().toString();
-                            PtConnection ptCon = connections.get(ptQName);
-                            if (ptCon != null) {
-                                ptCon.addPort(p);
-                            }
-
                             // Mapping port to binding component ID...
                             List<ExtensibilityElement> xts = p.getExtensibilityElements();
                             if (xts.size() > 0) {
                                 ExtensibilityElement ee = xts.get(0);
+                                
+                                // Ignore dummy soap port
+                                QName eeQName = ee.getQName();                                
+                                if (SOAP_ADDRESS_QNAME.equals(eeQName)) {
+                                    String location = ee.getAttribute("location");
+                                    if (DUMMY_SOAP_LOCATION.equals(location)) {
+                                        task.log("INFO: WSDL Port with dummy SOAP address \"REPLACE_WITH_ACTUAL_URL\" is ignored: " +
+                                                sQName + ":" + p.getName());
+                                        continue;
+                                    }
+                                }
+                                
                                 String bcNs = ee.getQName().getNamespaceURI();
                                 if (bcNs != null) {
                                     String bcName = bcNsMap.get(bcNs);
@@ -397,6 +402,19 @@ public class wsdlRepository {
                                                 Project.MSG_WARN);
                                     }
                                 }
+                            }
+                            
+                            ports.put(key, p);
+                            
+                            Binding binding = p.getBinding().get();
+                            if (binding == null) {
+                                throw new BuildException(
+                                    "ERROR: Missing binding for WSDL port " + key);
+                            }
+                            String ptQName = binding.getType().getQName().toString();
+                            PtConnection ptCon = connections.get(ptQName);
+                            if (ptCon != null) {
+                                ptCon.addPort(p);
                             }
                         }
                     }

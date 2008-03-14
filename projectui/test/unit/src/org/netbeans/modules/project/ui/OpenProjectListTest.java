@@ -54,12 +54,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -72,6 +75,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /** Tests fix of issue 56454.
@@ -87,6 +91,11 @@ public class OpenProjectListTest extends NbTestCase {
 
     public OpenProjectListTest (String testName) {
         super (testName);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     protected void setUp () throws Exception {
@@ -436,19 +445,37 @@ public class OpenProjectListTest extends NbTestCase {
         }
     }
     
-    private static class TestProjectOpenedHookImpl extends ProjectOpenedHook {
+    private static class TestProjectOpenedHookImpl extends ProjectOpenedHook 
+    implements Runnable {
         
         public static int opened = 0;
         public static int closed = 0;
         
+        private Object result;
+        
         protected void projectClosed() {
             closed++;
+            assertFalse("Working on", OpenProjects.getDefault().openProjects().isDone());
+            RequestProcessor.getDefault().post(this).waitFinished();
+            assertNotNull("some result computed", result);
+            assertEquals("It is time out exception", TimeoutException.class, result.getClass());
         }
         
         protected void projectOpened() {
             opened++;
+            assertFalse("Working on", OpenProjects.getDefault().openProjects().isDone());
+            RequestProcessor.getDefault().post(this).waitFinished();
+            assertNotNull("some result computed", result);
+            assertEquals("It is time out exception", TimeoutException.class, result.getClass());
         }
         
+        public void run() {
+            try {
+                result = OpenProjects.getDefault().openProjects().get(100, TimeUnit.MILLISECONDS);
+            } catch (Exception ex) {
+                result = ex;
+    }
+        }
     }
     
     private class ChangeListener implements PropertyChangeListener {

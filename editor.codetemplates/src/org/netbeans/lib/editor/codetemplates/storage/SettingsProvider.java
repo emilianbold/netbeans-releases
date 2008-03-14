@@ -43,9 +43,19 @@ package org.netbeans.lib.editor.codetemplates.storage;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.KeyStroke;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.CodeTemplateDescription;
+import org.netbeans.api.editor.settings.CodeTemplateSettings;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
@@ -70,7 +80,7 @@ public final class SettingsProvider implements MimeDataProvider {
      * @return Lookup or null, if there are no lookup-able objects for mime or global level.
      */
     public Lookup getLookup(MimePath mimePath) {
-        return new MyLookup(mimePath, null);
+        return new MyLookup(mimePath);
     }
     
     private static final class MyLookup extends AbstractLookup implements PropertyChangeListener {
@@ -79,54 +89,107 @@ public final class SettingsProvider implements MimeDataProvider {
         
         private final InstanceContent ic;
         private Object codeTemplateSettings = null;
-        private CodeTemplateSettingsImpl ctsi;
+        private CodeTemplateSettingsImpl [] allCtsi;
         
-        public MyLookup(MimePath mimePath, String profile) {
-            this(mimePath, profile, new InstanceContent());
+        public MyLookup(MimePath mimePath) {
+            this(mimePath, new InstanceContent());
         }
         
-        private MyLookup(MimePath mimePath, String profile, InstanceContent ic) {
+        private MyLookup(MimePath mimePath, InstanceContent ic) {
             super(ic);
 
             this.mimePath = mimePath;
             this.ic = ic;
             
             // Start listening
-            this.ctsi = CodeTemplateSettingsImpl.get(mimePath);
-            this.ctsi.addPropertyChangeListener(WeakListeners.propertyChange(this, this.ctsi));
+            MimePath [] allPaths = computeInheritedMimePaths(mimePath);
+            this.allCtsi = new CodeTemplateSettingsImpl[allPaths.length];
+            
+            for(int i = 0; i < allPaths.length; i++) {
+                this.allCtsi[i] = CodeTemplateSettingsImpl.get(allPaths[i]);
+                this.allCtsi[i].addPropertyChangeListener(WeakListeners.propertyChange(this, this.allCtsi[i]));
+            }
         }
 
         protected @Override void initialize() {
             synchronized (this) {
-                codeTemplateSettings = this.ctsi.createInstanceForLookup();
+                codeTemplateSettings = new CompositeCTS(allCtsi);
                 ic.set(Arrays.asList(new Object [] { codeTemplateSettings }), null);
             }
         }
         
         public void propertyChange(PropertyChangeEvent evt) {
             synchronized (this) {
-                boolean ctsChanged = false;
-
-                // Determine what has changed
-                if (this.ctsi == evt.getSource() || 
-                    CodeTemplateSettingsImpl.PROP_EXPANSION_KEY.equals(evt.getPropertyName())
-                ) {
-                    ctsChanged = true;
-                }
-                
                 // Update lookup contents
-                boolean updateContents = false;
-                
-                if (ctsChanged  && codeTemplateSettings != null) {
-                    codeTemplateSettings = this.ctsi.createInstanceForLookup();
-                    updateContents = true;
-                }
-                
-                if (updateContents) {
+                if (codeTemplateSettings != null) {
+                    codeTemplateSettings = new CompositeCTS(allCtsi);
                     ic.set(Arrays.asList(new Object [] { codeTemplateSettings }), null);
                 }
             }
         }
 
     } // End of MyLookup class
+    
+    private static final class CompositeCTS extends CodeTemplateSettings {
+
+        private final CodeTemplateSettingsImpl [] allCtsi;
+        private List<CodeTemplateDescription> codeTemplates;
+        private KeyStroke expansionKey;
+
+        public CompositeCTS(CodeTemplateSettingsImpl [] allCtsi) {
+            this.allCtsi = allCtsi;
+        }
+        
+        public List<CodeTemplateDescription> getCodeTemplateDescriptions() {
+            if (codeTemplates == null) {
+                Map<String, CodeTemplateDescription> map;
+                
+                if (allCtsi.length > 1) {
+                    map = new HashMap<String, CodeTemplateDescription>();
+                    for(int i = allCtsi.length - 1; i >= 0; i--) {
+                        map.putAll(allCtsi[i].getCodeTemplates());
+                    }
+                } else {
+                    map = allCtsi[0].getCodeTemplates();
+                }
+                
+                codeTemplates = Collections.unmodifiableList(new ArrayList<CodeTemplateDescription>(map.values()));
+            }
+            return codeTemplates;
+        }
+
+        public KeyStroke getExpandKey() {
+            if (expansionKey == null) {
+                expansionKey = allCtsi[allCtsi.length - 1].getExpandKey();
+            }
+            return expansionKey;
+        }
+        
+    } // End of CompositeCTS class
+    
+    private static MimePath [] computeInheritedMimePaths(MimePath mimePath) {
+        List<String> paths = null;
+        try {
+            Method m = MimePath.class.getDeclaredMethod("getInheritedPaths", String.class, String.class); //NOI18N
+            m.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            List<String> ret = (List<String>) m.invoke(mimePath, null, null);
+            paths = ret;
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Can't call org.netbeans.api.editor.mimelookup.MimePath.getInheritedPaths method.", e); //NOI18N
+        }
+
+        if (paths != null) {
+            ArrayList<MimePath> mimePaths = new ArrayList<MimePath>(paths.size());
+
+            for (String path : paths) {
+                mimePaths.add(MimePath.parse(path));
+            }
+
+            return mimePaths.toArray(new MimePath[mimePaths.size()]);
+        } else {
+            return new MimePath [] { mimePath, MimePath.EMPTY };
+        }
+    }
+    
 }

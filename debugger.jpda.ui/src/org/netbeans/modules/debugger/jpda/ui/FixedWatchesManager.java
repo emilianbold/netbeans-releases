@@ -50,6 +50,7 @@ import java.util.*;
 import org.netbeans.spi.viewmodel.*;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.*;
+import org.netbeans.modules.debugger.jpda.ui.models.VariablesTreeModelFilter;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.openide.util.NbBundle;
@@ -99,13 +100,33 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter {
             ("CTL_CreateFixedWatch_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                return !WatchesNodeModel.isEmptyWatch(node);
+                return !WatchesNodeModel.isEmptyWatch(node) && !isPrimitive(node);
             }
             public void perform (Object[] nodes) {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++)
                     createFixedWatch (nodes [i]);
             }
+            private boolean isPrimitive (Object node) {
+                if (!(node instanceof Variable)) {
+                    return false;
+                }
+                Variable v = (Variable) node;
+                if (!VariablesTreeModelFilter.isEvaluated(v)) {
+                    return false;
+                }
+                String type = v.getType ();
+                return "".equals(type)        ||
+                        "boolean".equals(type)||
+                        "byte".equals (type)  || 
+                        "char".equals (type)  || 
+                        "short".equals (type) ||
+                        "int".equals (type)   || 
+                        "long".equals (type)  || 
+                        "float".equals (type) || 
+                        "double".equals (type);
+            }
+
         },
         Models.MULTISELECTION_TYPE_ALL
     );

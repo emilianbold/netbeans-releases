@@ -53,7 +53,7 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
-import org.netbeans.modules.j2ee.clientproject.SourceRoots;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.MouseUtils;

@@ -42,21 +42,20 @@
 package org.netbeans.modules.gsfret.navigation;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.Parser;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.StructureScanner;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementHandle;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
-import org.netbeans.api.gsf.StructureItem;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.gsf.GsfHtmlFormatter;
-import org.netbeans.modules.gsfret.navigation.ElementNode.Description;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -102,7 +101,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 return null;
             }
 
-            public ElementHandle<? extends Element> getElementHandle() {
+            public ElementHandle getElementHandle() {
                 throw new UnsupportedOperationException("Not supported on the Root Node.");
             }
 
@@ -128,13 +127,27 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             public long getEndPosition() {
                 return Long.MAX_VALUE;
             }
+
+            public ImageIcon getCustomIcon() {
+                return null;
+            }
+            
+            public String getSortText() {
+                return null;
+            }
         };
         
-        ParserResult pr = info.getParserResult();
-        if (pr != null) {
-            StructureScanner scanner = info.getLanguage().getStructure();
-            Parser parser = info.getParser();
-            if (scanner != null && parser != null) {
+        Set<String> mimeTypes = info.getEmbeddedMimeTypes();
+        LanguageRegistry registry = LanguageRegistry.getInstance();
+        List<String> sortedMimes = new ArrayList<String>(mimeTypes);
+        // TODO - sort results by something more interesting than the alphabetical
+        // order of their mimetypes...
+        Collections.sort(sortedMimes);
+        
+        for (String mimeType : mimeTypes) {
+            Language language = registry.getLanguageByMimeType(mimeType);
+            StructureScanner scanner = language.getStructure();
+            if (scanner != null) {
                 List<? extends StructureItem> children = scanner.scan(info, new NavigatorFormatter());
                 for (StructureItem co : children) {
                     items.add(co);

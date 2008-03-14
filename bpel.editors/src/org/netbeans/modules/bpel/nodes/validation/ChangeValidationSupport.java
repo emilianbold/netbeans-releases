@@ -19,8 +19,6 @@
 package org.netbeans.modules.bpel.nodes.validation;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
@@ -28,7 +26,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.bpel.model.api.support.UniqueId;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 
 /**
  *
@@ -38,9 +35,16 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
  */
 public class ChangeValidationSupport {
 
-    private Lock writeLock = new ReentrantReadWriteLock().writeLock();
+    private Lock writeLock;
+    private Lock readLock;
     private List<ChangeValidationListener> myListeners = new ArrayList<ChangeValidationListener>();
 
+    public ChangeValidationSupport() {
+        ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
+        writeLock = rwLock.writeLock();
+        readLock = rwLock.readLock();
+    }
+    
     public void addChangeValidationListener(ChangeValidationListener listener) {
         assert listener != null : "Try to add null listerner."; // NOI18N
         writeLock.lock();
@@ -60,7 +64,7 @@ public class ChangeValidationSupport {
             writeLock.unlock();
         }
     }
-    
+
     public void fireChangeValidation(Map<Component, Validator.ResultType> changedItems) {
         assert changedItems != null;
         // TODO m
@@ -81,12 +85,12 @@ public class ChangeValidationSupport {
 
     public void fireRemoveValidation(List<Component> removedComponents) {
         assert removedComponents != null;
-        
+
         Component[] curRemovedComponents = new Component[removedComponents.size()];
         synchronized (removedComponents){
             curRemovedComponents = removedComponents.toArray(curRemovedComponents);
         }
-        
+
 //        List<Component>  curRemovedComponents = 
 //                new ArrayList<Component>(removedComponents);
 //        Collections.copy(curRemovedComponents, removedComponents);
@@ -106,12 +110,15 @@ public class ChangeValidationSupport {
 //    }
 
     public void fireChangeValidation(Component component
-            , Validator.ResultType resultType) 
+            , Validator.ResultType resultType)
     {
 
-        ChangeValidationListener[] tmp = new ChangeValidationListener[myListeners.size()];
-        synchronized (myListeners){
-            tmp = myListeners.toArray(tmp);
+        ChangeValidationListener[] tmp = null;
+        readLock.lock();
+        try {
+            tmp = myListeners.toArray(new ChangeValidationListener[myListeners.size()]);
+        } finally {
+            readLock.unlock();
         }
 
         for (ChangeValidationListener listener : tmp) {
@@ -131,36 +138,71 @@ public class ChangeValidationSupport {
 //    }
 
     public void fireRemoveValidation(Component component) {
-        writeLock.lock();
+        ChangeValidationListener[] tmp = null;
+        readLock.lock();
         try {
-            for (ChangeValidationListener listener : myListeners) {
-                listener.validationRemoved(component);
-            }
+            tmp = myListeners.toArray(new ChangeValidationListener[myListeners.size()]);
         } finally {
-            writeLock.unlock();
+            readLock.unlock();
         }
+
+        for (ChangeValidationListener listener : tmp) {
+            listener.validationRemoved(component);
+        }
+//        writeLock.lock();
+//        try {
+//            for (ChangeValidationListener listener : myListeners) {
+//                listener.validationRemoved(component);
+//            }
+//        } finally {
+//            writeLock.unlock();
+//        }
     }
 
     public void fireAddAnnotation(UniqueId entity, String annotationType) {
-        writeLock.lock();
+        ChangeValidationListener[] tmp = null;
+        readLock.lock();
         try {
-            for (ChangeValidationListener listener : myListeners) {
-                listener.annotationAdded(entity, annotationType);
-            }
+            tmp = myListeners.toArray(new ChangeValidationListener[myListeners.size()]);
         } finally {
-            writeLock.unlock();
+            readLock.unlock();
         }
+
+        for (ChangeValidationListener listener : tmp) {
+            listener.annotationAdded(entity, annotationType);
+        }
+
+//        writeLock.lock();
+//        try {
+//            for (ChangeValidationListener listener : myListeners) {
+//                listener.annotationAdded(entity, annotationType);
+//            }
+//        } finally {
+//            writeLock.unlock();
+//        }
     }
 
     public void fireRemoveAnnotation(UniqueId entity, String annotationType) {
-        writeLock.lock();
+        ChangeValidationListener[] tmp = null;
+        readLock.lock();
         try {
-            for (ChangeValidationListener listener : myListeners) {
-                listener.annotationRemoved(entity, annotationType);
-            }
+            tmp = myListeners.toArray(new ChangeValidationListener[myListeners.size()]);
         } finally {
-            writeLock.unlock();
+            readLock.unlock();
         }
+
+        for (ChangeValidationListener listener : tmp) {
+            listener.annotationRemoved(entity, annotationType);
+        }
+
+//        writeLock.lock();
+//        try {
+//            for (ChangeValidationListener listener : myListeners) {
+//                listener.annotationRemoved(entity, annotationType);
+//            }
+//        } finally {
+//            writeLock.unlock();
+//        }
     }
 //    public void fireRemoveValidation(ResultItem removedItem) {
 //        writeLock.lock();

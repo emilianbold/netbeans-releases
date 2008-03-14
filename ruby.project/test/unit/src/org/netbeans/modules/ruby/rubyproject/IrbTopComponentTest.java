@@ -59,7 +59,7 @@ public final class IrbTopComponentTest extends RubyProjectTestBase {
         File lib = new File(TestUtil.getXTestJRubyHome(), "lib/ruby/1.8");
         RubyArray loadPath = (RubyArray) runtime.getLoadService().getLoadPath();
         loadPath.add(lib.getAbsolutePath());
-        runtime.evalScript("require 'irb'; require 'irb/completion'");
+        runtime.evalScriptlet("require 'irb'; require 'irb/completion'");
     }
 
 }

@@ -563,7 +563,7 @@ final class CppFoldManager extends CppFoldManagerBase
 
         @Override
         public String toString() {
-            return "BlockFoldInfo:" + template.getType() + " at[" + getRealStartOffset() + "," + getRealEndOffset() + "]";
+            return "BlockFoldInfo:" + template.getType() + " at[" + getRealStartOffset() + "," + getRealEndOffset() + "]";  // NOI18N
         }
     }
 

@@ -618,6 +618,9 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         platformValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_PlatformValue"));
         javaPlatformCombo.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_JavaPlatformCombo"));
         javaPlatformButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_JavaPlatformButton"));
+        
+        javaPlatformLabel.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_JavaPlatformLbl"));
+        platform.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_PlatformLbl"));
     }
     
     // #65924: show warnings if some dependencies cannot be satisfied
@@ -701,6 +704,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             // Cannot use ProjectXMLManager since we need to report also deps on nonexistent modules.
             Element dataE = project.getPrimaryConfigurationData();
             Element depsE = Util.findElement(dataE, "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+            assert depsE != null : "Malformed metadata in " + project;
             for (Element dep : Util.findSubElements(depsE)) {
                 Element run = Util.findElement(dep, "run-dependency", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
                 if (run == null) {

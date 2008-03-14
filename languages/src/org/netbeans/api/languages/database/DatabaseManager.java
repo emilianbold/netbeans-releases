@@ -80,7 +80,12 @@ public class DatabaseManager {
     private static Map<ASTNode, DatabaseContext> astNodeToDatabaseContext = new WeakHashMap<ASTNode, DatabaseContext>();
 
     public static DatabaseContext getRoot(ASTNode ast) {
-        return astNodeToDatabaseContext.get(ast);
+        DatabaseContext rootCtx = astNodeToDatabaseContext.get(ast);
+        if (rootCtx == null) {
+            // Avoid a null rootCtx
+            rootCtx = new DatabaseContext (null, null, ast.getOffset (), ast.getEndOffset ());
+        }
+        return rootCtx;
     }
 
     public static void setRoot(ASTNode node, DatabaseContext databaseContext) {

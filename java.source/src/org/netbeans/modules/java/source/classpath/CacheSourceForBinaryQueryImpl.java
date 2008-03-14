@@ -80,7 +80,7 @@ public class CacheSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
                 }
             }
             result = new R (sourceURL, result);
-        }        
+            }
         return result;
     }
     

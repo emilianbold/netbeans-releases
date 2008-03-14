@@ -43,9 +43,9 @@ package org.netbeans.spi.project.support.ant;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -339,7 +339,11 @@ public final class ReferenceHelper {
                 relativePath
             };
         }        
-        else if (CollocationQuery.areCollocated(base, path)) {
+        else if (PropertyUtils.relativizeFile(base, path) != null) {
+        //mkleint: removed CollocationQuery.areCollocated() reference
+        // when AlwaysRelativeCQI gets removed the condition resolves to false more frequently.
+        // that might not be desirable.
+            
             // Fine, using a relative path to subproject.
             relativePath = PropertyUtils.relativizeFile(base, path);
             assert relativePath != null : "These dirs are not really collocated: " + base + " & " + path;
@@ -367,12 +371,12 @@ public final class ReferenceHelper {
      * the given name and with (possibly relative) path value.
      * @return was there any change or not
      */
-    private boolean setPathProperty(File path, String propertyName) {
+    private boolean setPathProperty(String path, String propertyName) {
         String[] propertiesFiles = new String[] {
             AntProjectHelper.PROJECT_PROPERTIES_PATH
         };
         String[] values = new String[] {
-            path.getPath()
+            path
         };
         return setPathPropertyImpl(propertyName, values, propertiesFiles);
     }
@@ -943,12 +947,12 @@ public final class ReferenceHelper {
             throw new IllegalArgumentException("Parameter file was not "+  // NOI18N
                 "normalized. Was "+file+" instead of "+FileUtil.normalizeFile(file));  // NOI18N
         }
-        return createForeignFileReferenceImpl(file, expectedArtifactType, true);
+        return createForeignFileReferenceImpl(file.getAbsolutePath(), expectedArtifactType, true);
     }
     
     /**
      * Create an Ant-interpretable string referring to a file on disk. Compared
-     * to {@link #createForeignFileReference} the file does not have to be 
+     * to {@link #createForeignFileReference} the filepath does not have to be 
      * normalized (ie. it can be relative path to project base folder), no 
      * relativization or absolutization of path is done and
      * reference to file is always stored in project properties.
@@ -958,18 +962,20 @@ public final class ReferenceHelper {
      * the behavior is identical to {@link #createForeignFileReference(AntArtifact)}.
      * <p>
      * Acquires write access.
-     * @param file a file to refer to (need not currently exist)
+     * @param path a file path to refer to (need not currently exist)
      * @param expectedArtifactType the required {@link AntArtifact#getType}
      * @return a string which can refer to that file somehow
      *
      * @since org.netbeans.modules.project.ant/1 1.19
      */
-    public String createForeignFileReferenceAsIs(final File file, final String expectedArtifactType) {
-        return createForeignFileReferenceImpl(file, expectedArtifactType, false);
+    public String createForeignFileReferenceAsIs(final String filepath, final String expectedArtifactType) {
+        return createForeignFileReferenceImpl(filepath, expectedArtifactType, false);
     }
 
-    private String createForeignFileReferenceImpl(final File file, final String expectedArtifactType, final boolean performHeuristics) {
-        final File normalizedFile = FileUtil.normalizeFile(file);
+    private String createForeignFileReferenceImpl(final String path, final String expectedArtifactType, final boolean performHeuristics) {
+        FileObject myProjDirFO = h.getProjectDirectory();
+        File myProjDir = FileUtil.toFile(myProjDirFO);
+        final File normalizedFile = FileUtil.normalizeFile(PropertyUtils.resolveFile(myProjDir, path));
         return ProjectManager.mutex().writeAccess(new Mutex.Action<String>() {
             public String run() {
                 AntArtifact art = AntArtifactQuery.findArtifactFromFile(normalizedFile);
@@ -981,13 +987,13 @@ public final class ReferenceHelper {
                     }
                 } else {
                     File myProjDir = FileUtil.toFile(AntBasedProjectFactorySingleton.getProjectFor(h).getProjectDirectory());
-                    String fileID = file.getName();
+                    String fileID = normalizedFile.getName();
                     // if the file is folder then add to ID string also parent folder name,
                     // i.e. if external source folder name is "src" the ID will
                     // be a bit more selfdescribing, e.g. project-src in case
                     // of ID for ant/project/src directory.
-                    if (file.isDirectory() && file.getParentFile() != null) {
-                        fileID = file.getParentFile().getName()+"-"+file.getName();
+                    if (normalizedFile.isDirectory() && normalizedFile.getParentFile() != null) {
+                        fileID = normalizedFile.getParentFile().getName()+"-"+normalizedFile.getName();
                     }
                     fileID = PropertyUtils.getUsablePropertyName(fileID);
                     String prop = findReferenceID(fileID, "file.reference.", normalizedFile.getAbsolutePath()); // NOI18N
@@ -997,7 +1003,7 @@ public final class ReferenceHelper {
                     if (performHeuristics) {
                         setPathProperty(myProjDir, normalizedFile, "file.reference." + prop);
                     } else {
-                        setPathProperty(file, "file.reference." + prop);
+                        setPathProperty(path, "file.reference." + prop);
                     }
                     return "${file.reference." + prop + '}'; // NOI18N
                 }
@@ -1007,23 +1013,22 @@ public final class ReferenceHelper {
     
     /**
      * Create an Ant-interpretable string referring to a file on disk. Compared
-     * to {@link #createForeignFileReference} the file does not have to be 
+     * to {@link #createForeignFileReference} the file path does not have to be 
      * normalized (ie. it can be relative path to project base folder), no 
      * relativization or absolutization of path is done and
      * reference to file is always stored in project properties.
      * <p>
      * Acquires write access.
-     * @param file a file to refer to (need not currently exist)
-     * @param fileId
-     * @param propertyPrefix the prefix of the created property
+     * @param path a file path to refer to (need not currently exist)
+     * @param property name of the property
      * @return a string which can refer to that file somehow
      *
      * @since org.netbeans.modules.project.ant/1 1.19
      */
-    public String createExtraForeignFileReferenceAsIs(final File file, final String property) {
+    public String createExtraForeignFileReferenceAsIs(final String path, final String property) {
         return ProjectManager.mutex().writeAccess(new Mutex.Action<String>() {
             public String run() {
-                    setPathProperty(file, property);
+                    setPathProperty(path, property);
                     return "${" + property + '}'; // NOI18N
                 }
         });
@@ -1384,7 +1389,12 @@ public final class ReferenceHelper {
             File absolutePath = FileUtil.normalizeFile(PropertyUtils.resolveFile(originalPath, value));
             
             //TODO: extra base dir relativization:
-            if (!CollocationQuery.areCollocated(absolutePath, projectDir)) {
+            
+        //mkleint: removed CollocationQuery.areCollocated() reference
+        // when AlwaysRelativeCQI gets removed the condition resolves to false more frequently.
+        // that might not be desirable.
+            String rel = PropertyUtils.relativizeFile(projectDir, absolutePath);
+            if (rel == null) {
                 pubRemove.add(key);
                 privAdd.put(key, absolutePath.getAbsolutePath());
             }
@@ -1418,8 +1428,13 @@ public final class ReferenceHelper {
 	    }
 	    
             //TODO: extra base dir relativization:
-            if (CollocationQuery.areCollocated(absolutePath, projectDir)) {
-                pubAdd.put(key, PropertyUtils.relativizeFile(projectDir, absolutePath));
+            
+        //mkleint: removed CollocationQuery.areCollocated() reference
+        // when AlwaysRelativeCQI gets removed the condition resolves to false more frequently.
+        // that might not be desirable.            
+            String rel = PropertyUtils.relativizeFile(projectDir, absolutePath);
+            if (rel != null) {
+                pubAdd.put(key, rel);
             }
         }
         
@@ -1480,8 +1495,39 @@ public final class ReferenceHelper {
     }
 
     /**
+     * Gets a library manager of the given project.
+     * There is no guarantee that the manager is the same object from call to call
+     * even if the project is the same; in particular, it is <em>not</em> guaranteed that
+     * the manager match that returned from {@link Library#getManager} for libraries added
+     * from {@link #createLibraryReference}.
+     * @return a library manager associated with project's libraries or null if project is 
+     *  not shared (will not include {@link LibraryManager#getDefault})
+     *  {@link LibraryManager#getDefault})
+     * @since org.netbeans.modules.project.ant/1 1.19
+     */
+    public static LibraryManager getProjectLibraryManager(Project p) {
+        AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
+        if (aux != null) {
+            File libFile = ProjectLibraryProvider.getLibrariesLocation(aux, 
+                    FileUtil.toFile(p.getProjectDirectory()));
+            if (libFile != null) {
+                try {
+                    return LibraryManager.forLocation(libFile.toURI().toURL());
+                } catch (MalformedURLException e) {
+                    // ok, no project manager
+                    Logger.getLogger(ReferenceHelper.class.getName()).info(
+                        "library manager cannot be found for "+libFile+". "+e.toString()); //NOI18N
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Copy global IDE library to sharable libraries definition associated with
-     * this project. Does nothing if project is not sharable.
+     * this project. Does nothing if project is not sharable. 
+     * When a library with same name already exists in sharable location, the new one 
+     * is copied with generated unique name.
      * 
      * <p>Library creation is done under write access of ProjectManager.mutex().
      * 
@@ -1489,8 +1535,6 @@ public final class ReferenceHelper {
      * @return newly created sharable version of library in case of sharable
      *  project or given global library in case of non-sharable project
      * @throws java.io.IOException if there was problem copying files
-     * @throws IllegalArgumentException if library is not global one or library
-     *  with this name already exists in sharable libraries definition
      * @since org.netbeans.modules.project.ant/1 1.19
      */
     public Library copyLibrary(Library lib) throws IOException {
@@ -1502,7 +1546,7 @@ public final class ReferenceHelper {
             return lib;
         }
         File mainPropertiesFile = h.resolveFile(h.getLibrariesLocation());
-        return ProjectLibraryProvider.copyLibrary(lib, mainPropertiesFile.toURI().toURL(), false);
+        return ProjectLibraryProvider.copyLibrary(lib, mainPropertiesFile.toURI().toURL(), true);
     }
     
     /**

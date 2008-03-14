@@ -46,7 +46,7 @@
   description_key="LBL_bpel_validation_annotation"
   localizing_bundle="org.netbeans.modules.bpel.core.resources.Bundle"
   glyph="nbresloc:/org/netbeans/modules/bpel/design/decoration/resources/error.png"
-  highlight="#EE891B"
-  type="linepart"
+  waveunderline="#FF00FF"
   visible="true"
+  type="linepart"
 />

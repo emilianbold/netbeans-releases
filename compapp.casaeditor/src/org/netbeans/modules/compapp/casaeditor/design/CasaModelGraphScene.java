@@ -42,6 +42,7 @@ package org.netbeans.modules.compapp.casaeditor.design;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
@@ -78,6 +79,7 @@ import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaPaletteAcceptPr
 import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaRemoveAction;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaPopupMenuAction;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaPopupMenuProvider;
+import org.netbeans.modules.compapp.casaeditor.graph.actions.DoubleClickToOpenAction;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.MouseWheelScrollAction;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.RegionResizeAction;
 import org.netbeans.modules.compapp.casaeditor.graph.layout.CasaCollisionCollector;
@@ -88,6 +90,7 @@ import org.netbeans.modules.compapp.casaeditor.graph.layout.LayoutEngines;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
@@ -97,6 +100,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.validation.CasaValidat
 import org.netbeans.modules.compapp.casaeditor.multiview.CasaGraphMultiViewElement;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNodeFactory;
+import org.netbeans.modules.compapp.casaeditor.nodes.ServiceUnitProcessNode;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Port;
@@ -121,7 +125,7 @@ import org.openide.windows.WindowManager;
  * @author Josh Sandusky
  */
 public class CasaModelGraphScene 
-extends CasaGraphAbstractScene<CasaComponent, CasaComponent, CasaComponent>
+extends CasaGraphAbstractScene<CasaComponent, CasaComponent, CasaComponent, CasaComponent>
 implements PropertyChangeListener, CasaValidationListener {
 
     private static final Logger LOGGER = Logger.getLogger(CasaModelGraphScene.class.getName());
@@ -136,6 +140,7 @@ implements PropertyChangeListener, CasaValidationListener {
     private Router mDirectRouter = RouterFactory.createDirectRouter();
     private Router mCurrentRouter = mDirectRouter;
 
+    private WidgetAction mDoubleClickOpenAction = new DoubleClickToOpenAction();
     private WidgetAction mPopupMenuAction = new CasaPopupMenuAction(new CasaPopupMenuProvider());
     private WidgetAction mMoveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction ();
     private WidgetAction mMoveActionBindingRegion;
@@ -418,9 +423,11 @@ implements PropertyChangeListener, CasaValidationListener {
             } else if (regionWidget == mExternalRegion) {
                 layout = mExternalAutoLayout;
             }
-            layout.setIsAdjustingForOverlapOnly(isProgressive);
-            layout.setIsAnimating(isAnimating);
-            layout.invokeLayout();
+            if (layout != null) {
+                layout.setIsAdjustingForOverlapOnly(isProgressive);
+                layout.setIsAnimating(isAnimating);
+                layout.invokeLayout();
+            }
         }
         // trigger the layout to actually occur
         validate();
@@ -467,9 +474,12 @@ implements PropertyChangeListener, CasaValidationListener {
             CasaPort port = (CasaPort) node;
             widget = new CasaNodeWidgetBinding(this);
             CasaModelGraphUtilities.updateNodeProperties(mModel, port, widget);
-            
+
             widget.setEditable(mModel.isEditable(port));
-//            widget.setWSPolicyAttached(true);
+            // only soap binding support WSIT configuration.
+            //if (port.getBindingType().equalsIgnoreCase("SOAP")) { // NOTI18N
+            widget.setWSPolicyAttached(mModel.isEditable(port)); // mModel.isWsitEnable(port));
+            //}
             widget.initializeGlassLayer(mGlassLayer);
             mBindingRegion.addChild(widget);
             moveAction = mMoveActionBindingRegion;
@@ -527,10 +537,30 @@ implements PropertyChangeListener, CasaValidationListener {
         }
         ((CasaNodeWidget) findWidget(node)).attachPinWidget(widget);
         
+        if (!isBinding) {
+            widget.getActions().addAction(mDoubleClickOpenAction);
+        }
         widget.getActions().addAction(createObjectHoverAction());
         widget.getActions().addAction(createSelectAction());
         widget.getActions().addAction(mPopupMenuAction);
         widget.getActions().addAction(new CasaConnectAction(this, mConnectionLayer));
+
+        return widget;
+    }
+    
+    @Override
+    protected Widget attachProcessWidget (CasaComponent node, CasaComponent endpoint) {
+        
+        Image image = ServiceUnitProcessNode.getFileIconImage((CasaEndpoint) endpoint);
+                
+        CasaProcessTitleWidget widget = new CasaProcessTitleWidget(
+                this, ((CasaEndpoint)endpoint).getProcessName(), image);
+        
+        ((CasaNodeWidgetEngine) findWidget(node)).attachProcessWidget(widget);
+        
+        widget.getActions().addAction(mDoubleClickOpenAction);
+        widget.getActions().addAction(createSelectAction());
+        widget.getActions().addAction(mPopupMenuAction);
 
         return widget;
     }
@@ -691,7 +721,18 @@ implements PropertyChangeListener, CasaValidationListener {
             }
         });
     }
-    
+
+    protected void refreshWidgetBadge(CasaComponent node, Widget widget) {
+        if (widget instanceof CasaNodeWidgetBinding) {
+            CasaNodeWidgetBinding portWidget = (CasaNodeWidgetBinding) widget;
+            portWidget.setEditable(mModel.isEditable((CasaPort) node));
+            portWidget.setWSPolicyAttached(mModel.isWsitEnable((CasaPort) node));
+        }
+
+        updateSelectionAndRequestFocus(node);
+        CasaModelGraphUtilities.ensureVisibity(widget);
+    }
+
     public void cleanup() {
         // scene is not used anymore, free up resources
         TopComponent.getRegistry().removePropertyChangeListener(this);
@@ -751,6 +792,7 @@ implements PropertyChangeListener, CasaValidationListener {
         Set<CasaComponent> objectsToSelect = new HashSet<CasaComponent>();
         for (CasaComponent component : modelComponents) {
             if (
+                    component instanceof CasaEndpoint ||    // Process
                     component instanceof CasaPort ||
                     component instanceof CasaServiceEngineServiceUnit ||
                     component instanceof CasaConsumes ||
@@ -780,6 +822,7 @@ implements PropertyChangeListener, CasaValidationListener {
             // Special mouse listener that ensures scene component
             // has focus when it is clicked.
             getView().addMouseListener(new MouseAdapter() {
+                @Override
                 public void mousePressed(MouseEvent e) {
                     if (!getView().hasFocus()) {
                         getView().requestFocusInWindow();
@@ -827,6 +870,7 @@ implements PropertyChangeListener, CasaValidationListener {
      * @param object the object
      * @return the identity code of the object; null, if the object is null
      */
+    @Override
     public Comparable getIdentityCode (Object object) {
         if(object == null || object instanceof CasaRegion) {
             return null;

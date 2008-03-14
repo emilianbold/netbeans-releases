@@ -582,10 +582,13 @@ public class RetoucheUtils {
         Set<URL> dependentRoots = new HashSet();
         for (FileObject fo: files) {
             Project p = null;
-            if (fo!=null)
-                p=FileOwnerQuery.getOwner(fo);
-            if (p!=null) {
-                URL sourceRoot = URLMapper.findURL(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo), URLMapper.INTERNAL);
+            FileObject ownerRoot = null;
+            if (fo != null) {
+                p = FileOwnerQuery.getOwner(fo);
+                ownerRoot = ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo);
+            }
+            if (p != null && ownerRoot != null) {
+                URL sourceRoot = URLMapper.findURL(ownerRoot, URLMapper.INTERNAL);
                 if (dependencies) {
                     dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
                 } else {
@@ -914,7 +917,8 @@ public class RetoucheUtils {
             DialogDescriptor dd = new DialogDescriptor(label, actionName, true, new Object[]{getString("LBL_CancelAction", new Object[]{actionName})}, null, 0, null, listener);
             waitDialog = DialogDisplayer.getDefault().createDialog(dd);
             waitDialog.pack();
-            waitTask = RequestProcessor.getDefault().post(ap);
+            //100ms is workaround for 127536
+            waitTask = RequestProcessor.getDefault().post(ap, 100);
             waitDialog.setVisible(true);
             waitTask = null;
             waitDialog = null;

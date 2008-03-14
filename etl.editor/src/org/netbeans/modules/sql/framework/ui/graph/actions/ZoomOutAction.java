@@ -38,12 +38,13 @@ made subject to such option by the copyright holder.
 package org.netbeans.modules.sql.framework.ui.graph.actions;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.net.URL;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 
@@ -54,20 +55,22 @@ import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 public class ZoomOutAction extends GraphAction {
 
     private static final URL zoomOutImgUrl = ZoomOutAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/zoom_out_edm.png");
-    private static transient final Logger mLogger = LogUtil.getLogger(ZoomOutAction.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ZoomOutAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public ZoomOutAction() {
         //action name
-        String nbBundle = mLoc.t("PRSR001: Zoom Out...");
-        this.putValue(Action.NAME, Localizer.parse(nbBundle));
+        String nbBundle = mLoc.t("BUND323: Zoom Out...");
+        this.putValue(Action.NAME, nbBundle.substring(15));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(zoomOutImgUrl));
 
         //action tooltip
-        String nbBundle1 = mLoc.t("PRSR001: Zoom Out");
-        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle1));
+        String nbBundle1 = mLoc.t("BUND324: Zoom Out (Shift-Z)");
+        this.putValue(Action.SHORT_DESCRIPTION, nbBundle1.substring(15));
+        // Acceleratot Shift-Z
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('Z', InputEvent.SHIFT_DOWN_MASK));
     }
 
     public void actionPerformed(ActionEvent e) {

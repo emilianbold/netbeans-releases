@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="glassfish" basedir="." default="build-pkg">
+
+    <property name="appdir" value="${basedir}/build/app"/>
+    
+    <target name="clean">
+        <delete dir="build"/>
+        <mkdir dir="build"/>
+    </target>
+    
+    <target name="get-bits">
+        <echo message="Downloading GlassFish from ${glassfish_location}" />
+        <get src="${gf_builds_host}/${glassfish_location}" dest="./build/glassfish_image.zip" usetimestamp="true"/>
+    </target>
+    
+    <target name="unzip" depends="get-bits">
+        <mkdir dir="build/app"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="cd ${basedir}/build ; unzip glassfish_image.zip -d ${appdir}; rm ${basedir}/build/glassfish_image.zip"/>
+        </exec>
+    </target>
+    
+    <target name="build-pkg" depends="clean, unzip">
+        <exec executable="sh" failonerror="yes" outputproperty="size">
+            <arg value="-c"/>
+            <arg value="du -sk build | sed 's/[\t]*build//' | xargs -I {}  expr {} + 22528"/>
+        </exec>        
+        <echo message="sizeof.glassfish=${size}${line.separator}" file="${basedir}/../build/sizes.pro" append="true"/>            
+        <echo message="Executing pack200 in ${appdir}"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value='sh ${basedir}/../pack200.sh ${appdir}'/>
+        </exec>
+
+        
+        <copy file="pkg/Info.plist" filtering="true" tofile="${basedir}/build/Info.plist">
+            <filterset>
+                <filter token="INSTALLDIR" value="${glassfish.install.dir}"/>
+                <filter token="APPVERSION" value="${glassfish.version}"/>
+            </filterset>
+        </copy>
+        
+        <copy file="../commonfiles/Description.plist" overwrite="true" filtering="true" tofile="pkg/scripts/Description.plist">
+            <filterset>
+                <filter token="TITLE" value="${glassfish.appname}"/>
+            </filterset>
+        </copy>
+        
+        <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/env.sh" tofile="${basedir}/pkg/scripts/env.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/add_gf.sh" tofile="${basedir}/pkg/scripts/add_gf.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/pkg/scripts/perm.sh" tofile="${basedir}/pkg/scripts/perm.sh"/>
+        
+        <echo message="Building glassfish.pkg into ${basedir}/../build/glassfish.pkg"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/glassfish.pkg -f ${appdir} -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
+        </exec>
+    </target>
+    
+</project>

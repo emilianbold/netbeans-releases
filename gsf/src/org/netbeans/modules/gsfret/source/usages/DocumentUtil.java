@@ -73,6 +73,7 @@ class DocumentUtil {
     private static final String FIELD_BINARY_NAME = "binaryName";         //NOI18N
     private static final String FIELD_PACKAGE_NAME = "packageName";     //NOI18N
     static final String FIELD_TIME_STAMP = "timeStamp";         //NOI18N
+    static final String FIELD_FILENAME = "filename";         //NOI18N
     private static final String FIELD_REFERENCES = "references";        //NOI18N
     private static final String FIELD_SIMPLE_NAME = "simpleName";       //NOI18N
     private static final String FIELD_CASE_INSENSITIVE_NAME = "ciName"; //NOI18N

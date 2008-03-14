@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.spring.beans.hyperlink;
 
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
@@ -47,7 +46,7 @@ import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class JavaClassHyperlinkProcessor implements HyperlinkProcessor {
+public class JavaClassHyperlinkProcessor extends HyperlinkProcessor {
 
     public JavaClassHyperlinkProcessor() {
     }

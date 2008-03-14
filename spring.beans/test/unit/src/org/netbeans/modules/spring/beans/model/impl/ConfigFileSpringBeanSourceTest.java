@@ -42,11 +42,14 @@
 package org.netbeans.modules.spring.beans.model.impl;
 
 import java.util.List;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.beans.ConfigFileTestCase;
 import org.netbeans.modules.spring.beans.TestUtils;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -58,16 +61,26 @@ public class ConfigFileSpringBeanSourceTest extends ConfigFileTestCase {
         super(testName);
     }
     public void testParse() throws Exception {
-        String contents = TestUtils.createXMLConfigText("<bean id='foo' name='bar baz' class='org.example.Foo'/>");
+        String contents = TestUtils.createXMLConfigText("<bean id='foo' name='bar baz' " +
+                "parent='father' factory-bean='factory' factory-method='createMe' " +
+                "class='org.example.Foo'/>");
         TestUtils.copyStringToFile(contents, configFile);
+        DataObject dataObject = DataObject.find(FileUtil.toFileObject(configFile));
+        BaseDocument doc = (BaseDocument)dataObject.getCookie(EditorCookie.class).openDocument();
         ConfigFileSpringBeanSource source = new ConfigFileSpringBeanSource();
-        source.parse(FileUtil.toFileObject(configFile));
+        source.parse(doc);
         List<SpringBean> beans = source.getBeans();
         assertEquals(1, beans.size());
         SpringBean bean = beans.get(0);
-        assertSame(bean, source.findBean("foo"));
-        assertSame(bean, source.findBean("bar"));
-        assertSame(bean, source.findBean("baz"));
+        assertSame(bean, source.findBeanByIDOrName("foo"));
+        assertSame(bean, source.findBeanByIDOrName("bar"));
+        assertSame(bean, source.findBeanByIDOrName("baz"));
+        assertSame(bean, source.findBeanByID("foo"));
+        assertNull(source.findBeanByID("bar"));
+        assertNull(source.findBeanByID("baz"));
+        assertEquals("father", bean.getParent());
+        assertEquals("factory", bean.getFactoryBean());
+        assertEquals("createMe", bean.getFactoryMethod());
         int offset = contents.indexOf("<bean ");
         Location location = bean.getLocation();
         assertEquals(offset, location.getOffset());

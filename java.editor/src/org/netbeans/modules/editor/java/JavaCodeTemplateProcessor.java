@@ -50,10 +50,14 @@ import java.util.concurrent.Future;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.Types;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.ElementHeaders;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.codetemplates.spi.*;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
@@ -77,12 +81,13 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     public static final String NAMED = "named"; //NOI18N
     public static final String UNCAUGHT_EXCEPTION_TYPE = "uncaughtExceptionType"; //NOI18N
 
-    private static final String FALSE = "false"; //NOI18N
+    private static final String TRUE = "true"; //NOI18N
     private static final String NULL = "null"; //NOI18N
     private static final String ERROR = "<error>"; //NOI18N
     
     private CodeTemplateInsertRequest request;
 
+    private int caretOffset;
     private CompilationInfo cInfo = null;
     private Future<Void> initTask = null;
     private TreePath treePath = null;
@@ -98,6 +103,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     }
     
     public synchronized void updateDefaultValues() {
+        updateTemplateEnding();
         updateTemplateBasedOnSelection();
         boolean cont = true;
         while (cont) {
@@ -133,6 +139,23 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     public void release() {
     }
     
+    private void updateTemplateEnding() {
+        String text = request.getParametrizedText();
+        if (text.endsWith("\n")) { //NOI18N
+            JTextComponent component = request.getComponent();
+            int offset = component.getSelectionEnd();
+            Document doc = component.getDocument();
+            if (doc.getLength() > offset) {
+                try {
+                    if ("\n".equals(doc.getText(offset, 1))) {
+                        request.setParametrizedText(text.substring(0, text.length() - 1));
+                    }
+                } catch (BadLocationException ble) {
+                }
+            }
+        }
+    }
+
     private void updateTemplateBasedOnSelection() {
         for (CodeTemplateParameter parameter : request.getAllParameters()) {
             if (CodeTemplateParameter.SELECTION_PARAMETER_NAME.equals(parameter.getName())) {
@@ -148,8 +171,12 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             TreePath treePath = tu.pathFor(component.getSelectionStart());
                             Tree tree = treePath.getLeaf();
                             if (tree.getKind() == Tree.Kind.BLOCK && tree == tu.pathFor(component.getSelectionEnd()).getLeaf()) {
+                                String selection = component.getSelectedText();
+                                int idx = 0;
+                                while ((idx < selection.length()) && (selection.charAt(idx) <= ' '))
+                                    idx++;
                                 final StringBuilder selectionText = new StringBuilder(parameter.getValue());
-                                final int caretOffset = component.getSelectionStart();
+                                final int caretOffset = component.getSelectionStart() + idx;
                                 final StringBuilder sb = new StringBuilder();
                                 final Trees trees = cInfo.getTrees();
                                 final SourcePositions sp = trees.getSourcePositions();
@@ -233,7 +260,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             for (Map.Entry<CodeTemplateParameter, TypeMirror> entry : param2types.entrySet()) {
                 CodeTemplateParameter param = entry.getKey();
                 TypeMirror tm = param2types.get(param);
-                TreePath tp = cInfo.getTreeUtilities().pathFor(request.getInsertTextOffset() + param.getInsertTextOffset());
+                TreePath tp = cInfo.getTreeUtilities().pathFor(caretOffset + param.getInsertTextOffset());
                 CharSequence typeName = imp.resolveImport(tp, tm);
                 if (CAST.equals(param2hints.get(param))) {
                     param.setValue("(" + typeName + ")"); //NOI18N
@@ -450,7 +477,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     if (type.getKind() == TypeKind.DECLARED)
                         return NULL;
                     else if (type.getKind() == TypeKind.BOOLEAN)
-                        return FALSE;
+                        return TRUE;
                 }
             }
         } catch (Exception e) {
@@ -579,7 +606,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     return null;
                 if (left == null)
                     return null;
-                if (right.getKind() != TypeKind.ERROR && cInfo.getTypes().isAssignable(right, left))
+                if (right.getKind() == TypeKind.ERROR || cInfo.getTypes().isAssignable(right, left))
                     return null;
                 return left;
             }
@@ -673,7 +700,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private synchronized boolean initParsing() {
         if (cInfo == null && initTask == null) {
             JTextComponent c = request.getComponent();
-            final int caretOffset = c.getSelectionStart();
+            caretOffset = c.getSelectionStart();
             JavaSource js = JavaSource.forDocument(c.getDocument());
             if (js != null) {
                 try {

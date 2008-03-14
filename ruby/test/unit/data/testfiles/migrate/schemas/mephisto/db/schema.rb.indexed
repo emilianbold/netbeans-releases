@@ -3,16 +3,11 @@
 Document 0
 Delete:  source : <TESTURL>/schema.rb
 
-Indexed:
-
-Not Indexed:
 
 
 Document 1
-Delete:
 Indexed:
   dbtable : assets
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : content_type;string
@@ -31,10 +26,8 @@ Not Indexed:
 
 
 Document 2
-Delete:
 Indexed:
   dbtable : assigned_sections
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : article_id;integer
@@ -44,10 +37,8 @@ Not Indexed:
 
 
 Document 3
-Delete:
 Indexed:
   dbtable : cached_pages
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : cleared_at;datetime
@@ -59,10 +50,8 @@ Not Indexed:
 
 
 Document 4
-Delete:
 Indexed:
   dbtable : content_versions
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : approved;boolean
@@ -95,10 +84,8 @@ Not Indexed:
 
 
 Document 5
-Delete:
 Indexed:
   dbtable : contents
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : approved;boolean
@@ -130,10 +117,8 @@ Not Indexed:
 
 
 Document 6
-Delete:
 Indexed:
   dbtable : events
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : article_id;integer
@@ -149,10 +134,8 @@ Not Indexed:
 
 
 Document 7
-Delete:
 Indexed:
   dbtable : memberships
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : admin;boolean
@@ -163,10 +146,8 @@ Not Indexed:
 
 
 Document 8
-Delete:
 Indexed:
   dbtable : sections
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : archive_path;string
@@ -184,10 +165,8 @@ Not Indexed:
 
 
 Document 9
-Delete:
 Indexed:
   dbtable : sessions
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : data;text
@@ -197,10 +176,8 @@ Not Indexed:
 
 
 Document 10
-Delete:
 Indexed:
   dbtable : sites
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : akismet_key;string
@@ -225,10 +202,8 @@ Not Indexed:
 
 
 Document 11
-Delete:
 Indexed:
   dbtable : taggings
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : tag_id;integer
@@ -238,10 +213,8 @@ Not Indexed:
 
 
 Document 12
-Delete:
 Indexed:
   dbtable : tags
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : name;string
@@ -249,10 +222,8 @@ Not Indexed:
 
 
 Document 13
-Delete:
 Indexed:
   dbtable : users
-  source : <TESTURL>/schema.rb
 
 Not Indexed:
   dbcolumn : activated_at;datetime

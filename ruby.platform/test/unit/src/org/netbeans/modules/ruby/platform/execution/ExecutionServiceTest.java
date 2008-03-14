@@ -40,10 +40,18 @@
  */
 package org.netbeans.modules.ruby.platform.execution;
 
-import org.netbeans.modules.ruby.platform.execution.ExecutionService;
-import org.netbeans.junit.NbTestCase;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.api.ruby.platform.RubyTestBase;
+import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.openide.util.Task;
 
-public final class ExecutionServiceTest extends NbTestCase {
+public final class ExecutionServiceTest extends RubyTestBase {
 
     public ExecutionServiceTest(String testName) {
         super(testName);
@@ -59,5 +67,26 @@ public final class ExecutionServiceTest extends NbTestCase {
         assertFalse(ExecutionService.isAppropriateName("test.rb", "tester.rb"));
         assertFalse(ExecutionService.isAppropriateName("Migration", "tester.rb"));
         assertFalse(ExecutionService.isAppropriateName("Migration", "Migration #1 #2"));
+    }
+
+    public void testAdditionalEnvironment() throws IOException {
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        ExecutionDescriptor descriptor = new ExecutionDescriptor(platform);
+
+        descriptor.cmd(platform.getInterpreterFile());
+        String gemPath = getWorkDirPath() + File.separator + "fake-repo";
+        descriptor.addAdditionalEnv(Collections.singletonMap("GEM_PATH", gemPath));
+        
+        List<String> argList = new ArrayList<String>();
+        argList.addAll(RubyExecution.getRubyArgs(platform));
+        argList.add("-e");
+        File file = new File(getWorkDir(), "gp.txt");
+        argList.add("File.open('" + file.getAbsolutePath() + "', 'w'){|f|f.printf ENV['GEM_PATH']}");
+        descriptor.additionalArgs(argList.toArray(new String[argList.size()]));
+        ExecutionService es = new ExecutionService(descriptor);
+        Task task = es.run();
+        task.waitFinished();
+        assertTrue(task.isFinished());
+        assertEquals("right GEM_PATH", gemPath, slurp(file));
     }
 }

@@ -72,6 +72,27 @@ public interface SpringBean {
     String getClassName();
 
     /**
+     * Returns the parent bean of this bean.
+     *
+     * @return the factory bean.
+     */
+    String getParent();
+
+    /**
+     * Returns the factory bean that creates this bean.
+     *
+     * @return the factory bean or null.
+     */
+    String getFactoryBean();
+
+    /**
+     * Returns the factory method that creates this bean.
+     *
+     * @return the factory method or null.
+     */
+    String getFactoryMethod();
+
+    /**
      * Returns the location of this bean.
      *
      * @return the location or null.

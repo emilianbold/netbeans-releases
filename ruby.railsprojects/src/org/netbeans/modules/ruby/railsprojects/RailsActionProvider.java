@@ -51,7 +51,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
@@ -61,6 +61,7 @@ import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectPropert
 import org.netbeans.modules.ruby.rubyproject.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
@@ -156,7 +157,12 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     }
 
     private RubyPlatform getPlatform() {
-        return RubyPlatform.platformFor(project);
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (platform == null) {
+            platform = RubyPlatformManager.getDefaultPlatform();
+        }
+        
+        return platform;
     }
 
     /** Return true iff the given file is a migration file */

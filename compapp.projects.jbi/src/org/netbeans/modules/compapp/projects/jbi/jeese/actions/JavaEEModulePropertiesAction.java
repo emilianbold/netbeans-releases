@@ -49,8 +49,10 @@
 package org.netbeans.modules.compapp.projects.jbi.jeese.actions;
 
 import java.awt.Dialog;
+import java.util.List;
 import java.util.ResourceBundle;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.compapp.javaee.codegen.model.EndpointCfg;
 import org.netbeans.modules.compapp.javaee.util.ProjectUtil;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.jeese.ui.DeploymentOptionPanel;
@@ -100,8 +102,8 @@ public class JavaEEModulePropertiesAction extends NodeAction {
         if ( jbiProject != null && vcpi != null ) {
             ResourceBundle rb = NbBundle.getBundle(this.getClass());
             String msgDeployOption = rb.getString(MSG_DEPLOY_OPTION);
-            
-            DeploymentOptionPanel pnl = new DeploymentOptionPanel();
+            List<EndpointCfg> cfgs = ProjectUtil.getEndpointCfgs(jbiProject, vcpi.getProjectName());
+            DeploymentOptionPanel pnl = new DeploymentOptionPanel(cfgs);
             pnl.isDeployThruCA(depThruCA(jbiProject, vcpi.getProjectName()));
             
             DialogDescriptor dd = new DialogDescriptor(pnl, " " + vcpi.getProjectName() + msgDeployOption);
@@ -110,10 +112,13 @@ public class JavaEEModulePropertiesAction extends NodeAction {
             //dlg.setSize( 400, 165 );
             dlg.setVisible( true );
             
-            if ( dd.getValue() == dd.OK_OPTION ) {
+            if ( dd.getValue() == DialogDescriptor.OK_OPTION ) {
                 ProjectUtil.setJavaEECustomProperty(jbiProject,
                         vcpi.getProjectName() + ProjectUtil.DEPLOY_THRU_CA,
                         Boolean.toString(pnl.isDeployThruCA()));
+                if ((cfgs != null) && (cfgs.size() > 0)){
+                    ProjectUtil.saveEndpointCfgs(jbiProject, vcpi.getProjectName(), cfgs);
+                }
             }
         }
     }

@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
@@ -229,11 +228,11 @@ public final class NativeProjectProvider {
 	NativeFileItem.Language getLanguage(File file, DataObject dobj) {
 	    if (dobj == null) {
 		String path = file.getAbsolutePath();
-		if (CCDataLoader.getInstance().getExtensions().isRegistered(path)) {
+		if (CCDataLoader.getInstance().getDefaultExtensionList().isRegistered(path)) {
 		    return NativeFileItem.Language.CPP;
-		} else if (CDataLoader.getInstance().getExtensions().isRegistered(path)) {
+		} else if (CDataLoader.getInstance().getDefaultExtensionList().isRegistered(path)) {
 		    return NativeFileItem.Language.C;
-		} else if (HDataLoader.getInstance().getExtensions().isRegistered(path)) {
+		} else if (HDataLoader.getInstance().getDefaultExtensionList().isRegistered(path)) {
 		    return NativeFileItem.Language.C_HEADER;
 		} else {
 		    return NativeFileItem.Language.OTHER;

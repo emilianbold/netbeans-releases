@@ -50,20 +50,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.netbeans.api.gsf.Index.SearchResult;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.NameKind;
+import org.netbeans.modules.gsf.api.Index.SearchResult;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.IndexDocument;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.api.gsfpath.queries.SourceForBinaryQuery;
+import org.netbeans.modules.gsfpath.api.queries.SourceForBinaryQuery;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.napi.gsfret.source.ClassIndex;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.modules.gsfret.source.SourceAccessor;
-import static org.netbeans.modules.gsfret.source.usages.ClassIndexImpl.UsageType.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.Exceptions;
 
 /**
@@ -84,20 +87,21 @@ public class PersistentClassIndex extends ClassIndexImpl {
     private static final Logger LOGGER = Logger.getLogger(PersistentClassIndex.class.getName());
     
     /** Creates a new instance of ClassesAndMembersUQ */
-    private PersistentClassIndex(final URL root, final File cacheRoot, final boolean source) 
+    private PersistentClassIndex(final Language language, final URL root, final File cacheRoot, final boolean source) 
         throws IOException, IllegalArgumentException {
         assert root != null;
         this.root = root;
-        this.index = LuceneIndex.create (cacheRoot, this);
+        this.index = LuceneIndex.create (language, cacheRoot, this);
         this.isSource = source;
     // BEGIN TOR MODIFICATIONS
+        this.language = language;
         this.cacheRoot = cacheRoot;
     // END TOR MODIFICATIONS
     }
     
-    public BinaryAnalyser getBinaryAnalyser () {
-        return new BinaryAnalyser (this.index);
-    }
+//    public BinaryAnalyser getBinaryAnalyser () {
+//        return new BinaryAnalyser (this.index);
+//    }
     
     public SourceAnalyser getSourceAnalyser () {        
         return new SourceAnalyser (this.index);        
@@ -118,9 +122,9 @@ public class PersistentClassIndex extends ClassIndexImpl {
 
     // Factory method
     
-    public static ClassIndexImpl create(URL root, final File cacheRoot, final boolean indexNow) 
+    public static ClassIndexImpl create(Language language, URL root, final File cacheRoot, final boolean indexNow) 
         throws IOException, IllegalArgumentException {        
-        return new PersistentClassIndex(root, cacheRoot, indexNow);
+        return new PersistentClassIndex(language, root, cacheRoot, indexNow);
     }
     
     public synchronized void setDirty (final Source js) {        
@@ -143,6 +147,26 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
     
     // Private methods ---------------------------------------------------------                          
+
+    private Void runIndexers(final CompilationInfo info) throws IOException {
+
+        Set<String> mimeTypes = info.getEmbeddedMimeTypes();
+        final SourceAnalyser sa = getSourceAnalyser();
+        long st = System.currentTimeMillis();
+        for (String mimeType : mimeTypes) {
+            for (ParserResult result: info.getEmbeddedResults(mimeType)) {
+                assert result != null;
+
+                Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+                Indexer indexer = language.getIndexer();
+                if (indexer != null) {
+                    sa.analyseUnitAndStore(indexer, result);
+                }
+            }
+        }
+        long et = System.currentTimeMillis();
+        return null;
+    }
     
     private void updateDirty () {
         WeakReference<Source> jsRef;        
@@ -153,19 +177,16 @@ public class PersistentClassIndex extends ClassIndexImpl {
             final Source js = jsRef.get();
             if (js != null) {
                 final long startTime = System.currentTimeMillis();
-                if (SourceAccessor.INSTANCE.isDispatchThread()) {
+                if (SourceAccessor.getINSTANCE().isDispatchThread()) {
                     //Already under javac's lock
                     try {
-                        ClassIndexManager.getDefault().writeLock(
+                        ClassIndexManager.get(language).writeLock(
                             new ClassIndexManager.ExceptionAction<Void>() {
                                 public Void run () throws IOException {
-                                    CompilationInfo compilationInfo = SourceAccessor.INSTANCE.getCurrentCompilationInfo (js, Phase.RESOLVED);
+                                    CompilationInfo compilationInfo = SourceAccessor.getINSTANCE().getCurrentCompilationInfo (js, Phase.RESOLVED);
                                     if (compilationInfo != null) {
                                         //Not cancelled
-                                        final SourceAnalyser sa = getSourceAnalyser();
-                                        long st = System.currentTimeMillis();
-                                        sa.analyseUnitAndStore(compilationInfo.getParserResult(), SourceAccessor.INSTANCE.getParserTask(compilationInfo));
-                                        long et = System.currentTimeMillis();
+                                        return runIndexers(compilationInfo);
                                     }
                                     return null;
                                 }
@@ -179,15 +200,11 @@ public class PersistentClassIndex extends ClassIndexImpl {
                         js.runUserActionTask(new CancellableTask<CompilationController>() {
                             public void run (final CompilationController controller) {
                                 try {                            
-                                    ClassIndexManager.getDefault().writeLock(
+                                    ClassIndexManager.get(language).writeLock(
                                         new ClassIndexManager.ExceptionAction<Void>() {
                                             public Void run () throws IOException {
                                                 controller.toPhase(Phase.RESOLVED);
-                                                final SourceAnalyser sa = getSourceAnalyser();
-                                                long st = System.currentTimeMillis();
-                                                sa.analyseUnitAndStore(controller.getParserResult(), SourceAccessor.INSTANCE.getParserTask(controller));
-                                                long et = System.currentTimeMillis();
-                                                return null;
+                                                return runIndexers(controller);
                                             }
                                     });
                                 } catch (IOException ioe) {
@@ -211,13 +228,13 @@ public class PersistentClassIndex extends ClassIndexImpl {
     }
         
     // BEGIN TOR MODIFICATIONS
-    public void gsfSearch(final String primaryField, final String name, final NameKind kind, 
-            final Set<ClassIndex.SearchScope> scope, final Set<SearchResult> result) throws IOException {
+    public void search(final String primaryField, final String name, final NameKind kind, 
+            final Set<ClassIndex.SearchScope> scope, final Set<SearchResult> result, final Set<String> terms) throws IOException {
         updateDirty();
         try {
-            ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
+            ClassIndexManager.readLock(new ClassIndexManager.ExceptionAction<Void> () {
                 public Void run () throws IOException {
-                    index.gsfSearch(primaryField, name, kind, scope, result);
+                    index.search(primaryField, name, kind, scope, result, terms);
                     return null;
                 }                    
             });
@@ -226,12 +243,17 @@ public class PersistentClassIndex extends ClassIndexImpl {
         }
     }
     
+    public Map<String,String> getTimeStamps() throws IOException {
+        return this.index.getTimeStamps();
+    }
+    
     /** For development purposes only */
     public File getSegment() {
         return cacheRoot;
     }
     
     private File cacheRoot;
+    private Language language;
     
     public URL getRoot() {
         return root;
@@ -248,6 +270,16 @@ public class PersistentClassIndex extends ClassIndexImpl {
         }
         
         return null;
+    }
+
+    @Override
+    public void storeEmpty() {
+        List<IndexDocument> list = Collections.emptyList();
+        try {
+            this.index.store(null, list);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 // END TOR MODIFICATIONS
     

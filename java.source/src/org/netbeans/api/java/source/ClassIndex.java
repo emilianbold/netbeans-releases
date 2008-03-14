@@ -433,28 +433,24 @@ public final class ClassIndex {
         final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
         List<ClassPath.Entry> entries = cp.entries();
 	for (ClassPath.Entry entry : entries) {
-	    try {
-                URL[] srcRoots;
-                if (!sources) {
-                    srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, true);                        
-                    if (srcRoots == null) {
-                        srcRoots = new URL[] {entry.getURL()};
-                    }
-                }
-                else {
+            URL[] srcRoots;
+            if (!sources) {
+                srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, true);                        
+                if (srcRoots == null) {
                     srcRoots = new URL[] {entry.getURL()};
-                }                
-                for (URL srcRoot : srcRoots) {
-                    oldState.add (srcRoot);
-                    ClassIndexImpl ci = ClassIndexManager.getDefault().getUsagesQuery(srcRoot);
-                    if (ci != null) {
-                        ci.addClassIndexImplListener(spiListener);
-                        queries.add (ci);
-                    }
                 }
-	    } catch (IOException ioe) {
-		Exceptions.printStackTrace(ioe);
-	    }
+            }
+            else {
+                srcRoots = new URL[] {entry.getURL()};
+            }                
+            for (URL srcRoot : srcRoots) {
+                oldState.add (srcRoot);
+                ClassIndexImpl ci = ClassIndexManager.getDefault().getUsagesQuery(srcRoot);
+                if (ci != null) {
+                    ci.addClassIndexImplListener(spiListener);
+                    queries.add (ci);
+                }
+            }	    
 	}
     }
     
@@ -657,7 +653,7 @@ public final class ClassIndex {
                         //trying to access javac lock in this thread may cause deadlock with Java Worker Thread
                         //because the classpath events are fired under the project mutex and it's legal to
                         //aquire project mutex in the CancellableTask.run()
-                        JavaSourceAccessor.INSTANCE.runSpecialTask(new CancellableTask<CompilationInfo>() {
+                        JavaSourceAccessor.getINSTANCE().runSpecialTask(new CancellableTask<CompilationInfo>() {
                             public void cancel() {
                                 //Cannot cancel event firing
                             }

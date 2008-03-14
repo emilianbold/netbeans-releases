@@ -39,12 +39,19 @@
 
 package org.netbeans.test.ide;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Frame;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import junit.framework.Assert;
 import org.netbeans.junit.Log;
 import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -89,8 +96,54 @@ final class WatchProjects {
             getProjects.invoke(projectManager)
         );
         
-        System.setProperty("assertgc.paths", "20");
-     // disabled due to issue 124038
-     //   Log.assertInstances("Checking if all projects are really garbage collected");
+        if (System.getProperty("java.version").startsWith("1.5")) {
+            // hopefully this hack will be needed just on 1.5
+            resetJTreeUIs(Frame.getFrames());
+            
+            // clear input method memory leak on JDK 1.5
+            Class<?> inputMethod = Class.forName("sun.awt.im.InputContext");
+            Field f = inputMethod.getDeclaredField("previousInputMethod");
+            f.setAccessible(true);
+            f.set(null, null);
+        }
+        
+        tryCloseNavigator();
+        
+        System.setProperty("assertgc.paths", "5");
+        // disabled due to issue 129435
+        // Log.assertInstances("Checking if all projects are really garbage collected");
     }
+    
+    private static void resetJTreeUIs(Component[] arr) {
+        for (Component c : arr) {
+            if (c instanceof JTree) {
+                JTree jt = (JTree)c;
+                jt.updateUI();
+            }
+            if (c instanceof Container) {
+                Container o = (Container)c;
+                resetJTreeUIs(o.getComponents());
+            }
+        }
+    }
+
+    /** 
+     * #124061 workaround - close navigator before tests
+     */
+    private static void tryCloseNavigator() {
+        for (TopComponent c : TopComponent.getRegistry().getOpened()) {
+            LOG.fine("Processing TC " + c.getDisplayName() + "class " + c.getClass().getName());
+            if (c.getClass().getName().equals("org.netbeans.modules.navigator.NavigatorTC")) {
+                final TopComponent navigator = (TopComponent)c;
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        navigator.close();
+                    }
+                });
+                LOG.fine("tryCloseNavigator: Navigator closed, OK!");
+                break;
+            }
+        }
+    }
+    
 }

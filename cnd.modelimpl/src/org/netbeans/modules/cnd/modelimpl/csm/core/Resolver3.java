@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
@@ -174,7 +175,7 @@ public class Resolver3 implements Resolver {
             } else if( decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ) {
                 CsmFunctionDefinition fd = (CsmFunctionDefinition) decl;
                 if( fd.getStartOffset() < this.offset && this.offset < fd.getEndOffset()  ) {
-                    CsmNamespace ns = getFunctionDefinitionNamespace(fd);
+                    CsmNamespace ns = CsmBaseUtilities.getFunctionNamespace(fd);
                     if( ns != null && ! ns.isGlobal() ) {
                         containingNamespace = ns;
                     }
@@ -211,36 +212,7 @@ public class Resolver3 implements Resolver {
             }
         }
         return false;
-    }
-    
-    private CsmNamespace getFunctionDefinitionNamespace(CsmFunctionDefinition def) {
-        CsmFunction fun = getFunctionDeclaration(def);
-        if( fun != null ) {
-            CsmScope scope = fun.getScope();
-            if( CsmKindUtilities.isNamespace(scope)) {
-                CsmNamespace ns = (CsmNamespace) scope;
-                return ns;
-            } else if( CsmKindUtilities.isClass(scope) ) {
-                return getClassNamespace((CsmClass) scope);
-            }
-        }
-        return null;
-    }
-    
-    private CsmNamespace getClassNamespace(CsmClass cls) {
-        CsmScope scope = cls.getScope();
-        while( scope != null ) {
-            if( CsmKindUtilities.isNamespace(scope) ) {
-                return (CsmNamespace) scope;
-            }
-            if( CsmKindUtilities.isScopeElement(scope) ) {
-                scope = ((CsmScopeElement)scope).getScope();
-            } else {
-                break;
-            }
-        }
-        return null;
-    }
+    }      
     
     protected void gatherMaps(CsmFile file) {
         if( file == null || visitedFiles.contains(file) ) {

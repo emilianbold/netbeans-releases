@@ -47,35 +47,35 @@
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://developer.yahoo.com/traffic/rest/V1/index.html"
-               url="nbres:/org/netbeans/modules/websvc/saas/services/yahoo/resources/YahooTrafficServiceWadl.xml">
+               api-doc="http://developer.yahoo.com/search/news/V1/newsSearch.html"
+               url="org/netbeans/modules/websvc/saas/services/yahoo/resources/YahooNewsSearchWadl.xml">
 
     <description>Yahoo News Search Service</description>
     
-    <display-name>YahooNewsSearchService</display-name>
+    <display-name>News Search Service</display-name>
 
     <saas-metadata>
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.yahoo.Bundle</localizing-bundle>
 
-        <icon16>org/netbeans/modules/websvc/saas/services/yahoo/resources/yahoo16.png</icon16>
-
-        <group name="YahooTrafficService">
+        <group name="Yahoo">
         </group>
 
-        <authentication profile="Templates/WebServices/profile.properties">
+        <authentication profile="SaaSServices/Yahoo/profile.properties">
             <api-key id="dev_id"/>
         </authentication>
 
     </saas-metadata>
 
+    <!--
     <methods>
-        <method name="newsSearch" href="//resource[@path='newsSearch']/method[@href='#search']">
+        <method name="newsSearch" href="#search">
             <documentation>
                 The Yahoo News Search service provides online searching of news
                 stories from around the world.
             </documentation>
         </method>
     </methods>
-
+    -->
+    
 </saas-services>

@@ -37,11 +37,11 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
+import org.jruby.ast.NodeType;
 import org.jruby.lexer.yacc.ISourcePosition;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -95,25 +95,24 @@ public class ExpandSameLineDef implements AstRule {
         return info.getFileObject().getMIMEType().equals("text/x-ruby");
     }
 
-    public Set<Integer> getKinds() {
-        Set<Integer> integers = new HashSet<Integer>();
-        integers.add(NodeTypes.CLASSNODE);
-        integers.add(NodeTypes.DEFNNODE);
-        integers.add(NodeTypes.DEFSNODE);
-        return integers;
+    public Set<NodeType> getKinds() {
+        Set<NodeType> types = new HashSet<NodeType>();
+        types.add(NodeType.CLASSNODE);
+        types.add(NodeType.DEFNNODE);
+        types.add(NodeType.DEFSNODE);
+        return types;
     }
 
     public void run(RuleContext context, List<Description> result) {
         Node node = context.node;
         AstPath path = context.path;
         CompilationInfo info = context.compilationInfo;
+        BaseDocument doc = context.doc;
 
         // Look for use of deprecated fields
-        if (node.nodeId == NodeTypes.DEFNNODE || node.nodeId == NodeTypes.DEFSNODE || node.nodeId == NodeTypes.CLASSNODE) {
+        if (node.nodeId == NodeType.DEFNNODE || node.nodeId == NodeType.DEFSNODE || node.nodeId == NodeType.CLASSNODE) {
             ISourcePosition pos = node.getPosition();
             try {
-                BaseDocument doc = (BaseDocument)info.getDocument();
-                
                 if (doc == null) {
                     // Run on a file that was just closed
                     return;
@@ -140,11 +139,7 @@ public class ExpandSameLineDef implements AstRule {
                     // on the same line only produces a single suggestion for the outer block
                     return;
                 }
-            }
-            catch (BadLocationException ex){
-                Exceptions.printStackTrace(ex);
-            }
-            catch (IOException ex){
+            } catch (BadLocationException ex){
                 Exceptions.printStackTrace(ex);
             }
         }
@@ -179,12 +174,12 @@ public class ExpandSameLineDef implements AstRule {
         }
 
         public String getDescription() {
-            String code = path.leaf().nodeId == NodeTypes.DEFNNODE ? "def" : "class";
+            String code = path.leaf().nodeId == NodeType.DEFNNODE ? "def" : "class";
             return NbBundle.getMessage(ExpandSameLineDef.class, "ExpandLineFix", code);
         }
         
         private void findLineBreaks(Node node, Set<Integer> offsets) {
-            if (node.nodeId == NodeTypes.NEWLINENODE) {
+            if (node.nodeId == NodeType.NEWLINENODE) {
                 offsets.add(node.getPosition().getStartOffset());
             }
             @SuppressWarnings(value = "unchecked")

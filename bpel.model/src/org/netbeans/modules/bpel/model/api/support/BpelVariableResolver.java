@@ -17,6 +17,7 @@
 
 package org.netbeans.modules.bpel.model.api.support;
 
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xam.Model.State;
+import org.openide.util.NbBundle;
 
 /**
  * This object is intended to allow to an XPath model to resolve BPEL variables.
@@ -79,8 +81,7 @@ public class BpelVariableResolver implements VariableResolver<XPathBpelVariable>
             if (namespaceUri == null) {
                 // Error: Unknown prefix
                 if (myVContext != null) {
-                    myVContext.addResultItem(ResultType.ERROR, 
-                            "UNKNOWN_NAMESPACE_PREFIX", prefix); // NOI18N
+                    myVContext.addResultItem(ResultType.ERROR, NbBundle.getMessage(BpelVariableResolver.class, "UNKNOWN_NAMESPACE_PREFIX"), prefix); // NOI18N
                 }
                 return null;
             }
@@ -93,8 +94,7 @@ public class BpelVariableResolver implements VariableResolver<XPathBpelVariable>
                 String correctPrefix = nsContext.getPrefix(processNsUri);
                 String varName = varQName.getLocalPart();
                 if (myVContext != null) {
-                    myVContext.addResultItem(ResultType.ERROR,
-                            "WRONG_VARIABLE_PREFIX", varName, 
+                    myVContext.addResultItem(ResultType.ERROR, NbBundle.getMessage(BpelVariableResolver.class, "WRONG_VARIABLE_PREFIX"), varName, 
                             prefix, correctPrefix); // NOI18N
                 }
                 return null;
@@ -118,7 +118,6 @@ public class BpelVariableResolver implements VariableResolver<XPathBpelVariable>
             //
             // Don't show this error because of it is already detected by another
             // See: ReferencesValidator.FIX_VARIABLE
-            // addResultItem(ResultType.ERROR, "UNKNOWN_VARIABLE", varName); // NOI18N
             return null;
         } 
         //
@@ -130,8 +129,7 @@ public class BpelVariableResolver implements VariableResolver<XPathBpelVariable>
             if (message == null) {
                 // Error: impossible to get message by ref
                 if (myVContext != null) {
-                    myVContext.addResultItem(ResultType.ERROR, 
-                            "CANT_RETRIEVE_MESSAGE_TYPE",
+                    myVContext.addResultItem(ResultType.ERROR, NbBundle.getMessage(BpelVariableResolver.class, "CANT_RETRIEVE_MESSAGE_TYPE"),
                             messageTypeRef.getRefString(), varName); // NOI18N
                 }
                 return null;
@@ -148,19 +146,19 @@ public class BpelVariableResolver implements VariableResolver<XPathBpelVariable>
                     ArrayList<String> partNameList = getPartNames(message);
                     switch (partNameList.size()) {
                     case 0: 
-                        myVContext.addResultItem(ResultType.ERROR, 
-                                "MESSAGE_PART_REQUIRED", varName); // NOI18N
+                        myVContext.addResultItem(ResultType.ERROR, NbBundle.getMessage(BpelVariableResolver.class,
+                                "MESSAGE_PART_REQUIRED"), varName); // NOI18N
                         break;
                     case 1:
                         String firstPartName = partNameList.get(0);
-                        myVContext.addResultItem(ResultType.ERROR, 
-                                "SPECIFIC_MESSAGE_PART_REQUIRED", 
+                        myVContext.addResultItem(ResultType.ERROR, NbBundle.getMessage(BpelVariableResolver.class,
+                                "SPECIFIC_MESSAGE_PART_REQUIRED"), 
                                 varName, firstPartName); // NOI18N
                         break;
                     default:
                         //
-                        myVContext.addResultItem(ResultType.ERROR, 
-                                "A_MESSAGE_PART_REQUIRED", varName, 
+                        myVContext.addResultItem(ResultType.ERROR, NbBundle.getMessage(BpelVariableResolver.class,
+                                "A_MESSAGE_PART_REQUIRED"), varName, 
                                 partNameListToString(partNameList)); // NOI18N
                     }
                 }
@@ -172,8 +170,8 @@ public class BpelVariableResolver implements VariableResolver<XPathBpelVariable>
             if (messageTypeRef == null) {
                 // Error: if the part is specified then variable has to be of a message type
                 if (myVContext != null) {
-                    myVContext.addResultItem(ResultType.ERROR, 
-                            "VARIABLE_MESSAGE_TYPE_REQUIRED", varName); // NOI18N
+                    myVContext.addResultItem(ResultType.ERROR, NbBundle.getMessage(BpelVariableResolver.class,
+                            "VARIABLE_MESSAGE_TYPE_REQUIRED"), varName); // NOI18N
                 }
                 return null;
             } else {
@@ -192,19 +190,19 @@ public class BpelVariableResolver implements VariableResolver<XPathBpelVariable>
                         ArrayList<String> partNameList = getPartNames(message);
                         switch (partNameList.size()) {
                         case 0: 
-                            myVContext.addResultItem(ResultType.ERROR, 
-                                    "UNKNOWN_MESSAGE_PART", partName, varName); // NOI18N
+                            myVContext.addResultItem(ResultType.ERROR, NbBundle.getMessage(BpelVariableResolver.class,
+                                    "UNKNOWN_MESSAGE_PART"), partName, varName); // NOI18N
                             break;
                         case 1:
                             String firstPartName = partNameList.get(0);
-                            myVContext.addResultItem(ResultType.ERROR, 
-                                    "SPECIFIC_UNKNOWN_MESSAGE_PART", 
+                            myVContext.addResultItem(ResultType.ERROR, NbBundle.getMessage(BpelVariableResolver.class,
+                                    "SPECIFIC_UNKNOWN_MESSAGE_PART"), 
                                     partName, varName, firstPartName); // NOI18N
                             break;
                         default:
                             //
-                            myVContext.addResultItem(ResultType.ERROR, 
-                                    "A_UNKNOWN_MESSAGE_PART", 
+                            myVContext.addResultItem(ResultType.ERROR, NbBundle.getMessage(BpelVariableResolver.class,
+                                    "A_UNKNOWN_MESSAGE_PART"), 
                                     partName, varName, 
                                     partNameListToString(partNameList)); // NOI18N
                         }

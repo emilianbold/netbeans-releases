@@ -43,7 +43,11 @@ made subject to such option by the copyright holder.
 <!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN" "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
 
 <bindings>
-    <bind actionName="abbrev-reset" key="S-SPACE"/>
+    <bind actionName="abbrev-expand" key="S-SPACE"/>
+    <bind actionName="adjust-caret-bottom" key="OS-PAGE_DOWN"/>
+    <bind actionName="adjust-caret-center" key="OS-INSERT"/>
+    <bind actionName="adjust-caret-top" key="OS-PAGE_UP"/>
+    <bind actionName="all-completion-show" key="DO-BACK_SLASH"/>
     <bind actionName="all-completion-show" key="DO-SPACE"/>
     <bind actionName="annotations-cycling" key="DS-C"/>
     <bind actionName="caret-backward" key="LEFT"/>
@@ -55,30 +59,48 @@ made subject to such option by the copyright holder.
     <bind actionName="caret-end" key="D-END"/>
     <bind actionName="caret-end-line" key="END"/>
     <bind actionName="caret-forward" key="RIGHT"/>
+    <bind actionName="caret-forward" key="KP_RIGHT"/>
     <bind actionName="caret-next-word" key="D-RIGHT"/>
     <bind actionName="caret-previous-word" key="D-LEFT"/>
     <bind actionName="caret-up" key="UP"/>
     <bind actionName="caret-up" key="KP_UP"/>
-    <bind actionName="collapse-fold" key="D-SUBTRACT"/>
     <bind actionName="collapse-all-folds" key="DS-SUBTRACT"/>
+    <bind actionName="collapse-all-folds" key="DS-MINUS"/>
+    <bind actionName="collapse-fold" key="D-MINUS"/>
+    <bind actionName="collapse-fold" key="D-SUBTRACT"/>
     <bind actionName="completion-show" key="D-SPACE"/>
+    <bind actionName="completion-show" key="D-BACK_SLASH"/>
+    <bind actionName="copy-selection-else-line-down" key="DO-DOWN"/>
+    <bind actionName="copy-selection-else-line-up" key="DO-UP"/>
+    <bind actionName="copy-to-clipboard" key="D-INSERT"/>
     <bind actionName="copy-to-clipboard" key="COPY"/>
+    <bind actionName="copy-to-clipboard" key="D-C"/>
+    <bind actionName="cut-to-clipboard" key="S-DELETE"/>
     <bind actionName="cut-to-clipboard" key="CUT"/>
+    <bind actionName="cut-to-clipboard" key="D-X"/>
     <bind actionName="delete-next" key="DELETE"/>
     <bind actionName="delete-previous" key="BACK_SPACE"/>
+    <bind actionName="delete-previous" key="S-BACK_SPACE"/>
     <bind actionName="documentation-show" key="DS-SPACE"/>
+    <bind actionName="documentation-show" key="DS-BACK_SLASH"/>
+    <bind actionName="expand-all-folds" key="DS-ADD"/>
+    <bind actionName="expand-all-folds" key="DS-PLUS"/>
     <bind actionName="expand-all-folds" key="D-MULTIPLY"/>
+    <bind actionName="expand-all-folds" key="DS-EQUALS"/>
+    <bind actionName="expand-fold" key="D-EQUALS"/>
+    <bind actionName="expand-fold" key="D-PLUS"/>
     <bind actionName="expand-fold" key="D-ADD"/>
     <bind actionName="fast-import" key="DS-M"/>
-    <bind actionName="incremental-search-forward" key="FIND"/>
     <bind actionName="find-next" key="D-K"/>
     <bind actionName="find-previous" key="DS-K"/>
     <bind actionName="fix-imports" key="DS-O"/>
     <bind actionName="format" key="DS-F"/>
+    <bind actionName="generate-code" key="OS-S"/>
     <bind actionName="goto" key="D-L"/>
     <bind actionName="goto-declaration" key="F3"/>
-    <bind actionName="goto-source" key="D-F3"/>
     <bind actionName="in-place-refactoring" key="D-R"/>
+    <bind actionName="incremental-search-forward" key="D-J"/>
+    <bind actionName="incremental-search-backward" key="DS-J"/>
     <bind actionName="insert-break" key="ENTER"/>
     <bind actionName="insert-tab" key="TAB"/>
     <bind actionName="jump-list-last-edit" key="D-Q"/>
@@ -87,20 +109,28 @@ made subject to such option by the copyright holder.
     <bind actionName="make-getter" key="O-U$G"/>
     <bind actionName="make-is" key="O-U$I"/>
     <bind actionName="make-setter" key="O-U$S"/>
-    <bind actionName="match-brace" key="DOS-P"/>
+    <bind actionName="match-brace" key="DS-P"/>
+    <bind actionName="move-selection-else-line-down" key="O-DOWN"/>
+    <bind actionName="move-selection-else-line-up" key="O-UP"/>
     <bind actionName="page-down" key="PAGE_DOWN"/>
     <bind actionName="page-up" key="PAGE_UP"/>
+    <bind actionName="paste-formated" key="DS-V"/>
+    <bind actionName="paste-from-clipboard" key="S-INSERT"/>
+    <bind actionName="paste-from-clipboard" key="D-V"/>
     <bind actionName="paste-from-clipboard" key="PASTE"/>
-    <bind actionName="remove-tab" key="S-TAB"/>
+    <bind actionName="redo" key="D-Y"/>
     <bind actionName="remove-line" key="D-D"/>
+    <bind actionName="remove-tab" key="S-TAB"/>
     <bind actionName="remove-word-next" key="D-DELETE"/>
     <bind actionName="remove-word-previous" key="D-BACK_SPACE"/>
-    <bind actionName="replace" key="DS-F"/>
+    <bind actionName="replace" key="D-F"/>
     <bind actionName="scroll-down" key="D-UP"/>
     <bind actionName="scroll-up" key="D-DOWN"/>
     <bind actionName="select-all" key="D-A"/>
-    <bind actionName="select-element-next" key="OS-UP"/>
-    <bind actionName="select-element-previous" key="OS-DOWN"/>
+    <bind actionName="select-element-next" key="OS-PERIOD"/>
+    <bind actionName="select-element-previous" key="OS-COMMA"/>
+    <bind actionName="select-identifier" key="OS-J"/>
+    <bind actionName="select-next-parameter" key="D-M"/>
     <bind actionName="selection-backward" key="S-LEFT"/>
     <bind actionName="selection-begin" key="DS-HOME"/>
     <bind actionName="selection-begin-line" key="S-HOME"/>
@@ -108,20 +138,26 @@ made subject to such option by the copyright holder.
     <bind actionName="selection-end" key="DS-END"/>
     <bind actionName="selection-end-line" key="S-END"/>
     <bind actionName="selection-forward" key="S-RIGHT"/>
+    <bind actionName="selection-match-brace" key="DS-OPEN_BRACKET"/>
     <bind actionName="selection-next-word" key="DS-RIGHT"/>
     <bind actionName="selection-page-down" key="S-PAGE_DOWN"/>
     <bind actionName="selection-page-up" key="S-PAGE_UP"/>
     <bind actionName="selection-previous-word" key="DS-LEFT"/>
     <bind actionName="selection-up" key="S-UP"/>
+    <bind actionName="shift-line-left" key="OS-LEFT"/>
+    <bind actionName="shift-line-right" key="OS-RIGHT"/>
+    <bind actionName="show-popup-menu" key="S-F10"/>
     <bind actionName="split-line" key="D-ENTER"/>
-    <bind actionName="start-macro-recording" key="D-J$S"/>
     <bind actionName="start-new-line" key="S-ENTER"/>
-    <bind actionName="stop-macro-recording" key="D-J$E"/>
+    <bind actionName="switch-case" key="D-U$S"/>
     <bind actionName="to-lower-case" key="DS-Y"/>
     <bind actionName="to-upper-case" key="DS-X"/>
+    <bind actionName="toggle-comment" key="D-SLASH"/>
+    <bind actionName="toggle-highlight-search" key="OS-H"/>
     <bind actionName="toggle-typing-mode" key="INSERT"/>
-    <bind actionName="tooltip-show" key="O-P"/>
+    <bind actionName="tooltip-show" key="F2"/>
     <bind actionName="try-catch" key="OS-W"/>
+    <bind actionName="undo" key="D-Z"/>
     <bind actionName="undo" key="UNDO"/>
     <bind actionName="word-match-next" key="O-SLASH"/>
 </bindings>

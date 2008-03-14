@@ -1,0 +1,13 @@
+var |>GLOBAL:declaredglobal<|;
+|>GLOBAL:global<| = 5;
+|>CLASS:Autocompleter<|.Base.prototype = {
+  |>METHOD:baseInitialize<|: function(|>UNUSED:element1<|, |>UNUSED:update1<|, |>UNUSED:options1<|) {
+    var foo1 = 5, |>UNUSED:bar1<|;
+    alert('foo1 ' + foo1);
+  },
+  |>METHOD:other<|: function(|>UNUSED:element2<|, |>UNUSED:update2<|, |>UNUSED:options2<|) {
+    var foo2 = 5, |>UNUSED:bar2<|;
+    alert('foo2 ' + foo2);
+  }
+}
+

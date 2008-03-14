@@ -50,10 +50,10 @@ import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.FileInformation;
-import javax.swing.AbstractAction;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.util.RequestProcessor;
 import  org.openide.util.NbBundle;
 
@@ -62,7 +62,7 @@ import  org.openide.util.NbBundle;
  *
  * @author Petr Kuzel
  */
-public class ConflictResolvedAction extends AbstractAction {
+public class ConflictResolvedAction extends ContextAction {
 
     private final VCSContext context;
  
@@ -71,8 +71,7 @@ public class ConflictResolvedAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         resolved(context);
     }
 

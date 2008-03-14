@@ -97,6 +97,8 @@ public class HTMLSettingsInitializer extends Settings.AbstractInitializer {
                 }
             );
             
+            settingsMap.put(SettingsNames.CODE_FOLDING_ENABLE, new Boolean(true));
+            
             settingsMap.put(SettingsNames.IDENTIFIER_ACCEPTOR,
                             HTML_IDENTIFIER_ACCEPTOR);
 

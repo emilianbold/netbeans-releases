@@ -48,22 +48,25 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
-import org.netbeans.modules.cnd.api.model.CsmVariable;
-import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -82,22 +85,16 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  */
 public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     
-    public enum ReferenceKind {
-        DEFINITION,
-        DECLARATION,
-        USAGE,
-    }
-    
     public ReferenceRepositoryImpl() {
     }
     
-    public Collection<CsmReference> getReferences(CsmObject target, CsmProject project, boolean includeSelfDeclarations) {
+    public Collection<CsmReference> getReferences(CsmObject target, CsmProject project, EnumSet<CsmReferenceKind> kinds) {
         if (!(project instanceof ProjectBase)) {
             return Collections.<CsmReference>emptyList();
         }
         ProjectBase basePrj = (ProjectBase)project;
-        
-        CsmObject[] decDef = getDefinitionDeclaration(target);
+        boolean unboxInstantiation = true;
+        CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, unboxInstantiation);
         CsmObject decl = decDef[0];
         CsmObject def = decDef[1];
         
@@ -108,18 +105,18 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         if (scopeFile instanceof FileImpl) {
             out = new ArrayList(10);
             CsmOffsetable offs = (CsmOffsetable)scope;
-            out.addAll(getReferences(decl, def, (FileImpl)scopeFile, includeSelfDeclarations, offs.getStartOffset(), offs.getEndOffset()));
+            out.addAll(getReferences(decl, def, (FileImpl)scopeFile, kinds, unboxInstantiation, offs.getStartOffset(), offs.getEndOffset()));
         } else {
             files = basePrj.getAllFileImpls();
             out = new ArrayList<CsmReference>(files.size() * 10);
             for (FileImpl file : files) {
-                out.addAll(getReferences(decl, def, file, includeSelfDeclarations, 0, Integer.MAX_VALUE));
+                out.addAll(getReferences(decl, def, file, kinds,unboxInstantiation, 0, Integer.MAX_VALUE));
             }
         }
         return out;
     }
     
-    public Collection<CsmReference> getReferences(CsmObject target, CsmFile file, boolean includeSelfDeclarations) {
+    public Collection<CsmReference> getReferences(CsmObject target, CsmFile file, EnumSet<CsmReferenceKind> kinds) {
         CsmScope scope = getDeclarationScope(target);
         CsmFile scopeFile = CsmKindUtilities.isOffsetable(scope) ? ((CsmOffsetable)scope).getContainingFile() : null;
         if (!(file instanceof FileImpl)) {
@@ -128,7 +125,8 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
             // asked file is not scope file for target object
             return Collections.<CsmReference>emptyList();
         } else {
-            CsmObject[] decDef = getDefinitionDeclaration(target);
+            boolean unboxInstantiation = true;
+            CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, unboxInstantiation);
             CsmObject decl = decDef[0];
             CsmObject def = decDef[1];            
             int start = 0, end = Integer.MAX_VALUE;
@@ -136,31 +134,42 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
                 start = ((CsmOffsetable)scope).getStartOffset();
                 end = ((CsmOffsetable)scope).getEndOffset();
             }
-            return getReferences(decl, def, (FileImpl)file, includeSelfDeclarations, start, end);
+            return getReferences(decl, def, (FileImpl)file, kinds, unboxInstantiation, start,end);
         }
     }
     
-    public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmProject project, boolean includeSelfDeclarations) {
+    public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmProject project, EnumSet<CsmReferenceKind> kinds) {
         Map<CsmObject, Collection<CsmReference>> out = new HashMap<CsmObject, Collection<CsmReference>>(targets.length);
         for (CsmObject target : targets) {
-            out.put(target, getReferences(target, project, includeSelfDeclarations));
+            out.put(target, getReferences(target, project, kinds));
         }
         return out;
     }
     
-    public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmFile file, boolean includeSelfDeclarations) {
-        Map<CsmObject, Collection<CsmReference>> out = new HashMap<CsmObject, Collection<CsmReference>>(targets.length);
-        for (CsmObject target : targets) {
-            out.put(target, getReferences(target, file, includeSelfDeclarations));
+    public Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, EnumSet<CsmReferenceKind> kinds) {
+        Collection<CsmReference> refs = new LinkedHashSet<CsmReference>(1024);
+        // TODO: optimize performance
+        for (CsmObject target : targets) {            
+            refs.addAll(getReferences(target, file, kinds));
         }
-        return out;
+        if (!refs.isEmpty() && targets.length > 1) {
+            // if only one target, then collection is already sorted
+            List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
+            Collections.sort(sortedRefs, new Comparator<CsmReference>() {
+                public int compare(CsmReference o1, CsmReference o2) {
+                    return o1.getStartOffset() - o2.getStartOffset();
+                }
+            });    
+            refs = sortedRefs;
+        }
+        return refs;
     }
     
     ////////////////////////////////////////////////////////////////////////////
     // prototype of impl
     
     private Collection<CsmReference> getReferences(CsmObject targetDecl, CsmObject targetDef, FileImpl file, 
-            boolean includeSelfDeclarations, int startOffset, int endOffset) {
+            EnumSet<CsmReferenceKind> kinds, boolean unboxInstantiation, int startOffset, int endOffset) {
         assert targetDecl != null;
         assert file != null;
         CharSequence name = "";
@@ -190,7 +199,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
             // this is candidate to resolve
             int offset = token.getOffset();
             CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, offset);
-            if (acceptReference(ref, targetDecl, targetDef, includeSelfDeclarations)) {
+            if (acceptReference(ref, targetDecl, targetDef, kinds, unboxInstantiation)) {
                 out.add(ref);
             }
         }
@@ -253,81 +262,26 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         }
         return ts == null ? null : file.getLanguageFilter().getFilteredStream( new APTCommentsFilter(ts));
     }
-    
-    private boolean acceptReference(CsmReference ref, CsmObject targetDecl, CsmObject targetDef, boolean includeSelfDeclarations) {
+
+    private boolean acceptReference(CsmReference ref, CsmObject targetDecl, CsmObject targetDef, 
+            EnumSet<CsmReferenceKind> kinds, boolean unboxInstantiation) {
         assert targetDecl != null;
         boolean accept = false;
-        if (ref != null && targetDecl.equals(ref.getReferencedObject())) {
-            if (includeSelfDeclarations) {
+        CsmObject referencedObj = ref == null ? null : ref.getReferencedObject();
+        if (unboxInstantiation && CsmKindUtilities.isTemplateInstantiation(referencedObj)) {
+            referencedObj = ((CsmInstantiation)referencedObj).getTemplateDeclaration();
+        }
+        if (targetDecl.equals(referencedObj)) {
+            if (kinds == CsmReferenceKind.ALL) {
                 accept = true;
-            } else {
-                accept = (getReferenceKind(ref, targetDecl, targetDef) == ReferenceKind.USAGE);
+            } else { 
+                CsmReferenceKind kind = ref.getKind();
+                accept = kinds.contains(kind);
             }
         }
         return accept;
-    }
-    
-    public static ReferenceKind getReferenceKind(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
-        assert targetDecl != null;
-        CsmObject owner = ref.getOwner();
-        // assert owner != null;        
-        ReferenceKind kind = ReferenceKind.USAGE;
-        if (owner != null) {
-            if (owner.equals(targetDecl)) {
-                kind = ReferenceKind.DECLARATION;
-            } else if (owner.equals(targetDef)) {
-                kind = ReferenceKind.DEFINITION;
-            }
-        }
-        return kind;
-    }
-    
-    public static CsmObject[] getDefinitionDeclaration(CsmObject target) {
-        CsmObject decl;
-        CsmObject def; 
-        if (CsmKindUtilities.isVariableDefinition(target)) {
-            decl = ((CsmVariableDefinition)target).getDeclaration();
-            if (decl == null) {
-                decl = target;
-                if (TraceFlags.TRACE_XREF_REPOSITORY) {
-                    System.err.println("not found declaration for variable definition " + target);
-                }
-            }
-            def = target;
-        } else if (CsmKindUtilities.isVariableDeclaration(target)) {
-            decl = target;
-            def = ((CsmVariable)target).getDefinition();
-        } else if (CsmKindUtilities.isFunctionDefinition(target)) {
-            decl = ((CsmFunctionDefinition)target).getDeclaration();
-            if (decl == null) {
-                decl = target;
-                if (TraceFlags.TRACE_XREF_REPOSITORY) {
-                    System.err.println("not found declaration for function definition " + target);
-                }
-            }
-            def = target;
-        } else if (CsmKindUtilities.isFunctionDeclaration(target)) {
-            decl = target;
-            def = ((CsmFunction)target).getDefinition();
-        } else {
-            decl = target;
-            def = null;
-        }
-        assert decl != null;
-        return new CsmObject[] { decl, def };
-    }
+    }   
 
-//    private Collection<FileImpl> getFiles(CsmObject decl, ProjectBase basePrj) {
-//        assert decl != null;
-//        CsmScope scope = getDeclarationScope(decl);
-//        if (scope != null && CsmKindUtilities.isOffsetable(scope)) {
-//            CsmFile 
-//            return Collections.singleton((FileImpl)scopeFile);
-//        } else {
-//            return basePrj.getAllFileImpls();
-//        }
-//    }
-    
     private CsmScope getDeclarationScope(CsmObject decl) {
         assert decl != null;
         CsmObject scopeElem = decl;

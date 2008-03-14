@@ -17,13 +17,14 @@ package org.netbeans.modules.etl.ui.view.graph.actions;
 
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.net.URL;
 import javax.swing.Action;
 import java.util.Iterator;
 import javax.swing.ImageIcon;
+import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
@@ -40,20 +41,22 @@ import org.openide.awt.StatusDisplayer;
 public class RemountCollaborationAction extends GraphAction {
 
     private static final URL remountImgUrl = RemountCollaborationAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/redo.png");
-    private static transient final Logger mLogger = LogUtil.getLogger(RemountCollaborationAction.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(RemountCollaborationAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     
     public RemountCollaborationAction() {
         //action name
-        String nbBundle1 = mLoc.t("PRSR001: Remount");
-        this.putValue(Action.NAME,Localizer.parse(nbBundle1));
+        String nbBundle1 = mLoc.t("BUND027: Remount");
+        this.putValue(Action.NAME,nbBundle1.substring(15));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(remountImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("PRSR001: Drops and re-creates all the tables.");
-        this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
+        String nbBundle2 = mLoc.t("BUND028: Drops and re-creates all the tables. (Shift-M)");
+        this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
+        // Acceleratot Shift-M
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('M', InputEvent.SHIFT_DOWN_MASK));
     }
 
     /**

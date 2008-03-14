@@ -63,35 +63,35 @@ public class SubprojectProviderImplTest extends TestBase {
     }
     
     public void testNetBeansOrgSubprojects() throws Exception {
-        // Keep in synch with ant/nbproject/project.xml:
-        checkSubprojects("ant", new String[] {
-            "openide/fs",
-            "openide/util",
-            "openide/modules",
-            "openide/nodes",
-            "openide/awt",
-            "openide/dialogs",
-            "openide/windows",
-            "openide/text",
-            "openide/actions",
-            "openide/execution",
-            "openide/io",
-            "openide/loaders",
-            "xml/api",
-            "core/navigator",
-            "openide/explorer",
-            "core/options",
-            "libs/swing-layout",
-            "core/progress",
-            "projects/projectapi",
-            "projects/projectuiapi",
+        // Keep in synch with o.apache.tools.ant.module/nbproject/project.xml:
+        checkSubprojects("o.apache.tools.ant.module", new String[] {
+            "openide.filesystems",
+            "openide.util",
+            "openide.modules",
+            "openide.nodes",
+            "openide.awt",
+            "openide.dialogs",
+            "openide.windows",
+            "openide.text",
+            "openide.actions",
+            "openide.execution",
+            "openide.io",
+            "openide.loaders",
+            "api.xml",
+            "spi.navigator",
+            "openide.explorer",
+            "options.api",
+            "o.jdesktop.layout",
+            "api.progress",
+            "projectapi",
+            "projectuiapi",
         });
     }
     
     public void testExternalSubprojects() throws Exception {
         checkSubprojects(resolveEEPPath("/suite1/action-project"), new String[] {
             resolveEEPPath("/suite1/support/lib-project"),
-            file("openide/dialogs").getAbsolutePath(),
+            file("openide.dialogs").getAbsolutePath(),
         });
         checkSubprojects(resolveEEPPath("/suite1/support/lib-project"), new String[0]);
         // No sources for beans available, so no subprojects reported:
@@ -101,17 +101,17 @@ public class SubprojectProviderImplTest extends TestBase {
     /** @see "#63824" */
     public void testAdHocSubprojects() throws Exception {
         //assertDepends("mdr/module", "mdr");
-        assertDepends("core/applemenu", "core/applemenu/eawtstub");
+        assertDepends("applemenu", "applemenu/eawtstub");
     }
     
     /** @see "#77533" */
     public void testSelfRefWithClassPathExts() throws Exception {
-        checkSubprojects("apisupport/samples/PaintApp-suite/ColorChooser", new String[0]);
+        checkSubprojects("apisupport.paintapp/PaintApp-suite/ColorChooser", new String[0]);
     }
     
     /** @see "#81878" */
     public void testInclusionOfHigherBin() throws Exception {
-        checkSubprojects("httpserver/servletapi", new String[0]);
+        checkSubprojects("servletapi", new String[0]);
     }
     
     private void checkSubprojects(String project, String[] subprojects) throws Exception {
@@ -134,8 +134,8 @@ public class SubprojectProviderImplTest extends TestBase {
     }
     
     private Project project(String path) throws Exception {
-        FileObject dir = FileUtil.toFileObject(PropertyUtils.resolveFile(nbCVSRootFile(), path));
-//        FileObject dir = nbCVSRoot().getFileObject(path);
+        FileObject dir = FileUtil.toFileObject(PropertyUtils.resolveFile(nbRootFile(), path));
+//        FileObject dir = nbRoot().getFileObject(path);
         assertNotNull("have " + path, dir);
         Project p = ProjectManager.getDefault().findProject(dir);
         assertNotNull("have project in " + path, p);

@@ -39,6 +39,8 @@
 
 package org.netbeans.api.ruby.platform;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
@@ -72,14 +74,14 @@ public class RubyPlatformTest extends RubyTestBase {
 
     public void testFindGemExecutableInRubyBin() throws Exception {
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
-        touch("rdebug-ide", platform.getBinDir());
+        touch(platform.getBinDir(), "rdebug-ide");
         assertNotNull(platform.findExecutable("rdebug-ide"));
     }
 
     public void testFindGemExecutableInGemRepo() throws Exception {
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         GemManager gemManager = platform.getGemManager();
-        touch("rdebug-ide", new File(gemManager.getGemHome(), "bin").getPath());
+        touch(new File(gemManager.getGemHome(), "bin").getPath(), "rdebug-ide");
         assertNotNull(platform.findExecutable("rdebug-ide"));
     }
 
@@ -93,6 +95,20 @@ public class RubyPlatformTest extends RubyTestBase {
         assertNotNull("rdoc found", platform.getRDoc());
     }
     
+    public void testFindIRB() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        assertNotNull("irb found", platform.getIRB());
+    }
+
+    public void testFindJIRB() throws Exception {
+        assertNotNull("jirb found", RubyPlatformManager.getDefaultPlatform().getIRB());
+    }
+
+    public void testFindIRBWithSuffix() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRuby(false, "1.8.6-p110"));
+        assertNotNull("irb found", platform.getIRB());
+    }
+    
     public void testLongDescription() throws Exception {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
         assertEquals("right long description", "JRuby 1.8.6 (2008-01-12 patchlevel 5512) [java]", jruby.getInfo().getLongDescription());
@@ -102,15 +118,9 @@ public class RubyPlatformTest extends RubyTestBase {
     
     public void testLabel() throws Exception {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        assertEquals("right label for build-in JRuby", "Built-in JRuby (1.1RC1)", jruby.getLabel());
+        assertEquals("right label for build-in JRuby", "Built-in JRuby (1.1RC2)", jruby.getLabel());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         assertEquals("right label for Ruby", "Ruby (0.1)", ruby.getLabel());
-    }
-
-    private String touch(String path, String dir) throws IOException {
-        File f = new File(dir, path);
-        f.createNewFile();
-        return f.getAbsolutePath();
     }
 
     public void testHasFastDebuggerInstalled() throws IOException {
@@ -118,9 +128,32 @@ public class RubyPlatformTest extends RubyTestBase {
         FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
         GemManager.initializeRepository(gemRepo);
         jruby.setGemHome(FileUtil.toFile(gemRepo));
+        jruby.getInfo().setGemPath("");
         assertFalse("does not have fast debugger", jruby.hasFastDebuggerInstalled());
         installFakeFastRubyDebugger(jruby);
         assertTrue("does have fast debugger", jruby.hasFastDebuggerInstalled());
+    }
+    
+    public void testFireGemsChanged() throws Exception {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        jruby.setGemHome(FileUtil.toFile(gemRepo));
+
+        final boolean[] gotEvent = new boolean[1];
+        jruby.addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("gems".equals(evt.getPropertyName())) {
+                    gotEvent[0] = true;
+                }
+            }
+        });
+        
+        installFakeGem("jalokivi", "9.9", jruby);
+        
+        assertTrue(gotEvent[0]);
+        
     }
 
 }

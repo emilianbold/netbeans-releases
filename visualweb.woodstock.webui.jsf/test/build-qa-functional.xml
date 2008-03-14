@@ -95,7 +95,7 @@ made subject to such option by the copyright holder.
     
     <target name="install-fresh-woodstock" if="woodstock.plugin.url"
         description="Installs Fresh Woodstock plugin, woodstock.plugin.url property must be set.">
-        <property name="download.dir" value="${netbeans.dest.dir}/visualweb1/update/download"/>
+        <property name="download.dir" value="${netbeans.dest.dir}/visualweb2/update/download"/>
         <mkdir dir="${download.dir}"/>
         <get verbose="true"
             src="${woodstock.plugin.url}/org-netbeans-modules-visualweb-webui-jsf-defaulttheme.nbm"

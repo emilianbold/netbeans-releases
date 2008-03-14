@@ -52,8 +52,7 @@ public class ThreadsTreeModel implements TreeModel {
      */
     public ThreadsTreeModel(
             final ContextProvider contextProvider) {
-        myDebugger = (BpelDebugger) contextProvider.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
     }
     
     /**{@inheritDoc}*/
@@ -66,6 +65,19 @@ public class ThreadsTreeModel implements TreeModel {
             final Object object, 
             final int from, 
             final int to) throws UnknownTypeException {
+        
+        if (myDebugger.getCurrentProcessInstance() == null) {
+            if (ROOT.equals(object)) {
+                return new Object[] {
+                    new Dummy()
+                };
+            }
+            
+            if (object instanceof Dummy) {
+                return new Object[0];
+            }
+        }
+        
         if (ROOT.equals(object)) {
             return getBranches(null, from, to);
         }
@@ -80,6 +92,17 @@ public class ThreadsTreeModel implements TreeModel {
     /**{@inheritDoc}*/
     public int getChildrenCount(
             final Object object) throws UnknownTypeException {
+        
+        if (myDebugger.getCurrentProcessInstance() == null) {
+            if (ROOT.equals(object)) {
+                return 1;
+            }
+            
+            if (object instanceof Dummy) {
+                return 0;
+            }
+        }
+        
         if (ROOT.equals(object)) {
             return getBranches(null, -1, -1).length;
         }
@@ -220,5 +243,9 @@ public class ThreadsTreeModel implements TreeModel {
                 }, 500);
             }
         }
+    }
+    
+    static class Dummy {
+        // Empty, stub class
     }
 }

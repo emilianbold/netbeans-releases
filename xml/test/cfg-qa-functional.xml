@@ -60,12 +60,12 @@ made subject to such option by the copyright holder.
                 <!-- CATALOG -->
 		<include name="org/netbeans/modules/xml/catalog/CatalogTest.class"/>
                 <!-- TOOLS -->
-                <include name="org/netbeans/modules/xml/tools/generator/GenerateDOMScannerSupportTest.class"/>
                 <include name="org/netbeans/modules/xml/tools/generator/GenerateDTDSupportTest.class"/>
-                <include name="org/netbeans/modules/xml/tools/generator/SAXGeneratorJTest.class"/>
                 <include name="org/netbeans/modules/xml/tools/doclet/DTDDocletTest.class"/>
                 <include name="org/netbeans/modules/xml/tools/actions/CheckActionTest.class"/>
                 <include name="org/netbeans/modules/xml/tools/actions/ValidateActionTest.class"/>
+                <include name="org/netbeans/modules/xml/tools/java/generator/GenerateDOMScannerSupportTest.class"/>
+                <include name="org/netbeans/modules/xml/tools/java/generator/SAXGeneratorJTest.class"/>
                 <!-- TEXT-EDIT -->
                 <include name="org/netbeans/modules/xml/text/syntax/ColoringTest.class"/>
                 <!-- TREE-EDIT -->

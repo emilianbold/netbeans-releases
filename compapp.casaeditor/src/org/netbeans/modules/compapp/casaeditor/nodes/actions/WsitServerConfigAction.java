@@ -118,7 +118,7 @@ public class WsitServerConfigAction extends NodeAction {
     protected void performAction(Node[] activatedNodes) {
         String mName = activatedNodes[0].getDisplayName();
         final WSDLEndpointNode node = ((WSDLEndpointNode) activatedNodes[0]);
-        CasaPort cp = (CasaPort) node.getData();
+        final CasaPort cp = (CasaPort) node.getData();
         String ptn = ((CasaWrapperModel) cp.getModel()).getCasaPortType(cp).toString();
 
         Node[] ns = node.getChildren().getNodes();
@@ -148,14 +148,16 @@ public class WsitServerConfigAction extends NodeAction {
 
         SwingUtilities.invokeLater(new Runnable(){
             public void run(){
-                DialogDescriptor dialogDesc = new DialogDescriptor(stc, "WS-Policy Attachement: "+node.getName());  // NOI18N
+                DialogDescriptor dialogDesc = new DialogDescriptor(stc, "WS-Policy Attachment: "+node.getName());  // NOI18N
                 //dialogDesc.setHelpCtx(new HelpCtx(EditWSAttributesCookieImpl.class));
                 Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
                 dialog.setVisible(true);
 
                 // todo: 08/24, we need to decide how to back out changes when CANCEL is selected..
                 if(dialogDesc.getValue() == NotifyDescriptor.OK_OPTION){
-                    // save
+                    // refresh wsit badge..
+                    // 02/22/08, disabled upon request
+                    // ((CasaWrapperModel) cp.getModel()).refershWsitStatus(cp);
                 } else { // cancle
                     try {
                         if (undoManager != null) {

@@ -72,7 +72,7 @@ import org.netbeans.modules.sql.framework.model.TargetColumn;
 import com.sun.sql.framework.jdbc.SQLUtils;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * Configures type, precision and scale (as appropriate) of a cast as operator.
@@ -86,7 +86,7 @@ public class CustomOperatorPane extends JPanel {
     private List args;
     private JTextField nameField = new JTextField(20);
     private TableColumnModel tableModel = null;
-    private static transient final Logger mLogger = LogUtil.getLogger(CustomOperatorPane.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(CustomOperatorPane.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public CustomOperatorPane() {
@@ -194,8 +194,9 @@ public class CustomOperatorPane extends JPanel {
 
     private void initComponents() {
         this.setLayout(new GridBagLayout());
-        String nbBundle1 = mLoc.t("PRSR001: Function Name");
-        JLabel nameLabel = new JLabel(Localizer.parse(nbBundle1)); //NOI18N
+        String nbBundle1 = mLoc.t("BUND413: Function Name");
+        JLabel nameLabel = new JLabel(nbBundle1.substring(15)); //NOI18N
+        nameLabel.getAccessibleContext().setAccessibleName(nbBundle1.substring(15));
         this.add(nameLabel,
                 new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                 GridBagConstraints.WEST,
@@ -207,20 +208,26 @@ public class CustomOperatorPane extends JPanel {
                 GridBagConstraints.WEST,
                 GridBagConstraints.HORIZONTAL,
                 new Insets(5, 5, 5, 5), 0, 0));
-        JButton addButton = new JButton("Add");
+        String nbBundle4 = mLoc.t("BUND151: Add");
+        JButton addButton = new JButton(nbBundle4.substring(15));
+        addButton.getAccessibleContext().setAccessibleName(nbBundle4.substring(15));
         this.add(addButton,
                 new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
                 GridBagConstraints.WEST,
                 GridBagConstraints.HORIZONTAL,
                 new Insets(5, 5, 5, 5), 0, 0));
 
-        JButton removeButton = new JButton("Remove");
+        String nbBundle2 = mLoc.t("BUND152: Remove");
+        JButton removeButton = new JButton(nbBundle2.substring(15));
+        removeButton.getAccessibleContext().setAccessibleName(nbBundle2.substring(15));
         this.add(removeButton,
                 new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
                 GridBagConstraints.WEST,
                 GridBagConstraints.NONE,
                 new Insets(5, 5, 5, 5), 0, 0));
-        JLabel argLabel = new JLabel("Arguments");
+        String nbBundle3 = mLoc.t("BUND416: Arguments");
+        JLabel argLabel = new JLabel(nbBundle3.substring(15));
+        argLabel.getAccessibleContext().setAccessibleName(nbBundle3.substring(15));
 
         this.add(argLabel,
                 new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,

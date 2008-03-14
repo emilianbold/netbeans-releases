@@ -39,29 +39,32 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
+import java.awt.Image;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author nam
  */
 public class SaasGroup {
-    /**
-     * Property change event names
-     */
-    public static final String PROP_CHILD_GROUP = "childGroup";
-    public static final String PROP_CHILD_SERVICE = "childService";
+    public static final String PROP_GROUP_NAME = "groupName";
 
     private final Group delegate;
     private final SaasGroup parent;
+    private FileObject groupFolder;
     private boolean userDefined = true; //once set to false, remain false.
     private SortedMap<String, Saas> services;
     private SortedMap<String, SaasGroup> children;
+    private String icon16Path;
+    private String icon32Path;
     
     public SaasGroup(SaasGroup parent, Group group) {
         this.parent = parent;
@@ -73,6 +76,23 @@ public class SaasGroup {
         return parent;
     }
     
+    public FileObject getGroupFolder() {
+        if (groupFolder == null) {
+            if (parent == null) {
+                return SaasServicesModel.getWebServiceHome();
+            }
+            groupFolder = parent.getGroupFolder().getFileObject(getName(), null);
+            if (groupFolder == null) {
+                try {
+                    groupFolder = parent.getGroupFolder().createFolder(getName());
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return groupFolder;
+    }
+    
     public Group getDelegate() {
         return delegate;
     }
@@ -81,37 +101,69 @@ public class SaasGroup {
         return Collections.unmodifiableList(new ArrayList<Saas>(services.values()));
     }
 
+    public Saas getChildService(String name) {
+        getServices();
+        return services.get(name);
+    }
+
     /**
-     * If this is part of model mutation, caller is responsible to ensure 
-     * SaasServices persists with proper Group information.
+     * Not a mutation
      * 
      * @param service saas service
      */
     public void addService(Saas service) {
+        getServices();
         services.put(service.getDisplayName(), service);
-        SaasServicesModel.getInstance().fireChange(PROP_CHILD_SERVICE, this, null, service);
     }
     
     /**
      * If this is part of model mutation, caller is responsible to ensure 
-     * SaasServices persists with proper Group information.
+     * SaasServices persists with proper Group information and eventing.
      * 
      * @param service saas service to remove
      */
     public boolean removeService(Saas service) {
         Saas removed = services.remove(service.getDisplayName());
         if (removed != null) {
-            SaasServicesModel.getInstance().fireChange(PROP_CHILD_SERVICE, this, removed, null);
             return true;
         }
         return false;
     }
 
     public void setName(String value) {
+        if (getParent() == null) {
+            throw new IllegalArgumentException("Cannot rename root group");
+        }
+
+        if (value == null || value.equals(getName())) {
+            return;
+        }
+        
+        String message = null;
         if (! isUserDefined()) {
-            getParent().removeChildGroup(this);
-            delegate.setName(value);
-            getParent().addChildGroup(this);
+            message = NbBundle.getMessage(getClass(), "MSG_GroupNotUserDefined");
+        }
+        
+        for (SaasGroup g : getParent().getChildrenGroups()) {
+            if (g.getName().equals(value)) {
+                message = NbBundle.getMessage(getClass(), "MSG_DuplicateGroupName");
+            }
+        }
+        
+        if (message != null) {
+            throw new IllegalArgumentException(message);
+        }
+        
+        delegate.setName(value);
+        resetAllServicesGroupPath();
+    }
+    
+    private void resetAllServicesGroupPath() {
+        for (Saas s : getServices()) {
+            s.computePathFromRoot();
+        }
+        for (SaasGroup g : getChildrenGroups()) {
+            g.resetAllServicesGroupPath();
         }
     }
 
@@ -123,12 +175,29 @@ public class SaasGroup {
         return userDefined;
     }
 
-    public void setUserDefined(boolean v) {
+    void setUserDefined(boolean v) {
         if (userDefined) {
             userDefined = v;
         }
     }
 
+    public String getIcon16Path() {
+        return icon16Path;
+    }
+
+    protected void setIcon16Path(String icon16Path) {
+        this.icon16Path = icon16Path;
+    }
+
+    public String getIcon32Path() {
+        return icon32Path;
+    }
+
+    protected void setIcon32Path(String icon32Path) {
+        this.icon32Path = icon32Path;
+    }
+
+    
     public List<SaasGroup> getChildrenGroups() {
         if (children == null) {
             children = Collections.synchronizedSortedMap(new TreeMap<String,SaasGroup>());
@@ -151,37 +220,38 @@ public class SaasGroup {
      * Caller is responsible for persisting changes.
      * @param group saas group to remove
      */
-    public boolean removeChildGroup(SaasGroup group) {
+    protected boolean removeChildGroup(SaasGroup group) {
         if (! group.canRemove()) {
             return false;
         }
         
         _removeChildGroup(group);
         
-        // only fire on top-level object
-        SaasServicesModel.getInstance().fireChange(PROP_CHILD_GROUP, this, group, null);
         return true;
     }
     
     private void _removeChildGroup(SaasGroup child) {
         if (child != null) {
             for (Saas saas : child.getServices()) {
-                _removeSaas(saas);
+                removeService(saas);
+                SaasServicesModel.getInstance()._removeService(saas);
             }
             for (SaasGroup c : child.getChildrenGroups()) {
                 _removeChildGroup(c);
             }
+            getDelegate().getGroup().remove(child.getDelegate());
+            children.remove(child.getName());
         }
     }
     
-    private void _removeSaas(Saas childService) {
-        services.remove(childService.getDisplayName());
-        //TODO cleanup persistence and remove local files
-    }
-    
     public boolean canRemove() {
-        if (isUserDefined()) {
+        if (! isUserDefined()) {
             return false;
+        }
+        for (Saas s : getServices()) {
+            if (! s.isUserDefined()) {
+                return false;
+            }
         }
         for (SaasGroup child : getChildrenGroups()) {
             if (! child.canRemove()) {
@@ -197,8 +267,52 @@ public class SaasGroup {
      * 
      * @param group saas group to add
      */
-    public void addChildGroup(SaasGroup group) {
+    protected void addChildGroup(SaasGroup group) {
+        getChildrenGroups();
         children.put(group.getName(), group);
-        SaasServicesModel.getInstance().fireChange(PROP_CHILD_GROUP, this, null, group);
+        getDelegate().getGroup().add(group.getDelegate());
     }
+    
+    /**
+     * Return a clone of group element that has one descendant at each level,
+     * excluding root, down to the current group.
+     * @return
+     */
+    public Group getPathFromRoot() {
+        SaasGroup parentGroup = getParent();
+        if (parentGroup == null) {
+            return null;
+        }
+        
+        Group group = new Group();
+        group.setName(getName());
+        while(parentGroup != SaasServicesModel.getInstance().getRootGroup()) {
+            Group p = new Group();
+            p.setName(parentGroup.getName());
+            p.getGroup().add(group);
+            group = p;
+            parentGroup = parentGroup.getParent();
+        }
+        return group;
+    }
+
+    /**
+     * Just create a child group node with given name and back parent pointer.
+     * Caller should explicitly mutate model, flush, persist and fire event
+     * 
+     * @param name
+     * @return created group
+     */
+    protected SaasGroup createGroup(String name) {
+        Group g = new Group();
+        g.setName(name);
+        SaasGroup child = new SaasGroup(this, g);
+        child.setUserDefined(true);
+        return child;
+    }
+    
+    public String toString() {
+        return getName();
+    }
+
 }

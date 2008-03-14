@@ -49,10 +49,10 @@ import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory;
 import org.openide.util.NbBundle;
 
 public class PlatformValidator {
-    public static final String APPSERVERSJS = "SJS";
-    public static final String GLASSFISH_V2 = "GF_V2";
-    public static final String GLASSFISH_V1 = "GF_V1";
-    public static final String SAILFIN_V1 = "SIP_V1";
+    public static final String APPSERVERSJS = "SJS"; //NOI18N
+    public static final String GLASSFISH_V2 = "GF_V2"; //NOI18N
+    public static final String GLASSFISH_V1 = "GF_V1"; //NOI18N
+    public static final String SAILFIN_V1 = "SIP_V1"; //NOI18N
     
     public boolean isGoodAppServerLocation(File loc) {
         return ServerLocationManager.isGoodAppServerLocation(loc);
@@ -61,42 +61,76 @@ public class PlatformValidator {
     public boolean isDescriminatorPresent(File loc, String serverVersion) {
         boolean retVal = ServerLocationManager.isGoodAppServerLocation(loc);
         if (retVal) {
-            File sipDescriminator = new File(loc, "lib/sip-stack.jar"); //NOI18N
+            File sipDescriminator = new File(loc, "lib/comms-appserv-rt.jar"); //NOI18N
             if(serverVersion.equals(SAILFIN_V1)){
-                if (!sipDescriminator.exists() || !sipDescriminator.isFile()) { //NOI18N
+                if (!sipDescriminator.exists() || !sipDescriminator.isFile()) { 
                    return false;
                 }
             } else {
                 //V1 or V2 or SJSAS
-                if (sipDescriminator.exists() || sipDescriminator.isFile()) { //NOI18N
+                if (sipDescriminator.exists() || sipDescriminator.isFile()) { 
                     retVal = false;
                 }
             }
             if (retVal) {
-                File versionDescriminator = new File(loc, "lib/shoal-gms.jar"); //NOI18N
-                if(serverVersion.equals(GLASSFISH_V1)){
-                    if (versionDescriminator.exists() || versionDescriminator.isFile()) {
+                if (ServerLocationManager.isGlassFish(loc)) {
+                    File versionDescriminator = new File(loc, "lib/shoal-gms.jar"); //NOI18N
+                    if (serverVersion.equals(GLASSFISH_V1)) {
+                        if (versionDescriminator.exists() || versionDescriminator.isFile()) {
+                            retVal = false;
+                        }
+                    } else if (serverVersion.equals(GLASSFISH_V2)) {
+                        if (!versionDescriminator.exists() || !versionDescriminator.isFile()) {
+                            retVal = false;
+                        }
+                    } else {
+                        //GlassFish match but no descriminator match
+                        //should not come here
                         retVal = false;
                     }
-                } else if(serverVersion.equals(GLASSFISH_V2)){
-                    if (!versionDescriminator.exists() || !versionDescriminator.isFile()) {
+                }else{
+                    File versionDescriminator = new File(loc, "lib/dtds/sun-domain_1_1.dtd"); // NOI18N
+                    if (serverVersion.equals(APPSERVERSJS)) {
+                        if (! versionDescriminator.exists() || ! versionDescriminator.isFile()) {
+                            retVal = false;
+                        }
+                    }else{
+                        //All Server types checked but no descriminator match
+                        //should not come here
                         retVal = false;
                     }
-                }
+                }    
             }
         }
         return retVal;
     }
     
     public String getServerTypeName(String serverVersion){
-        String serverType = NbBundle.getMessage(SunDeploymentFactory.class, "FACTORY_DISPLAYNAME");
+        //serverVersion.equals(APPSERVERSJS)
+        String serverType = NbBundle.getMessage(SunDeploymentFactory.class, "FACTORY_DISPLAYNAME"); //NOI18N
         if(serverVersion.equals(GLASSFISH_V1)){
-            serverType = NbBundle.getMessage(Installer.class, "LBL_GlassFishV1");
+            serverType = NbBundle.getMessage(Installer.class, "LBL_GlassFishV1"); //NOI18N
         }else if(serverVersion.equals(GLASSFISH_V2)){
-            serverType = NbBundle.getMessage(Installer.class, "LBL_GlassFishV2");
+            serverType = NbBundle.getMessage(Installer.class, "LBL_GlassFishV2"); //NOI18N
         }else if(serverVersion.equals(SAILFIN_V1)){
-            serverType = NbBundle.getMessage(Installer.class, "LBL_JavaEEPlusSIP");
+            serverType = NbBundle.getMessage(Installer.class, "LBL_JavaEEPlusSIP"); //NOI18N
         }
         return serverType;
     }
+    
+    public String getServerVersionByName(String serverName){
+        String serverVersion = null;
+        if(serverName.equals(NbBundle.getMessage(Installer.class, "LBL_GlassFishV1"))){ //NOI18N
+            serverVersion = GLASSFISH_V1;
+        }else if(serverName.equals(NbBundle.getMessage(Installer.class, "LBL_GlassFishV2"))){ //NOI18N
+            serverVersion = GLASSFISH_V2;
+        }else if(serverName.equals(NbBundle.getMessage(Installer.class, "LBL_JavaEEPlusSIP"))){ //NOI18N
+            serverVersion = SAILFIN_V1;
+        }else if(serverName.equals(NbBundle.getMessage(SunDeploymentFactory.class, "FACTORY_DISPLAYNAME"))){ //NOI18N
+            serverVersion = APPSERVERSJS;
+        }
+        
+        return serverVersion;
+    }
+
 }

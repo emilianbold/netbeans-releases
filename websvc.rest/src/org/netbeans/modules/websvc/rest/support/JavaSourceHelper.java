@@ -194,7 +194,12 @@ public class JavaSourceHelper {
     }
 
     public static String getClassName(JavaSource source) throws IOException {
-        return getTypeElement(source).getSimpleName().toString();
+        TypeElement te = getTypeElement(source);
+        if (te != null) {
+            return te.getSimpleName().toString();
+        } else {
+            return null;
+        }
     }
 
     public static String getClassType(JavaSource source) throws IOException {

@@ -45,8 +45,7 @@ public class ThreadsTableModel implements TableModel, Constants {
     public ThreadsTableModel(
             final ContextProvider contextProvider) {
         
-        myDebugger = (BpelDebugger) contextProvider.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
     }
     
     /**{@inheritDoc}*/
@@ -55,6 +54,10 @@ public class ThreadsTableModel implements TableModel, Constants {
             final String column) throws UnknownTypeException {
         
         if (object == TreeModel.ROOT) {
+            return "";
+        }
+        
+        if (object instanceof ThreadsTreeModel.Dummy) {
             return "";
         }
         
@@ -94,6 +97,10 @@ public class ThreadsTableModel implements TableModel, Constants {
     public boolean isReadOnly(
             final Object object, 
             final String column) throws UnknownTypeException {
+        
+        if (object instanceof ThreadsTreeModel.Dummy) {
+            return true;
+        }
         
         if (column.equals(ThreadsColumnModel_State.COLUMN_ID)) {
             if (object instanceof Branch) {

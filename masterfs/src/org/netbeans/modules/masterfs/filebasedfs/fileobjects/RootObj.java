@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
+import java.io.File;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.openide.filesystems.*;
 
@@ -48,13 +49,20 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 
-public final class RootObj extends FileObject {
-    private BaseFileObj realRoot = null;
+public final class RootObj<T extends FileObject> extends FileObject {
+    private T realRoot = null;
 
-    public RootObj(final BaseFileObj realRoot) {
+    public RootObj(final T realRoot) {
         this.realRoot = realRoot;
     }
 
@@ -110,13 +118,77 @@ public final class RootObj extends FileObject {
         FSException.io("EXC_CannotDeleteRoot", getFileSystem().getDisplayName()); // NOI18N        
     }
 
-    public final Object getAttribute(final String attrName) {
+    public final Object getAttribute(final String attrName) {        
+        if (attrName.equals("SupportsRefreshForNoPublicAPI")) {
+            return true;
+        }
         return getRealRoot().getAttribute(attrName);
     }
 
     public final void setAttribute(final String attrName, final Object value) throws IOException {
+        if ("request_for_refreshing_files_be_aware_this_is_not_public_api".equals(attrName) && (value instanceof File[])) {//NOI18N
+            invokeRefreshFor((File[])value);
+            return;
+        }        
         getRealRoot().setAttribute(attrName, value);
     }
+    
+    private void invokeRefreshFor(File[] files) {
+        //first normalize
+        for (int i = 0; i < files.length; i++) {
+            File file = files[i];
+            files[i] = FileUtil.normalizeFile(file);
+        }
+        Map<FileObjectFactory, List<File>> files2Factory = new HashMap<FileObjectFactory, List<File>>();
+        Map<File, ? extends FileObjectFactory> roots2Factory = FileBasedFileSystem.getInstance().factories();
+        Arrays.sort(files);
+        for (File file : files) {
+            FileObjectFactory factory =  roots2Factory.get(file);
+            if (factory == null) {
+                File tmp = file;
+                while (tmp.getParentFile() != null) {
+                    tmp = tmp.getParentFile();
+                }
+                factory =  roots2Factory.get(tmp);
+            }
+            if (factory != null) {
+                List<File> lf = files2Factory.get(factory);
+                if (lf == null) {
+                    lf = new ArrayList<File>();
+                    files2Factory.put(factory, lf);
+                } else {
+                    File tmp = file;
+                    while (tmp.getParentFile() != null) {
+                        if (lf.contains(tmp)) {
+                            tmp = null;
+                            break;
+                        }
+                        tmp = tmp.getParentFile();
+                    }                    
+                    if (tmp == null) {
+                        continue;
+                    }
+                }
+                lf.add(file);
+            }
+        }        
+        for (Map.Entry<FileObjectFactory, List<File>> entry : files2Factory.entrySet()) {
+            FileObjectFactory factory = entry.getKey();
+            List<File> lf = entry.getValue();
+            if (lf.size() == 1) {
+                for (File file : lf) {
+                    if (file.getParentFile() == null) {
+                        factory.refresh(true);
+                    } else {
+                        factory.refreshFor(file);
+                    }
+                }
+            } else if (lf.size() > 1) {
+                factory.refreshFor(lf.toArray(new File[lf.size()]));
+            }
+        }
+    }
+    
 
     public final Enumeration getAttributes() {
         return getRealRoot().getAttributes();
@@ -174,7 +246,7 @@ public final class RootObj extends FileObject {
         return getRealRoot().isReadOnly();
     }
 
-    public final BaseFileObj getRealRoot() {
+    public final T getRealRoot() {
         return realRoot;
     }
 

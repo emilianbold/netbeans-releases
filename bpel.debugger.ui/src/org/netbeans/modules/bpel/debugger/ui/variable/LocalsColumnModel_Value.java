@@ -48,8 +48,7 @@ public final class LocalsColumnModel_Value extends AbstractColumn {
     public LocalsColumnModel_Value(final ContextProvider context) {
         super();
         
-        myDebugger = (BpelDebugger) context.lookupFirst(
-                null, BpelDebugger.class);
+        myDebugger = context.lookupFirst(null, BpelDebugger.class);
         
         myId = Constants.LOCALS_VALUE_COLUMN_ID;
         myName = "CTL_Variable_Column_Value";
@@ -78,19 +77,47 @@ public final class LocalsColumnModel_Value extends AbstractColumn {
         
         @Override
         public String getAsText() {
-            return myHelper.getValue(getValue());
+            if (getValue() instanceof LocalsTreeModel.Dummy) {
+                return "";
+            }
+            
+            if (getValue() == null) {
+                return "";
+            }
+            
+            // Sometimes it's "Evaluating..." by the good will of the 
+            // debuggercore.
+            if (getValue() instanceof String) {
+                return (String) getValue();
+            }
+            
+            return ((LocalsTableModel.Pair) getValue()).getValue();
         }
         
         @Override
         public void setAsText(
                 final String value) {
             
-            myHelper.setValue(getValue(), value);
+            setValue(new LocalsTableModel.Pair(((LocalsTableModel.Pair) getValue()).getKey(), value));
         }
         
         @Override
         public boolean supportsCustomEditor() {
-            return myHelper.supportsCustomEditor(getValue());
+            if (getValue() instanceof LocalsTreeModel.Dummy) {
+                return false;
+            }
+            
+            if (getValue() == null) {
+                return false;
+            }
+            
+            // Sometimes it's "Evaluating..." by the good will of the 
+            // debuggercore.
+            if (getValue() instanceof String) {
+                return false;
+            }
+            
+            return myHelper.supportsCustomEditor(((LocalsTableModel.Pair) getValue()).getKey());
         }
         
         @Override
@@ -137,11 +164,11 @@ public final class LocalsColumnModel_Value extends AbstractColumn {
         
         private void init() {
             final String text = 
-                    myHelper.getCustomEditorValue(myEditor.getValue());
+                    myHelper.getCustomEditorValue(((LocalsTableModel.Pair) myEditor.getValue()).getKey());
             final String mimeType = 
-                    myHelper.getCustomEditorMimeType(myEditor.getValue());
+                    myHelper.getCustomEditorMimeType(((LocalsTableModel.Pair) myEditor.getValue()).getKey());
             final boolean editable = 
-                    !myHelper.isValueReadOnly(myEditor.getValue());
+                    !myHelper.isValueReadOnly(((LocalsTableModel.Pair) myEditor.getValue()).getKey());
             
             setLayout(new BorderLayout());
             setBorder(new EmptyBorder(12, 12, 0, 11));
@@ -161,21 +188,6 @@ public final class LocalsColumnModel_Value extends AbstractColumn {
             myEditorPane.requestFocus();
             myEditorPane.setCaretPosition(0);
             
-//            myEditorPane.getDocument().addDocumentListener(
-//                    new DocumentListener() {
-//                public void insertUpdate(DocumentEvent event) {
-//                    myEditor.setValue(myEditorPane.getText());
-//                }
-//                
-//                public void removeUpdate(DocumentEvent event) {
-//                    myEditor.setValue(myEditorPane.getText());
-//                }
-//                
-//                public void changedUpdate(DocumentEvent event) {
-//                    myEditor.setValue(myEditorPane.getText());
-//                }
-//            });
-//            
             myEditorPane.getAccessibleContext().
                     setAccessibleName("ACS_EditorPane"); // NOI18N
             myEditorPane.getAccessibleContext().

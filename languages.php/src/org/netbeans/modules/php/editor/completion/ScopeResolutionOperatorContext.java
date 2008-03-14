@@ -44,9 +44,10 @@ package org.netbeans.modules.php.editor.completion;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.gsf.api.CompletionProposal;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.gsf.CompletionProposal;
+import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.languages.php.lang.Operators;
 import org.netbeans.modules.languages.php.lang.SpecialKeywords;
 import org.netbeans.modules.php.editor.TokenUtils;
@@ -127,6 +128,8 @@ public class ScopeResolutionOperatorContext extends MemberAccessExpressionScope
             referencedClass = getReferencedClass((Constant)e);
         } else if(isApplicableIncompleteExpression()) {
             referencedClass = getReferencedClass(context);
+        } else {
+            referencedClass = null;
         }
         // This provider is applicble iif it possible to find referencedClass.
         if(referencedClass == null) {
@@ -148,10 +151,10 @@ public class ScopeResolutionOperatorContext extends MemberAccessExpressionScope
         assert context == myContext;
         assert referencedClass != null;
 
-        // Should the static access mode be processed differently?
-        if (isInsideClassDefinition()) {
+        // PHP 5.3.0: Should the static access mode be processed differently?
+        if (isLocalReference()) {
             // Should the self access mode be processed differently?
-            
+
             // Example 19.13. :: from inside the class definition
             addConstants();
             // This also applies to Constructors and Destructors, Overloading, 
@@ -160,7 +163,6 @@ public class ScopeResolutionOperatorContext extends MemberAccessExpressionScope
             addMethods(null);
             // (private|protected|public) (static|default), i.e. ANY
             addProperties(null);
-
         } else {
             if (isParentAccess()) {  // i.e. parent::xxx
                 // all constants
@@ -199,6 +201,9 @@ public class ScopeResolutionOperatorContext extends MemberAccessExpressionScope
                 // Example 19.12. :: from outside the class definition
                 // <ClassName>::<PublicStaticClassMemberOrConstant>
                 addConstants();
+                // Wow! It is possible to call a non-static method via ::
+                // from outside the class definition. So, all public methods of
+                // the specified class should be collected.
                 addMethods(new Filter<ClassFunctionDefinition>() {
 
                     @Override
@@ -206,9 +211,8 @@ public class ScopeResolutionOperatorContext extends MemberAccessExpressionScope
                         List<Modifier> modifiers = fd.getModifiers();
                         int actualFlags = Modifier.toFlags(modifiers);
                         int logicalFlags = Modifier.toLogicalFlags(actualFlags);
-                        int expectedFlags = Modifier.STATIC.flag() | 
-                                            Modifier.PUBLIC.flag();
-                        if (logicalFlags != expectedFlags) {
+                        int expectedFlags = Modifier.PUBLIC.flag();
+                        if ((logicalFlags & expectedFlags) != expectedFlags) {
                             return false;
                         }
                         return true;
@@ -221,8 +225,8 @@ public class ScopeResolutionOperatorContext extends MemberAccessExpressionScope
                         List<Modifier> modifiers = ad.getModifiers();
                         int actualFlags = Modifier.toFlags(modifiers);
                         int logicalFlags = Modifier.toLogicalFlags(actualFlags);
-                        int expectedFlags = Modifier.STATIC.flag() | 
-                                            Modifier.PUBLIC.flag();
+                        int expectedFlags = Modifier.STATIC.flag() |
+                                Modifier.PUBLIC.flag();
                         if (logicalFlags != expectedFlags) {
                             return false;
                         }
@@ -243,7 +247,12 @@ public class ScopeResolutionOperatorContext extends MemberAccessExpressionScope
      */
     private boolean isParentAccess() {
         if(expression != null) {
-            String name = expression.getClassConstant().getObjectName();
+            ClassMemberReference<SourceElement> ref = 
+                                                  expression.getClassConstant();
+            if(ref == null) {
+                return false;
+            }
+            String name = ref.getObjectName();
             if(SpecialKeywords.PARENT.value().equals(name)) {
                 return true;
             }
@@ -269,7 +278,7 @@ public class ScopeResolutionOperatorContext extends MemberAccessExpressionScope
      * @return <code>true</code> if the context is located inside the referred
      * class, otherwise <code>false</code>.
      */
-    private boolean isInsideClassDefinition() {
+    private boolean isLocalReference() {
         SourceElement e = myContext.getSourceElement();
         while(e!=null) {
             if(e == referencedClass) {
@@ -284,7 +293,7 @@ public class ScopeResolutionOperatorContext extends MemberAccessExpressionScope
         // Context description:
         // SomeClassIdentifier::
         // i.e. Identifier of the member is not presented.
-        // In this case the PHP Model don't interpret the expression as
+        // In this case the PHP Model doesn't interpret the expression as
         // the scope resolution expression.
         String referencedClassName = getReferencedClassName(context);
         PhpModel model = context.getSourceElement().getModel();

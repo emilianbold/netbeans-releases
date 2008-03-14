@@ -300,7 +300,9 @@ public class AddDomainWizardIterator implements
             result.add(ip);
         } else {
             if (null != wizard && wizard.getProperty(TYPE) != PERSONAL)
-                throw new java.io.IOException("Could not create instance");     // NOI18N
+                throw new java.io.IOException(
+                        NbBundle.getMessage(AddDomainWizardIterator.class,
+                        "MSG_COULD_NOT_CREATE_INSTANCE"));                      //NOI18N
         }
         return result;
     }

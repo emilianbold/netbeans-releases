@@ -322,7 +322,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
     }
 
     // Sheet
-    public Sheet getGeneralSheet(MakeConfigurationDescriptor configurationDescriptor, MakeConfiguration conf) {
+    public Sheet getGeneralSheet(Project project, MakeConfigurationDescriptor configurationDescriptor, MakeConfiguration conf) {
 	Sheet sheet = new Sheet();
         CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
         String linkDriver;
@@ -369,6 +369,23 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	set4.setShortDescription(getString("ToolHint1"));
 	set4.put(new StringNodeProp(getTool(), linkDriver, "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N
 	sheet.put(set4);
+        
+	texts = new String[] {getString("LibrariesTxt1"), getString("LibrariesHint"), getString("LibrariesTxt2"), getString("AllOptionsTxt2")};
+	set2 = new Sheet.Set();
+	set2.setName("Libraries"); // NOI18N
+	set2.setDisplayName(getString("LibrariesTxt1"));
+	set2.setShortDescription(getString("LibrariesHint"));
+	set2.put(new LibrariesNodeProp(getLibrariesConfiguration(), project, conf, getMakeConfiguration().getBaseDir(), texts));
+	sheet.put(set2);
+        
+	texts = new String[] {getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")}; // NOI18N
+	set2 = new Sheet.Set();
+	set2.setName("CommandLine"); // NOI18N
+	set2.setDisplayName(getString("CommandLineTxt"));
+	set2.setShortDescription(getString("CommandLineHint"));
+	set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, null, null, texts));
+	sheet.put(set2);
+        
 	return sheet;
     }
 
@@ -378,34 +395,6 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	    options += additionalDependencies.getPreDefined();
 	    return CppUtils.reformatWhitespaces(options);
 	}
-    }
-
-    public Sheet getLibrariesSheet(Project project, MakeConfiguration conf) {
-	Sheet sheet = new Sheet();
-	String[] texts = new String[] {getString("LibrariesTxt1"), getString("LibrariesHint"), getString("LibrariesTxt2"), getString("AllOptionsTxt2")};
-
-	Sheet.Set set2 = new Sheet.Set();
-	set2.setName("Libraries"); // NOI18N
-	set2.setDisplayName(getString("LibrariesTxt1"));
-	set2.setShortDescription(getString("LibrariesHint"));
-	set2.put(new LibrariesNodeProp(getLibrariesConfiguration(), project, conf, getMakeConfiguration().getBaseDir(), texts));
-	sheet.put(set2);
-
-	return sheet;
-    }
-
-    public Sheet getCommandLineSheet() {
-	Sheet sheet = new Sheet();
-	String[] texts = new String[] {getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")}; // NOI18N
-
-	Sheet.Set set2 = new Sheet.Set();
-	set2.setName("CommandLine"); // NOI18N
-	set2.setDisplayName(getString("CommandLineTxt"));
-	set2.setShortDescription(getString("CommandLineHint"));
-	set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, null, null, texts));
-	sheet.put(set2);
-
-	return sheet;
     }
 
     private String getNameassignOption(boolean val) {

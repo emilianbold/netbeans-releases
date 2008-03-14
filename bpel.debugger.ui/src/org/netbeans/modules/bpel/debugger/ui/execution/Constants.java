@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.bpel.debugger.api.pem.PemEntity;
+import org.netbeans.modules.bpel.debugger.api.pem.ProcessExecutionModel;
 
 /**
  * Constants supporting the Process Execution View.
@@ -48,7 +49,7 @@ public class Constants {
             PSM_ICON_BASE + ICON_UNKNOWN;
             
     // Colors //////////////////////////////////////////////////////////////////
-    public static Color NEVER_EXECUTED_COLOR = 
+    public static Color NOT_YET_EXECUTED = 
             Color.GRAY;
     
     public static Color STARTED_COLOR = 
@@ -65,7 +66,9 @@ public class Constants {
             new HashMap<String, String>();
     
     // Utility methods /////////////////////////////////////////////////////////
-    public static Color getColor(PemEntity pemEntity) {
+    public static Color getColor(
+            final PemEntity pemEntity) {
+        
         switch (pemEntity.getState()) {
             case STARTED :
                 return STARTED_COLOR;
@@ -77,6 +80,29 @@ public class Constants {
             default :
                 return STARTED_COLOR;
         }
+    }
+    
+    public static boolean isBold(
+            final PemEntity pemEntity) {
+        
+        final ProcessExecutionModel.Branch currentBranch = 
+                pemEntity.getModel().getCurrentBranch();
+        
+        if (currentBranch == null) {
+            return false;
+        }
+        
+        final String currentBranchId = currentBranch.getId();
+        final String pemBranchId = pemEntity.getBranchId();
+        final boolean isInCurrentBranch = pemBranchId != null ?
+                pemBranchId.equals(currentBranchId) : false;
+        
+        if (isInCurrentBranch && 
+                (pemEntity.getState() == PemEntity.State.STARTED)) {
+            return true;
+        }
+        
+        return false;
     }
     
     public static String makeLabel(String tag, String name) {
@@ -135,7 +161,7 @@ public class Constants {
         myLabelByTag.put("catchAll", "Catch All");
         myLabelByTag.put("compensate", "Compensate");
         myLabelByTag.put("compensateScope", "Compensate Scope");
-        myLabelByTag.put("compensationHandler", "Compensaton Handler");
+        myLabelByTag.put("compensationHandler", "Compensation Handler");
         myLabelByTag.put("copy", "Copy");
         myLabelByTag.put("else", "Else");
         myLabelByTag.put("elseif", "Else If");

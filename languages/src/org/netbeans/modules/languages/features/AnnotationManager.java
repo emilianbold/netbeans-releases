@@ -57,7 +57,6 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.SyntaxContext;
-import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.editor.NbEditorDocument;
@@ -82,8 +81,8 @@ public class AnnotationManager extends ASTEvaluator {
     
     /** Creates a new instance of AnnotationManager */
     public AnnotationManager (Document doc) {
-        
         this.doc = (NbEditorDocument) doc;
+        if (doc == null) throw new NullPointerException ();
         parser = ParserManager.get (doc);
         parser.addASTEvaluator (this);
     }
@@ -199,6 +198,7 @@ public class AnnotationManager extends ASTEvaluator {
             throw new NullPointerException ("TokenSequence.mimeType==null");
         if (ts.language().mimeType().equals(item.getMimeType())) {
                 Token t = ts.token();
+                if (t == null) throw new NullPointerException ();
                 Position position = doc.createPosition(t.offset(hi));
                 la.setPosition (position);
                 doc.addAnnotation(position, t.length(), la);

@@ -441,13 +441,19 @@ public class JsfForm {
     
     
     public static JsfMultiViewElement[] getJsfMultiViewElements() {
+        Set<JsfMultiViewElement> jsfMEs;
 //        synchronized (jsfMultiViewElements) {
         jsfMultiViewElementsLock.readLock().lock();
         try {
-            return jsfMultiViewElements.toArray(new JsfMultiViewElement[jsfMultiViewElements.size()]);
+            jsfMEs = new HashSet<JsfMultiViewElement>(jsfMultiViewElements);
         } finally {
             jsfMultiViewElementsLock.readLock().unlock();
         }
+        // #126861 Possible null inside the weak set.
+        if (jsfMEs.contains(null)) {
+            jsfMEs.remove(null);
+        }
+        return jsfMEs.toArray(new JsfMultiViewElement[jsfMEs.size()]);
     }
     
     private static JsfMultiViewElement[] findJsfMultiViewElements(JsfForm jsfForm) {
@@ -2691,7 +2697,7 @@ public class JsfForm {
         }
 
         // XXX Context page notion from fragment should be removed.
-        if (this.contextJsfForm != contextJsfForm) {
+        if (this.contextJsfForm != contextJsfForm && isValid()) {
             // Force refresh such that the style links are recomputed
             clearHtml();
         }

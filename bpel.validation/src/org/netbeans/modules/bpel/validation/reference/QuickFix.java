@@ -41,7 +41,6 @@
 package org.netbeans.modules.bpel.validation.reference;
 
 import java.util.List;
-
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.Referenceable;
 
@@ -54,8 +53,8 @@ import org.netbeans.modules.bpel.model.api.VariableContainer;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
-import org.netbeans.modules.bpel.validation.util.QuickFix.Adapter;
-import org.netbeans.modules.bpel.validation.util.Util;
+import org.netbeans.modules.bpel.validation.core.QuickFix.Adapter;
+import org.netbeans.modules.bpel.validation.core.Util;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -66,7 +65,7 @@ class QuickFix {
 
   static Adapter get(BpelEntity entity, Reference<Referenceable> reference) {
 //out();
-//out("reference: " + reference.getClass().getName());
+//out("reference: " + reference.getClass().getName());  // todo m
 //out("         : " + reference.getType().getName());
     if (reference.getType().isAssignableFrom(VariableDeclaration.class)) {
       if (entity instanceof VariableReference) {

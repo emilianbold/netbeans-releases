@@ -34,7 +34,6 @@
   option applies only if the new code is made subject to such option by the copyright
   holder.
 -->
-
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.java.j2seproject</type>
     <configuration>
@@ -43,6 +42,7 @@
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
                 <root id="src.dir"/>
+                <root id="reglib.src.dir" name="RegLib Source Packages"/>
             </source-roots>
             <test-roots>
                 <root id="test.src.dir"/>

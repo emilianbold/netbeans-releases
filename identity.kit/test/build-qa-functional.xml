@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -42,14 +42,12 @@ made subject to such option by the copyright holder.
 -->
 <project name="org.netbeans.modules.identity.kit/test-qa-functional" basedir="." default="all">
 
-    <property file="../nbproject/private/private.properties"/>
-
     <!-- Imports default qa-functional-compiler and runidetest executor.
         jemmy and jellytools jars are on classpath for both. -->
     <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
 
     <target name="qa-functional-compiler">
-        <ant inheritAll="false" antfile="../../websvc.kit/test/build.xml" target="buildtests"/>
+        <ant inheritAll="false" dir="../../websvc.kit/test" target="buildtests"/>
         <antcall target="xtest-qa-functional.qa-functional-compiler"/>
     </target>
 

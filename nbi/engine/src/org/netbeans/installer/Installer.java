@@ -303,7 +303,13 @@ public class Installer implements FinishHandler {
                 final String key = keys.nextElement();
                 final String value = bundle.getString(key);
                 LogManager.log("loading " + key + " => " + value); // NOI18N
-                System.setProperty(key,value);
+		final String currentValue = System.getProperty(key);
+		if(currentValue!=null) {
+                    LogManager.log("... already defined, using existing value: " + currentValue); // NOI18N
+                } else {
+                    System.setProperty(key,value);
+                }
+                
             }
         } catch (MissingResourceException e) {
             LogManager.log("... no engine properties file, skip loading engine properties");
@@ -747,6 +753,17 @@ public class Installer implements FinishHandler {
                 LogManager.unindent();
                 continue;
             }
+            if (arguments[i].equalsIgnoreCase(NO_SPACE_CHECK_ARG)) {
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, NO_SPACE_CHECK_ARG)); // NOI18N
+                
+                System.setProperty(
+                        SystemUtils.NO_SPACE_CHECK_PROPERTY,
+                        UNARY_ARG_VALUE);
+                
+                LogManager.unindent();
+                continue;
+            }
         }
         if (arguments.length == 0) {
             LogManager.log(
@@ -754,6 +771,13 @@ public class Installer implements FinishHandler {
         }
         
         // validate arguments ///////////////////////////////////////////////////////
+	/*
+          Disabled since 28.02.2008 by Dmitry Lipin:
+          I don`t see any reason for having that restiction at this moment:
+          I can succesfully install/create bundle just with empty state file similar to
+          Registry.DEFAULT_STATE_FILE_STUB_URI or even just have <state/> as the file contents
+	*/
+        /*
         if (UiMode.getCurrentUiMode() != UiMode.DEFAULT_MODE) {
             if (System.getProperty(
                     Registry.SOURCE_STATE_FILE_PATH_PROPERTY) == null) {
@@ -765,7 +789,7 @@ public class Installer implements FinishHandler {
                         STATE_ARG));
             }
         }
-        
+        */
         LogManager.logExit(
                 "... finished parsing command line arguments"); // NOI18N
     }
@@ -857,7 +881,7 @@ public class Installer implements FinishHandler {
     }
     
     private void initializeMacOS() {
-        if (SystemUtils.isMacOS()) {
+        if (SystemUtils.isMacOS() && UiMode.getCurrentUiMode() == UiMode.SWING) {
             final Application application = Application.getApplication();
             
             application.removeAboutMenuItem();
@@ -1094,6 +1118,9 @@ public class Installer implements FinishHandler {
     
     public static final String BUNDLE_PROPERTIES_ARG =
             "--bundle-properties"; // NOI18N
+
+    public static final String NO_SPACE_CHECK_ARG =
+            "--nospacecheck"; // NOI18N
     
     public static final String UNARY_ARG_VALUE =
             "true"; // NOI18N

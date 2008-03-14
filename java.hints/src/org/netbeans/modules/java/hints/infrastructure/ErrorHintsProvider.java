@@ -269,7 +269,7 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
         int pos = (int) getPrefferedPosition(info, d);
         TreePath tp = info.getTreeUtilities().pathFor(pos + 1);
         
-        if (tp != null && tp.getParentPath().getLeaf() != null && (tp.getParentPath().getLeaf().getKind() == Kind.METHOD_INVOCATION || tp.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS)) {
+        if (tp != null && tp.getParentPath() != null && tp.getParentPath().getLeaf() != null && (tp.getParentPath().getLeaf().getKind() == Kind.METHOD_INVOCATION || tp.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS)) {
             int[] index = new int[1];
             
             tp = tp.getParentPath();

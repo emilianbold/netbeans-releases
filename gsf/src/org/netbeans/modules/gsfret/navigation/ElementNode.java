@@ -49,12 +49,11 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementHandle;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
-import org.netbeans.api.gsf.StructureItem;
-import org.netbeans.api.gsf.StructureItem;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.StructureItem;
+import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsfret.navigation.actions.OpenAction;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
@@ -103,6 +102,9 @@ public class ElementNode extends AbstractNode {
     
     @Override
     public Image getIcon(int type) {
+        if (description.getCustomIcon() != null) {
+            return Utilities.icon2Image(description.getCustomIcon());
+        }
         Icon icon = Icons.getElementIcon(description.getKind(), description.getModifiers());
         if (icon != null) {
             return Utilities.icon2Image(icon);
@@ -154,7 +156,7 @@ public class ElementNode extends AbstractNode {
     private synchronized Action getOpenAction() {
         if ( openAction == null ) {
             FileObject fo = ui.getFileObject();
-            openAction = new OpenAction(description.getElementHandle(), fo);
+            openAction = new OpenAction(description.getElementHandle(), fo, description.getPosition());
         }
         return openAction;
     }
@@ -289,7 +291,7 @@ public class ElementNode extends AbstractNode {
         //FileObject fileObject; // For the root description
         
         String name;
-        ElementHandle<? extends Element> elementHandle;
+        ElementHandle elementHandle;
         ElementKind kind;
         Set<Modifier> modifiers;        
         List<Description> subs; 
@@ -366,7 +368,7 @@ public class ElementNode extends AbstractNode {
                         return k2i(d1.getKind()) - k2i(d2.getKind());
                     } 
                     
-                    return d1.getName().compareTo(d2.getName());
+                    return d1.getSortText().compareTo(d2.getSortText());
                 }
                 else {
                     return d1.getPosition() == d2.getPosition() ? 0 : d1.getPosition() < d2.getPosition() ? -1 : 1;

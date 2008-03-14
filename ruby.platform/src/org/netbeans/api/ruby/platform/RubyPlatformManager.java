@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -22,7 +22,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,7 +46,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
+import java.io.StringReader;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -54,11 +54,12 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatform.Info;
+import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
@@ -68,11 +69,14 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.Utilities;
+import org.openide.util.io.ReaderInputStream;
 
 /**
  * Represents one Ruby platform, i.e. installation of a Ruby interpreter.
  */
 public final class RubyPlatformManager {
+    
+    public static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     
     private static final String[] RUBY_EXECUTABLE_NAMES = { "ruby", "jruby" }; // NOI18N
     
@@ -113,35 +117,33 @@ public final class RubyPlatformManager {
     }
 
     public static void performPlatformDetection() {
+        if (PREINDEXING) {
+            return;
+        }
         // Check the path to see if we find any other Ruby installations
-        String path = System.getenv("PATH"); // NOI18N
-        if (path == null) {
-            path = System.getenv("Path"); // NOI18N
-        }
 
-        if (path != null) {
-            final Set<File> rubies = new LinkedHashSet<File>();
-            Set<String> dirs = new TreeSet<String>(Arrays.asList(path.split(File.pathSeparator)));
-            for (String dir : dirs) {
-                for (String ruby : RUBY_EXECUTABLE_NAMES) {
-                    File f = findPlatform(dir, ruby);
-                    if (f != null) {
-                        rubies.add(f);
-                    }
-                }
-            }
-
-            for (File ruby : rubies) {
-                try {
-                    if (getPlatformByFile(ruby) == null) {
-                        addPlatform(ruby);
-                    }
-                } catch (IOException e) {
-                    // tell the user that something goes wrong
-                    LOGGER.log(Level.WARNING, e.getLocalizedMessage(), e);
+        final Set<File> rubies = new LinkedHashSet<File>();
+        for (String dir : Util.dirsOnPath()) {
+            for (String ruby : RUBY_EXECUTABLE_NAMES) {
+                File f = findPlatform(dir, ruby);
+                if (f != null) {
+                    rubies.add(f);
                 }
             }
         }
+
+        for (File ruby : rubies) {
+            try {
+                if (getPlatformByFile(ruby) == null) {
+                    addPlatform(ruby);
+                }
+            } catch (IOException e) {
+                // tell the user that something goes wrong
+                LOGGER.log(Level.WARNING, e.getLocalizedMessage(), e);
+            }
+        }
+        Util.setFirstPlatformTouch(false);
+        
     }
 
     private static void firePlatformsChanged() {
@@ -177,24 +179,24 @@ public final class RubyPlatformManager {
         return null;
     }
 
-    private static Set<RubyPlatform> getPlatformsInternal() {
+    private static synchronized Set<RubyPlatform> getPlatformsInternal() {
         if (platforms == null) {
             platforms = new HashSet<RubyPlatform>();
 
             // Test and preindexing hook
             String hardcodedRuby = System.getProperty("ruby.interpreter");
             if (hardcodedRuby != null) {
-                Info info = new Info("User-specified Ruby", "0.1");
+                Info info = new Info("User-specified Ruby", "0.1"); // NOI18N
 
-                FileObject gems = FileUtil.toFileObject(new File(hardcodedRuby)).getParent().getParent().getFileObject("lib/ruby/gems/1.8");
+                FileObject gems = FileUtil.toFileObject(new File(hardcodedRuby)).getParent().getParent().getFileObject("lib/ruby/gems/1.8"); // NOI18N
                 if (gems != null) {
                     Properties props = new Properties();
-                    props.setProperty(Info.RUBY_KIND, "User-specified Ruby");
-                    props.setProperty(Info.RUBY_VERSION, "0.1");
+                    props.setProperty(Info.RUBY_KIND, "User-specified Ruby"); // NOI18N
+                    props.setProperty(Info.RUBY_VERSION, "0.1"); // NOI18N
                     String gemHome = FileUtil.toFile(gems).getAbsolutePath();
                     props.setProperty(Info.GEM_HOME, gemHome);
                     props.setProperty(Info.GEM_PATH, gemHome);
-                    props.setProperty(Info.GEM_VERSION, "1.0.1 (1.0.1)");
+                    props.setProperty(Info.GEM_VERSION, "1.0.1 (1.0.1)"); // NOI18N
                     info = new Info(props);
                 }
 
@@ -299,6 +301,10 @@ public final class RubyPlatformManager {
     public static RubyPlatform addPlatform(final File interpreter) throws IOException {
         final Info info = computeInfo(interpreter);
         if (info == null) {
+            return null;
+        }
+        if (info.getKind() == null) { // # see #128354
+            LOGGER.warning("Getting platform information for " + interpreter + " failed.");
             return null;
         }
 
@@ -406,11 +412,10 @@ public final class RubyPlatformManager {
         }
     }
 
-    private static String computeID(final String label) {
-        String base = label.replaceAll("[\\. ]", "_"); // NOI18N
-        String id = base;
+    private static String computeID(final String kind) {
+        String id = kind;
         for (int i = 0; getPlatformByID(id) != null; i++) {
-            id = base + '_' + i;
+            id = kind + '_' + i;
         }
         return id;
     }
@@ -428,24 +433,33 @@ public final class RubyPlatformManager {
             File platformInfoScript = InstalledFileLocator.getDefault().locate(
                     "platform_info.rb", "org.netbeans.modules.ruby.platform", false);  // NOI18N
             if (platformInfoScript == null) {
-                throw new IllegalStateException("Cannot locate platform_info.rb script");
+                throw new IllegalStateException("Cannot locate platform_info.rb script"); // NOI18N
             }
             ProcessBuilder pb = new ProcessBuilder(interpreter.getAbsolutePath(), platformInfoScript.getAbsolutePath()); // NOI18N
             // be sure that JRUBY_HOME is not set during configuration
             // autodetection, otherwise interpreter under JRUBY_HOME would be
             // effectively used
             pb.environment().remove("JRUBY_HOME"); // NOI18N
+            pb.environment().put("JAVA_HOME", RubyExecution.getJavaHome()); // NOI18N
             ExecutionService.logProcess(pb);
-            Process start = pb.start();
+            Process proc = pb.start();
             // FIXME: set timeout
-            start.waitFor();
-            if (start.exitValue() == 0) {
+            proc.waitFor();
+            if (proc.exitValue() == 0) {
                 Properties props = new Properties();
-                props.load(start.getInputStream());
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    String stdout = Util.readAsString(proc.getInputStream());
+                    String stderr = Util.readAsString(proc.getErrorStream());
+                    LOGGER.finest("stdout:\n" + stdout);
+                    LOGGER.finest("stderr:\n " + stderr);
+                    props.load(new ReaderInputStream(new StringReader(stdout)));
+                } else {
+                    props.load(proc.getInputStream());
+                }
                 info = new Info(props);
             } else {
                 LOGGER.severe(interpreter.getAbsolutePath() + " does not seems to be a valid interpreter"); // TODO localize me
-                BufferedReader errors = new BufferedReader(new InputStreamReader(start.getErrorStream()));
+                BufferedReader errors = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
                 String line;
                 while ((line = errors.readLine()) != null) {
                     LOGGER.severe(line);

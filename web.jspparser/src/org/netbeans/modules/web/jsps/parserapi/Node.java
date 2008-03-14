@@ -883,7 +883,7 @@ public abstract class Node {
 	public String getText() {
 	    String ret = text;
 	    if ((ret == null) && (body != null)) {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		for (int i=0; i<body.size(); i++) {
 		    buf.append(body.getNode(i).getText());
 		}
@@ -2020,7 +2020,7 @@ public abstract class Node {
 	public boolean isAllSpace() {
 	    boolean isAllSpace = true;
 	    for (int i=0; i<text.length(); i++) {
-		if (!Character.isSpace(text.charAt(i))) {
+		if (!Character.isWhitespace(text.charAt(i))) {
 		    isAllSpace = false;
 		    break;
 		}

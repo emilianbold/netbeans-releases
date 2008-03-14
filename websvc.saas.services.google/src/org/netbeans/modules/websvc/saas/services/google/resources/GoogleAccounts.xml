@@ -48,30 +48,28 @@
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://code.google.com/apis/accounts/AuthForInstalledApps.html"
-               url="nbres:/org/netbeans/modules/websvc/saas/services/google/resources/GoogleAccountsWadl.xml">
+               url="org/netbeans/modules/websvc/saas/services/google/resources/GoogleAccountsWadl.xml">
 
     <description>Google Accounts Service</description>
     
-    <display-name>GoogleAccounts</display-name>
+    <display-name>Accounts Service</display-name>
 
     <saas-metadata>
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.google.Bundle</localizing-bundle>
 
-        <icon16>org/netbeans/modules/websvc/saas/services/google/resources/google16.png</icon16>
-
         <group name="Google">
         </group>
 
-        <authentication profile="Templates/WebServices/profile.properties">
-            <api-key id="dev_id"/>
+        <authentication profile="SaaSServices/Google/profile.properties">
+            <api-key id="key"/>
         </authentication>
 
     </saas-metadata>
 
     <methods>
-        <method name="getComps" 
-            href="//resource[@path='accounts']/resource[@path='ClientLogin']/method[@id='google.accounts_ClientLogin']"/>
+        <method name="accountsClientLogin" 
+            href="#google.accounts_ClientLogin"/>
     </methods>
 
 </saas-services>

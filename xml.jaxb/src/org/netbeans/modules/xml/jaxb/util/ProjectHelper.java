@@ -790,9 +790,9 @@ public class ProjectHelper {
 
     private static String getEndorsedDirs(Project prj) {
         // XXX TODO:Find a better portable way to do this.
-        String ret = "\"${netbeans.home}/../java1/modules/ext/jaxws21/api" //NOI18N
+        String ret = "\"${netbeans.home}/../java2/modules/ext/jaxws21/api" //NOI18N
                 + File.pathSeparator 
-                + "${netbeans.home}/../java1/modules/ext/jaxws21\""; //NOI18N
+                + "${netbeans.home}/../java2/modules/ext/jaxws21\""; //NOI18N
         return ret;
     }
 

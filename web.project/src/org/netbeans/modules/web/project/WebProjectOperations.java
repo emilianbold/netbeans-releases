@@ -49,7 +49,7 @@ import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.web.project.classpath.WebProjectClassPathModifier;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
@@ -72,6 +72,11 @@ import org.openide.util.lookup.Lookups;
 public class WebProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     
     private WebProject project;
+
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private String libraryPath;
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private File libraryFile;
     
     public WebProjectOperations(WebProject project) {
         this.project = project;
@@ -154,9 +159,6 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         assert targetNames.length > 0;
         
         ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
-        
-        WebProjectClassPathModifier cpMod = (WebProjectClassPathModifier) project.getLookup().lookup(WebProjectClassPathModifier.class);
-        cpMod.notifyDeleting();
     }
     
     public void notifyDeleted() throws IOException {
@@ -164,7 +166,7 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
     }
     
     public void notifyCopying() {
-        //nothing.
+        rememberLibraryLocation();
     }
     
     public void notifyCopied(Project original, File originalPath, final String newName) {
@@ -176,6 +178,9 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
 	final String oldProjectName = project.getName();
         
         project.getReferenceHelper().fixReferences(originalPath);
+        
+        WebProjectOperations origOperations = original.getLookup().lookup(WebProjectOperations.class);
+        fixLibraryLocation(origOperations);
         
         project.setName(newName);
         
@@ -202,6 +207,7 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
     }
     
     public void notifyMoving() throws IOException {
+        rememberLibraryLocation();
         notifyDeleting();
     }
     
@@ -215,6 +221,9 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
 	
         project.setName(newName);
         project.getReferenceHelper().fixReferences(originalPath);
+        WebProjectOperations origOperations = original.getLookup().lookup(WebProjectOperations.class);
+        fixLibraryLocation(origOperations);
+        
 
         ProjectManager.mutex().writeAccess(new Runnable() {
             public void run() {
@@ -239,6 +248,34 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
 		helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
             }
         });
+    }
+    
+    private void fixLibraryLocation(WebProjectOperations original) throws IllegalArgumentException {
+        String libPath = original.libraryPath;
+        if (libPath != null) {
+            if (!new File(libPath).isAbsolute()) {
+                File file = original.libraryFile;
+                if (file == null) {
+                    // could happen in some rare cases, but in that case the original project was already broken, don't fix.
+                    return;
+                }
+                String relativized = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), file);
+                if (relativized != null) {
+                    project.getAntProjectHelper().setLibrariesLocation(relativized);
+                } else {
+                    //cannot relativize, use absolute path
+                    project.getAntProjectHelper().setLibrariesLocation(file.getAbsolutePath());
+                }
+            }
+        }
+    }
+    
+    
+    private void rememberLibraryLocation() {
+        libraryPath = project.getAntProjectHelper().getLibrariesLocation();
+        if (libraryPath != null) {
+            libraryFile = PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), libraryPath);
+        }
     }
 
 }

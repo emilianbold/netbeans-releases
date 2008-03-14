@@ -1,0 +1,127 @@
+#!/bin/sh
+
+[ "$action" = "build" ] || [ "$action" = "sync" ] || exit 101
+
+[ -n "$push_username" ] || exit 102
+[ -n "$push_password" ] || exit 103
+
+
+ANT_OPTS="-Xmx512m"
+export ANT_OPTS
+HGMERGE=merge
+export HGMERGE
+
+rm -rf real.workspace
+hg clone . real.workspace || exit 1
+cd real.workspace
+
+testmodule() {
+    ant -f $1/build.xml test -Dtest-unit-sys-prop.ignore.random.failures=true
+}
+
+if [ "$action" = "build" ]; then
+#    hg fetch http://hg.netbeans.org/main || exit 1
+#    hg pull http://hg.netbeans.org/main || exit 1
+#    if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
+#    then
+#       hg up || exit 6
+#    else
+#       hg merge || exit 7
+#       hg ci -m 'Automated merge' || exit 8
+#    fi
+
+    ant build || exit 2
+    ant commit-validation # || exit 3
+    ant commit-validation-junit-format # || exit 3
+    testmodule openide.util  || exit 4
+    testmodule openide.modules || exit 4
+    testmodule openide.filesystems || exit 4
+    testmodule masterfs  # || exit 4
+    testmodule openide.nodes|| exit 4
+    testmodule openide.options || exit 4
+    testmodule openide.dialogs || exit 4
+    testmodule openide.awt || exit 4
+    testmodule openide.windows || exit 4
+    testmodule core.startup  || exit 4
+    testmodule api.progress  # || exit 4
+    testmodule api.visual  # || exit 4
+    testmodule applemenu  # || exit 4
+    testmodule autoupdate.services  # || exit 4
+    testmodule autoupdate.ui  # || exit 4
+    testmodule core.execution  # || exit 4
+    testmodule core.kit  # || exit 4
+    testmodule core.multiview  # || exit 4
+    testmodule core.nativeaccess  # || exit 4
+    testmodule core.output2  # || exit 4
+    testmodule core.ui  # || exit 4
+    testmodule core.windows  # || exit 4
+    testmodule editor.mimelookup  # || exit 4
+    testmodule editor.mimelookup.impl  # || exit 4
+    testmodule favorites  # || exit 4
+    testmodule javahelp  # || exit 4
+    testmodule libs.jna  # || exit 4
+    testmodule libs.jsr223  # || exit 4
+    testmodule masterfs  # || exit 4
+    testmodule o.jdesktop.layout  # || exit 4
+    testmodule o.n.bootstrap  # || exit 4
+    testmodule o.n.core  # || exit 4
+    testmodule o.n.swing.plaf  # || exit 4
+    testmodule o.n.swing.tabcontrol  # || exit 4
+    testmodule openide.actions  # || exit 4
+    testmodule openide.compat  # || exit 4
+    testmodule openide.dialogs  # || exit 4
+    testmodule openide.execution  # || exit 4
+    testmodule openide.explorer  # || exit 4
+    testmodule openide.io  # || exit 4
+    testmodule openide.loaders  # || exit 4
+    testmodule openide.modules || exit 4
+    testmodule openide.nodes || exit 4
+    testmodule openide.options  # || exit 4
+    testmodule openide.text  # || exit 4
+    testmodule openide.util  || exit 4
+    testmodule openide.util.enumerations  # || exit 4
+    testmodule options.api  # || exit 4
+    testmodule options.keymap  # || exit 4
+    testmodule progress.ui  # || exit 4
+    testmodule queries  # || exit 4
+    testmodule sendopts  # || exit 4
+    testmodule settings  # || exit 4
+    testmodule templates # || exit 4
+
+
+    if [ `hg out --template '{node|short}\n' http://hg.netbeans.org/main | wc -l` > 0 ]; then
+        echo No outgoing changes
+#        exit 0
+    fi
+
+    for i in 1 2 3; do
+       hg pull http://hg.netbeans.org/main || exit 5
+       if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
+       then
+           hg up || exit 6
+       else
+           hg merge || exit 7
+           hg ci -m 'Automated merge' || exit 8
+       fi
+       hg out http://hg.netbeans.org/main
+       hg in http://hg.netbeans.org/main
+       hg push https://"$push_username":"$push_password"@hg.netbeans.org/main && exit 0
+    done
+    exit 5
+fi
+
+if [ "$action" = "sync" ]; then
+    HEADS=`hg heads --template "{node}\n" | wc -l`
+    if [ $HEADS = 2 ]; then
+      hg merge
+      hg ci -m "Automated merge"
+      hg up -C
+    fi
+    hg fetch http://hg.netbeans.org/core-main
+    hg push https://"$push_username":"$push_password"@hg.netbeans.org/core-main
+    exit 0
+fi
+
+
+
+

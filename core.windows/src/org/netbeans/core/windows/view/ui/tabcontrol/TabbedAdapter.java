@@ -152,7 +152,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
  
     public void setSelectedComponent(Component comp) {
         int i = indexOf (comp);
-        if (i == -1) {
+        if (i == -1 && null != comp) {
             throw new IllegalArgumentException (
                 "Component not a child of this control: " + comp); //NOI18N
         } else {

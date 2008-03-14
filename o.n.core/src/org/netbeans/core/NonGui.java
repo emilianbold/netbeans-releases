@@ -133,23 +133,8 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         
         StartLog.logStart ("Main window initialization"); //NOI18N
 
-        // #28536: make sure a JRE bug does not prevent the event queue from having
-        // the right context class loader
-        // and #35470: do it early, before any module-loaded AWT code might run
-        // and #36820: even that isn't always early enough, so we need to push
-        // a new EQ to enforce the context loader
-        // XXX this is a hack!
-        try {
-            org.openide.util.Mutex.EVENT.writeAccess (new Runnable() {
-                public void run() {
-                    Thread.currentThread().setContextClassLoader(Main.getModuleSystem().getManager().getClassLoader());
-                    Toolkit.getDefaultToolkit().getSystemEventQueue().push(new EventQueue());
-                }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        TimableEventQueue.initialize();
+        
         // -----------------------------------------------------------------------------------------------------
         // 11. Initialization of main window
         StatusDisplayer.getDefault().setStatusText (NbBundle.getMessage (NonGui.class, "MSG_MainWindowInit"));

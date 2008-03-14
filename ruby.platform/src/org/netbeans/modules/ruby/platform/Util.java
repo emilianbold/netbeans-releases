@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,20 +40,38 @@
  */
 package org.netbeans.modules.ruby.platform;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.JComboBox;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.NbPreferences;
 
 public final class Util {
+    
+    private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 
     // FIXME: get rid of those proxy constants as soon as some NB Proxy API is available
     private static final String USE_PROXY_AUTHENTICATION = "useProxyAuthentication"; // NOI18N
     private static final String PROXY_AUTHENTICATION_USERNAME = "proxyAuthenticationUsername"; // NOI18N
     private static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword"; // NOI18N
+
+    private static final String FIRST_TIME_KEY = "platform-manager-called-first-time"; // NOI18N
 
     private Util() {
     }
@@ -77,7 +95,7 @@ public final class Util {
         int index = 0;
         int max = line.length();
         while (index < max) {
-            int nextEscape = line.indexOf("\033[", index);
+            int nextEscape = line.indexOf("\033[", index); // NOI18N
             if (nextEscape == -1) {
                 nextEscape = line.length();
             }
@@ -151,23 +169,89 @@ public final class Util {
         return host + ":" + port; // NOI18N
     }
 
+    /**
+     * Returns an {@link Iterable} which will uniquely traverse all valid
+     * elements on the <em>PATH</em> environment variables. That means,
+     * duplicates and elements which are not valid, existing directories are
+     * skipped.
+     * 
+     * @return an {@link Iterable} which will traverse all valid elements on the
+     * <em>PATH</em> environment variables.
+     */
+    public static Iterable<String> dirsOnPath() {
+        String rawPath = System.getenv("PATH"); // NOI18N
+        if (rawPath == null) {
+            rawPath = System.getenv("Path"); // NOI18N
+        }
+        if (rawPath == null) {
+            return Collections.emptyList();
+        }
+        Set<String> candidates = new LinkedHashSet<String>(Arrays.asList(rawPath.split(File.pathSeparator)));
+        for (Iterator<String> it = candidates.iterator(); it.hasNext();) {
+            String dir = it.next();
+            if (!new File(dir).isDirectory()) { // remove non-existing directories (#124562)
+                LOGGER.fine(dir + " found in the PATH environment variable. But is not a valid directory. Ignoring...");
+                it.remove();
+            }
+        }
+        return NbCollections.iterable(candidates.iterator());
+    }
+
     public static String findOnPath(final String toFind) {
-        String rubyLib = System.getenv("PATH"); // NOI18N
-        if (rubyLib != null) {
-            String[] paths = rubyLib.split("[:;]"); // NOI18N
-            for (String path : paths) {
-                String result = path + File.separator + toFind;
-                if (new File(result).isFile()) {
-                    return result;
-                }
+        for (String path : Util.dirsOnPath()) {
+            String result = path + File.separator + toFind;
+            if (new File(result).isFile()) {
+                return result;
             }
         }
         return null;
     }
 
-    public static void notifyLocalized(Class aClass, String resName, Object... params) {
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                NbBundle.getMessage(aClass, resName, params)));
+    public static void preselectPlatform(final JComboBox platforms, final String preferencePlatformIDKey) {
+        String lastPlatformID = Util.getPreferences().get(preferencePlatformIDKey, null);
+        if (lastPlatformID != null) {
+            RubyPlatform platform = RubyPlatformManager.getPlatformByID(lastPlatformID);
+            if (platform != null) {
+                platforms.setSelectedItem(platform);
+            }
+        }
     }
 
+    public static void notifyLocalized(Class aClass, String resName, int type, Object... params) {
+        String message = NbBundle.getMessage(aClass, resName, params);
+        if (type == NotifyDescriptor.ERROR_MESSAGE) {
+            LOGGER.severe(message);
+        }
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, type));
+    }
+    
+    public static void notifyLocalized(Class aClass, String resName, Object... params) {
+        notifyLocalized(aClass, resName, NotifyDescriptor.INFORMATION_MESSAGE, params);
+    }
+
+    /** Returns whether the user confirmed the question or not. */
+    public static boolean confirmLocalized(Class aClass, String resName, Object... params) {
+        String message = NbBundle.getMessage(aClass, resName, params);
+        Object result = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(message, NotifyDescriptor.Confirmation.OK_CANCEL_OPTION));
+        return result.equals(NotifyDescriptor.OK_OPTION);
+    }
+
+    public static void setFirstPlatformTouch(boolean b) {
+        Util.getPreferences().putBoolean(FIRST_TIME_KEY, b);
+    }
+
+    static boolean isFirstPlatformTouch() {
+        return Util.getPreferences().getBoolean(FIRST_TIME_KEY, true);
+    }
+    
+    public static String readAsString(final InputStream is) throws IOException {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            FileUtil.copy(is, baos);
+            return baos.toString("UTF-8"); // NOI18N
+        } finally {
+            is.close();
+        }
+    }
+    
 }

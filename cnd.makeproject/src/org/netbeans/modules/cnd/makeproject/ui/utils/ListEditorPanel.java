@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.makeproject.ui.utils;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ResourceBundle;
 import java.util.Vector;
 import javax.accessibility.AccessibleContext;
 import javax.swing.JButton;
@@ -103,11 +102,13 @@ public class ListEditorPanel extends javax.swing.JPanel {
         targetList.setListData(listData);
         targetList.addListSelectionListener(new TargetSelectionListener());
         targetList.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 targetListKeyPressed(evt);
             }
         });
 	targetList.addMouseListener(new MouseAdapter() {
+            @Override
 	    public void mouseClicked(MouseEvent me) {
 		Object ob[] = targetList.getSelectedValues();
 		if (ob.length != 1)
@@ -266,6 +267,7 @@ public class ListEditorPanel extends javax.swing.JPanel {
 	return defaultButton;
     }
 
+    @Override
     public void setEnabled(boolean b) {
 	listLabel.setEnabled(b);
 	targetList.setEnabled(b);

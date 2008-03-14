@@ -93,6 +93,8 @@ public final class CompletionResultSetImpl {
     
     private boolean hasAdditionalItems;
     
+    private String hasAdditionalItemsText;
+    
     private boolean finished;
     
     private CompletionDocumentation documentation;
@@ -218,6 +220,18 @@ public final class CompletionResultSetImpl {
         return hasAdditionalItems;
     }    
     
+    public synchronized void setHasAdditionalItemsText(String text) {
+        checkNotFinished();
+        if (queryType != CompletionProvider.COMPLETION_QUERY_TYPE) {
+            return;
+        }
+        this.hasAdditionalItemsText = text;
+    }
+    
+    public synchronized String getHasAdditionalItemsText() {
+        return hasAdditionalItemsText;
+    }
+
     public synchronized void setDocumentation(CompletionDocumentation documentation) {
         checkNotFinished();
         if (!active || queryType != CompletionProvider.DOCUMENTATION_QUERY_TYPE) {

@@ -13,29 +13,20 @@
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>A collection of XPath functions are available in the BPEL Mapper's menu bar. These functions are based on the XPath 1.0 specification.</p>
 <p>Each function has zero or more arguments. Each function returns a single result.</p>
-<p>The menu bar contains the following drop-down menus: <a href="#datetime">Datetime</a>, <a href="#operator">Operator</a>, <a href="#boolean">Boolean</a>, <a href="#string">String</a>, <a href="#nodes">Nodes</a>, and <a href="#number">Number</a>.
-</p>
-<h3><a name="datetime"></a>Datetime</h3>
-<p>The Datetime menu contains the following functions:</p>
-<ul>
-  <li> <tt><b>Duration Literal</b></tt> enables you to enter a duration literal. Use the format specified in the XML Schema specification.</li>
-  <li> <tt><b>Current Time</b></tt> provides the current time.</li>
-  <li> <tt><b>Current Date</b></tt> provides the current date.</li>
-  <li> <tt><b>Current Date and Time</b></tt> provides the current date and time.<br>
-</li>
-</ul>
+<p>The menu bar contains the following drop-down menus: <a href="#operator">Operator</a>, <a href="#boolean">Boolean</a>, <a href="#string">String</a>, <a href="#node">Node</a>, <a href="#number">Number</a>, <a href="#datetime">Date&amp;Time</a>, <a href="#bpel">BPEL</a>. </p>
+
 <h3><a name="operator"></a>Operator</h3>
 <p>The Operator menu contains the following functions:</p>
 <ul>
-  <li><tt><b>Greater Than</b></tt></li>
+  <li><tt><b>Greater</b></tt></li>
   <li><tt><b>Greater or Equal</b></tt></li>
-  <li><tt><b>Less Than</b></tt></li>
+  <li><tt><b>Less</b></tt></li>
   <li><tt><b>Less or Equal</b></tt></li>
   <li><tt><b>Addition</b></tt></li>
   <li><tt><b>Subtraction</b></tt></li>
   <li><tt><b>Multiplication</b></tt></li>
-  <li><tt><b>Div</b></tt> or <i>division</i> operator returns the quotient for a given dividend and divisor.</li>
-  <li><tt><b>Mod</b></tt> or <i>modulus</i> operator returns the remainder for a given dividend and divisor.</li>
+  <li><tt><b>Division</b></tt></li>
+  <li><tt><b>Remainder</b></tt></li>
   <li><tt><b>Negative</b></tt></li>
   <li><tt><b>Not Equal</b></tt></li>
   <li><tt><b>Equal</b></tt></li>
@@ -43,12 +34,12 @@
 <h3><a name="boolean"></a>Boolean</h3>
 <p>The Boolean menu contains the following functions:</p>
 <ul>
-  <li> <tt><b>True</b></tt> returns true.</li>
-  <li> <tt><b>False</b></tt> returns false.</li>
-  <li><tt><b>And</b></tt> uses the following logic: If both arguments are true, then the function returns true. If either argument is false, then the function returns false.</li>
-  <li><tt><b>Or</b></tt> uses the following logic: If either argument is true, then the function returns true. If both arguments are false, then the function returns false.</li>
-  <li> <tt><b>Not</b></tt> uses the following logic: If the argument is false, then the function returns true. If the argument is true, then the function returns false.</li>
-  <li> <tt><b>Lang</b></tt> returns true or false depending on whether the language of the context node is the same as or is a sublanguage of the language specified in the argument.</li>
+<li><tt><b>Logical And</b></tt> uses the following logic: If both arguments are true, then the function returns true. If either argument is false, then the function returns false.</li>
+  <li><tt><b>Logical Or</b></tt> uses the following logic: If either argument is true, then the function returns true. If both arguments are false, then the function returns false.</li>
+  <li> <tt><b>Logical Not</b></tt> uses the following logic: If the argument is false, then the function returns true. If the argument is true, then the function returns false.</li>
+  <li> <tt><b>Language</b></tt> returns true or false depending on whether the language of the context node is the same as or is a sublanguage of the language specified in the argument.</li>
+  <li><tt><b>Logical False</b></tt> returns false.</li>
+  <li><tt><b>Logical True</b></tt> returns true.</li>
   <li> <tt><b>Boolean</b></tt> converts the argument to a boolean. For detailed information about the logic, see the XPath 1.0 specification.</li>
 </ul>
 <h3><a name="string"></a>String</h3>
@@ -67,7 +58,7 @@
   <li> <tt><b>String Literal</b></tt> enables you to enter a string literal.
     
 </ul>
-<h3><a name="nodes"></a>Nodes</h3>
+<h3><a name="node"></a>Node</h3>
 <p>The Nodes menu contains the following functions:</p>
 <ul>
   <li> <tt><b>Local Name</b></tt> returns the local part of the expanded name of the node in the argument node-set that is first in document order. (An expanded name consists of a local part and a namespace URI.)</li>
@@ -82,12 +73,28 @@
 <ul>
   <li> <tt><b>Number</b></tt> converts the argument to a number. For detailed information about the logic, see the XPath 1.0 specification.</li>
   <li> <tt><b>Number Literal</b></tt> enables you to enter a number literal.
-    
   <li> <tt><b>Round</b></tt> returns the number that is closest to the argument and that is an integer.</li>
   <li> <tt><b>Sum</b></tt> returns the sum, for each node in the argument node-set, of the result of converting the string values of the node to a number.</li>
   <li> <tt><b>Floor</b></tt> returns the largest number that is not greater than the argument and that is an integer.</li>
   <li> <tt><b>Ceiling</b></tt> returns the smallest number that is not less than the argument and that is an integer.</li>
 </ul>
+<h3><a name="datetime"></a>Date&Time </h3>
+<p>The Datetime menu contains the following functions:</p>
+<ul>
+  <li> <tt><b>Current Date</b></tt> provides the current date.</li>
+    <li> <tt><b>Current Time</b></tt> provides the current time.</li>
+    <li> <tt><b>Current Date and Time</b></tt> provides the current date and time.<br>
+	<li> <tt><b>Duration Literal</b></tt> enables you to enter a duration literal. Use the format specified in the XML Schema specification.</li>
+</li>
+</ul>
+<h3><a name="bpel"></a>BPEL</h3>
+<ul>
+<li><tt><b>doXslTransform</b></tt></li>
+<li><tt><b>Wrap with Service Reference</b></tt></li>
+<li><tt><b>doMarshal</b></tt></li>
+<li><tt><b>doUnMarshal</b></tt></li>
+</ul>
+
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd><a href="mapper_mappings.html" title="Creating BPEL Mappings">Creating BPEL Mappings</a></dd>

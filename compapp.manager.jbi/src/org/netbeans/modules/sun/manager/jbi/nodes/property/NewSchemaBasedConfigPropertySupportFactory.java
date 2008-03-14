@@ -69,16 +69,16 @@ public class NewSchemaBasedConfigPropertySupportFactory {
             final Attribute attr,
             final JBIComponentConfigurationMBeanAttributeInfo info) {
 
-        JBIComponentConfigurationDescriptor descriptor = info.getDescriptor();
+        JBIComponentConfigurationDescriptor descriptor = info.getConfigurationDescriptor();
         QName typeQName = descriptor.getTypeQName();
 
         List<JBIComponentConfigurationConstraint> constraints =
                 descriptor.getConstraints();
 
-        if (descriptor.isApplicationConfiguration()) {
+        if (descriptor instanceof JBIComponentConfigurationDescriptor.ApplicationConfiguration) {
             return new ApplicationConfigurationsPropertySupport(
                     propertySheetOwner, attr, info);
-        } else if (descriptor.isApplicationVariable()) {
+        } else if (descriptor instanceof JBIComponentConfigurationDescriptor.ApplicationVariable) {
             return new ApplicationVariablesPropertySupport(
                     propertySheetOwner, attr, info);
         } else if (JBIComponentConfigurationDescriptor.XSD_STRING.equals(typeQName)) {
@@ -92,6 +92,8 @@ public class NewSchemaBasedConfigPropertySupportFactory {
                         propertySheetOwner, attr, info, options);
             }
         } else if (JBIComponentConfigurationDescriptor.XSD_INT.equals(typeQName) ||
+                JBIComponentConfigurationDescriptor.XSD_BYTE.equals(typeQName) ||
+                JBIComponentConfigurationDescriptor.XSD_SHORT.equals(typeQName) ||
                 JBIComponentConfigurationDescriptor.XSD_POSITIVE_INTEGER.equals(typeQName) ||
                 JBIComponentConfigurationDescriptor.XSD_NEGATIVE_INTEGER.equals(typeQName) ||
                 JBIComponentConfigurationDescriptor.XSD_NON_POSITIVE_INTEGER.equals(typeQName) ||
@@ -99,7 +101,13 @@ public class NewSchemaBasedConfigPropertySupportFactory {
 
             int minInc, maxInc;
 
-            if (JBIComponentConfigurationDescriptor.XSD_INT.equals(typeQName)) {
+            if (JBIComponentConfigurationDescriptor.XSD_BYTE.equals(typeQName)) {
+                minInc = Byte.MIN_VALUE;
+                maxInc = Byte.MAX_VALUE;
+            } else if (JBIComponentConfigurationDescriptor.XSD_SHORT.equals(typeQName)) {
+                minInc = Short.MIN_VALUE;
+                maxInc = Short.MAX_VALUE;
+            } else if (JBIComponentConfigurationDescriptor.XSD_INT.equals(typeQName)) {
                 minInc = Integer.MIN_VALUE;
                 maxInc = Integer.MAX_VALUE;
             } else if (JBIComponentConfigurationDescriptor.XSD_POSITIVE_INTEGER.equals(typeQName)) {

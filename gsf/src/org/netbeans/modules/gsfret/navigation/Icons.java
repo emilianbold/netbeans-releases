@@ -47,8 +47,8 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
 import org.openide.util.Utilities;
 
 
@@ -66,66 +66,66 @@ public final class Icons {
     private static final String GIF_EXTENSION = ".gif";
     private static final String PNG_EXTENSION = ".png";
     private static final String WAIT = ICON_BASE + "wait" + PNG_EXTENSION;
-    private static final Map<String, Icon> icons = new HashMap<String, Icon>();
+    //private static final Map<String, Icon> icons = new HashMap<String, Icon>();
 
     /** Creates a new instance of Icons */
     private Icons() {
     }
 
-    public static Icon getBusyIcon() {
-        Image img = Utilities.loadImage(WAIT);
-
-        if (img == null) {
-            return null;
-        } else {
-            return new ImageIcon(img);
-        }
-    }
-
-    public static Icon getMethodIcon() {
-        // TODO - consider modifiers
-        Image img =
-            Utilities.loadImage(ICON_BASE + "method" + "Public" + PNG_EXTENSION);
-
-        if (img == null) {
-            return null;
-        } else {
-            return new ImageIcon(img);
-        }
-    }
-
-    public static Icon getFieldIcon() {
-        // TODO - consider modifiers
-        Image img =
-            Utilities.loadImage(ICON_BASE + "field" + "Public" + PNG_EXTENSION);
-
-        if (img == null) {
-            return null;
-        } else {
-            return new ImageIcon(img);
-        }
-    }
-
-    public static Icon getClassIcon() {
-        Image img = Utilities.loadImage(ICON_BASE + "class" + PNG_EXTENSION);
-
-        if (img == null) {
-            return null;
-        } else {
-            return new ImageIcon(img);
-        }
-    }
-
-    public static Icon getModuleIcon() {
-        Image img =
-            Utilities.loadImage(ICON_BASE + "package"  + GIF_EXTENSION);
-
-        if (img == null) {
-            return null;
-        } else {
-            return new ImageIcon(img);
-        }
-    }
+//    public static Icon getBusyIcon() {
+//        Image img = Utilities.loadImage(WAIT);
+//
+//        if (img == null) {
+//            return null;
+//        } else {
+//            return new ImageIcon(img);
+//        }
+//    }
+//
+//    public static Icon getMethodIcon() {
+//        // TODO - consider modifiers
+//        Image img =
+//            Utilities.loadImage(ICON_BASE + "method" + "Public" + PNG_EXTENSION);
+//
+//        if (img == null) {
+//            return null;
+//        } else {
+//            return new ImageIcon(img);
+//        }
+//    }
+//
+//    public static Icon getFieldIcon() {
+//        // TODO - consider modifiers
+//        Image img =
+//            Utilities.loadImage(ICON_BASE + "field" + "Public" + PNG_EXTENSION);
+//
+//        if (img == null) {
+//            return null;
+//        } else {
+//            return new ImageIcon(img);
+//        }
+//    }
+//
+//    public static Icon getClassIcon() {
+//        Image img = Utilities.loadImage(ICON_BASE + "class" + PNG_EXTENSION);
+//
+//        if (img == null) {
+//            return null;
+//        } else {
+//            return new ImageIcon(img);
+//        }
+//    }
+//
+//    public static Icon getModuleIcon() {
+//        Image img =
+//            Utilities.loadImage(ICON_BASE + "package"  + GIF_EXTENSION);
+//
+//        if (img == null) {
+//            return null;
+//        } else {
+//            return new ImageIcon(img);
+//        }
+//    }
 
     public static ImageIcon getElementIcon( ElementKind elementKind, Collection<Modifier> modifiers ) {
     
@@ -136,49 +136,38 @@ public final class Icons {
         Image img = null;
     
         switch( elementKind ) {
-            //case PACKAGE:
         case ERROR:
             img = Utilities.loadImage( ICON_BASE + "error-glyph" + GIF_EXTENSION );
             break;
+        case PACKAGE:
         case MODULE:
-                img = Utilities.loadImage( ICON_BASE + "package" + GIF_EXTENSION );
-                break;
-//            case ENUM:
-//                img = Utilities.loadImage( ICON_BASE + "enum" + PNG_EXTENSION );
-//                break;
-//            case ANNOTATION_TYPE:
-//                img = Utilities.loadImage( ICON_BASE + "annotation" + PNG_EXTENSION );
-//                break;
-            case CLASS:
-                img = Utilities.loadImage( ICON_BASE + "class" + PNG_EXTENSION );
-                break;
-//            case INTERFACE:
-//                img = Utilities.loadImage( ICON_BASE + "interface"  + PNG_EXTENSION );
-//                break;
-            case VARIABLE:
-            case GLOBAL:
-            case ATTRIBUTE:
-            case FIELD:
-                img = Utilities.loadImage( getIconName( ICON_BASE + "field", PNG_EXTENSION, modifiers ) );
-                break;
-//            case ENUM_CONSTANT:
-//                img = Utilities.loadImage( ICON_BASE + "constant" + PNG_EXTENSION );
-//                break;
-            case CONSTANT:
-                img = Utilities.loadImage(ICON_BASE + "constant" + PNG_EXTENSION );
-                break;
-            case CONSTRUCTOR:
-                img = Utilities.loadImage( getIconName( ICON_BASE + "constructor", PNG_EXTENSION, modifiers ) );
-                break;
-//            case STATIC_INIT:
-//                img = Utilities.loadImage( getIconName( ICON_BASE + "initializer", PNG_EXTENSION, modifiers ) );
-//                break;
-            case METHOD:
-                img = Utilities.loadImage( getIconName( ICON_BASE + "method", PNG_EXTENSION, modifiers ) );
-                break;
-            case DB:
-                img = Utilities.loadImage(ICON_BASE + "database" + GIF_EXTENSION);
-                break;
+            img = Utilities.loadImage( ICON_BASE + "package" + GIF_EXTENSION );
+            break;
+        case CLASS:
+            img = Utilities.loadImage( ICON_BASE + "class" + PNG_EXTENSION );
+            break;
+        case TAG:
+            img = Utilities.loadImage( ICON_BASE + "html_element" + PNG_EXTENSION );
+            break;
+        case VARIABLE:
+        case PROPERTY:
+        case GLOBAL:
+        case ATTRIBUTE:
+        case FIELD:
+            img = Utilities.loadImage( getIconName( ICON_BASE + "field", PNG_EXTENSION, modifiers ) );
+            break;
+        case CONSTANT:
+            img = Utilities.loadImage(ICON_BASE + "constant" + PNG_EXTENSION );
+            break;
+        case CONSTRUCTOR:
+            img = Utilities.loadImage( getIconName( ICON_BASE + "constructor", PNG_EXTENSION, modifiers ) );
+            break;
+        case METHOD:
+            img = Utilities.loadImage( getIconName( ICON_BASE + "method", PNG_EXTENSION, modifiers ) );
+            break;
+        case DB:
+            img = Utilities.loadImage(ICON_BASE + "database" + GIF_EXTENSION);
+            break;
         default:   
                 img = null;
         }
@@ -186,25 +175,23 @@ public final class Icons {
         return img == null ? null : new ImageIcon (img);
     }
         
-        // Private Methods ---------------------------------------------------------
-        private static String getIconName(String typeName, String extension, Collection<Modifier> modifiers) {
-            
-            StringBuffer fileName = new StringBuffer( typeName );
-            
-            if (modifiers.contains(Modifier.STATIC)) {
-                fileName.append( "Static" );
-            }
-            if (modifiers.contains(Modifier.PROTECTED)) {
-                return fileName.append( "Protected" ).append( extension ).toString();
-            }
-            if (modifiers.contains(Modifier.PRIVATE)) {
-                return fileName.append( "Private" ).append( extension ).toString();
-            }
-            // Assume it's public
-            return fileName.append( "Public" ).append( extension ).toString();
-            //return fileName.append( "Package" ).append( extension ).toString();
-            //return fileName.append(extension).toString();
-                            
+    // Private Methods ---------------------------------------------------------
+    private static String getIconName(String typeName, String extension, Collection<Modifier> modifiers) {
+
+        StringBuffer fileName = new StringBuffer( typeName );
+
+        if (modifiers.contains(Modifier.STATIC)) {
+            fileName.append( "Static" );
         }
-        
+        if (modifiers.contains(Modifier.PROTECTED)) {
+            return fileName.append( "Protected" ).append( extension ).toString();
+        }
+        if (modifiers.contains(Modifier.PRIVATE)) {
+            return fileName.append( "Private" ).append( extension ).toString();
+        }
+        // Assume it's public
+        return fileName.append( "Public" ).append( extension ).toString();
+        //return fileName.append( "Package" ).append( extension ).toString();
+        //return fileName.append(extension).toString();
+    }
 }

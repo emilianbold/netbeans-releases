@@ -39,44 +39,127 @@
 
 package org.netbeans.modules.cnd.editor.options;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
+import javax.swing.text.EditorKit;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.editor.Formatter;
+import org.netbeans.editor.Settings;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.BracePlacement;
+import org.netbeans.modules.cnd.editor.api.CodeStyle.PreprocessorIndent;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Alexander Simon
  */
-public class EditorOptions {
+public class EditorOptions {   
+    public static CodeStyleFactory codeStyleFactory;
+    static {
+        Class c = CodeStyle.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+    //indents
     /**
-     * Whether insert extra space before the parenthesis or not.
-     * Values: java.lang.Boolean instances
-     * Effect: function(a)
-     *           becomes (when set to true)
-     *         function (a)
+     * How many spaces should be added to the statement that continues
+     * on the next line.
      */
-    public static final String CC_FORMAT_SPACE_BEFORE_PARENTHESIS = "cc-add-space-before-parenthesis"; //NOI18N
-    public static final boolean defaultCCFormatSpaceBeforeParenthesis = false;
+    public static final String statementContinuationIndent = "statementContinuationIndent"; // NOI18N 
+    public static final int statementContinuationIndentDefault = 8;
+
+    public static final String indentSize = "indentSize"; // NOI18N 
+    public static final int indentSizeDefault = 4;
 
     /**
-     * Whether insert space after the comma inside the parameter list.
-     * Values: java.lang.Boolean instances
-     * Effect: function(a,b)
-     *           becomes (when set to true)
-     *         function(a, b)
+     * Whether to indent preprocessors positioned at start of line.
+     * Those not starting at column 0 of the line will automatically be indented.
+     * This setting is to prevent C/C++ code that is compiled with compilers that
+     * require the processors to have '#' in column 0.
+     * <B>Note:</B>This will not convert formatted preprocessors back to column 0.
      */
-    public static final String CC_FORMAT_SPACE_AFTER_COMMA = "cc-add-space-after-comma"; //NOI18N
-    public static final boolean defaultCCFormatSpaceAfterComma = true;
+    public static final String indentPreprocessorDirectives = "indentPreprocessorDirectives"; //NOI18N
+    public static final String indentPreprocessorDirectivesDefault = PreprocessorIndent.START_LINE.name();
+    public static final String sharpAtStartLine = "sharpAtStartLine"; //NOI18N
+    public static final boolean sharpAtStartLineDefault = true;
+    public static final String indentCasesFromSwitch = "indentCasesFromSwitch"; //NOI18N
+    public static final boolean indentCasesFromSwitchDefault = true;
+    public static final String absoluteLabelIndent = "absoluteLabelIndent"; //NOI18N
+    public static final boolean absoluteLabelIndentDefault = true;
 
+    public static final String indentNamespace = "indentNamespace"; //NOI18N
+    public static final boolean indentNamespaceDefault = true;
+    
+    //BracesPlacement
+    public static final String newLineBeforeBraceNamespace = "newLineBeforeBraceNamespace"; //NOI18N
+    public static final String newLineBeforeBraceNamespaceDefault = BracePlacement.NEW_LINE.name();
+    public static final String newLineBeforeBraceClass = "newLineBeforeBraceClass"; //NOI18N
+    public static final String newLineBeforeBraceClassDefault = BracePlacement.NEW_LINE.name();
+    /**
+     * Whether insert extra new-line before the declaration or not.
+     * Values: java.lang.Boolean instances
+     * Effect: int foo() {
+     *           function();
+     *         }
+     *           becomes (when set to true)
+     *         int foo(test)
+     *         {
+     *           function();
+     *         }
+     */
+    public static final String newLineBeforeBraceDeclaration = "newLineBeforeBraceDeclaration"; //NOI18N
+    public static final String newLineBeforeBraceDeclarationDefault = BracePlacement.NEW_LINE.name();
+    /**
+     * Whether insert extra new-line before the compound bracket or not.
+     * Values: java.lang.Boolean instances
+     * Effect: if (test) {
+     *           function();
+     *         }
+     *           becomes (when set to true)
+     *         if (test)
+     *         {
+     *           function();
+     *         }
+     */
+    public static final String newLineBeforeBrace = "newLineBeforeBrace"; //NOI18N
+    public static final String newLineBeforeBraceDefault = BracePlacement.SAME_LINE.name();
+
+    //MultilineAlignment
+    public static final String alignMultilineArrayInit = "alignMultilineArrayInit"; //NOI18N
+    public static final boolean alignMultilineArrayInitDefault = false;
+    public static final String alignMultilineCallArgs = "alignMultilineCallArgs"; //NOI18N
+    public static final boolean alignMultilineCallArgsDefault = false;
+    public static final String alignMultilineMethodParams = "alignMultilineMethodParams"; //NOI18N
+    public static final boolean alignMultilineMethodParamsDefault = false;
+
+    //NewLine
+    public static final String newLineCatch = "newLineCatch"; //NOI18N
+    public static final boolean newLineCatchDefault = false;
+    public static final String newLineElse = "newLineElse"; //NOI18N
+    public static final boolean newLineElseDefault = false;
+    public static final String newLineWhile = "newLineWhile"; //NOI18N
+    public static final boolean newLineWhileDefault = false;
+
+    //SpacesBeforeKeywords
     public static final String spaceBeforeWhile = "spaceBeforeWhile"; //NOI18N
     public static final boolean spaceBeforeWhileDefault = true;
     public static final String spaceBeforeElse = "spaceBeforeElse"; //NOI18N
     public static final boolean spaceBeforeElseDefault = true;
     public static final String spaceBeforeCatch = "spaceBeforeCatch"; //NOI18N
     public static final boolean spaceBeforeCatchDefault = true;
+
+    //SpacesBeforeParentheses
     public static final String spaceBeforeMethodDeclParen = "spaceBeforeMethodDeclParen"; //NOI18N
     public static final boolean spaceBeforeMethodDeclParenDefault = false;
     public static final String spaceBeforeMethodCallParen = "spaceBeforeMethodCallParen"; //NOI18N
@@ -91,6 +174,8 @@ public class EditorOptions {
     public static final boolean spaceBeforeCatchParenDefault = true;
     public static final String spaceBeforeSwitchParen = "spaceBeforeSwitchParen"; //NOI18N
     public static final boolean spaceBeforeSwitchParenDefault = true;
+    
+    //SpacesAroundOperators
     public static final String spaceAroundUnaryOps = "spaceAroundUnaryOps"; //NOI18N
     public static final boolean spaceAroundUnaryOpsDefault = false;
     public static final String spaceAroundBinaryOps = "spaceAroundBinaryOps"; //NOI18N
@@ -99,6 +184,8 @@ public class EditorOptions {
     public static final boolean spaceAroundTernaryOpsDefault = true;
     public static final String spaceAroundAssignOps = "spaceAroundAssignOps"; //NOI18N
     public static final boolean spaceAroundAssignOpsDefault = true;
+    
+    //SpacesBeforeLeftBraces
     public static final String spaceBeforeClassDeclLeftBrace = "spaceBeforeClassDeclLeftBrace"; //NOI18N
     public static final boolean spaceBeforeClassDeclLeftBraceDefault = true;
     public static final String spaceBeforeMethodDeclLeftBrace = "spaceBeforeMethodDeclLeftBrace"; //NOI18N
@@ -121,6 +208,8 @@ public class EditorOptions {
     public static final boolean spaceBeforeCatchLeftBraceDefault = true;
     public static final String spaceBeforeArrayInitLeftBrace = "spaceBeforeArrayInitLeftBrace"; //NOI18N
     public static final boolean spaceBeforeArrayInitLeftBraceDefault = false;
+    
+    //SpacesWithinParentheses
     public static final String spaceWithinParens = "spaceWithinParens"; //NOI18N
     public static final boolean spaceWithinParensDefault = false;
     public static final String spaceWithinMethodDeclParens = "spaceWithinMethodDeclParens"; //NOI18N
@@ -141,8 +230,8 @@ public class EditorOptions {
     public static final boolean spaceWithinTypeCastParensDefault = false;
     public static final String spaceWithinBraces = "spaceWithinBraces"; //NOI18N
     public static final boolean spaceWithinBracesDefault = false;
-    public static final String spaceWithinArrayInitBrackets = "spaceWithinArrayInitBrackets"; //NOI18N
-    public static final boolean spaceWithinArrayInitBracketsDefault = false;
+    
+    //SpacesOther
     public static final String spaceBeforeComma = "spaceBeforeComma"; //NOI18N
     public static final boolean spaceBeforeCommaDefault = false;
     public static final String spaceAfterComma = "spaceAfterComma"; //NOI18N
@@ -158,98 +247,36 @@ public class EditorOptions {
     public static final String spaceAfterTypeCast = "spaceAfterTypeCast"; //NOI18N
     public static final boolean spaceAfterTypeCastDefault = true;
     
-    public static final String alignMultilineArrayInit = "alignMultilineArrayInit"; //NOI18N
-    public static final boolean alignMultilineArrayInitDefault = false;
-    public static final String alignMultilineCallArgs = "alignMultilineCallArgs"; //NOI18N
-    public static final boolean alignMultilineCallArgsDefault = false;
-    public static final String alignMultilineMethodParams = "alignMultilineMethodParams"; //NOI18N
-    public static final boolean alignMultilineMethodParamsDefault = false;
+    //BlankLines
+    public static final String blankLinesBeforeClass = "blankLinesBeforeClass"; //NOI18N
+    public static final int blankLinesBeforeClassDefault = 1;    
+    //public static final String blankLinesAfterClass = "blankLinesAfterClass"; //NOI18N
+    //public static final int blankLinesAfterClassDefault = 0;    
+    public static final String blankLinesAfterClassHeader = "blankLinesAfterClassHeader"; //NOI18N
+    public static final int blankLinesAfterClassHeaderDefault = 0;    
+    //public static final String blankLinesBeforeFields = "blankLinesBeforeFields"; //NOI18N
+    //public static final int blankLinesBeforeFieldsDefault = 0;    
+    //public static final String blankLinesAfterFields = "blankLinesAfterFields"; //NOI18N
+    //public static final int blankLinesAfterFieldsDefault = 0;    
+    public static final String blankLinesBeforeMethods = "blankLinesBeforeMethods"; //NOI18N
+    public static final int blankLinesBeforeMethodsDefault = 1;    
+    //public static final String blankLinesAfterMethods = "blankLinesAfterMethods"; //NOI18N
+    //public static final int blankLinesAfterMethodsDefault = 0;    
 
-    /**
-     * Whether insert extra new-line before the compound bracket or not.
-     * Values: java.lang.Boolean instances
-     * Effect: if (test) {
-     *           function();
-     *         }
-     *           becomes (when set to true)
-     *         if (test)
-     *         {
-     *           function();
-     *         }
-     */
-    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE = "cc-add-newline-before-brace"; //NOI18N
-    public static final String defaultCCFormatNewlineBeforeBrace = BracePlacement.SAME_LINE.name();
-    
-    /**
-     * Whether insert extra new-line before the declaration or not.
-     * Values: java.lang.Boolean instances
-     * Effect: int foo() {
-     *           function();
-     *         }
-     *           becomes (when set to true)
-     *         int foo(test)
-     *         {
-     *           function();
-     *         }
-     */
-    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION = "cc-add-newline-before-brace-declaratin"; //NOI18N
-    public static final String defaultCCFormatNewlineBeforeBraceDeclaration = BracePlacement.NEW_LINE.name();
-
-    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_CLASS = "cc-add-newline-before-brace-class"; //NOI18N
-    public static final String defaultCCFormatNewlineBeforeBraceClass = BracePlacement.NEW_LINE.name();
-
-    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_METHOD = "cc-add-newline-before-brace-method"; //NOI18N
-    public static final String defaultCCFormatNewlineBeforeBraceMethod = BracePlacement.NEW_LINE.name();
-
-    /**
-     * Whether to indent preprocessors positioned at start of line.
-     * Those not starting at column 0 of the line will automatically be indented.
-     * This setting is to prevent C/C++ code that is compiled with compilers that
-     * require the processors to have '#' in column 0.
-     * <B>Note:</B>This will not convert formatted preprocessors back to column 0.
-     */
-    public static final String CC_FORMAT_PREPROCESSOR_AT_LINE_START = "cc-keep-preprocessor-at-line-start"; //NOI18N
-    public static final boolean defaulCCtFormatPreprocessorAtLineStart = false;
-
-    /**
-     * Add one more space to the begining of each line
-     * in the multi-line comment if it's not already there.
-     * Values: java.lang.Boolean
-     * Effect: For example in java:
-     *
-     *        /* this is
-     *        *  multiline comment
-     *        *\/
-     *
-     *            becomes (when set to true)
-     *
-     *         /* this is
-     *          * multiline comment
-     *          *\/
-     */
-    public static final String CC_FORMAT_LEADING_SPACE_IN_COMMENT = "cc-format-leading-space-in-comment"; // NOI18N
-    public static final Boolean defaultCCFormatLeadingSpaceInComment = false;
-
+    //Other
     /** Whether the '*' should be added at the new line * in comment */
-    public static final String CC_FORMAT_LEADING_STAR_IN_COMMENT = "cc-format-leading-star-in-comment"; // NOI18N
-    public static final Boolean defaultCCFormatLeadingStarInComment = true;
+    public static final String addLeadingStarInComment = "addLeadingStarInComment"; // NOI18N
+    public static final Boolean addLeadingStarInCommentDefault = true;
     
-    /**
-     * How many spaces should be added to the statement that continues
-     * on the next line.
-     */
-    public static final String CC_FORMAT_STATEMENT_CONTINUATION_INDENT = "cc-format-statement-continuation-indent"; // NOI18N 
-    public static final int defaultCCFormatStatementContinuationIndent = 8;
-    
-    private static final Preferences preferences = NbPreferences.forModule(EditorOptions.class);
+    private static final String APACHE_PROFILE = "Apache"; // NOI18N
+    private static final String DEFAULT_PROFILE = "Default"; // NOI18N
+    private static final String GNU_PROFILE = "GNU"; // NOI18N
 
-    private static final String DEFAULT_PROFILE = "default"; // NOI18N
-
-    public static CodeStyleProducer codeStyleProducer;
+    public static final String[] PREDEFINED_STYLES = new String[]
+                              {DEFAULT_PROFILE, APACHE_PROFILE, GNU_PROFILE};
 
     private static Map<String,Object> defaults;
-    
-    static Preferences lastValues;
+    private static Map<String,Map<String,Object>> namedDefaults;
     
     static {
         createDefaults();
@@ -257,20 +284,33 @@ public class EditorOptions {
     
     private static void createDefaults() {
         defaults = new HashMap<String,Object>();
-        defaults.put(CC_FORMAT_SPACE_BEFORE_PARENTHESIS,defaultCCFormatSpaceBeforeParenthesis);
-        defaults.put(CC_FORMAT_SPACE_AFTER_COMMA,defaultCCFormatSpaceAfterComma);
-        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE,defaultCCFormatNewlineBeforeBrace);
-        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION,defaultCCFormatNewlineBeforeBraceDeclaration);
-        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_CLASS,defaultCCFormatNewlineBeforeBraceClass);
-        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_METHOD,defaultCCFormatNewlineBeforeBraceMethod);
-        defaults.put(CC_FORMAT_PREPROCESSOR_AT_LINE_START,defaulCCtFormatPreprocessorAtLineStart);
-        defaults.put(CC_FORMAT_LEADING_SPACE_IN_COMMENT,defaultCCFormatLeadingSpaceInComment);
-        defaults.put(CC_FORMAT_LEADING_STAR_IN_COMMENT,defaultCCFormatLeadingStarInComment);
-        defaults.put(CC_FORMAT_STATEMENT_CONTINUATION_INDENT,defaultCCFormatStatementContinuationIndent);
+        // Indents
+        defaults.put(indentSize, indentSizeDefault);
+        defaults.put(statementContinuationIndent,statementContinuationIndentDefault);
+        defaults.put(indentPreprocessorDirectives,indentPreprocessorDirectivesDefault);
+        defaults.put(sharpAtStartLine, sharpAtStartLineDefault);
+        defaults.put(indentNamespace, indentNamespaceDefault);
+        defaults.put(indentCasesFromSwitch, indentCasesFromSwitchDefault);
+        defaults.put(absoluteLabelIndent, absoluteLabelIndentDefault);
 
+        //BracesPlacement
+        defaults.put(newLineBeforeBraceNamespace,newLineBeforeBraceNamespaceDefault);
+        defaults.put(newLineBeforeBraceClass,newLineBeforeBraceClassDefault);
+        defaults.put(newLineBeforeBraceDeclaration,newLineBeforeBraceDeclarationDefault);
+        defaults.put(newLineBeforeBrace,newLineBeforeBraceDefault);
+        //MultilineAlignment
+        defaults.put(alignMultilineArrayInit,alignMultilineArrayInitDefault);
+        defaults.put(alignMultilineCallArgs,alignMultilineCallArgsDefault);
+        defaults.put(alignMultilineMethodParams,alignMultilineMethodParamsDefault);
+        //NewLine
+        defaults.put(newLineCatch,newLineCatchDefault);
+        defaults.put(newLineElse,newLineElseDefault);
+        defaults.put(newLineWhile,newLineWhileDefault);
+        //SpacesBeforeKeywords
         defaults.put(spaceBeforeWhile,spaceBeforeWhileDefault);
         defaults.put(spaceBeforeElse,spaceBeforeElseDefault);
         defaults.put(spaceBeforeCatch,spaceBeforeCatchDefault);
+        //SpacesBeforeParentheses
         defaults.put(spaceBeforeMethodDeclParen,spaceBeforeMethodDeclParenDefault);
         defaults.put(spaceBeforeMethodCallParen,spaceBeforeMethodCallParenDefault);
         defaults.put(spaceBeforeIfParen,spaceBeforeIfParenDefault);
@@ -278,10 +318,12 @@ public class EditorOptions {
         defaults.put(spaceBeforeWhileParen,spaceBeforeWhileParenDefault);
         defaults.put(spaceBeforeCatchParen,spaceBeforeCatchParenDefault);
         defaults.put(spaceBeforeSwitchParen,spaceBeforeSwitchParenDefault);
+        //SpacesAroundOperators
         defaults.put(spaceAroundUnaryOps,spaceAroundUnaryOpsDefault);
         defaults.put(spaceAroundBinaryOps,spaceAroundBinaryOpsDefault);
         defaults.put(spaceAroundTernaryOps,spaceAroundTernaryOpsDefault);
         defaults.put(spaceAroundAssignOps,spaceAroundAssignOpsDefault);
+        //SpacesBeforeLeftBraces
         defaults.put(spaceBeforeClassDeclLeftBrace,spaceBeforeClassDeclLeftBraceDefault);
         defaults.put(spaceBeforeMethodDeclLeftBrace,spaceBeforeMethodDeclLeftBraceDefault);
         defaults.put(spaceBeforeIfLeftBrace,spaceBeforeIfLeftBraceDefault);
@@ -293,6 +335,7 @@ public class EditorOptions {
         defaults.put(spaceBeforeTryLeftBrace,spaceBeforeTryLeftBraceDefault);
         defaults.put(spaceBeforeCatchLeftBrace,spaceBeforeCatchLeftBraceDefault);
         defaults.put(spaceBeforeArrayInitLeftBrace,spaceBeforeArrayInitLeftBraceDefault);
+        //SpacesWithinParentheses
         defaults.put(spaceWithinParens,spaceWithinParensDefault);
         defaults.put(spaceWithinMethodDeclParens,spaceWithinMethodDeclParensDefault);
         defaults.put(spaceWithinMethodCallParens,spaceWithinMethodCallParensDefault);
@@ -303,7 +346,7 @@ public class EditorOptions {
         defaults.put(spaceWithinCatchParens,spaceWithinCatchParensDefault);
         defaults.put(spaceWithinTypeCastParens,spaceWithinTypeCastParensDefault);
         defaults.put(spaceWithinBraces,spaceWithinBracesDefault);
-        defaults.put(spaceWithinArrayInitBrackets,spaceWithinArrayInitBracketsDefault);
+        //SpacesOther
         defaults.put(spaceBeforeComma,spaceBeforeCommaDefault);
         defaults.put(spaceAfterComma,spaceAfterCommaDefault);
         defaults.put(spaceBeforeSemi,spaceBeforeSemiDefault);
@@ -311,41 +354,230 @@ public class EditorOptions {
         defaults.put(spaceBeforeColon,spaceBeforeColonDefault);
         defaults.put(spaceAfterColon,spaceAfterColonDefault);
         defaults.put(spaceAfterTypeCast,spaceAfterTypeCastDefault);
-    
-        defaults.put(alignMultilineArrayInit,alignMultilineArrayInitDefault);
-        defaults.put(alignMultilineCallArgs,alignMultilineCallArgsDefault);
-        defaults.put(alignMultilineMethodParams,alignMultilineMethodParamsDefault);
+        //BlankLines
+        defaults.put(blankLinesBeforeClass,blankLinesBeforeClassDefault);
+        //defaults.put(blankLinesAfterClass,blankLinesAfterClassDefault);
+        defaults.put(blankLinesAfterClassHeader,blankLinesAfterClassHeaderDefault);
+        //defaults.put(blankLinesBeforeFields,blankLinesBeforeFieldsDefault);
+        //defaults.put(blankLinesAfterFields,blankLinesAfterFieldsDefault);
+        defaults.put(blankLinesBeforeMethods,blankLinesBeforeMethodsDefault);
+        //defaults.put(blankLinesAfterMethods,blankLinesAfterMethodsDefault);      
+        //Other
+        defaults.put(addLeadingStarInComment,addLeadingStarInCommentDefault);
+
+        namedDefaults = new HashMap<String,Map<String,Object>>();
+//Apache style
+//This style can be generated with the following arguments to GNU indent:
+//    -i4 -npsl -di0 -br -nce -d0 -cli0 -npcs -nfc1 -nut
+//The Guidelines
+//        * Opening braces are given on the same lines as statements,
+//          or on the following line at the start of a function definition.
+//        * Code inside a block (whether surrounded by braces or not) is indented by four space characters.
+//          Tab characters are not used. Comments are indented to the same level as the surrounding code.
+//        * Closing braces are always on a separate line from surrounding code,
+//          and are indented to line up with the start of the text on the line containing the corresponding
+//          opening brace.
+//        * Functions are declared with ANSI-style arguments.
+//        * There is no space between the function name and the opening bracket of the arguments to the function.
+//          There is a single space following commas in argument lists and the semi-colons in for statements.
+//        * Inside a switch() statement, the case keywords are indented to the same level as the switch line.
+//        * Operators in expressions should be surrounded by a single space before and after,
+//          except for unary increment (++), decrement (--), and negation (!) operators.
+//        * There is no whitespace between a cast and the item modified (e.g., "(int)j" and not "(int) j").
+//        * If a cast is to a pointer type, there is a space between the type and
+//          the * character (e.g., "(char *)i" instead of "(char*)i")
+        Map<String,Object> apache = new HashMap<String,Object>();
+        namedDefaults.put(APACHE_PROFILE, apache);
+        apache.put(indentCasesFromSwitch, false);
+        apache.put(alignMultilineCallArgs, true);
+        apache.put(alignMultilineMethodParams, true);
+        apache.put(newLineCatch, true);
+        apache.put(newLineElse, true);
+        apache.put(newLineWhile, true);
+// I see that GNU style differ from apache only in half indent
+// Is it true?
+        Map<String,Object> gnu = new HashMap<String,Object>();
+        namedDefaults.put(GNU_PROFILE, gnu);
+        gnu.put(indentCasesFromSwitch, false);
+        gnu.put(alignMultilineCallArgs, true);
+        gnu.put(alignMultilineMethodParams, true);
+        gnu.put(newLineCatch, true);
+        gnu.put(newLineElse, true);
+        gnu.put(newLineWhile, true);
+        gnu.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        gnu.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        gnu.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        gnu.put(newLineBeforeBrace, BracePlacement.NEW_LINE_HALF_INDENTED.name());
     }
 
-    public static Object getDefault(String id){
+    public static Object getDefault(CodeStyle.Language language, String styleId, String id){
+        Map<String,Object> map = namedDefaults.get(styleId);
+        if (map != null){
+            Object res = map.get(id);
+            if (res != null){
+                return res;
+            }
+        }
         return defaults.get(id);
     }
     
-    public static String getCurrentProfileId() {
-        return DEFAULT_PROFILE;
-    }
-
-    public static Object getLastValue(String optionID) {
-        Preferences p = lastValues == null ? getPreferences(getCurrentProfileId()) : lastValues;
-        Object def = getDefault(optionID);
-        if (def instanceof Integer) {
-            return p.getInt(optionID, (Integer)def);
-        } else if (def instanceof Boolean) {
-            return p.getBoolean(optionID, (Boolean)def);
+    public static String getCurrentProfileId(CodeStyle.Language language) {
+        switch(language){
+            case C:
+                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("C_Style", DEFAULT_PROFILE); // NOI18N
+            case CPP:
+            default:
+                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("CPP_Style", DEFAULT_PROFILE); // NOI18N
         }
-        return p.get(optionID, def.toString());
     }
 
-    public static Preferences getPreferences(String profileId) {
-        return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").node(profileId);
+    public static void setCurrentProfileId(CodeStyle.Language language, String style) {
+        switch(language){
+            case C:
+                NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put("C_Style", style); // NOI18N
+                break;
+            case CPP:
+            default:
+                NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put("CPP_Style", style); // NOI18N
+                break;
+        }
     }
 
-    public static CodeStyle createCodeStyle(Preferences p) {
-        CodeStyle.getDefault(null);
-        return codeStyleProducer.create(p);
+    private static String getString(String key) {
+        return NbBundle.getMessage(EditorOptions.class, key);
     }
 
-    public static interface CodeStyleProducer {
-        public CodeStyle create( Preferences preferences );
+    public static String getStyleDisplayName(CodeStyle.Language language, String style) {
+        for (String name : EditorOptions.PREDEFINED_STYLES) {
+            if (style.equals(name)) {
+                return getString(style + "_Name"); // NOI18N
+            }
+        }
+        switch(language){
+            case C:
+                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get(style+"_Style_Name", style); // NOI18N
+            case CPP:
+            default:
+                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get(style+"_Style_Name", style); // NOI18N
+        }
+    }
+    
+    public static Preferences getPreferences(CodeStyle.Language language, String profileId) {
+        switch(language){
+            case C:
+                return NbPreferences.forModule(CodeStyle.class).node("C_CodeStyles").node(profileId); // NOI18N
+            case CPP:
+            default:
+                return NbPreferences.forModule(CodeStyle.class).node("CPP_CodeStyles").node(profileId); // NOI18N
+        }
+    }
+
+    public static List<String> getAllStyles(CodeStyle.Language language) {
+        String styles = null;
+        StringBuilder def = new StringBuilder();
+        for(String s: PREDEFINED_STYLES){
+            if (def.length() > 0){
+                def.append(',');
+            }
+            def.append(s);
+        }
+        switch(language){
+            case C:
+                styles = NbPreferences.forModule(CodeStyle.class).node("C_CodeStyles").get("List_Of_Styles", def.toString()); // NOI18N
+                break;
+            case CPP:
+            default:
+                styles = NbPreferences.forModule(CodeStyle.class).node("CPP_CodeStyles").get("List_Of_Styles", def.toString()); // NOI18N
+                break;
+        }
+        List<String> res = new ArrayList<String>();
+        StringTokenizer st = new StringTokenizer(styles,","); // NOI18N
+        while(st.hasMoreTokens()) {
+            res.add(st.nextToken());
+        }
+        return res;
+    }
+
+    public static void setAllStyles(CodeStyle.Language language, String list) {
+        switch(language){
+            case C:
+                NbPreferences.forModule(CodeStyle.class).node("C_CodeStyles").put("List_Of_Styles", list); // NOI18N
+                break;
+            case CPP:
+            default:
+                NbPreferences.forModule(CodeStyle.class).node("CPP_CodeStyles").put("List_Of_Styles", list); // NOI18N
+                break;
+        }
+    }
+
+//    public static int getGlobalIndentSize(CodeStyle.Language language) {
+//        Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter"); // NOI18N
+//        if (f != null) {
+//            return f.getShiftWidth();
+//        }
+//        return 4;
+//    }
+
+    public static int getGlobalTabSize(CodeStyle.Language language) {
+        Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter"); // NOI18N
+        if (f != null) {
+            return f.getTabSize();
+        }
+        return 4;
+    }
+    
+    private static Class<? extends EditorKit> cKitClass;
+    private static Class<? extends EditorKit> cppKitClass;
+    private static Class<? extends EditorKit> getKitClass(CodeStyle.Language language) {
+        if (language == CodeStyle.Language.C) {
+            if (cKitClass == null) {
+                EditorKit kit = MimeLookup.getLookup(MimePath.get("text/x-c")).lookup(EditorKit.class); //NOI18N
+                cKitClass = kit != null ? kit.getClass() : EditorKit.class;
+            }
+            return cKitClass;
+        } else {
+            if (cppKitClass == null) {
+                EditorKit kit = MimeLookup.getLookup(MimePath.get("text/x-c++")).lookup(EditorKit.class); //NOI18N
+                cppKitClass = kit != null ? kit.getClass() : EditorKit.class;
+            }
+            return cppKitClass;
+        }
+    }
+    
+
+    public static CodeStyle createCodeStyle(CodeStyle.Language language, Preferences p) {
+        CodeStyle.getDefault(language);
+        return codeStyleFactory.create(language, p);
+    }
+
+    public static Preferences getPreferences(CodeStyle codeStyle){
+        return codeStyleFactory.getPreferences(codeStyle);
+    }
+
+    public static void resetToDefault(CodeStyle codeStyle){
+        Preferences preferences = getPreferences(codeStyle);
+        for(Map.Entry<String,Object> entry : defaults.entrySet()){
+            if (entry.getValue() instanceof Boolean){
+                preferences.putBoolean(entry.getKey(), (Boolean)entry.getValue());
+            } else if (entry.getValue() instanceof Integer){
+                preferences.putInt(entry.getKey(), (Integer)entry.getValue());
+            } else {
+                preferences.put(entry.getKey(), entry.getValue().toString());
+            }
+        }
+    }
+
+    public static Set<String> keys(){
+        return defaults.keySet();
+    }
+
+    public static void setPreferences(CodeStyle codeStyle, Preferences preferences){
+        codeStyleFactory.setPreferences(codeStyle, preferences);
+    }
+    
+    public static interface CodeStyleFactory {
+        CodeStyle create(CodeStyle.Language language, Preferences preferences);
+        Preferences getPreferences(CodeStyle codeStyle);
+        void setPreferences(CodeStyle codeStyle, Preferences preferences);
     }
 }

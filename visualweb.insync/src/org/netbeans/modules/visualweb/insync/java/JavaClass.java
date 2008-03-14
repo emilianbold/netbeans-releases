@@ -48,6 +48,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
@@ -800,6 +801,18 @@ public class JavaClass {
             return null;
         }
 
+        @Override
+        public Tree visitMemberSelect(MemberSelectTree tree, Void v) {
+            if (useStatus != UsageStatus.USED) {
+                UsageStatus status = getUseStatus(getCurrentPath());
+                if(status != useStatus && status != UsageStatus.NOT_USED) {
+                    useStatus = status;
+                }
+                return super.visitMemberSelect(tree, v);
+            }
+            return null;
+        }
+        
         @Override
         public Tree visitMethod(MethodTree tree, Void v) {
             if (useStatus != UsageStatus.USED && !canSkip(getCurrentPath())) {

@@ -211,7 +211,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         if (editorUI == null) // no long er active
             return;
 
-        JTextComponent component = editorUI.getComponent();
+        final JTextComponent component = editorUI.getComponent();
         if (evt == null || component == null) return;
 
         String settingName = evt.getSettingName();
@@ -219,23 +219,16 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             renderingHints = null;
         }
         
-        Class kitClass = evt.getKitClass();        
-        if (Utilities.getKitClass(component) != kitClass){
-            Rectangle rect = component.getVisibleRect();
-            if (rect!=null && rect.width == 0){
-                if (SwingUtilities.isEventDispatchThread()) {
-                    resize();
-                } else {
-                    SwingUtilities.invokeLater(
-                        new Runnable() {
-                            public void run() {
-                                resize();
-                            }
-                        }
-                    );
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                public void run() {
+                    Rectangle rect = component.getVisibleRect();
+                    if (rect != null) {
+                        resize();
+                    }
                 }
             }
-        }
+        );
     }
     
     
@@ -356,7 +349,12 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         int lineCnt;
         try {
             if (doc != null) {
-                lineCnt = Utilities.getLineOffset(doc, doc.getLength()) + 1;
+                doc.readLock();
+                try {
+                    lineCnt = Utilities.getLineOffset(doc, doc.getLength()) + 1;
+                } finally {
+                    doc.readUnlock();
+                }
             } else { // deactivated
                 lineCnt = 1;
             }
@@ -597,8 +595,14 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             lineCnt = 1;
         }
 
-        repaint();
-        checkSize();
+        // This method is called from the same thread as doc.insertString/remove() is done.
+        // Ensure the following runs in EDT.
+        Utilities.runInEventDispatchThread(new Runnable() {
+            public void run() {
+                repaint();
+                checkSize();
+            }
+        });
     }
 
     /** Check whether it is not necessary to resize the gutter */

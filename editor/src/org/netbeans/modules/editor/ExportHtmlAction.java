@@ -64,6 +64,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
+import org.openide.awt.Mnemonics;
 
 public class ExportHtmlAction extends CookieAction {
 
@@ -291,8 +292,8 @@ public class ExportHtmlAction extends CookieAction {
             getAccessibleContext().setAccessibleName(NbBundle.getMessage (ExportHtmlAction.class, "ACSN_ExportToHTML")); // NOI18N
             getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ExportHtmlAction.class, "ACSD_ExportToHTML")); // NOI18N
             
-            JLabel label = new JLabel (NbBundle.getMessage (ExportHtmlAction.class, "CTL_OutputDir"));
-            label.setDisplayedMnemonic (NbBundle.getMessage (ExportHtmlAction.class, "MNE_OutputDir").charAt(0));
+            JLabel label = new JLabel ();
+            Mnemonics.setLocalizedText(label, NbBundle.getMessage (ExportHtmlAction.class, "CTL_OutputDir"));
             label.getAccessibleContext().setAccessibleName(NbBundle.getMessage (ExportHtmlAction.class, "AN_OutputDir"));
             label.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ExportHtmlAction.class, "AD_OutputDir"));
             GridBagConstraints c = new GridBagConstraints ();
@@ -318,8 +319,8 @@ public class ExportHtmlAction extends CookieAction {
             ((GridBagLayout)this.getLayout()).setConstraints (fileName, c);
             this.add (this.fileName);
             label.setLabelFor (this.fileName);
-            JButton button = new JButton (NbBundle.getMessage(ExportHtmlAction.class,"CTL_Select"));
-            button.setMnemonic (NbBundle.getMessage (ExportHtmlAction.class, "MNE_Select").charAt(0));
+            JButton button = new JButton ();
+            Mnemonics.setLocalizedText(button, NbBundle.getMessage(ExportHtmlAction.class,"CTL_Select"));
             button.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExportHtmlAction.class,"AN_Select"));
             button.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(ExportHtmlAction.class,"AD_Select"));
             button.addActionListener (new ActionListener () {
@@ -336,8 +337,8 @@ public class ExportHtmlAction extends CookieAction {
             c.insets = new Insets (12,6,6,12);
             ((GridBagLayout)this.getLayout()).setConstraints (button,c);
             this.add (button);
-            selection = new JCheckBox (NbBundle.getMessage(ExportHtmlAction.class, "CTL_Selection"));
-            selection.setMnemonic(NbBundle.getMessage(ExportHtmlAction.class,"MNE_Selection").charAt(0));
+            selection = new JCheckBox ();
+            Mnemonics.setLocalizedText(selection, NbBundle.getMessage(ExportHtmlAction.class, "CTL_Selection"));
             selection.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExportHtmlAction.class,"AN_Selection"));
             selection.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportHtmlAction.class,"AD_Selection"));
             c = new GridBagConstraints ();
@@ -351,8 +352,8 @@ public class ExportHtmlAction extends CookieAction {
             c.weightx = 1.0;
             ((GridBagLayout)this.getLayout()).setConstraints (this.selection,c);
             this.add (this.selection);
-            showLineNumbers = new JCheckBox (NbBundle.getMessage(ExportHtmlAction.class,"CTL_ShowLineNumbers"));
-            showLineNumbers.setMnemonic(NbBundle.getMessage(ExportHtmlAction.class,"MNE_ShowLineNumbers").charAt(0));
+            showLineNumbers = new JCheckBox ();
+            Mnemonics.setLocalizedText(showLineNumbers, NbBundle.getMessage(ExportHtmlAction.class,"CTL_ShowLineNumbers"));
             showLineNumbers.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExportHtmlAction.class,"AN_ShowLineNumbers"));
             showLineNumbers.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportHtmlAction.class,"AD_ShowLineNumbers"));
             c = new GridBagConstraints();
@@ -366,8 +367,8 @@ public class ExportHtmlAction extends CookieAction {
             c.weightx = 1.0;
             ((GridBagLayout)this.getLayout()).setConstraints (this.showLineNumbers,c);
             this.add (this.showLineNumbers);
-            openHtml = new JCheckBox (NbBundle.getMessage(ExportHtmlAction.class,"CTL_OpenHTML"));
-            openHtml.setMnemonic(NbBundle.getMessage(ExportHtmlAction.class,"MNE_OpenHTML").charAt(0));
+            openHtml = new JCheckBox ();
+            Mnemonics.setLocalizedText(openHtml, NbBundle.getMessage(ExportHtmlAction.class,"CTL_OpenHTML"));
             openHtml.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExportHtmlAction.class,"AN_OpenHTML"));
             openHtml.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportHtmlAction.class,"AD_OpenHTML"));
             c = new GridBagConstraints ();
@@ -386,6 +387,7 @@ public class ExportHtmlAction extends CookieAction {
 
         private void selectFile () {
             JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle(NbBundle.getMessage(ExportHtmlAction.class, "CTL_Browse_Dialog_Title")); // NOI18N
             chooser.setFileFilter (new javax.swing.filechooser.FileFilter () {
                 public boolean accept(File f) {
                     if (f.isFile() && f.getName().endsWith (HTML_EXT) || f.isDirectory()) {
@@ -396,11 +398,11 @@ public class ExportHtmlAction extends CookieAction {
                 }
 
                 public String getDescription() {
-                    return NbBundle.getMessage (ExportHtmlAction.class, "TXT_HTMLFileType");
+                    return NbBundle.getMessage (ExportHtmlAction.class, "TXT_HTMLFileType"); // NOI18N
                 }
             });
             chooser.setSelectedFile (new File (this.fileName.getText()));
-            if (chooser.showOpenDialog (dlg) == JFileChooser.APPROVE_OPTION) {
+            if (chooser.showDialog (dlg, NbBundle.getMessage(ExportHtmlAction.class, "CTL_Approve_Label")) == JFileChooser.APPROVE_OPTION) { // NOI18N
                 this.fileName.setText (chooser.getSelectedFile().getAbsolutePath());
             }
         }

@@ -54,6 +54,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.*;
 
+import org.netbeans.modules.j2ee.websphere6.WSVersion;
 import org.openide.*;
 import org.openide.util.*;
 
@@ -151,9 +152,20 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
         // check for the validity of the entered installation directory
         // if it's invalid, return false
         if (!isValidServerRoot(locationField.getText())) {
+            WSVersion version = instantiatingIterator.getVersion();
+            String strVersion = ""; // NOI18N
+            switch (version) {
+                case VERSION_60:
+                    strVersion = "V6.0"; // NOI18N
+                    break;
+                case VERSION_61:
+                    strVersion = "V6.1"; // NOI18N
+                    break;
+            }
+            
             wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(ServerLocationPanel.class,
-                    "ERR_INVALID_SERVER_ROOT"));                       // NOI18N
+                    "ERR_INVALID_SERVER_ROOT", strVersion)); 
             return false;
         }
         
@@ -298,7 +310,8 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
         
         // wait for the user to choose the directory and if he clicked the OK
         // button store the selected directory in the server location field
-        if (fileChooser.showOpenDialog(this) == fileChooser.APPROVE_OPTION) {
+        if (fileChooser.showOpenDialog(SwingUtilities.getWindowAncestor(this))
+                == JFileChooser.APPROVE_OPTION) {
             locationField.setText(fileChooser.getSelectedFile().getPath());
             fireChangeEvent();
         }

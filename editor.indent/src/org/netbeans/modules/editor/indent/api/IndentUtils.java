@@ -165,6 +165,7 @@ public final class IndentUtils {
                         tabSize = tabSize(doc);
                     // Round to next tab stop
                     indent = (indent + tabSize) / tabSize * tabSize;
+                    break;
 
                 default:
                     if (Character.isWhitespace(ch))

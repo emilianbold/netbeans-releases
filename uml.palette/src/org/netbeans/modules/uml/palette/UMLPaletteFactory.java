@@ -72,7 +72,10 @@ public final class UMLPaletteFactory {
     }
     
     public static PaletteController getPalette(String folderName) {
-        //if (palette == null || (folderName != null && !folderName.equals(paletteFolder)) ) {
+        if (folderName == null) 
+        {
+            return null;
+        }
         String paletteFolder = folderName;
         
         //get the file object from folder

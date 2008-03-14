@@ -1,0 +1,9 @@
+|>CLASS:Draggable<|.prototype = {
+  |>METHOD:scroll<|: function() {
+    var |>UNUSED:wind<|, |>UNUSED:window2<|, |>UNUSED:y<| = 1, |>UNUSED:win3<| = 50;
+    var |>UNUSED:windo<|
+    if(this.scroll == |>GLOBAL:window<|) {
+    }
+  }
+}  
+

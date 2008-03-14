@@ -42,14 +42,10 @@
 package org.netbeans.modules.cnd.settings;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -70,7 +66,7 @@ public class CppSettings extends SharedClassObject {
     static final long serialVersionUID = -2942467713237077336L;
 
     public static final int DEFAULT_PARSING_DELAY = 2000;
-    private static final boolean DEFAULT_FORTRAN_ENABLED = false;   // disable Fortran by default
+    private static final boolean DEFAULT_FORTRAN_ENABLED = true;   // disable Fortran by default
 
     // Properties
     public static final String PROP_PARSING_DELAY = "parsingDelay"; //NOI18N
@@ -95,7 +91,7 @@ public class CppSettings extends SharedClassObject {
     /** The resource bundle for the form editor */
     public static ResourceBundle bundle;
     
-    private String path = null;
+//    private String path = null;
 
     private static CppSettings cppSettings = null;
 
@@ -117,25 +113,25 @@ public class CppSettings extends SharedClassObject {
         return cppSettings;
     }
     
-    /**
-     * Return the local version of $PATH. This masquerades as a property but isn't!
-     * The reason it isn't is that we don't want persistance beyond the existing IDE
-     * session.
-     *
-     * @returns Current value of the path (as a String)
-     */
-    public String getPath() {
-        if (path == null) {
-            path = Path.getPathAsString();
-        }
-        return path;
-    }
-    
-    public void setPath(String p) {
-        if (!p.equals(path) && p.length() > 0) {
-            path = p;
-        }
-    }
+//    /**
+//     * Return the local version of $PATH. This masquerades as a property but isn't!
+//     * The reason it isn't is that we don't want persistance beyond the existing IDE
+//     * session.
+//     *
+//     * @returns Current value of the path (as a String)
+//     */
+//    public String getPath() {
+//        if (path == null) {
+//            path = Path.getPathAsString();
+//        }
+//        return path;
+//    }
+//    
+//    public void setPath(String p) {
+//        if (!p.equals(path) && p.length() > 0) {
+//            path = p;
+//        }
+//    }
     
     public String getCompilerSetName() {
         //String name = (String) getProperty(PROP_COMPILER_SET_NAME);
@@ -156,97 +152,97 @@ public class CppSettings extends SharedClassObject {
         }
     }
     
-    public String getCompilerSetDirectories() {
-        //return (String) getProperty(PROP_COMPILER_SET_DIRECTORIES);
-        return getPreferences().get(PROP_COMPILER_SET_DIRECTORIES, null);
-    }
-    
-    public void setCompilerSetDirectories(String name) {
-        String n = getCompilerSetDirectories();
-        if (n == null || !n.equals(name)) {
-            //putProperty(PROP_COMPILER_SET_DIRECTORIES, name, true);
-            getPreferences().put(PROP_COMPILER_SET_DIRECTORIES, name);
-            firePropertyChange(PROP_COMPILER_SET_DIRECTORIES, n, name);
-        }
-    }
-    
-    public String getMakeName() {
-        //String name = (String) getProperty(PROP_MAKE_NAME);
-        String name = getPreferences().get(PROP_MAKE_NAME, null);
-        if (name == null) {
-            return "make"; // NOI18N
-        } else {
-            return name;
-        }
-    }
-    
-    public void setMakeName(String name) {
-        String n = getMakeName();
-        if (!n.equals(name)) {
-            //putProperty(PROP_MAKE_NAME, name, true);
-            getPreferences().put(PROP_MAKE_NAME, name);
-            firePropertyChange(PROP_MAKE_NAME, n, name);
-        }
-    }
-    
-    /**
-     * Get the current make path. If this isnt' set but make name is, do a path search and
-     * set the make path too.
-     *
-     * @returns Path to the make program
-     */
-    public String getMakePath() {
-        String p = getPreferences().get(PROP_MAKE_PATH, null);
-        if (p == null) {
-            //String name = (String) getProperty(PROP_MAKE_NAME);
-            String name = getPreferences().get(PROP_MAKE_NAME, null);
-            if (name != null) {
-                StringTokenizer tok = new StringTokenizer(getPath(), File.pathSeparator);
-                while (tok.hasMoreTokens()) {
-                    String d = tok.nextToken();
-                    File file = new File(d, name);
-                    if (file.exists()) {
-                        p = file.getAbsolutePath();
-                        //putProperty(PROP_MAKE_PATH, p, true); 
-                        getPreferences().put(PROP_MAKE_PATH, p);
-                        firePropertyChange(PROP_MAKE_PATH, null, p);
-                        return p;
-                    }
-                }
-            }
-            if (Utilities.isWindows()) {
-                return "C:\\Cygwin\\bin\\make.exe"; // NOI18N
-            } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-                return "/usr/ccs/bin/make"; // NOI18N
-            } else { // pick /usr/bin/make as a default value
-                return "/usr/bin/make"; // NOI18N
-            }
-        } else {
-            return p;
-        }
-    }
-    
-    public void setMakePath(String path) {
-        String p = getMakePath();
-        if (!p.equals(path)) {
-            //putProperty(PROP_MAKE_PATH, path, true);
-            getPreferences().put(PROP_MAKE_PATH, path);
-            firePropertyChange(PROP_MAKE_PATH, p, path);
-        }
-    }
-    
-    /*
-     * Returns full path if no spaces otherwise return just base name.
-     * See IZ 116463 for details
-     */
-    public String getMakeCommand() {
-        String makeCommand = getMakePath();
-        if (makeCommand.indexOf(' ') >= 0) {
-            // Strip path
-            makeCommand = IpeUtils.getBaseName(makeCommand);
-        }
-        return makeCommand;
-    }
+//    public String getCompilerSetDirectories() {
+//        //return (String) getProperty(PROP_COMPILER_SET_DIRECTORIES);
+//        return getPreferences().get(PROP_COMPILER_SET_DIRECTORIES, null);
+//    }
+//    
+//    public void setCompilerSetDirectories(String name) {
+//        String n = getCompilerSetDirectories();
+//        if (n == null || !n.equals(name)) {
+//            //putProperty(PROP_COMPILER_SET_DIRECTORIES, name, true);
+//            getPreferences().put(PROP_COMPILER_SET_DIRECTORIES, name);
+//            firePropertyChange(PROP_COMPILER_SET_DIRECTORIES, n, name);
+//        }
+//    }
+//    
+//    public String getMakeName() {
+//        //String name = (String) getProperty(PROP_MAKE_NAME);
+//        String name = getPreferences().get(PROP_MAKE_NAME, null);
+//        if (name == null) {
+//            return "make"; // NOI18N
+//        } else {
+//            return name;
+//        }
+//    }
+//    
+//    public void setMakeName(String name) {
+//        String n = getMakeName();
+//        if (!n.equals(name)) {
+//            //putProperty(PROP_MAKE_NAME, name, true);
+//            getPreferences().put(PROP_MAKE_NAME, name);
+//            firePropertyChange(PROP_MAKE_NAME, n, name);
+//        }
+//    }
+//    
+//    /**
+//     * Get the current make path. If this isnt' set but make name is, do a path search and
+//     * set the make path too.
+//     *
+//     * @returns Path to the make program
+//     */
+//    public String getMakePath() {
+//        String p = getPreferences().get(PROP_MAKE_PATH, null);
+//        if (p == null) {
+//            //String name = (String) getProperty(PROP_MAKE_NAME);
+//            String name = getPreferences().get(PROP_MAKE_NAME, null);
+//            if (name != null) {
+//                StringTokenizer tok = new StringTokenizer(Path.getPathAsString(), File.pathSeparator);
+//                while (tok.hasMoreTokens()) {
+//                    String d = tok.nextToken();
+//                    File file = new File(d, name);
+//                    if (file.exists()) {
+//                        p = file.getAbsolutePath();
+//                        //putProperty(PROP_MAKE_PATH, p, true); 
+//                        getPreferences().put(PROP_MAKE_PATH, p);
+//                        firePropertyChange(PROP_MAKE_PATH, null, p);
+//                        return p;
+//                    }
+//                }
+//            }
+//            if (Utilities.isWindows()) {
+//                return "C:\\Cygwin\\bin\\make.exe"; // NOI18N
+//            } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+//                return "/usr/ccs/bin/make"; // NOI18N
+//            } else { // pick /usr/bin/make as a default value
+//                return "/usr/bin/make"; // NOI18N
+//            }
+//        } else {
+//            return p;
+//        }
+//    }
+//    
+//    public void setMakePath(String path) {
+//        String p = getMakePath();
+//        if (!p.equals(path)) {
+//            //putProperty(PROP_MAKE_PATH, path, true);
+//            getPreferences().put(PROP_MAKE_PATH, path);
+//            firePropertyChange(PROP_MAKE_PATH, p, path);
+//        }
+//    }
+//    
+//    /*
+//     * Returns full path if no spaces otherwise return just base name.
+//     * See IZ 116463 for details
+//     */
+//    public String getMakeCommand() {
+//        String makeCommand = getMakePath();
+//        if (makeCommand.indexOf(' ') >= 0) {
+//            // Strip path
+//            makeCommand = IpeUtils.getBaseName(makeCommand);
+//        }
+//        return makeCommand;
+//    }
     
     public String getGdbName() {
         //String name = (String) getProperty(PROP_GDB_NAME);
@@ -290,62 +286,62 @@ public class CppSettings extends SharedClassObject {
         }
     }
     
-    public String getCCompilerName() {
-        //String name = (String) getProperty(PROP_C_COMPILER_NAME);
-        String name = getPreferences().get(PROP_C_COMPILER_NAME, null);
-        if (name == null) {
-            return getCompilerSetName().startsWith("Sun") ? "cc" : "gcc"; // NOI18N
-        } else {
-            return name;
-        }
-    }
-    
-    public void setCCompilerName(String name) {
-        String n = getCCompilerName();
-        if (!n.equals(name)) {
-            //putProperty(PROP_C_COMPILER_NAME, name, true);
-            getPreferences().put(PROP_C_COMPILER_NAME, name);
-            firePropertyChange(PROP_C_COMPILER_NAME, n, name);
-        }
-    }
-    
-    public String getCppCompilerName() {
-        //String name = (String) getProperty(PROP_CPP_COMPILER_NAME);
-        String name = getPreferences().get(PROP_CPP_COMPILER_NAME, null);
-        if (name == null) {
-            return getCompilerSetName().startsWith("Sun") ? "CC" : "g++"; // NOI18N
-        } else {
-            return name;
-        }
-    }
-    
-    public void setCppCompilerName(String name) {
-        String n = getCppCompilerName();
-        if (!n.equals(name)) {
-            //putProperty(PROP_CPP_COMPILER_NAME, name, true);
-            getPreferences().put(PROP_CPP_COMPILER_NAME, name);
-            firePropertyChange(PROP_CPP_COMPILER_NAME, n, name);
-        }
-    }
-    
-    public String getFortranCompilerName() {
-        //String name = (String) getProperty(PROP_FORTRAN_COMPILER_NAME);
-        String name = getPreferences().get(PROP_FORTRAN_COMPILER_NAME, null);
-        if (name == null) {
-            return getCompilerSetName().startsWith("Sun") ? "f90" : "g77"; // NOI18N
-        } else {
-            return name;
-        }
-    }
-    
-    public void setFortranCompilerName(String name) {
-        String n = getFortranCompilerName();
-        if (!n.equals(name)) {
-            //putProperty(PROP_FORTRAN_COMPILER_NAME, name, true);
-            getPreferences().put(PROP_FORTRAN_COMPILER_NAME, name);
-            firePropertyChange(PROP_FORTRAN_COMPILER_NAME, n, name);
-        }
-    }
+//    public String getCCompilerName() {
+//        //String name = (String) getProperty(PROP_C_COMPILER_NAME);
+//        String name = getPreferences().get(PROP_C_COMPILER_NAME, null);
+//        if (name == null) {
+//            return getCompilerSetName().startsWith("Sun") ? "cc" : "gcc"; // NOI18N
+//        } else {
+//            return name;
+//        }
+//    }
+//    
+//    public void setCCompilerName(String name) {
+//        String n = getCCompilerName();
+//        if (!n.equals(name)) {
+//            //putProperty(PROP_C_COMPILER_NAME, name, true);
+//            getPreferences().put(PROP_C_COMPILER_NAME, name);
+//            firePropertyChange(PROP_C_COMPILER_NAME, n, name);
+//        }
+//    }
+//    
+//    public String getCppCompilerName() {
+//        //String name = (String) getProperty(PROP_CPP_COMPILER_NAME);
+//        String name = getPreferences().get(PROP_CPP_COMPILER_NAME, null);
+//        if (name == null) {
+//            return getCompilerSetName().startsWith("Sun") ? "CC" : "g++"; // NOI18N
+//        } else {
+//            return name;
+//        }
+//    }
+//    
+//    public void setCppCompilerName(String name) {
+//        String n = getCppCompilerName();
+//        if (!n.equals(name)) {
+//            //putProperty(PROP_CPP_COMPILER_NAME, name, true);
+//            getPreferences().put(PROP_CPP_COMPILER_NAME, name);
+//            firePropertyChange(PROP_CPP_COMPILER_NAME, n, name);
+//        }
+//    }
+//    
+//    public String getFortranCompilerName() {
+//        //String name = (String) getProperty(PROP_FORTRAN_COMPILER_NAME);
+//        String name = getPreferences().get(PROP_FORTRAN_COMPILER_NAME, null);
+//        if (name == null) {
+//            return getCompilerSetName().startsWith("Sun") ? "f90" : "g77"; // NOI18N
+//        } else {
+//            return name;
+//        }
+//    }
+//    
+//    public void setFortranCompilerName(String name) {
+//        String n = getFortranCompilerName();
+//        if (!n.equals(name)) {
+//            //putProperty(PROP_FORTRAN_COMPILER_NAME, name, true);
+//            getPreferences().put(PROP_FORTRAN_COMPILER_NAME, name);
+//            firePropertyChange(PROP_FORTRAN_COMPILER_NAME, n, name);
+//        }
+//    }
 
     /**
      * Gets the delay time for the start of the parsing.
@@ -484,44 +480,44 @@ public class CppSettings extends SharedClassObject {
         firePropertyChange(PROP_GDB_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
     }
     
-    public boolean isCRequired() {
-        //Boolean b = (Boolean) getProperty(PROP_C_REQUIRED);
-        //return b == null ? true : b.booleanValue();
-        return getPreferences().getBoolean(PROP_C_REQUIRED, true);
-    }
-    
-    public void setCRequired(boolean enabled) {
-        //putProperty(PROP_C_REQUIRED, Boolean.valueOf(enabled));
-        boolean oldValue = isCRequired();
-        getPreferences().putBoolean(PROP_C_REQUIRED, enabled);
-        firePropertyChange(PROP_C_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
-    }
-    
-    public boolean isCppRequired() {
-        //Boolean b = (Boolean) getProperty(PROP_CPP_REQUIRED);
-        //return b == null ? true : b.booleanValue();
-        return getPreferences().getBoolean(PROP_CPP_REQUIRED, true);
-    }
-    
-    public void setCppRequired(boolean enabled) {
-        //putProperty(PROP_CPP_REQUIRED, Boolean.valueOf(enabled));
-        boolean oldValue = isCppRequired();
-        getPreferences().putBoolean(PROP_CPP_REQUIRED, enabled);
-        firePropertyChange(PROP_CPP_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
-    }
-    
-    public boolean isFortranRequired() {
-        //Boolean b = (Boolean) getProperty(PROP_FORTRAN_REQUIRED);
-        //return b == null ? false : b.booleanValue();
-        return getPreferences().getBoolean(PROP_FORTRAN_REQUIRED, false);
-    }
-    
-    public void setFortranRequired(boolean enabled) {
-        //putProperty(PROP_FORTRAN_REQUIRED, Boolean.valueOf(enabled));
-        boolean oldValue = isFortranRequired();
-        getPreferences().putBoolean(PROP_FORTRAN_REQUIRED, enabled);
-        firePropertyChange(PROP_FORTRAN_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
-    }
+//    public boolean isCRequired() {
+//        //Boolean b = (Boolean) getProperty(PROP_C_REQUIRED);
+//        //return b == null ? true : b.booleanValue();
+//        return getPreferences().getBoolean(PROP_C_REQUIRED, true);
+//    }
+//    
+//    public void setCRequired(boolean enabled) {
+//        //putProperty(PROP_C_REQUIRED, Boolean.valueOf(enabled));
+//        boolean oldValue = isCRequired();
+//        getPreferences().putBoolean(PROP_C_REQUIRED, enabled);
+//        firePropertyChange(PROP_C_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
+//    }
+//    
+//    public boolean isCppRequired() {
+//        //Boolean b = (Boolean) getProperty(PROP_CPP_REQUIRED);
+//        //return b == null ? true : b.booleanValue();
+//        return getPreferences().getBoolean(PROP_CPP_REQUIRED, true);
+//    }
+//    
+//    public void setCppRequired(boolean enabled) {
+//        //putProperty(PROP_CPP_REQUIRED, Boolean.valueOf(enabled));
+//        boolean oldValue = isCppRequired();
+//        getPreferences().putBoolean(PROP_CPP_REQUIRED, enabled);
+//        firePropertyChange(PROP_CPP_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
+//    }
+//    
+//    public boolean isFortranRequired() {
+//        //Boolean b = (Boolean) getProperty(PROP_FORTRAN_REQUIRED);
+//        //return b == null ? false : b.booleanValue();
+//        return getPreferences().getBoolean(PROP_FORTRAN_REQUIRED, false);
+//    }
+//    
+//    public void setFortranRequired(boolean enabled) {
+//        //putProperty(PROP_FORTRAN_REQUIRED, Boolean.valueOf(enabled));
+//        boolean oldValue = isFortranRequired();
+//        getPreferences().putBoolean(PROP_FORTRAN_REQUIRED, enabled);
+//        firePropertyChange(PROP_FORTRAN_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
+//    }
     
     public int getArrayRepeatThreshold() {
         return getPreferences().getInt(PROP_ARRAY_REPEAT_THRESHOLD, 10);

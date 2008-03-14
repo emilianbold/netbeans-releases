@@ -38,11 +38,11 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.types.INameNode;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.EditRegions;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.EditRegions;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
@@ -87,7 +87,7 @@ public class AttributeIsLocal implements AstRule {
     private Set<String> attributeNames;
 
     public boolean appliesTo(CompilationInfo info) {
-        RubyParseResult rpr = (RubyParseResult)info.getParserResult();
+        RubyParseResult rpr = AstUtilities.getParseResult(info);
         AnalysisResult ar = rpr.getStructure();
         this.attributes = ar.getAttributes();
 
@@ -108,8 +108,8 @@ public class AttributeIsLocal implements AstRule {
         return true;
     }
 
-    public Set<Integer> getKinds() {
-        return Collections.singleton(NodeTypes.LOCALASGNNODE);
+    public Set<NodeType> getKinds() {
+        return Collections.singleton(NodeType.LOCALASGNNODE);
     }
 
     public void run(RuleContext context, List<Description> result) {
@@ -164,7 +164,7 @@ public class AttributeIsLocal implements AstRule {
             Iterator<Node> it = path.leafToRoot();
             while (it.hasNext()) {
                 Node n = it.next();
-                if (n.nodeId == NodeTypes.ARGSNODE) {
+                if (n.nodeId == NodeType.ARGSNODE) {
                     return;
                 }
             }
@@ -284,7 +284,7 @@ public class AttributeIsLocal implements AstRule {
         }
 
         private void addLocalRegions(Node node, String name, Set<OffsetRange> ranges) {
-            if ((node.nodeId == NodeTypes.LOCALASGNNODE || node.nodeId == NodeTypes.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
+            if ((node.nodeId == NodeType.LOCALASGNNODE || node.nodeId == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = AstUtilities.getNameRange(node);
                 range = LexUtilities.getLexerOffsets(info, range);
                 if (range != OffsetRange.NONE) {

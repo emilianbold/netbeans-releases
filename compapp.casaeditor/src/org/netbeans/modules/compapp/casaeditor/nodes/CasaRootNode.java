@@ -58,6 +58,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddWSDLPortsAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AutoLayoutAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddExternalServiceUnitAction;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.LoadWSDLPortsAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddJBIModuleAction;
 import org.netbeans.modules.compapp.casaeditor.properties.LookAndFeelProperty;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
@@ -142,7 +143,8 @@ public class CasaRootNode extends CasaNode {
             return false;
         }
 
-        else if (action instanceof AddWSDLPortsAction) {
+        else if ((action instanceof AddWSDLPortsAction)
+              || (action instanceof LoadWSDLPortsAction)) {
             CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
             Widget bindingRegion = scene.getBindingRegion();
             Rectangle bindingRegionRect =
@@ -170,6 +172,7 @@ public class CasaRootNode extends CasaNode {
     protected void addCustomActions(List<Action> actions) {
         final Project jbiProject = getModel().getJBIProject();
         actions.add(new AddJBIModuleAction(jbiProject));
+        actions.add(SystemAction.get(LoadWSDLPortsAction.class));
         actions.add(SystemAction.get(AddWSDLPortsAction.class));
         actions.add(SystemAction.get(AddExternalServiceUnitAction.class));
         actions.add(null);

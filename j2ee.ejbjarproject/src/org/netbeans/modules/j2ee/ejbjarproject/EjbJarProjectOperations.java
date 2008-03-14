@@ -49,8 +49,8 @@ import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.ejbjarproject.classpath.EjbJarProjectClassPathExtender;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
@@ -72,6 +72,10 @@ import org.openide.util.lookup.Lookups;
 public class EjbJarProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     
     private EjbJarProject project;
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private String libraryPath;
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private File libraryFile;
     
     public EjbJarProjectOperations(EjbJarProject project) {
         this.project = project;
@@ -153,9 +157,6 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
         assert targetNames.length > 0;
         
         ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
-        
-        EjbJarProjectClassPathExtender extender = project.getLookup().lookup(EjbJarProjectClassPathExtender.class);
-        extender.notifyDeleting();
     }
     
     public void notifyDeleted() throws IOException {
@@ -163,7 +164,7 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
     }
     
     public void notifyCopying() {
-        //nothing.
+        rememberLibraryLocation();
     }
     
     public void notifyCopied(Project original, File originalPath, String nueName) {
@@ -173,12 +174,16 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
         }
         
         project.getReferenceHelper().fixReferences(originalPath);
+        EjbJarProjectOperations origOperations = original.getLookup().lookup(EjbJarProjectOperations.class);
+        fixLibraryLocation(origOperations);
+        
         fixOtherReferences(originalPath);
         
         project.setName(nueName);
     }
     
     public void notifyMoving() throws IOException {
+        rememberLibraryLocation();
         notifyDeleting();
     }
     
@@ -192,6 +197,9 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
 
         project.setName(newName);
         project.getReferenceHelper().fixReferences(originalPath);        
+        EjbJarProjectOperations origOperations = original.getLookup().lookup(EjbJarProjectOperations.class);
+        fixLibraryLocation(origOperations);
+        
         fixOtherReferences(originalPath);
 	
         ProjectManager.mutex().writeAccess(new Runnable() {
@@ -247,5 +255,34 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
         
         return false;
     }
+    
+    private void fixLibraryLocation(EjbJarProjectOperations original) throws IllegalArgumentException {
+        String libPath = original.libraryPath;
+        if (libPath != null) {
+            if (!new File(libPath).isAbsolute()) {
+                File file = original.libraryFile;
+                if (file == null) {
+                    // could happen in some rare cases, but in that case the original project was already broken, don't fix.
+                    return;
+                }
+                String relativized = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), file);
+                if (relativized != null) {
+                    project.getAntProjectHelper().setLibrariesLocation(relativized);
+                } else {
+                    //cannot relativize, use absolute path
+                    project.getAntProjectHelper().setLibrariesLocation(file.getAbsolutePath());
+                }
+            }
+        }
+    }
+    
+    
+    private void rememberLibraryLocation() {
+        libraryPath = project.getAntProjectHelper().getLibrariesLocation();
+        if (libraryPath != null) {
+            libraryFile = PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), libraryPath);
+        }
+    }
+    
 
 }

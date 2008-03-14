@@ -43,6 +43,8 @@ package org.netbeans.modules.cnd.api.model.xref;
 
 import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
@@ -101,7 +103,7 @@ public abstract class CsmReferenceResolver {
             }
         }
         return null;
-    }
+    }   
     
     /**
      * fast checks reference scope if possible
@@ -112,6 +114,7 @@ public abstract class CsmReferenceResolver {
     
     public static enum Scope {
         LOCAL,
+        FILE_LOCAL,
         GLOBAL,
         UNKNOWN
     }
@@ -154,6 +157,6 @@ public abstract class CsmReferenceResolver {
                 }
             }
             return Scope.UNKNOWN;
-        }        
+        }       
     }    
 }

@@ -59,6 +59,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.sql.framework.model.ValidationInfo;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 
@@ -77,7 +79,8 @@ public class ValidationTableView extends JPanel {
     private IGraphView graphView;
     private TableCellRenderer cellRenderer;
     private String maxLengthStr = "THIS IS MAX LENGTH STRING";
-
+    private static transient final Logger mLogger = Logger.getLogger(ValidationTableView.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     static {
         errorImg = new ImageIcon(errorImgUrl);
         warningImg = new ImageIcon(warningImgUrl);
@@ -195,13 +198,22 @@ public class ValidationTableView extends JPanel {
                 int type = ((Integer) value).intValue();
                 if (type == ValidationInfo.VALIDATION_WARNING) {
                     label = new JLabel(warningImg);
-                    label.setToolTipText("Warning");
+                    label.setDisplayedMnemonic('W');
+                    String nbBundle1 = mLoc.t("BUND479: Warning");
+                    label.setToolTipText(nbBundle1.substring(15));
+                    label.getAccessibleContext().setAccessibleName(nbBundle1.substring(15));
                 } else if (type == ValidationInfo.VALIDATION_INFO) {
                     label = new JLabel(infoImg);
-                    label.setToolTipText("Information");
+                    label.setDisplayedMnemonic('I');
+                    String nbBundle2 = mLoc.t("BUND480: Information");
+                    label.getAccessibleContext().setAccessibleName(nbBundle2.substring(15));
+                    label.setToolTipText(nbBundle2.substring(15));
                 } else {
                     label = new JLabel(errorImg);
-                    label.setToolTipText("Error");
+                    label.setDisplayedMnemonic('E');
+                    String nbBundle3 = mLoc.t("BUND481: Error");
+                    label.setToolTipText(nbBundle3.substring(15));
+                    label.getAccessibleContext().setAccessibleName(nbBundle3.substring(15));
                 }
                 return label;
             }

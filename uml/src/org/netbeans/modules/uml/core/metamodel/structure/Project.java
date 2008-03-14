@@ -49,7 +49,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -110,7 +109,6 @@ import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframe
 import org.netbeans.modules.uml.core.support.umlmessagingcore.UMLMessagingHelper;
 import org.netbeans.modules.uml.core.support.umlsupport.FileManip;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
-import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import org.netbeans.modules.uml.core.support.umlsupport.PathManip;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
@@ -238,70 +236,71 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
    }
    
    /**
-	*
-	* Saves this project to the specified file.
-	*
-	* @param fileName[in] Points to a zero-terminated string containing the absolute path 
-	*                of the file to which the object should be saved. If fileName
-	*                is NULL, the object should save its data to the current file, if 
-	*                there is one. 
-	* @param remember[in] Indicates whether the fileName parameter is to be used as the 
-	*                current working file. If TRUE, fileName becomes the current 
-	*                file and the object should clear its dirty flag after the save. 
-	*                If FALSE, this save operation is a "Save A Copy As ..." 
-	*                operation. In this case, the current file is unchanged and the 
-	*                object should not clear its dirty flag. If fileName is NULL, 
-	*                the implementation should ignore the remember flag
-	*/
+    *
+    * Saves this project to the specified file.
+    *
+    * @param fileName[in] Points to a zero-terminated string containing the absolute path 
+    *                of the file to which the object should be saved. If fileName
+    *                is NULL, the object should save its data to the current file, if 
+    *                there is one. 
+    * @param remember[in] Indicates whether the fileName parameter is to be used as the 
+    *                current working file. If TRUE, fileName becomes the current 
+    *                file and the object should clear its dirty flag after the save. 
+    *                If FALSE, this save operation is a "Save A Copy As ..." 
+    *                operation. In this case, the current file is unchanged and the 
+    *                object should not clear its dirty flag. If fileName is NULL, 
+    *                the implementation should ignore the remember flag
+    */
+   
    synchronized public void save( String fileName, boolean remember )
    {
-		// m_ChildrenDirty will only be set during the EstablishDirtyState()
-		// call. It will only be true when dealing with a Project that contains
-		// elements that have been versioned. And in that case, only when one of those
-		// versioned elements has been modified.
-		if( m_IsDirty || m_ChildrenDirty )
-		{
-			String curFileName = getCurFile();
-			String newFileName = fileName;
-			if( (curFileName == null || curFileName.length() == 0)  && (newFileName != null && newFileName.length() != 0) )
-			{
-			   // If we don't have a filename put on us yet and one is coming in,
-			   // establish the file name
-			   setFileName( newFileName );
-			}
-			
-			EventDispatchRetriever ret = EventDispatchRetriever.instance();
-			IStructureEventDispatcher disp = (IStructureEventDispatcher) 
-							  ret.getDispatcher(EventDispatchNameKeeper.structure());
-			boolean proceed = true; 
-			if( disp != null )
-			{
-			   IEventPayload payload = disp.createPayload("ProjectPreSave" );
-			   proceed = disp.fireProjectPreSave(this,payload);			 
-			}
-			
-			if( proceed )
-			{
-			   internalPreCommit();
-			   if (m_IsDirty == false && ( m_ChildrenDirty == false ))
- 			   {
-			   	    int retryMax = 5;
-					while( ( ( m_IsDirty || m_ChildrenDirty ) && retryMax >0) )
-					{
-					   internalPreCommit();
-					   retryMax--;
-					}
-					internalCommit();
-			   }
-			   if( disp != null )
-			   {
-				  IEventPayload payload = disp.createPayload("ProjectSaved");
-				  disp.fireProjectSaved(this,payload);
-			   }
-			}
-		}		
+        // m_ChildrenDirty will only be set during the EstablishDirtyState()
+        // call. It will only be true when dealing with a Project that contains
+        // elements that have been versioned. And in that case, only when one of those
+        // versioned elements has been modified.
+        if( m_IsDirty || m_ChildrenDirty )
+        {
+                String curFileName = getCurFile();  
+                String newFileName = fileName;     
+                if( (curFileName == null || curFileName.length() == 0)  && (newFileName != null && newFileName.length() != 0) )
+                {
+                   // If we don't have a filename put on us yet and one is coming in,
+                   // establish the file name
+                   setFileName( newFileName );
+                }
+
+                EventDispatchRetriever ret = EventDispatchRetriever.instance();
+                IStructureEventDispatcher disp = (IStructureEventDispatcher) 
+                                                  ret.getDispatcher(EventDispatchNameKeeper.structure());
+                boolean proceed = true; 
+                if( disp != null )
+                {
+                   IEventPayload payload = disp.createPayload("ProjectPreSave" );
+                   proceed = disp.fireProjectPreSave(this,payload);			 
+                }
+
+                if( proceed )
+                {
+                   internalCommit();
+//                   if (m_IsDirty == false && ( m_ChildrenDirty == false ))
+//                   {
+//                            int retryMax = 5;
+//                                while( ( ( m_IsDirty || m_ChildrenDirty ) && retryMax >0) )
+//                                {
+//                                   internalCommit();
+//                                   retryMax--;
+//                                }
+//                                internalCommit();
+//                   }
+                   if( disp != null )
+                   {
+                          IEventPayload payload = disp.createPayload("ProjectSaved");
+                          disp.fireProjectSaved(this,payload);
+                   }
+                }
+        }		
    }
-   
+
 	/**
 	 * Injects all the necessary XMI nodes into the document.
 	 */
@@ -1527,30 +1526,30 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
 	 * @return true if the commit succeeded, else false
 	 *
 	 */
-	public boolean commitProjectFile(String tempName)
-	{
-		boolean isSuccess = false;
-
-		if( m_ProjectNeedsCommit )
-		{
-			if ( deleteFile(m_OrigFileName) )
-			{
-				isSuccess = moveFile(tempName,m_OrigFileName);
-			}
-			else
-			{
-				sendSaveError();
-//				m_IsDirty = true;
-                                setDirty(true);
-			}
-		}
-		else
-		{
-			// Just clean up the file used for the temporary name
-			deleteFile(tempName);
-		}
-		return isSuccess;
-	}
+//	public boolean commitProjectFile(String tempName)
+//	{
+//		boolean isSuccess = false;
+//
+//		if( m_ProjectNeedsCommit )
+//		{
+//			if ( deleteFile(m_OrigFileName) )
+//			{
+//				isSuccess = moveFile(tempName,m_OrigFileName);
+//			}
+//			else
+//			{
+//				sendSaveError();
+////				m_IsDirty = true;
+//                                setDirty(true);
+//			}
+//		}
+//		else
+//		{
+//			// Just clean up the file used for the temporary name
+//			deleteFile(tempName);
+//		}
+//		return isSuccess;
+//	}
 	
 	/**
 	 *
@@ -1657,118 +1656,38 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
 	
 	/**
 	 *
-	 * Called during Save processing.
+	 * Called during Save processing. Save directly to the model files (*.etd and *.ettm)
 	 */
-	public void internalPreCommit()
+	public void internalCommit()
 	{
-		String fileName = getCurFile();
+		String fileName = getCurFile();   //<project folder>\*.etd file
 		if (fileName != null)
 		{
 			m_OrigFileName = fileName;
-			if (m_ExtManager != null)
-			{
-				m_ExtManager = null;
-			}
 			m_ExtManager = new ExternalFileManager();
 			if (m_ExtManager != null)
 			{
-				String name = fileName;
-                File f = new File(name);
-                
-				String dir = f.getParent();
-				String fName = f.getName();
-		
-				// Build a temporary file name								
-				File file = null;
-				try
-				{
-					if (fName != null && fName.indexOf('.') >= 0)
-					{
-						String subs = fName.substring(0,fName.indexOf('.'));
-						String extn = fName.substring(fName.indexOf('.'),fName.length());
-                        if (subs.length() < 3)
-                            subs += "abc"; 
-						file = File.createTempFile(subs,"temp"+extn,new File(dir));
-					}
-					else
-					{
-						file = File.createTempFile(fName,"temp",new File(dir));
-					}
-				}
-				catch(Exception e)
-				{
-				Log.stackTrace(e);
-				}
-				if (file != null)
-				{
-					if (m_IsDirty)
-					{
-						// This flag is used during the commit to signify whether or
-						// not the actual movement of the Project file needs to be managed.
-						// If m_ProjectNeedsCommit is true, then the temporary file that is created
-						// during the PreCommit should and will replace the original .etd file.
-						// If m_ProjectNeedsCommit is false, the original file will not be replace,
-						// with the temporary file being removed all together.
-						m_ProjectNeedsCommit = true;						
-					}
-					String buffer = file.getAbsolutePath();
-					internalSave(buffer);
-					// Now save the TypeManager
-					if (m_TypeManager != null)
-					{
-						String typeManFile = StringUtilities.ensureExtension
-															(buffer,".ettm");
-						m_TypeManager.save(typeManFile);															
-					}
-//					m_IsDirty         = false;
-                                        setDirty(false);
-					m_ChildrenDirty   = false;
-				}
-				
+                                if (m_IsDirty)
+                                {
+                                    internalSave(fileName);
+                                    // Now save the TypeManager
+                                    if (m_TypeManager != null)
+                                    {
+                                            String typeManFile = StringUtilities.ensureExtension(fileName,".ettm");
+                                            m_TypeManager.save(typeManFile);															
+                                    }
+    //					
+                                    m_ExtManager.commit();
+                                    setDirty(false);
+                                    m_ChildrenDirty   = false;
+                                    m_ExtManager = null;
+                                    m_OrigFileName = "";	
+                                    //m_ProjectNeedsCommit = false;
+                                }
 			}
 		}
 	}
 	
-	/**
-	 *
-	 * Called during Save() processing
-	 */
-	public void internalCommit()
-	{	
-		if( (m_OrigFileName.length() > 0) && (m_ExtManager != null) )
-		{
-			if (m_ExtManager.commit())
-			{
-				String tempName = getCurFile();			 
-				// Now restore the original filename.
-				setFileName(m_OrigFileName);
-				commitProjectFile(tempName);
-			
-				// Now save the type manager
-				if (m_TypeManager != null)
-				{
-					String origTypeManFile = StringUtilities.ensureExtension
-												(m_OrigFileName,".ettm" );													
-					String curTypeManFile = StringUtilities.ensureExtension
-												(tempName,".ettm" );														
-					deleteFile(origTypeManFile);
-					if (!moveFile(curTypeManFile,origTypeManFile))
-					{
-						//problem moving																						
-					}
-				}
-			}
-			else
-			{
-				//"Problem committing the ExternalFileManager"
-				setFileName(m_OrigFileName);
-			}
-
-			m_ExtManager = null;
-			m_OrigFileName = "";	
-			m_ProjectNeedsCommit = false;	
-		}
-	}
 	
 	/**
 	 *
@@ -1779,12 +1698,10 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
 		Element nodeElement = getElementNode();
 		if (nodeElement != null)
 		{
-         String curFileName = fileName;    
-         Map< Node, ETList<Node> > removed = null;
-              
-         try
-          {
-   			
+                    String curFileName = fileName;    
+                    Map< Node, ETList<Node> > removed = null;
+                    try
+                    {
    			if (curFileName == null || curFileName.length() < 0)
    			{
    				// Let's get the current name of the project and save to that
@@ -1813,27 +1730,17 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
    			{
    				m_Disposal.disposeElements();
    			}
-   			// ensure the target folder exists
-   			boolean problemDuringSave = false;
+
    			if (m_IsDirty)
    			{
-   				try
-   				{
-   					XMLManip.save(m_Doc,curFileName);
-   				}
-   				catch(Exception e)
-   				{
-   					e.printStackTrace();
-   				}
-   								
+                                XMLManip.save(m_Doc,curFileName);
    			}
-         }
-         finally
-         {
-            performAfterSaveCleanUp(curFileName,removed,nodeElement);
-         }
-      }
-      
+                     }
+                     finally
+                     {
+                        performAfterSaveCleanUp(curFileName,removed,nodeElement);
+                     }
+                }
 	}
 	
 	public void close()
@@ -2232,28 +2139,28 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
 		m_ChildrenDirty = value;
 	}
 	
-	private boolean moveFile(String source_file1, String destination_file1)
-	{
-		boolean isSuccess = false;
-		try
-		{	
-			File source_file = new File(source_file1);
-			if(source_file.exists())	
-			{		
-				File dest_file = new File(destination_file1);
-				if(!dest_file.exists())		
-				{			
-					isSuccess = source_file.renameTo(dest_file);					
-				}	
-			}
-		}
-		catch(Exception e)
-		{		 
-			e.printStackTrace();
-		}
-		return isSuccess;
-	}
-	
+//	private boolean moveFile(String source_file1, String destination_file1)
+//	{
+//		boolean isSuccess = false;
+//		try
+//		{	
+//			File source_file = new File(source_file1);  // absolute file of *temp.etd |*temp.ettm file
+//			if(source_file.exists())	
+//			{		
+//				File dest_file = new File(destination_file1);   // absolute file of *.etd | *.ettm
+//				if(!dest_file.exists())		
+//				{			
+//					isSuccess = source_file.renameTo(dest_file);					
+//				}	
+//			}
+//		}
+//		catch(Exception e)
+//		{		 
+//			e.printStackTrace();
+//		}
+//		return isSuccess;
+//	}
+        
 	/**
 	 * Sets / Gets the name of the file this project will be saved to.
 	*/

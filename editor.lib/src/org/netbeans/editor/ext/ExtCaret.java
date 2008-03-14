@@ -137,8 +137,6 @@ public class ExtCaret extends BaseCaret {
 //
 //    private int matchBraceOffset = MATCH_BRACE_EITHER;
     
-    private boolean popupMenuEnabled;
-
     static final long serialVersionUID =-4292670043122577690L;
 
 // XXX: remove    
@@ -225,8 +223,6 @@ public class ExtCaret extends BaseCaret {
 //                                    ExtSettingsNames.CARET_SIMPLE_MATCH_BRACE,
 //                                    ExtSettingsDefaults.defaultCaretSimpleMatchBrace);
 //            
-            popupMenuEnabled = SettingsUtil.getBoolean(kitClass,
-                ExtSettingsNames.POPUP_MENU_ENABLED, true);
         }
     }
 // XXX: remove
@@ -367,30 +363,6 @@ public class ExtCaret extends BaseCaret {
 //        matchBraceUpdateSync = true;
     }
     
-    public void mousePressed(MouseEvent evt) {
-        Completion completion = ExtUtilities.getCompletion(component);
-        if (completion != null && completion.isPaneVisible()) {
-            // Hide completion if visible
-            completion.setPaneVisible(false);
-        }
-        super.mousePressed(evt);
-	showPopup(evt);        
-    }
-    
-    private boolean showPopup (MouseEvent evt) {
-        // Show popup menu for right click
-        if (component != null && evt.isPopupTrigger() && popupMenuEnabled) {
-            ExtUtilities.getExtEditorUI(component).showPopupMenu(evt.getX(), evt.getY());
-            return true;
-        }
-        return false;
-    }
-    
-    public void mouseReleased(MouseEvent evt) {
-        if (!showPopup(evt)) {
-            super.mouseReleased(evt);
-        }
-    }
 // XXX: remove
 //    /* package */ static boolean NO_HIGHLIGHT_BRACE_LAYER = Boolean.getBoolean("nbeditor-no-HighlightBraceLayer");
 //    

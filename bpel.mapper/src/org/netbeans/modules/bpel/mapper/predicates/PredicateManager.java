@@ -28,6 +28,7 @@ import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
+import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 
 /**
  * The class collects all predicate expressions which are in the edited 
@@ -36,16 +37,9 @@ import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
  * The predicate manager keeps the location of predicate in term of
  * schema components' path.
  *
- * The set of predicates is populated from XPath model(s). The manager can
- * be populated entirely or can track small model's changes only.
- * It produces notification messages about adding, editing or deleting of
- * the predicates set.
- *
  * The main intention of the predicate manager is to provide showing of
  * predicates in the mapper source and destination trees.
  * 
- * TODO: remove unused code later. It is commented now.
- *
  * @author nk160297
  */
 public class PredicateManager {
@@ -71,16 +65,17 @@ public class PredicateManager {
         return result;
     }
     
-    public void addPredicate(List<Object> parentPath, AbstractPredicate pred) {
+    public boolean addPredicate(List<Object> parentPath, AbstractPredicate pred) {
         for (CachedPredicate cPred : mPredicates) {
             if (cPred.hasSameLocation(parentPath) && cPred.hasSamePredicate(pred)) {
                 // the same predicate already in cache
-                return;
+                return false;
             }
         }
         //
         CachedPredicate cPredicate = new CachedPredicate(parentPath, pred);
         mPredicates.add(cPredicate);
+        return true;
     }
 
     public boolean addPredicate(RestartableIterator<Object> parentItr, 
@@ -90,9 +85,7 @@ public class PredicateManager {
                 PathConverter.constructPredicateLocationtList(parentItr);
         //
         if (parentPath != null) {
-            CachedPredicate cPredicate = new CachedPredicate(parentPath, pred);
-            mPredicates.add(cPredicate);
-            return true;
+            return addPredicate(parentPath, pred);
         }
         //
         return false;
@@ -191,7 +184,7 @@ public class PredicateManager {
                 XPathPredicateExpression[] predArr) {
             AbstractPredicate pComp = getPredicate();
             return pComp.getSComponent().equals(schemaComp) &&
-                    pComp.hasSamePredicates(predArr);
+                    XPathUtils.samePredicatesArr(pComp.getPredicates(), predArr);
         }
         
         public boolean hasSamePredicate(AbstractPredicate pred) {

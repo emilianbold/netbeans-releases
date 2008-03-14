@@ -45,11 +45,8 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import javax.swing.text.StyledDocument;
-import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
-import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
@@ -57,8 +54,8 @@ import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Feature.Type;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
-import org.openide.ErrorManager;
-import org.openide.text.NbDocument;
+import org.netbeans.modules.languages.Utils;
+
 
 /**
  *
@@ -67,119 +64,81 @@ import org.openide.text.NbDocument;
 public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
 
     protected void insertString (
-        BaseDocument doc, int dotPos,
-        Caret caret, String str,
-        boolean overwrite
+        BaseDocument        document, 
+        int                 offset,
+        Caret               caret, 
+        String              insertString,
+        boolean             overwrite
     ) throws BadLocationException {
-        try {
-            TokenHierarchy th = TokenHierarchy.get (doc);
-            if (th == null) {
-                super.insertString (doc, dotPos, caret, str, overwrite);
-                return;
-            }
-            TokenSequence ts = th.tokenSequence ();
-            if (ts == null) {
-                super.insertString (doc, dotPos, caret, str, overwrite);
-                return;
-            }
-            int offset = caret.getDot ();
-            while (true) {
-                ts.move (caret.getDot ());
-                if (!ts.moveNext ())
-                    break;
-                offset = ts.offset ();
-                TokenSequence ts2 = ts.embedded ();
-                if (ts2 == null) break;
-                ts = ts2;
-            }
-            String mimeType = ts.language ().mimeType ();
-            Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
-            List<Feature> completes = l.getFeatureList ().getFeatures ("COMPLETE");
-            if (completes == null) {
-                super.insertString (doc, dotPos, caret, str, overwrite);
-                return;
-            }
-            Feature methodCall = null;
-            Iterator<Feature> it = completes.iterator ();
-            while (it.hasNext ()) {
-                Feature complete = it.next ();
-                if (complete.getType () == Type.METHOD_CALL) {
-                    methodCall = complete;
-                    continue;
-                }
-                String s = (String) complete.getValue ();
-                int i = s.indexOf (':');
-                String ss = doc.getText (
-                    caret.getDot (), 
-                    s.length () - i - 1
-                );
-                if (s.endsWith (ss) && str.equals (ss)) {
-                    // skip closing bracket / do not write it again
-                    caret.setDot (caret.getDot () + 1);
+        TokenSequence tokenSequence = Utils.getTokenSequence (document, caret.getDot ());
+        if (tokenSequence != null) {
+            String mimeType = tokenSequence.language ().mimeType ();
+            try {
+                Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
+                List<Feature> completes = l.getFeatureList ().getFeatures ("COMPLETE");
+                if (completes != null) {
+                    complete (
+                        document,
+                        offset,
+                        caret,
+                        insertString,
+                        overwrite,
+                        tokenSequence,
+                        completes 
+                    );
                     return;
                 }
+            } catch (LanguageDefinitionNotFoundException ex) {
             }
-            boolean beg = offset == caret.getDot ();
-
-            super.insertString (doc, dotPos, caret, str, overwrite);
-
-            th = TokenHierarchy.get (doc);
-            ts = th.tokenSequence ();
-            while (true) {
-                ts.move (caret.getDot ());
-                if (!ts.moveNext ())
-                    break;
-                TokenSequence ts2 = ts.embedded ();
-                if (ts2 == null) break;
-                ts = ts2;
-            }
-            if (methodCall != null) {
-                if (caret.getDot () < doc.getLength ())
-                    ts.movePrevious ();
-                String s = (String) methodCall.getValue (Context.create (doc, caret.getDot ()));
-                if (s != null) {
-                    int pos = caret.getDot ();
-                    doc.insertString (pos, s, null);
-                    caret.setDot (pos);
-                }
-            }
-            if (!beg && 
-                ts.token ().id ().name ().indexOf ("whitespace") < 0
-            ) return;
-            StyledDocument sdoc = (StyledDocument) doc;
-            int ln = NbDocument.findLineNumber (sdoc, caret.getDot ());
-            int ls = NbDocument.findLineOffset (sdoc, ln);
-            String text = sdoc.getText (ls, caret.getDot () - ls);
-            it = completes.iterator ();
-            while (it.hasNext ()) {
-                Feature complete = it.next ();
-                if (complete.getType () == Type.METHOD_CALL) continue;
-                String s = (String) complete.getValue ();
-                int i = s.indexOf (':');
-                if (text.endsWith (s.substring (0, i))) {
-                    int pos = caret.getDot ();
-                    doc.insertString (pos, s.substring (i + 1), null);
-                    caret.setDot (pos);
-                    return;
-                }
-            }
-        } catch (LanguageDefinitionNotFoundException ex) {
-            // ignore the exception
-            super.insertString (doc, dotPos, caret, str, overwrite);
-        } catch (ParseException ex) {
-            ErrorManager.getDefault ().notify (ex);
         }
+        super.insertString (document, offset, caret, insertString, overwrite);
     }
-/*
-    protected void replaceSelection (
-        JTextComponent target,  
-        int dotPos, 
-        Caret caret,
-        String str, 
-        boolean overwrite
+    
+    private void complete (
+        BaseDocument        document, 
+        int                 offset,
+        Caret               caret, 
+        String              insertString,
+        boolean             overwrite,
+        TokenSequence       tokenSequence,
+        List<Feature>       completes
     ) throws BadLocationException {
-        S ystem.out.println ("replaceSelection " + str);
-        super.replaceSelection (target, dotPos, caret, str, overwrite);
+        Iterator<Feature> it = completes.iterator ();
+        while (it.hasNext ()) {
+            Feature complete = it.next ();
+            if (complete.getType () == Type.METHOD_CALL) {
+                complete.getValue (new Object[] {document, caret, insertString});
+                return;
+            }
+            String bracketPair = (String) complete.getValue ();
+            int i = bracketPair.indexOf (':');
+            if (i < 0) continue;
+            String followingText = document.getText (
+                caret.getDot (), 
+                bracketPair.length () - i - 1
+            );
+            if (bracketPair.endsWith (":" + followingText) && insertString.equals (followingText)) {
+                // skip closing bracket / do not write it again
+                caret.setDot (caret.getDot () + 1);
+                return;
+            }
+            if (bracketPair.startsWith (insertString + ":")) {
+                Token token = tokenSequence.token ();
+                if (token != null) {
+                    char firstCharOfTokenText = token.text ().charAt (0);
+                    boolean startsWithWhiteSpcae = firstCharOfTokenText == '\n' || firstCharOfTokenText == ' ';
+                    if (
+                        tokenSequence.offset () == caret.getDot () ||
+                        token.id ().name ().indexOf ("whitespace") >= 0 || startsWithWhiteSpcae
+                    ) { // between tokens or in whitespace
+                        insertString += bracketPair.substring (i + 1);
+                        super.insertString (document, offset, caret, insertString, overwrite);
+                        caret.setDot (offset + 1);
+                        return;
+                    }
+                }
+            }
+        }
+        super.insertString (document, offset, caret, insertString, overwrite);
     }
-*/        
 }

@@ -61,19 +61,22 @@ import org.netbeans.lib.editor.codetemplates.ParametrizedTextParser;
 public final class CodeTemplate {
     
     private final CodeTemplateManagerOperation managerOperation;
-    
     private final String abbreviation;
-    
     private final String description;
-    
     private final String parametrizedText;
-    
     private final List<String> contexts;
+    private final String mimePath;
     
     private String singleLineText = null;
     
-    CodeTemplate(CodeTemplateManagerOperation managerOperation,
-    String abbreviation, String description, String parametrizedText, List<String> contexts) {
+    CodeTemplate(
+        CodeTemplateManagerOperation managerOperation,
+        String abbreviation, 
+        String description, 
+        String parametrizedText, 
+        List<String> contexts, 
+        String mimePath
+    ) {
         
         assert (managerOperation != null);
         if (abbreviation == null) {
@@ -88,6 +91,7 @@ public final class CodeTemplate {
         this.description = description;
         this.parametrizedText = parametrizedText;
         this.contexts = contexts;
+        this.mimePath = mimePath;
     }
 
     /**
@@ -97,7 +101,7 @@ public final class CodeTemplate {
      * @param component non-null text component.
      */
     public void insert(JTextComponent component) {
-        managerOperation.insert(this, component);
+        CodeTemplateManagerOperation.insert(this, component);
     }
 
     /**
@@ -158,6 +162,10 @@ public final class CodeTemplate {
             singleLineText = ParametrizedTextParser.parseToHtml(new StringBuffer(), singleLine).toString();
         }
         return singleLineText;
+    }
+    
+    /* package */ String getMimePath() {
+        return mimePath;
     }
     
     @Override

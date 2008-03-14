@@ -130,7 +130,7 @@ public abstract class MakeBaseAction extends NodeAction {
             tabName += " " + target; // NOI18N
         
         // Execute the makefile
-        String[] envp = { Path.getPathName() + '=' + CppSettings.getDefault().getPath() };
+        String[] envp = { Path.getPathName() + '=' + Path.getPathAsString() };
         try {
             new NativeExecutor(
                     buildDir.getPath(),

@@ -139,7 +139,7 @@ public class AdministrationServiceHelper {
         if (connection == null) {
             throw new RuntimeException("MBeanServerConnection is null. Make sure the App Server is running.");
         }
-        return new ManagementClient(connection);
+        return new ManagementClient(connection, true);
     }
     
     

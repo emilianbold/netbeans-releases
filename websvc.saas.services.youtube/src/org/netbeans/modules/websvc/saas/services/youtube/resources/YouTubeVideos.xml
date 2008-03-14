@@ -49,18 +49,28 @@
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://youtube.com/dev_api_ref"
-               url="nbres:/org/netbeans/modules/websvc/saas/services/youtube/resources/YouTubeVideosWadl.xml">
+               url="org/netbeans/modules/websvc/saas/services/youtube/resources/YouTubeVideosWadl.xml">
 
     <description>YouTube Video Service</description>
     
-    <display-name>YouTubeVideos</display-name>
+    <display-name>Video Service</display-name>
     
-    <xi:include href="file:/export/home/nam/main/websvc.saas.services.youtube/src/org/netbeans/modules/websvc/saas/services/youtube/resources/YouTubeVideosMetaData.xml"/>
+    <!-- xi:include href="YouTubeVideosMetaData.xml"/ -->
+    <saas-metadata>
+        <localizing-bundle>org.netbeans.modules.websvc.saas.services.youtube.Bundle</localizing-bundle>
+        <group name="YouTube">
+        </group>
 
+        <authentication profile="SaaSServices/YouTube/profile.properties">
+            <api-key id="dev_id"/>
+        </authentication>
+    </saas-metadata>
+
+    <!--
     <methods>
-        <method name="ListByTag" href="//resource[@path='api2_rest']/method[@id='youtube.listByTag']"/>
-        <method name="ListFeatured" href="//resource[@path='api2_rest']/method[@id='youtube.listFeatured']"/>
-        <method name="ListPopular" href="//resource[@path='api2_rest']/method[@id='youtube.listPopular']"/>
+        <method name="ListByTag" href="#youtube.listByTag"/>
+        <method name="ListFeatured" href="#youtube.listFeatured"/>
+        <method name="ListPopular" href="#youtube.listPopular"/>
     </methods>
-
+    -->
 </saas-services>

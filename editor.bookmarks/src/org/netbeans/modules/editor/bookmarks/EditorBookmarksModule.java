@@ -132,8 +132,11 @@ public class EditorBookmarksModule extends ModuleInstall {
     /**
      * Called when all modules agreed with closing and the IDE will be closed.
      */
-    public void close() {
+    public boolean closing() {
+        // this used to be called from close(), but didn't save properly on JDK6,
+        // no idea why, see #120880
         finish();
+        return super.closing();
     }
     
     /**

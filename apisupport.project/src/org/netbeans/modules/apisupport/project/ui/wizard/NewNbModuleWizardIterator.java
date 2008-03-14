@@ -71,18 +71,17 @@ import org.openide.util.NbBundle;
  * @author Martin Krauskopf
  */
 public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
-    
-    /** Either standalone module, suite component or NB CVS module. */
-    static final int TYPE_MODULE = 1;
-    
-    /** Suite wizard. */
-    static final int TYPE_SUITE = 2;
-    
-    /** Library wrapper module wizard. */
-    static final int TYPE_LIBRARY_MODULE = 3;
-    
-    /** Pure suite component wizard. */
-    static final int TYPE_SUITE_COMPONENT = 4;
+
+    enum Type {
+        /** Either standalone module, suite component or NB.org module. */
+        MODULE,
+        /** Suite wizard. */
+        SUITE,
+        /** Library wrapper module wizard. */
+        LIBRARY_MODULE,
+        /** Pure suite component wizard. */
+        SUITE_COMPONENT,
+    }
     
     /**
      * Property under which a suite to be selected in the suite combo can be
@@ -105,30 +104,30 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
     private Boolean suiteDedicated = Boolean.FALSE; // default
     
     /** Create a new wizard iterator. */
-    private NewNbModuleWizardIterator(int type) {
+    private NewNbModuleWizardIterator(NewNbModuleWizardIterator.Type type) {
         data = new NewModuleProjectData(type);
     }
     
     /**
      * Returns wizard for creating NetBeans module in general - i.e. either
-     * standalone module, suite component or NB CVS module.
+     * standalone module, suite component or NB.org module.
      */
     public static NewNbModuleWizardIterator createModuleIterator() {
-        return new NewNbModuleWizardIterator(TYPE_MODULE);
+        return new NewNbModuleWizardIterator(Type.MODULE);
     }
     
     /**
      * Returns wizard for creating suite component <strong>only</strong>.
      */
     public static NewNbModuleWizardIterator createSuiteComponentIterator(final SuiteProject suite) {
-        NewNbModuleWizardIterator iterator = new NewNbModuleWizardIterator(TYPE_SUITE_COMPONENT);
+        NewNbModuleWizardIterator iterator = new NewNbModuleWizardIterator(Type.SUITE_COMPONENT);
         iterator.preferredSuiteDir = suite.getProjectDirectoryFile().getAbsolutePath();
         iterator.suiteDedicated = Boolean.TRUE;
         return iterator;
     }
     
     public static NewNbModuleWizardIterator createSuiteIterator() {
-        return new NewNbModuleWizardIterator(TYPE_SUITE);
+        return new NewNbModuleWizardIterator(Type.SUITE);
     }
     
     /**
@@ -137,7 +136,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
      * instance of {@link SuiteProvider} in its lookup.
      */
     public static NewNbModuleWizardIterator createLibraryModuleIterator(final Project project) {
-        NewNbModuleWizardIterator iterator = new NewNbModuleWizardIterator(TYPE_LIBRARY_MODULE);
+        NewNbModuleWizardIterator iterator = new NewNbModuleWizardIterator(Type.LIBRARY_MODULE);
         iterator.preferredSuiteDir = SuiteUtils.getSuiteDirectoryPath(project);
         assert iterator.preferredSuiteDir != null : project + " does not have a SuiteProvider in its lookup?"; // NOI18N
         iterator.suiteDedicated = Boolean.TRUE;
@@ -145,7 +144,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
     }
     
     public static NewNbModuleWizardIterator createLibraryModuleIterator() {
-        return new NewNbModuleWizardIterator(TYPE_LIBRARY_MODULE);
+        return new NewNbModuleWizardIterator(Type.LIBRARY_MODULE);
     }
     
     public FileObject getCreateProjectFolder() {
@@ -158,15 +157,15 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
         ModuleUISettings.getDefault().setLastUsedPlatformID(data.getPlatformID());
         WizardDescriptor settings = data.getSettings();
         switch (data.getWizardType()) {
-            case NewNbModuleWizardIterator.TYPE_SUITE:
+            case SUITE:
                 ModuleUISettings.getDefault().setNewSuiteCounter(data.getSuiteCounter());
                 SuiteProjectGenerator.createSuiteProject(projectFolder, data.getPlatformID());
                 break;
-            case NewNbModuleWizardIterator.TYPE_MODULE:
-            case NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT:
+            case MODULE:
+            case SUITE_COMPONENT:
                 ModuleUISettings.getDefault().setNewModuleCounter(data.getModuleCounter());
                 if (data.isNetBeansOrg()) {
-                    // create module within the netbeans.org CVS tree
+                    // create module within the netbeans.org source tree
                     NbModuleProjectGenerator.createNetBeansOrgModule(projectFolder,
                             data.getCodeNameBase(), data.getProjectDisplayName(),
                             data.getBundle(), data.getLayer());
@@ -182,7 +181,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
                             data.getBundle(), data.getLayer(), new File(data.getSuiteRoot()));
                 }
                 break;
-            case NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE:
+            case LIBRARY_MODULE:
                 // create suite-component module
                 File[] jars = LibraryStartVisualPanel.convertStringToFiles((String) settings.getProperty(LibraryStartVisualPanel.PROP_LIBRARY_PATH));
                 
@@ -229,16 +228,16 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
         position = 0;
         String[] steps = null;
         switch (data.getWizardType()) {
-            case TYPE_MODULE:
+            case MODULE:
                 steps = initModuleWizard();
                 break;
-            case TYPE_SUITE_COMPONENT:
+            case SUITE_COMPONENT:
                 steps = initModuleWizard();
                 break;
-            case TYPE_SUITE:
+            case SUITE:
                 steps = initSuiteModuleWizard();
                 break;
-            case TYPE_LIBRARY_MODULE:
+            case LIBRARY_MODULE:
                 steps = initLibraryModuleWizard();
                 break;
             default:

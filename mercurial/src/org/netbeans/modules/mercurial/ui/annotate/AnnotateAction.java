@@ -54,14 +54,16 @@ import org.openide.windows.WindowManager;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.mercurial.util.HgCommand;
-import org.netbeans.modules.mercurial.util.HgLogMessage;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.openide.windows.TopComponent;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -75,7 +77,7 @@ import org.openide.NotifyDescriptor;
  * 
  * @author John Rice
  */
-public class AnnotateAction extends AbstractAction {
+public class AnnotateAction extends ContextAction {
     
     private final VCSContext context;
     
@@ -104,8 +106,7 @@ public class AnnotateAction extends AbstractAction {
         } 
     } 
 
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         Node [] nodes = context.getElements().lookupAll(Node.class).toArray(new Node[0]);
         if (visible(nodes)) {
             JEditorPane pane = activatedEditorPane(nodes);
@@ -138,15 +139,16 @@ public class AnnotateAction extends AbstractAction {
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
             HgProgressSupport support = new HgProgressSupport() {
                 public void perform() {
-                    HgUtils.outputMercurialTabInRed(
+                    OutputLogger logger = getLogger();
+                    logger.outputInRed(
                             NbBundle.getMessage(AnnotateAction.class,
                             "MSG_ANNOTATE_TITLE")); // NOI18N
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                             NbBundle.getMessage(AnnotateAction.class,
                             "MSG_ANNOTATE_TITLE_SEP")); // NOI18N
                     computeAnnotations(repository, file, this, ab);
-                    HgUtils.outputMercurialTab("\t" + file.getAbsolutePath()); // NOI18N
-                    HgUtils.outputMercurialTabInRed(
+                    logger.output("\t" + file.getAbsolutePath()); // NOI18N
+                    logger.outputInRed(
                             NbBundle.getMessage(AnnotateAction.class,
                             "MSG_ANNOTATE_DONE")); // NOI18N
                 }
@@ -158,7 +160,7 @@ public class AnnotateAction extends AbstractAction {
     private void computeAnnotations(File repository, File file, HgProgressSupport progress, AnnotationBar ab) {
         List<String> list = null;
         try {
-             list = HgCommand.doAnnotate(repository, file);
+             list = HgCommand.doAnnotate(repository, file, progress.getLogger());
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -169,16 +171,13 @@ public class AnnotateAction extends AbstractAction {
         }
         if (list == null) return;
         AnnotateLine [] lines = toAnnotateLines(list);
-        try {
-             list = HgCommand.doLogShort(repository, file);
-        } catch (HgException ex) {
-            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-            DialogDisplayer.getDefault().notifyLater(e);
-        }
+        HgLogMessage [] logs;
+        Set<File> setFile = new HashSet<File>();
+        setFile.add(file);
+        logs = HgCommand.getLogMessages(repository.getAbsolutePath(), setFile, progress.getLogger());
         if (progress.isCanceled()) {
             return;
         }
-        HgLogMessage [] logs = toHgLogMessages(list);
         if (logs == null) return;
         fillCommitMessages(lines, logs);
         ab.setLogs(logs);
@@ -191,13 +190,12 @@ public class AnnotateAction extends AbstractAction {
             AnnotateLine annotation = annotations[i];
             for (int j = 0; j < logs.length; j++) {
                 HgLogMessage log = logs[j];
-                if (log.getRevision() < lowestRevisionNumber) {
-                    lowestRevisionNumber = log.getRevision();
+                if (log.getRevisionAsLong() < lowestRevisionNumber) {
+                    lowestRevisionNumber = log.getRevisionAsLong();
                 }
-                if (annotation.getRevision().equals(log.getRevision().toString()
-)) {
+                if (annotation.getRevision().equals(log.getRevision())) {
                     annotation.setDate(log.getDate());
-                    annotation.setCommitMessage(log.getCommitMessage());
+                    annotation.setCommitMessage(log.getMessage());
                 }
             }
         }
@@ -208,41 +206,8 @@ public class AnnotateAction extends AbstractAction {
         }
     }
 
-    private static HgLogMessage [] toHgLogMessages(List<String> lines) {
-	List <HgLogMessage> logs = new ArrayList<HgLogMessage>();
-        HgLogMessage log = null;
-
-        int i = 0;
-        for (Iterator j = lines.iterator(); j.hasNext();) {
-            String line =  (String) j.next();
-            if (i % 4  == 0) {
-                log = new HgLogMessage();
-                try {
-                    log.setRevision(Long.parseLong(line));
-                } catch (java.lang.Exception e) {
-                    Mercurial.LOG.log(Level.SEVERE, "Caught Exception while parsing revision", e); // NOI18N
-                }
-            } else if (i % 4 == 1) {
-                log.setCommitMessage(line);
-            } else if (i % 4 == 2) {
-                String splits[] = line.split(" ", 2); // NOI18N
-                try {
-                    log.setDate(new Date(Long.parseLong(splits[0].trim()) * 1000));
-                } catch (java.lang.Exception e) {
-                    Mercurial.LOG.log(Level.SEVERE, "Caught Exception while parsing date", e); // NOI18N
-                }
-                log.setTimeZoneOffset(splits[1]);
-            } else if (i % 4 == 3) {
-                log.setChangeSet(line);
-		logs.add(log);
-            }
-            i++;
-        }
-        return logs.toArray(new HgLogMessage[logs.size()]);
-    }
-
     private static AnnotateLine [] toAnnotateLines(List<String> annotations)
-{
+    {
         final int GROUP_AUTHOR = 1;
         final int GROUP_REVISION = 2;
         final int GROUP_FILENAME = 3;

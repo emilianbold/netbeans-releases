@@ -20,15 +20,14 @@ package org.netbeans.modules.bpel.model.api.support;
 
 import java.util.Collection;
 import java.util.HashMap;
-import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.xpath.ext.XPathExtensionFunction;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.metadata.ExtFunctionMetadata;
-import org.netbeans.modules.xml.xpath.ext.metadata.StubExtFunction;
 import org.netbeans.modules.xml.xpath.ext.spi.ExtensionFunctionResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathValidationContext;
-import org.netbeans.modules.bpel.model.api.support.BpelXPathExtFunctionMetadata;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
+import org.openide.util.NbBundle;
 
 /**
  * Provides information about BPEL extension functions for XPath. 
@@ -41,29 +40,34 @@ import org.netbeans.modules.bpel.model.api.support.BpelXPathExtFunctionMetadata;
 public class BpelXpathExtFunctionResolver implements ExtensionFunctionResolver, 
         BpelXPathExtFunctionMetadata {
 
-    private static HashMap<QName, ExtFunctionMetadata> validFunctions = 
+    private static HashMap<QName, ExtFunctionMetadata> mValidFunctions = 
             new HashMap<QName, ExtFunctionMetadata>();
 
     static {
         //
         // Standard BPEL Extensions.
-        validFunctions.put(GET_VARIABLE_PROPERTY_METADATA.getName(), 
+        mValidFunctions.put(GET_VARIABLE_PROPERTY_METADATA.getName(), 
                 GET_VARIABLE_PROPERTY_METADATA);
-        
-        validFunctions.put(DO_XSL_TRANSFORM_METADATA.getName(), 
+        mValidFunctions.put(DO_XSL_TRANSFORM_METADATA.getName(), 
                 DO_XSL_TRANSFORM_METADATA);
         //
         // Runtime specific extensions.
-        validFunctions.put(CURRENT_TIME_METADATA.getName(), 
+        mValidFunctions.put(CURRENT_TIME_METADATA.getName(), 
                 CURRENT_TIME_METADATA);
-        validFunctions.put(CURRENT_DATE_METADATA.getName(), 
+        mValidFunctions.put(CURRENT_DATE_METADATA.getName(), 
                 CURRENT_DATE_METADATA);
-        validFunctions.put(CURRENT_DATE_TIME_METADATA.getName(), 
+        mValidFunctions.put(CURRENT_DATE_TIME_METADATA.getName(), 
                 CURRENT_DATE_TIME_METADATA);
-        validFunctions.put(DO_MARSHAL_METADATA.getName(), 
+        mValidFunctions.put(DO_MARSHAL_METADATA.getName(), 
                 DO_MARSHAL_METADATA);
-        validFunctions.put(DO_UNMARSHAL_METADATA.getName(), 
+        mValidFunctions.put(DO_UNMARSHAL_METADATA.getName(), 
                 DO_UNMARSHAL_METADATA);
+        //
+        // Another runtime specific extensions
+        // These functions are not going to be supported by the runtime
+        // mValidFunctions.put(GET_GUID_METADATA.getName(), GET_GUID_METADATA);
+        // mValidFunctions.put(GET_BPID_METADATA.getName(), GET_BPID_METADATA);
+        // mValidFunctions.put(EXIST_METADATA.getName(), EXIST_METADATA);
         //
     }
     
@@ -71,11 +75,11 @@ public class BpelXpathExtFunctionResolver implements ExtensionFunctionResolver,
     }
 
     public ExtFunctionMetadata getFunctionMetadata(QName name) {
-        return validFunctions.get(name);
+        return mValidFunctions.get(name);
     }
 
     public Collection<QName> getSupportedExtFunctions() {
-        return validFunctions.keySet();
+        return mValidFunctions.keySet();
     }
 
     public XPathExtensionFunction newInstance(XPathModel model, QName name) {
@@ -84,7 +88,15 @@ public class BpelXpathExtFunctionResolver implements ExtensionFunctionResolver,
 
     public void validateFunction(XPathExtensionFunction function, 
             XPathValidationContext context) {
-        return;
+        assert context != null && context instanceof PathValidationContext;
+        QName funcQName = function.getMetadata().getName();
+        if (GET_VARIABLE_PROPERTY_METADATA.getName().equals(funcQName)) {
+            String funcName = funcQName.getLocalPart();
+            PathValidationContext vContext = (PathValidationContext)context;
+            vContext.addResultItem(ResultType.WARNING, 
+                    NbBundle.getMessage(BpelVariableResolver.class,
+                                    "RUNTIME_NOT_SUPPORT_EXT_FUNC"), funcName); // NOI18N
+        }
     }
 
 }

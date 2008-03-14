@@ -42,17 +42,21 @@
 package org.netbeans.modules.websvc.design.loader;
 
 import java.io.IOException;
+import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.multiview.MultiViewSupport;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -72,6 +76,7 @@ import org.openide.windows.CloneableOpenSupport;
 
 public final class JaxWsDataObject extends MultiDataObject {
     
+    private static final String BUILD_IMPL_XML_PATH = "nbproject/build-impl.xml"; // NOI18N
     private transient JaxWsJavaEditorSupport jes;    
     private transient MultiViewSupport mvc;
     private transient Service service;
@@ -107,6 +112,68 @@ public final class JaxWsDataObject extends MultiDataObject {
     public @Override Node createNodeDelegate() {
         lazyInitialize();
         return new JaxWsDataNode(this);
+    }
+
+    @Override
+    protected void handleDelete() throws java.io.IOException {
+        super.handleDelete();
+        Project project = FileOwnerQuery.getOwner(getPrimaryFile());
+        JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
+        if (wss != null) {
+            String serviceName = service.getName();
+            FileObject localWsdlFolder = wss.getLocalWsdlFolderForService(serviceName, false);
+            if (localWsdlFolder != null) {
+                // removing local wsdl and xml artifacts
+                FileLock lock = null;
+                FileObject clientArtifactsFolder = localWsdlFolder.getParent();
+                try {
+                    lock = clientArtifactsFolder.lock();
+                    clientArtifactsFolder.delete(lock);
+                } finally {
+                    if (lock != null) {
+                        lock.releaseLock();
+                    }
+                }
+                // removing wsdl and xml artifacts from WEB-INF/wsdl
+                FileObject wsdlFolder = wss.getWsdlFolder(false);
+                if (wsdlFolder != null) {
+                    FileObject serviceWsdlFolder = wsdlFolder.getFileObject(serviceName);
+                    if (serviceWsdlFolder != null) {
+                        try {
+                            lock = serviceWsdlFolder.lock();
+                            serviceWsdlFolder.delete(lock);
+                        } finally {
+                            if (lock != null) {
+                                lock.releaseLock();
+                            }
+                        }
+                    }
+                }
+                // cleaning java artifacts
+                FileObject buildImplFo = project.getProjectDirectory().getFileObject(BUILD_IMPL_XML_PATH);
+                try {
+                    ExecutorTask wsimportTask = ActionUtils.runTarget(buildImplFo, new String[]{"wsimport-service-clean-" + serviceName}, null); //NOI18N
+                    wsimportTask.waitFinished();
+                } catch (java.io.IOException ex) {
+                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                } catch (IllegalArgumentException ex) {
+                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                }
+            }
+
+            // removing service from jax-ws.xml
+            wss.removeService(serviceName);
+
+            // remove non JSR109 entries
+            Boolean isJsr109 = project.getLookup().lookup(JaxWsModel.class).getJsr109();
+            if (isJsr109 != null && !isJsr109.booleanValue()) {
+                if (service.getWsdlUrl() != null) {
+                    //if coming from wsdl
+                    serviceName = service.getServiceName();
+                }
+                wss.removeNonJsr109Entries(serviceName);
+            }
+        }
     }
 
     public @Override <T extends Cookie> T getCookie(Class<T> type) {
@@ -148,7 +215,7 @@ public final class JaxWsDataObject extends MultiDataObject {
     static class JaxWsDataNode extends DataNode {
         public JaxWsDataNode(DataObject dobj) {
             super(dobj, Children.LEAF);
-            setIconBaseWithExtension("org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif");
+            setIconBaseWithExtension("org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.png");
         }
 
         @Override
@@ -162,11 +229,6 @@ public final class JaxWsDataObject extends MultiDataObject {
 
         @Override
         public boolean canCopy() {
-            return false;
-        }
-        
-        @Override
-        public boolean canDestroy() {
             return false;
         }
         

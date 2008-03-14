@@ -110,9 +110,9 @@ import org.netbeans.api.debugger.jpda.ListeningDICookie;
 import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsEngineListener;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.LocalsTreeModel;
-import org.netbeans.modules.debugger.jpda.models.ThreadsTreeModel;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAClassTypeImpl;
+import org.netbeans.modules.debugger.jpda.models.ThreadsCache;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext;
@@ -145,6 +145,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private int                         state = 0;
     private Operator                    operator;
     private PropertyChangeSupport       pcs;
+    public  PropertyChangeSupport       varChangeSupport = new PropertyChangeSupport(this);
     private JPDAThreadImpl              currentThread;
     private CallStackFrame              currentCallStackFrame;
     private int                         suspend = (SINGLE_THREAD_STEPPING) ? SUSPEND_EVENT_THREAD : SUSPEND_ALL;
@@ -159,6 +160,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private ObjectTranslation           threadsTranslation;
     private ObjectTranslation           localsTranslation;
     private ExpressionPool              expressionPool;
+    private ThreadsCache                threadsCache;
 
     private StackFrame      altCSF = null;  //PATCH 48174
 
@@ -399,7 +401,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
     
     public Session getSession() {
-        return (Session) lookupProvider.lookupFirst (null, Session.class);
+        return lookupProvider.lookupFirst(null, Session.class);
     }
     
     private Boolean canBeModified;
@@ -438,8 +440,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public SmartSteppingFilter getSmartSteppingFilter () {
         if (smartSteppingFilter == null) {
-            smartSteppingFilter = (SmartSteppingFilter) lookupProvider.
-                lookupFirst (null, SmartSteppingFilter.class);
+            smartSteppingFilter = lookupProvider.lookupFirst(null, SmartSteppingFilter.class);
             smartSteppingFilter.addExclusionPatterns (
                 (Set) Properties.getDefault ().getProperties ("debugger").
                     getProperties ("sources").getProperties ("class_filters").
@@ -456,8 +457,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     
     private CompoundSmartSteppingListener getCompoundSmartSteppingListener () {
         if (compoundSmartSteppingListener == null)
-            compoundSmartSteppingListener = (CompoundSmartSteppingListener) lookupProvider.
-                lookupFirst (null, CompoundSmartSteppingListener.class);
+            compoundSmartSteppingListener = lookupProvider.lookupFirst(null, CompoundSmartSteppingListener.class);
         return compoundSmartSteppingListener;
     }
     
@@ -965,6 +965,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
 //            }
 //        }
         
+        synchronized (this) {
+            if (threadsCache != null) {
+                threadsCache.setVirtualMachine(vm);
+            }
+        }
+        
         setState (STATE_RUNNING);
         synchronized (this) {
             vm = virtualMachine; // re-take the VM, it can be nulled by finish()
@@ -1069,8 +1075,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 finishing = true;
             }
             logger.fine("StartActionProvider.finish ()");
-            AbstractDICookie di = (AbstractDICookie) lookupProvider.lookupFirst 
-                (null, AbstractDICookie.class);
+            AbstractDICookie di = lookupProvider.lookupFirst(null, AbstractDICookie.class);
             if (getState () == STATE_DISCONNECTED) return;
             Operator o = getOperator();
             if (o != null) o.stop();
@@ -1261,18 +1266,19 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
     
-    public JPDAThreadGroup[] getTopLevelThreadGroups() {
-        VirtualMachine vm;
-        synchronized (this) {
-            vm = virtualMachine;
+    public synchronized ThreadsCache getThreadsCache() {
+        if (threadsCache == null) {
+            threadsCache = new ThreadsCache(this);
         }
-        if (vm == null) {
+        return threadsCache;
+    }
+    
+    public JPDAThreadGroup[] getTopLevelThreadGroups() {
+        ThreadsCache tc = getThreadsCache();
+        if (tc == null) {
             return new JPDAThreadGroup[0];
         }
-        List groupList;
-        synchronized (LOCK) {
-            groupList = vm.topLevelThreadGroups();
-        }
+        List<ThreadGroupReference> groupList = tc.getTopLevelThreadGroups();
         JPDAThreadGroup[] groups = new JPDAThreadGroup[groupList.size()];
         for (int i = 0; i < groups.length; i++) {
             groups[i] = getThreadGroup((ThreadGroupReference) groupList.get(i));
@@ -1396,8 +1402,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private SourcePath engineContext;
     public synchronized SourcePath getEngineContext () {
         if (engineContext == null)
-            engineContext = (SourcePath) lookupProvider.
-                lookupFirst (null, SourcePath.class);
+            engineContext = lookupProvider.lookupFirst(null, SourcePath.class);
         return engineContext;
     }
 
@@ -1559,7 +1564,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
     
     public JPDAStep createJPDAStep(int size, int depth) {
-        Session session = (Session) lookupProvider.lookupFirst (null, Session.class);
+        Session session = lookupProvider.lookupFirst(null, Session.class);
         return new JPDAStepImpl(this, session, size, depth);
     }
     

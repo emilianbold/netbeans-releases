@@ -1,0 +1,14 @@
+# Blacklist file for testing purposes
+org.netbeans.Test1
+org.netbeans.Test2
+org.netbeans.Test3
+org.netbeans.Test4
+org.netbeans.Test5
+org.netbeans.Test6
+org.netbeans.Test7
+org.netbeans.Test8
+org.netbeans.Test9
+org.netbeans.TestA
+org.netbeans.TestB
+org.netbeans.TestC
+org.netbeans.TestD

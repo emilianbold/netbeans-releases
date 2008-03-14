@@ -45,6 +45,7 @@ import java.util.Calendar;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
@@ -59,7 +60,7 @@ import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
-import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -74,7 +75,7 @@ import org.openide.filesystems.FileObject;
  * 
  * @author John Rice
  */
-public class CreateAction extends AbstractAction {
+public class CreateAction extends ContextAction {
     
     private final VCSContext context;
     Map<File, FileInformation> repositoryFiles = new HashMap<File, FileInformation>();
@@ -127,11 +128,10 @@ public class CreateAction extends AbstractAction {
         return f1;
     }
 
-    public void actionPerformed(ActionEvent e) {
+    public void performAction(ActionEvent e) {
         final Mercurial hg = Mercurial.getInstance();
-        if(!hg.isGoodVersionAndNotify()) return;
 
-        File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
+        final File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         if(files == null || files.length == 0) return;
         
         // If there is a .hg directory in an ancestor of any of the files in 
@@ -147,18 +147,20 @@ public class CreateAction extends AbstractAction {
         }
 
         final Project proj = HgUtils.getProject(context);
-        File projFile = HgUtils.getProjectFile(proj);
+        final File projFile = HgUtils.getProjectFile(proj);
         
         if (projFile == null) {
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE_SEP")); // NOI18N
-            HgUtils.outputMercurialTabInRed(
+            OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
+            logger.outputInRed( NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE")); // NOI18N
+            logger.outputInRed( NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE_SEP")); // NOI18N
+            logger.outputInRed(
                     NbBundle.getMessage(CreateAction.class, "MSG_CREATE_NOT_SUPPORTED_INVIEW_INFO")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
+            logger.output(""); // NOI18N
             JOptionPane.showMessageDialog(null,
                     NbBundle.getMessage(CreateAction.class, "MSG_CREATE_NOT_SUPPORTED_INVIEW"),// NOI18N
                     NbBundle.getMessage(CreateAction.class, "MSG_CREATE_NOT_SUPPORTED_INVIEW_TITLE"),// NOI18N
                     JOptionPane.INFORMATION_MESSAGE);
+            logger.closeLog();
             return;
         }
         String projName = HgProjectUtils.getProjectName(projFile);
@@ -168,15 +170,43 @@ public class CreateAction extends AbstractAction {
         root = getCommonAncestor(root, projFile);
         if (root == null) return;
         
-        HgUtils.outputMercurialTabInRed(
-                NbBundle.getMessage(CreateAction.class,
-                "MSG_CREATE_TITLE")); // NOI18N
-        HgUtils.outputMercurialTabInRed(
-                NbBundle.getMessage(CreateAction.class,
-                "MSG_CREATE_TITLE_SEP")); // NOI18N
-        
         final File rootToManage = root;
         final String prjName = projName;
+        
+
+        if (rootToManage.getAbsolutePath().indexOf(projFile.getAbsolutePath()) != 0) {
+            OutputLogger logger = OutputLogger.getLogger(rootToManage.getAbsolutePath());
+            logger.outputInRed(
+                    NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE")); // NOI18N
+            logger.outputInRed(
+                    NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE_SEP")); // NOI18N
+            logger.output(
+                    NbBundle.getMessage(CreateAction.class,
+                    "MSG_CREATE_INFO1", projFile.getAbsolutePath())); // NOI18N
+            for (File f : files) {
+                if (f.getAbsolutePath().indexOf(projFile.getAbsolutePath()) != 0){
+                    logger.output("        " + f.getAbsolutePath()); // NOI18N
+                }
+            }
+            logger.output(
+                    NbBundle.getMessage(CreateAction.class,
+                    "MSG_CREATE_INFO2", rootToManage.getAbsolutePath())); // NOI18N
+            NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(CreateAction.class,
+                    "MSG_CREATE_CONFIRM_QUERY", rootToManage.getAbsolutePath())); // NOI18N
+
+            descriptor.setTitle(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_CONFIRM_TITLE")); // NOI18N
+            descriptor.setMessageType(JOptionPane.INFORMATION_MESSAGE);
+            descriptor.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+
+            Object res = DialogDisplayer.getDefault().notify(descriptor);
+            if (res == NotifyDescriptor.CANCEL_OPTION) {
+                logger.outputInRed(
+                        NbBundle.getMessage(CreateAction.class,
+                        "MSG_CREATE_CANCELED", rootToManage.getAbsolutePath())); // NOI18N
+                logger.output(""); // NOI18N
+                return;
+            }
+        }
 
         RequestProcessor rp = hg.getRequestProcessor(rootToManage.getAbsolutePath());
         
@@ -184,10 +214,17 @@ public class CreateAction extends AbstractAction {
             public void perform() {
                 
                 try {
-                    HgUtils.outputMercurialTab(
+                    OutputLogger logger = getLogger();
+                    if (rootToManage.getAbsolutePath().indexOf(projFile.getAbsolutePath()) == 0) {
+                        logger.outputInRed(
+                                NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE")); // NOI18N
+                        logger.outputInRed(
+                                NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE_SEP")); // NOI18N
+                    }                 
+                    logger.output(
                             NbBundle.getMessage(CreateAction.class,
                             "MSG_CREATE_INIT", prjName, rootToManage)); // NOI18N
-                    HgCommand.doCreate(rootToManage);
+                    HgCommand.doCreate(rootToManage, logger);
                     hg.versionedFilesChanged();
                     hg.refreshAllAnnotations();      
                 } catch (HgException ex) {
@@ -202,6 +239,7 @@ public class CreateAction extends AbstractAction {
         
         HgProgressSupport supportAdd = new HgProgressSupport() {
             public void perform() {
+                OutputLogger logger = getLogger();
                 try {
                     File[] files = HgUtils.getProjectRootFiles(proj);
                     FileStatusCache cache = hg.getFileStatusCache();
@@ -213,27 +251,27 @@ public class CreateAction extends AbstractAction {
                         repositoryFiles = HgCommand.getUnknownStatus(rootToManage, rootFile);
                         Calendar end = Calendar.getInstance();
                         Mercurial.LOG.log(Level.FINE, "getUnknownStatus took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
-                        HgUtils.outputMercurialTab(
+                        logger.output(
                                 NbBundle.getMessage(CreateAction.class,
                                 "MSG_CREATE_ADD", repositoryFiles.keySet().size(), rootFile.getAbsolutePath())); // NOI18N
                         start = Calendar.getInstance(); cache.addToCache(repositoryFiles.keySet());
                         end = Calendar.getInstance();
                         Mercurial.LOG.log(Level.FINE, "addUnknownsToCache took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
-                        if (repositoryFiles.keySet().size() < HgUtils.MAX_LINES_TO_PRINT) {
+                        if (repositoryFiles.keySet().size() < OutputLogger.MAX_LINES_TO_PRINT) {
                             for(File f: repositoryFiles.keySet()){
-                                HgUtils.outputMercurialTab("\t" + f.getAbsolutePath()); // NOI18N
+                                logger.output("\t" + f.getAbsolutePath()); // NOI18N
                             }
                         }
                     }
                     HgUtils.createIgnored(rootToManage);
-                    HgUtils.outputMercurialTab(""); // NOI18N
-                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE_WARNING")); // NOI18N
+                    logger.output(""); // NOI18N
+                    logger.outputInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE_WARNING")); // NOI18N
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
                 } finally {
-                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE")); // NOI18N
-                    HgUtils.outputMercurialTab(""); // NOI18N
+                    logger.outputInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE")); // NOI18N
+                    logger.output(""); // NOI18N
                 }
             }
         };

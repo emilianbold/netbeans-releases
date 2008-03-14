@@ -88,7 +88,6 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.plaf.PopupMenuUI;
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.actions.PropertyAction;
-import org.netbeans.modules.form.assistant.AssistantMessages;
 import org.netbeans.modules.form.editors.IconEditor.NbImageIcon;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.palette.PaletteUtils;
@@ -432,13 +431,13 @@ public class MenuEditLayer extends JPanel {
                 }
                 
             };
-            formDesigner.addPropertyChangeListener("activatedNodes",selectionListener);
+            formDesigner.addPropertyChangeListener("activatedNodes", selectionListener); // NOI18N
         }
     }
     
     private void unconfigureSelectionListener() {
         if(selectionListener != null) {
-            formDesigner.removePropertyChangeListener(selectionListener);
+            formDesigner.removePropertyChangeListener("activatedNodes", selectionListener); // NOI18N
             selectionListener = null;
         }
     }
@@ -1404,7 +1403,8 @@ public class MenuEditLayer extends JPanel {
             // open top level menus when clicking them
             RADComponent rad = formDesigner.getHandleLayer().getMetaComponentAt(e.getPoint(), HandleLayer.COMP_DEEPEST);
             if(rad != null) {
-                JComponent c = (JComponent) formDesigner.getComponent(rad);
+                Object o = formDesigner.getComponent(rad);
+                JComponent c = (o instanceof JComponent) ? (JComponent)o : null;
                 if(c != null && isTopLevelMenu(c)) {
                     if(e.getClickCount() > 1) {
                         isEditing = true;

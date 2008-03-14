@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,13 +34,14 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.ws.qaf.wsdl;
 
 import java.io.File;
 import java.io.IOException;
+import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
@@ -52,6 +53,8 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.ws.qaf.WsValidation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * 
@@ -92,9 +95,11 @@ public class FromWSDLTSuite extends WsValidation {
     }
 
     /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
+    public static TestSuite suite() {
+        TestSuite suite = new NbTestSuite();
         suite.addTest(new FromWSDLTSuite("testWSFromWSDL"));
+        suite.addTest(new FromWSDLTSuite("testRefreshService"));
+        suite.addTest(new FromWSDLTSuite("testRefreshServiceAndReplaceWSDL"));
         return suite;
     }
     
@@ -122,9 +127,9 @@ public class FromWSDLTSuite extends WsValidation {
         EditorOperator eo = new EditorOperator(getWsName());
         assertTrue(eo.contains("AddNumbersFault_Exception"));
         assertTrue(eo.contains("org.netbeans.websvc.qatests.ws.addnumbers.AddNumbersPortType"));
-//        FileObject srcRoot = getProject().getProjectDirectory().getFileObject("src/java");
-//        File createdFile = new File(FileUtil.toFile(srcRoot), getWsPackage().replace('.', '/') + "/" + getWsName() + ".java");
-//        assertTrue("Ws Impl class has not been created", createdFile.exists());
+        FileObject srcRoot = getProject().getProjectDirectory().getFileObject("src/java");
+        File createdFile = new File(FileUtil.toFile(srcRoot), getWsPackage().replace('.', '/') + "/" + getWsName() + ".java");
+        assertTrue("Ws Impl class has not been created", createdFile.exists());
     }
     
     protected void createNewWSFromWSDL(Project p, String name, String pkg, String wsdl) throws IOException {
@@ -145,6 +150,16 @@ public class FromWSDLTSuite extends WsValidation {
         jtfo.waitText("#"); //NOI18N
         op.finish();
         waitForWsImport("(wsimport-service-" + name); //NOI18N
+    }
+    
+    @Override
+     public void testRefreshService() {
+        refreshWSDL("service","AddNumbersService[AddNumbersPort]",false);
+    }
+    
+    @Override
+    public void testRefreshServiceAndReplaceWSDL() {
+        refreshWSDL("service","AddNumbersService[AddNumbersPort]",true);
     }
 
 }

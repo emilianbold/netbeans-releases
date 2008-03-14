@@ -98,47 +98,38 @@ public final class ServerRegistry implements java.io.Serializable {
     // This is the serializable portion of ServerRegistry
     private ServerString defaultInstance;
 
-    public ServerRegistry() {
+    private ServerRegistry() {
+        super();
     }
+
     private synchronized void init() {
-        if (servers != null && instances != null)
+        LOGGER.log(Level.FINE, "Entering registry initialization"); // NOI18N
+
+        if (servers != null && instances != null) {
             return;
-        //long t0 = System.currentTimeMillis();
+        }
+
         servers = new HashMap();
         instances = new HashMap();
+
         Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
         FileObject dir = rep.getDefaultFileSystem().findResource(DIR_JSR88_PLUGINS);
         if (dir != null) {
+            LOGGER.log(Level.FINE, "Loading server plugins"); // NOI18N
             dir.addFileChangeListener(new PluginInstallListener());
             FileObject[] ch = dir.getChildren();
-            for(int i = 0; i < ch.length; i++) {
-                //long t1=System.currentTimeMillis();
+            for (int i = 0; i < ch.length; i++) {
                 addPlugin(ch[i]);
-                //System.out.println("ServerRegistry.addPlugin("+ch[i]+")="+(System.currentTimeMillis()-t1));
             }
+            LOGGER.log(Level.FINE, "Loading server instances"); // NOI18N
             dir = rep.getDefaultFileSystem().findResource(DIR_INSTALLED_SERVERS);
             dir.addFileChangeListener(new InstanceInstallListener());
             ch = dir.getChildren();
-            for(int i = 0; i < ch.length; i++) {
-                //long t1=System.currentTimeMillis();
+            for (int i = 0; i < ch.length; i++) {
                 addInstance(ch[i]);
-                //System.out.println("ServerRegistry.addInstance("+ch[i]+")="+(System.currentTimeMillis()-t1));
             }
         } else {
-            LOGGER.warning("No DIR_JSR88_PLUGINS folder found, no server plugins will be availabe"); // NOI18N
-        }
-        //System.out.println("ServerRegistry.init="+(System.currentTimeMillis()-t0));
-    }
-
-    private synchronized void fetchInstances(Server server) {
-        Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
-        FileObject dir = rep.getDefaultFileSystem().findResource(DIR_INSTALLED_SERVERS);
-        FileObject[] ch = dir.getChildren();
-        for (int i = 0; i < ch.length; i++) {
-            String url = (String) ch[i].getAttribute(URL_ATTR);
-            if (url != null && server.handlesUri(url)) {
-                addInstance(ch[i]);
-            }
+            LOGGER.log(Level.WARNING, "No DIR_JSR88_PLUGINS folder found, no server plugins will be availabe"); // NOI18N
         }
     }
 
@@ -162,11 +153,10 @@ public final class ServerRegistry implements java.io.Serializable {
                     }
                     server = new Server(fo);
                     serversMap().put(name, server);
-
-                    fetchInstances(server);
                 }
                 if (server != null) {
                     firePluginListeners(server, true);
+                    fetchInstances(server);
                 }
             }
         } catch (Exception e) {
@@ -175,8 +165,19 @@ public final class ServerRegistry implements java.io.Serializable {
         }
     }
 
-    // PENDING should be private
-    void removePlugin(FileObject fo) {
+    private void fetchInstances(Server server) {
+        Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
+        FileObject dir = rep.getDefaultFileSystem().findResource(DIR_INSTALLED_SERVERS);
+        FileObject[] ch = dir.getChildren();
+        for (int i = 0; i < ch.length; i++) {
+            String url = (String) ch[i].getAttribute(URL_ATTR);
+            if (url != null && server.handlesUri(url)) {
+                addInstance(ch[i]);
+            }
+        }
+    }
+
+    private void removePlugin(FileObject fo) {
         Server server = null;
         synchronized (this) {
             String name = fo.getName();
@@ -221,17 +222,20 @@ public final class ServerRegistry implements java.io.Serializable {
     class LayerListener implements FileChangeListener {
 
         public void fileAttributeChanged(FileAttributeEvent fae) {
-            LOGGER.finest("Attribute changed event"); // NOI18N
         }
+        
         public void fileChanged(FileEvent fe) {
         }
+        
         public void fileFolderCreated(FileEvent fe) {
         }
+        
         public void fileRenamed(FileRenameEvent fe) {
         }
 
         public void fileDataCreated(FileEvent fe) {
         }
+        
         public void fileDeleted(FileEvent fe) {
         }
 
@@ -498,6 +502,7 @@ public final class ServerRegistry implements java.io.Serializable {
     }
 
     private void firePluginListeners(Server server, boolean add) {
+        LOGGER.log(Level.FINE, "Firing plugin listener"); // NOI18N
         for(Iterator i = pluginListeners.iterator();i.hasNext();) {
             PluginListener pl = (PluginListener)i.next();
             if(add) pl.serverAdded(server);

@@ -44,9 +44,8 @@ package org.netbeans.modules.java.j2seproject;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -56,7 +55,9 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -102,6 +103,14 @@ public class J2SEProjectUtil {
             return false;
         }
         return !SourceUtils.getMainClasses(fo).isEmpty();
+    }
+    
+    public static Collection<ElementHandle<TypeElement>> getMainMethods (final FileObject fo) {
+        // support for unit testing
+        if (fo == null || MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
+            return Collections.<ElementHandle<TypeElement>>emptySet();
+        }
+        return SourceUtils.getMainClasses(fo);
     }
 
         
@@ -160,5 +169,18 @@ public class J2SEProjectUtil {
             }
             return null;
         }
+    }
+    
+    public static String getBuildXmlName (final J2SEProject project) {
+        assert project != null;
+        String buildScriptPath = project.evaluator().getProperty(J2SEProjectProperties.BUILD_SCRIPT);
+        if (buildScriptPath == null) {
+            buildScriptPath = GeneratedFilesHelper.BUILD_XML_PATH;
+        }
+        return buildScriptPath;
+    }
+    
+    public static FileObject getBuildXml (final J2SEProject project) {
+        return project.getProjectDirectory().getFileObject (getBuildXmlName(project));
     }
 }

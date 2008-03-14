@@ -48,10 +48,12 @@ import java.io.File;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.Set;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.wizards.CloneRepositoryWizardPanel;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
@@ -66,7 +68,7 @@ import org.openide.util.HelpCtx;
  * 
  * @author John Rice
  */
-public class PushOtherAction extends AbstractAction implements PropertyChangeListener {
+public class PushOtherAction extends ContextAction implements PropertyChangeListener {
     
     private final VCSContext context;
     private Repository repository = null;
@@ -78,15 +80,14 @@ public class PushOtherAction extends AbstractAction implements PropertyChangeLis
         putValue(Action.NAME, name);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         final File root = HgUtils.getRootFile(context);
         if (root == null) return;
 
         if (repository == null) {
             int repositoryModeMask = Repository.FLAG_URL_EDITABLE | Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
             String title = org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Location");       // NOI18N
-            repository = new Repository(repositoryModeMask, title);
+            repository = new Repository(repositoryModeMask, title, true);
             repository.addPropertyChangeListener(this);
         }
         pushButton = new JButton();
@@ -126,7 +127,7 @@ public class PushOtherAction extends AbstractAction implements PropertyChangeLis
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() { 
-               PushAction.performPush(root, pushPath, fromPrjName, toPrjName); 
+               PushAction.performPush(root, pushPath, fromPrjName, toPrjName, this.getLogger()); 
             } 
         };
 
@@ -135,10 +136,9 @@ public class PushOtherAction extends AbstractAction implements PropertyChangeLis
     }
     
     public boolean isEnabled() {
-        File root = HgUtils.getRootFile(context);
-        if(root == null)
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) 
             return false;
-        else
-            return true;
+        return true; // #121293: Speed up menu display, warn user if not set when Push selected
     }
 }

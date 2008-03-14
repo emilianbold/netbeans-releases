@@ -181,7 +181,7 @@ public final class ModuleList {
             // netbeans.org module.
             File nbroot = findNetBeansOrg(basedir);
             if (nbroot == null) {
-                throw new IOException("Could not find netbeans.org CVS root from " + basedir + "; note that 3rd-level modules (a/b/c) are permitted at the maximum"); // NOI18N
+                throw new IOException("Could not find netbeans.org source root from " + basedir + "; note that 3rd-level modules (a/b/c) are permitted at the maximum"); // NOI18N
             }
             return findOrCreateModuleListFromNetBeansOrgSources(nbroot);
         }
@@ -256,6 +256,9 @@ public final class ModuleList {
     }
     
     private static ModuleList loadNetBeansOrgCachedModuleList(File root, File nbdestdir) throws IOException {
+        if (!PERMIT_CACHES) {
+            throw new IOException("Not using caches any more due to previous call of refresh()");
+        }
         File scanCache = new File(root, "nbbuild" + File.separatorChar + "nbproject" + File.separatorChar +
                 "private" + File.separatorChar + "scan-cache-full.ser");
         if (!scanCache.isFile()) {
@@ -902,12 +905,14 @@ public final class ModuleList {
         return PropertyUtils.fixedPropertyProvider(NbCollections.checkedMapByFilter(p, String.class, String.class, true));
     }
     
+    private static boolean PERMIT_CACHES = true;
     /**
      * Refresh any existing lists, e.g. in response to a new module being created.
      */
     public static void refresh() {
         sourceLists.clear();
         binaryLists.clear();
+        PERMIT_CACHES = false; // #126524
         // XXX what about knownEntries?
     }
     
@@ -920,7 +925,7 @@ public final class ModuleList {
     }
     
     /**
-     * Whether whether a given dir is root of netbeans.org CVS.
+     * Whether whether a given dir is root of netbeans.org sources.
      */
     public static boolean isNetBeansOrg(File dir) {
         return new File(dir, "nbbuild").isDirectory() && // NOI18N
@@ -929,7 +934,7 @@ public final class ModuleList {
     }
     
     /**
-     * Find the root of netbeans.org CVS starting from a project basedir.
+     * Find the root of netbeans.org sources starting from a project basedir.
      */
     public static File findNetBeansOrg(File basedir) {
         File f = basedir;

@@ -55,12 +55,8 @@ public class HighlightsLayerFactoryImpl implements HighlightsLayerFactory {
     
     public HighlightsLayer[] createLayers(Context context) {
         return new HighlightsLayer[] {
-//            HighlightsLayer.create(SemanticHighlighter.class.getName() + "-1", ZOrder.SYNTAX_RACK.forPosition(1000), false, LexerBasedHighlightLayer.getLayer(SemanticHighlighter.class, context.getDocument())),
-//            HighlightsLayer.create(SemanticHighlighter.class.getName() + "-2", ZOrder.SYNTAX_RACK.forPosition(1500), false, SemanticHighlighter.getImportHighlightsBag(context.getDocument())),
-            //the mark occurrences layer should be "above" current row and "below" the search layers:
-//            HighlightsLayer.create(MarkOccurrencesHighlighter.class.getName(), ZOrder.CARET_RACK.forPosition(50), false, MarkOccurrencesHighlighter.getHighlightsBag(context.getDocument())),
-            //"above" mark occurrences, "below" search layers:
-            HighlightsLayer.create(InstantRenamePerformer.class.getName(), ZOrder.CARET_RACK.forPosition(75), false, InstantRenamePerformer.getHighlightsBag(context.getDocument())),
+            //"above" mark occurrences (1000)
+            HighlightsLayer.create(InstantRenamePerformer.class.getName(), ZOrder.CARET_RACK.forPosition(1075), false, InstantRenamePerformer.getHighlightsBag(context.getDocument())),
         };
     }
 }

@@ -19,12 +19,10 @@
 package org.netbeans.modules.bpel.model.api.support;
 
 import java.text.MessageFormat;
-import java.util.LinkedList;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.bpel.model.api.Import;
-import org.netbeans.modules.bpel.model.api.VariableDeclarationScope;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathProblem;
@@ -126,26 +124,17 @@ public class PathValidationContext implements XPathValidationContext {
     /**
      * Adds validation result item in current context.
      */ 
-    public void addResultItem(ResultType resultType, String bundleKey,
-            Object... values){
-        //
-        String str = NbBundle.getMessage(BpelXpathValidator.class, bundleKey);
+    public void addResultItem(ResultType resultType, String str, Object... values){
         addResultItemImpl(null, resultType, str, values);
     }
 
     /**
      * Adds validation result item in current context.
      */ 
-    public void addResultItem(String exprText, ResultType resultType, 
-            String bundleKey, Object... values){
-        //
-        String str = NbBundle.getMessage(BpelXpathValidator.class, bundleKey);
+    public void addResultItem(String exprText, ResultType resultType, String str, Object... values) {
         addResultItemImpl(exprText, resultType, str, values);
     }
 
-    /**
-     * Implementation of the XPath SPI ValidationContex interface
-     */ 
     public void addResultItem(XPathExpression expr, ResultType resultType, 
             XPathProblem problem, Object... values) {
         //
@@ -163,8 +152,7 @@ public class PathValidationContext implements XPathValidationContext {
         }
     }
     
-    private void addResultItemImpl(String exprText, ResultType resultType, 
-            String template, Object... values){
+    private void addResultItemImpl(String exprText, ResultType resultType, String template, Object... values){
         //
         String str = template;
         if (values != null && values.length > 0) {

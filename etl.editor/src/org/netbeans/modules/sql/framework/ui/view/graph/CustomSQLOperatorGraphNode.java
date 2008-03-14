@@ -48,7 +48,6 @@ import javax.swing.JPopupMenu;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.jdbc.SQLUtils;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.GUIInfo;
 import org.netbeans.modules.sql.framework.model.SQLCanvasObject;
 import org.netbeans.modules.sql.framework.model.SQLOperatorArg;
@@ -71,7 +70,7 @@ import org.openide.NotifyDescriptor;
  */
 public class CustomSQLOperatorGraphNode extends SQLOperatorGraphNode {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(CustomSQLOperatorGraphNode.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(CustomSQLOperatorGraphNode.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private JMenuItem editItem;
     private IOperatorXmlInfo info;
@@ -159,6 +158,7 @@ public class CustomSQLOperatorGraphNode extends SQLOperatorGraphNode {
                     NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION,
                     DialogDescriptor.DEFAULT_ALIGN, null, null);
             Dialog customOptDialog = DialogDisplayer.getDefault().createDialog(dlgDesc);
+            customOptDialog.getAccessibleContext().setAccessibleDescription("This dialog provides information about Custom Operators");
             customOptDialog.setVisible(true);
             if (NotifyDescriptor.CANCEL_OPTION == dlgDesc.getValue()) {
                 return;
@@ -196,7 +196,7 @@ public class CustomSQLOperatorGraphNode extends SQLOperatorGraphNode {
                 ((ConditionBuilderSQLUIModelImpl) graphModel).restoreUIState();
             }
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("PRSR167: editCustomOperator{0}", e.getMessage()), e);
+            mLogger.errorNoloc(mLoc.t("EDIT167: editCustomOperator{0}", e.getMessage()), e);
         }
     }
 

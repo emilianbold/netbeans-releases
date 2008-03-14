@@ -1,0 +1,28 @@
+/*
+ *  __NAME__
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package Templates.Classes;
+
+import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.UriInfo;
+
+/**
+ * REST Web Service
+ *
+ * @author __USER__
+ */
+
+public class __NAME__ {
+    @HttpContext
+    private UriInfo context;
+
+    /** Creates a new instance of __NAME__ */
+    public __NAME__() {
+    }
+}

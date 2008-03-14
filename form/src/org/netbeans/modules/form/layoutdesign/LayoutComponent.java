@@ -211,6 +211,10 @@ public final class LayoutComponent implements LayoutConstants {
         return resizability;
     }
 
+    LayoutInterval[] getParentRoots() {
+        return parentComponent != null ? parentComponent.getLayoutRoots(layoutIntervals[0]) : null;
+    }
+
     // -----
     // subcomponents
 

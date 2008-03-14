@@ -40,9 +40,11 @@
     <import namespace="http://manufacturing.org/wsdl/inventory/bp4"
             location="InventoryService.wsdl"
             importType="http://schemas.xmlsoap.org/wsdl/"></import>
+    
     <import namespace="http://manufacturing.org/xsd/inventory"
             location="inventory.xsd"
             importType="http://www.w3.org/2001/XMLSchema"></import>
+    
     <import namespace="http://manufacturing.org/xsd/purchase"
             location="purchaseOrder.xsd"
             importType="http://www.w3.org/2001/XMLSchema"></import>

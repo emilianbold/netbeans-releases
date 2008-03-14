@@ -42,9 +42,11 @@
 package org.netbeans.modules.cnd.completion.cplusplus.utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenContextPath;
@@ -52,7 +54,6 @@ import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenProcessor;
 import org.netbeans.modules.cnd.completion.cplusplus.NbCsmSyntaxSupport;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
-import org.openide.ErrorManager;
 
 /**
  *
@@ -64,23 +65,26 @@ public final class TokenUtilities {
     private TokenUtilities() {
     }
     
-    public static List<Token> getTokens(Document doc) {
+    public static List<Token> getTokens(Document doc, int start, int end) {
         if (!(doc instanceof BaseDocument))
-            return null;
+            return Collections.<Token>emptyList();
         
         try {
             SyntaxSupport sup = ((BaseDocument) doc).getSyntaxSupport();
             NbCsmSyntaxSupport nbSyntaxSup = (NbCsmSyntaxSupport)sup.get(NbCsmSyntaxSupport.class);
             if (nbSyntaxSup == null) {
-                return null;
+                String name = (String) doc.getProperty(Document.TitleProperty);
+                System.err.println("document " + name + " doesn't have NbCsmSyntaxSupport syntax support " + doc);
+                System.err.println("document " + (CndLexerUtilities.getCppTokenSequence(doc, start) == null ? "DOESN'T" : "") + " have " + "lexer info");
+                return Collections.<Token>emptyList();
             }
            
             AllTokensTP tp = new AllTokensTP();
-            nbSyntaxSup.tokenizeText(tp, 0, doc.getLength(), true);
+            nbSyntaxSup.tokenizeText(tp, start, end, true);
             return tp.getTokens();
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
-            return null;
+            // there could be some modifications in document
+            return Collections.<Token>emptyList();
         }
     }
     
@@ -102,7 +106,7 @@ public final class TokenUtilities {
             
             return token;
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            // there could be some modifications in document
             return null;
         }
     }
@@ -150,7 +154,7 @@ public final class TokenUtilities {
                 }
             }
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            // there could be some modifications in document
         }
         return origOffset;
     }

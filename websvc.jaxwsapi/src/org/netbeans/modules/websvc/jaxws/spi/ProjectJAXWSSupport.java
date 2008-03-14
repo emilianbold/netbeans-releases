@@ -56,7 +56,6 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -64,6 +63,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.ServiceAlreadyExists
 import org.netbeans.modules.websvc.jaxws.api.WsdlWrapperGenerator;
 import org.netbeans.modules.websvc.jaxws.api.WsdlWrapperHandler;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
@@ -174,7 +174,7 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
      */
     
     public String addService(String name, String serviceImpl, String wsdlUrl, String serviceName,
-            String portName, String packageName, boolean isJsr109) {
+            String portName, String packageName, boolean isJsr109, boolean useProvider) {
         JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
         if (jaxWsModel!=null) {
             String finalServiceName = WSUtils.findProperServiceName(name, jaxWsModel);
@@ -242,8 +242,9 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
                     try {
                         service = jaxWsModel.addService(finalServiceName, serviceImpl, wsdlUrl, serviceName, portName, packageName);
                     } catch (ServiceAlreadyExistsExeption ex) {
-                        //this shouldn't happen
+                        ErrorManager.getDefault().notify(ex);
                     }
+                    service.setUseProvider(useProvider);
                     String localWsdlUrl = FileUtil.getRelativePath(xmlResorcesFo, localWsdl);
                     service.setLocalWsdlFile(localWsdlUrl);
                     FileObject catalog = getCatalogFileObject();
@@ -311,27 +312,29 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
     private void writeJaxWsModel(final JaxWsModel jaxWsModel) {
         try {
             final FileObject jaxWsFo = project.getProjectDirectory().getFileObject("nbproject/jax-ws.xml"); //NOI18N
-            jaxWsFo.getFileSystem().runAtomicAction(new AtomicAction() {
-                public void run() {
-                    FileLock lock=null;
-                    OutputStream os=null;
-                    try {
-                        lock = jaxWsFo.lock();
-                        os = jaxWsFo.getOutputStream(lock);
-                        jaxWsModel.write(os);
-                        os.close();
-                    } catch (java.io.IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                    } finally {
-                        if (os!=null) {
-                            try {
-                                os.close();
-                            } catch (IOException ex) {}
+            if (jaxWsFo != null) {
+                jaxWsFo.getFileSystem().runAtomicAction(new AtomicAction() {
+                    public void run() {
+                        FileLock lock=null;
+                        OutputStream os=null;
+                        try {
+                            lock = jaxWsFo.lock();
+                            os = jaxWsFo.getOutputStream(lock);
+                            jaxWsModel.write(os);
+                            os.close();
+                        } catch (java.io.IOException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        } finally {
+                            if (os!=null) {
+                                try {
+                                    os.close();
+                                } catch (IOException ex) {}
+                            }
+                            if (lock!=null) lock.releaseLock();
                         }
-                        if (lock!=null) lock.releaseLock();
                     }
-                }
-            });
+                });
+            }
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }

@@ -56,7 +56,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
@@ -64,6 +63,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
@@ -75,28 +75,32 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 public class JaxWsClientChildren extends Children.Keys<WsdlService> {
+
     Client client;
     WsdlModel wsdlModel;
     FileObject srcRoot;
-    
+
     public JaxWsClientChildren(Client client, FileObject srcRoot) {
-        this.client=client;
+        this.client = client;
         this.srcRoot = srcRoot;
     }
-    
+
     @Override
     protected void addNotify() {
-        final WsdlModeler wsdlModeler = ((JaxWsClientNode)getNode()).getWsdlModeler();
-        if (wsdlModeler!=null) {
+        final WsdlModeler wsdlModeler = ((JaxWsClientNode) getNode()).getWsdlModeler();
+        if (wsdlModeler != null) {
             JAXWSClientSupport clientSupport = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
-            if (clientSupport != null) wsdlModeler.setCatalog(clientSupport.getCatalog());
+            if (clientSupport != null) {
+                wsdlModeler.setCatalog(clientSupport.getCatalog());
+            }
             wsdlModel = wsdlModeler.getWsdlModel();
-            if (wsdlModel==null) {
+            if (wsdlModel == null) {
                 wsdlModeler.generateWsdlModel(new WsdlModelListener() {
+
                     public void modelCreated(WsdlModel model) {
-                        wsdlModel=model;
-                        ((JaxWsClientNode)getNode()).changeIcon();
-                        if (model==null) {
+                        wsdlModel = model;
+                        ((JaxWsClientNode) getNode()).changeIcon();
+                        if (model == null) {
                             DialogDisplayer.getDefault().notify(
                                     new JaxWsUtils.WsImportClientFailedMessage(wsdlModeler.getCreationException()));
                         }
@@ -108,121 +112,122 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
             }
         }
     }
-    
+
     @Override
     protected void removeNotify() {
         setKeys(Collections.<WsdlService>emptySet());
     }
-       
+
     private void updateKeys() {
-        List<WsdlService> keys=null;
-        if (wsdlModel!=null) {
-            keys=wsdlModel.getServices();
+        List<WsdlService> keys = null;
+        if (wsdlModel != null) {
+            keys = wsdlModel.getServices();
         }
         setKeys(keys == null ? new ArrayList<WsdlService>() : keys);
     }
 
     protected Node[] createNodes(WsdlService key) {
-        return new Node[] {new ServiceNode(key)};
+        return new Node[]{new ServiceNode(key)};
     }
-    
+
     void refreshKeys(boolean downloadWsdl) {
         this.refreshKeys(downloadWsdl, "");
     }
-    
+
     void refreshKeys(boolean downloadWsdl, String newWsdlUrl) {
         super.addNotify();
         // copy to local wsdl first
         JAXWSClientSupport support = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
-        final JaxWsClientNode clientNode = (JaxWsClientNode)getNode();
+        final JaxWsClientNode clientNode = (JaxWsClientNode) getNode();
         if (downloadWsdl) {
             try {
                 String clientName = clientNode.getName();
                 String oldWsdlUrl = client.getWsdlUrl();
-                boolean jaxWsModelChanged=false;
+                boolean jaxWsModelChanged = false;
                 FileObject localWsdl = null;
-                if (newWsdlUrl.length()>0 && !oldWsdlUrl.equals(newWsdlUrl)) {                    
+                if (newWsdlUrl.length() > 0 && !oldWsdlUrl.equals(newWsdlUrl)) {
                     localWsdl = WSUtils.retrieveResource(
-                        support.getLocalWsdlFolderForClient(clientName,true),
-                        new URI(newWsdlUrl));
-                    jaxWsModelChanged=true;
+                            support.getLocalWsdlFolderForClient(clientName, true),
+                            new URI(newWsdlUrl));
+                    jaxWsModelChanged = true;
                 } else {
                     WSUtils.retrieveResource(
-                        support.getLocalWsdlFolderForClient(clientName,true),
-                        new URI(oldWsdlUrl));                       
+                            support.getLocalWsdlFolderForClient(clientName, true),
+                            new URI(oldWsdlUrl));
                 }
-                
+
                 if (jaxWsModelChanged) {
                     client.setWsdlUrl(newWsdlUrl);
-                    FileObject xmlResourcesFo = support.getLocalWsdlFolderForClient(clientName,false);
-                    if (xmlResourcesFo!=null) {
+                    FileObject xmlResourcesFo = support.getLocalWsdlFolderForClient(clientName, false);
+                    if (xmlResourcesFo != null) {
                         String localWsdlUrl = FileUtil.getRelativePath(xmlResourcesFo, localWsdl);
                         client.setLocalWsdlFile(localWsdlUrl);
                     }
-                    
+
                     clientNode.getJaxWsModel().write();
-                }  
+                }
                 // copy resources to WEB-INF[META-INF]/wsdl/client/${clientName}
                 if (client.getWsdlUrl().startsWith("file:")) {
                     FileObject srcRoot = getNode().getLookup().lookup(FileObject.class);
                     Project project = FileOwnerQuery.getOwner(srcRoot);
-                    if (project.getLookup().lookup(J2eeModuleProvider.class)!=null) {
-                        FileObject xmlResorcesFo = support.getLocalWsdlFolderForClient(clientName,false);
-                        if (xmlResorcesFo!=null) {
+                    if (project.getLookup().lookup(J2eeModuleProvider.class) != null) {
+                        FileObject xmlResorcesFo = support.getLocalWsdlFolderForClient(clientName, false);
+                        if (xmlResorcesFo != null) {
                             FileObject wsdlFolder = getWsdlFolderForClient(support, clientName);
                             WSUtils.copyFiles(xmlResorcesFo, wsdlFolder);
                         }
                     }
-                }              
+                }
             } catch (URISyntaxException ex) {
                 ErrorManager.getDefault().notify(ex);
             } catch (UnknownHostException ex) {
                 ErrorManager.getDefault().annotate(ex,
-                        NbBundle.getMessage(JaxWsClientChildren.class,"MSG_ConnectionProblem"));
+                        NbBundle.getMessage(JaxWsClientChildren.class, "MSG_ConnectionProblem"));
                 return;
             } catch (IOException ex) {
                 ErrorManager.getDefault().annotate(ex,
-                        NbBundle.getMessage(JaxWsClientChildren.class,"MSG_ConnectionProblem"));
+                        NbBundle.getMessage(JaxWsClientChildren.class, "MSG_ConnectionProblem"));
                 return;
             }
-            
+
         }
 
         final WsdlModeler wsdlModeler = clientNode.getWsdlModeler();
         clientNode.setModelGenerationFinished(false);
         clientNode.changeIcon();
-        if (wsdlModeler!=null) {
+        if (wsdlModeler != null) {
             wsdlModeler.generateWsdlModel(new WsdlModelListener() {
+
                 public void modelCreated(WsdlModel model) {
-                    wsdlModel=model;
+                    wsdlModel = model;
                     clientNode.setModelGenerationFinished(true);
                     clientNode.changeIcon();
-                    if (model==null) {
+                    if (model == null) {
                         DialogDisplayer.getDefault().notify(
                                 new JaxWsUtils.WsImportClientFailedMessage(wsdlModeler.getCreationException()));
                     }
                     updateKeys();
-                    
-                    if (model!=null) {
+
+                    if (model != null) {
                         Client client = clientNode.getJaxWsModel().findClientByName(clientNode.getName());
-                        if (client!=null) {
+                        if (client != null) {
                             WsdlService wsdlService = null;
-                            boolean jaxWsModelChanged=false;
+                            boolean jaxWsModelChanged = false;
                             List<WsdlService> wsdlServices = model.getServices();
-                            if (wsdlServices!=null && wsdlServices.size()>0) {
+                            if (wsdlServices != null && wsdlServices.size() > 0) {
                                 wsdlService = wsdlServices.get(0);
                             }
-                            
+
                             // test if package name for java artifacts hasn't changed
                             String oldPkgName = client.getPackageName();
-                            if (wsdlService!=null && oldPkgName!=null && !client.isPackageNameForceReplace()) {
+                            if (wsdlService != null && !client.isPackageNameForceReplace()) {
                                 String javaName = wsdlService.getJavaName();
                                 int dotPosition = javaName.lastIndexOf(".");
-                                if (dotPosition>=0) {
-                                    String newPkgName = javaName.substring(0,dotPosition);
-                                    if (!oldPkgName.equals(newPkgName)) {
+                                if (dotPosition >= 0) {
+                                    String newPkgName = javaName.substring(0, dotPosition);
+                                    if ((oldPkgName == null && newPkgName != null) || (!oldPkgName.equals(newPkgName))) {
                                         client.setPackageName(newPkgName);
-                                        jaxWsModelChanged=true;
+                                        jaxWsModelChanged = true;
                                     }
                                 }
                             }
@@ -232,7 +237,7 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
                                 try {
                                     clientNode.getJaxWsModel().write();
                                 } catch (IOException ex) {
-                                    ErrorManager.getDefault().notify(ErrorManager.ERROR,ex);
+                                    ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
                                 }
                             }
                         }
@@ -243,13 +248,13 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
         // re-generate java artifacts
         FileObject srcRoot = getNode().getLookup().lookup(FileObject.class);
         Project project = FileOwnerQuery.getOwner(srcRoot);
-        if (project!=null) {
+        if (project != null) {
             FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
             try {
                 String name = client.getName();
                 ExecutorTask wsimportTask =
-                    ActionUtils.runTarget(buildImplFo,
-                        new String[]{"wsimport-client-clean-"+name,"wsimport-client-"+name},null); //NOI18N
+                        ActionUtils.runTarget(buildImplFo,
+                        new String[]{"wsimport-client-clean-" + name, "wsimport-client-" + name}, null); //NOI18N
                 wsimportTask.waitFinished();
             } catch (IOException ex) {
                 ErrorManager.getDefault().log(ex.getLocalizedMessage());
@@ -259,21 +264,23 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
             // refresh client artifacts directory due to code copletion
             String packageName = client.getPackageName();
             if (packageName != null) {
-                packageName = packageName.replace(".","/"); //NOI18N
-                FileObject clientArtifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/client/"+packageName); //NOI18N
-                if (clientArtifactsFolder!=null) clientArtifactsFolder.refresh();
+                packageName = packageName.replace(".", "/"); //NOI18N
+                FileObject clientArtifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/client/" + packageName); //NOI18N
+                if (clientArtifactsFolder != null) {
+                    clientArtifactsFolder.refresh();
+                }
             }
         }
     }
-    
+
     WsdlModel getWsdlModel() {
         return wsdlModel;
     }
-    
+
     private FileObject getWsdlFolderForClient(JAXWSClientSupport support, String name) throws IOException {
         FileObject globalWsdlFolder = support.getWsdlFolder(true);
-        FileObject oldWsdlFolder = globalWsdlFolder.getFileObject("client/"+name);
-        if (oldWsdlFolder!=null) {
+        FileObject oldWsdlFolder = globalWsdlFolder.getFileObject("client/" + name);
+        if (oldWsdlFolder != null) {
             FileLock lock = oldWsdlFolder.lock();
             try {
                 oldWsdlFolder.delete(lock);
@@ -282,8 +289,9 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
             }
         }
         FileObject clientWsdlFolder = globalWsdlFolder.getFileObject("client"); //NOI18N
-        if (clientWsdlFolder==null) clientWsdlFolder = globalWsdlFolder.createFolder("client"); //NOI18N
+        if (clientWsdlFolder == null) {
+            clientWsdlFolder = globalWsdlFolder.createFolder("client");
+        } //NOI18N
         return clientWsdlFolder.createFolder(name);
     }
-
 }

@@ -51,14 +51,14 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.netbeans.modules.mercurial.FileInformation;
-import javax.swing.AbstractAction;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 
 /**
  * Show basic conflict resolver UI (provided by the diff module).
  *
  * @author Petr Kuzel
  */
-public class ResolveConflictsAction extends AbstractAction {
+public class ResolveConflictsAction extends ContextAction {
 
     private final VCSContext context;
  
@@ -67,8 +67,7 @@ public class ResolveConflictsAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         resolve(context);
     }
 

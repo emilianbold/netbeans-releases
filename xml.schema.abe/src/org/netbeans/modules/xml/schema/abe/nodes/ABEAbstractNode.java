@@ -461,8 +461,8 @@ public abstract class ABEAbstractNode extends AbstractNode
         // try rename silently
         
         try {
-            
-            context.setUserInducedEventMode(true);
+            if(context != null)
+                context.setUserInducedEventMode(true);
             SchemaModel sm = model.getSchemaModel();
           //  RefactoringManager.getInstance().execute(request, false);
             SharedUtils.silentRename((Nameable)ref,value, false);

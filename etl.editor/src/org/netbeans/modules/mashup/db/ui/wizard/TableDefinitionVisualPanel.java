@@ -6,6 +6,9 @@
 
 package org.netbeans.modules.mashup.db.ui.wizard;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+
 /**
  *
  * @author  karthikeyan s
@@ -13,7 +16,8 @@ package org.netbeans.modules.mashup.db.ui.wizard;
 public class TableDefinitionVisualPanel extends javax.swing.JPanel {
     
     private TableDefinitionPanel owner;
-    
+    private static transient final Logger mLogger = Logger.getLogger(TableDefinitionVisualPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /** Creates new form TableDefinitionVisualPanel */
     public TableDefinitionVisualPanel(TableDefinitionPanel panel) {
         initComponents();
@@ -21,7 +25,8 @@ public class TableDefinitionVisualPanel extends javax.swing.JPanel {
     }
     
     public String getName() {
-        return "Enter Column Properties";
+        String nbBundle1 = mLoc.t("BUND252: Enter Column Properties");
+        return nbBundle1.substring(15);
     }    
     
     /** This method is called from within the constructor to

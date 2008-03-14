@@ -111,7 +111,7 @@ public final class PaletteItem implements Node.Cookie {
      * normally used only for project output).
      */
     public void setClassFromCurrentProject(String className, FileObject fileInProject) {
-        setComponentClassSource(new ClassSource(className, null, null));
+        setComponentClassSource(new ClassSource(className));
         cpRepresentative = fileInProject;
     }
 

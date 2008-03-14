@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.bpel.debugger.ui.execution;
 
-import org.netbeans.modules.bpel.debugger.ui.callstack.*;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.bpel.debugger.ui.util.AbstractColumn;
@@ -38,6 +37,7 @@ public final class ProcessExecutionColumnModel_Name extends AbstractColumn {
         myName = "CTL_PEV_Column_Name"; // NOI18N
         myTooltip = "CTL_PEV_Column_Name_Tooltip"; // NOI18N
         myType = null;
+        mySortable = false;
     }
     
     @Override

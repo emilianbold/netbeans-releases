@@ -31,6 +31,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -104,5 +105,9 @@ public class MockOpenProjectsTrampoline implements OpenProjectsTrampoline {
             throw new IllegalArgumentException("Project " + ProjectUtils.getInformation(project).getDisplayName() + " is not open and cannot be set as main.");
         }
         this.mainProject = project;
+    }
+
+    public Future<Project[]> openProjectsAPI() {
+        return null;
     }
 }

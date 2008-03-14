@@ -3,13 +3,9 @@
 Document 0
 Delete:  source : <TESTURL>/resolv.rb
 
-Indexed:
-
-Not Indexed:
 
 
 Document 1
-Delete:
 Indexed:
   attribute : aa
   attribute : additional
@@ -41,7 +37,6 @@ Indexed:
   method : encode
   method : initialize(id)|PRIVATE|
   method : new(id)|PRIVATE|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -50,7 +45,6 @@ Not Indexed:
 
 
 Document 2
-Delete:
 Indexed:
   attribute : address
   attribute : bitmap
@@ -65,7 +59,6 @@ Indexed:
   method : encode_rdata(msg)
   method : initialize(address,protocol,bitmap)|PRIVATE|
   method : new(address,protocol,bitmap)|PRIVATE|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -74,7 +67,6 @@ Not Indexed:
 
 
 Document 3
-Delete:
 Indexed:
   attribute : address
   class : A
@@ -87,7 +79,6 @@ Indexed:
   method : encode_rdata(msg)
   method : initialize(address)|PRIVATE|
   method : new(address)|PRIVATE|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -96,7 +87,6 @@ Not Indexed:
 
 
 Document 4
-Delete:
 Indexed:
   attribute : address
   class : AAAA
@@ -109,7 +99,6 @@ Indexed:
   method : encode_rdata(msg)
   method : initialize(address)|PRIVATE|
   method : new(address)|PRIVATE|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -118,7 +107,6 @@ Not Indexed:
 
 
 Document 5
-Delete:
 Indexed:
   attribute : address
   class : IPv4
@@ -134,7 +122,6 @@ Indexed:
   method : new(address)|PRIVATE|STATIC|
   method : to_name
   method : to_s
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -143,7 +130,6 @@ Not Indexed:
 
 
 Document 6
-Delete:
 Indexed:
   attribute : address
   class : IPv6
@@ -163,7 +149,6 @@ Indexed:
   method : new(address)|PRIVATE|STATIC|
   method : to_name
   method : to_s
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -172,7 +157,6 @@ Not Indexed:
 
 
 Document 7
-Delete:
 Indexed:
   attribute : cpu
   attribute : os
@@ -185,7 +169,6 @@ Indexed:
   method : encode_rdata(msg)
   method : initialize(cpu,os)|PRIVATE|
   method : new(cpu,os)|PRIVATE|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -194,7 +177,6 @@ Not Indexed:
 
 
 Document 8
-Delete:
 Indexed:
   attribute : data
   class : Generic
@@ -206,7 +188,6 @@ Indexed:
   method : encode_rdata(msg)
   method : initialize(data)|PRIVATE|
   method : new(data)|PRIVATE|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -215,7 +196,6 @@ Not Indexed:
 
 
 Document 9
-Delete:
 Indexed:
   attribute : downcase
   attribute : string
@@ -229,7 +209,6 @@ Indexed:
   method : inspect
   method : new(string)|PRIVATE|STATIC|
   method : to_s
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -238,7 +217,6 @@ Not Indexed:
 
 
 Document 10
-Delete:
 Indexed:
   attribute : emailbx
   attribute : rmailbx
@@ -251,7 +229,6 @@ Indexed:
   method : encode_rdata(msg)
   method : initialize(rmailbx,emailbx)|PRIVATE|
   method : new(rmailbx,emailbx)|PRIVATE|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -260,7 +237,6 @@ Not Indexed:
 
 
 Document 11
-Delete:
 Indexed:
   attribute : exchange
   attribute : preference
@@ -273,7 +249,6 @@ Indexed:
   method : encode_rdata(msg)
   method : initialize(preference,exchange)|PRIVATE|
   method : new(preference,exchange)|PRIVATE|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -282,7 +257,6 @@ Not Indexed:
 
 
 Document 12
-Delete:
 Indexed:
   attribute : expire
   attribute : minimum
@@ -300,7 +274,6 @@ Indexed:
   method : encode_rdata(msg)
   method : initialize(mname,rname,serial,refresh,retry_,expire,minimum)|PRIVATE|
   method : new(mname,rname,serial,refresh,retry_,expire,minimum)|PRIVATE|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -309,7 +282,6 @@ Not Indexed:
 
 
 Document 13
-Delete:
 Indexed:
   attribute : name
   class : DomainName
@@ -320,7 +292,6 @@ Indexed:
   method : encode_rdata(msg)
   method : initialize(name)|PRIVATE|
   method : new(name)|PRIVATE|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -329,7 +300,6 @@ Not Indexed:
 
 
 Document 14
-Delete:
 Indexed:
   attribute : port
   attribute : priority
@@ -345,7 +315,6 @@ Indexed:
   method : encode_rdata(msg)
   method : initialize(priority,weight,port,target)|DOCUMENTED|PRIVATE|
   method : new(priority,weight,port,target)|DOCUMENTED|PRIVATE|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |DOCUMENTED|;1305
@@ -354,7 +323,6 @@ Not Indexed:
 
 
 Document 15
-Delete:
 Indexed:
   attribute : queue
   class : Sender
@@ -366,7 +334,6 @@ Indexed:
   method : initialize(msg,data,sock,queue)|PRIVATE|
   method : new(msg,data,sock,queue)|PRIVATE|STATIC|
   method : recv(msg)
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -375,7 +342,6 @@ Not Indexed:
 
 
 Document 16
-Delete:
 Indexed:
   attribute : strings
   class : TXT
@@ -388,7 +354,6 @@ Indexed:
   method : encode_rdata(msg)
   method : initialize(first_string,*rest_strings)|PRIVATE|
   method : new(first_string,*rest_strings)|PRIVATE|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -397,14 +362,12 @@ Not Indexed:
 
 
 Document 17
-Delete:
 Indexed:
   class : ANY
   class-ig : any
   constant : TypeValue
   extends : Query
   fqn : Resolv::DNS::Resource::ANY
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -413,14 +376,12 @@ Not Indexed:
 
 
 Document 18
-Delete:
 Indexed:
   class : CNAME
   class-ig : cname
   constant : TypeValue
   extends : DomainName
   fqn : Resolv::DNS::Resource::CNAME
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -429,7 +390,6 @@ Not Indexed:
 
 
 Document 19
-Delete:
 Indexed:
   class : Config
   class-ig : config
@@ -450,7 +410,6 @@ Indexed:
   method : parse_resolv_conf(filename)|STATIC|
   method : resolv(name)
   method : single?
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -459,7 +418,6 @@ Not Indexed:
 
 
 Document 20
-Delete:
 Indexed:
   class : ConnectedUDP
   class-ig : connectedudp
@@ -473,7 +431,6 @@ Indexed:
   method : initialize(host,port)|PRIVATE|
   method : new(host,port)|PRIVATE|STATIC|
   method : sender(msg,data,queue,host,port)
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -482,7 +439,6 @@ Not Indexed:
 
 
 Document 21
-Delete:
 Indexed:
   class : DNS
   class-ig : dns
@@ -509,7 +465,6 @@ Indexed:
   method : lazy_initialize
   method : new(config_info)|PRIVATE|STATIC|
   method : open(*args)|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -518,13 +473,11 @@ Not Indexed:
 
 
 Document 22
-Delete:
 Indexed:
   class : DecodeError
   class-ig : decodeerror
   extends : StandardError
   fqn : Resolv::DNS::DecodeError
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -533,13 +486,11 @@ Not Indexed:
 
 
 Document 23
-Delete:
 Indexed:
   class : EncodeError
   class-ig : encodeerror
   extends : StandardError
   fqn : Resolv::DNS::EncodeError
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -548,7 +499,6 @@ Not Indexed:
 
 
 Document 24
-Delete:
 Indexed:
   class : Hosts
   class-ig : hosts
@@ -569,7 +519,6 @@ Indexed:
   method : initialize(filename)|PRIVATE|
   method : lazy_initialize
   method : new(filename)|PRIVATE|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -578,13 +527,11 @@ Not Indexed:
 
 
 Document 25
-Delete:
 Indexed:
   class : IN
   class-ig : in
   constant : ClassValue
   fqn : Resolv::DNS::Resource::IN
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |DOCUMENTED|MODULE|;28
@@ -593,13 +540,11 @@ Not Indexed:
 
 
 Document 26
-Delete:
 Indexed:
   class : Label
   class-ig : label
   fqn : Resolv::DNS::Label
   method : split(arg)|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |MODULE|
@@ -608,7 +553,6 @@ Not Indexed:
 
 
 Document 27
-Delete:
 Indexed:
   class : MessageDecoder
   class-ig : messagedecoder
@@ -628,7 +572,6 @@ Indexed:
   method : get_unpack(template)
   method : initialize(data)|PRIVATE|
   method : new(data)|PRIVATE|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -637,7 +580,6 @@ Not Indexed:
 
 
 Document 28
-Delete:
 Indexed:
   class : MessageEncoder
   class-ig : messageencoder
@@ -655,7 +597,6 @@ Indexed:
   method : put_string(d)
   method : put_string_list(ds)
   method : to_s
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -664,14 +605,12 @@ Not Indexed:
 
 
 Document 29
-Delete:
 Indexed:
   class : NS
   class-ig : ns
   constant : TypeValue
   extends : DomainName
   fqn : Resolv::DNS::Resource::NS
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -680,13 +619,11 @@ Not Indexed:
 
 
 Document 30
-Delete:
 Indexed:
   class : NXDomain
   class-ig : nxdomain
   extends : ResolvError
   fqn : Resolv::DNS::Config::NXDomain
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -695,7 +632,6 @@ Not Indexed:
 
 
 Document 31
-Delete:
 Indexed:
   class : Name
   class-ig : name
@@ -714,7 +650,6 @@ Indexed:
   method : subdomain_of?(other)|DOCUMENTED|
   method : to_a
   method : to_s|DOCUMENTED|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -723,7 +658,6 @@ Not Indexed:
 
 
 Document 32
-Delete:
 Indexed:
   class : OpCode
   class-ig : opcode
@@ -733,7 +667,6 @@ Indexed:
   constant : Status
   constant : Update
   fqn : Resolv::DNS::OpCode
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |MODULE|
@@ -742,13 +675,11 @@ Not Indexed:
 
 
 Document 33
-Delete:
 Indexed:
   class : OtherResolvError
   class-ig : otherresolverror
   extends : ResolvError
   fqn : Resolv::DNS::Config::OtherResolvError
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -757,14 +688,12 @@ Not Indexed:
 
 
 Document 34
-Delete:
 Indexed:
   class : PTR
   class-ig : ptr
   constant : TypeValue
   extends : DomainName
   fqn : Resolv::DNS::Resource::PTR
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -773,14 +702,12 @@ Not Indexed:
 
 
 Document 35
-Delete:
 Indexed:
   class : Query
   class-ig : query
   fqn : Resolv::DNS::Query
   method : decode_rdata(msg)|STATIC|
   method : encode_rdata(msg)
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -789,7 +716,6 @@ Not Indexed:
 
 
 Document 36
-Delete:
 Indexed:
   class : RCode
   class-ig : rcode
@@ -812,7 +738,6 @@ Indexed:
   constant : YXDomain
   constant : YXRRSet
   fqn : Resolv::DNS::RCode
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |MODULE|
@@ -821,13 +746,11 @@ Not Indexed:
 
 
 Document 37
-Delete:
 Indexed:
   class : RequestError
   class-ig : requesterror
   extends : StandardError
   fqn : Resolv::DNS::Requester::RequestError
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -836,7 +759,6 @@ Not Indexed:
 
 
 Document 38
-Delete:
 Indexed:
   class : Requester
   class-ig : requester
@@ -848,7 +770,6 @@ Indexed:
   method : delete(arg)
   method : initialize|PRIVATE|
   method : new|PRIVATE|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -857,7 +778,6 @@ Not Indexed:
 
 
 Document 39
-Delete:
 Indexed:
   class : Resolv
   class-ig : resolv
@@ -879,7 +799,6 @@ Indexed:
   method : getnames(address)|STATIC|
   method : initialize(resolvers)|PRIVATE|
   method : new(resolvers)|PRIVATE|STATIC|
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -887,13 +806,11 @@ Not Indexed:
 
 
 Document 40
-Delete:
 Indexed:
   class : ResolvError
   class-ig : resolverror
   extends : StandardError
   fqn : Resolv::ResolvError
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -902,13 +819,11 @@ Not Indexed:
 
 
 Document 41
-Delete:
 Indexed:
   class : ResolvTimeout
   class-ig : resolvtimeout
   extends : TimeoutError
   fqn : Resolv::ResolvTimeout
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -917,7 +832,6 @@ Not Indexed:
 
 
 Document 42
-Delete:
 Indexed:
   class : Resource
   class-ig : resource
@@ -932,7 +846,6 @@ Indexed:
   method : eql?(other)
   method : get_class(type_value,class_value)|STATIC|
   method : hash
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -941,7 +854,6 @@ Not Indexed:
 
 
 Document 43
-Delete:
 Indexed:
   class : Sender
   class-ig : sender
@@ -952,7 +864,6 @@ Indexed:
   method : initialize(msg,data,sock,host,port,queue)|PRIVATE|
   method : new(msg,data,sock,host,port,queue)|PRIVATE|STATIC|
   method : send
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -961,14 +872,12 @@ Not Indexed:
 
 
 Document 44
-Delete:
 Indexed:
   class : Sender
   class-ig : sender
   extends : Requester::Sender
   fqn : Resolv::DNS::Requester::ConnectedUDP::Sender
   method : send
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -977,14 +886,12 @@ Not Indexed:
 
 
 Document 45
-Delete:
 Indexed:
   class : Sender
   class-ig : sender
   extends : Requester::Sender
   fqn : Resolv::DNS::Requester::TCP::Sender
   method : send
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -993,7 +900,6 @@ Not Indexed:
 
 
 Document 46
-Delete:
 Indexed:
   class : TCP
   class-ig : tcp
@@ -1008,7 +914,6 @@ Indexed:
   method : initialize(host,port)|PRIVATE|
   method : new(host,port)|PRIVATE|STATIC|
   method : sender(msg,data,queue,host,port)
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -1017,7 +922,6 @@ Not Indexed:
 
 
 Document 47
-Delete:
 Indexed:
   class : UnconnectedUDP
   class-ig : unconnectedudp
@@ -1029,7 +933,6 @@ Indexed:
   method : initialize|PRIVATE|
   method : new|PRIVATE|STATIC|
   method : sender(msg,data,queue,host,port)
-  source : <TESTURL>/resolv.rb
 
 Not Indexed:
   attrs : |CLASS|

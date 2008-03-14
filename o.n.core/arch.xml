@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- -*- sgml-indent-step: 1 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -852,7 +852,16 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-progress">
   <p>
-   XXX no answer for perf-progress
+   <api name="org.netbeans.core.TimeableEventQueue" category="private" group="property" type="export">
+   This module contains a hook to identify long running tasks inside the AWT
+   dispatch thread. It observers the Swing event queue and if a task takes longer
+   than expected (right now 5s, but that is configurable via
+   <code>org.netbeans.core.TimeableEventQueue.quantum=xyz</code> ms), it reports
+   a warning exception with <code>Level.INFO</code> logging level. This exception
+   shall contain a thread dump taken at the time the AWT event queue was occupied.
+   After such exception the <q>watch dog</q> is disabled for next 
+   <code>org.netbeans.core.TimeableEventQueue.pause</code> milliseconds, by default 60s.
+   </api>
   </p>
  </answer>
 

@@ -233,6 +233,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         jLabelPort = new javax.swing.JLabel();
         jTextFieldPort = new javax.swing.JTextField();
         jButtonBrowsePort = new javax.swing.JButton();
+        useProviderBtn = new javax.swing.JCheckBox();
 
         jLabelWSDLFile.setLabelFor(jTextFieldWSDLFile);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelWSDLFile, org.openide.util.NbBundle.getMessage(WebServiceFromWSDLPanel.class, "LBL_WSDL_File")); // NOI18N
@@ -263,6 +264,8 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(useProviderBtn, org.openide.util.NbBundle.getMessage(WebServiceFromWSDLPanel.class, "LBL_UseProvider")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -281,7 +284,10 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonWSDLFileBrowse, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonBrowsePort, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE))))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonBrowsePort, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(useProviderBtn)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -299,7 +305,9 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     .add(jButtonBrowsePort)
                     .add(jLabelPort)
                     .add(jTextFieldPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(202, Short.MAX_VALUE))
+                .add(57, 57, 57)
+                .add(useProviderBtn)
+                .addContainerGap(122, Short.MAX_VALUE))
         );
 
         jTextFieldWSDLFile.getAccessibleContext().setAccessibleDescription("null");
@@ -359,6 +367,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     private javax.swing.JLabel jLabelWSDLFile;
     private javax.swing.JTextField jTextFieldPort;
     private javax.swing.JTextField jTextFieldWSDLFile;
+    private javax.swing.JCheckBox useProviderBtn;
     // End of variables declaration//GEN-END:variables
     
     void validate(WizardDescriptor wizardDescriptor) {
@@ -485,6 +494,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     
     void store(WizardDescriptor d) {
         String wsdlLocation =  jTextFieldWSDLFile.getText().trim();
+        Boolean useProvider = this.useProviderBtn.isSelected();
         if (wsdlLocation.startsWith("www.")) wsdlLocation = "http://"+wsdlLocation; //NOI18N
         if(wsdlLocation.startsWith("http://") || wsdlLocation.startsWith("https://")) { //NOI18N
             d.putProperty(WizardProperties.WSDL_URL, wsdlLocation);
@@ -496,6 +506,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         d.putProperty(WizardProperties.WSDL_SERVICE, service);
         d.putProperty(WizardProperties.WSDL_PORT, port);
         d.putProperty(WizardProperties.WSDL_SERVICE_HANDLER,wsdlServiceHandler);
+        d.putProperty(WizardProperties.USE_PROVIDER, useProvider);
     }
     
     void read(WizardDescriptor wizardDescriptor) {

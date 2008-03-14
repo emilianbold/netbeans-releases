@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.WSDLEndpointAction;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.LoadWSDLPortsAction;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.CloneWSDLPortAction;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
@@ -119,11 +121,14 @@ public class WSDLEndpointNode extends CasaNode {
     @Override
     protected void addCustomActions(List<Action> actions) {
         CasaPort cp = (CasaPort) this.getData();
-        if (((CasaWrapperModel) cp.getModel()).isEditable(cp)) {
+        CasaWrapperModel model = (CasaWrapperModel) cp.getModel();
+        if (model.isEditable(cp)) {
             // only add this for soap port...
-            if (cp.getBindingType().equalsIgnoreCase(SOAP_BINDING)) {
+            if (model.getBindingType(cp).equalsIgnoreCase(SOAP_BINDING)) {
                 actions.add(new WSDLEndpointAction());
             }
+        } else { // non-editable port
+            actions.add(SystemAction.get(CloneWSDLPortAction.class));
         }
     }
 

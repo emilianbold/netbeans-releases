@@ -99,9 +99,6 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
         getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MEP")); // NOI18N
         macrosTable.getAccessibleContext().setAccessibleName(getBundleString("ACSN_MEP_Table")); // NOI18N
         macrosTable.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MEP_Table")); // NOI18N
-        addButton.setMnemonic(getBundleString("MEP_Add_Mnemonic").charAt(0)); // NOI18N
-        editButton.setMnemonic(getBundleString("MEP_Edit_Mnemonic").charAt(0)); // NOI18N
-        removeButton.setMnemonic(getBundleString("MEP_Remove_Mnemonic").charAt(0)); // NOI18N
         addButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MEP_Add")); // NOI18N
         editButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MEP_Edit")); // NOI18N
         removeButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MEP_Remove")); // NOI18N
@@ -176,7 +173,8 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
     }
 
 
-    private void initComponents() {//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
         macrosPane = new javax.swing.JScrollPane();
@@ -184,9 +182,8 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
         editButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setLayout(new java.awt.GridBagLayout());
-
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 11, 11)));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -195,25 +192,23 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(macrosPane, gridBagConstraints);
 
-        addButton.setText(getBundleString( "MEP_Add" ));
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, getBundleString( "MEP_Add" ));
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(addButton, gridBagConstraints);
 
-        editButton.setText(getBundleString( "MEP_Edit" ));
+        org.openide.awt.Mnemonics.setLocalizedText(editButton, getBundleString( "MEP_Edit" ));
         editButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -221,20 +216,18 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(editButton, gridBagConstraints);
 
-        removeButton.setText(getBundleString( "MEP_Remove" ));
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, getBundleString( "MEP_Remove" ));
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(removeButton, gridBagConstraints);
-
-    }//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         String[] macro = getMacro( null );

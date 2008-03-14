@@ -119,7 +119,7 @@ public class DBColumnDrop extends DBConnectionDrop {
             pItem.setIcon(new ImageIcon(
                 Utilities.loadImage("org/netbeans/modules/form/j2ee/resources/binding.gif")).getImage()); // NOI18N
         } else {
-            pItem = new PaletteItem(new ClassSource("javax.swing.JTextField", null, null), null); // NOI18N
+            pItem = new PaletteItem(new ClassSource("javax.swing.JTextField"), null); // NOI18N
         }
         return pItem;
     }

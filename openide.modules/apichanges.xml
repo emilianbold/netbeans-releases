@@ -47,6 +47,77 @@ made subject to such option by the copyright holder.
   	<apidef name="modules">Modules API</apidef>
   </apidefs>
 <changes>
+    <change id="OpenIDE-Module-Hide-Classpath-Packages">
+        <api name="modules"/>
+        <summary></summary>
+        <version major="7" minor="6"/>
+        <date day="23" month="2" year="2008"/>
+        <author login="jglick"/>
+        <compatibility semantic="incompatible">
+            <p>
+                To guaranteed that the new tag will be honored you should also:
+            </p>
+            <pre>OpenIDE-Module-Requires: org.openide.modules.ModuleFormat2</pre>
+            <p>
+                Several JRE packages used to be hidden automatically but are not any more;
+                while these were never documented, modules which relied on being able to override
+                these packages could be broken by having the JRE classes exposed instead. Specifically,
+                the following packages (or package prefixes) were in NetBeans 6.0 not loaded from the
+                classpath, but now will be unless otherwise requested:
+            </p>
+            <pre>com.sun.javadoc
+com.sun.source
+com.sun.tools.javac
+com.sun.tools.javadoc
+javax.annotation
+javax.jws
+javax.lang.model
+javax.tools
+javax.xml.bind
+javax.xml.soap
+javax.xml.stream
+javax.xml.ws</pre>
+        </compatibility>
+        <description>
+            <p>
+                Packages supplied in a module which overlap those in the JRE or its extensions will normally be ignored
+                (as usual, the JRE takes precedence). Modules which wish to specifically suppress loading of some packages
+                from the classpath can now request the class loader to do so by specifying:
+            </p>
+            <pre>OpenIDE-Module-Hide-Classpath-Packages: javax.lang.model.*, com.sun.source.**</pre>
+            <p>
+                (The syntax is analogous to that of <code>OpenIDE-Module-Public-Packages</code>.)
+            </p>
+            <p>
+                Such a declaration affects not just this module, but any other modules declaring a <em>direct</em>
+                dependency on it (<code>OpenIDE-Module-Module-Dependencies</code>). The module is now free to bundle
+                its own versions of these classes and be sure they will be used by it and its clients.
+                Be aware that as with all changes to the normal class loading scheme,
+                careless usage could result in <code>LinkageError</code>s.
+            </p>
+        </description>
+        <issue number="96711"/>
+    </change>
+    <change id="no-FileObject-for-module-JAR-entry">
+        <api name="modules"/>
+        <summary>No longer possible to obtain a module JAR entry as a <code>FileObject</code></summary>
+        <version major="7" minor="5"/>
+        <date day="15" month="2" year="2008"/>
+        <author login="jglick"/>
+        <compatibility semantic="incompatible"/>
+        <description>
+            <p>
+                Modules used to be able to obtain their own entries as file objects, e.g.:
+            </p>
+            <pre>FileObject f = URLMapper.findFileObject(ThisClass.class.getResource("something.xml"));</pre>
+            <p>
+                This is no longer supported.
+                Client code should either use module classpath entries directly as URLs;
+                or register files of interest in the XML layer and refer to them using the system filesystem.
+            </p>
+        </description>
+        <issue number="127268"/>
+    </change>
     <change id="removeWritables">
         <api name="modules"/>
         <summary>An option to revert user's modifications to XML layer files</summary>

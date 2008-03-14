@@ -51,7 +51,6 @@ import java.io.IOException;
 
 import org.netbeans.modules.visualweb.gravy.*;
 import org.netbeans.modules.visualweb.gravy.ProjectNavigatorOperator;
-import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
 import org.netbeans.modules.visualweb.gravy.toolbox.PaletteContainerOperator;
 import org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator;
 import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
@@ -104,15 +103,6 @@ public class AcceptanceTest extends RaveTestCase {
     String image1= imageDir + "red.gif";
     String image2= imageDir + "white.gif";
     String image3= imageDir + "blue.gif";
-    String[] javaCode = { "String selection=\"Your selection: \";", 
-        "if (colorRadioButton1.isChecked()) ",
-       "selection+=\"Red is checked\"; ", 
-       "if (colorRadioButton2.isChecked()) ",
-       "selection+=\"White is checked \"; ", 
-     //  "if (colorRadioButton3.isChecked()) ", 
-     //  "selection+=\"Blue is checked \"; ", 
-       "info(selection); " };    
-    
     
     public AcceptanceTest(String testName) {
         super(testName);
@@ -264,7 +254,7 @@ public class AcceptanceTest extends RaveTestCase {
         editor.requestFocus();
         TestUtils.wait(2000);
         editor.pushKey(KeyEvent.VK_ENTER);
-        ComponentUtils.insertJavaCode(editor, javaCode);
+        editor.insert("log(\"Action Performed.\");\n");
      
         TestUtils.wait(200);
         

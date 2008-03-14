@@ -76,6 +76,16 @@ public class WebSetupTest extends IDESetupTest {
         
         VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"VisualWebProject");
         VWPUtilities.waitForPendingBackgroundTasks();
+        VWPUtilities.verifyAndResolveMissingWebServer("VisualWebProject", "GlassFish V2");
+        VWPUtilities.waitForPendingBackgroundTasks();
+        
+        VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"UltraLargeWA");
+        VWPUtilities.waitForPendingBackgroundTasks();
+        VWPUtilities.verifyAndResolveMissingWebServer("UltraLargeWA", "GlassFish V2");
+        VWPUtilities.waitForPendingBackgroundTasks();
+        
+        VWPUtilities.verifyAndResolveMissingWebServer("HugeApp", "GlassFish V2");
+        VWPUtilities.waitForPendingBackgroundTasks();        
     }
     
     public void setupAppServer() {

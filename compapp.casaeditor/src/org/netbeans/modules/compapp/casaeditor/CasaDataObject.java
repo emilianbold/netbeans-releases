@@ -47,10 +47,8 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.JComponent;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphUtilities;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildListener;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
@@ -67,7 +65,7 @@ public class CasaDataObject extends MultiDataObject {
     
     static final long serialVersionUID = 7527025549386876556L;
     
-    public static final String CASA_ICON_BASE_WITH_EXT = "org/netbeans/modules/compapp/casaeditor/resources/casa16.gif"; // NOI18N
+    public static final String CASA_ICON_BASE_WITH_EXT = "org/netbeans/modules/compapp/casaeditor/resources/service_composition_16.png"; // NOI18N
     
     private transient CasaDataEditorSupport editorSupport;
     
@@ -90,7 +88,7 @@ public class CasaDataObject extends MultiDataObject {
         set.add(editorSupport);
         getCookieSet().add(mBuildCookie);
     }
-           
+               
     public CasaDataEditorSupport getEditorSupport() {
         return editorSupport;
     }
@@ -100,6 +98,7 @@ public class CasaDataObject extends MultiDataObject {
         return new CasaDataNode(this);
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CasaDataObject.class);
     }

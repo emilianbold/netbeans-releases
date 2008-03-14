@@ -29,10 +29,13 @@
             </fileset>
         </copy>
     </target>
-
 	<taskdef name="i18n" classname="net.java.hulp.i18n.buildtools.I18NTask" classpath="${basedir}/external/net.java.hulp.i18ntask.jar"></taskdef>
 	  <target name="compile-i18" depends="init">
-        <i18n dir="${basedir}/build/classes" file="${basedir}/src/org/netbeans/modules/etl/logger/msgs.properties" prefix="DM-DI-" strict="false" pattern="([A-Z][A-Z][A-Z]\d\d\d)(: )(.*)"></i18n>   
-          <echo message="hello how are u!!!${basedir}"/>
+        <i18n dir="${basedir}/build/classes" file="${basedir}/src/org/netbeans/modules/etl/logger/msgs.properties" prefix="DM-DI-" strict="false" pattern="(BUND\d\d\d)(: )(.*)"></i18n> 
+        <i18n dir="${basedir}/build/classes" file="${basedir}/src/org/netbeans/modules/etl/logger/msgs_log.properties" prefix="DM-DI-" strict="false" pattern="(EDIT\d\d\d)(: )(.*)"></i18n> 
+        <copy file="${basedir}/src/org/netbeans/modules/etl/logger/msgs.properties"
+                                      todir="${basedir}/build/classes/org/netbeans/modules/etl/logger"/>
+        <copy file="${basedir}/src/org/netbeans/modules/etl/logger/msgs_log.properties"  
+                                      todir="${basedir}/build/classes/org/netbeans/modules/etl/logger"/>
     </target>
 </project>

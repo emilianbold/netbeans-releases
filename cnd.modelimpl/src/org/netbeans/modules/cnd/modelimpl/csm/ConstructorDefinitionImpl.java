@@ -41,29 +41,64 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.io.DataOutput;
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
  * @author Vladimir Kvasihn
  */
-public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl {
+public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl implements CsmInitializerListContainer {
 
+    private List<CsmExpression> initializers;
+    
     public ConstructorDefinitionImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope, true);
+        
+        initializers = AstRenderer.renderConstructorInitializersList(ast, this, this.getContainingFile());
     }
     
     @Override
     public CsmType getReturnType() {
         return NoType.instance();
     }
+
+    public Collection<CsmExpression> getInitializerList() {
+        if(initializers != null) {
+            return initializers;
+        } else {
+            return Collections.<CsmExpression>emptyList();
+        }
+    }    
     
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     
     public ConstructorDefinitionImpl(DataInput input) throws IOException {
         super(input);
-    }     
+        initializers = PersistentUtils.readExpressions(new ArrayList<CsmExpression>(), input);
+    }
+
+    @Override
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        PersistentUtils.writeExpressions(initializers, output);
+    }
+
+    
+    @Override
+    public Collection getScopeElements() {
+        Collection c = super.getScopeElements();
+        c.addAll(getInitializerList());
+        return c;
+    }
 }

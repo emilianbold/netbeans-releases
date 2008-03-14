@@ -43,6 +43,8 @@
             <attr name="id" stringvalue="sun-bpel-engine"/>
             <attr name="description" stringvalue="This is a bpel service engine."/>
             <attr name="type" stringvalue="Engine"/>
+            <attr name="projectIcon" urlvalue="nbresloc:/org/netbeans/modules/bpel/project/resources/bpelProject.png"/>
+            <attr name="fileIcon" urlvalue="nbresloc:/org/netbeans/modules/bpel/core/resources/bp_file.gif"/>
         </file>
     </folder>
 

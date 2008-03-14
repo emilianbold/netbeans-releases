@@ -5,4 +5,4 @@
 
 # These are used quite independently (sharing in platform makes little sense).
 # apisupport does not even technically use it - it is only part of a sample app.
-apisupport/samples/feedreader-sample-ui/external/jdom-1.0.jar mobility/deployment/webdav/external/jdom-1.0.jar
+apisupport.feedreader/external/jdom-1.0.jar mobility.deployment.webdav/external/jdom-1.0.jar

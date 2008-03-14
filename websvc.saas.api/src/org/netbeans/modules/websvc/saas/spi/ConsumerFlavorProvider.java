@@ -27,7 +27,14 @@
  */
 package org.netbeans.modules.websvc.saas.spi;
 
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
+import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
+import org.netbeans.modules.websvc.saas.model.WsdlSaas;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasPort;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -38,6 +45,18 @@ import java.awt.datatransfer.Transferable;
  */
 public interface ConsumerFlavorProvider {
     
+    public static final DataFlavor WSDL_SERVICE_FLAVOR = new DataFlavor(WsdlSaas.class, "SaaS WSDL Service"); //NOI18N
+    public static final DataFlavor WSDL_SERVICE_NODE_FLAVOR = new DataFlavor(Node.class, "SaaS WSDL Service Node"); //NOI18N
+    public static final DataFlavor PORT_FLAVOR = new DataFlavor(WsdlSaasPort.class, "SaaS WSDL Port"); //NOI18N
+    public static final DataFlavor PORT_NODE_FLAVOR = new DataFlavor(Node.class, "SaaS WSDL Port Node"); //NOI18N
+    public static final DataFlavor WSDL_METHOD_FLAVOR = new DataFlavor(WsdlSaasMethod.class, "SaaS WSDL Operation"); //NOI18N
+    public static final DataFlavor WSDL_METHOD_NODE_FLAVOR = new DataFlavor(Node.class, "SaaS WSDL Operation Node"); //NOI18N
+            
+    public static final DataFlavor WADL_METHOD_FLAVOR = new DataFlavor(WadlSaasMethod.class, "SaaS WADL Method"); //NOI18N
+    public static final DataFlavor WADL_METHOD_NODE_FLAVOR = new DataFlavor(Node.class, "SaaS WADL Method Node"); //NOI18N
+    
+    public static final DataFlavor CUSTOM_METHOD_FLAVOR = new DataFlavor(CustomSaasMethod.class, "SaaS Custom Method"); //NOI18N
+    public static final DataFlavor CUSTOM_METHOD_NODE_FLAVOR = new DataFlavor(Node.class, "SaaS Custom Method Node"); //NOI18N
     /**
      * Add DataFlavors specific to a web service consumer to the base <code>Transferable</code>.
      * This method must not modify existing <code>DataFlavor</code> to data mappings.

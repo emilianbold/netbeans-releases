@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.swing.AbstractAction;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
@@ -199,36 +200,40 @@ public class DiagramTopComponent extends CloneableTopComponent
     {  
         if (diagramDO == null)
         {
-            String file = getDrawingAreaControl().getFilename();   
-            String etld = file;
-            String etlp = file;
-            try
+            IDrawingAreaControl ctrl = getDrawingAreaControl();
+            if (ctrl != null) 
             {
-                if (file != null && !file.equals(""))
+                String file = ctrl.getFilename();   
+                String etld = file;
+                String etlp = file;
+                try
                 {
-                    int index = file.lastIndexOf(".");
-                    if (index > -1)
+                    if (file != null && !file.equals(""))
                     {
-                        etlp = file.substring(0, index) +
+                        int index = file.lastIndexOf(".");
+                        if (index > -1)
+                        {
+                            etlp = file.substring(0, index) +
                                 FileExtensions.DIAGRAM_PRESENTATION_EXT;
-                        etld = file.substring(0, index) +
+                            etld = file.substring(0, index) +
                                 FileExtensions.DIAGRAM_LAYOUT_EXT;
+                        }
+                        
+                        File etlpF = new File(etlp);
+                        File etldF = new File(etld);
+                        
+                        
+                        FileObject etlpFO = FileUtil.createData(etlpF);
+                        FileUtil.createData(etldF);
+                        
+                        if (etlpFO != null)
+                            diagramDO = (DiagramDataObject) DataObject.find(etlpFO);                    
                     }
-                    
-                    File etlpF = new File(etlp);
-                    File etldF = new File(etld);
-                    
-                    
-                    FileObject etlpFO = FileUtil.createData(etlpF);
-                    FileUtil.createData(etldF);
-
-                    if (etlpFO != null)
-                        diagramDO = (DiagramDataObject) DataObject.find(etlpFO);
+                }   
+                catch (Exception ex)
+                {
+                    ex.printStackTrace();
                 }
-            }   
-            catch (Exception ex)
-            {
-                ex.printStackTrace();
             }
         }
         
@@ -241,6 +246,7 @@ public class DiagramTopComponent extends CloneableTopComponent
             return ""; // NOI18N
         
         StringBuffer fullNameSpace = new StringBuffer();
+
         IProject project = mControl.getNamespace().getProject();
         IElement owner = mControl.getDiagram().getOwner();
         
@@ -1243,10 +1249,18 @@ public class DiagramTopComponent extends CloneableTopComponent
     
     public Lookup getThisLookup()
     {
-        if ( paletteContrl == null)
+        if ( paletteContrl == null) 
             paletteContrl = this.getAssociatedPalette();
-        //return Lookups.fixed(new Object[] {mControl, paletteContrl, diagramDO});
-        return Lookups.fixed(new Object[] {mControl, paletteContrl, getDiagramDO() } );
+
+        ArrayList objs = new ArrayList();
+        if (mControl != null) 
+            objs.add(mControl);
+        if (paletteContrl != null)
+            objs.add(paletteContrl);
+        if (getDiagramDO() != null)
+            objs.add(getDiagramDO());
+        
+        return Lookups.fixed(objs.toArray());
     }
     
     ///////////////////////////////////////////////////////////////////////////

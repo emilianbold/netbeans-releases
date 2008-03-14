@@ -44,7 +44,7 @@ public interface MapperModel extends TreeModel {
     public boolean canCopy(TreePath treePath, GraphSubset graphSubset);
     public boolean canMove(TreePath treePath, GraphSubset graphSubset);
     
-    public void copy(TreePath treePath, GraphSubset graphGroup, int x, int y);
+    public GraphSubset copy(TreePath treePath, GraphSubset graphGroup, int x, int y);
     public void move(TreePath treePath, GraphSubset graphGroup, int x, int y);
     
     public void valueChanged(TreePath treePath, VertexItem vertexItem, 

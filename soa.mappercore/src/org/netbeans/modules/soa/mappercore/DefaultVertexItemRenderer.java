@@ -51,11 +51,14 @@ public class DefaultVertexItemRenderer extends JLabel
         //
         if (value != null) {
             text = value.toString();
-            if (text != null && text.length() != 0) {
+            if (text != null) {
                 Class type = vertexItem.getValueType();
                 if (Utils.equal(type, Number.class)) {
                     prepareNumberRenderer();
                 } else {
+                    if (Utils.equal(type, String.class)) {
+                        text = "\'" + text + "\'"; // NOI18N
+                    }
                     prepareTextRenderer();
                 }
                 valuePrepared = true;

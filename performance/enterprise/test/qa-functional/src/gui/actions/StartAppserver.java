@@ -122,17 +122,19 @@ public class StartAppserver extends org.netbeans.performance.test.utilities.Perf
     
     public void close(){
         log("::close");
-        String serverIDEName = asNode.getText();
-        
-        JPopupMenuOperator popup = asNode.callPopup();
-        if (popup == null) {
-            throw new Error("Cannot get context menu for Application server node ");
+        if (asNode != null) {
+            String serverIDEName = asNode.getText();
+
+            JPopupMenuOperator popup = asNode.callPopup();
+            if (popup == null) {
+                throw new Error("Cannot get context menu for Application server node ");
+            }
+            boolean startEnabled = popup.showMenuItem("Stop").isEnabled(); // NOI18N
+            if(startEnabled) {
+                popup.pushMenuNoBlock("Stop"); // NOI18N
+            }
+            waitForAppServerTask("Stopping", serverIDEName);
         }
-        boolean startEnabled = popup.showMenuItem("Stop").isEnabled(); // NOI18N
-        if(startEnabled) {
-            popup.pushMenuNoBlock("Stop"); // NOI18N
-        }
-        waitForAppServerTask("Stopping", serverIDEName);
     }
     
     private void waitForAppServerTask(String taskName, String serverIDEName) {
@@ -175,7 +177,7 @@ public class StartAppserver extends org.netbeans.performance.test.utilities.Perf
     
     private InternalHandle getServerTaskHandle(InternalHandle[] handles, String taskName) {
         if(handles.length == 0)  {
-            log("Empty tasks queue");
+//            log("Empty tasks queue");
             return null;
         }
         

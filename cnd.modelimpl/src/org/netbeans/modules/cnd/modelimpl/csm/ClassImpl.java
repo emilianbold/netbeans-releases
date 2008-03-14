@@ -52,8 +52,10 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * Implements CsmClass
@@ -68,6 +70,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     private final List<CsmUID<CsmFriend>> friends = new ArrayList<CsmUID<CsmFriend>>();
     
     private final List<CsmInheritance> inheritances = new ArrayList<CsmInheritance>();
+    
+    private List<CsmTemplateParameter> templateParams = Collections.emptyList();
+    private CharSequence templateSuffix;
     private boolean template;
     
     private /*final*/ int leftBracketPos;
@@ -83,7 +88,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         @Override
         protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, 
 		MutableDeclarationsContainer container1, MutableDeclarationsContainer container2,CsmScope scope) {
-	    
+	    type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
             FieldImpl field = new FieldImpl(offsetAst, file, type, name, ClassImpl.this, curentVisibility);
             ClassImpl.this.addMember(field);
             return field;
@@ -99,6 +104,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     //case CPPTokenTypes.CSM_TEMPLATE_PARMLIST:
                     case CPPTokenTypes.LITERAL_template:
                         template = true;
+                        templateSuffix = '<' + TemplateUtils.getClassSpecializationSuffix(token) + '>';
+                        templateParams = TemplateUtils.getTemplateParameters(token, ClassImpl.this);
                         break;
                     case CPPTokenTypes.CSM_BASE_SPECIFIER:
                         inheritances.add(new InheritanceImpl(token, getContainingFile()));
@@ -285,6 +292,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 	
         @Override
         protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, String name) {
+            type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
             return new MemberTypedef(ClassImpl.this, ast, type, name, curentVisibility);
         }
     }
@@ -390,7 +398,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         CsmUID<CsmMember> uid = RepositoryUtils.put(member);
         assert uid != null;
         synchronized (members) {
-            members.add(uid);       
+            members.add(uid);
         }
     }
 
@@ -398,7 +406,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         CsmUID<CsmFriend> uid = RepositoryUtils.put(friend);
         assert uid != null;
         synchronized (friends) {
-            friends.add(uid);       
+            friends.add(uid);
         }
     }
     
@@ -454,11 +462,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     }
 
     public CharSequence getDisplayName() {
-	return isTemplate() ? getName() + "<>" : getName(); // NOI18N
+	return isTemplate() ? CharSequenceKey.create((getName().toString() + templateSuffix)) : getName(); // NOI18N
     }
 
     public List<CsmTemplateParameter> getTemplateParameters() {
-	return Collections.EMPTY_LIST;
+	return templateParams;
     }
 	
     ////////////////////////////////////////////////////////////////////////////
@@ -479,6 +487,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         assert this.kind != null;
         writeKind(this.kind, output);
         output.writeBoolean(this.template);
+        PersistentUtils.writeTemplateParameters(templateParams, output);
+        if (this.template) {
+            output.writeUTF(this.templateSuffix.toString());
+        }
         output.writeInt(this.leftBracketPos);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUIDCollection(this.members, output, true);
@@ -490,6 +502,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         super(input);
         this.kind = readKind(input);
         this.template = input.readBoolean();
+        this.templateParams = PersistentUtils.readTemplateParameters(input);
+        if (this.template) {
+            this.templateSuffix = NameCache.getManager().getString(input.readUTF());
+        }
         this.leftBracketPos = input.readInt();
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.readUIDCollection(this.members, input);

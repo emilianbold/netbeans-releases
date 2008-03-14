@@ -45,6 +45,8 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -61,13 +63,13 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
 
 /**
  *
@@ -489,41 +491,33 @@ public class CsmContextUtilities {
     }
 
     private static CsmNamespace getFunctionNamespace(CsmFunction fun) {
-        if (CsmKindUtilities.isFunctionDefinition(fun)) {
-            CsmFunction decl = ((CsmFunctionDefinition) fun).getDeclaration();
-            fun = decl != null ? decl : fun;
-        }
-        if (fun != null) {
-            CsmScope scope = fun.getScope();
-            if (CsmKindUtilities.isNamespace(scope)) {
-                CsmNamespace ns = (CsmNamespace) scope;
-                return ns;
-            } else if (CsmKindUtilities.isClass(scope)) {
-                return getClassNamespace((CsmClass) scope);
-            }
-        }
-        return null;
+        return CsmBaseUtilities.getFunctionNamespace(fun);
     }
 
     private static CsmNamespace getClassNamespace(CsmClass cls) {
-        CsmScope scope = cls.getScope();
-        while (scope != null) {
-            if (CsmKindUtilities.isNamespace(scope)) {
-                return (CsmNamespace) scope;
-            }
-            if (CsmKindUtilities.isScopeElement(scope)) {
-                scope = ((CsmScopeElement) scope).getScope();
-            } else {
-                break;
-            }
-        }
-        return null;
+        return CsmBaseUtilities.getClassNamespace(cls);
     }
     
+    public static boolean isInFunctionBodyOrInitializerList(CsmContext context, int offset) {
+        return isInFunctionBody(context, offset) || isInInitializerList(context, offset);
+    }
+
     public static boolean isInFunctionBody(CsmContext context, int offset) {
         CsmFunctionDefinition funDef = getFunctionDefinition(context);
         return (funDef == null) ? false : CsmOffsetUtilities.isInObject(funDef.getBody(), offset);
     }   
+
+    public static boolean isInInitializerList(CsmContext context, int offset) {
+        CsmFunction f = getFunction(context);
+        if (CsmKindUtilities.isConstructor(f)) {
+            for (CsmExpression izer : ((CsmInitializerListContainer) f).getInitializerList()) {
+                if (CsmOffsetUtilities.isInObject(izer, offset)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     
     public static boolean isInFunction(CsmContext context, int offset) {
         CsmFunction fun = getFunction(context);

@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -58,12 +59,12 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
 import org.netbeans.modules.java.j2seplatform.wizard.NewJ2SEPlatform;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.J2SEProjectType;
-import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.projectimport.LoggerFactory;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
@@ -142,10 +143,8 @@ final class Importer {
                                 EclipseProject eclPrj = (EclipseProject) it.next();
                                 nbProjects[pos++] = importProject(eclPrj);
                             }
-                        } catch (IOException ioe) {
-                            Throwable t = ErrorManager.getDefault().annotate(ioe,
-                                    "Error occured during project importing"); // NOI18N
-                            ErrorManager.getDefault().notify(ErrorManager.USER, t);
+                        } catch (Exception ex) {
+                            logger.log(Level.WARNING, "Error occurred during project importing", ex); // NOI18N
                         } finally {
                             done = true;
                         }
@@ -211,7 +210,7 @@ final class Importer {
         }
         // create basic NB project
         final AntProjectHelper helper = J2SEProjectGenerator.createProject(
-                nbProjectDir, eclProject.getName(), srcFiles, testDirs, null, null);
+                nbProjectDir, eclProject.getName(), srcFiles, testDirs, null, null, null);
         // get NB project
         J2SEProject nbProject = (J2SEProject) ProjectManager.getDefault().
                 findProject(FileUtil.toFileObject(

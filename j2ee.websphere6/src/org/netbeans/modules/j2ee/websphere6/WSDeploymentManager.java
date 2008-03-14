@@ -276,9 +276,9 @@ public class WSDeploymentManager implements DeploymentManager {
     /**
      * Returns true if the type of server is local. Otherwise return false
      */
-    public String getIsLocal() {
-        return (getInstanceProperties()!=null)?getInstanceProperties().getProperty(
-                WSDeploymentFactory.IS_LOCAL_ATTR):"";
+    public boolean isLocal() {
+        return (getInstanceProperties() != null) ? Boolean.parseBoolean(getInstanceProperties().getProperty(
+                WSDeploymentFactory.IS_LOCAL_ATTR)) : false;
     }
 
     /**
@@ -446,6 +446,7 @@ public class WSDeploymentManager implements DeploymentManager {
                 isConnected = true;
             }
         } catch (DeploymentManagerCreationException e) {
+            LOGGER.log(Level.FINE, null, e);
             try {
                 // if the connected deployment manager cannot be obtained - get
                 // a disconnected one and set the connected marker to false

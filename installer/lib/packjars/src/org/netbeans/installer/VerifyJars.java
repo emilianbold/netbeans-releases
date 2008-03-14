@@ -58,9 +58,9 @@ public class VerifyJars {
 
     /** Constants for special test handling. It must be updated according
      *  to cluster and jar names. */
-    private static String JAR_NAME    = "ide8/modules/ext/jaxws20/jaxb-xjc.jar";
+    private static String JAR_NAME    = "ide9/modules/ext/jaxws20/jaxb-xjc.jar";
     private static String JAR_VERSION = "1.0";
-    private static String TOMCAT_PATH = "enterprise4/jakarta-tomcat";
+    private static String TOMCAT_PATH = "enterprise5/jakarta-tomcat";
 
     public VerifyJars () {
     }

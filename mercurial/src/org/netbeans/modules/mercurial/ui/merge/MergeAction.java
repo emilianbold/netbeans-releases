@@ -44,12 +44,14 @@ import java.io.File;
 import java.util.List;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.Set;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -64,10 +66,9 @@ import org.openide.windows.OutputWriter;
  *
  * @author John Rice
  */
-public class MergeAction extends AbstractAction {
+public class MergeAction extends ContextAction {
 
     private final VCSContext context;
-    private String revStr;
     private final static int MULTIPLE_AUTOMERGE_HEAD_LIMIT = 2;
     
     public MergeAction(String name, VCSContext context) {
@@ -82,61 +83,55 @@ public class MergeAction extends AbstractAction {
         return true; // #121293: Speed up menu display, warn user if nothing to merge when Merge selected
     }
 
-    public void actionPerformed(ActionEvent ev) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent ev) {
         final File root = HgUtils.getRootFile(context);
         if (root == null) {
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE_SEP")); // NOI18N
-            HgUtils.outputMercurialTabInRed(
+            OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
+            logger.outputInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE")); // NOI18N
+            logger.outputInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE_SEP")); // NOI18N
+            logger.outputInRed(
                     NbBundle.getMessage(MergeAction.class, "MSG_MERGE_NOT_SUPPORTED_INVIEW_INFO")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
+            logger.output(""); // NOI18N
+            logger.closeLog();
             JOptionPane.showMessageDialog(null,
                     NbBundle.getMessage(MergeAction.class, "MSG_MERGE_NOT_SUPPORTED_INVIEW"),// NOI18N
                     NbBundle.getMessage(MergeAction.class, "MSG_MERGE_NOT_SUPPORTED_INVIEW_TITLE"),// NOI18N
                     JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        if(root != null && !HgCommand.isMergeRequired(root)){
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE_SEP")); // NOI18N
-            HgUtils.outputMercurialTab( NbBundle.getMessage(MergeAction.class,"MSG_NOTHING_TO_MERGE")); // NOI18N
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class, "MSG_MERGE_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
-            JOptionPane.showMessageDialog(null,
-                NbBundle.getMessage(MergeAction.class,"MSG_NOTHING_TO_MERGE"),// NOI18N
-                NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE"),// NOI18N
-                JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-
         String repository = root.getAbsolutePath();
-        try{
-            List<String> headList = HgCommand.getHeadRevisions(root);
-            revStr = null;
-            if (headList.size() > MULTIPLE_AUTOMERGE_HEAD_LIMIT){
-                final MergeRevisions mergeDlg = new MergeRevisions(root);
-                if (!mergeDlg.showDialog()) {
-                    return;
-                }
-                revStr = mergeDlg.getSelectionRevision();               
-            }
-        } catch(HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
-        }
-        
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
+                OutputLogger logger = getLogger();
                 try {
-                    HgUtils.outputMercurialTabInRed(
+                    List<String> headList = HgCommand.getHeadRevisions(root);
+                    String revStr = null;
+                    if (headList.size() <= 1) {
+                        logger.outputInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE")); // NOI18N
+                        logger.outputInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE_SEP")); // NOI18N
+                        logger.output( NbBundle.getMessage(MergeAction.class,"MSG_NOTHING_TO_MERGE")); // NOI18N
+                        logger.outputInRed( NbBundle.getMessage(MergeAction.class, "MSG_MERGE_DONE")); // NOI18N
+                        logger.output(""); // NOI18N
+                        JOptionPane.showMessageDialog(null,
+                            NbBundle.getMessage(MergeAction.class,"MSG_NOTHING_TO_MERGE"),// NOI18N
+                            NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE"),// NOI18N
+                            JOptionPane.INFORMATION_MESSAGE);
+                         return;
+                    } else if (headList.size() > MULTIPLE_AUTOMERGE_HEAD_LIMIT){
+                        final MergeRevisions mergeDlg = new MergeRevisions(root);
+                        if (!mergeDlg.showDialog()) {
+                            return;
+                        }
+                        revStr = mergeDlg.getSelectionRevision();               
+                    }
+                    logger.outputInRed(
                             NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE")); // NOI18N
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                             NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE_SEP")); // NOI18N
-                    doMergeAction(root, revStr);
+                    doMergeAction(root, revStr, logger);
                     HgUtils.forceStatusRefreshProject(context);
-                    HgUtils.outputMercurialTab(""); // NOI18N
+                    logger.output(""); // NOI18N
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
@@ -146,17 +141,17 @@ public class MergeAction extends AbstractAction {
         support.start(rp, repository, NbBundle.getMessage(MergeAction.class, "MSG_MERGE_PROGRESS")); // NOI18N
     }
 
-    public static boolean doMergeAction(File root, String revStr) throws HgException {
+    public static boolean doMergeAction(File root, String revStr, OutputLogger logger) throws HgException {
         List<String> listMerge = HgCommand.doMerge(root, revStr);
         Boolean bConflicts = false;
         Boolean bMergeFailed = false;
         
         if (listMerge != null && !listMerge.isEmpty()) {
-            HgUtils.outputMercurialTab(listMerge);          
+            logger.output(listMerge);
             for (String line : listMerge) {
                 if (HgCommand.isMergeAbortUncommittedMsg(line)){ 
                     bMergeFailed = true;
-                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class,
+                    logger.outputInRed(NbBundle.getMessage(MergeAction.class,
                             "MSG_MERGE_FAILED")); // NOI18N
                     JOptionPane.showMessageDialog(null,
                         NbBundle.getMessage(MergeAction.class,"MSG_MERGE_UNCOMMITTED"), // NOI18N
@@ -167,7 +162,7 @@ public class MergeAction extends AbstractAction {
 
                 if (HgCommand.isMergeAbortMultipleHeadsMsg(line)){ 
                     bMergeFailed = true;
-                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class,
+                    logger.outputInRed(NbBundle.getMessage(MergeAction.class,
                             "MSG_MERGE_FAILED")); // NOI18N
                     break;
                 }
@@ -183,7 +178,7 @@ public class MergeAction extends AbstractAction {
                     }else{
                         filepath = line.substring(HgCommand.HG_MERGE_CONFLICT_ERR.length());
                     }
-                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_CONFLICT", filepath)); // NOI18N
+                    logger.outputInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_CONFLICT", filepath)); // NOI18N
                     HgCommand.createConflictFile(filepath);
                 }
                 
@@ -192,53 +187,37 @@ public class MergeAction extends AbstractAction {
                                 NbBundle.getMessage(MergeAction.class, "MSG_MERGE_UNAVAILABLE"), // NOI18N
                                 NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE"), // NOI18N
                                 JOptionPane.WARNING_MESSAGE);
-                        HgUtils.outputMercurialTabInRed(
+                        logger.outputInRed(
                                 NbBundle.getMessage(MergeAction.class, "MSG_MERGE_INFO"));// NOI18N            
-                        HgUtils.outputMercurialTabLink(
+                        logger.outputLink(
                                 NbBundle.getMessage(MergeAction.class, "MSG_MERGE_INFO_URL")); // NOI18N 
                 }            
             }
                   
             if (bConflicts) {
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, 
+                logger.outputInRed(NbBundle.getMessage(MergeAction.class, 
                         "MSG_MERGE_DONE_CONFLICTS")); // NOI18N
             }
             if (!bMergeFailed && !bConflicts) {
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, 
+                logger.outputInRed(NbBundle.getMessage(MergeAction.class, 
                         "MSG_MERGE_DONE")); // NOI18N
             }
         }
         return true;
     }
     
-    public static void printMergeWarning(OutputWriter outRed, List<String> list){
+    public static void printMergeWarning(List<String> list, OutputLogger logger){
         if(list == null || list.isEmpty() || list.size() <= 1) return;
         
         if (list.size() == 2) {
-            outRed.println(NbBundle.getMessage(MergeAction.class, 
+            logger.outputInRed(NbBundle.getMessage(MergeAction.class, 
                     "MSG_MERGE_WARN_NEEDED", list)); // NOI18N
-            outRed.println(NbBundle.getMessage(MergeAction.class, 
+            logger.outputInRed(NbBundle.getMessage(MergeAction.class, 
                     "MSG_MERGE_DO_NEEDED")); // NOI18N
         } else {
-            outRed.println(NbBundle.getMessage(MergeAction.class, 
+            logger.outputInRed(NbBundle.getMessage(MergeAction.class, 
                     "MSG_MERGE_WARN_MULTIPLE_HEADS", list.size(), list)); // NOI18N
-            outRed.println(NbBundle.getMessage(MergeAction.class, 
-                    "MSG_MERGE_DONE_MULTIPLE_HEADS")); // NOI18N
-        }
-    }
-    
-    public static void printMergeWarning(List<String> list){
-        if(list == null || list.isEmpty() || list.size() <= 1) return;
-        
-        if (list.size() == 2) {
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, 
-                    "MSG_MERGE_WARN_NEEDED", list)); // NOI18N
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, 
-                    "MSG_MERGE_DO_NEEDED")); // NOI18N
-        } else {
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, 
-                    "MSG_MERGE_WARN_MULTIPLE_HEADS", list.size(), list)); // NOI18N
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, 
+            logger.outputInRed(NbBundle.getMessage(MergeAction.class, 
                     "MSG_MERGE_DONE_MULTIPLE_HEADS")); // NOI18N
         }
     }

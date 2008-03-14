@@ -41,17 +41,19 @@ package org.netbeans.modules.gsf;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.Error;
-import org.netbeans.api.gsf.HintsProvider;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.HintsProvider;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
@@ -131,6 +133,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
         }
         
         for (Project p : scope.getLookup().lookupAll(Project.class)) {
+            // TODO - find out which subgroups to use
             for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
                 enqueue(new Work(sg.getRootFolder(), callback));
             }
@@ -243,13 +246,17 @@ public class GsfTaskProvider extends PushTaskScanner  {
                 }
                 return;
             }
-            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(file.getMIMEType());
-            if (language == null) {
-                return;
+            final LanguageRegistry registry = LanguageRegistry.getInstance();
+            final List<Language> applicableLanguages = registry.getApplicableLanguages(file.getMIMEType());
+            boolean applicable = false;
+            for (Language language : applicableLanguages) {
+                HintsProvider provider = language.getHintsProvider();
+                if (provider != null) {
+                    applicable = true;
+                }
             }
-
-            final HintsProvider provider = language.getHintsProvider();
-            if (provider == null) {
+            if (!applicable) {
+                // No point compiling the file if there are no hintsproviders
                 return;
             }
 
@@ -271,19 +278,42 @@ public class GsfTaskProvider extends PushTaskScanner  {
                     UiUtils.getDocument(info.getFileObject(), true);
 
                     info.toPhase(Phase.RESOLVED);
-                    
-                    List<Error> errors = provider.computeErrors(info, result);
-                    provider.computeHints(info, result);
-                    for (Error error : errors) {
-                        try {
-                            int lineno = NbDocument.findLineNumber((StyledDocument)info.getDocument(), error.getStartPosition().getOffset())+1;
-                            Task task = Task.create(file, 
-                                    error.getSeverity() == org.netbeans.api.gsf.Severity.ERROR ? TASKLIST_ERROR : TASKLIST_WARNING,
-                                    error.getDisplayName(),
-                                    lineno);
-                            tasks.add(task);
-                        } catch (IOException ioe) {
-                            Exceptions.printStackTrace(ioe);
+
+                    for (String mimeType : info.getEmbeddedMimeTypes()) {
+                        Collection<? extends ParserResult> embeddedResults = info.getEmbeddedResults(mimeType);
+                        for (ParserResult parserResult : embeddedResults) {
+                            Language language = registry.getLanguageByMimeType(mimeType);
+                            HintsProvider provider = language.getHintsProvider();
+                            if (provider == null) {
+                                continue;
+                            }
+
+                            List<Error> errors = provider.computeErrors(info, result);
+                            provider.computeHints(info, result);
+                            for (Error error : errors) {
+                                try {
+                                    int astOffset = error.getStartPosition();
+                                    int lexOffset;
+                                    if (parserResult.getTranslatedSource() != null) {
+                                        lexOffset = parserResult.getTranslatedSource().getLexicalOffset(astOffset);
+                                        if (lexOffset == -1) {
+                                            continue;
+                                        }
+                                    } else {
+                                        lexOffset = astOffset;
+                                    }
+
+
+                                    int lineno = NbDocument.findLineNumber((StyledDocument)info.getDocument(), lexOffset)+1;
+                                    Task task = Task.create(file, 
+                                            error.getSeverity() == org.netbeans.modules.gsf.api.Severity.ERROR ? TASKLIST_ERROR : TASKLIST_WARNING,
+                                            error.getDisplayName(),
+                                            lineno);
+                                    tasks.add(task);
+                                } catch (IOException ioe) {
+                                    Exceptions.printStackTrace(ioe);
+                                }
+                            }
                         }
                     }
                 }

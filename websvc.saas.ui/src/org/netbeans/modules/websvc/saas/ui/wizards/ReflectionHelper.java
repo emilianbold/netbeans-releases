@@ -49,18 +49,18 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.net.URL;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
-//import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-//import org.netbeans.modules.websvc.saas.model.SaasServices;
-//import org.netbeans.modules.websvc.saas.util.SaasUtil;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
+import org.netbeans.modules.websvc.saas.util.TypeUtil;
 
 /**
  *
@@ -372,8 +372,7 @@ public class ReflectionHelper {
             }
         }
     }
-    //TODO:nam
-    /*
+
     public static String getPropertyType(String type, String propName, ClassLoader loader) 
         throws WebServiceReflectionException {
         ClassLoader savedLoader = null;
@@ -402,7 +401,7 @@ public class ReflectionHelper {
                 throw new NoSuchMethodException("Method not found for property " + propName + " in class " + type);
             }
             
-            return SaasUtil.typeToString(method.getGenericReturnType());
+            return TypeUtil.typeToString(method.getGenericReturnType());
         }catch (Exception ex) {
             throw new WebServiceReflectionException(ex.getClass().getName(), ex);
         }finally {
@@ -410,7 +409,7 @@ public class ReflectionHelper {
                 Thread.currentThread().setContextClassLoader(savedLoader);
             }            
         }
-    }*/
+    }
     
     public static Object getHolderValue(Object holder) throws WebServiceReflectionException {
         try {
@@ -608,146 +607,147 @@ public class ReflectionHelper {
         }
     }    
     
-    //TODO:nam
-//    public static Object callMethodWithParams(String inClassName, LinkedList inParamList, JavaMethod inMethod,
-//                                              URLClassLoader urlClassLoader, WebServiceData wsData, WsdlPort port) throws WebServiceReflectionException {
-//        Class clazz = null;
-//        Class serviceClass = null;
-//        if(null == urlClassLoader) return null;
-//        
-//        /**
-//         * We need to save off the current classLoader and set the context to the one passed in for
-//         * executing the method.
-//         */        
-//        ClassLoader savedLoader = Thread.currentThread().getContextClassLoader();
-//        try {
-//            /**
-//             * Now set the new classLoader to the one passed in.
-//             */
-//            Thread.currentThread().setContextClassLoader(urlClassLoader);
-//
-//            /**
-//             * Get an instance of the Class
-//             */
-//            try {
-//                serviceClass = Class.forName(inClassName, true, urlClassLoader);
-//            } catch (ClassNotFoundException cnfe) {
-//                throw new WebServiceReflectionException("ClassNotFoundException", cnfe);
-//            }
-//
-//            /**
-//             * Instantiate the Class so we can call the method on it.
-//             */
-//            Object classInstance = null;
-//            try {
-//                
-//                URL wsdlUrl = wsData.getJaxWsDescriptor().getWsdlUrl();
-//                String urlPath = wsdlUrl.getPath();
-//                int start;
-//                if (wsdlUrl.getProtocol().toLowerCase().startsWith("file")) {
-//                    // NOI18N
-//                    start = urlPath.lastIndexOf(System.getProperty("path.separator"));
-//                    start = (start < 0) ? urlPath.lastIndexOf("/") : start;
-//                } else {
-//                    start = urlPath.lastIndexOf("/");
-//                }
-//                start = (start < 0 || start >= urlPath.length() - 1) ? 0 : start + 1;
-//
-//                String wsdlFileName = urlPath.substring(start);
-//                String namespace = wsData.getJaxWsDescriptor().getModel().getNamespaceURI();
-//                String qname = wsData.getJaxWsDescriptor().getName();
-//
-//                URL jarWsdlUrl = serviceClass.getResource(wsdlFileName);
-//                QName name = new QName(namespace, qname);
-//
-//                Constructor constructor = serviceClass.getConstructor(java.net.URL.class, javax.xml.namespace.QName.class);
-//                
-//                Object serviceObject = constructor.newInstance(jarWsdlUrl, name);
-//
-//                String portGetter = port.getPortGetter();
-//                Method getPort = serviceObject.getClass().getMethod(portGetter);
-//                
-//                classInstance = getPort.invoke(serviceObject);
-//                clazz = classInstance.getClass();
-//            } catch (InstantiationException ia) {
-//                throw new WebServiceReflectionException("InstantiationExceptoin", ia);
-//            } catch (IllegalAccessException iae) {
-//                throw new WebServiceReflectionException("IllegalAccessException", iae);
-//            } catch (NoSuchMethodException nsme) {
-//                throw new WebServiceReflectionException("NoSuchMethodException", nsme);
-//            } catch (InvocationTargetException ite) {
-//                throw new WebServiceReflectionException("InvocationTargetException", ite);
-//            }
-//
-//
-//            Method method = null;
-//            Object[] paramValues = inParamList.toArray();
-//            /**
-//             * Take the parameters and make an array of Classes based on the type of each Object.
-//             * For each parameter, we need to have the type of the original parameter for the JavaMethod
-//             * and do the following conversions:
-//             * 1. from ArrayList to a typed array. (done prior)
-//             * 2. from objects to primitives
-//             */
-//            LinkedList classList = new LinkedList();
-//            List parameterList = inMethod.getParametersList();
-//            for (int ii = 0; null != paramValues && ii < paramValues.length; ii++) {
-//
-//                /**
-//                 * If the parameter type is a primitive, we've stored the value as a reference
-//                 * type and need to convert it back to a primitive.
-//                 */
-//                Class classToAdd = null;
-//                if (null != parameterList && ii < parameterList.size()) {
-//                    JavaParameter actualParameter = (JavaParameter) parameterList.get(ii);
-//                    if (isPrimitiveClass(actualParameter.getType().getFormalName())) {
-//                        classToAdd = referenceClass2PrimitiveClass(paramValues[ii].getClass());
-//                    } else if (actualParameter.getType().getFormalName().equals("java.util.Calendar") && !actualParameter.isHolder()) {
-//                        classToAdd = java.util.Calendar.class;
-//                    }else if (paramValues[ii] == null) {
-//                        try {
-//                            classToAdd = Class.forName(actualParameter.getType().getFormalName(), true, urlClassLoader);
-//                        }catch (Exception ex) {
-//                            throw new WebServiceReflectionException("Exception", ex);
-//                        }
-//                    } else {
-//                        classToAdd = paramValues[ii].getClass();
-//                    }
-//                }
-//                classList.add(classToAdd);
-//            }
-//            Class[] paramClasses = (Class[]) classList.toArray(new Class[0]);
-//
-//            /**
-//             * Now instantiate the method to call.
-//             */
-//            try {
-//                method = clazz.getMethod(inMethod.getName(), paramClasses);
-//            } catch (NoSuchMethodException nsme) {
-//                throw new WebServiceReflectionException("NoSuchMethodException", nsme);
-//            }
-//
-//
-//            Object returnObject = null;
-//            try {
-//                returnObject = method.invoke(classInstance, paramValues);
-//            } catch (InvocationTargetException ite) {
-//                throw new WebServiceReflectionException("InvocationTargetException", ite);
-//            } catch (IllegalArgumentException ia) {
-//                throw new WebServiceReflectionException("IllegalArgumentException", ia);
-//            } catch (IllegalAccessException iae) {
-//                throw new WebServiceReflectionException("IllegalAccessException", iae);
-//            } catch (Exception e) {
-//                throw new WebServiceReflectionException("Exception", e);
-//            }
-//
-//            return returnObject;
-//        }finally {
-//            // Reset the classloader
-//            Thread.currentThread().setContextClassLoader(savedLoader);
-//        }
-//        
-//    }
+    public static Object callMethodWithParams(
+            String inClassName, LinkedList inParamList, JavaMethod inMethod,
+            URLClassLoader urlClassLoader, WsdlData wsData, WsdlPort port) throws WebServiceReflectionException {
+
+        Class clazz = null;
+        Class serviceClass = null;
+        if(null == urlClassLoader) return null;
+        
+        /**
+         * We need to save off the current classLoader and set the context to the one passed in for
+         * executing the method.
+         */        
+        ClassLoader savedLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            /**
+             * Now set the new classLoader to the one passed in.
+             */
+            Thread.currentThread().setContextClassLoader(urlClassLoader);
+
+            /**
+             * Get an instance of the Class
+             */
+            try {
+                serviceClass = Class.forName(inClassName, true, urlClassLoader);
+            } catch (ClassNotFoundException cnfe) {
+                throw new WebServiceReflectionException("ClassNotFoundException", cnfe);
+            }
+
+            /**
+             * Instantiate the Class so we can call the method on it.
+             */
+            Object classInstance = null;
+            try {
+                
+                URL wsdlUrl = wsData.getJaxWsDescriptor().getWsdlUrl();
+                String urlPath = wsdlUrl.getPath();
+                int start;
+                if (wsdlUrl.getProtocol().toLowerCase().startsWith("file")) {
+                    // NOI18N
+                    start = urlPath.lastIndexOf(System.getProperty("path.separator"));
+                    start = (start < 0) ? urlPath.lastIndexOf("/") : start;
+                } else {
+                    start = urlPath.lastIndexOf("/");
+                }
+                start = (start < 0 || start >= urlPath.length() - 1) ? 0 : start + 1;
+
+                String wsdlFileName = urlPath.substring(start);
+                String namespace = wsData.getJaxWsDescriptor().getModel().getNamespaceURI();
+                String qname = wsData.getJaxWsDescriptor().getName();
+
+                URL jarWsdlUrl = serviceClass.getResource(wsdlFileName);
+                QName name = new QName(namespace, qname);
+
+                Constructor constructor = serviceClass.getConstructor(java.net.URL.class, javax.xml.namespace.QName.class);
+                
+                Object serviceObject = constructor.newInstance(jarWsdlUrl, name);
+
+                String portGetter = port.getPortGetter();
+                Method getPort = serviceObject.getClass().getMethod(portGetter);
+                
+                classInstance = getPort.invoke(serviceObject);
+                clazz = classInstance.getClass();
+            } catch (InstantiationException ia) {
+                throw new WebServiceReflectionException("InstantiationExceptoin", ia);
+            } catch (IllegalAccessException iae) {
+                throw new WebServiceReflectionException("IllegalAccessException", iae);
+            } catch (NoSuchMethodException nsme) {
+                throw new WebServiceReflectionException("NoSuchMethodException", nsme);
+            } catch (InvocationTargetException ite) {
+                throw new WebServiceReflectionException("InvocationTargetException", ite);
+            }
+
+
+            Method method = null;
+            Object[] paramValues = inParamList.toArray();
+            /**
+             * Take the parameters and make an array of Classes based on the type of each Object.
+             * For each parameter, we need to have the type of the original parameter for the JavaMethod
+             * and do the following conversions:
+             * 1. from ArrayList to a typed array. (done prior)
+             * 2. from objects to primitives
+             */
+            LinkedList classList = new LinkedList();
+            List parameterList = inMethod.getParametersList();
+            for (int ii = 0; null != paramValues && ii < paramValues.length; ii++) {
+
+                /**
+                 * If the parameter type is a primitive, we've stored the value as a reference
+                 * type and need to convert it back to a primitive.
+                 */
+                Class classToAdd = null;
+                if (null != parameterList && ii < parameterList.size()) {
+                    JavaParameter actualParameter = (JavaParameter) parameterList.get(ii);
+                    if (isPrimitiveClass(actualParameter.getType().getFormalName())) {
+                        classToAdd = referenceClass2PrimitiveClass(paramValues[ii].getClass());
+                    } else if (actualParameter.getType().getFormalName().equals("java.util.Calendar") && !actualParameter.isHolder()) {
+                        classToAdd = java.util.Calendar.class;
+                    }else if (paramValues[ii] == null) {
+                        try {
+                            classToAdd = Class.forName(actualParameter.getType().getFormalName(), true, urlClassLoader);
+                        }catch (Exception ex) {
+                            throw new WebServiceReflectionException("Exception", ex);
+                        }
+                    } else {
+                        classToAdd = paramValues[ii].getClass();
+                    }
+                }
+                classList.add(classToAdd);
+            }
+            Class[] paramClasses = (Class[]) classList.toArray(new Class[0]);
+
+            /**
+             * Now instantiate the method to call.
+             */
+            try {
+                method = clazz.getMethod(inMethod.getName(), paramClasses);
+            } catch (NoSuchMethodException nsme) {
+                throw new WebServiceReflectionException("NoSuchMethodException", nsme);
+            }
+
+
+            Object returnObject = null;
+            try {
+                returnObject = method.invoke(classInstance, paramValues);
+            } catch (InvocationTargetException ite) {
+                throw new WebServiceReflectionException("InvocationTargetException", ite);
+            } catch (IllegalArgumentException ia) {
+                throw new WebServiceReflectionException("IllegalArgumentException", ia);
+            } catch (IllegalAccessException iae) {
+                throw new WebServiceReflectionException("IllegalAccessException", iae);
+            } catch (Exception e) {
+                throw new WebServiceReflectionException("Exception", e);
+            }
+
+            return returnObject;
+        }finally {
+            // Reset the classloader
+            Thread.currentThread().setContextClassLoader(savedLoader);
+        }
+        
+    }
 
     public static boolean isPrimitiveClass(String inType) {
         if(inType.equalsIgnoreCase("int")) {

@@ -51,7 +51,6 @@ import javax.swing.text.JTextComponent;
  * @author  Dusan Balek
  */
 public class MethodParamsTipPaintComponent extends JToolTip {
-
     private int drawX;
     private int drawY;
     private int drawHeight;
@@ -96,15 +95,22 @@ public class MethodParamsTipPaintComponent extends JToolTip {
 
         int startX = drawX;
         drawWidth = drawX;
+        // This code is deliberately a bit different from the Retouche version
+        // of this class. With the way I'm using the parameters list (a 2d set
+        // of parameters balanced by width) the code would incorrectly highlight
+        // the idx'th element on EVERY row. So I've modified the code by moving
+        // the i-count out outside the iteration over the rows, and I've removed
+        // the check to see if the index is creater than the list length.
+        int i = 0;
         for (List<String> p : params) {
-            int i = 0;
-            int plen = p.size() - 1;
+            //int i = 0;
+            //int plen = p.size() - 1;
             for (String s : p) {
-                if (getWidth(s, i == idx || i == plen && idx > plen ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont()) + drawX > screenWidth) {
+                if (getWidth(s, i == idx/* || i == plen && idx > plen*/ ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont()) + drawX > screenWidth) {
                     drawY += fontHeight;
                     drawX = startX + getWidth("        ", drawFont); //NOI18N
                 }
-                drawString(g, s, i == idx || i == plen && idx > plen ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont());
+                drawString(g, s, i == idx/* || i == plen && idx > plen*/ ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont());
                 if (drawWidth < drawX)
                     drawWidth = drawX;
                 i++;

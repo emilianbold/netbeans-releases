@@ -114,7 +114,7 @@ public final class Preview extends Dialog implements Percent.Listener {
   }
 
   public void print(List<PrintProvider> providers, boolean withPreview) {
-    assert providers != null : "Print providers can't be null"; // NOI18N
+    assert providers != null : "Print providers can not be null"; // NOI18N
     assert providers.size() > 0 : "Must be at least one provider"; // NOI18N
 //out();
 //out("Do action");
@@ -230,21 +230,9 @@ public final class Preview extends Dialog implements Percent.Listener {
     InputMap inputMap = myGoto.getInputMap();
     ActionMap actionMap = myGoto.getActionMap();
 
-    inputMap.put(KeyStroke.getKeyStroke('+'), INCREASE);
-    inputMap.put(KeyStroke.getKeyStroke('='), INCREASE);
-    inputMap.put(KeyStroke.getKeyStroke('-'), DECREASE);
-    inputMap.put(KeyStroke.getKeyStroke('_'), DECREASE);
-    
-    actionMap.put(INCREASE, new AbstractAction() {
-      public void actionPerformed(ActionEvent event) {
-        next();
-      }
-    });
-    actionMap.put(DECREASE, new AbstractAction() {
-      public void actionPerformed(ActionEvent event) {
-        previous();
-      }
-    });
+    populateInputMap(inputMap);
+    populateActionMap(actionMap);
+
     myGoto.setHorizontalAlignment(JTextField.CENTER);
     myGoto.setToolTipText(i18n("TLT_Goto")); // NOI18N
     myGoto.addActionListener(new ActionListener() {
@@ -277,6 +265,46 @@ public final class Preview extends Dialog implements Percent.Listener {
     panel.add(myLast, c);
 
     return panel;
+  }
+
+  private void populateInputMap(InputMap inputMap) {
+    inputMap.put(KeyStroke.getKeyStroke('k'), INCREASE);
+    inputMap.put(KeyStroke.getKeyStroke('K'), INCREASE);
+    inputMap.put(KeyStroke.getKeyStroke('+'), INCREASE);
+    inputMap.put(KeyStroke.getKeyStroke('='), INCREASE);
+    inputMap.put(KeyStroke.getKeyStroke('g'), DECREASE);
+    inputMap.put(KeyStroke.getKeyStroke('G'), DECREASE);
+    inputMap.put(KeyStroke.getKeyStroke('-'), DECREASE);
+    inputMap.put(KeyStroke.getKeyStroke('_'), DECREASE);
+    inputMap.put(KeyStroke.getKeyStroke('l'), LAST);
+    inputMap.put(KeyStroke.getKeyStroke('L'), LAST);
+    inputMap.put(KeyStroke.getKeyStroke('*'), LAST);
+    inputMap.put(KeyStroke.getKeyStroke('f'), FIRST);
+    inputMap.put(KeyStroke.getKeyStroke('F'), FIRST);
+    inputMap.put(KeyStroke.getKeyStroke('/'), FIRST);
+  }
+
+  private void populateActionMap(ActionMap actionMap) {
+    actionMap.put(INCREASE, new AbstractAction() {
+      public void actionPerformed(ActionEvent event) {
+        next();
+      }
+    });
+    actionMap.put(DECREASE, new AbstractAction() {
+      public void actionPerformed(ActionEvent event) {
+        previous();
+      }
+    });
+    actionMap.put(LAST, new AbstractAction() {
+      public void actionPerformed(ActionEvent event) {
+        last();
+      }
+    });
+    actionMap.put(FIRST, new AbstractAction() {
+      public void actionPerformed(ActionEvent event) {
+        first();
+      }
+    });
   }
 
   private JComponent createScalePanel() {
@@ -427,7 +455,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 
   private void scrollTo() {
 //out("Scroll to: " + myPaperNumber);
-    Paper paper = myPapers [myPaperNumber - 1];
+    Paper paper = myPapers.get(myPaperNumber - 1);
     int gap  = getGap();
     int x = paper.getX() - gap;
     int y = paper.getY() - gap;
@@ -445,8 +473,8 @@ public final class Preview extends Dialog implements Percent.Listener {
     if (getPaperCount() == 0) {
       return 0.0;
     }
-    int width = myPapers [0].getPaperWidth() + GAP_SIZE;
-    int height = myPapers [0].getPaperHeight() + GAP_SIZE;
+    int width = myPapers.get(0).getPaperWidth() + GAP_SIZE;
+    int height = myPapers.get(0).getPaperHeight() + GAP_SIZE;
 
     if (index == 0) {
       return getWidthScale(width);
@@ -524,7 +552,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     c.insets = new Insets(gap, gap, 0, 0);
 
     if (isSingleMode()) {
-      myPaperPanel.add(myPapers [myPaperNumber - 1], c);
+      myPaperPanel.add(myPapers.get(myPaperNumber - 1), c);
     }
     else {
       for (Paper paper : myPapers) {
@@ -541,83 +569,65 @@ public final class Preview extends Dialog implements Percent.Listener {
     myPaperPanel.repaint();
   }
 
-  private void createPapers() { // todo start here
-    PrintProvider myPrintProvider = myPrintProviders.get(0);
-    PrintPage [][] pages = myPrintProvider.getPages(
-      Option.getDefault().getPageWidth(),
-      Option.getDefault().getPageHeight(),
-      Option.getDefault().getZoom());
-//out("Create papers: " + pages.length);
-    myPapers = null;
+  private void createPapers() {
+    myPapers = new ArrayList<Paper>();
 
-    if (pages == null) {
-      return;
-    }
-    String name = myPrintProvider.getName();
-    
-    if (name == null) {
-      name = ""; // NOI18N
-    }
-    Date modified = myPrintProvider.getLastModifiedDate();
+    int width = Option.getDefault().getPageWidth();
+    int height = Option.getDefault().getPageHeight();
 
-    if (modified == null) {
-      modified = new Date(System.currentTimeMillis());
-    }
+    double zoom = Option.getDefault().getZoom();
     double scale = 1.0;
 
     if (myScale != null) {
       scale = myScale.getValue();
     }
+    int delta = 0;
     int number = 0;
-    int count = getCount(pages);
-    myPapers = new Paper [count];
 
-    for (int i=0; i < pages.length; i++) {
-      for (int j=0; j < pages [i].length; j++) {
-        PrintPage page = pages [i][j];
-
-        if (page == null) {
-          continue;
-        }
-        myPapers [number] = new Paper(
-          page,
-          name,
-          modified,
-          scale
-        );
-        myPapers [number].setInfo(
-          number + 1,
-          i, j,
-          count
-        );
-        number++;
+    for (PrintProvider provider : myPrintProviders) {
+      String name = provider.getName();
+      
+      if (name == null) {
+        name = ""; // NOI18N
       }
-    }
-  }
+      Date modified = provider.getLastModifiedDate();
 
-  private int getCount(PrintPage [][] pages) {
-    int count = 0;
+      if (modified == null) {
+        modified = new Date(System.currentTimeMillis());
+      }
+      PrintPage [][] pages = provider.getPages(width, height, zoom);
+//out("Create papers: " + pages.length);
 
-    for (int i=0; i < pages.length; i++) {
-      for (int j=0; j < pages [i].length; j++) {
-        PrintPage page = pages [i][j];
+      for (int i=0; i < pages.length; i++) {
+        for (int j=0; j < pages [i].length; j++) {
+          PrintPage page = pages [i][j];
 
-        if (page != null) {
-          count++;
+          if (page == null) {
+            continue;
+          }
+          Paper paper = new Paper(page, name, modified);
+          paper.setCoordinate(number + 1, i + delta, j, scale);
+          myPapers.add(paper);
+          number++;
         }
       }
+      delta += pages.length;
     }
-    return count;
-  }
+    int count = myPapers.size();
 
-  public void invalidValue(String value) {}
+    for (Paper paper : myPapers) {
+      paper.setCount(count);
+    }
+  }
 
   private int getPaperCount() {
     if (myPapers == null) {
       return 0;
     }
-    return myPapers.length;
+    return myPapers.size();
   }
+
+  public void invalidValue(String value) {}
 
   private void first() {
     updatePaperNumber();
@@ -856,8 +866,8 @@ public final class Preview extends Dialog implements Percent.Listener {
     private List<MouseWheelListener> myMouseWheelListeners;
   }
 
-  private Paper [] myPapers;
   private JPanel myPaperPanel;
+  private List<Paper> myPapers;
   
   private JButton myFirst;
   private JButton myPrevious;
@@ -889,6 +899,8 @@ public final class Preview extends Dialog implements Percent.Listener {
 
   private static final String INCREASE = "increase"; // NOI18N
   private static final String DECREASE = "decrease"; // NOI18N
+  private static final String LAST = "last"; // NOI18N
+  private static final String FIRST = "first"; // NOI18N
   
   private final String [] CUSTOMS = new String [] {
     i18n("LBL_Fit_to_Width"), // NOI18N

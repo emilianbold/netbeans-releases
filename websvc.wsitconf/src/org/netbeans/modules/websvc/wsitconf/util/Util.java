@@ -286,28 +286,6 @@ public class Util {
         return false;
     }
 
-    public static String getServerStoreLocation(Project project, boolean trust) {
-        String storeLocation = null;
-        J2eeModuleProvider mp = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (mp != null) {
-            InstanceProperties ip = mp.getInstanceProperties();
-            if ("".equals(ip.getProperty("LOCATION"))) {    //NOI18N
-                return null;
-            }
-            
-            J2eePlatform j2eePlatform = getJ2eePlatform(project);
-            if (j2eePlatform != null) {
-                File[] keyLocs = null;
-                keyLocs = trust ? j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_TRUSTSTORE_CLIENT) :
-                                  j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_KEYSTORE_CLIENT);
-                if ((keyLocs != null) && (keyLocs.length > 0)) {
-                    storeLocation = keyLocs[0].getAbsolutePath();
-                }
-            }
-        }
-        return storeLocation;
-    }
-    
     public static List<String> getAliases(String storePath, char[] password, String type) throws IOException {
         if ((storePath == null) || (type == null)) return null;
         FileInputStream iStream = null;
@@ -426,6 +404,9 @@ public class Util {
 
     public static String getStoreLocation(Project project, boolean trust, boolean client) {
         String storeLocation = null;
+        if (project == null) {
+            return storeLocation;
+        }
         J2eeModuleProvider mp = project.getLookup().lookup(J2eeModuleProvider.class);
         if (mp != null) {
             String sID = mp.getServerInstanceID();
@@ -576,6 +557,7 @@ public class Util {
             copyKey(SERVER_KEYSTORE_BUNDLED, WSSIP, PASSWORD, PASSWORD, serverKeyStorePath,WSSIP, dstPasswd, false);
             copyKey(SERVER_TRUSTSTORE_BUNDLED, "certificate-authority", PASSWORD, PASSWORD, serverTrustStorePath, "xwss-certificate-authority", dstPasswd, true);
             copyKey(SERVER_TRUSTSTORE_BUNDLED, XWS_SECURITY_CLIENT, PASSWORD, PASSWORD, serverTrustStorePath,XWS_SECURITY_CLIENT, dstPasswd, true);
+            copyKey(SERVER_TRUSTSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, serverTrustStorePath,XWS_SECURITY_SERVER, dstPasswd, true);
             copyKey(CLIENT_KEYSTORE_BUNDLED, XWS_SECURITY_CLIENT, PASSWORD, PASSWORD, clientKeyStorePath,XWS_SECURITY_CLIENT, dstPasswd, false);
             copyKey(CLIENT_TRUSTSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, clientTrustStorePath,XWS_SECURITY_SERVER, dstPasswd, true);
             copyKey(CLIENT_TRUSTSTORE_BUNDLED, WSSIP, PASSWORD, PASSWORD, clientTrustStorePath,WSSIP, dstPasswd, true);

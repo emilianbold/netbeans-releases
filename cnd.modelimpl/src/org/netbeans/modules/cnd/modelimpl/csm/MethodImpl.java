@@ -72,6 +72,9 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
         //setAst(ast);
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
+                case CPPTokenTypes.LITERAL_static:
+                    setStatic(true);                    
+                    break;                
                 case CPPTokenTypes.LITERAL_virtual:
                     setVirtual(true);
                     break;

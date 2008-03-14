@@ -50,7 +50,6 @@ made subject to such option by the copyright holder.
     <property name="test.qa-functional.cp.extra" value="
               ${openide.util.dir}/lib/org-openide-util.jar:
               ${nbjunit.dir}/modules/ext/nbjunit.jar:"/>
-<!--              ../../../nbbuild/netbeans/nb6.0/modules/org-netbeans-modules-uihandler.jar: -->
 
     <target name="qa-functional-compiler" depends="init,init-cp">
         <buildTests srcdir="qa-functional/src" compileexcludes="**/data/**">

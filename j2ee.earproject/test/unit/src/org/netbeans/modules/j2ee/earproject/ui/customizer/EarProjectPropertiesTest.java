@@ -43,22 +43,24 @@ package org.netbeans.modules.j2ee.earproject.ui.customizer;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
+import javax.swing.DefaultListModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.earproject.EarProjectTest;
-import org.netbeans.modules.j2ee.earproject.EarProjectType;
+import org.netbeans.modules.j2ee.earproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIteratorTest;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
@@ -115,7 +117,7 @@ public class EarProjectPropertiesTest extends NbTestCase {
         assertEquals("car reference should be set properly", CAR_REFERENCE_EXPECTED_VALUE, carReferenceValue);
         
         // get ear project from lookup
-        Project p = ProjectManager.getDefault().findProject(prjDirFO);
+        EarProject p = (EarProject)ProjectManager.getDefault().findProject(prjDirFO);
         earProject = p.getLookup().lookup(EarProject.class);
         assertNotNull("project should be created", earProject);
         
@@ -123,35 +125,33 @@ public class EarProjectPropertiesTest extends NbTestCase {
         AntProjectHelper aph = project.getAntProjectHelper();
         AuxiliaryConfiguration aux = aph.createAuxiliaryConfiguration();
         ReferenceHelper refHelper = new ReferenceHelper(aph, aux, aph.getStandardPropertyEvaluator());
-        earProjectProperties = new EarProjectProperties(earProject, refHelper, new EarProjectType());
+        earProjectProperties = new EarProjectProperties(earProject, p.getUpdateHelper(), p.evaluator(), refHelper);
         assertNotNull("ear project properties should be created", earProjectProperties);
     }
 
     public void testPropertiesWithoutDDJ2EE() throws Exception { // see #73751
         File proj = new File(getWorkDir(), "EARProject");
         AntProjectHelper aph = EarProjectGenerator.createProject(proj,
-                "test-project", J2eeModule.J2EE_14, serverID, "1.4");
+                "test-project", J2eeModule.J2EE_14, serverID, "1.4", null, null);
         FileObject prjDirFO = aph.getProjectDirectory();
         // simulateing #73751
         prjDirFO.getFileObject("src/conf/application.xml").delete();
-        Project p = ProjectManager.getDefault().findProject(prjDirFO);
+        EarProject p = (EarProject)ProjectManager.getDefault().findProject(prjDirFO);
         AuxiliaryConfiguration aux = aph.createAuxiliaryConfiguration();
         ReferenceHelper refHelper = new ReferenceHelper(aph, aux, aph.getStandardPropertyEvaluator());
-        EarProjectProperties epp = new EarProjectProperties((EarProject) p, refHelper, new EarProjectType());
-        assertNotNull("non-null application modules", epp.getApplicationSubprojects());
+        assertNotNull("non-null application modules", EarProjectProperties.getApplicationSubprojects(p));
     }
 
     public void testPropertiesWithoutDDJavaEE() throws Exception {
         File proj = new File(getWorkDir(), "EARProject");
         AntProjectHelper aph = EarProjectGenerator.createProject(proj,
-                "test-project", J2eeModule.JAVA_EE_5, serverID, "1.5");
+                "test-project", J2eeModule.JAVA_EE_5, serverID, "1.5", null, null);
         FileObject prjDirFO = aph.getProjectDirectory();
         assertNull("application should not exist", prjDirFO.getFileObject("src/conf/application.xml"));
-        Project p = ProjectManager.getDefault().findProject(prjDirFO);
+        EarProject p = (EarProject)ProjectManager.getDefault().findProject(prjDirFO);
         AuxiliaryConfiguration aux = aph.createAuxiliaryConfiguration();
         ReferenceHelper refHelper = new ReferenceHelper(aph, aux, aph.getStandardPropertyEvaluator());
-        EarProjectProperties epp = new EarProjectProperties((EarProject) p, refHelper, new EarProjectType());
-        assertNotNull("non-null application modules", epp.getApplicationSubprojects());
+        assertNotNull("non-null application modules", EarProjectProperties.getApplicationSubprojects(p));
     }
     
     public void testPathInEARChangingJ2EE() throws Exception { // see #76008
@@ -173,45 +173,41 @@ public class EarProjectPropertiesTest extends NbTestCase {
         assertEquals("ejb path", "testEA-ejb.jar", app.getModule(0).getEjb());
         
         // simulate change through customizer
-        EarProjectProperties epp = earProject.getProjectProperties();
-        List<VisualClassPathItem> vcpis = epp.getJarContentAdditional();
-        vcpis.get(0).setPathInEAR("otherPath");
-        epp.updateContentDependency(
-                new HashSet<VisualClassPathItem>(vcpis),
-                new HashSet<VisualClassPathItem>(vcpis));
+        EditableProperties projectProperties = earProject.getUpdateHelper().getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
+        List<ClassPathSupport.Item> old = EarProjectProperties.getJarContentAdditional(earProject);
+        List<ClassPathSupport.Item> updated = EarProjectProperties.getJarContentAdditional(earProject);
+        updated.get(0).setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, "otherPath");
+        EarProjectProperties.updateContentDependency(earProject,
+                old, updated,
+                projectProperties);
         
         assertEquals("ejb path", "otherPath/testEA-ejb.jar", app.getModule(0).getEjb());
     }
     
-    public void testSetACPrivateProperties() throws Exception { // #81964
-        
-        
-        // #102486 - test broken for long time; commenting out
-        if (true) return;
-        
-        
-        File earDirF = new File(getWorkDir(), "testEA-2");
-        String name = "Test EnterpriseApplication";
-        String j2eeLevel = J2eeModule.JAVA_EE_5;
-        String acName = "testEA-ac";
-        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeLevel,
-                serverID, null, null, acName, null, null, null);
-        EarProject earProject = (EarProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(earDirF));
-        earProject.getProjectDirectory().getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH).delete();
-        EarProjectTest.openProject(earProject);
-        assertNotNull("private properties successfully regenerated", earProject.getAntProjectHelper().getProperties(
-                AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(EarProjectProperties.APPCLIENT_WA_COPY_CLIENT_JAR_FROM));
+    public static void putProperty(EarProject p, String key, String value) throws IOException {
+        EditableProperties projectProperties = p.getUpdateHelper().getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );
+        projectProperties.setProperty(key, value);
+        p.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+    }
+    
+    public static void putProperty(EarProject p, String key, String value[]) throws IOException {
+        EditableProperties projectProperties = p.getUpdateHelper().getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );
+        projectProperties.setProperty(key, value);
+        p.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+        ProjectManager.getDefault().saveProject(p);
+    }
+    
+    public static void putProperty(EarProject p, String key, List<ClassPathSupport.Item> modules, String element) throws IOException {
+        String value[] = p.getClassPathSupport().encodeToStrings(modules, element);
+        putProperty(p, key, value);
     }
     
     // see #97185 & #95604
     public void testResolveProjectDependencies() throws Exception {
         
-        int countBefore = earProjectProperties.getJarContentAdditional().size();
-        
-        List<VisualClassPathItem> modules = new ArrayList<VisualClassPathItem>();
-        modules.addAll(earProjectProperties.getJarContentAdditional());
-        modules.remove(getEjbProject());
-        earProjectProperties.put(EarProjectProperties.JAR_CONTENT_ADDITIONAL, modules);
+        int countBefore = EarProjectProperties.getJarContentAdditional(earProject).size();
+        DefaultListModel l = earProjectProperties.EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel();
+        l.remove(l.indexOf(getEjbProject()));
         earProjectProperties.store();
         
         EditableProperties ep = TestUtil.loadProjectProperties(earProject.getProjectDirectory());
@@ -219,18 +215,16 @@ public class EarProjectPropertiesTest extends NbTestCase {
         assertNull("ejb reference should not exist", ejbReferenceValue);
         String carReferenceValue = ep.getProperty(CAR_REFERENCE_EXPECTED_KEY);
         assertEquals("car reference should exist", CAR_REFERENCE_EXPECTED_VALUE, carReferenceValue);
-        assertEquals("wrong count of project references", countBefore - 1, earProjectProperties.getJarContentAdditional().size());
-        assertEquals("wrong count of project references", countBefore - 1, earProjectProperties.getReferenceHelper().getRawReferences().length);
+        assertEquals("wrong count of project references", countBefore - 1, EarProjectProperties.getJarContentAdditional(earProject).size());
+        assertEquals("wrong count of project references", countBefore - 1, earProject.getReferenceHelper().getRawReferences().length);
         
         // remove all entries
-        modules.clear();
-        earProjectProperties.put(EarProjectProperties.JAR_CONTENT_ADDITIONAL, modules);
-        assertEquals("wrong count of project references", 0, earProjectProperties.getJarContentAdditional().size());
+        l.clear();
+        earProjectProperties.store();
+        assertEquals("wrong count of project references", 0, EarProjectProperties.getJarContentAdditional(earProject).size());
         
         // add new project/module
-        modules.add(getWebProject());
-        earProjectProperties.put(EarProjectProperties.JAR_CONTENT_ADDITIONAL, modules);
-        
+        l.addElement(getWebProject());
         earProjectProperties.store();
         
         ep = TestUtil.loadProjectProperties(earProject.getProjectDirectory());
@@ -240,22 +234,22 @@ public class EarProjectPropertiesTest extends NbTestCase {
         assertNull("car reference should not exist", carReferenceValue);
         String webReferenceValue = ep.getProperty(WEB_REFERENCE_EXPECTED_KEY);
         assertEquals("web reference should exist", WEB_REFERENCE_EXPECTED_VALUE, webReferenceValue);
-        assertEquals("wrong count of project references", 1, earProjectProperties.getJarContentAdditional().size());
-        assertEquals("wrong count of project references", 1, earProjectProperties.getReferenceHelper().getRawReferences().length);
+        assertEquals("wrong count of project references", 1, EarProjectProperties.getJarContentAdditional(earProject).size());
+        assertEquals("wrong count of project references", 1, earProject.getReferenceHelper().getRawReferences().length);
     }
     
-    private VisualClassPathItem getEjbProject() {
-        List<VisualClassPathItem> list = earProjectProperties.getJarContentAdditional();
-        for (VisualClassPathItem vcpi : list) {
-            if (vcpi.getRaw().indexOf(EJB_REFERENCE_EXPECTED_KEY) != -1
-                    && EJB_REFERENCE_EXPECTED_VALUE.endsWith(vcpi.getEvaluated())) {
+    private ClassPathSupport.Item getEjbProject() {
+        List<ClassPathSupport.Item> list = EarProjectProperties.getJarContentAdditional(earProject);
+        for (ClassPathSupport.Item vcpi : list) {
+            if (vcpi.getReference().indexOf(EJB_REFERENCE_EXPECTED_KEY) != -1
+                    /*&& EJB_REFERENCE_EXPECTED_VALUE.endsWith(vcpi.getEvaluated())*/) {
                 return vcpi;
             }
         }
         return null;
     }
     
-    private VisualClassPathItem getWebProject() throws IOException {
+    private ClassPathSupport.Item getWebProject() throws IOException {
         List<AntArtifact> artifactList = new ArrayList<AntArtifact>();
         AntArtifact artifacts[] = AntArtifactQuery.findArtifactsByType(
                 createWebProject(),
@@ -266,10 +260,8 @@ public class EarProjectPropertiesTest extends NbTestCase {
         assertEquals("size should be exactly 1", 1, artifactList.size());
         
         // create the vcpis
-        List<VisualClassPathItem> newVCPIs = new ArrayList<VisualClassPathItem>();
         for (AntArtifact art : artifactList) {
-            VisualClassPathItem vcpi = VisualClassPathItem.createArtifact(art);
-            vcpi.setRaw(EarProjectProperties.JAR_CONTENT_ADDITIONAL);
+            ClassPathSupport.Item vcpi = ClassPathSupport.Item.create(art, art.getArtifactLocations()[0], null);
             return vcpi;
         }
         fail("web reference should exist");

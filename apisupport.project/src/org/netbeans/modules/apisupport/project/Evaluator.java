@@ -83,6 +83,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
 
@@ -399,15 +400,15 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                         "${test.unit.lib.cp}:" + // NOI18N
                         // XXX this is ugly, try to look for the JAR using wildcards instead
                         "${netbeans.dest.dir}/ide6/modules/ext/junit-3.8.1.jar:" + // NOI18N
-                        "${netbeans.dest.dir}/java1/modules/ext/junit-3.8.2.jar:" + // NOI18N
-                        "${netbeans.dest.dir}/java1/modules/ext/junit-4.1.jar:" + // NOI18N
+                        "${netbeans.dest.dir}/java2/modules/ext/junit-3.8.2.jar:" + // NOI18N
+                        "${netbeans.dest.dir}/java2/modules/ext/junit-4.1.jar:" + // NOI18N
                         "${netbeans.dest.dir}/testtools/modules/ext/nbjunit.jar:" + // NOI18N
                         "${netbeans.dest.dir}/testtools/modules/ext/insanelib.jar:" + // NOI18N
                         "${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit.jar:" + // NOI18N, new for 6.0
                         "${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit-ide.jar:" + // NOI18N, new for 6.0
                         "${netbeans.home}/../ide6/modules/ext/junit-3.8.1.jar:" + // NOI18N
-                        "${netbeans.home}/../java1/modules/ext/junit-3.8.2.jar:" + // NOI18N
-                        "${netbeans.home}/../java1/modules/ext/junit-4.1.jar:" + // NOI18N
+                        "${netbeans.home}/../java2/modules/ext/junit-3.8.2.jar:" + // NOI18N
+                        "${netbeans.home}/../java2/modules/ext/junit-4.1.jar:" + // NOI18N
                         "${netbeans.home}/../testtools/modules/ext/nbjunit.jar:" + // NOI18N
                         "${netbeans.home}/../testtools/modules/ext/insanelib.jar:" + // NOI18N
                         "${netbeans.home}/../testtools/modules/org-netbeans-modules-nbjunit.jar:" + // NOI18N, new for 6.0
@@ -519,7 +520,12 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                     }
                 }
                 if (bootcp == null) {
-                    bootcp = "${nbjdk.home}/jre/lib/rt.jar".replace('/', File.separatorChar); // NOI18N
+                    if (Utilities.isMac()) {
+                        bootcp = "${nbjdk.home}/../Classes/classes.jar";    //NOI18N
+                    }
+                    else {
+                        bootcp = "${nbjdk.home}/jre/lib/rt.jar".replace('/', File.separatorChar); // NOI18N
+                    }
                 }
             }
             if (bootcp == null) {
@@ -527,7 +533,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 bootcp = "${sun.boot.class.path}"; // NOI18N
             }
             props.put("nbjdk.bootclasspath", bootcp); // NOI18N
-            if (home != null) {
+            if (home != null && !Utilities.isMac()) {   //On Mac everything is in classes.jar, there is no tools.jar
                 props.put("tools.jar", home + "/lib/tools.jar".replace('/', File.separatorChar)); // NOI18N
             }
             if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
@@ -625,6 +631,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         Element data = project.getPrimaryConfigurationData();
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        assert moduleDependencies != null : "Malformed metadata in " + project;
         StringBuffer cp = new StringBuffer();
         for (Element dep : Util.findSubElements(moduleDependencies)) {
             if (Util.findElement(dep, "compile-dependency", // NOI18N

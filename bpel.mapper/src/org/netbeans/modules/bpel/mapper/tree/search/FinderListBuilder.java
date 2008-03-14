@@ -20,6 +20,7 @@
 package org.netbeans.modules.bpel.mapper.tree.search;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
@@ -31,6 +32,8 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xpath.ext.AbstractLocationPath;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
+import org.netbeans.modules.xml.xpath.ext.StepNodeTest;
+import org.netbeans.modules.xml.xpath.ext.StepNodeTypeTest;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
@@ -86,6 +89,29 @@ public class FinderListBuilder {
         return finderList;
     }
     
+    public static List<TreeItemFinder> build(XPathVariableReference varRef) {
+        ArrayList<TreeItemFinder> finderList = new ArrayList<TreeItemFinder>();
+        //
+        XPathVariable var = varRef.getVariable();
+        // Variable could be deleted but the reference no.
+        // issue 128684
+        if (var == null) {
+            return finderList;
+        }
+        assert var instanceof XPathBpelVariable;
+        XPathBpelVariable bpelVar = (XPathBpelVariable)var;
+        VariableDeclaration varDecl = bpelVar.getVarDecl();
+        VariableFinder varFinder = new VariableFinder(varDecl);
+        finderList.add(varFinder);
+        //
+        Part part = bpelVar.getPart();
+        if (part != null) {
+            PartFinder partFinder = new PartFinder(part);
+            finderList.add(partFinder);
+        }
+        return finderList;
+    }
+
     public static List<TreeItemFinder> build(AbstractLocationPath locationPath) {
         ArrayList<TreeItemFinder> finderList = new ArrayList<TreeItemFinder>();
         //
@@ -93,19 +119,7 @@ public class FinderListBuilder {
             XPathExpression rootExpr = 
                     ((XPathExpressionPath)locationPath).getRootExpression();
             if (rootExpr instanceof XPathVariableReference) {
-                XPathVariable var = 
-                        ((XPathVariableReference)rootExpr).getVariable();
-                assert var instanceof XPathBpelVariable;
-                XPathBpelVariable bpelVar = (XPathBpelVariable)var;
-                VariableDeclaration varDecl = bpelVar.getVarDecl();
-                VariableFinder varFinder = new VariableFinder(varDecl);
-                finderList.add(varFinder);
-                //
-                Part part = bpelVar.getPart();
-                if (part != null) {
-                    PartFinder partFinder = new PartFinder(part);
-                    finderList.add(partFinder);
-                }
+                finderList.addAll(build((XPathVariableReference)rootExpr));
             }
         }
         //
@@ -113,16 +127,23 @@ public class FinderListBuilder {
         LocationStep[] stepArr = locationPath.getSteps();
         //
         for (LocationStep step : stepArr) {
+            //
+            StepNodeTest stepNodeTest = step.getNodeTest();
+            if (stepNodeTest instanceof StepNodeTypeTest) {
+                result.add(step);
+                continue;
+            }
+            //
             XPathSchemaContext sContext = step.getSchemaContext();
             if (sContext == null) {
                 // it didn't manage to resolve a schema context for 
                 // the step
-                return null;
+                return Collections.EMPTY_LIST;
             }
             SchemaComponent stepSchemaComp = 
                     XPathSchemaContext.Utilities.getSchemaComp(sContext);
             if (stepSchemaComp == null) {
-                return null;
+                return Collections.EMPTY_LIST;
             }
             //
             XPathPredicateExpression[] predArr = step.getPredicates();

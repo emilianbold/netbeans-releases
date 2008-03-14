@@ -118,6 +118,9 @@ do
     shift
 done
 
+DEFAULT_NB="${CND}/../nbbuild/netbeans"
+NBDIST="${NBDIST-${DEFAULT_NB}}"
+
 if [ -z "${NBDIST}" ]; then
 	echo "Please specify NBDIST environment variable; it should point to Netbeans installation"
         exit 1;
@@ -128,7 +131,7 @@ else
 	fi
 fi
 
-DEFAULT_CND="${CND}/../nbbuild/netbeans/cnd2"
+DEFAULT_CND="${DEFAULT_NB}/cnd2"
 CNDDIST="${CNDDIST-${DEFAULT_CND}}"
 
 if [ -z "${CNDDIST}" ]; then
@@ -145,6 +148,9 @@ DEFS="${DEFS} ${PARSERRORS}"
 DEFS="${DEFS} -J-Dcnd.modelimpl.timing=true"
 DEFS="${DEFS} -J-Dcnd.modelimpl.timing.per.file.flat=true"
 DEFS="${DEFS} -J-Dparser.report.include.failures=true"
+DEFS="${DEFS} -J-Dsun.java2d.pmoffscreen=false"
+DEFS="${DEFS} -J-Dtest.xref.action=true"
+DEFS="${DEFS} -J-Dcnd.classview.sys-includes=true"
 ##DEFS="${DEFS} -J-Dcnd.parser.queue.trace=true"
 ##DEFS="${DEFS} -J-Dcnd.modelimpl.parser.threads=2"
 ##DEFS="${DEFS} -J-Dcnd.modelimpl.no.reparse.include=true"

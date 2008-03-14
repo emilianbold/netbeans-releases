@@ -128,6 +128,9 @@ public class Graph implements TargetPin {
         return !hasLinks() && !hasVerteces();
     }
     
+    public boolean isEmptyOrOneLink() {
+        return !hasVerteces() && (links == null || links.size() <= 1);
+    }
     
     public void addGraphListener(GraphListener graphListener) {
         if (graphListener == null) throw new IllegalArgumentException();
@@ -297,6 +300,7 @@ public class Graph implements TargetPin {
         
         vertex.setGraph(this); 
         invalidateBounds();
+        fireGraphContentChanged();
     }
     
     
@@ -340,6 +344,7 @@ public class Graph implements TargetPin {
         
         vertex.setGraph(null);
         invalidateBounds();
+        fireGraphContentChanged();
     }
     
     
@@ -389,6 +394,7 @@ public class Graph implements TargetPin {
         
         link.setGraph(this);
         invalidateLinks();
+        fireGraphContentChanged();
     }
     
     
@@ -404,6 +410,7 @@ public class Graph implements TargetPin {
         
         link.setGraph(null);
         invalidateLinks();
+        fireGraphContentChanged();
     }
     
     

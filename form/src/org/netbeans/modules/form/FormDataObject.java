@@ -54,6 +54,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
+import org.openide.util.Lookup;
 
 /** The DataObject for forms.
  *
@@ -114,6 +115,11 @@ public class FormDataObject extends MultiDataObject {
             retValue = super.getCookie(type);
         }
         return retValue;
+    }
+    
+    @Override
+    public Lookup getLookup() {
+        return isValid() ? getNodeDelegate().getLookup() : Lookup.EMPTY;
     }
 
     private class OpenEdit implements OpenCookie, EditCookie {

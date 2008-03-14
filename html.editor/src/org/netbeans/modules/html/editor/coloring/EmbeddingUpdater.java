@@ -63,66 +63,65 @@ import org.netbeans.modules.editor.NbEditorUtilities;
  * This class creates lexer embeddings of CSS or JAVASCRIPT language in HTML code.
  * The HTML code may be either the top level language (.html file) or
  * may be embedded as FIRST level embedding language in other language like JSP, RHTML.
- *   
- * 
- * Note: Dynamic embedding creation for &lt;script&gt; and &lt;style&gt; tags has been removed temporarily 
+ *
+ *
+ * Note: Dynamic embedding creation for &lt;script&gt; and &lt;style&gt; tags has been removed temporarily
  * due to problems described in following issues:
  * [Issue 117450]  Provide unified LexerInput across multiple joined embedded sections
  * [Issue 118892]  Allow Schlieman lexer to continuously lex embedded language over  more tokens of its parent language
- * 
+ *
  * Once Issue 117450 is fixed the old way of dynamic embeddings creation should be used
- * 
+ *
  * @author Marek.Fukala@Sun.com
  */
 public class EmbeddingUpdater implements SyntaxParserListener {
-    
+
     private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
     private static final String JAVASCRIPT_HREF_PREFIX = "javascript:"; //NOI18N
-    
+
     //XXX update mimetype once Hanz fixes the mimetype in CSS editor module
 //    private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
-    private static final String CSS_INLINED_MIMETYPE = "text/x-css-inlined"; //NOI18N
-    
+    private static final String CSS_INLINED_MIMETYPE = "text/x-css"; //NOI18N
 //    private static final String CSS_SCRIPT_TAG_NAME = "style"; //NOI18N
-    
+
     private static final Logger LOGGER = Logger.getLogger(EmbeddingUpdater.class.getName());
-    
+
     private final Document doc;
-    
+
 //    private int styleStart = -1;
-    
+
     private LanguagePath languagePath;
-    
+
     @SuppressWarnings("unchecked")
     public EmbeddingUpdater(Document doc) {
         this.doc = doc;
-        
+
         String topLevelLanguageMimeType = NbEditorUtilities.getMimeType(doc);
         if(topLevelLanguageMimeType == null) {
             throw new IllegalArgumentException("Cannot determine document mimetype " + doc);
         }
-        
+
         Language lang = Language.find(topLevelLanguageMimeType);
         if(lang == null) {
             throw new IllegalArgumentException("Cannot find language " + topLevelLanguageMimeType);
         }
-        
+
         if("text/html".equals(topLevelLanguageMimeType)) {
             languagePath = LanguagePath.get(lang);
         } else {
             languagePath = LanguagePath.get(LanguagePath.get(lang), Language.find("text/html"));
         }
-        
+
     }
-    
+
     public void parsingFinished(List<SyntaxElement> elements) {
         for(SyntaxElement sel : elements) {
             if(sel.type() == SyntaxElement.TYPE_TAG) {
                 startTag((SyntaxElement.Tag)sel);
-            } 
+            }
         }
     }
-    
+
     private void startTag(SyntaxElement.Tag sel) {
 //        if(CSS_SCRIPT_TAG_NAME.equalsIgnoreCase(sel.getName()) && declaresCSS(sel)) {
 //            styleStart = sel.getElementOffset() + sel.getElementLength();
@@ -142,7 +141,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
                 }
             }
         }
-        
+
         //various attributes values embedding
         for(SyntaxElement.TagAttribute tagattr : sel.getAttributes()) {
             if("style".equalsIgnoreCase(tagattr.getName())) { //NOI18N
@@ -158,16 +157,16 @@ public class EmbeddingUpdater implements SyntaxParserListener {
 
 //    private boolean declaresCSS(SyntaxElement.Tag sel) {
 //        TagAttribute type = sel.getAttribute("type"); //NOI18N
-//        
+//
 //        if(type == null) {
 //            return true; //default is css
 //        } else if(unquote(type.getValue()).equalsIgnoreCase("text/css")) { //NOI18N
 //            return true;
 //        }
-//        
+//
 //        return false;
 //    }
-    
+
     private String unquote(String s) {
         if(s.length() == 0) {
             //nothing to unquote
@@ -185,11 +184,11 @@ public class EmbeddingUpdater implements SyntaxParserListener {
         }
         return s;
     }
-    
+
     private boolean isQuotationChar(char ch) {
         return ch == '"' || ch == '\'';
     }
-    
+
 //    private void endTag(SyntaxElement.Named sel) {
 //        if(CSS_SCRIPT_TAG_NAME.equalsIgnoreCase(sel.getName())) {
 //            if(styleStart != -1) {
@@ -198,7 +197,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
 //            }
 //        }
 //    }
-    
+
 //    //I need to specially handle the case where the javascript block contains
 //    //html comments.
 //    private void createJavascriptEmbedding(SyntaxElement.Named sel, int from, int to) {
@@ -235,7 +234,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
 //            ((BaseDocument)doc).readUnlock();
 //        }
 //    }
-    
+
     private void createEmbedding(String mimeType, SyntaxElement.TagAttribute tagAttr) {
         if(tagAttr.getValue().charAt(0) == '\'' || tagAttr.getValue().charAt(0) == '"') {
             //cut off the qutation marks
@@ -244,30 +243,30 @@ public class EmbeddingUpdater implements SyntaxParserListener {
             createEmbedding(mimeType, tagAttr.getValueOffset(), tagAttr.getValueOffset() + tagAttr.getValueLength(), 0, 0);
         }
     }
-    
-    @SuppressWarnings("unchecked") 
+
+    @SuppressWarnings("unchecked")
     private void createEmbedding(String mimeType, int startOffset, int endOffset, int startSkipLength, int endSkipLength ) {
         if(startOffset >= endOffset) {
             LOGGER.log(Level.WARNING, "startOffset >= endOffset: "+ startOffset + " >= " + endOffset); //NOI18N
             return ;
         }
-        
+
         Language lang = Language.find(mimeType);
         if(lang == null) {
             LOGGER.log(Level.WARNING, "No " + mimeType + " language found! (" + startOffset + " - " + endOffset + ")"); //NOI18N
             return ; //no language found
         }
-        
+
         ((BaseDocument)doc).extWriteLock(); //writeLock is required since we create embedding what is kind of document change
         try {
             TokenHierarchy th = TokenHierarchy.get(doc);
             List<TokenSequence> tokenSequenceList = th.tokenSequenceList(languagePath, startOffset, endOffset);
-            
+
             //use the startSkipLength and endSkipLength only on the first and last token
             //in the sequence of tokens we create the embedding.
             boolean iAmFirstToken = true;
             boolean iAmLastToken = false;
-            
+
             //find all token sequences of the language in the given range
             Iterator<TokenSequence> sequences = tokenSequenceList.iterator();
             while(sequences.hasNext()) {
@@ -283,6 +282,13 @@ public class EmbeddingUpdater implements SyntaxParserListener {
                 }
                 do {
                     Token item = ts.token();
+                    //test if the token != null, according to the API doc shouldn't happen
+                    //once moveNext/Previous() has been called
+                    if(item == null) {
+                        LOGGER.log(Level.FINE, "Please refer to issue #126628: tokenSequence.token() returned null after tokenSequence.moveNext/Previous() called! This seems to be a bug in lexer. Please attach the info dumped into the log, the document and possibly steps to reproduce."); //NOI18N
+                        LOGGER.log(Level.FINE, "TokenSequence:\n" + ts.toString()); //NOI18N
+                    }
+
                     //test if we are last token
                     boolean hasNextToken = ts.moveNext();
                     iAmLastToken = !(hasNextToken && ts.offset() < endOffset);
@@ -295,16 +301,24 @@ public class EmbeddingUpdater implements SyntaxParserListener {
                     if(ts.embedded(lang) == null) {
                         //the embedding doesn't exist, try to create
                         if(!ts.createEmbedding(lang, iAmFirstToken ? startSkipLength : 0, iAmLastToken && iAmLastSequence ? endSkipLength : 0, true)) {
-                            LOGGER.log(Level.FINE, "Cannot create embedding for " + mimeType + " [" + startOffset + " - "  + endOffset + "] (" + item.text().toString() + ")\n");
+                            CharSequence text = item.text();
+                            if(text == null) {
+                              //according to the Token.text() javadoc this shouldn't happen =>
+                              //notify user about the situation and provide some debug info.
+                              LOGGER.log(Level.FINE, null, new IllegalStateException("Please refer to issue #126628: Token.text() of " + item.toString() + " == null without any previous modification of the underlying document! This seems to be a bug in lexer. Please attach the info dumped into the log, the document and possibly steps to reproduce.")); //NOI18N
+                              LOGGER.log(Level.FINE, "TokenSequence:\n" + ts.toString()); //NOI18N
+                            } else {
+                                LOGGER.log(Level.FINE, "Cannot create embedding for " + mimeType + " [" + startOffset + " - "  + endOffset + "] (" + text + ")\n"); //NOI18N
+                            }
                         } else {
                             CharSequence text = item.text();
                             if(text == null) {
-                                //according to the Token.text() javadoc this shouldn't happen => 
+                                //according to the Token.text() javadoc this shouldn't happen =>
                                 //notify user about the situation and provide some debug info.
-                                LOGGER.log(Level.WARNING, null, new IllegalStateException("Token.text() of " + item.toString() + " == null without any previous modification of the underlying document! This seems to be a bug in lexer. Please report the issue to lexer module and attach the info dumped into the log, the document and possibly steps to reproduce."));
-                                LOGGER.log(Level.WARNING, "TokenSequence:\n" + ts.toString());
+                                LOGGER.log(Level.FINE, null, new IllegalStateException("Token.text() of " + item.toString() + " == null without any previous modification of the underlying document! This seems to be a bug in lexer. Please report the issue to lexer module and attach the info dumped into the log, the document and possibly steps to reproduce.")); //NOI18N
+                                LOGGER.log(Level.FINE, "TokenSequence:\n" + ts.toString()); //NOI18N
                             } else {
-                                LOGGER.log(Level.FINE, "Embedding for " + mimeType + " created [" + startOffset + " - "  + endOffset + "] (" + printEmbeddedText(text, iAmFirstToken ? startSkipLength : 0, iAmLastToken && iAmLastSequence ? endSkipLength : 0) + ")\n");
+                                LOGGER.log(Level.FINE, "Embedding for " + mimeType + " created [" + startOffset + " - "  + endOffset + "] (" + printEmbeddedText(text, iAmFirstToken ? startSkipLength : 0, iAmLastToken && iAmLastSequence ? endSkipLength : 0) + ")\n"); //NOI18N
                             }
                         }
                     }
@@ -318,7 +332,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
             ((BaseDocument)doc).extWriteUnlock();
         }
     }
-    
+
     private CharSequence printEmbeddedText(CharSequence text, int startSkipLength, int endSkipLength) {
         StringBuffer sb = new StringBuffer(text);
         if(startSkipLength >= 0) {
@@ -329,5 +343,6 @@ public class EmbeddingUpdater implements SyntaxParserListener {
         }
         return sb;
     }
-    
+
 }
+

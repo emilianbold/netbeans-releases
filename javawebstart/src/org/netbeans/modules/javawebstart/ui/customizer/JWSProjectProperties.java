@@ -133,6 +133,10 @@ public class JWSProjectProperties {
         
     }
     
+    boolean isJWSEnabled() {
+        return enabledModel.isSelected();
+    }
+    
     private void storeRest(EditableProperties editableProps) {
         String selItem = ((CodebaseComboBoxModel) codebaseModel).getSelectedCodebaseItem();
         String propName = null;

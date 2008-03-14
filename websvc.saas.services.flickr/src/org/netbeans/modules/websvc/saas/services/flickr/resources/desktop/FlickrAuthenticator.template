@@ -1,0 +1,173 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+import java.io.IOException;
+import java.math.BigInteger;
+import java.net.URLEncoder;
+import java.security.MessageDigest;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.saas.AuthorizationFrame;
+import org.netbeans.saas.RestConnection;
+import org.netbeans.saas.facebook.FacebookAuthenticator;
+
+/**
+ *
+ * @author ${user}
+ */
+public class FlickrAuthenticator {
+
+    private static String apiKey;
+    private static String secret;
+    private static String authToken;
+    private static boolean readOnly = false;
+    
+
+    static {
+        try {
+            Properties props = new Properties();
+            props.load(FacebookAuthenticator.class.getResourceAsStream(
+                    "/org/netbeans/saas/flickr/flickr.properties"));
+            apiKey = props.getProperty("api_key");
+            secret = props.getProperty("secret");
+        } catch (IOException ex) {
+            Logger.getLogger(FacebookAuthenticator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public static String getApiKey() {
+        return apiKey;
+    }
+
+    public static String getAuthToken() {
+        return authToken;
+    }
+
+    public static void login() {
+        try {
+            if (authToken == null) {
+                String frob = getFrob();
+
+                if (frob != null) {
+                    String method = "flickr.auth.getToken";
+                    String apiSig = sign(
+                            new String[][]{
+                                {"method", method},
+                                {"frob", frob},
+                                {"api_key", apiKey},
+                            });
+
+                    RestConnection conn = new RestConnection(
+                            "http://api.flickr.com/services/rest/",
+                            new String[][]{
+                                {"method", method},
+                                {"api_key", apiKey},
+                                {"api_sig", apiSig},
+                                {"frob", frob}
+                            });
+                    String result = conn.get();
+
+                    authToken = result.substring(result.indexOf("<token>") + 7,
+                            result.indexOf("</token>"));
+                }
+            }
+
+        } catch (Exception ex) {
+            Logger.getLogger(FlickrAuthenticator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private static void logout() {
+        
+    }
+
+    private static String getFrob() {
+        try {
+            String method = "flickr.auth.getFrob";
+
+            String apiSig = sign(
+                    new String[][]{
+                        {"method", method},
+                        {"api_key", apiKey}
+                    });
+
+            RestConnection conn = new RestConnection(
+                    "http://api.flickr.com/services/rest/",
+                    new String[][]{
+                        {"method", method},
+                        {"api_key", apiKey},
+                        {"api_sig", apiSig}
+                    });
+            String result = conn.get();
+            String frob = result.substring(result.indexOf("<frob>") + 6, result.indexOf("</frob>"));
+
+            String perms = (readOnly) ? "read" : "write";
+            apiSig = sign(
+                    new String[][]{
+                        {"frob", frob},
+                        {"api_key", apiKey},
+                        {"perms", perms}
+                    });
+
+            String loginUrl = "http://www.flickr.com/services/auth/?api_key=" + apiKey + "&frob=" + frob + "&perms=" + perms + "&api_sig=" + apiSig;
+
+            AuthorizationFrame frame = new AuthorizationFrame(loginUrl);
+            synchronized (frame) {
+                try {
+                    frame.wait();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(FlickrAuthenticator.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+
+            return frob;
+        } catch (IOException ex) {
+            Logger.getLogger(FlickrAuthenticator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
+    }
+
+    public static String sign(String[][] params) {
+        try {
+            TreeMap<String, String> map = new TreeMap<String, String>();
+
+            for (int i = 0; i < params.length; i++) {
+                String key = params[i][0];
+                String value = params[i][1];
+
+                if (value != null) {
+                    map.put(key, URLEncoder.encode(value, "UTF-8"));
+                }
+            }
+
+            String signature = secret;
+            Set<Map.Entry<String, String>> entrySet = map.entrySet();
+            for (Map.Entry<String, String> entry : entrySet) {
+                signature += entry.getKey() + entry.getValue();
+            }
+
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] sum = md.digest(signature.getBytes("UTF-8"));
+            BigInteger bigInt = new BigInteger(1, sum);
+
+            return bigInt.toString(16);
+        } catch (Exception ex) {
+            Logger.getLogger(FlickrAuthenticator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
+    }
+}
+
+

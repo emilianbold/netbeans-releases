@@ -55,6 +55,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.FocusManager;
 import javax.swing.JComboBox;
@@ -144,6 +145,8 @@ public final class NavigatorController implements LookupListener, ActionListener
     /** boolean flag to indicate whether updateContext is currently running */
     private boolean inUpdate;
     
+    private static final Logger LOG = Logger.getLogger(NavigatorController.class.getName());
+    
     /** Creates a new instance of NavigatorController */
     public NavigatorController(NavigatorTC navigatorTC) {
         this.navigatorTC = navigatorTC;
@@ -154,6 +157,7 @@ public final class NavigatorController implements LookupListener, ActionListener
     
     /** Starts listening to selected nodes and active component */
     public void navigatorTCOpened() {
+        LOG.fine("Entering navigatorTCOpened");
         curNodesRes = Utilities.actionsGlobalContext().lookup(CUR_NODES);
         curNodesRes.addLookupListener(this);
         curHintsRes = Utilities.actionsGlobalContext().lookup(CUR_HINTS);
@@ -164,10 +168,11 @@ public final class NavigatorController implements LookupListener, ActionListener
         panelLookupNodesResult.addLookupListener(panelLookupListener);
 
         updateContext();
-            }
+    }
             
     /** Stops listening to selected nodes and active component */
     public void navigatorTCClosed() {
+        LOG.fine("Entering navigatorTCClosed");
         curNodesRes.removeLookupListener(this);
         curHintsRes.removeLookupListener(this);
         navigatorTC.getPanelSelector().removeActionListener(this);
@@ -189,6 +194,11 @@ public final class NavigatorController implements LookupListener, ActionListener
         lastActivatedRef = null;
         navigatorTC.setPanels(null);
         panelLookupNodesResult = null;
+        LOG.fine("navigatorTCClosed: activated nodes: " + navigatorTC.getActivatedNodes());
+        if (navigatorTC.getActivatedNodes() != null) {
+            LOG.fine("navigatorTCClosed: clearing act nodes...");
+            navigatorTC.setActivatedNodes(new Node[0]);
+        }
     }
     
     /** Returns lookup that delegates to lookup of currently active 
@@ -268,8 +278,10 @@ public final class NavigatorController implements LookupListener, ActionListener
      * @force if true that update is forced even if it means clearing navigator content
      */
     private void updateContext (boolean force) {
+        LOG.fine("updateContext entered, force: " + force);
         // #105327: don't allow reentrancy, may happen due to listening to node changes
         if (inUpdate) {
+            LOG.fine("Exit because inUpdate already, force: " + force);
             return;
         }
         inUpdate = true;
@@ -278,6 +290,7 @@ public final class NavigatorController implements LookupListener, ActionListener
         // navigator was already closed, that's why the check
         if (curNodesRes == null) {
             inUpdate = false;
+            LOG.fine("Exit because curNodesRes is null, force: " + force);
             return;
         }
         
@@ -286,6 +299,7 @@ public final class NavigatorController implements LookupListener, ActionListener
         Collection<? extends Node> nodes = curNodesRes.allInstances();
         if (nodes.isEmpty() && !shouldUpdate() && !force) {
             inUpdate = false;
+            LOG.fine("Exit because act nodes empty, force: " + force);
             return;
         }
 
@@ -300,6 +314,7 @@ public final class NavigatorController implements LookupListener, ActionListener
             // #63165: curNode has to be modified only in updateContext
             // body, to prevent situation when curNode is null in getLookup
             curNodes = nodes;
+            LOG.fine("new CurNodes size " + curNodes.size());
 
             // #104229: listen to node destroy and update navigator correctly 
             NodeListener weakNodeL = null;
@@ -318,6 +333,7 @@ public final class NavigatorController implements LookupListener, ActionListener
         // navigator remains empty, do nothing
         if (oldProviders == null && providers == null) {
             inUpdate = false;
+            LOG.fine("Exit because nav remain empty, force: " + force);
             return;
         }
         
@@ -341,7 +357,8 @@ public final class NavigatorController implements LookupListener, ActionListener
             }
             // #100122: update activated nodes of Navigator TC
             updateActNodesAndTitle();
-            
+
+            LOG.fine("Exit because same provider and panel, notified. Force: " + force);
             inUpdate = false;
             return;
         }
@@ -350,6 +367,7 @@ public final class NavigatorController implements LookupListener, ActionListener
             // #61334: don't deactivate previous providers if there are no new ones
             if (!areNewProviders && !force) {
                 inUpdate = false;
+                LOG.fine("Exit because no new providers, force: " + force);
                 return;
             }
             selPanel.panelDeactivated();
@@ -370,12 +388,14 @@ public final class NavigatorController implements LookupListener, ActionListener
         
         updateActNodesAndTitle();
         
+        LOG.fine("Normal exit, change to new provider, force: " + force);
         inUpdate = false;
     }
 
     /** Updates activated nodes of Navigator TopComponent and updates its
      * display name to reflect activated nodes */
     private void updateActNodesAndTitle () {
+        LOG.fine("updateActNodesAndTitle called...");
         Node[] actNodes = obtainActivatedNodes();
         navigatorTC.setActivatedNodes(actNodes);
         updateTCTitle(actNodes);
@@ -521,6 +541,14 @@ public final class NavigatorController implements LookupListener, ActionListener
         } else if (TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
             // force update context if some tc was closed
             // invokeLater to let node change perform before calling update 
+            LOG.fine("Component closed, invoking update through invokeLater...");
+            // #124061 - force navigator cleanup in special situation
+            TopComponent tc = TopComponent.getRegistry().getActivated();
+            if (tc == navigatorTC) {
+                LOG.fine("navigator active, clearing its activated nodes");
+                navigatorTC.setActivatedNodes(new Node[0]);
+            }
+            
             EventQueue.invokeLater(this);
         }
     }
@@ -528,10 +556,13 @@ public final class NavigatorController implements LookupListener, ActionListener
     /****** NodeListener implementation *****/
     
     public void nodeDestroyed(NodeEvent ev) {
+        LOG.fine("Node destroyed reaction...");
         // #121944: don't react on node destroy when we are active 
         if (navigatorTC.equals(WindowManager.getDefault().getRegistry().getActivated())) {
+            LOG.fine("NavigatorTC active, skipping node destroyed reaction.");
             return;
         }
+        LOG.fine("invokeLater on updateContext from node destroyed reaction...");
         // #122257: update content later to fight possible deadlocks
         EventQueue.invokeLater(this);
     }
@@ -613,9 +644,11 @@ public final class NavigatorController implements LookupListener, ActionListener
             // technique to share one runnable impl between RP and Swing,
             // to save one inner class
             if (RequestProcessor.getDefault().isRequestProcessorThread()) {
+                LOG.fine("invokeLater on updateContext from ActNodeSetter");
                 SwingUtilities.invokeLater(this);
             } else {
                 // AWT thread
+                LOG.fine("Calling updateContext from ActNodeSetter");
                 updateContext();
             }
         }

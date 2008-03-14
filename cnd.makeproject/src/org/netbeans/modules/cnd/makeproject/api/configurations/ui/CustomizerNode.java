@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations.ui;
 
+import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -55,6 +56,8 @@ public class CustomizerNode {
     public String displayName;
     public boolean advanced;
     public CustomizerNode[] children;
+
+    public enum CustomizerStyle {SHEET, PANEL};
         
     public CustomizerNode(String name, String displayName, boolean advanced, CustomizerNode[] children) {
         this.name = name;
@@ -66,9 +69,17 @@ public class CustomizerNode {
     public CustomizerNode(String name, String displayName, CustomizerNode[] children) {
         this(name, displayName, false, children);
     }
+    
+    public CustomizerStyle customizerStyle() {
+        return CustomizerStyle.SHEET; // Backward compatible
+    }
 
     public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
 	return null;
+    }
+    
+    public JPanel getPanel(Project project, ConfigurationDescriptor configurationDescriptor) {
+        return null;
     }
     
     public HelpCtx getHelpCtx() {

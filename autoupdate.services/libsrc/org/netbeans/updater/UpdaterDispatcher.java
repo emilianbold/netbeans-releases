@@ -42,6 +42,7 @@
 package org.netbeans.updater;
 
 import java.io.File;
+import java.io.IOException;
 import javax.swing.SwingUtilities;
 
 /**
@@ -145,6 +146,17 @@ public final class UpdaterDispatcher implements Runnable {
     public void run () {
         dispatch ();
         UpdaterFrame.disposeSplash ();
+    }
+    
+    public static void touchLastModified (File cluster) {
+        try {
+            File stamp = new File (cluster, ".lastModified"); // NOI18N
+            if (! stamp.createNewFile ()) {
+                stamp.setLastModified (System.currentTimeMillis ());
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace ();
+        }
     }
     
 }

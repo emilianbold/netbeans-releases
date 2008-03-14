@@ -89,7 +89,8 @@ public final class SearchAction extends IconAction {
   }
 
   public void actionPerformed(ActionEvent event) {
-    Node node = getSelectedNode();
+    Node node = getLastNode();
+
     Model model = getModel(node);
     ShowCookie cookie = getShowCookie(node);
     Object view = getView();

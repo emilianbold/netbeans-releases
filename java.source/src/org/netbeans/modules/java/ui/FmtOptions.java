@@ -119,6 +119,7 @@ public class FmtOptions {
     public static final String redundantDoWhileBraces = "redundantDoWhileBraces"; //NOI18N
     public static final String alignMultilineMethodParams = "alignMultilineMethodParams"; //NOI18N
     public static final String alignMultilineCallArgs = "alignMultilineCallArgs"; //NOI18N
+    public static final String alignMultilineAnnotationArgs = "alignMultilineAnnotationArgs"; //NOI18N
     public static final String alignMultilineImplements = "alignMultilineImplements"; //NOI18N
     public static final String alignMultilineThrows = "alignMultilineThrows"; //NOI18N
     public static final String alignMultilineParenthesized = "alignMultilineParenthesized"; //NOI18N
@@ -139,6 +140,7 @@ public class FmtOptions {
     public static final String wrapThrowsKeyword = "wrapThrowsKeyword"; //NOI18N
     public static final String wrapThrowsList = "wrapThrowsList"; //NOI18N
     public static final String wrapMethodCallArgs = "wrapMethodCallArgs"; //NOI18N
+    public static final String wrapAnnotationArgs = "wrapAnnotationArgs"; //NOI18N
     public static final String wrapChainedMethodCalls = "wrapChainedMethodCalls"; //NOI18N
     public static final String wrapArrayInit = "wrapArrayInit"; //NOI18N
     public static final String wrapFor = "wrapFor"; //NOI18N
@@ -378,6 +380,7 @@ public class FmtOptions {
             { redundantDoWhileBraces, BGS_GENERATE}, //NOI18N
             { alignMultilineMethodParams, FALSE}, //NOI18N
             { alignMultilineCallArgs, FALSE}, //NOI18N
+            { alignMultilineAnnotationArgs, FALSE}, //NOI18N
             { alignMultilineImplements, FALSE}, //NOI18N
             { alignMultilineThrows, FALSE}, //NOI18N
             { alignMultilineParenthesized, FALSE}, //NOI18N
@@ -398,6 +401,7 @@ public class FmtOptions {
             { wrapThrowsKeyword, WRAP_NEVER}, //NOI18N
             { wrapThrowsList, WRAP_NEVER}, //NOI18N
             { wrapMethodCallArgs, WRAP_NEVER}, //NOI18N
+            { wrapAnnotationArgs, WRAP_NEVER}, //NOI18N
             { wrapChainedMethodCalls, WRAP_NEVER}, //NOI18N
             { wrapArrayInit, WRAP_NEVER}, //NOI18N
             { wrapFor, WRAP_NEVER}, //NOI18N

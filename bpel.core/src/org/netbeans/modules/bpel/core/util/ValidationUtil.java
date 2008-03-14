@@ -19,9 +19,28 @@
 package org.netbeans.modules.bpel.core.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import javax.swing.text.StyledDocument;
+import org.openide.cookies.LineCookie;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Line;
+import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+
+import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 
@@ -29,17 +48,12 @@ public final class ValidationUtil {
     
     private ValidationUtil() {}
     
-    public static List<ResultItem> filterBpelResultItems( 
-            List<ResultItem> validationResults) 
-    {
+    public static List<ResultItem> filterBpelResultItems(List<ResultItem> validationResults) {
         List<ResultItem> bpelResultItems = new ArrayList<ResultItem>();
         
-        // Go through all result items.
         for(ResultItem resultItem: validationResults) {
-            // For each result item go through all components for
-            // which it applies.
             Component component = resultItem.getComponents();
-            // Only gather bpel components.
+
             if(component instanceof BpelEntity) {
                 ResultItem bpelResultItem = 
                     new ResultItem(resultItem.getValidator(),
@@ -71,46 +85,7 @@ public final class ValidationUtil {
         }
         return true;
     }
-    
-    public static List<ResultItem> getAddedResultItems(List<ResultItem> oldList, 
-            List<ResultItem> newList) 
-    {
-        List<ResultItem> addedResultItems = new ArrayList<ResultItem>();
-        
-        if(oldList == null)
-            return newList;
-        
-        if(newList == null) // No items could have been added.
-            return addedResultItems;
-        
-        for(ResultItem item: newList) {
-            if(!contains(oldList, item)) {
-                addedResultItems.add(item);
-            }
-        }
-        return addedResultItems;
-    }
-    
-    public static List<ResultItem> getRemovedResultItems(List<ResultItem> oldList,
-            List<ResultItem> newList) 
-    {
-        List<ResultItem> removedResultItems = new ArrayList<ResultItem>();
-        
-        if(newList == null) {
-            return oldList;
-        }
-        if(oldList == null) {  // No items could have been removed.
-            return removedResultItems;
-        }
-        
-        for(ResultItem item: oldList) {
-            if(!contains(newList, item)) {
-                removedResultItems.add(item);
-            }
-        }
-        return removedResultItems;
-    }
-    
+
     private static boolean contains(List<ResultItem> list, ResultItem resultItem) {
         assert list!=null;
         for (ResultItem item: list) {
@@ -119,5 +94,88 @@ public final class ValidationUtil {
             }
         }
         return false;
+    }
+
+    public static Line getLine(ResultItem item) {
+      int number;
+      Component component = item.getComponents();
+
+      if (component != null) {
+        number = -1;
+
+        if (component instanceof DocumentComponent) {
+          number = getLineNumber((DocumentComponent) item.getComponents());
+        } 
+      }
+      else {
+        number = item.getLineNumber() - 1;
+      }
+  //System.out.println("  number: " + number);
+
+      if (number < 1) {
+        return null;
+      }
+      FileObject file = getFileObjectByModel(component == null ? item.getModel() : component.getModel());
+
+      if (file == null) {
+        return null;
+      }
+      LineCookie cookie = null;
+
+      try {
+        DataObject data = DataObject.find(file);
+        cookie = (LineCookie) data.getCookie(LineCookie.class);
+      }
+      catch (DataObjectNotFoundException e) {
+        e.printStackTrace();
+      }
+      if (cookie == null) {
+        return null;
+      }
+      return cookie.getLineSet().getCurrent(number);
+    }
+    
+    private static int getLineNumber(DocumentComponent entity) {
+      if (entity == null) {
+        return -1;
+      }
+      Model model = entity.getModel();
+
+      if (model == null) {
+        return -1;
+      }
+      ModelSource source = model.getModelSource();
+
+      if (source == null) {
+        return -1;
+      }
+      Lookup lookup = source.getLookup();
+
+      if (lookup == null) {
+        return -1;
+      }
+      StyledDocument document = (StyledDocument) lookup.lookup(StyledDocument.class);
+
+      if (document == null) {
+        return -1;
+      }
+      return NbDocument.findLineNumber(document, entity.findPosition());
+    }
+
+    private static FileObject getFileObjectByModel(Model model) {
+      if (model == null) {
+        return null;
+      }
+      ModelSource src = model.getModelSource();
+
+      if (src == null) {
+       return null;
+      }
+      Lookup lookup = src.getLookup();
+
+      if (lookup == null) {
+        return null;
+      }
+      return lookup.lookup(FileObject.class);
     }
 }

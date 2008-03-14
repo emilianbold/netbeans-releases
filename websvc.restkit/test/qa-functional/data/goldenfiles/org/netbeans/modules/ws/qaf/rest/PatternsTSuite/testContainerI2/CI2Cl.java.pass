@@ -1,7 +1,7 @@
 /*
  *  CI2Cl
  *
- * Created on December 12, 2007, 1:32 AM
+ * Created on March 11, 2008, 10:42 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -9,14 +9,15 @@
 
 package o.n.m.ws.qaf.rest.patterns;
 
-import javax.ws.rs.core.HttpContext;
+import java.util.logging.Level;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.UriParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.PathParam;
 
 /**
  * REST Web Service
@@ -25,7 +26,7 @@ import javax.ws.rs.ConsumeMime;
  */
 
 public class CI2Cl {
-    @HttpContext
+    @Context
     private UriInfo context;
     
     /** Creates a new instance of CI2Cl */
@@ -35,11 +36,11 @@ public class CI2Cl {
     /**
      * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.CI2Cl
      * @param CI2URI resource URI parameter
-     * @return an instance of java.lang.String
+     * @return an instance of java.util.logging.Level
      */
     @GET
     @ProduceMime("text/plain")
-    public String getText(@UriParam("CI2URI")
+    public Level getText(@PathParam("CI2URI")
     String CI2URI) {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
@@ -53,8 +54,8 @@ public class CI2Cl {
      */
     @PUT
     @ConsumeMime("text/plain")
-    public void putText(@UriParam("CI2URI")
-    String CI2URI, String content) {
+    public void putText(@PathParam("CI2URI")
+    String CI2URI, Level content) {
     }
 
     /**
@@ -62,7 +63,7 @@ public class CI2Cl {
      * @param CI2URI resource URI parameter
      */
     @DELETE
-    public void delete(@UriParam("CI2URI")
+    public void delete(@PathParam("CI2URI")
     String CI2URI) {
     }
 }

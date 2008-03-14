@@ -42,9 +42,11 @@
 package org.netbeans.modules.spring.beans.editor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Stack;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -194,6 +196,20 @@ public class DocumentContext {
 
     public String lookupNamespacePrefix(String prefix) {
         return declaredNamespaces.get(prefix);
+    }
+    
+    public String getNamespacePrefix(String namespace) {
+        for(Entry<String, String> entry : declaredNamespaces.entrySet()) {
+            if(entry.getValue().equals(namespace)) {
+                return entry.getKey();
+            }
+        }
+        
+        return null;
+    }
+    
+    public Collection<String> getDeclaredNamespaces() {
+        return declaredNamespaces.values();
     }
 
     public StartTag getDocRoot() {

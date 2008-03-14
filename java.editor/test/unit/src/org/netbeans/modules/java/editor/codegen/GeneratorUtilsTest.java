@@ -105,64 +105,6 @@ public class GeneratorUtilsTest extends NbTestCase {
         performTest("package test;\npublic class Test implements Runnable {\npublic Test(){\n}\n }\n", 54, new RunnableValidator());
     }
     
-//    public void testImplementAllAbstractMethods2() throws Exception {
-//        performTest("package test;\npublic class Test implements Runnable {\n }\n", 54, new RunnableValidator());
-//    }
-//    
-//    public void testImplementAllAbstractMethods3() throws Exception {
-//        performTest("package test;\npublic class Test implements Runnable {\npublic void testMethod() {\n} }\n", 54, new RunnableValidator());
-//    }
-    
-    public void testImplementAllAbstractMethods4() throws Exception {
-        performTest("package test;\npublic class Test implements Runnable {\npublic Test(){\n}\npublic void testMethod() {\n} }\n", 54, new RunnableValidator());
-    }
-    
-    public void testImplementAllAbstractMethods5() throws Exception {
-        performTest("package test;import java.util.concurrent.*;\npublic class Test implements Future<String>{\npublic Test(){\n} }\n", 89, new SimpleFutureValidator("java.lang.String"));
-    }
-    
-//    public void testImplementAllAbstractMethods6() throws Exception {
-//        performTest("package test;import java.util.concurrent.*;\npublic class Test implements Future<java.util.List<? extends java.util.List>>{\npublic Test(){\n} }\n", 123, new FutureValidator() {
-//            protected TypeMirror returnType(CompilationInfo info) {
-//                return SourceUtils.parseType(info, "java.util.List<? extends java.util.List>", info.getElements().getTypeElement("test.Test"));
-//            }
-//        });
-//    }
-    
-    public void testImplementAllAbstractMethods7() throws Exception {
-        performTest("package test;\npublic class Test extends java.util.AbstractList{\npublic Test(){\n} }\n", 64, new Validator() {
-            public void validate(CompilationInfo info) {
-            }
-        });
-    }
-    
-    /** issue #85966
-     */
-//    public void testImplementAllAbstractMethods8() throws Exception {
-//        performTest("package test;\npublic class Test implements XX {\npublic Test(){\n} }\ninterface XX {\npublic void test(String ... a);}", 42, new Validator() {
-//            public void validate(CompilationInfo info) {
-//                TypeElement clazz = info.getElements().getTypeElement("test.Test");
-//                ExecutableElement method = ElementFilter.methodsIn(clazz.getEnclosedElements()).get(0);
-//                
-//                assertTrue(method.isVarArgs());
-//            }
-//        });
-//    }
-    
-    public void testImplementAllAbstractMethods9() throws Exception {
-        performTest("package test;\npublic class Test implements java.util.concurrent.ExecutorService {\npublic Test(){\n} }\n", 30, new Validator() {
-            public void validate(CompilationInfo info) {
-            }
-        });
-    }
-    
-    public void testImplementAllAbstractMethodsa() throws Exception {
-        performTest("package test;\npublic class Test implements XX {\npublic Test(){\n} }\ninterface XX {public <T extends java.util.List> void test(T t);}", 30, new Validator() {
-            public void validate(CompilationInfo info) {
-            }
-        });
-    }
-    
     public static interface Validator {
         
         public void validate(CompilationInfo info);

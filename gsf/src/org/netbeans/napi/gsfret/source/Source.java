@@ -84,19 +84,20 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.api.gsf.ParserFile;
-import org.netbeans.api.gsfpath.classpath.ClassPath;
-import org.netbeans.api.gsfpath.platform.JavaPlatformManager;
-import org.netbeans.api.gsfpath.queries.SourceLevelQuery;
-import org.netbeans.api.gsf.Error;
-import org.netbeans.api.gsf.ParseEvent;
-import org.netbeans.api.gsf.ParseListener;
-import org.netbeans.api.gsf.Parser;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.SourceFileReader;
-import org.netbeans.api.gsf.CancellableTask;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.platform.JavaPlatformManager;
+import org.netbeans.modules.gsfpath.api.queries.SourceLevelQuery;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.ParseEvent;
+import org.netbeans.modules.gsf.api.ParseListener;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.SourceFileReader;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.napi.gsfret.source.ClasspathInfo.PathKind;
-import org.netbeans.napi.gsfret.source.CompilationUnitTree;
 import org.netbeans.napi.gsfret.source.ModificationResult.Difference;
 import org.netbeans.napi.gsfret.source.ParserTaskImpl;
 import org.netbeans.napi.gsfret.source.support.CaretAwareSourceTaskFactory;
@@ -111,7 +112,7 @@ import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
 import org.netbeans.modules.gsfret.source.util.LowMemoryEvent;
 import org.netbeans.modules.gsfret.source.util.LowMemoryListener;
 import org.netbeans.modules.gsfret.source.util.LowMemoryNotifier;
-import org.netbeans.spi.gsf.DefaultParserFile;
+import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -135,7 +136,7 @@ import org.openide.util.WeakListeners;
  * possible. 
  *
  *
- * This file is based on the JavaSource class in Retouche's org.netbeans.api.gsfpath.source package.
+ * This file is based on the JavaSource class in Retouche's org.netbeans.modules.gsfpath.api.source package.
  * It represents an open source file in the editor.
  *
  * @author Petr Hrebejk
@@ -210,7 +211,7 @@ public final class Source {
      * Init the maps
      */
     static {
-        SourceAccessor.INSTANCE = new JavaSourceAccessorImpl ();
+        SourceAccessor.setINSTANCE (new JavaSourceAccessorImpl ());
         phase2Key.put(Phase.PARSED,"parsed");                                   //NOI18N
         phase2Message.put (Phase.PARSED,"Parsed");                              //NOI18N
 
@@ -313,13 +314,9 @@ public final class Source {
         if (fileObject == null) {
             throw new IllegalArgumentException ("fileObject == null");  //NOI18N
         }
-        if (!fileObject.isValid()) {
+        if (!fileObject.isValid() || fileObject.isFolder()) {
             return null;
         }
-//        if (!"text/x-java".equals(FileUtil.getMIMEType(fileObject)) && !"java".equals(fileObject.getExt())) {  //NOI18N
-//            //TODO: Source cannot be created for all kinds of files, but text/x-java is too restrictive:
-//            return null;
-//        }
         if (!LanguageRegistry.getInstance().isSupported(fileObject.getMIMEType())) {
             return null;
         }
@@ -424,7 +421,7 @@ public final class Source {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }
         
-        assert !holdsDocumentWriteLock(files) : "Source.runCompileControlTask called under Document write lock.";    //NOI18N
+        assert javacLock.isHeldByCurrentThread() || !holdsDocumentWriteLock(files) : "Source.runCompileControlTask called under Document write lock.";    //NOI18N
         
         if (this.files.size()<=1) {                        
             final Source.Request request = currentRequest.getTaskToCancel();
@@ -552,7 +549,7 @@ public final class Source {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }
         
-        assert !holdsDocumentWriteLock(files) : "Source.runModificationTask called under Document write lock.";    //NOI18N
+        assert javacLock.isHeldByCurrentThread() || !holdsDocumentWriteLock(files) : "Source.runCompileControlTask called under Document write lock.";    //NOI18N
         
         ModificationResult result = new ModificationResult(this);
         if (this.files.size()<=1) {
@@ -630,6 +627,7 @@ public final class Source {
                         task.run(copy);
                         if (!ci.needsRestart) {
                             jt = ci.getParserTask();
+                            //jt = ci.getParserTask();
 //                            Log.instance(jt.getContext()).nerrors = 0;
                             List<Difference> diffs = copy.getChanges();
                             if (diffs != null && diffs.size() > 0)
@@ -782,22 +780,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     }
 
     private static ParserTaskImpl createParserTask(Language language, final CompilationInfo currentInfo, final ClasspathInfo cpInfo, /*final DiagnosticListener<? super SourceFileObject> diagnosticListener,*/ final String sourceLevel, final boolean backgroundCompilation) {
-        ArrayList<String> options = new ArrayList<String>();
-
-
-        //        CompilationUnitTree unit = new CompilationUnitTree();
-
-        Parser parser = language.getParser();
-        assert parser != null;
         ParserTaskImpl jti = new ParserTaskImpl(language);
-        jti.setParser(parser);
-        if (currentInfo != null) {
-            currentInfo.setParser(parser);
-        }
 
         return jti;
     }
-
 
     /**
      * Not synchronized, only the CompilationJob's thread can call it!!!!
@@ -826,67 +812,91 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     return Phase.MODIFIED;
                 }
                 long start = System.currentTimeMillis();
-                Language language = currentInfo.getLanguage();
+
+                List<ParserFile> sourceFiles = new ArrayList<ParserFile>(1);
+                sourceFiles.add(new DefaultParserFile(currentInfo.getFileObject(), null, false));
+                final FileObject bufferFo = currentInfo.getFileObject();
+
+                final ParserResult[] resultHolder = new ParserResult[1];
+                ParseListener listener = new ParseListener() {
+                    final List<Error> errors = new ArrayList<Error>();
+
+                    public void started(ParseEvent e) {
+                        errors.clear();
+                    }
+
+                    public void error(Error error) {
+                        errors.add(error);
+                    }
+
+                    public void exception(Exception exception) {
+                        Exceptions.printStackTrace(exception);
+                    }
+
+                    public void finished(ParseEvent e) {
+                        // TODO - check state
+                        if (e.getKind() == ParseEvent.Kind.PARSE) {
+                            ParserResult result = e.getResult();
+                            for (Error error : errors) {
+                                result.addError(error);
+                            }
+                            resultHolder[0] = result;
+                        }
+                    }
+                };
+                
+                LanguageRegistry registry = LanguageRegistry.getInstance();
+                String mimeType = currentInfo.getFileObject().getMIMEType();
+                List<Language> languages = registry.getApplicableLanguages(mimeType);
+                
+            for (Language language : languages) {
+                EmbeddingModel model = registry.getEmbedding(language.getMimeType(), mimeType);
                 assert language != null;
-                CompilationUnitTree unit = new CompilationUnitTree();
                 Parser parser = language.getParser(); // Todo - call createParserTask here?
+                
                 if (parser != null) {
-                    final String buffer = currentInfo.getText();
-                    
-                    final ParserResult[] resultHolder = new ParserResult[1];
-                    ParseListener listener = new ParseListener() {
-                        public void started(ParseEvent e) {
-                        }
-                        
-                        public void error(Error error) {
-                            currentInfo.addError(error);
-                        }
-                        
-                        public void exception(Exception exception) {
-                            Exceptions.printStackTrace(exception);
-                        }
-
-                        public void finished(ParseEvent e) {
-                            // TODO - check state
-                            if (e.getKind() == ParseEvent.Kind.PARSE) {
-                                resultHolder[0] = e.getResult();
+                    if (model != null) {
+                        Document document;
+                        try {
+                            document = currentInfo.getDocument();
+                            
+                            if (document == null) {
+                                // Ensure document is forced open such that info.getDocument() will not yield null
+                                UiUtils.getDocument(currentInfo.getFileObject(), true);
+                                document = currentInfo.getDocument();
                             }
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                            return null;
                         }
                         
-                    };
-                    List<ParserFile> sourceFiles = new ArrayList<ParserFile>(1);
-                    sourceFiles.add(new DefaultParserFile(currentInfo.getFileObject(), null, false));
-                    final FileObject bufferFo = currentInfo.getFileObject();
-                    SourceFileReader reader = new SourceFileReader() {
-                        public CharSequence read(ParserFile fileObject) {
-                            assert fileObject.getFileObject() == bufferFo;
-                            return buffer;
+                        if (document == null) {
+                            // TODO - log problem
+                            continue;
                         }
                         
-                        public int getCaretOffset(ParserFile file) {
-                            assert file.getFileObject() == bufferFo;
-
-                            int offset = CaretAwareSourceTaskFactory.getLastPosition(file.getFileObject());
-                            if (offset == 0) {
-                                // CaretAwareSourceTaskFactory return 0 for unknown positions. These
-                                // could also be actual positions, but for now, treat 0 as an unknown
-                                // position since it's unlikely we have errors there.
-                                return -1;
-                            } else {
-                                return offset;
-                            }
+                        Collection<? extends TranslatedSource> translations = model.translate(document);
+                        for (TranslatedSource translatedSource : translations) {
+                            String buffer = translatedSource.getSource();
+                            SourceFileReader reader = new StringSourceFileReader(buffer, bufferFo);
+                            Parser.Job job = new Parser.Job(sourceFiles, listener, reader, translatedSource);
+                            parser.parseFiles(job);
+                            ParserResult result = resultHolder[0];
+                            result.setTranslatedSource(translatedSource);
+                            assert result != null;
+                            currentInfo.addEmbeddingResult(language.getMimeType(), result);
                         }
-                    };
-                    parser.parseFiles(sourceFiles, listener, reader);
-                    ParserResult result = resultHolder[0];
-              
-                    assert result != null;
-                    currentInfo.setParser(parser);
-                    currentInfo.setParserResult(result);
-                    currentInfo.setPositionManager(parser.getPositionManager());
-                    currentInfo.setCompilationUnit(unit);
+                    } else {
+                        String buffer = currentInfo.getText();
+                        SourceFileReader reader = new StringSourceFileReader(buffer, bufferFo);
+                        Parser.Job job = new Parser.Job(sourceFiles, listener, reader, null);
+                        parser.parseFiles(job);
+                        ParserResult result = resultHolder[0];
+                        assert result != null;
+                        currentInfo.addEmbeddingResult(language.getMimeType(), result);
+                    }
                 }
-
+            }
                 currentPhase = Phase.PARSED;
                 long end = System.currentTimeMillis();
                 FileObject file = currentInfo.getFileObject();
@@ -1027,9 +1037,13 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     private void updateIndex () {
         if (this.rootFo != null) {
             try {
-                ClassIndexImpl ciImpl = ClassIndexManager.getDefault().getUsagesQuery(this.rootFo.getURL());
-                if (ciImpl != null) {
-                    ciImpl.setDirty(this);
+                for (Language language : LanguageRegistry.getInstance()) {
+                    if (language.getIndexer() != null) {
+                        ClassIndexImpl ciImpl = ClassIndexManager.get(language).getUsagesQuery(this.rootFo.getURL());
+                        if (ciImpl != null) {
+                            ciImpl.setDirty(this);
+                        }
+                    }
                 }
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
@@ -1322,27 +1336,43 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
 
     }
 
-    private static class EditorRegistryListener implements ChangeListener, CaretListener {
-
+    private static class EditorRegistryListener implements CaretListener/*, PropertyChangeListener*/ {
+                        
+        private Request request;
         private JTextComponent lastEditor;
-
-        public EditorRegistryListener () {
-            Registry.addChangeListener(this);
+        
+        public EditorRegistryListener() {
+            EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    editorRegistryChanged();
+                }
+            });
+            editorRegistryChanged();
         }
-
-        public void stateChanged(ChangeEvent event) {
-            final JTextComponent editor = Registry.getMostActiveComponent();
+                
+        public void editorRegistryChanged() {
+            final JTextComponent editor = EditorRegistry.lastFocusedComponent();
             if (lastEditor != editor) {
                 if (lastEditor != null) {
                     lastEditor.removeCaretListener(this);
+                    //lastEditor.removePropertyChangeListener(this);
+                    final Document doc = lastEditor.getDocument();
+                    Source js = null;
+                    if (doc != null) {
+                        js = forDocument(doc);
+                    }
+                    //if (js != null) {
+                    //    js.k24 = false;
+                    //}                   
                 }
                 lastEditor = editor;
-                if (lastEditor != null) {
+                if (lastEditor != null) {                    
                     lastEditor.addCaretListener(this);
+                    //lastEditor.addPropertyChangeListener(this);
                 }
             }
         }
-
+        
         public void caretUpdate(CaretEvent event) {
             if (lastEditor != null) {
                 Document doc = lastEditor.getDocument();
@@ -1354,6 +1384,39 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 }
             }
         }
+
+//        public void propertyChange(final PropertyChangeEvent evt) {
+//            String propName = evt.getPropertyName();
+//            if ("completion-active".equals(propName)) {
+//                Source js = null;
+//                final Document doc = lastEditor.getDocument();
+//                if (doc != null) {
+//                    js = forDocument(doc);
+//                }
+//                if (js != null) {
+//                    Object rawValue = evt.getNewValue();
+//                    assert rawValue instanceof Boolean;
+//                    if (rawValue instanceof Boolean) {
+//                        final boolean value = (Boolean)rawValue;
+//                        if (value) {
+//                            assert this.request == null;
+//                            this.request = currentRequest.getTaskToCancel(false);
+//                            if (this.request != null) {
+//                                this.request.task.cancel();
+//                            }
+//                            js.k24 = true;
+//                        }
+//                        else {                    
+//                            Request _request = this.request;
+//                            this.request = null;                            
+//                            js.k24 = false;
+//                            js.resetTask.schedule(js.reparseDelay);
+//                            currentRequest.cancelCompleted(_request);
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
 
     private class FileChangeListenerImpl extends FileChangeAdapter {
@@ -1452,6 +1515,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     }
 
     private static class JavaSourceAccessorImpl extends SourceAccessor {
+        private StackTraceElement[] javacLockedStackTrace;
 
         protected @Override void runSpecialTaskImpl (CancellableTask<CompilationInfo> task, Priority priority) {
             handleAddRequest(new Request (task, null, null, priority, false));
@@ -1499,7 +1563,30 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         public boolean isDispatchThread () {
             return factory.isDispatchThread(Thread.currentThread());
          }
-    
+
+        @Override
+        public void lockParser() {            
+            javacLock.lock();
+            try {
+                this.javacLockedStackTrace = Thread.currentThread().getStackTrace();
+            } catch (RuntimeException e) {
+                //Not important, thrown by logging code
+            }
+        }
+        
+        @Override
+        public void unlockParser() {
+            try {
+                this.javacLockedStackTrace = null;
+            } finally {
+                javacLock.unlock();
+            }
+        }
+        
+        @Override
+        public boolean isParserLocked() {
+            return javacLock.isLocked();
+        }
     }
 
     private static class CurrentRequestReference {

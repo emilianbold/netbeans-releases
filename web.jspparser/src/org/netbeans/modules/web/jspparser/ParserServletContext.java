@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,16 +42,15 @@
 package org.netbeans.modules.web.jspparser;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
-import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,13 +59,15 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
-import javax.swing.text.EditorKit;
-import javax.swing.text.StyledDocument;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 
 /**
  * Simple <code>ServletContext</code> implementation without
@@ -97,7 +98,7 @@ public class ParserServletContext implements ServletContext {
     protected FileObject wmRoot;
     
     
-    protected JspParserAPI.WebModule myWm;
+    private final WebModuleProvider webModuleProvider;
     
     /** If true, takes the data from the editor; otherwise
      * from the disk.
@@ -115,11 +116,11 @@ public class ParserServletContext implements ServletContext {
      * @param wm JspParserAPI.WebModule in which we are parsing the file - this is used to
      *    find the editor for objects which are open in the editor
      */
-    public ParserServletContext(FileObject wmRoot, JspParserAPI.WebModule wm, boolean useEditor) {
+    public ParserServletContext(FileObject wmRoot, WebModuleProvider WebModuleProvider, boolean useEditor) {
         LOGGER.log(Level.FINE, "ParserServletContext created");
         myAttributes = new Hashtable<String, Object>();
         this.wmRoot = wmRoot;
-        this.myWm = wm;
+        this.webModuleProvider = WebModuleProvider;
         this.useEditorVersion = useEditor;
         
         setAttribute(JSP_TAGLIBRARY_CACHE, new ConcurrentHashMap<String, TagLibraryInfo>());
@@ -234,15 +235,16 @@ public class ParserServletContext implements ServletContext {
      */
     protected FileObject getResourceAsObject(String path) {
         LOGGER.log(Level.FINE,  "getResourceAsObject({0})", path);
-        FileObject fileObject = ContextUtil.findRelativeFileObject(wmRoot, path);
-        if (fileObject == null && path != null) {
+        FileObject fileObject = wmRoot.getFileObject(path);
+        WebModule webModule = webModuleProvider.getWebModule();
+        if (fileObject == null && path != null && webModule != null) {
             int index = path.toLowerCase().indexOf("web-inf");
             if (index > -1) {
                 String newPath = path.substring(index + 7);
-                fileObject = ContextUtil.findRelativeFileObject(myWm.getWebInf(), newPath);
+                fileObject = webModule.getWebInf().getFileObject(newPath);
             }
             else {
-                fileObject = ContextUtil.findRelativeFileObject(myWm.getWebInf(), path);
+                fileObject = webModule.getWebInf().getFileObject(path);
             }
         }
         return fileObject;
@@ -318,14 +320,12 @@ public class ParserServletContext implements ServletContext {
     public InputStream getResourceAsStream(String path) {
         LOGGER.log(Level.FINE,  "getResourceAsStream({0})", path);
         // first try from the opened editor - if fails read from file
-        if (myWm != null) {
-            FileObject fo = getResourceAsObject(path);
-            if ((fo != null) && (useEditorVersion)) {
-                // reading from the editor
-                InputStream result = myWm.getEditorInputStream(fo);
-                if (result != null) {
-                    return result;
-                }
+        FileObject fo = getResourceAsObject(path);
+        if ((fo != null) && (useEditorVersion)) {
+            // reading from the editor
+            InputStream result = getEditorInputStream(fo);
+            if (result != null) {
+                return result;
             }
         }
         
@@ -338,12 +338,35 @@ public class ParserServletContext implements ServletContext {
                 return url.openStream();
             }
         } catch (Throwable t) {
-            Logger.getLogger("global").log(Level.INFO, null, t);
+            LOGGER.log(Level.INFO, null, t);
             return (null);
         }
         
     }
     
+    // copied from web.core because it's the only place with this method implemented
+    // (can be easily improved using customization interface if needed)
+    /**
+     * Returns InputStream for the file open in editor or null
+     * if the file is not open.
+     */
+    private InputStream getEditorInputStream(FileObject fo) {
+        InputStream result = null;
+        EditorCookie ec = null;
+        try {
+            ec = DataObject.find(fo).getCookie(EditorCookie.class);
+        } catch (DataObjectNotFoundException e) {
+            LOGGER.log(Level.INFO, null, e);
+        }
+        if (ec != null && (ec instanceof CloneableEditorSupport)) {
+            try {
+                result = ((CloneableEditorSupport) ec).getInputStream();
+            } catch (IOException e) {
+                LOGGER.log(Level.INFO, null, e);
+            }
+        }
+        return result;
+    }
     
     /**
      * Return the set of resource paths for the "directory" at the
@@ -440,7 +463,7 @@ public class ParserServletContext implements ServletContext {
      * @param message The message to be logged
      */
     public void log(String message) {
-        Logger.getLogger("global").log(Level.INFO, message);
+        LOGGER.log(Level.INFO, message);
     }
     
     
@@ -466,8 +489,8 @@ public class ParserServletContext implements ServletContext {
      * @param exception The exception to be logged
      */
     public void log(String message, Throwable exception) {
-        Logger.getLogger("global").log(Level.INFO, message);
-        Logger.getLogger("global").log(Level.INFO, null, exception);
+        LOGGER.log(Level.INFO, message);
+        LOGGER.log(Level.INFO, null, exception);
     }
     
     
@@ -498,4 +521,15 @@ public class ParserServletContext implements ServletContext {
         return "";
     }
     
+    /**
+     * This interface delegates lifecycle of {@link WebModule} to the caller.
+     * See issue #85817 for more information.
+     */
+    public interface WebModuleProvider {
+        /**
+         * Get {@link WebModule} instance.
+         * @return {@link WebModule} instance or <code>null</code> if WebModule has already been garbage collected.
+         */
+        WebModule getWebModule();
+    }
 }

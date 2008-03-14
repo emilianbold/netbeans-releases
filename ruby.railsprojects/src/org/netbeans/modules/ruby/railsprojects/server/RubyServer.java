@@ -52,12 +52,36 @@ import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
  */
 public interface RubyServer extends RubyInstance {
 
+    /**
+     * Gets the name for the node displayed in the services tab.
+     * 
+     * @return the name for the node.
+     */
     String getNodeName();
     
+    /**
+     * Gets the startup param for forcing an instance of this server 
+     * to started.
+     * 
+     * @return the startup param.
+     */
     String getStartupParam();
 
+    /**
+     * Gets the path to the startup script of this server.
+     * 
+     * @return the path to the startup script.
+     */
     String getServerPath();
 
+    /**
+     * Checks whether the given <code>outputLine</code> represented a startup
+     * message of this server.
+     * 
+     * @param outputLine the line to check.
+     * @return true if the given <code>outputLine</code> was a startup message
+     * of this server, false otherwise.
+     */
     boolean isStartupMsg(String outputLine);
 
     /**
@@ -78,12 +102,25 @@ public interface RubyServer extends RubyInstance {
      * Removes the application running on the given <code>port</code>. Must
      * notify all registered listeners.
      * 
-     * @param port
-     * @return 
+     * @param port the port on which the given application runs.
+     * @return true if removing the identified application was successful, false
+     * otherwise.
      */
     boolean removeApplication(int port);
 
+    /**
+     * Registers a change listener to be notified when a new application has been 
+     * started or a running application stopped on this server.
+     * @param listener
+     */
     void addChangeListener(ChangeListener listener);
 
+    /**
+     * Removes the given <code>listener</code>. 
+     * 
+     * @param listener
+     * 
+     * @see addChangeListener(listener)
+     */
     void removeChangeListener(ChangeListener listener);
 }

@@ -54,14 +54,15 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
 import org.netbeans.modules.j2ee.clientproject.AppClientProvider;
-import org.netbeans.modules.j2ee.clientproject.UpdateHelper;
 import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
-import org.netbeans.modules.j2ee.clientproject.ui.customizer.PlatformUiSupport;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
@@ -69,6 +70,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -125,6 +128,14 @@ public class AppClientProjectGenerator {
     public static AntProjectHelper createProject(File dir, final String name, 
             final String mainClass, final String j2eeLevel, 
             final String serverInstanceID) throws IOException {
+        return createProject(dir, name, mainClass, j2eeLevel, serverInstanceID, null, null);
+    }
+    
+    public static AntProjectHelper createProject(File dir, final String name, 
+            final String mainClass, final String j2eeLevel, 
+            final String serverInstanceID, final String librariesDefinition,
+            final String serverLibraryName) throws IOException {
+        
         final AntProjectHelper[] h = new AntProjectHelper[1];
         final FileObject projectDir = FileUtil.createFolder(dir);
         
@@ -132,13 +143,17 @@ public class AppClientProjectGenerator {
         FileSystem fs = projectDir.getFileSystem();
         fs.runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
-                AntProjectHelper helper = createProjectImpl(projectDir, name, mainClass, j2eeLevel, serverInstanceID);
+                AntProjectHelper helper = createProjectImpl(projectDir, name,
+                        mainClass, j2eeLevel, serverInstanceID, librariesDefinition, serverLibraryName);
                 h[0] = helper;
             }});
         return h[0];
     }
     
-    private static AntProjectHelper createProjectImpl(FileObject projectDir, String name, String mainClass, String j2eeLevel, String serverInstanceID) throws IOException {
+    private static AntProjectHelper createProjectImpl(FileObject projectDir,
+            String name, String mainClass, String j2eeLevel, final String serverInstanceID,
+            final String librariesDefinition, final String serverLibraryName) throws IOException {
+
         FileObject srcRoot = projectDir.createFolder(DEFAULT_SRC_FOLDER);
         FileObject javaRoot = srcRoot.createFolder(DEFAULT_JAVA_FOLDER);
         FileObject confRoot = srcRoot.createFolder(DEFAULT_CONF_FOLDER);
@@ -153,8 +168,10 @@ public class AppClientProjectGenerator {
         appClient.setDisplayName(name);
         appClient.write(ddFile);
         
-        AntProjectHelper h = createProject(projectDir, name, DEFAULT_SRC_FOLDER, DEFAULT_TEST_FOLDER,
-                null, null, null,mainClass, j2eeLevel, serverInstanceID);
+        final AntProjectHelper h = setupProject(projectDir, name,
+                DEFAULT_SRC_FOLDER, DEFAULT_TEST_FOLDER,
+                null, null, null, mainClass, j2eeLevel,
+                serverInstanceID, librariesDefinition, serverLibraryName);
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.put(AppClientProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
@@ -163,8 +180,20 @@ public class AppClientProjectGenerator {
         
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
-        Project p = ProjectManager.getDefault().findProject(projectDir);
+        AppClientProject p = (AppClientProject) ProjectManager.getDefault().findProject(projectDir);
         ProjectManager.getDefault().saveProject(p);
+        
+        final ReferenceHelper refHelper = p.getReferenceHelper();        
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
+                    copyRequiredLibraries(h, refHelper, serverInstanceID, serverLibraryName);
+                    return null;
+                }
+            });
+        } catch (MutexException ex) {
+            Exceptions.printStackTrace(ex.getException());
+        }        
         
         if ( mainClass != null ) {
             createMainClass( mainClass, javaRoot );
@@ -193,6 +222,15 @@ public class AppClientProjectGenerator {
     public static AntProjectHelper importProject(final File dir, final String name,
             final File[] sourceFolders, final File[] testFolders, final File confFolder, 
             final File libFolder, final String j2eeLevel, final String serverInstanceID) throws IOException {
+        
+        return importProject(dir, name, sourceFolders, testFolders, confFolder,
+                libFolder, j2eeLevel, serverInstanceID, null, null);
+    }
+    
+    public static AntProjectHelper importProject(final File dir, final String name,
+            final File[] sourceFolders, final File[] testFolders, final File confFolder, 
+            final File libFolder, final String j2eeLevel, final String serverInstanceID,
+            final String librariesDefinition, final String serverLibraryName) throws IOException {
         final AntProjectHelper[] h = new AntProjectHelper[1];
         final FileObject projectDir = FileUtil.createFolder(dir);
         
@@ -201,18 +239,19 @@ public class AppClientProjectGenerator {
         fs.runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
                 AntProjectHelper helper = importProjectImpl(projectDir, name, sourceFolders, 
-                        testFolders, confFolder, libFolder, j2eeLevel, serverInstanceID);
+                        testFolders, confFolder, libFolder, j2eeLevel, serverInstanceID, librariesDefinition, serverLibraryName);
                 h[0] = helper;
             }});
         return h[0];
     }
     
     private static AntProjectHelper importProjectImpl(final FileObject projectDir, final String name,
-            final File[] sourceFolders, final File[] testFolders, final File confFolder, final File libFolder, String j2eeLevel, String serverInstanceID) throws IOException {
+            final File[] sourceFolders, final File[] testFolders, final File confFolder,
+            final File libFolder, String j2eeLevel, String serverInstanceID, String librariesDefinition, String serverLibraryName) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
-        final AntProjectHelper h = createProject(projectDir, name, null, null,
+        final AntProjectHelper h = setupProject(projectDir, name, null, null,
                 confFolder.getAbsolutePath(), (libFolder == null ? null : libFolder.getAbsolutePath()),
-                null, null, j2eeLevel, serverInstanceID);
+                null, null, j2eeLevel, serverInstanceID, librariesDefinition, serverLibraryName);
         final AppClientProject p = (AppClientProject) ProjectManager.getDefault().findProject(projectDir);
         final ReferenceHelper refHelper = p.getReferenceHelper();
         
@@ -245,7 +284,7 @@ public class AppClientProjectGenerator {
                     } else {
                         for (int i=0; i<testFolders.length; i++) {
                             if (!testFolders[i].exists()) {
-                                testFolders[i].mkdirs();
+                                FileUtil.createFolder(testFolders[i]);
                             }
                             String propName = "test.src.dir" + (i == 0 ? "" : Integer.toString(i+1)); //NOI18N
                             String testReference = refHelper.createForeignFileReference(testFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -305,6 +344,27 @@ public class AppClientProjectGenerator {
         return h;
     }
     
+    private static void copyRequiredLibraries(AntProjectHelper h, ReferenceHelper rh,
+            String serverInstanceId, String serverlibraryName) throws IOException {
+
+        if (!h.isSharableProject()) {
+            return;
+        }
+        if (rh.getProjectLibraryManager().getLibrary("junit") == null) { // NOI18N
+            rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit")); // NOI18N
+        }
+        if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
+            rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
+        }
+
+        if (h.isSharableProject() && serverlibraryName != null  && SharabilityUtility.findSharedServerLibrary(
+                h.resolveFile(h.getLibrariesLocation()), serverlibraryName) == null) {
+
+            SharabilityUtility.createLibrary(
+                h.resolveFile(h.getLibrariesLocation()), serverlibraryName, serverInstanceId);
+        }
+    }
+    
     /**
      * Imports an existing Application client project into NetBeans project
      * with a flag to specify whether the project contains java source files
@@ -333,11 +393,13 @@ public class AppClientProjectGenerator {
         ProjectManager.getDefault().saveProject(subP);
         return h;
     }
-    private static AntProjectHelper createProject(FileObject dirFO, String name,
+    
+    private static AntProjectHelper setupProject(FileObject dirFO, String name,
             String srcRoot, String testRoot, String configFiles, String libraries,
             String resources, String mainClass, String j2eeLevel,
-            String serverInstanceID) throws IOException {
-        AntProjectHelper h = ProjectGenerator.createProject(dirFO, AppClientProjectType.TYPE);
+            String serverInstanceID, String librariesDefinition, String serverLibraryName) throws IOException {
+        
+        AntProjectHelper h = ProjectGenerator.createProject(dirFO, AppClientProjectType.TYPE, librariesDefinition);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element nameEl = doc.createElementNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -394,7 +456,6 @@ public class AppClientProjectGenerator {
         ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(AppClientProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
         //        ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
         ep.setProperty(AppClientProjectProperties.DIST_JAR, "${"+AppClientProjectProperties.DIST_DIR+"}/" + "${" + AppClientProjectProperties.JAR_NAME + "}"); // NOI18N
-        ep.setProperty("javac.classpath", new String[0]); // NOI18N
         ep.setProperty("build.sysclasspath", "ignore"); // NOI18N
         ep.setComment("build.sysclasspath", new String[] {"# " + NbBundle.getMessage(AppClientProjectGenerator.class, "COMMENT_build.sysclasspath")}, false); // NOI18N
         ep.setProperty("run.classpath", new String[] { // NOI18N
@@ -483,6 +544,19 @@ public class AppClientProjectGenerator {
         ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM, j2eeLevel);
         ep.setProperty("manifest.file", "${" +AppClientProjectProperties.META_INF + "}/" + MANIFEST_FILE); // NOI18N
         
+        if (h.isSharableProject() && serverLibraryName != null) {
+            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH,
+                    "${libs." + serverLibraryName + "." + "classpath" + "}"); // NOI18N
+            ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH,
+                    "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
+            ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
+                    "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
+            ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
+                    "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
+        } else {
+            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, "");
+        }        
+        
         String mainClassArgs = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_MAIN_CLASS_ARGS);
         if (mainClassArgs != null && !mainClassArgs.equals("")) {
             ep.put(AppClientProjectProperties.APPCLIENT_MAINCLASS_ARGS, mainClassArgs);
@@ -494,9 +568,13 @@ public class AppClientProjectGenerator {
         
         //private.properties
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        
+        // XXX this seems to be used in runtime only so, not part of sharable server
         // set j2ee.appclient environment
         File[] accrt = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME);
         ep.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_RUNTIME, Utils.toClasspathString(accrt));
+        
+        
         String acMain = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_MAIN_CLASS);
         if (acMain != null) {
             ep.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_MAINCLASS, acMain);
@@ -512,38 +590,35 @@ public class AppClientProjectGenerator {
         }
         
         ep.setProperty(AppClientProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
-        // set j2ee.platform.classpath
-        String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
-        ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
-        // set j2ee.platform.wscompile.classpath
-        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
-            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
-            ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                    Utils.toClasspathString(wsClasspath));
-        }
         
-        // set j2ee.platform.wsimport.classpath
-        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
-            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
-            ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                    Utils.toClasspathString(wsClasspath));
-        }
-        //WORKAROUND for --retrieve option in asadmin deploy command
-        //works only for local domains
-        //see also http://www.netbeans.org/issues/show_bug.cgi?id=82929
-        if ("J2EE".equals(deployment.getServerID(serverInstanceID))) { // NOI18N
-            File asRoot = j2eePlatform.getPlatformRoots()[0];
-            File exFile = new File(asRoot, "lib/javaee.jar"); // NOI18N
-            InstanceProperties ip = InstanceProperties.getInstanceProperties(serverInstanceID);
-            if (exFile.exists()) {
-                ep.setProperty("wa.copy.client.jar.from", // NOI18N
-                        new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/generated/xml/j2ee-modules").getAbsolutePath()); // NOI18N
-            } else {
-                ep.setProperty("wa.copy.client.jar.from", // NOI18N
-                        new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/applications/j2ee-modules").getAbsolutePath()); // NOI18N
+        if (!h.isSharableProject() || serverLibraryName == null) {
+            // set j2ee.platform.classpath
+            String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
+            ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+        
+            // set j2ee.platform.wscompile.classpath
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
+                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
+                ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
+                        Utils.toClasspathString(wsClasspath));
             }
+
+            // set j2ee.platform.wsimport.classpath
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
+                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
+                ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
+                        Utils.toClasspathString(wsClasspath));
+            }
+        }
+
+        // WORKAROUND for --retrieve option in asadmin deploy command
+        // works only for local domains
+        // see also http://www.netbeans.org/issues/show_bug.cgi?id=82929
+        String copyProperty = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_CLIENT_JAR_LOCATION);
+        if (copyProperty != null) {
+            ep.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_CLIENT_JAR, copyProperty);
         } else {
-            ep.remove("wa.copy.client.jar.from"); // NOI18N
+            ep.remove(AppClientProjectProperties.APPCLIENT_TOOL_CLIENT_JAR);
         }
         
         // ant deployment support
@@ -637,7 +712,7 @@ public class AppClientProjectGenerator {
                                 if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")) {
                                     srcLevel = "1.5";
                                 }
-                                PlatformUiSupport.storePlatform(ep, updateHelper, finalPlatformName, srcLevel != null ? new SpecificationVersion(srcLevel) : null);
+                                PlatformUiSupport.storePlatform(ep, updateHelper, AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, finalPlatformName, srcLevel != null ? new SpecificationVersion(srcLevel) : null);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                                 ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(helper.getProjectDirectory()));
                             } catch (IOException e) {

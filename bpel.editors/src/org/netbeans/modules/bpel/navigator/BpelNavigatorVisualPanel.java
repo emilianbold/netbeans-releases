@@ -42,6 +42,7 @@ import org.openide.util.HelpCtx;
 
 import org.openide.util.NbBundle;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.nodes.actions.GoToAction;
 import org.netbeans.modules.bpel.nodes.actions.GoToLoggingAction;
 import org.netbeans.modules.bpel.nodes.actions.ShowBpelMapperAction;
 import org.netbeans.modules.bpel.nodes.navigator.NavigatorNodeFactory;
@@ -127,10 +128,23 @@ public class BpelNavigatorVisualPanel extends JPanel
 ////        keys.put(KeyStroke.getKeyStroke("control X"), DefaultEditorKit.cutAction);// NOI18N
 ////        keys.put(KeyStroke.getKeyStroke("control V"), DefaultEditorKit.pasteAction);// NOI18N
         keys.put(DELETE_KEYSTROKE, DELETE); // NOI18N
-        keys.put(GoToSourceAction.GOTOSOURCE_KEYSTROKE, GOTOSOURCE); // NOI18N
-        keys.put(GoToDiagrammAction.GOTODIAGRAMM_KEYSTROKE, GOTODIAGRAMM); // NOI18N
-        keys.put(ShowBpelMapperAction.GOTOMAPPER_KEYSTROKE, GOTOMAPPER); // NOI18N
-        keys.put(GoToLoggingAction.GOTOLOGGING_KEYSTROKE, GOTOLOGGING); // NOI18N
+
+        KeyStroke gotoSourceKey = GoToAction.getKeyStroke(GoToSourceAction.class);
+        KeyStroke gotoDesignKey = GoToAction.getKeyStroke(GoToDiagrammAction.class);
+        KeyStroke gotoMapperKey = GoToAction.getKeyStroke(ShowBpelMapperAction.class);
+        KeyStroke gotoLoggingKey = GoToAction.getKeyStroke(GoToLoggingAction.class);
+        if (gotoSourceKey != null) {
+            keys.put(gotoSourceKey, GOTOSOURCE); // NOI18N
+        }
+        if (gotoDesignKey != null) {
+            keys.put(gotoDesignKey, GOTODIAGRAMM); // NOI18N
+        }
+        if (gotoMapperKey != null) {
+            keys.put(gotoMapperKey, GOTOMAPPER); // NOI18N
+        }
+        if (gotoLoggingKey != null) {
+            keys.put(gotoLoggingKey, GOTOLOGGING); // NOI18N
+        }
 //////        keys.put((KeyStroke) SystemAction.get(FindUsagesAction.class)
 //////            .getValue(FindUsagesAction.ACCELERATOR_KEY), FINDUSAGES); // NOI18N
 

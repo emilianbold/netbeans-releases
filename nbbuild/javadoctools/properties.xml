@@ -161,3 +161,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-xml-retriever" value="${javadoc.web.root}/org-netbeans-modules-xml-retriever"/>
 <property name="javadoc.docs.org-netbeans-modules-server" value="${javadoc.web.root}/org-netbeans-modules-server"/>
 <property name="javadoc.docs.org-netbeans-modules-websvc-serviceapi" value="${javadoc.web.root}/org-netbeans-modules-websvc-serviceapi"/>
+<property name="javadoc.docs.org-netbeans-modules-java-api-common" value="${javadoc.web.root}/org-netbeans-modules-java-api-common"/>

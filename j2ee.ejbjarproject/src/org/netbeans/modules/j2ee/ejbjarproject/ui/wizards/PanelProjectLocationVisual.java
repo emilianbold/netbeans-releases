@@ -48,8 +48,8 @@ import java.text.MessageFormat;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import org.openide.WizardDescriptor;
@@ -234,7 +234,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         
         String projectName = (String) settings.getProperty(WizardProperties.NAME);
         if (projectName == null) {
-            int baseCount = FoldersListSettings.getDefault().getNewProjectCount() + 1;
+            int baseCount = UserProjectSettings.getDefault().getNewProjectCount() + 1;
             String formater = NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NPW1_DefaultProjectName");
             while ((projectName = validFreeProjectName(projectLocation, formater, baseCount)) == null) {
                 baseCount++;

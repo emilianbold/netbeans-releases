@@ -53,6 +53,7 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
@@ -174,10 +175,20 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
         if (file != null && file.isParsed() && getDocument() != null ) {
             FileObject fo = CsmUtilities.getFileObject(file);
             assert fo != null;
-            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, CaretAwareCsmFileTaskFactory.getLastPosition(fo));
-            if (ref!=null && ref.getReferencedObject()!=null) {
-                out = CsmReferenceRepository.getDefault().getReferences(ref.getReferencedObject(), file, true);
-            }
+            out = getOccurences(file, CaretAwareCsmFileTaskFactory.getLastPosition(fo));
+//            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, CaretAwareCsmFileTaskFactory.getLastPosition(fo));
+//            if (ref!=null && ref.getReferencedObject()!=null) {
+//                out = CsmReferenceRepository.getDefault().getReferences(ref.getReferencedObject(), file, CsmReferenceKind.ALL);
+//            }
+        }
+        return out;
+    }
+    
+    /* package-local */ static Collection<CsmReference> getOccurences(CsmFile file, int position) {
+        Collection<CsmReference> out = null;
+        CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, position);
+        if (ref!=null && ref.getReferencedObject()!=null) {
+            out = CsmReferenceRepository.getDefault().getReferences(ref.getReferencedObject(), file, CsmReferenceKind.ALL);
         }
         return out;
     }

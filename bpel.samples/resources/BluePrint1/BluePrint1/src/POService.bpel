@@ -40,12 +40,15 @@
     <import namespace="http://manufacturing.org/wsdl/purchase/bp1"
             location="POService.wsdl"
             importType="http://schemas.xmlsoap.org/wsdl/"></import>
+    
     <import namespace="http://manufacturing.org/wsdl/inventory/bp1"
             location="InventoryService.wsdl"
             importType="http://schemas.xmlsoap.org/wsdl/"></import>
+    
     <import namespace="http://manufacturing.org/xsd/inventory"
             location="inventory.xsd"
             importType="http://www.w3.org/2001/XMLSchema"></import>
+    
     <import namespace="http://manufacturing.org/xsd/purchase"
             location="purchaseOrder.xsd"
             importType="http://www.w3.org/2001/XMLSchema"></import>
@@ -58,20 +61,16 @@
                      partnerLinkType="invs:inventoryRequestingLT"
                      partnerRole="inventoryService"/>
     </partnerLinks>
+    
     <variables>
-        <variable name="purchaseOrderRequest"
-                  messageType="pos:POMessage"></variable>
-        <variable name="purchaseOrderReply"
-                  messageType="pos:POMessage"></variable>
-        <variable name="purchaseOrderFault"
-                  messageType="pos:orderFaultType"></variable>
-        <variable name="inventoryServiceRequest"
-                  messageType="invs:POMessage"></variable>
-        <variable name="inventoryServiceReply"
-                  messageType="invs:InventoryMessage"></variable>
-        <variable name="inventoryServiceFault"
-                  messageType="invs:inventoryFault"></variable>
+        <variable name="purchaseOrderRequest" messageType="pos:POMessage"></variable>
+        <variable name="purchaseOrderReply" messageType="pos:POMessage"></variable>
+        <variable name="purchaseOrderFault" messageType="pos:orderFaultType"></variable>
+        <variable name="inventoryServiceRequest" messageType="invs:POMessage"></variable>
+        <variable name="inventoryServiceReply" messageType="invs:InventoryMessage"></variable>
+        <variable name="inventoryServiceFault" messageType="invs:inventoryFault"></variable>
     </variables>
+
     <sequence>
         <receive name="sendPurchaseOrder"
                  partnerLink="POServicePLink"
@@ -137,8 +136,7 @@
                            portType="pos:purchaseOrderPT"
                            operation="sendPurchaseOrder"
                            variable="purchaseOrderFault"
-                           faultName="pos:cannotCompleteOrder"
-                    />
+                           faultName="pos:cannotCompleteOrder"/>
                 </sequence>
             </else>
         </if>

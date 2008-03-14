@@ -32,7 +32,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
@@ -40,8 +39,8 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementDescriptor;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementProvider;
-import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcherFactory;
 import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcher;
+import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcherFactory;
 import org.netbeans.spi.jumpto.type.SearchType;
 
 /**
@@ -51,110 +50,151 @@ import org.netbeans.spi.jumpto.type.SearchType;
 public abstract class BaseProvider implements ElementProvider {
 
     protected interface ResultSet {
-        void add(ElementDescriptor descriptor);
-        Collection<? extends ElementDescriptor> getResult();
+        public void add(ElementDescriptor descriptor);
+        public Collection<? extends ElementDescriptor> getResult();
     }
     
-    private class ResultSetImpl implements ResultSet {
+    protected abstract static class ProviderDelegate {
 
-        Map<ElementDescriptor, Boolean> data = new HashMap<ElementDescriptor, Boolean>();
-        
-        public void add(ElementDescriptor descriptor) {
-	    // There might be several instances that correspond to the same declaration (IZ #116478);
-	    // in this case instance that belongs to non-artificial project is stronger
-            if( ! data.containsKey(descriptor) || ! isArtificial(currentProject) ) {
-                data.put(descriptor, Boolean.TRUE);
+            protected class ResultSetImpl implements ResultSet {
+
+                private Map<ElementDescriptor, Boolean> data = new HashMap<ElementDescriptor, Boolean>();
+
+                public void add(ElementDescriptor descriptor) {
+                    // There might be several instances that correspond to the same declaration (IZ #116478);
+                    // in this case instance that belongs to non-artificial project is stronger
+                    if( ! data.containsKey(descriptor) || ! isArtificial(currentProject) ) {
+                        data.put(descriptor, Boolean.TRUE);
+                    }
+                }
+
+                public Collection<? extends ElementDescriptor> getResult() {
+                    return new ArrayList<ElementDescriptor>(data.keySet());
+                }
+
+                private boolean isArtificial(CsmProject project) {
+                    return project != null && project.isArtificial();
+                }
+
+            }
+
+            private boolean isCancelled = false;
+
+            protected static final boolean PROCESS_LIBRARIES = true; // Boolean.getBoolean("cnd.type.provider.libraries");
+            protected static final boolean TRACE = Boolean.getBoolean("cnd.goto.fv.trace");
+
+            /** To not process same libararies twice */
+            private Set<CsmProject> processedProjects = new HashSet<CsmProject>();
+
+            /** Project that is currently being processed. */
+            private CsmProject currentProject;
+
+            public void cancel() {
+                isCancelled = true;
+            }
+
+            protected final boolean isCancelled() {
+                return isCancelled;
+            }
+
+            protected abstract void processProject(CsmProject project, ResultSet result, NameMatcher comparator);
+
+            public Collection<? extends ElementDescriptor> getElements(Project project, String text, SearchType type, boolean first) {
+
+                if( TRACE ) System.err.printf("%s.getElements(%s, %s, %s)\n", getBriefClassName(), project, text, type);
+
+                NameMatcher comparator = NameMatcherFactory.createNameMatcher(text, type);
+                if( comparator == null ) {
+                    return Collections.emptyList();
+                }
+
+                if( first ) {
+                    processedProjects.clear();
+                }
+                ResultSet result = new ResultSetImpl();
+                CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
+                if( csmProject != null ) {
+                    // we should check the processed project here:
+                    // otherwise when some of the required projects are open,we'll have duplicates
+                    if( ! processedProjects.contains(csmProject) ) {
+                        processedProjects.add(csmProject);
+                        currentProject = csmProject;
+                        processProject(csmProject, result, comparator);
+                        currentProject = null;
+                        if( PROCESS_LIBRARIES ) {
+                            for( CsmProject lib : csmProject.getLibraries() ) {
+                                if( isCancelled() ) {
+                                    break;
+                                }
+                                if( lib.isArtificial() ) {
+                                    if( ! processedProjects.contains(lib) ) {
+                                        processedProjects.add(lib);
+                                        currentProject = lib;
+                                        processProject(lib, result, comparator);
+                                        currentProject = null;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                return result.getResult();
+            }
+
+            public void cleanup() {
+                processedProjects.clear();
+                currentProject = null;
+            }
+
+            private String getBriefClassName() {
+                String name = getClass().getName();
+                int pos = name.lastIndexOf('.');
+                return (pos >= 0) ? name.substring(pos + 1) : name;
+            }
+
+        }
+    
+    private ProviderDelegate delegate;
+    
+    protected abstract ProviderDelegate createDelegate();
+    
+    public void cancel() {
+        ProviderDelegate oldDelegate = null;
+        synchronized (this) {
+            if( delegate != null ) {
+                oldDelegate = delegate;
+                delegate = null;
             }
         }
-
-        public Collection<? extends ElementDescriptor> getResult() {
-            return new ArrayList<ElementDescriptor>(data.keySet());
+        if( oldDelegate != null ) {
+            oldDelegate.cancel();
         }
-	
-	private boolean isArtificial(CsmProject project) {
-	    return project != null && project.isArtificial();
-	}
-        
-    }
-    
-    private boolean isCancelled = false;
-    
-    protected static final boolean PROCESS_LIBRARIES = true; // Boolean.getBoolean("cnd.type.provider.libraries");
-    protected static final boolean TRACE = Boolean.getBoolean("cnd.goto.fv.trace");
-
-    /** To not process same libararies twice */
-    private Set<CsmProject> processedProjects = new HashSet<CsmProject>();
-
-    /** Project that is currently being processed. */
-    private CsmProject currentProject;
-
-    public void cancel() {
-	isCancelled = true;
-    }
-    
-    protected final boolean isCancelled() {
-	return isCancelled;
     }
     
     public boolean isSuitable() {
 	return ! CsmModelAccessor.getModel().projects().isEmpty();
     }
     
-    protected abstract void processProject(CsmProject project, ResultSet result, NameMatcher comparator);
     
     public Collection<? extends ElementDescriptor> getElements(Project project, String text, SearchType type, boolean first) {
-
-	if( TRACE ) System.err.printf("%s.getElements(%s, %s, %s)\n", getBriefClassName(), project, text, type);
-        
-	NameMatcher comparator = NameMatcherFactory.createNameMatcher(text, type);
-	if( comparator == null ) {
-	    return Collections.emptyList();
-	}
-
-        if( first ) {
-            processedProjects.clear();
-        }
-        ResultSet result = new ResultSetImpl();
-        CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
-	if( csmProject != null ) {
-	    // we should check the processed project here:
-	    // otherwise when some of the required projects are open,we'll have duplicates
-	    if( ! processedProjects.contains(csmProject) ) {
-                processedProjects.add(csmProject);
-                currentProject = csmProject;
-                processProject(csmProject, result, comparator);
-                currentProject = null;
-                if( PROCESS_LIBRARIES ) {
-                    for( CsmProject lib : csmProject.getLibraries() ) {
-                        if( isCancelled() ) {
-                            break;
-                        }
-                        if( lib.isArtificial() ) {
-                            if( ! processedProjects.contains(lib) ) {
-                                processedProjects.add(lib);
-                                currentProject = lib;
-                                processProject(lib, result, comparator);
-                                currentProject = null;
-                            }
-                        }
-                    }
-                }
-	    }
-	}
-	return result.getResult();
+        cancel();
+	delegate = createDelegate();
+        return delegate.getElements(project, text, type, first);
     }
     
     
     public void cleanup() {
-        processedProjects.clear();
-        currentProject = null;
+        ProviderDelegate oldDelegate = null;
+        synchronized (this) {
+            if( delegate != null ) {
+                oldDelegate = delegate;
+                delegate = null;
+            }
+        }
+        if( oldDelegate != null ) {
+            oldDelegate.cancel();
+            oldDelegate.cleanup();
+        }
+        
     }
-
-    private String getBriefClassName() {
-	String name = getClass().getName();
-	int pos = name.lastIndexOf('.');
-	return (pos >= 0) ? name.substring(pos + 1) : name;
-    }
-    
-    
 }

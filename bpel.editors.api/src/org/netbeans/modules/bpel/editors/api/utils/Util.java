@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -124,17 +124,20 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.w3c.dom.Element;
 
 /**
- * 
+ *
  * @author vb160295
  * @version 1.0
  */
 public final class Util {
-    
+
+    private Util() {
+    }
+
     private static Map<Class<? extends Component>, NodeType> ENTITY_NODETYPE_MAP;
-    
+
     static {
         ENTITY_NODETYPE_MAP = new HashMap<Class<? extends Component>, NodeType>();
-        
+
         ENTITY_NODETYPE_MAP.put(Assign.class, NodeType.ASSIGN);
 
         ENTITY_NODETYPE_MAP.put(BooleanExpr.class, NodeType.BOOLEAN_EXPR);
@@ -189,7 +192,7 @@ public final class Util {
 
         ENTITY_NODETYPE_MAP.put(Scope.class, NodeType.SCOPE);
         ENTITY_NODETYPE_MAP.put(Sequence.class, NodeType.SEQUENCE);
-        
+
         ENTITY_NODETYPE_MAP.put(TerminationHandler.class, NodeType.TERMINATION_HANDLER);
         ENTITY_NODETYPE_MAP.put(Throw.class, NodeType.THROW);
         ENTITY_NODETYPE_MAP.put(ReThrow.class, NodeType.RETHROW);
@@ -202,9 +205,9 @@ public final class Util {
         ENTITY_NODETYPE_MAP.put(Variable.class, NodeType.VARIABLE);
         ENTITY_NODETYPE_MAP.put(VariableContainer.class, NodeType.VARIABLE_CONTAINER);
     }
-    
+
     /**
-     * 
+     *
      * @param entityClass class which represents primary entity interface
      * @return generally used NodeType
      */
@@ -229,19 +232,19 @@ public final class Util {
         default:
             isShowable = true;
         }
-        
+
         return isShowable;
     }
-    
+
     /**
-     * 
-     * @param entity 
-     * @param lookup 
+     *
+     * @param entity
+     * @param lookup
      * @return the closest node
      */
     public static Node getClosestNavigatorNode(
-            BpelEntity entity, 
-            Lookup lookup) 
+            BpelEntity entity,
+            Lookup lookup)
     {
         if (entity == null || entity.getElementType() == null) {
             return null;
@@ -251,15 +254,15 @@ public final class Util {
         NodeType basicNodeType = getBasicNodeType(entity);
 
         while (!isNavigatorShowableNodeType(basicNodeType)
-                
+
                 && curEntity != null )
         {
             curEntity = curEntity.getParent();
             basicNodeType = getBasicNodeType(curEntity);
         }
-        
-        if (curEntity != null 
-                && !(NodeType.UNKNOWN_TYPE.equals(basicNodeType))) 
+
+        if (curEntity != null
+                && !(NodeType.UNKNOWN_TYPE.equals(basicNodeType)))
         {
             basicNode = FactoryAccess.getPropertyNodeFactory().
                     createNode(basicNodeType, curEntity, lookup);
@@ -283,8 +286,8 @@ public final class Util {
 
     /**
      * This method don't aware about bpelModel lock
-     * @param entity BpelEntity 
-     * @return generally used NodeType, if entity or 
+     * @param component Component
+     * @return generally used NodeType, if entity or
      *  enity#getElementType is null then return null
      */
     public static NodeType getBasicNodeType(Component component) {
@@ -299,7 +302,7 @@ public final class Util {
         }
         return getBasicNodeType(bpelEntity.getElementType());
     }
-    
+
     public static void goToSource(Component component) {
         if ( !(component instanceof DocumentComponent)) {
             return;
@@ -312,7 +315,7 @@ public final class Util {
         }
         try {
             DataObject d = DataObject.find(fo);
-            LineCookie lc = (LineCookie) d.getCookie(LineCookie.class);
+            LineCookie lc = d.getCookie(LineCookie.class);
             if (lc == null) {
                 return;
             }
@@ -320,13 +323,13 @@ public final class Util {
             if (lineNum < 0) {
                 return;
             }
-            
+
             final Line l = lc.getLineSet().getCurrent(lineNum);
             final int column = getColumnNum(document);
             if (column < 0) {
                 return;
             }
-            
+
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     l.show(Line.SHOW_GOTO, column);
@@ -341,7 +344,7 @@ public final class Util {
 
     public static void goToLoggingAlerting(Component component) {
         assert component instanceof BpelEntity ;
-        
+
         final BpelEntity bpelEntity = (BpelEntity) component;
         FileObject fo = getFileObjectByModel(bpelEntity.getBpelModel());
 
@@ -350,12 +353,12 @@ public final class Util {
         try {
             DataObject d = DataObject.find(fo);
             final Lookup lookup = d.getLookup();
-            
-            final EditCookie ec = (EditCookie) d.getCookie(EditCookie.class);
+
+            final EditCookie ec = d.getCookie(EditCookie.class);
             if (ec == null) {
                 return;
             }
-            
+
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     ec.edit();
@@ -369,7 +372,7 @@ public final class Util {
 
     public static void goToBusinessRules(Component component) {
         assert component instanceof BpelEntity ;
-        
+
         final BpelEntity bpelEntity = (BpelEntity) component;
         FileObject fo = getFileObjectByModel(bpelEntity.getBpelModel());
 
@@ -378,12 +381,12 @@ public final class Util {
         try {
             DataObject d = DataObject.find(fo);
             final Lookup lookup = d.getLookup();
-            
-            final EditCookie ec = (EditCookie) d.getCookie(EditCookie.class);
+
+            final EditCookie ec = d.getCookie(EditCookie.class);
             if (ec == null) {
                 return;
             }
-            
+
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     ec.edit();
@@ -428,7 +431,7 @@ public final class Util {
           Highlight highlight = new Highlight(component, Highlight.SEARCH_RESULT);
           group.addHighlight(highlight);
           manager.addHighlightGroup(group);
-          
+
           if (view instanceof SchemaTreeView && component instanceof SchemaComponent) {
             ((SchemaTreeView) view).showComponent((SchemaComponent) component);
             return;
@@ -450,23 +453,23 @@ public final class Util {
             return;                                                        }
         try {
             DataObject d = DataObject.find(fo);
-            final Lookup lookup = d instanceof Lookup.Provider
-                    ? ((Lookup.Provider)d).getLookup()
-                    : null;
-            
-            final EditCookie ec = (EditCookie) d.getCookie(EditCookie.class);
+            final Lookup lookup = d != null ? d.getLookup() : null;
+
+            final EditCookie ec = d.getCookie(EditCookie.class);
             if (ec == null) {
                 return;
             }
-            
+
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     ec.edit();
                     openActiveDesignEditor();
                     if (lookup != null || bpelEntity != null) {
                         NodeType nodeType = getBasicNodeType(bpelEntity);
-                        if (nodeType == null || NodeType.UNKNOWN_TYPE.equals(nodeType)) {
+                        if (nodeType == null) {
                             return;
+                        } else if (NodeType.UNKNOWN_TYPE.equals(nodeType)) {
+                            nodeType = NodeType.DEFAULT_BPEL_ENTITY_NODE;
                         }
                         Node bpelNode = FactoryAccess.getPropertyNodeFactory()
                         .createNode(nodeType,bpelEntity, lookup);
@@ -486,13 +489,13 @@ public final class Util {
 
     public static FileObject getFileObjectByModel(Model model) {
         if (model != null){
-            
+
             ModelSource src = model.getModelSource();
             if (src != null){
-                
+
                 Lookup lookup = src.getLookup();
                 if (lookup != null){
-                    return (FileObject) lookup.lookup(FileObject.class);
+                    return lookup.lookup(FileObject.class);
                 }
             }
         }
@@ -508,37 +511,37 @@ public final class Util {
         if (entity == null) {
             return ""; // NOI18N
         }
-        
+
         FileObject fo = getFileObjectByModel(entity.getBpelModel());
         if (fo == null) {
             return ""; // NOI18N
         }
 
         // TODO - if the line doesn't contain the target (query component name) string, keep searcing subsequent lines
-        
-        
+
+
         DataObject dobj = null;
         try {
             dobj = DataObject.find(fo);
         } catch (DataObjectNotFoundException ex) {
             ErrorManager.getDefault().notify(ex);
         }
-        
-        
+
+
         int line = getLineNum(entity);
         int col = getColumnNum(entity);
         ModelSource modelSource = entity.getBpelModel().getModelSource();
         assert modelSource != null;
         Lookup lookup = modelSource.getLookup();
-        
-        StyledDocument document = (StyledDocument)lookup.lookup(StyledDocument.class);
+
+        StyledDocument document = lookup.lookup(StyledDocument.class);
         if (document == null) {
             return ""; // NOI18N
         }
-            
+
         CloneableEditorSupport editor = (CloneableEditorSupport)dobj.getCookie(org.openide.cookies.EditorCookie.class);
         Line.Set s =editor.getLineSet();
-            
+
         Line xmlLine = s.getCurrent(line);
         String nodeLabel =   xmlLine.getText().trim();
         // substitute xml angle brackets <> for &lt; and &gt;
@@ -557,21 +560,21 @@ public final class Util {
         ModelSource modelSource = entity.getModel().getModelSource();
         assert modelSource != null;
         Lookup lookup = modelSource.getLookup();
-        
-        StyledDocument document = (StyledDocument)lookup.lookup(StyledDocument.class);
+
+        StyledDocument document = lookup.lookup(StyledDocument.class);
         if (document == null) {
             return -1;
         }
         return NbDocument.findLineNumber(document,position);
     }
-    
+
     private static int getColumnNum(DocumentComponent entity) {
         int position = entity.findPosition();
         ModelSource modelSource = entity.getModel().getModelSource();
         assert modelSource != null;
         Lookup lookup = modelSource.getLookup();
-        
-        StyledDocument document = (StyledDocument)lookup.lookup(StyledDocument.class);
+
+        StyledDocument document = lookup.lookup(StyledDocument.class);
         if (document == null) {
             return -1;
         }
@@ -598,9 +601,9 @@ public final class Util {
         if (mvPreferedID == null) {
             return;
         }
-        
+
         TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
-        
+
         MultiViewHandler mvh = MultiViews.findMultiViewHandler(tc);
         if (mvh == null) {
             return;
@@ -616,7 +619,7 @@ public final class Util {
             }
         }
     }
-    
+
     // TODO get xml snippet for line that contains the
     //  query component name
     /**
@@ -669,23 +672,23 @@ public final class Util {
         // the close quote has now been pushed right 3 spaces
         l.insert(iq2+3,"</b>");
         return l.toString();
-        
+
     }
-    
-    
+
+
     public static void goToReferenceSource(Reference<Referenceable> reference) {
         Referenceable referenceable = reference.get();
         if (referenceable == null) return;
         if (!(referenceable instanceof DocumentComponent)) return;
         goToDocumentComponentSource((DocumentComponent<DocumentComponent>) referenceable);
     }
-    
-    
+
+
     public static boolean canGoToDocumentComponentSource(
             DocumentComponent<DocumentComponent> component)
     {
         if (component == null) return false;
-        
+
         Model model = component.getModel();
         if (model == null) return false;
 
@@ -694,53 +697,51 @@ public final class Util {
 
         Lookup lookup = modelSource.getLookup();
         if (lookup == null) return false;
-        
-        FileObject fileObject = (FileObject) lookup.lookup(FileObject.class);
+
+        FileObject fileObject = lookup.lookup(FileObject.class);
         if (fileObject == null) return false;
-            
+
         DataObject dataObject = null;
         try {
             dataObject = DataObject.find(fileObject);
         } catch (DataObjectNotFoundException e) {}
         if (dataObject == null) return false;
-        
-        LineCookie lineCookie = (LineCookie) dataObject.getCookie(LineCookie
-            .class);
+
+        LineCookie lineCookie = dataObject.getCookie(LineCookie.class);
         if (lineCookie == null) return false;
-        
+
         Line.Set lineSet = lineCookie.getLineSet();
         if (lineSet == null) return false;
-        
-        StyledDocument document = (StyledDocument) lookup.lookup(StyledDocument
-                .class);
+
+        StyledDocument document = lookup.lookup(StyledDocument.class);
         if (document == null) return false;
-        
+
         Line line = null;
         int column = 0;
-        
+
         try {
             int pos = component.findPosition();
             line = lineSet.getCurrent(NbDocument.findLineNumber(document, pos));
             column = NbDocument.findLineColumn(document, pos);
         } catch (IndexOutOfBoundsException e) {}
-            
+
         if (line == null) {
             try {
                 line = lineCookie.getLineSet().getCurrent(0);
             } catch (IndexOutOfBoundsException e) {}
         }
         if (line == null) return false;
-        
+
         return true;
     }
-            
-    
-    
+
+
+
     public static void goToDocumentComponentSource(
-            DocumentComponent<DocumentComponent> component) 
+            DocumentComponent<DocumentComponent> component)
     {
         if (component == null) return;
-        
+
         Model model = component.getModel();
         if (model == null) return;
 
@@ -749,46 +750,44 @@ public final class Util {
 
         Lookup lookup = modelSource.getLookup();
         if (lookup == null) return;
-        
-        FileObject fileObject = (FileObject) lookup.lookup(FileObject.class);
+
+        FileObject fileObject = lookup.lookup(FileObject.class);
         if (fileObject == null) return;
-            
+
         DataObject dataObject = null;
         try {
             dataObject = DataObject.find(fileObject);
         } catch (DataObjectNotFoundException e) {}
         if (dataObject == null) return;
-        
-        LineCookie lineCookie = (LineCookie) dataObject.getCookie(LineCookie
-            .class);
+
+        LineCookie lineCookie = dataObject.getCookie(LineCookie.class);
         if (lineCookie == null) return;
-        
+
         Line.Set lineSet = lineCookie.getLineSet();
         if (lineSet == null) return;
-        
-        StyledDocument document = (StyledDocument) lookup.lookup(StyledDocument
-                .class);
+
+        StyledDocument document = lookup.lookup(StyledDocument.class);
         if (document == null) return;
-        
+
         Line line = null;
         int column = 0;
-        
+
         try {
             int pos = component.findPosition();
             line = lineSet.getCurrent(NbDocument.findLineNumber(document, pos));
             column = NbDocument.findLineColumn(document, pos);
         } catch (IndexOutOfBoundsException e) {}
-            
+
         if (line == null) {
             try {
                 line = lineCookie.getLineSet().getCurrent(0);
             } catch (IndexOutOfBoundsException e) {}
         }
         if (line == null) return;
-        
+
         final Line fLine = line;
         final int fColumn = column;
-        
+
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 fLine.show(Line.SHOW_GOTO, fColumn);
@@ -815,7 +814,7 @@ public final class Util {
         htmlString = htmlString.replaceAll("&amp;","&"); // NOI18n
         htmlString = htmlString.replaceAll("&gt;",">;"); // NOI18n
         htmlString = htmlString.replaceAll("&lt;","<"); // NOI18n
-        
+
         htmlString = htmlString.replaceAll("&","&amp;"); // NOI18n
         htmlString = htmlString.replaceAll(">","&gt;"); // NOI18n
         htmlString = htmlString.replaceAll("<","&lt;"); // NOI18n
@@ -826,11 +825,11 @@ public final class Util {
         if (component == null) {
             return null;
         }
-        
+
         Element enEl = component.getPeer();
         return enEl == null ? null : enEl.getTagName();
     }
-    
+
     public static VariableStereotype
             getVariableStereotype(AbstractVariableDeclaration var) {
         if (var == null) {
@@ -856,7 +855,7 @@ public final class Util {
         }
         return currentStereotype;
     }
-    
+
     public static Reference getVariableType(AbstractVariableDeclaration variable) {
         NamedComponentReference<GlobalElement> elemRef = variable.getElement();
         if (elemRef != null) {
@@ -875,7 +874,7 @@ public final class Util {
         //
         return null;
     }
-    
+
     public static SchemaComponent getVariableSchemaType(
             AbstractVariableDeclaration variable) {
         NamedComponentReference<GlobalElement> elemRef = variable.getElement();
@@ -895,7 +894,7 @@ public final class Util {
         }
         return null;
     }
-    
+
     public static SchemaComponent getPartType(Part part) {
         NamedComponentReference<GlobalElement> elemRef = part.getElement();
         if (elemRef != null) {
@@ -915,5 +914,5 @@ public final class Util {
         //
         return null;
     }
-    
+
 }

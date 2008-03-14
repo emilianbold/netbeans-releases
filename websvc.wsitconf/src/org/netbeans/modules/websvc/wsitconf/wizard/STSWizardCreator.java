@@ -51,6 +51,7 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,6 +78,9 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoint;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoints;
+import org.netbeans.modules.websvc.api.jaxws.project.config.EndpointsProvider;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
@@ -90,6 +94,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -97,7 +102,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 public class STSWizardCreator {
-    public static final String MEX_NAME = "com.sun.xml.ws.mex.server.MEXEndpoint";
+    public static final String MEX_CLASS_NAME = "com.sun.xml.ws.mex.server.MEXEndpoint";
+    public static final String MEX_NAME = "MEXEndpoint";
 
     protected static final int JSE_PROJECT_TYPE = 0;
     protected static final int WEB_PROJECT_TYPE = 1;
@@ -106,6 +112,8 @@ public class STSWizardCreator {
     private static final String SERVLET_NAME = "ServletName";
     private static final String SERVLET_CLASS = "ServletClass";
     private static final String URL_PATTERN = "UrlPattern";
+
+    private final static String DISPATCH_CLASS_NAME = "com.sun.xml.ws.transport.http.servlet.WSServlet"; //NOI18N
     
     private int projectType;
 
@@ -226,7 +234,7 @@ public class STSWizardCreator {
         String portJavaName = port.getJavaName();
         String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf('.'));
 
-        serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported && Util.isJavaEE5orHigher(project));
+        serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported && Util.isJavaEE5orHigher(project), true);
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
                        
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
@@ -381,30 +389,46 @@ public class STSWizardCreator {
         
         targetSource.runModificationTask(task).commit();
             
+        boolean isGlassFish = Util.isGlassfish(project);
+        String mexUrl = "/" + targetName + "Service/mex";
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
             try {
                 WebApp wApp = DDProvider.getDefault ().getDDRoot(wm.getDeploymentDescriptor());                    
                 Servlet servlet = Util.getServlet(wApp, serviceImplPath);
-                if (servlet == null) {      //NOI18N
+                if (servlet == null) {
                     try {
-                        servlet = (Servlet)wApp.addBean("Servlet",              //NOI18N
-                                new String[]{SERVLET_NAME,SERVLET_CLASS},    
-                                new Object[]{serviceImplPath,serviceImplPath},SERVLET_NAME);
-                        servlet.setLoadOnStartup(new java.math.BigInteger("0"));               //NOI18N
-                        wApp.addBean("ServletMapping", new String[]{SERVLET_NAME,URL_PATTERN}, //NOI18N
-                                new Object[]{serviceImplPath, "/" + targetName + "Service"},SERVLET_NAME);      //NOI18N
-                        try {
+                        if (isGlassFish) {
                             servlet = (Servlet)wApp.addBean("Servlet",              //NOI18N
                                     new String[]{SERVLET_NAME,SERVLET_CLASS},    
-                                    new Object[]{MEX_NAME,MEX_NAME},SERVLET_NAME);
-                            servlet.setLoadOnStartup(new java.math.BigInteger("0"));     //NOI18N
-                        } catch (NameAlreadyUsedException ex) {
-                            // do nothing, this is ok - there should be only one instance of this
+                                    new Object[]{serviceImplPath,serviceImplPath},SERVLET_NAME);
+                            servlet.setLoadOnStartup(new java.math.BigInteger("0"));               //NOI18N
+                            wApp.addBean("ServletMapping", new String[]{SERVLET_NAME,URL_PATTERN}, //NOI18N
+                                    new Object[]{serviceImplPath, "/" + targetName + "Service"},SERVLET_NAME);      //NOI18N
+                            try {
+                                servlet = (Servlet)wApp.addBean("Servlet",              //NOI18N
+                                        new String[]{SERVLET_NAME,SERVLET_CLASS},    
+                                        new Object[]{MEX_CLASS_NAME,MEX_CLASS_NAME},SERVLET_NAME);
+                                servlet.setLoadOnStartup(new java.math.BigInteger("0"));     //NOI18N
+                            } catch (NameAlreadyUsedException ex) {
+                                // do nothing, this is ok - there should be only one instance of this
+                            }
+                            wApp.addBean("ServletMapping", new String[]{SERVLET_NAME,URL_PATTERN}, //NOI18N
+                                    new Object[]{MEX_CLASS_NAME, mexUrl},URL_PATTERN);  //NOI18N
+                            wApp.write(wm.getDeploymentDescriptor());
+                        } else {
+                            try {
+                                servlet = (Servlet)wApp.addBean("Servlet",              //NOI18N
+                                        new String[]{SERVLET_NAME,SERVLET_CLASS},    
+                                        new Object[]{MEX_NAME,MEX_CLASS_NAME},SERVLET_NAME);
+                                servlet.setLoadOnStartup(new java.math.BigInteger("0"));     //NOI18N
+                            } catch (NameAlreadyUsedException ex) {
+                                // do nothing, this is ok - there should be only one instance of this
+                            }
+                            wApp.addBean("ServletMapping", new String[]{SERVLET_NAME,URL_PATTERN}, //NOI18N
+                                    new Object[]{MEX_NAME, mexUrl},URL_PATTERN);  //NOI18N
+                            wApp.write(wm.getDeploymentDescriptor());
                         }
-                        wApp.addBean("ServletMapping", new String[]{SERVLET_NAME,URL_PATTERN}, //NOI18N
-                                new Object[]{MEX_NAME, "/" + targetName + "Service/mex"},URL_PATTERN);  //NOI18N
-                        wApp.write(wm.getDeploymentDescriptor());
                     } catch (NameAlreadyUsedException ex) {
                         ex.printStackTrace();
                     } catch (ClassNotFoundException ex) {
@@ -415,6 +439,30 @@ public class STSWizardCreator {
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
+            }
+        }
+        
+        FileObject ddFolder = jaxWsSupport.getDeploymentDescriptorFolder();
+        FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml");
+        Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
+        Endpoint endpoint = endpoints.newEndpoint();
+        endpoint.setEndpointName(MEX_NAME);
+        endpoint.setImplementation(MEX_CLASS_NAME);
+        endpoint.setUrlPattern(mexUrl);
+        endpoints.addEnpoint(endpoint);
+        FileLock lock = null;
+        OutputStream os = null;
+        synchronized (this) {
+            try{
+                lock = sunjaxwsFile.lock();
+                os = sunjaxwsFile.getOutputStream(lock);
+                endpoints.write(os);
+            }finally{
+                if(lock != null)
+                    lock.releaseLock();
+
+                if(os != null)
+                    os.close();
             }
         }
         

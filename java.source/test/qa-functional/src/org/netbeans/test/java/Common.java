@@ -67,6 +67,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -108,12 +109,12 @@ public class Common extends Object {
     public static Map<String,String> PARS3;
     
     static {
-        PARS1 = new HashMap<String, String>();
+        PARS1 = new TreeMap<String, String>();
         PARS1.put("param1","int");
-        PARS2 = new HashMap<String, String>();
+        PARS2 = new TreeMap<String, String>();
         PARS2.put("param1","int");
         PARS2.put("param2","int");
-        PARS3 = new HashMap<String, String>();
+        PARS3 = new TreeMap<String, String>();
         PARS3.put("param1","float");
         PARS3.put("param2","int");
         PARS3.put("param3","String");

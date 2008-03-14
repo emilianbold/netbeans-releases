@@ -39,16 +39,18 @@
 
 package org.netbeans.modules.cnd.editor.reformat;
 
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -66,38 +68,69 @@ public class Reformatter implements ReformatTask {
 
     public Reformatter(Document doc, CodeStyle codeStyle) {
         this.doc = doc;
-         this.codeStyle = codeStyle;
+        this.codeStyle = codeStyle;
     }
 
     public void reformat() throws BadLocationException {
         if (codeStyle == null){
-            codeStyle = CodeStyle.getDefault(null);
+            codeStyle = CodeStyle.getDefault(doc);
         }
         if (context != null) {
             for (Context.Region region : context.indentRegions()) {
                 reformatImpl(region);
             }
         } else {
-            int startOffset = doc.getLength();
-            TokenHierarchy th = TokenHierarchy.get(doc);
-            TokenSequence<CppTokenId> ts = th != null ? CndLexerUtilities.getCppTokenSequence(th, startOffset) : null;
-            if (ts != null) {
-                reformatImpl(ts, 0, startOffset);
+            int endOffset = doc.getLength();
+            TokenHierarchy hierarchy = TokenHierarchy.get(doc);
+            if (hierarchy == null) {
+                return;
             }
+            reformatImpl(hierarchy, 0, endOffset);
         }
     }
-    
-        
+
     private void reformatImpl(Context.Region region) throws BadLocationException {
         int startOffset = region.getStartOffset();
         int endOffset = region.getEndOffset();
-        if (!("text/x-c++".equals(context.mimePath())||
-              "text/x-c".equals(context.mimePath()))) { //NOI18N
-            TokenHierarchy th = TokenHierarchy.get(doc);
-            TokenSequence<CppTokenId> ts = th != null ? CndLexerUtilities.getCppTokenSequence(th, startOffset) : null;
-            if (ts != null) {
-                reformatImpl(ts, startOffset, endOffset);
+        if ("text/x-c++".equals(context.mimePath())) { //NOI18N
+            reformatLanguage(CppTokenId.languageCpp(), startOffset, endOffset);
+        } else if ("text/x-c".equals(context.mimePath())) { //NOI18N
+            reformatLanguage(CppTokenId.languageC(), startOffset, endOffset);
+        }
+    }
+
+    private void reformatLanguage(Language<CppTokenId> language, int startOffset, int endOffset) throws BadLocationException {
+        TokenHierarchy hierarchy = TokenHierarchy.create(doc.getText(0, doc.getLength()), language);
+        if (hierarchy == null) {
+            return;
+        }
+        reformatImpl(hierarchy, startOffset, endOffset);
+    }
+
+                
+    private void reformatImpl(TokenHierarchy hierarchy, int startOffset, int endOffset) throws BadLocationException {
+        TokenSequence<?> ts = hierarchy.tokenSequence();
+        ts.move(startOffset);
+        if (ts.moveNext() && ts.token().id() != CppTokenId.NEW_LINE){
+            while (ts.movePrevious()){
+                startOffset = ts.offset();
+                if (ts.token().id() != CppTokenId.NEW_LINE) {
+                    break;
+                }
             }
+        }
+        while (ts != null && (startOffset == 0 || ts.moveNext())) {
+            ts.move(startOffset);
+            if (ts.language() == CppTokenId.languageC() ||
+                ts.language() == CppTokenId.languageCpp() ||
+                ts.language() == CppTokenId.languagePreproc()) {
+                reformatImpl((TokenSequence<CppTokenId>) ts, startOffset, endOffset);
+                return;
+            }
+            if (!ts.moveNext() && !ts.movePrevious()) {
+                return;
+            }
+            ts = ts.embedded();
         }
     }
     
@@ -110,12 +143,21 @@ public class Reformatter implements ReformatTask {
                 continue;
             }
             if (endOffset < end) {
-                if (text != null && text.length() > 0)
+                if (text != null && text.length() > 0) {
                     text = end - endOffset >= text.length() ? null : 
                            text.substring(0, text.length() - end + endOffset);
+                }
                 end = endOffset;
             }
             if (end - start > 0) {
+                if (!checkRemoved(doc.getText(start, end - start))){
+                    // Reformat failed
+                    Logger log = Logger.getLogger("org.netbeans.modules.cnd.editor"); // NOI18N
+                    String error = NbBundle.getMessage(Reformatter.class, "REFORMATTING_FAILED", // NOI18N
+                            doc.getText(start, end - start), diff.toString());
+                    log.severe(error);
+                    break;
+                }
                 doc.remove(start, end - start);
             }
             if (text != null && text.length() > 0) {
@@ -124,6 +166,28 @@ public class Reformatter implements ReformatTask {
         }
     }
 
+    private boolean checkRemoved(String whatRemoved){
+        for(int i = 0; i < whatRemoved.length(); i++){
+            char c = whatRemoved.charAt(i);
+            switch(c){
+                case ' ':
+                case '\n':
+                case '\t':
+                case '\r':
+                case '\f':
+                case 0x0b:
+                case 0x1c:
+                case 0x1d:
+                case 0x1e:
+                case 0x1f:
+                    break;
+                default:
+                    return false;
+            }
+        }
+        return true;
+    }
+    
     public ExtraLock reformatLock() {
         return new Lock();
     }
@@ -142,12 +206,14 @@ public class Reformatter implements ReformatTask {
     static class Diff {
         private int start;
         private int end;
-        private String text;
+        private int newLines;
+        private int spaces;
 
-        Diff(int start, int end, String text) {
+        Diff(int start, int end, int newLines, int spaces) {
             this.start = start;
             this.end = end;
-            this.text = text;
+            this.spaces = spaces;
+            this.newLines = newLines;
         }
 
         public int getStartOffset() {
@@ -159,12 +225,42 @@ public class Reformatter implements ReformatTask {
         }
 
         public String getText() {
-            return text;
+            return repeatChar(newLines, '\n')+repeatChar(spaces, ' '); // NOI18N
+        }
+
+        public void setText(int newLines, int spaces) {
+            this.newLines = newLines;
+            this.spaces = spaces;
+        }
+        
+        public void replaceSpaces(int spaces){
+            this.spaces = spaces;
+        }
+
+        public boolean hasNewLine(){
+            return newLines > 0;
+        }
+
+        public int spaceLength() {
+            return spaces;
         }
 
         @Override
         public String toString() {
-            return "Diff<" + start + "," + end + ">:" + text; //NOI18N
+            return "Diff<" + start + "," + end + ">: newLines="+newLines+" spaces="+spaces; //NOI18N
+        }
+
+        public static String repeatChar(int length, char c){
+            StringBuilder buf = new StringBuilder(length);
+            for (int i = 0; i < length; i++) {
+                buf.append(c);
+            }
+            return buf.toString();
+        }
+
+        public static boolean equals(String text, int newLines, int spaces){
+           String space = repeatChar(newLines, '\n')+repeatChar(spaces, ' '); // NOI18N
+           return text.equals(space);
         }
     }
 }

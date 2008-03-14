@@ -1,0 +1,88 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2008 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>JSF 1.2 Accordion Component</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>JSF 1.2 Accordion Component</h2>
+<p><small><a href="#seealso">See Also  </a></small>
+
+
+
+<p>The Accordion component <img src="../../../images/accordion.png" alt="Accordion component icon">&nbsp;is an interface element similar to a vertical set of tabs - when you click on the header of an accordion panel, the header animate either up or down to reveal its associated container. The Accordion component generally tends to have a depth of one level unlike tabs where multilevel tabsets exist. Being rendered vertically, there is space to accommodate more markup than simply the name of the tab. Thus an accordion tab can contain a lot more information than a normal tab ususally does. The Accordion component is the container for <a href="accordiontab.html">Accordion Tab components</a>. </p>
+<ul class="note">
+      <li>
+        This component is a JavaServer Faces 1.2 component. You see components that use this
+        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,
+        see:<br>
+         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value=
+          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">
+          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>
+      </li>
+</ul>
+
+
+<p>After dragging the button to from the Woodstock Composite category of the Palette to the Visual Designer, you can:</p>
+<ul>
+  <li>Select the Accordion component and edit its properties in the Accordion's <a href="propsheets/accordion_props.html">Properties window</a>. Some typical properties you might set are:
+	  <ul>
+		  <li><b>id.</b> The name of the component. In the JSP file, this name is the value of the component's <code>id</code> attribute. In the page bean, this property's value is the name of the <code>Accordion</code> object.</li>
+		  <li><b>multipleSelect.</b> When selected, multiple tabs can be selected at the same time. When you deslect this property,  only one tab can be selected at a time.</li>
+          <li><strong>toggleControls.</strong> When selected, the user has the option to expand and collapse the  accordion. </li>
+    </ul>
+  </li>
+  <li>Right-click the Accordion component and choose one of several actions:
+    <ul>
+			<li> <b>Add Accordion Tab.</b> When you choose Add Accordion Tab, an Accordion Tab component is added to the Accordion component. The added Accordion Tab is selected by default. You can add as many tabs as your project requires. </li>
+			<li><b>Add Binding Attribute. </b>This option adds a binding attribute to the component. <br>
+<ul>
+  <li><b>Note: </b>If you plan to script the component in Java code, you  must manually add a binding attribute, which is bound using a value binding expression to a property of the backing page bean.</li>
+</ul>
+</li>
+			<li><strong>Remove Binding Attribute.</strong> This option removes the binding attribute from the component. </li>
+			<li><b>Snap to Grid</b>. This option aligns the Accordion component along the grid lines in the Visual Designer.</li>
+		    <li> <b>Preview in Browser</b>. See how the page renders in the default web browser for your system. </li>
+    </ul>
+  </li>
+</ul>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>  
+<dd><a href="propsheets/accordion_props.html">Accordion Component Properties Window</a></dd>
+<dd><a href="propsheets/accordiontab.html">Accordion Tab Component</a></dd>
+<dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+	<dd><a href="../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+	
+	<dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Alert Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+  <tr>
+  <td>&nbsp;</td>
+  </tr>
+</table>
+
+</body>
+</html>
+

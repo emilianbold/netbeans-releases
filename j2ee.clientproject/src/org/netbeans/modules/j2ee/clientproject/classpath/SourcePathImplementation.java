@@ -49,10 +49,10 @@ import java.util.Collections;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.modules.j2ee.clientproject.SourceRoots;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.Exceptions;
@@ -129,6 +129,13 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                             result.add(ClassPathSupport.createResource(url));
                             // generated/wsimport/client
                             f = new File (projectHelper.resolveFile(buildDir),"generated/wsimport/client"); //NOI18N
+                            url = f.toURI().toURL();
+                            if (!f.exists()) {  //NOI18N
+                                assert !url.toExternalForm().endsWith("/");  //NOI18N
+                                url = new URL (url.toExternalForm()+'/');   //NOI18N
+                            }
+                            result.add(ClassPathSupport.createResource(url));
+                             f = new File (projectHelper.resolveFile(buildDir),"generated/wsimport/binaries"); //NOI18N
                             url = f.toURI().toURL();
                             if (!f.exists()) {  //NOI18N
                                 assert !url.toExternalForm().endsWith("/");  //NOI18N

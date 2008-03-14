@@ -402,6 +402,27 @@ void removeItselfUsingCmd() {
     
 }
 
+void changeCurrentDirectory() {
+    WCHAR * currentFile = LocalAlloc(LPTR, sizeof(WCHAR) * MAX_PATH);    
+    if (GetModuleFileNameW(0, currentFile, MAX_PATH)) {
+        WCHAR * ptr = currentFile;
+        DWORD i=0;
+        DWORD len=0;
+        WCHAR * parent;
+        while(search(ptr, L"\\")!=NULL) {
+            ptr = search(ptr, L"\\") + 1;
+        }
+        len = lstrlenW(currentFile) - lstrlenW(ptr) - 1;
+        parent = LocalAlloc(LPTR, sizeof(WCHAR) * (len + 1));
+        for(i=0;i<len;i++) {
+            parent[i] = currentFile[i];
+        }
+        parent[len] = 0;
+        SetCurrentDirectoryW(parent);
+        LocalFree(parent);
+    }
+    LocalFree(currentFile);
+}
 
 // should be less or equals to MAXIMUM_WAIT_OBJECTS
 #define MAXIMUM_THREADS MAXIMUM_WAIT_OBJECTS
@@ -418,7 +439,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hi, PSTR pszCmdLine, int nCmd
     for(i=0;i<MAXIMUM_THREADS;i++) {
         runningThreads[i] = INVALID_HANDLE_VALUE;
     }
-    
+    changeCurrentDirectory();
     
     if(argumentsNumber==2) {
         WCHAR * filename = commandLine[1];

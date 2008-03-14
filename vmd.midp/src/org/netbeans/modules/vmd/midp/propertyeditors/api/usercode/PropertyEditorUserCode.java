@@ -38,9 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midp.propertyeditors.api.usercode;
 
+import java.awt.event.FocusEvent;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ui.DialogBinding;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
@@ -59,8 +59,14 @@ import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import javax.swing.text.Keymap;
+import javax.swing.undo.UndoManager;
+import org.netbeans.editor.ActionFactory;
+import org.netbeans.editor.BaseDocument;
 
 /**
  * This class allows create PropertyEditor which supports User Code.
@@ -78,7 +84,6 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
     public static final String USER_CODE_TEXT = NbBundle.getMessage(PropertyEditorUserCode.class, "LBL_STRING_USER_CODE"); // NOI18N
     private static final Icon ICON_WARNING = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/warning.gif")); // NOI18N
     private static final Icon ICON_ERROR = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
-    
     private final CustomEditor customEditor;
     private JRadioButton userCodeRadioButton;
     private final JLabel messageLabel;
@@ -232,11 +237,53 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
         messageLabel.setIcon(null);
     }
 
-    private final class CustomEditor extends JPanel implements DocumentListener, ActionListener {
+    private static void setupTextUndoRedo(javax.swing.text.JTextComponent editor) {
+        String os = System.getProperty("os.name").toLowerCase(); //NOI18N
+
+        KeyStroke[] undoKeys = null;
+        KeyStroke[] redoKeys = null;
+
+        if (os.indexOf("mac") != -1) { //NOI18N
+            undoKeys = new KeyStroke[]{KeyStroke.getKeyStroke(KeyEvent.VK_UNDO, 0),
+                KeyStroke.getKeyStroke(KeyEvent.VK_Z, Event.META_MASK)
+            };
+            redoKeys = new KeyStroke[]{KeyStroke.getKeyStroke(KeyEvent.VK_AGAIN, 0),
+                KeyStroke.getKeyStroke(KeyEvent.VK_Y, Event.META_MASK)
+            };
+        } else {
+            undoKeys = new KeyStroke[]{KeyStroke.getKeyStroke(KeyEvent.VK_UNDO, 0),
+                KeyStroke.getKeyStroke(KeyEvent.VK_Z, 130)
+            };
+            redoKeys = new KeyStroke[]{KeyStroke.getKeyStroke(KeyEvent.VK_AGAIN, 0),
+                KeyStroke.getKeyStroke(KeyEvent.VK_Y, 130)
+            };
+        }
+
+        Keymap keymap = editor.getKeymap();
+        Action undoAction = new ActionFactory.UndoAction();
+        for (KeyStroke k : undoKeys) {
+            keymap.removeKeyStrokeBinding(k);
+            keymap.addActionForKeyStroke(k, undoAction);
+        }
+        Action redoAction = new ActionFactory.RedoAction();
+        for (KeyStroke k : redoKeys) {
+            keymap.removeKeyStrokeBinding(k);
+            keymap.addActionForKeyStroke(k, redoAction);
+        }
+        Object currentUM = editor.getDocument().getProperty(BaseDocument.UNDO_MANAGER_PROP);
+        if (currentUM instanceof UndoManager) {
+            editor.getDocument().removeUndoableEditListener((UndoManager) currentUM);
+        }
+        UndoManager um = new UndoManager();
+        editor.getDocument().addUndoableEditListener(um);
+        editor.getDocument().putProperty(BaseDocument.UNDO_MANAGER_PROP, um);
+    }
+
+    private final class CustomEditor extends JPanel implements DocumentListener, ActionListener, FocusListener {
 
         private Collection<PropertyEditorElement> elements;
         private JEditorPane userCodeEditorPane;
-        
+
         public void init(Collection<PropertyEditorElement> elements) {
             this.elements = elements;
             initComponents();
@@ -274,7 +321,12 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
             }
 
             userCodeRadioButton = new JRadioButton();
-            Mnemonics.setLocalizedText(userCodeRadioButton, NbBundle.getMessage(PropertyEditorUserCode.class, "LBL_USER_CODE", userCodeLabel)); // NOI18N
+            Mnemonics.setLocalizedText(userCodeRadioButton, NbBundle.getMessage(
+                    PropertyEditorUserCode.class, "LBL_USER_CODE", userCodeLabel)); // NOI18N
+            userCodeRadioButton.getAccessibleContext().setAccessibleName(
+                    NbBundle.getMessage(PropertyEditorUserCode.class, "ACSN_USER_CODE", userCodeLabel)); //NOI18N
+            userCodeRadioButton.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(PropertyEditorUserCode.class, "ACSD_USER_CODE", userCodeLabel)); //NOI18N
             userCodeRadioButton.addActionListener(this);
             buttonGroup.add(userCodeRadioButton);
 
@@ -286,9 +338,9 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
             constraints.weighty = 0.0;
             constraints.fill = GridBagConstraints.HORIZONTAL;
             add(userCodeRadioButton, constraints);
-
             JScrollPane jsp = new JScrollPane();
             userCodeEditorPane = new JEditorPane();
+            userCodeEditorPane.addFocusListener(this);
             //userCodeEditorPane.setFont(userCodeRadioButton.getFont());
             SwingUtilities.invokeLater(new Runnable() {
 
@@ -335,6 +387,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
                 swingDoc.putProperty(Document.StreamDescriptionProperty, context.getDataObject());
                 int offset = CodeUtils.getMethodOffset(context);
                 DialogBinding.bindComponentToFile(context.getDataObject().getPrimaryFile(), offset, 0, userCodeEditorPane);
+                PropertyEditorUserCode.setupTextUndoRedo(userCodeEditorPane);
             }
         }
 
@@ -418,6 +471,17 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
             if (!wasSelected) {
                 userCodeEditorPane.requestFocus();
             }
+        }
+
+        public void focusGained(FocusEvent e) {
+            if (e.getSource() == userCodeEditorPane) {
+                userCodeRadioButton.setSelected(true);
+            }
+
+        }
+
+        public void focusLost(FocusEvent e) {
+
         }
     }
 }

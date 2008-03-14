@@ -87,7 +87,6 @@ import com.sun.sql.framework.jdbc.DBConstants;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
@@ -101,7 +100,7 @@ import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
  */
 public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutputPanel {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(SQLStatementPanel.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SQLStatementPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private JButton[] btn = new JButton[1];
 
@@ -127,10 +126,10 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
 
         /** Must be executed in AWT Thread and before stopProgressBar() is called. **/
         protected void startProgressBar() {
-            String nbBundle1 = mLoc.t("PRSR001: Show SQL");
-            String title = Localizer.parse(nbBundle1);
-            String nbBundle2 = mLoc.t("PRSR001: Generating SQL, please wait...");
-            String message = Localizer.parse(nbBundle2);
+            String nbBundle1 = mLoc.t("BUND365: Show SQL");
+            String title = nbBundle1.substring(15);
+            String nbBundle2 = mLoc.t("BUND366: Generating SQL, please wait...");
+            String message = nbBundle2.substring(15);
             UIUtil.startProgressDialog(title, message);
         }
 
@@ -160,8 +159,8 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
                 StatementContext context = new StatementContext();
 
                 if (sqlObjectLocalRef.getObjectType() == SQLConstants.SOURCE_TABLE) {
-                    String nbBundle3 = mLoc.t("PRSR001: -- Select statement for Source Table");
-                    sql = Localizer.parse(nbBundle3);
+                    String nbBundle3 = mLoc.t("BUND367: -- Select statement for Source Table {0}", NL);
+                    sql = nbBundle3.substring(15);
                     sql += db.getStatements().getSelectStatement((SourceTable) sqlObj, context).getSQL();
                 } else {
                     context.setUseSourceTableAliasName(true);
@@ -174,10 +173,10 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
 
             } catch (Exception exp) {
                 this.ex = exp;
-                String nbBundle4 = mLoc.t("PRSR001: Cannot evaluate SQL:{0}", sqlObj.getDisplayName());
-                sqlText = Localizer.parse(nbBundle4);
-                mLogger.errorNoloc(mLoc.t("PRSR151: Cannot evaluate SQL for{0}", sqlObj.getDisplayName()), ex);
-                mLogger.errorNoloc(mLoc.t("PRSR152: Can't get contents for table{0}", (sqlObj != null) ? sqlObj.getDisplayName() : ""), ex);
+                String nbBundle4 = mLoc.t("BUND368: Cannot evaluate SQL:{0}", sqlObj.getDisplayName());
+                sqlText = nbBundle4.substring(15);
+                mLogger.errorNoloc(mLoc.t("EDIT171: Cannot evaluate SQL for{0}", sqlObj.getDisplayName()), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT177: Can't get contents for table{0}", (sqlObj != null) ? sqlObj.getDisplayName() : ""), ex);
 
             }
             return "";
@@ -189,8 +188,8 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
             SQLStatementPanel.this.textArea.setText(this.sqlText);
             stopProgressBar();
             if (this.ex != null) {
-                String nbBundle5 = mLoc.t("PRSR001: Error fetching data for table {0}.\nCause: {1}", sqlObj.getDisplayName(), this.ex.getMessage());
-                String errorMsg = Localizer.parse(nbBundle5);
+                String nbBundle5 = mLoc.t("BUND369: Error fetching data for table {0}.Cause: {1}", sqlObj.getDisplayName(), this.ex.getMessage());
+                String errorMsg = nbBundle5.substring(15);
                 DialogDisplayer.getDefault().notify(new Message(errorMsg, NotifyDescriptor.ERROR_MESSAGE));
             }
         }
@@ -222,8 +221,8 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
         putClientProperty("TabPolicy", "HideWhenAlone"); //NOI18N
         putClientProperty("PersistenceType", "Never"); //NOI18N
         this.setLayout(new BorderLayout());
-        String nbBundle6 = mLoc.t("PRSR001: SQL: {0}", obj.getDisplayName());
-        this.setName(Localizer.parse(nbBundle6));
+        String nbBundle6 = mLoc.t("BUND370: SQL: {0}", obj.getDisplayName());
+        this.setName(nbBundle6.substring(15));
 
 
         JPanel panel = new JPanel();
@@ -234,8 +233,9 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
         toolbar.setFloatable(false);
         panel.add(toolbar);
 
-        String nbBundle7 = mLoc.t("PRSR001: Database Type:");
-        JLabel dbTypeLabel = new JLabel(Localizer.parse(nbBundle7));
+        String nbBundle7 = mLoc.t("BUND371: Database Type:");
+        JLabel dbTypeLabel = new JLabel(nbBundle7.substring(15));
+        dbTypeLabel.getAccessibleContext().setAccessibleName(nbBundle7.substring(15));
         dbTypeLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
         toolbar.add(dbTypeLabel);
 
@@ -256,6 +256,7 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
         //add refresh button
         URL url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/refresh.png");
         refreshButton = new JButton(new ImageIcon(url));
+        refreshButton.setMnemonic('R');
         refreshButton.setToolTipText("Refresh SQL");
         refreshButton.addActionListener(aListener);
         btn[0] = refreshButton;
@@ -351,8 +352,8 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
 
     public void updateSQLObject(SQLObject obj) {
         this.sqlObj = obj;
-        String nbBundle8 = mLoc.t("PRSR001: SQL: {0}", obj.getDisplayName());
-        this.setName(Localizer.parse(nbBundle8));
+        String nbBundle8 = mLoc.t("BUND370: SQL: {0}", obj.getDisplayName());
+        this.setName(nbBundle8.substring(15));
     }
 
     private String getDBType(SQLObject obj) {

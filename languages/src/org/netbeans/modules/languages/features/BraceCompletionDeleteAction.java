@@ -55,6 +55,7 @@ import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
+import org.netbeans.modules.languages.Utils;
 import org.openide.ErrorManager;
 
 
@@ -69,55 +70,40 @@ public class BraceCompletionDeleteAction extends ExtDeleteCharAction {
     }
 
     protected void charBackspaced (
-        BaseDocument doc, int dotPos, Caret caret, char ch
+        BaseDocument        document, 
+        int                 offset, 
+        Caret               caret, 
+        char                character
     ) throws BadLocationException {
-        try {
-            String mimeType = (String) doc.getProperty ("mimeType");
-            TokenHierarchy th = TokenHierarchy.get (doc);
-            if (th == null) return;
-            if (doc instanceof NbEditorDocument)
-                ((NbEditorDocument) doc).readLock ();
+        TokenSequence tokenSequence = Utils.getTokenSequence (document, offset);
+        if (tokenSequence != null) {
+            String mimeType = tokenSequence.language ().mimeType ();
             try {
-                TokenSequence ts = th.tokenSequence ();
-                if (ts == null) return;
-                while (true) {
-                    ts.move (caret.getDot ());
-                    if (!ts.moveNext ()) return;
-                    TokenSequence ts2 = ts.embedded ();
-                    if (ts2 == null) break;
-                    ts = ts2;
+                Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
+                List<Feature> completes = l.getFeatureList ().getFeatures ("COMPLETE");
+                Iterator<Feature> it = completes.iterator ();
+                while (it.hasNext ()) {
+                    Feature complete = it.next ();
+                    if (complete.getType () != Feature.Type.STRING)
+                        continue;
+                    String s = (String) complete.getValue ();
+                    int i = s.indexOf (':');
+                    if (i != 1) continue;
+                    String ss = document.getText (
+                        caret.getDot (), 
+                        s.length () - i - 1
+                    );
+                    if (s.endsWith (ss) && 
+                        s.charAt (0) == character
+                    ) {
+                        document.remove (caret.getDot (), s.length () - i - 1);
+                        return;
+                    }
                 }
-                mimeType = ts.language ().mimeType ();
-            } finally {
-                if (doc instanceof NbEditorDocument)
-                    ((NbEditorDocument) doc).readUnlock ();
+            } catch (LanguageDefinitionNotFoundException ex) {
+                // ignore the exception
             }
-            Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
-            List<Feature> completes = l.getFeatureList ().getFeatures ("COMPLETE");
-            Iterator<Feature> it = completes.iterator ();
-            while (it.hasNext ()) {
-                Feature complete = it.next ();
-                if (complete.getType () != Feature.Type.STRING)
-                    continue;
-                String s = (String) complete.getValue ();
-                int i = s.indexOf (':');
-                if (i != 1) continue;
-                String ss = doc.getText (
-                    caret.getDot (), 
-                    s.length () - i - 1
-                );
-                if (s.endsWith (ss) && 
-                    s.charAt (0) == ch
-                ) {
-                    doc.remove (caret.getDot (), s.length () - i - 1);
-                    return;
-                }
-            }
-        } catch (LanguageDefinitionNotFoundException ex) {
-            // ignore the exception
-            super.charBackspaced (doc, dotPos, caret, ch);
-        } catch (ParseException ex) {
-            ErrorManager.getDefault ().notify (ex);
         }
+        super.charBackspaced (document, offset, caret, character);
     }
 }

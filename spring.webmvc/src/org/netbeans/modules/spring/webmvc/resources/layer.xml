@@ -45,7 +45,26 @@ made subject to such option by the copyright holder.
     <folder name="j2ee">
         <folder name="webtier">
             <folder name="framework">
-                <file name="org-netbeans-modules-spring-webmvc-SpringWebFrameworkProvider.instance"/>
+                <file name="org-netbeans-modules-spring-webmvc-SpringWebFrameworkProvider.instance">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="spring-webmvc-2.5.xml" url="spring-webmvc-2.5.xml"/>
+        </folder>
+    </folder>
+    <folder name="Projects">
+        <folder name="org-codehaus-mevenide-netbeans">
+            <folder name="Lookup">
+                <file name="org-netbeans-modules-spring-webmvc-ProjectLookupProvider.instance"/>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-web-project">
+            <folder name="Lookup">
+                <file name="org-netbeans-modules-spring-webmvc-ProjectLookupProvider.instance"/>
             </folder>
         </folder>
     </folder>
@@ -59,6 +78,7 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="servlet-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/webmvc/resources/abstractController.html"/>
+                <attr name="position" intvalue="200"/>
             </file>
             <file name="SimpleFormController.java" url="templates/SimpleFormController.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.webmvc.resources.Bundle"/>
@@ -68,6 +88,19 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="servlet-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/webmvc/resources/simpleFormController.html"/>
+                <attr name="position" intvalue="300"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="SpringFramework">
+        <folder name="Templates">
+            <file name="applicationContext.xml" url="templates/applicationContext.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="template" boolvalue="true"/>
+            </file>
+            <file name="dispatcher-servlet.xml" url="templates/dispatcher-servlet.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="template" boolvalue="true"/>
             </file>
         </folder>
     </folder>

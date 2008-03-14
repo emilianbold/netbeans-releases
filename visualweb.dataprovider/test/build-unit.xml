@@ -52,9 +52,9 @@ made subject to such option by the copyright holder.
     <echo message="Pause..."/>
     <sleep seconds="1"/>
 
-<property name="dataprovider.libdir" value="../../nbbuild/netbeans/visualweb1/modules/ext"/>
+<property name="dataprovider.libdir" value="../../nbbuild/netbeans/visualweb2/modules/ext"/>
 <property name="dataprovider.libfile" value="dataprovider.jar"/>
-<property name="rowset.libdir" value="../../nbbuild/netbeans/visualweb1/modules/ext"/>
+<property name="rowset.libdir" value="../../nbbuild/netbeans/visualweb2/modules/ext"/>
 <property name="rowset.libfile" value="sqlx.jar"/>
 
 <path id="derby_jar_path">

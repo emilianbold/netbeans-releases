@@ -52,6 +52,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -78,7 +79,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoints;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Handler;
 import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChain;
@@ -101,6 +101,7 @@ import org.netbeans.modules.websvc.jaxws.api.JaxWsRefreshCookie;
 import org.netbeans.modules.websvc.jaxws.api.JaxWsTesterCookie;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -121,13 +122,18 @@ import org.openide.util.lookup.InstanceContent;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoint;
 import org.netbeans.modules.websvc.api.jaxws.project.config.EndpointsProvider;
 import org.netbeans.modules.websvc.core.WsWsdlCookie;
+import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsGenWSDLAction;
+import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsGenWSDLImpl;
 import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
-public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTesterCookie, ConfigureHandlerCookie {
+public class JaxWsNode extends AbstractNode implements 
+        WsWsdlCookie, JaxWsTesterCookie, ConfigureHandlerCookie {
 
     Service service;
     FileObject srcRoot;
@@ -147,21 +153,27 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         this.srcRoot = srcRoot;
         this.content = content;
         this.implBeanClass = implBeanClass;
+        project = FileOwnerQuery.getOwner(srcRoot);
         if (implBeanClass.getAttribute("jax-ws-service") == null) {
             try {
                 implBeanClass.setAttribute("jax-ws-service", java.lang.Boolean.TRUE);
                 getDataObject().setValid(false);
             } catch (PropertyVetoException ex) {
+                ErrorManager.getDefault().notify(ex);
             } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
             }
         }
-        setName(service.getName());
+        String serviceName = service.getName();
+        setName(serviceName);
         content.add(this);
         content.add(service);
         content.add(implBeanClass);
         content.add(new EditWSAttributesCookieImpl(this, jaxWsModel));
         if (service.getWsdlUrl() != null) {
             content.add(new RefreshServiceImpl());
+        } else {
+            content.add(new JaxWsGenWSDLImpl(project, serviceName));
         }
         OpenCookie cookie = new OpenCookie() {
 
@@ -173,7 +185,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
             }
         };
         content.add(cookie);
-        project = FileOwnerQuery.getOwner(srcRoot);
+        setValue("wsdl-url", getWsdlURL());
     }
 
     @Override
@@ -189,16 +201,13 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
     public String getShortDescription() {
         return getWsdlURL();
     }
-    
     private static final String WAITING_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/waiting.png"; // NOI18N
     private static final String ERROR_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/error-badge.gif"; //NOI18N
-    private static final String SERVICE_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif"; //NOI18N
-
-    
+    private static final String SERVICE_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.png"; //NOI18N
     private java.awt.Image cachedWaitingBadge;
     private java.awt.Image cachedErrorBadge;
     private java.awt.Image cachedServiceBadge;
-    
+
     @Override
     public java.awt.Image getIcon(int type) {
         WsdlModeler wsdlModeler = ((JaxWsChildren) getChildren()).getWsdlModeler();
@@ -219,24 +228,26 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
             }
         }
     }
-    
+
     private java.awt.Image getServiceImage() {
         if (cachedServiceBadge == null) {
             cachedServiceBadge = org.openide.util.Utilities.loadImage(SERVICE_BADGE);
-        }            
-        return cachedServiceBadge;        
+        }
+        return cachedServiceBadge;
     }
+
     private java.awt.Image getErrorBadge() {
         if (cachedErrorBadge == null) {
             cachedErrorBadge = org.openide.util.Utilities.loadImage(ERROR_BADGE);
-        }            
-        return cachedErrorBadge;        
+        }
+        return cachedErrorBadge;
     }
+
     private java.awt.Image getWaitingBadge() {
         if (cachedWaitingBadge == null) {
             cachedWaitingBadge = org.openide.util.Utilities.loadImage(WAITING_BADGE);
-        }            
-        return cachedWaitingBadge;        
+        }
+        return cachedWaitingBadge;
     }
 
     void changeIcon() {
@@ -282,7 +293,37 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
     // Create the popup menu:
     @Override
     public Action[] getActions(boolean context) {
-        return new SystemAction[]{SystemAction.get(OpenAction.class), SystemAction.get(JaxWsRefreshAction.class), null, SystemAction.get(AddOperationAction.class), null, SystemAction.get(WsTesterPageAction.class), null, SystemAction.get(WSEditAttributesAction.class), null, SystemAction.get(ConfigureHandlerAction.class), null, SystemAction.get(DeleteAction.class), null, SystemAction.get(PropertiesAction.class)};
+        DataObject dobj = getCookie(DataObject.class);
+        ArrayList<Action> actions = new ArrayList<Action>(Arrays.asList(
+                SystemAction.get(OpenAction.class),
+                SystemAction.get(JaxWsRefreshAction.class),
+                null,
+                SystemAction.get(AddOperationAction.class),
+                null,
+                SystemAction.get(WsTesterPageAction.class),
+                null,
+                SystemAction.get(WSEditAttributesAction.class),
+                null,
+                SystemAction.get(ConfigureHandlerAction.class),
+                null,
+                SystemAction.get(JaxWsGenWSDLAction.class),
+                null,
+                SystemAction.get(DeleteAction.class),
+                null,
+                SystemAction.get(PropertiesAction.class)));
+        addFromLayers(actions, "WebServices/Services/Actions");
+        return actions.toArray(new Action[actions.size()]);
+    }
+
+    private void addFromLayers(List<Action> actions, String path) {
+        Lookup look = Lookups.forPath(path);
+        for (Object next : look.lookupAll(Object.class)) {
+            if (next instanceof Action) {
+                actions.add((Action) next);
+            } else if (next instanceof javax.swing.JSeparator) {
+                actions.add(null);
+            }
+        }
     }
 
     @Override
@@ -512,7 +553,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
             if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
                 foundWsAnnotation = true;
                 Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry: expressions.entrySet()) {
+                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : expressions.entrySet()) {
                     if (entry.getKey().getSimpleName().contentEquals("serviceName")) {
                         serviceName[0] = (String) expressions.get(entry.getKey()).getValue();
                         if (serviceName[0] != null) {
@@ -814,6 +855,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         return new WebServiceTransferable(new WebServiceReference(url, service.getWsdlUrl() != null ? service.getServiceName() : service.getName(), project.getProjectDirectory().getName()));
     }
 
+ 
     private class RefreshServiceImpl implements JaxWsRefreshCookie {
 
         /**

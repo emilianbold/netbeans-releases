@@ -54,11 +54,9 @@ import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.text.Line.Part;
-import org.openide.util.RequestProcessor;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /*
@@ -89,7 +87,7 @@ public class ToolTipAnnotation extends Annotation {
         if (dob == null) {
             return null;
         }
-        EditorCookie ec = (EditorCookie) dob.getCookie(EditorCookie.class);
+        EditorCookie ec = dob.getCookie(EditorCookie.class);
         if (ec == null) {
             return null;
         }
@@ -109,34 +107,12 @@ public class ToolTipAnnotation extends Annotation {
             }
             try {
                 // There is a small window during debugger startup when getGdbProxy() returns null
-                int token = debugger.evaluate(expression);
-                debugger.completeToolTip(token, this);
+                return debugger.evaluateToolTip(expression);
             } catch (NullPointerException npe) {
             }
         } catch (IOException e) {
         }
         return null;
-    }
-
-    public void postToolTip(String value) {
-        if (expression == null) {
-            return;
-        }
-        int i = expression.indexOf('\n');
-        if (i >= 0) {
-            expression = expression.substring(0, i);
-        }
-        if (value.startsWith(">The program being debugged was signaled while in a function called from GDB.")) { // NOI18N
-           value = NbBundle.getMessage(GdbDebugger.class, "ERR_WatchedFunctionAborted"); // NOI18N
-           value = '>' + value + '<';
-        }
-        
-        final String toolTipText = expression + " = " + value; // NOI18N
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                firePropertyChange(PROP_SHORT_DESCRIPTION, null, toolTipText);
-            }
-        });
     }
 
     public String getAnnotationType () {

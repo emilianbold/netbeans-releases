@@ -298,10 +298,14 @@ public class CodeFoldingSideBar extends JComponent implements SettingsChangeList
         View rootView = Utilities.getDocumentView(component);
         if (rootView == null) return;
         for (int i=0; i<fold.getFoldCount(); i++){
-            int startViewIndex = rootView.getViewIndex(fold.getFold(i).getStartOffset(), Position.Bias.Forward);
-            int endViewIndex = rootView.getViewIndex(fold.getFold(i).getEndOffset(), Position.Bias.Forward);
-            if (endViewIndex>=startIndex && startViewIndex<=endIndex)
-                collectPaintInfos((Fold)fold.getFold(i), map, level+1, startIndex, endIndex);
+            Fold childFold = fold.getFold(i);
+            int startViewIndex = rootView.getViewIndex(childFold.getStartOffset(), Position.Bias.Forward);
+            int endViewIndex = rootView.getViewIndex(childFold.getEndOffset(), Position.Bias.Forward);
+            if (endViewIndex>=startIndex && startViewIndex<=endIndex && startViewIndex <= endViewIndex
+                    && level < 20 // #90931 - prevent stack overflow by a max fold nesting level
+            ) {
+                collectPaintInfos(childFold, map, level+1, startIndex, endIndex);
+            }
         }
         int foldStartOffset = fold.getStartOffset();
         int foldEndOffset = fold.getEndOffset();
@@ -712,7 +716,14 @@ public class CodeFoldingSideBar extends JComponent implements SettingsChangeList
                 performAction(mark);
             }
         }
-        
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            // #102288 - missing event consuming caused quick doubleclicks to break
+            // fold expanding/collapsing and move caret to the particular line
+            e.consume();
+        }
+
     }
 
     class SideBarFoldHierarchyListener implements FoldHierarchyListener{

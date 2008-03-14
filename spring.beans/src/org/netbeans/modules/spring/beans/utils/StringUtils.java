@@ -130,4 +130,28 @@ public final class StringUtils {
         }
         return tokens;
     }
+
+    /**
+     * Joins a list of strings.
+     *
+     * @param strings the list of strings; can be empty, but not null.
+     * @param separator a separator; can be null.
+     * @return a string containing the joined strings; never null.
+     */
+    public static String join(List<String> strings, String separator) {
+        int size = strings.size();
+        if (size == 0) {
+            return ""; // NOI18N
+        }
+        StringBuilder sb = new StringBuilder(strings.size() * strings.get(0).length());
+        int index = 0; int lastIndex = size - 1;
+        for (String string : strings) {
+            sb.append(string);
+            if (separator != null && index < lastIndex) {
+                sb.append(separator);
+            }
+            index++;
+        }
+        return sb.toString();
+    }
 }

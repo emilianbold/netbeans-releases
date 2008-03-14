@@ -78,26 +78,13 @@ class RaveText extends TextImpl {
 //     */
 //    private RaveText alternate;
 
-    // memory leak probing
-    private static final Logger TIMERS = Logger.getLogger("TIMER.raveTexts"); // NOI18N
     
     public RaveText() {
-        if (TIMERS.isLoggable(Level.FINE)) {
-            LogRecord rec = new LogRecord(Level.FINE, "RaveText"); // NOI18N
-            rec.setParameters(new Object[]{this });
-            TIMERS.log(rec);
-        }
     }
 
     /** Factory constructor. */
     public RaveText(CoreDocumentImpl ownerDoc, String data) {
         super(ownerDoc, data);
-        
-        if (TIMERS.isLoggable(Level.FINE)) {
-            LogRecord rec = new LogRecord(Level.FINE, "RaveText"); // NOI18N
-            rec.setParameters(new Object[]{this });
-            TIMERS.log(rec);
-        }
     }
 
     // Ensure that split text nodes "inherit" the jspx attribute.

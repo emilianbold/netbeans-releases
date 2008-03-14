@@ -90,11 +90,11 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.compapp.javaee.sunresources.SunResourcesUtil;
+import org.netbeans.modules.compapp.projects.jbi.CasaHelper;
 import org.netbeans.modules.compapp.projects.jbi.ComponentHelper;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectHelper;
 import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentDocument;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 
 
@@ -909,7 +909,7 @@ public class JbiProjectProperties {
     
     private void updateAssemblyInfoAndCasa() throws Exception {        
         saveAssemblyInfo();
-//        CasaHelper.updateCasaWithJBIModules(project, this);
+        CasaHelper.updateCasaWithJBIModules(project, this);
     }
     
     

@@ -42,6 +42,8 @@ package org.netbeans;
 
 import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -51,16 +53,21 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.AssertionFailedError;
-import org.fakepkg.FakeHandler;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Exceptions;
+import org.openide.filesystems.FileUtil;
 
 /** Tests that cover some basic aspects of a Proxy/JarClassLoader.
  *
  * @author Petr Nejedly
  */
 public class JarClassLoaderTest extends NbTestCase {
+
+    private static Logger LOGGER = Logger.getLogger(ProxyClassLoader.class.getName());
+
 
     public JarClassLoaderTest(String name) {
         super(name);
@@ -71,7 +78,10 @@ public class JarClassLoaderTest extends NbTestCase {
     /** directory full of testing roots */
     protected File dirs;
 
+    @Override
     protected void setUp() throws Exception {
+        LOGGER.setUseParentHandlers(false);
+        LOGGER.setLevel(Level.OFF);
         jars = new File(JarClassLoaderTest.class.getResource("jars").getFile());
         dirs = new File(JarClassLoaderTest.class.getResource("dirs").getFile());
     }
@@ -147,6 +157,36 @@ public class JarClassLoaderTest extends NbTestCase {
         assertURLsContent(jcl.getResources("/resource.txt"), "content");
     }
 
+    public void testFromNonExistentJAR() throws Exception {
+        File jar = new File(jars, "default-package-resource.jar");
+        File snd = new File(jars, "copy.jar");
+        FileInputStream is = new FileInputStream(jar);
+        FileOutputStream os = new FileOutputStream(snd);
+        FileUtil.copy(is, os);
+        is.close();
+        os.close();
+        
+        JarClassLoader jcl = new JarClassLoader(Collections.singletonList(jar), new ProxyClassLoader[0]);
+        JarClassLoader.initializeCache();
+
+        URL u = jcl.getResource("package/resource.txt");
+        //assertURLsContent(u, "content");
+        
+        URL n = new URL(u.toExternalForm().replaceAll("default-package-resource.jar", "copy.jar"));
+        
+        assertStreamContent(u.openStream(), "content");
+        
+        CharSequence log = Log.enable("org.netbeans.JarClassLoader", Level.WARNING);
+        assertStreamContent(n.openStream(), "content");
+        if (log.toString().indexOf("Cannot find") == -1) {
+            fail("There should be a warning:\n" + log);
+        }
+
+        CharSequence log2 = Log.enable("org.netbeans.JarClassLoader", Level.WARNING);
+        assertStreamContent(n.openStream(), "content");
+        assertEquals("No second log:\n" + log2, -1, log2.toString().indexOf("Cannot find"));
+    }
+    
     private void assertURLsContent(Enumeration<URL> urls, String ... contents) throws IOException {
         for (String content : contents) {
             assertTrue("Enough entries", urls.hasMoreElements());

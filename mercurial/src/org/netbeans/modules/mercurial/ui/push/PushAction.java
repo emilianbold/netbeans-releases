@@ -51,8 +51,10 @@ import java.util.Set;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.pull.PullAction;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -73,7 +75,7 @@ import org.openide.filesystems.FileObject;
  * 
  * @author John Rice
  */
-public class PushAction extends AbstractAction {
+public class PushAction extends ContextAction {
     
     private final VCSContext context;
 
@@ -82,34 +84,20 @@ public class PushAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         final File root = HgUtils.getRootFile(context);
         if (root == null) {
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE_SEP")); // NOI18N
-            HgUtils.outputMercurialTabInRed(
+            OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
+            logger.outputInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE")); // NOI18N
+            logger.outputInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE_SEP")); // NOI18N
+            logger.outputInRed(
                     NbBundle.getMessage(PushAction.class, "MSG_PUSH_NOT_SUPPORTED_INVIEW_INFO")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
+            logger.output(""); // NOI18N
             JOptionPane.showMessageDialog(null,
                     NbBundle.getMessage(PushAction.class, "MSG_PUSH_NOT_SUPPORTED_INVIEW"),// NOI18N
                     NbBundle.getMessage(PushAction.class, "MSG_PUSH_NOT_SUPPORTED_INVIEW_TITLE"),// NOI18N
                     JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-
-        // If the repository has no default pull path then inform user
-        if(HgRepositoryContextCache.getPushDefault(context) == null && 
-                HgRepositoryContextCache.getPullDefault(context) == null){
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE_SEP")); // NOI18N
-            HgUtils.outputMercurialTab(NbBundle.getMessage(PushAction.class, "MSG_NO_DEFAULT_PUSH_SET_MSG")); // NOI18N
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
-            JOptionPane.showMessageDialog(null,
-                NbBundle.getMessage(PushAction.class,"MSG_NO_DEFAULT_PUSH_SET"),
-                NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE"),
-                JOptionPane.INFORMATION_MESSAGE);
+            logger.closeLog();
             return;
         }
 
@@ -122,33 +110,49 @@ public class PushAction extends AbstractAction {
         return true; // #121293: Speed up menu display, warn user if not set when Push selected
     }
     
-    public static void push(VCSContext ctx){
+    public static void push(final VCSContext ctx){
         final File root = HgUtils.getRootFile(ctx);
         if (root == null) return;
         String repository = root.getAbsolutePath();
-        String tmpPushPath = HgCommand.getPushDefault(root);
-        if(tmpPushPath == null) {
-            tmpPushPath = HgCommand.getPullDefault(root);
-        }
-        if(tmpPushPath == null) return;
-        final String pushPath = tmpPushPath;
-        final String fromPrjName = HgProjectUtils.getProjectName(root);
-        final String toPrjName = HgProjectUtils.getProjectName(new File(pushPath));
 
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
-            public void perform() { performPush(root, pushPath, fromPrjName, toPrjName); } };
+            public void perform() { getDefaultAndPerformPush(ctx, root, this.getLogger()); } };
         support.start(rp, repository, 
                 org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")); // NOI18N
         
     }
                 
-    static void performPush(File root, String pushPath, String fromPrjName, String toPrjName) {
-        try {
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_TITLE_SEP")); // NOI18N
+    static void getDefaultAndPerformPush(VCSContext ctx, File root, OutputLogger logger) {
+        // If the repository has no default pull path then inform user
+        String tmpPushPath = HgRepositoryContextCache.getPushDefault(ctx);
+        if(tmpPushPath == null) {
+            tmpPushPath = HgRepositoryContextCache.getPullDefault(ctx);
+        }
+        if(tmpPushPath == null) {
+            logger.outputInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE")); // NOI18N
+            logger.outputInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE_SEP")); // NOI18N
+            logger.output(NbBundle.getMessage(PushAction.class, "MSG_NO_DEFAULT_PUSH_SET_MSG")); // NOI18N
+            logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_DONE")); // NOI18N
+            logger.output(""); // NOI18N
+            JOptionPane.showMessageDialog(null,
+                NbBundle.getMessage(PushAction.class,"MSG_NO_DEFAULT_PUSH_SET"),
+                NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE"),
+                JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        final String pushPath = tmpPushPath;
+        final String fromPrjName = HgProjectUtils.getProjectName(root);
+        final String toPrjName = HgProjectUtils.getProjectName(new File(pushPath));
+        performPush(root, pushPath, fromPrjName, toPrjName, logger);
 
-            List<String> listOutgoing = HgCommand.doOutgoing(root, pushPath);
+    }
+    static void performPush(File root, String pushPath, String fromPrjName, String toPrjName, OutputLogger logger) {
+        try {
+            logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_TITLE")); // NOI18N
+            logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_TITLE_SEP")); // NOI18N
+
+            List<String> listOutgoing = HgCommand.doOutgoing(root, pushPath, logger);
             if ((listOutgoing == null) || listOutgoing.isEmpty()) {
                 return;
             }
@@ -160,9 +164,9 @@ public class PushAction extends AbstractAction {
             if (bLocalPush) {
                 // Warn user if there are local changes which Push will overwrite
                 if (!bNoChanges && !PullAction.confirmWithLocalChanges(pushFile, PushAction.class,
-                        "MSG_PUSH_LOCALMODS_CONFIRM_TITLE", "MSG_PUSH_LOCALMODS_CONFIRM_QUERY", listOutgoing)) { // NOI18N
-                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_LOCALMODS_CANCEL")); // NOI18N
-                    HgUtils.outputMercurialTab(""); // NOI18N
+                        "MSG_PUSH_LOCALMODS_CONFIRM_TITLE", "MSG_PUSH_LOCALMODS_CONFIRM_QUERY", listOutgoing, logger)) { // NOI18N
+                    logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_LOCALMODS_CANCEL")); // NOI18N
+                    logger.output(""); // NOI18N
                     return;
                 }
             }
@@ -171,52 +175,53 @@ public class PushAction extends AbstractAction {
             if (bNoChanges) {
                 list = listOutgoing;
             } else {
-                list = HgCommand.doPush(root, pushPath);
+                list = HgCommand.doPush(root, pushPath, logger);
             }
             if (!list.isEmpty() &&
                     HgCommand.isErrorAbortPush(list.get(list.size() - 1))) {
-                HgUtils.outputMercurialTab(list);
-                HgUtils.outputMercurialTab("");
+                logger.output(list);
+                logger.output("");
                 HgUtils.warningDialog(PushAction.class,
                         "MSG_PUSH_ERROR_TITLE", "MSG_PUSH_ERROR_QUERY"); // NOI18N 
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_ERROR_CANCELED")); // NOI18N
+                logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_ERROR_CANCELED")); // NOI18N
                 return;
             }
 
             if (list != null && !list.isEmpty()) {
 
                 if (!HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size() - 1))) {
-                    InputOutput io = IOProvider.getDefault().getIO(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
-                    io.select();
-                    OutputWriter out = io.getOut();
-                    OutputWriter outRed = io.getErr();
-                    outRed.println(NbBundle.getMessage(PushAction.class, "MSG_CHANGESETS_TO_PUSH")); // NOI18N
+                    logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_CHANGESETS_TO_PUSH")); // NOI18N
                     for (String s : listOutgoing) {
                         if (s.indexOf(Mercurial.CHANGESET_STR) == 0) {
-                            outRed.println(s);
+                            logger.outputInRed(s);
                         } else if (!s.equals("")) { // NOI18N
-                            out.println(s);
+                            logger.output(HgUtils.replaceHttpPassword(s));
                         }
                     }
-                    out.println(""); // NOI18N
-                    out.close();
-                    outRed.close();
+                    logger.output(""); // NOI18N
                 }
 
-                HgUtils.outputMercurialTab(list);
+                logger.output(HgUtils.replaceHttpPassword(list));
 
-                if (toPrjName == null) {
-                    HgUtils.outputMercurialTabInRed(
+                if (toPrjName == null) { 
+                    logger.outputInRed(
                             NbBundle.getMessage(PushAction.class,
-                            "MSG_PUSH_TO_NONAME", bLocalPush ? HgUtils.stripDoubleSlash(pushPath) : pushPath)); // NOI18N
+                            "MSG_PUSH_TO_NONAME", bLocalPush ? HgUtils.stripDoubleSlash(pushPath) : HgUtils.replaceHttpPassword(pushPath))); // NOI18N
                 } else {
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                             NbBundle.getMessage(PushAction.class,
-                            "MSG_PUSH_TO", toPrjName, bLocalPush ? HgUtils.stripDoubleSlash(pushPath) : pushPath)); // NOI18N
+                            "MSG_PUSH_TO", toPrjName, bLocalPush ? HgUtils.stripDoubleSlash(pushPath) : HgUtils.replaceHttpPassword(pushPath))); // NOI18N
                 }
-                HgUtils.outputMercurialTabInRed(
-                        NbBundle.getMessage(PushAction.class,
-                        "MSG_PUSH_FROM", fromPrjName, root)); // NOI18N
+
+                if (fromPrjName == null ){
+                    logger.outputInRed(
+                            NbBundle.getMessage(PushAction.class,
+                            "MSG_PUSH_FROM_NONAME", root)); // NOI18N
+                } else {
+                    logger.outputInRed(
+                            NbBundle.getMessage(PushAction.class,
+                            "MSG_PUSH_FROM", fromPrjName, root)); // NOI18N
+                }
 
                 boolean bMergeNeeded = HgCommand.isHeadsCreated(list.get(list.size() - 1));
                 boolean bConfirmMerge = false;
@@ -225,19 +230,15 @@ public class PushAction extends AbstractAction {
                     if (bNoChanges) {
                         return;
                     }
-                    if (!bLocalPush) {
-                        HgUtils.outputMercurialTabInRed(
-                                NbBundle.getMessage(PushAction.class,
-                                "MSG_PUSH_UPDATE_NEEDED_NONAME", toPrjName, pushPath)); // NOI18N
-                    } else {
+                    if (bLocalPush) {
                         list = HgCommand.doUpdateAll(pushFile, false, null, false);
-                        HgUtils.outputMercurialTab(list);
+                        logger.output(list);
                         if (toPrjName != null) {
-                            HgUtils.outputMercurialTabInRed(
+                            logger.outputInRed(
                                     NbBundle.getMessage(PushAction.class,
                                     "MSG_PUSH_UPDATE_DONE", toPrjName, HgUtils.stripDoubleSlash(pushPath))); // NOI18N
                         } else {
-                            HgUtils.outputMercurialTabInRed(
+                            logger.outputInRed(
                                     NbBundle.getMessage(PushAction.class,
                                     "MSG_PUSH_UPDATE_DONE_NONAME", HgUtils.stripDoubleSlash(pushPath))); // NOI18N
                         }
@@ -251,15 +252,15 @@ public class PushAction extends AbstractAction {
                 }
 
                 if (bConfirmMerge) {
-                    HgUtils.outputMercurialTab(""); // NOI18N
-                    HgUtils.outputMercurialTabInRed(
+                    logger.output(""); // NOI18N
+                    logger.outputInRed(
                             NbBundle.getMessage(PushAction.class,
                             "MSG_PUSH_MERGE_DO")); // NOI18N
-                    MergeAction.doMergeAction(pushFile, null);
+                    MergeAction.doMergeAction(pushFile, null, logger);
                 } else {
                     List<String> headRevList = HgCommand.getHeadRevisions(pushPath);
                     if (headRevList != null && headRevList.size() > 1) {
-                        MergeAction.printMergeWarning(headRevList);
+                        MergeAction.printMergeWarning(headRevList, logger);
                     }
                 }
             }
@@ -276,8 +277,8 @@ public class PushAction extends AbstractAction {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
         } finally {
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
+            logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_DONE")); // NOI18N
+            logger.output(""); // NOI18N
         }
     }
     

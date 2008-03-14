@@ -144,32 +144,34 @@ public class BDIDebugConnector {
             
         try {
             mListener.setDebugger(null);
+            
+            if (mRmiServer != null) {
+                mRmiServer.closeClients();
+            }
+            
+            if (mServerThread != null) {
+                mServerThread.interrupt();
+            }
+            
+            if (mRmiServer != null) {
+                mRmiServer.destroy();
+            }
+            
+            if (mRmiService != null) {
+                mRmiService.destroy();
+            }
+            
+            if (mObjectAdapter != null) {
+                mObjectAdapter.destroy();
+            }
+            
+            synchronized (allConnectors) {
+                allConnectors.remove(mHost + ":" + mPort);
+            }
         } catch (Exception e) {
             mDebugger.setException(new DebugException(e));
         }
-
-        if (mRmiServer != null) {
-            mRmiServer.closeClients();
-        }
-
-        if (mServerThread != null) {
-            mServerThread.interrupt();
-        }
-
-        if (mRmiServer != null) {
-            mRmiServer.destroy();
-        }
-
-        if (mRmiService != null) {
-            mRmiService.destroy();
-        }
-
-        if (mObjectAdapter != null) {
-            mObjectAdapter.destroy();
-        }
-        synchronized (allConnectors) {
-            allConnectors.remove(mHost + ":" + mPort);
-        }
+        
         mServerThread = null;
         mRmiServer = null;
         mRmiService = null;
@@ -189,6 +191,7 @@ public class BDIDebugConnector {
                     .newInstance();
             return factory.createRMIService(getClass().getClassLoader());
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.warning("Exception in getRMIService:\n" + e);
             return null;
         }

@@ -50,6 +50,7 @@
 
 package org.netbeans.modules.compapp.casaeditor.properties;
 
+import org.netbeans.modules.compapp.casaeditor.properties.spi.BaseCasaProperty;
 import java.beans.PropertyEditor;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
@@ -78,9 +79,9 @@ public abstract class PropertyQName extends BaseCasaProperty<QName> {
     @Override
     public PropertyEditor getPropertyEditor() {
         return new NamespaceEditor(
-                this, 
                 getModel(),
                 getCurrentQName(),
-                getDisplayName());
+                getDisplayName(),
+                canWrite());
     }
 }

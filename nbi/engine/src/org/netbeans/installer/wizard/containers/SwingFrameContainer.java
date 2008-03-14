@@ -48,6 +48,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.net.MalformedURLException;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JRootPane;
@@ -57,6 +58,7 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
@@ -303,17 +305,15 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      * Initializes and lays out the Swing components for the container frame. This
      * method also sets some frame properties which will be required at runtime,
      * such as size, position, etc.
-     */
-    @Override
-    protected void initComponents() {
-        super.initComponents();
-        
+     */    
+    private void initComponents() {
         try {
             setDefaultCloseOperation(NbiFrame.DO_NOTHING_ON_CLOSE);
             addWindowListener(new WindowAdapter() {
+                @Override
                 public void windowClosing(WindowEvent event) {
-                    if (contentPane.getCancelButton().isEnabled()) {
-                        if (currentUi != null) {
+                    if (currentUi != null) {
+                        if (contentPane.getCancelButton().isEnabled()) {
                             currentUi.evaluateCancelButtonClick();
                         }
                     }
@@ -328,6 +328,15 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     RESOURCE_ERROR_SET_CLOSE_OPERATION),
                     e);
         }
+        setSize(frameWidth, frameHeight);
+        try {
+            setIconImage(new ImageIcon(frameIcon.toURI().toURL()).getImage());
+        } catch (MalformedURLException e) {
+            ErrorManager.notifyWarning(ResourceUtils.getString(
+                    SwingFrameContainer.class,
+                    RESOURCE_FAILED_TO_SET_FRAME_CONTAINER_ICON), e);
+        }
+        
         final String resizable = System.getProperty(WIZARD_FRAME_RESIZABLE_PROPERTY);
         if(resizable!=null && (resizable.equals("false") || resizable.equals("FALSE"))) {
             setResizable(false);
@@ -595,7 +604,16 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             
             // topSeparator /////////////////////////////////////////////////////////
             topSeparator = new NbiSeparator();
-            
+            if (SystemUtils.isMacOS()) {
+                // JSeparator`s height on Aqua L&F equals to 12px which is too much in SwingFrameContainer
+                // thus we descrease it to 7px
+                // TODO: possibly move this code to NbiSeparator later
+                Dimension d = topSeparator.getPreferredSize();
+                if (d != null && d.getHeight() == 12) {
+                    d.setSize(d.getWidth(), 7);
+                    topSeparator.setPreferredSize(d);
+                }
+            }
             titlePanel.add(titleLabel, new GridBagConstraints(
                     titlePanelDx , 0,                             // x, y
                     1, 1,                             // width, height
@@ -623,7 +641,16 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             
             // bottomSeparator //////////////////////////////////////////////////////
             bottomSeparator = new NbiSeparator();
-            
+            if (SystemUtils.isMacOS()) {
+                // JSeparator`s height on Aqua L&F equals to 12px which is too much in SwingFrameContainer
+                // thus we descrease it to 7px
+                // TODO: possibly move this code to NbiSeparator later
+                Dimension d = topSeparator.getPreferredSize();
+                if (d != null && d.getHeight() == 12) {
+                    d.setSize(d.getWidth(), 7);
+                    topSeparator.setPreferredSize(d);
+                }
+            }
             // helpButton ///////////////////////////////////////////////////////////
             helpButton = new NbiButton();
             
@@ -875,6 +902,8 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             "SFC.error.failed.to.download.icon"; // NOI18N
     private static final String RESOURCE_ERROR_SET_CLOSE_OPERATION =
             "SFC.error.close.operation"; //NOI18N
+    private static final String RESOURCE_FAILED_TO_SET_FRAME_CONTAINER_ICON =
+            "SFC.error.failed.to.set.icon";//NOI18N
     /**
      * Name of the {@link AbstractAction} which is invoked when the user presses the
      * <code>Escape</code> button.

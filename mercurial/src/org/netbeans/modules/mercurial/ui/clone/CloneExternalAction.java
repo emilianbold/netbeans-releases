@@ -51,6 +51,7 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.DialogDisplayer;
@@ -65,7 +66,7 @@ import org.netbeans.modules.mercurial.ui.wizards.CloneWizardAction;
  * 
  * @author Padraig O'Briain
  */
-public class CloneExternalAction extends AbstractAction {
+public class CloneExternalAction extends ContextAction {
     private final VCSContext context;
 
     public CloneExternalAction(String name, VCSContext context) {
@@ -73,8 +74,7 @@ public class CloneExternalAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent ev){
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent ev){
         CloneWizardAction wiz = CloneWizardAction.getInstance();
         wiz.performAction();
     }

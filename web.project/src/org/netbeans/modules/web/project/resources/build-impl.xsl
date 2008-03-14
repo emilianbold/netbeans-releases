@@ -58,7 +58,8 @@ introduced by support for multiple source roots. -jglick
                 xmlns:webproject3="http://www.netbeans.org/ns/web-project/3"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
                 xmlns:projdeps2="http://www.netbeans.org/ns/ant-project-references/2"
-                exclude-result-prefixes="xalan p projdeps projdeps2">
+                xmlns:libs="http://www.netbeans.org/ns/ant-project-libraries/1"
+                exclude-result-prefixes="xalan p projdeps projdeps2 libs">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     
     <xsl:template match="/">
@@ -108,8 +109,33 @@ introduced by support for multiple source roots. -jglick
                 <property file="nbproject/private/private.properties"/>
             </target>
             
+            <xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">
+                <target name="-init-libraries" depends="-pre-init,-init-private">
+                    <xsl:for-each select="/p:project/p:configuration/libs:libraries/libs:definitions">
+                        <property name="libraries.{position()}.path" location="{.}"/>
+                        <dirname property="libraries.{position()}.dir.nativedirsep" file="${{libraries.{position()}.path}}"/>
+                        <!-- Do not want \ on Windows, since it would act as an escape char: -->
+                        <pathconvert property="libraries.{position()}.dir" dirsep="/">
+                            <path path="${{libraries.{position()}.dir.nativedirsep}}"/>
+                        </pathconvert>
+                        <basename property="libraries.{position()}.basename" file="${{libraries.{position()}.path}}" suffix=".properties"/>
+                        <touch file="${{libraries.{position()}.dir}}/${{libraries.{position()}.basename}}-private.properties"/> <!-- has to exist, yuck -->
+                        <loadproperties srcfile="${{libraries.{position()}.dir}}/${{libraries.{position()}.basename}}-private.properties">
+                            <filterchain>
+                                <replacestring from="$${{base}}" to="${{libraries.{position()}.dir}}"/>
+                            </filterchain>
+                        </loadproperties>
+                        <loadproperties srcfile="${{libraries.{position()}.path}}">
+                            <filterchain>
+                                <replacestring from="$${{base}}" to="${{libraries.{position()}.dir}}"/>
+                            </filterchain>
+                        </loadproperties>
+                    </xsl:for-each>
+                </target>
+            </xsl:if>
+            
             <target name="-init-user">
-                <xsl:attribute name="depends">-pre-init,-init-private</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if></xsl:attribute>
                 <property file="${{user.properties.file}}"/>
                 <xsl:comment> The two properties below are usually overridden </xsl:comment>
                 <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
@@ -118,7 +144,7 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="-init-project">
-                <xsl:attribute name="depends">-pre-init,-init-private,-init-user</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user</xsl:attribute>
                 <property file="nbproject/project.properties"/>
             </target>
             
@@ -128,7 +154,7 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="-do-init">
-                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property,-do-ear-init</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
                     <webproject1:property name="platform.home" value="platforms.${{platform.active}}.home"/>
                     <webproject1:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
@@ -152,7 +178,14 @@ introduced by support for multiple source roots. -jglick
                     <fail unless="platform.bootcp">Must set platform.bootcp</fail>
                     <fail unless="platform.java">Must set platform.java</fail>
                     <fail unless="platform.javac">Must set platform.javac</fail>
-                    <fail if="platform.invalid">Platform is not correctly set up</fail>
+  <fail if="platform.invalid">
+ The J2SE Platform is not correctly set up.
+ Your active platform is: ${platform.active}, but the corresponding property "platforms.${platform.active}.home" is not found in the project's properties files. 
+ Either open the project in the IDE and setup the Platform with the same name or add it manually.
+ For example like this:
+     ant -Duser.properties.file=&lt;path_to_property_file&gt; jar (where you put the property "platforms.${platform.active}.home" in a .properties file)
+  or ant -Dplatforms.${platform.active}.home=&lt;path_to_JDK_home&gt; jar (where no properties file is used) 
+  </fail>
                 </xsl:if>
                 <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:use-manifest">
                     <fail unless="manifest.file">Must set manifest.file</fail>
@@ -189,8 +222,37 @@ introduced by support for multiple source roots. -jglick
                 <condition property="do.compile.jsps">
                     <istrue value="${{compile.jsps}}"/>
                 </condition>
+                <condition property="enable.jsdebugger">
+                    <and>
+                        <isset property="debug.client.available"/>
+                        <istrue value="${{debug.client.available}}"/>
+                    </and>
+                </condition>
+                <condition property="do.debug.server">
+                    <or>
+                        <not><isset property="debug.server"/></not>
+                        <istrue value="${{debug.server}}"/>
+                        <not><isset property="enable.jsdebugger"/></not>
+                        <and>
+                            <not><istrue value="${{debug.server}}"/></not>
+                            <not><istrue value="${{debug.client}}"/></not>
+                        </and>
+                    </or>
+                </condition>
+                <condition property="do.debug.client">
+                    <and>
+                        <istrue value="${{debug.client}}"/>
+                        <isset property="enable.jsdebugger"/>
+                    </and>
+                </condition>
                 <condition property="do.display.browser">
                     <istrue value="${{display.browser}}"/>
+                </condition>
+                <condition property="do.display.browser.debug">
+                    <and>
+                        <isset property="do.display.browser"/>
+                        <not><isset property="do.debug.client"/></not>
+                    </and>
                 </condition>
                 <available file="${{conf.dir}}/MANIFEST.MF" property="has.custom.manifest"/>
                 <available file="${{conf.dir}}/persistence.xml" property="has.persistence.xml"/>
@@ -256,7 +318,7 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="-init-check">
-                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init</xsl:attribute>
                 <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
                 <!-- Note that if the properties were defined in project.xml that would be easy -->
                 <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
@@ -276,6 +338,13 @@ introduced by support for multiple source roots. -jglick
                 <fail unless="build.test.results.dir">Must set build.test.results.dir</fail>
                 <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
                 <fail unless="dist.war">Must set dist.war</fail>
+                <fail unless="j2ee.platform.classpath">
+The Java EE server classpath is not correctly set up. Your active server type is ${j2ee.server.type}.
+Either open the project in the IDE and assign the server or setup the server classpath manually.
+For example like this:
+   ant -Duser.properties.file=&lt;path_to_property_file&gt; (where you put the property "j2ee.platform.classpath" in a .properties file)
+or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties file is used)
+                </fail>                
             </target>
             
             <target name="-init-macrodef-property">
@@ -423,6 +492,20 @@ introduced by support for multiple source roots. -jglick
                 </macrodef>
             </target>
             
+            <target name="-init-macrodef-nbjsdebug" if="enable.jsdebugger">
+                <macrodef>
+                    <xsl:attribute name="name">nbjsdebugstart</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">webUrl</xsl:attribute>
+                        <xsl:attribute name="default">${client.url}</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <nbjsdebugstart webUrl="@{{webUrl}}" urlPart="${{client.urlPart}}"/>
+                    </sequential>
+                </macrodef>                
+            </target>
+            
             <target name="-init-macrodef-nbjpda">
                 <macrodef>
                     <xsl:attribute name="name">nbjpdastart</xsl:attribute>
@@ -457,7 +540,9 @@ introduced by support for multiple source roots. -jglick
                     </attribute>
                     <sequential>
                         <nbjpdareload>
-                            <fileset includes="${{fix.includes}}*.class" dir="@{{dir}}"/>
+                            <fileset includes="${{fix.classes}}" dir="@{{dir}}" >
+                                <include name="${{fix.includes}}*.class"/>
+                            </fileset>
                         </nbjpdareload>
                     </sequential>
                 </macrodef>
@@ -573,7 +658,7 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-copy-ear-war</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-nbjsdebug,-init-macrodef-debug,-init-macrodef-copy-ear-war</xsl:attribute>
             </target>
             
             <xsl:comment>
@@ -1339,9 +1424,10 @@ introduced by support for multiple source roots. -jglick
                 <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}"/>
                 <antcall target="connect-debugger"/>
                 <antcall target="debug-display-browser"/>
+                <antcall target="connect-client-debugger"/>
             </target>
             
-            <target name="connect-debugger" unless="is.debugged">
+            <target name="connect-debugger" if="do.debug.server" unless="is.debugged">
                 <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
                     <classpath>
                         <path path="${{debug.classpath}}:${{j2ee.platform.classpath}}:${{ws.debug.classpaths}}"/>
@@ -1357,8 +1443,12 @@ introduced by support for multiple source roots. -jglick
                 </nbjpdaconnect>
             </target>
             
-            <target name="debug-display-browser" if="do.display.browser">
+            <target name="debug-display-browser" if="do.display.browser.debug">
                 <nbbrowse url="${{client.url}}"/>
+            </target>
+            
+            <target name="connect-client-debugger" if="do.debug.client">
+                <webproject1:nbjsdebugstart webUrl="${{client.url}}"/>
             </target>
             
             <target name="debug-single">
