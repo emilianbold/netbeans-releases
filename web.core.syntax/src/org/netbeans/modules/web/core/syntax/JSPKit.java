@@ -105,20 +105,32 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     private static final long serialVersionUID = 8933974837050367142L;
     
     public static final boolean debug = false;
+    private final String mimeType;
+
+    // called from the XML layer
+    private static JSPKit createKitForJsp() {
+        return new JSPKit(JSP_MIME_TYPE);
+    }
+    
+    // called from the XML layer
+    private static JSPKit createKitForTag() {
+        return new JSPKit(TAG_MIME_TYPE);
+    }
     
     /** Default constructor */
-    public JSPKit() {
+    public JSPKit(String mimeType) {
         super();
+        this.mimeType = mimeType;
     }
     
     @Override
     public String getContentType() {
-        return JSP_MIME_TYPE;
+        return mimeType;
     }
     
     @Override
     public Object clone() {
-        return new JSPKit();
+        return new JSPKit(mimeType);
     }
     
     /** Creates a new instance of the syntax coloring parser */

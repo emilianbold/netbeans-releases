@@ -40,9 +40,7 @@
  */
 package org.netbeans.modules.sun.manager.jbi.actions;
 
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.sun.manager.jbi.nodes.Installable;
-import org.netbeans.modules.sun.manager.jbi.nodes.Refreshable;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -72,16 +70,6 @@ public abstract class InstallAction extends NodeAction {
                 public void run() {
                     try {
                         installable.install(autoStart);
-
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                Refreshable refreshable =
-                                        lookup.lookup(Refreshable.class);
-                                if (refreshable != null) {
-                                    refreshable.refresh();
-                                }
-                            }
-                        });
                     } catch (RuntimeException rex) {
                         //gobble up exception
                     }
