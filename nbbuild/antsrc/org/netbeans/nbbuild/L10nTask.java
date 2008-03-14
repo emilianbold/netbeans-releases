@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.Delete;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.types.FileSet;
@@ -63,55 +64,21 @@ import org.apache.tools.ant.types.selectors.SelectorUtils;
 /**
  * This task was created to create L10N kits.
  * The xml to call this task might look like:
- * <l10nTask topdirs="${f4jroot} ${nbroot}" modules="${all_modules}"
- *           localizableFile="${localizableF}" generatedFile="${genFile}"
- *           changedFile="${changedFile}" buildDir="${l10n-build}"
- *           distDir="${l10n-dist}" buildNumber="${buildnumber}"
- *           globalFile=""/>
+ * <l10nTask nbmsdir="nbms" tmpdir="tmp" patternsFile="l10n.patterns" 
+ *           kitFile="build/l10n.zip"/>
  *
  *
- * Each resulting kit will be a tar file containing one directory
- *   for each repository examined.
- * Each repository_directory will contain one tar-file
- *   for each module with changed localizable files.
- * The structure of the tar file is as follows:
- * repository_dir/
- *                 module_tar/
- *                            generatedFile
- *                            contentFile
- *                            localizableFile1.html
- *                            localizableFile2.gif...
+ * Resulting kitFile will contain the files according the patterns 
+ * from patternsFile
  *
- * 1.  All localizable files (as defined in "localizableFile")
- *     "localizableFile" is a list of file patterns difining all localizable source files.
- *     "localizableFile" itself is not included in the kit.
- * 2.  A content file (as named in "contentFile")
- *     This is a list of the names of all localizable files which need to be (re)localized.
- * 3.  A generated file (as named in "generatedFile")
- *     This is a list of the names of all localizable files with the most recent
- *     CVS revision number.
- *
- * The generated file need not be committed to cvs until the files come back
- * localized. (This is a change from the procedure followed in late 2001).
- *
- * As of version 1.1.2, converted Gzip methods to use ant 1.4.1, and added ability to
- * 1) embed exclude patterns in the l10n.list file
- *		(must use keyword "exclude " followed by the pattern.)
- * 2) add ability to embed reading of additional files
- *		(must use the keyword "read " followed by the path to the file)
- *		The special case "read global" will read the file set by the property globalFile
- * 3) add the ability to embed properties in the patterns. i
- *		The special case "l10n-module" property will be set from within L10nTask
- *
- * @author Erica Grevemeyer
- * @version 1.1,	Feb  4 11:21:09 PST 2002
- * @version 1.1.2	Aug 29 15:23:51 PDT 2002
+ * @author Michal Zlamal
  */
 public class L10nTask extends Task {
 
     File nbmsDir = null;
     File tmpDir = null;
     File patternsFile = null;
+    File kitFile = null;
 
     public void execute() throws BuildException {
         LineNumberReader lnr = null;
@@ -128,6 +95,10 @@ public class L10nTask extends Task {
             if (!patternsFile.exists() || !patternsFile.isFile()) {
                 throw new BuildException("'patternsFile' has to exist and be file with patterns what should be included in the kit");
             }
+            if (kitFile == null) {
+                throw new BuildException("Required variable not set.  Set 'kitFile' in the calling build script file");
+            }
+            
             lnr = new LineNumberReader(new FileReader(patternsFile));
             String line = null;
             Map<String, Set<String>> includes = new HashMap<String, Set<String>>();
@@ -138,6 +109,7 @@ public class L10nTask extends Task {
                 if (line.trim().length() == 0) {
                     continue;
                 }
+                if (line.startsWith("#")) continue;
                 if (!line.startsWith("exclude ")) {  //Include pattern
 
                     String[] p = line.split(":");
@@ -201,11 +173,16 @@ public class L10nTask extends Task {
             if (excludesKeys[0] != null) {
                 ds.setExcludes(excludesKeys);
             }
-
+            
             //Go though all the found files maching the first part of the pattern
             ds.scan();
+            
+            if (kitFile.exists()) {
+                kitFile.delete();
+            }
+            
             Zip zip = (Zip) getProject().createTask("zip");
-            zip.setDestFile(new File(getProject().getBaseDir(), "l10n.zip"));
+            zip.setDestFile(kitFile);
             for (String file : ds.getIncludedFiles()) {
                 ZipFileSet zipFileSet = new ZipFileSet();
                 boolean matching = false;
@@ -240,6 +217,9 @@ public class L10nTask extends Task {
                 }
             }
             zip.execute();
+            Delete delete = (Delete) getProject().createTask("delete");
+            delete.setDir(tmpDir);
+            delete.execute();
         } catch (FileNotFoundException ex) {
             Logger.getLogger(L10nTask.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -263,5 +243,8 @@ public class L10nTask extends Task {
 
     public void setPatternsFile(File patternsFile) {
         this.patternsFile = patternsFile;
+    }
+    public void setKitFile(File kitFile) {
+        this.kitFile = kitFile;
     }
 }
