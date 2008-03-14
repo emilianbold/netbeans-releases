@@ -470,6 +470,8 @@ public class BuildServiceAssembly extends Task {
             String uri = systemNode.getAttribute("uri").replace("\\", "/");
             
             if (uri != null) {
+                // Tmp fix to make valid URI (#130092)
+                uri = uri.replaceAll("\\\\", "/");
                 URI realUri = new URI(uri);
                 
                 if (realUri.getScheme() == null) {

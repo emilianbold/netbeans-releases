@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2006 Sun Microsystems, Inc. All rights reserved.
+Copyright &copy; 2008 Sun Microsystems, Inc. All rights reserved.
 Use is subject to license terms.
  -->
 <html>
@@ -19,43 +19,66 @@ C and C++ projects.</p>
 <ol>
 <li>Choose Tools &gt; Options.</li>
 <li>
-Click C/C++ in the left pane of the window.
+Click C/C++ in the top pane of the window.
 </li>
-<li>In the right pane, click the Build Tools tab.</li>
+<li>Click the Build Tools tab.</li>
 <li>
 Modify the properties as desired.</li>
 </ol>
 <p>
 You can set the following properties:</p>
 <ul>
-<li><b>Current Path.</b> The path list used by the IDE to locate 
-the build tools required by your projects. You can add or remove paths from the list, or 
-reorder the list by moving paths up or down. 
+<li><b>Tool Collection.</b> The tool collection list displays 
+the collections found on your system the first time you started 
+the IDE. The default 
+collection is listed in bold type.
+<ul>
+<li>To add a collection to the list, click Add and specify the 
+base directory in the Add New Tool Set dialog box. The Tool Set 
+Family and Tool Set Name are filled in automatically. You can specify
+a different name for the collection. If you change the family,  
+make sure that the family you specify is the correct family for the 
+collection or the compiler flags might not be valid. 
 </li>
-<li><b>Make Command.</b> The make command to use when building 
-projects. The default command is the first make command found in the 
-current path. If you change the command, the current path is searched for 
-the new command. Clicking Version displays the version of the make 
-command.</li>
-<li><b>Gdb Command.</b> The gbd command to use when debugging projects. 
-The default command is the first gdb command found in the current path. 
-If you change the command, the current path is searched for 
-the new command. Clicking Version displays the version of the make 
-command.</li>
-<li><b>Compiler Collection.</b> The compiler collection to use for 
-building projects. The drop-down list includes a compiler collection for 
-each directory in the current path that ocntains compilers.</li>
+<li>To remove a collection from the list, select the collection and 
+click Remove.
+</li>
+<li>To duplicate a collection, select the collection from the list 
+and modify the base directory, tool set family, or tool set name in
+the dialog box.
+</li>
+<li>To make a collection the default, select the collection and 
+click Default.
+</li>
+</ul>
+</li>
+<li><b>Base Directory.</b> The base directory for compilers.</li>
+<ul>
 <li><b>C Compiler.</b> The C compiler to use for building projects. 
-The default compiler is the first one found in the selected compiler 
-collection. You can select a compiler from the drop-down list, or select 
+The default compiler is the first one found in the base directory. You can select a compiler from the drop-down list, or select 
 Add from the list to add another compiler from the same directory.</li>
 <li><b>C++ Compiler.</b> The C++ compiler to use for building projects. 
 The default compiler is the first one found in the selected compiler 
 collection. You can select a compiler from the drop-down list, or select 
 Add from the list to add another compiler from the same directory.</li>
-<li><b>Required Tools.</b> The tools required to build projects.
-</li>
 </ul>
+<li><b>Make Command.</b> The make command to use for building 
+projects. The default command is the first one found in the 
+base directory. To select a different command from the base directory 
+or another directory, click the browse button and navigate to a different 
+command in the Select Tool dialog box.
+</li>
+<li><b>Debugger Command.</b> The gdb command to use when debugging 
+projects. The default command is the first one found in the 
+base directory. To select a different command from the base directory 
+or another directory, click the browse button and navigate to a different 
+command in the Select Tool dialog box. 
+</ul>
+<p>To display the versions of all of the selected tools, click 
+Versions.</p>
+<p>To restore all of the tool selections to the defaults, click Restore
+Defaults.
+</p>
 <table>
 <tr>
 <th colspan="2" align="left"><a name="seealso">See also</a></th>
@@ -66,6 +89,12 @@ Add from the list to add another compiler from the same directory.</li>
 C++ Project Settings</a><br>
 <a href="ConfiguringParsingSettings.html">Configuring C and 
 C++ Parser Settings</a><br>
+<a href="ConfiguringCodeStyle.html">Configuring C and C++ 
+Code Style</a><br>
+<a href="ConfiguringSemanticHighlighting.html">Configuring C 
+and C++ Semantic Highlighting</a><br>
+<a href="ConfiguringFileExtensions.html">Configuring C and C++ 
+File Extensions</a><br>
 <a href="SettingCandC++ProjectProperties.html">Setting Project
 Properties</a>
 </td>
