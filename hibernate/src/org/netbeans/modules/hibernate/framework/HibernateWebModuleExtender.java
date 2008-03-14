@@ -77,7 +77,6 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
 
     @Override
     public void update() {
-        System.out.println("update is called.");
     }
 
     @Override
@@ -87,7 +86,6 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
 
     @Override
     public Set<FileObject> extend(WebModule webModule) {
-        System.out.println("extend is called ./");
         return new TreeSet<FileObject>();
     }
 }
