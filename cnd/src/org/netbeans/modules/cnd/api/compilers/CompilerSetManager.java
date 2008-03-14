@@ -50,10 +50,12 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.compilers.DefaultCompilerProvider;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.modules.ModuleInfo;
@@ -129,10 +131,16 @@ public class CompilerSetManager {
                 if (instance.getCompilerSets().size() > 0) {
                     instance.saveToDisk();
                 } else {
-                    String errormsg = getString("NO_COMPILERS_FOUND_MSG");
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(errormsg, NotifyDescriptor.WARNING_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                }
+                    DialogDescriptor dialogDescriptor = new DialogDescriptor(
+                        new NoCompilersPanel(),
+                        getString("NO_COMPILERS_FOUND_TITLE"),
+                        true,
+                        new Object[]{DialogDescriptor.OK_OPTION},
+                        DialogDescriptor.OK_OPTION,
+                        DialogDescriptor.BOTTOM_ALIGN,
+                        null,
+                        null);
+                    DialogDisplayer.getDefault().notify(dialogDescriptor);
             }
         }
         if (instance != null && instance.getCompilerSets().size() == 0) { // No compilers found
