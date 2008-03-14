@@ -51,7 +51,9 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Level;
 import javax.swing.JButton;
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
 import org.openide.modules.ModuleInfo;
@@ -71,6 +73,25 @@ public class InstanceDataObjectTest extends NbTestCase {
     /** Creates new DataFolderTest */
     public InstanceDataObjectTest(String name) {
         super (name);
+    }
+    
+    public static Test suite() {
+        NbTestSuite s = new NbTestSuite();
+        s.addTestSuite(InstanceDataObjectTest.class);
+        s.addTestSuite(LkpIDO.class);
+        return s;
+    }
+    
+    public static class LkpIDO extends InstanceDataObjectTest {
+        public LkpIDO(String s) {
+            super(s);
+        }
+        
+        @Override
+        protected <T extends Node.Cookie> T getCookie(DataObject obj, Class<T> clazz) {
+            return obj.getLookup().lookup(clazz);
+        }
+        
     }
     
     protected <T extends Node.Cookie> T getCookie(DataObject obj, Class<T> clazz) {
@@ -128,7 +149,11 @@ public class InstanceDataObjectTest extends NbTestCase {
         Lookup.getDefault().lookup(ModuleInfo.class);
         
         FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
-        FileObject myFolder = root.createFolder("My"); // NOI18N
+        FileObject myFolder = FileUtil.createFolder(root, "My"); // NOI18N
+        for (FileObject fo : myFolder.getChildren()) {
+            fo.delete();
+        }
+
         
         final InstanceDataObject ido = InstanceDataObject.create(
             DataFolder.findFolder(myFolder),
@@ -923,7 +948,12 @@ public class InstanceDataObjectTest extends NbTestCase {
         
         DataObject obj = DataObject.find (fo);
         assertNotNull(obj);
-        assertNull (getCookie(obj, InstanceCookie.class));
+        Object res = getCookie(obj, InstanceCookie.class);
+        if (this instanceof LkpIDO) {
+            assertEquals("Cannot hide content of lookup", obj, res);
+        } else {
+            assertEquals ("will be null", null, res);
+        }
         
 
         obj.addPropertyChangeListener(new PropertyChangeListener() {
