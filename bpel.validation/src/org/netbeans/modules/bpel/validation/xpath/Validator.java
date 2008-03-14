@@ -118,14 +118,6 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     if (fromName != null && fromName.equals(toName)) {
       return;
     }
-    /*todo r
-    if (fromName.equals("anyURI") || toName.equals("anyURI")) {
-      return;
-    }
-    if (fromType instanceof GlobalSimpleType && toType instanceof GlobalSimpleType) {
-      return;
-    }
-    */
     if (ValidationUtil.getBasedSimpleType(fromType) != ValidationUtil.getBasedSimpleType(toType)) {
       addWarning("FIX_TYPE_IN_COPY", copy, getTypeName(fromType), getTypeName(toType)); // NOI18N
     }

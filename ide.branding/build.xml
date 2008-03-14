@@ -75,9 +75,6 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
              classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar"
              classpath="${nb_all}/nbbuild/nbantext.jar"/>
-    <taskdef name="grabLocalizableFiles"
-             classname="org.netbeans.nbbuild.GetL9eFiles"
-             classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="makelayer" 
              classname="org.netbeans.nbbuild.MakeLayer" 
 	     classpath="${nb_all}/nbbuild/nbantext.jar"/>

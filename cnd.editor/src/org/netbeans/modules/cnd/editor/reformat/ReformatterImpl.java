@@ -1371,25 +1371,34 @@ public class ReformatterImpl {
     
     private void newLineBefore() {
         if (!ts.isFirstLineToken()) {
-           Token<CppTokenId> previous = ts.lookPrevious();
-           if (previous != null && previous.id() == WHITESPACE) {
+            Token<CppTokenId> previous = ts.lookPrevious();
+            if (previous != null) {
                 DiffResult diff = diffs.getDiffs(ts, -1);
-                if (diff != null) {
-                    if (diff.after != null) {
-                        diff.after.setText(1, getParentIndent());
-                        if (diff.replace != null){
-                            diff.replace.setText(0, 0);
+                if (previous.id() == WHITESPACE) {
+                    if (diff != null) {
+                        if (diff.after != null) {
+                            diff.after.setText(1, getParentIndent());
+                            if (diff.replace != null) {
+                                diff.replace.setText(0, 0);
+                            }
+                            return;
+                        } else if (diff.replace != null) {
+                            diff.replace.setText(1, getParentIndent());
+                            return;
                         }
-                        return;
-                    } else if (diff.replace != null) {
-                        diff.replace.setText(1, getParentIndent());
-                        return;
+                    }
+                    ts.replacePrevious(previous, 1, getParentIndent());
+                    return;
+                } else {
+                    if (diff != null) {
+                        if (diff.after != null) {
+                            diff.after.setText(1, getParentIndent());
+                            return;
+                        }
                     }
                 }
-               ts.replacePrevious(previous, 1, getParentIndent());
-           } else {
-               ts.addBeforeCurrent(1, getParentIndent());
-           }
+            }
+            ts.addBeforeCurrent(1, getParentIndent());
         } else {
             DiffResult diff = diffs.getDiffs(ts, -1);
             if (diff != null) {
