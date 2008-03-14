@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,36 +34,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ws.qaf.rest;
 
-import com.meterware.httpunit.HeaderOnlyWebRequest;
-import java.net.URL;
+package org.netbeans.modules.spring.beans;
+
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 
 /**
  *
- * @author lukas
+ * @author Andrei Badea
  */
-public class DeleteMethodWebRequest extends HeaderOnlyWebRequest {
+public class RecommendedTemplatesImpl implements RecommendedTemplates {
 
-    public DeleteMethodWebRequest(String arg0) {
-        super(arg0);
+    private static final String[] SPRING_TYPES = new String[] {
+        "spring-types" // NOI18N
+    };
+
+    private static final String[] SPRING_WEB_TYPES = new String[] {
+        "spring-web-types" // NOI18N
+    };
+
+    private final boolean web;
+
+    public RecommendedTemplatesImpl(boolean web) {
+        this.web = web;
     }
 
-    public DeleteMethodWebRequest(URL arg0, String arg1) {
-        super(arg0, arg1);
-    }
-
-    public DeleteMethodWebRequest(URL arg0, String arg1, String arg2) {
-        super(arg0, arg1, arg2);
-    }
-
-    /**
-     * Returns the HTTP method defined for this request.
-     **/
-    @Override
-    public String getMethod() {
-        return "DELETE";
+    public String[] getRecommendedTypes() {
+        return web ? SPRING_WEB_TYPES : SPRING_TYPES;
     }
 }

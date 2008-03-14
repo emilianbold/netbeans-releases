@@ -177,7 +177,7 @@ public class StartAppserver extends org.netbeans.performance.test.utilities.Perf
     
     private InternalHandle getServerTaskHandle(InternalHandle[] handles, String taskName) {
         if(handles.length == 0)  {
-            log("Empty tasks queue");
+//            log("Empty tasks queue");
             return null;
         }
         

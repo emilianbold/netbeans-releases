@@ -41,10 +41,12 @@
 
 package gui.window;
 
+import javax.swing.JComponent;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.performance.test.guitracker.LoggingRepaintManager.RegionFilter;
 
 /**
  *
@@ -69,22 +71,38 @@ public class RubyGemsDialog extends org.netbeans.performance.test.utilities.Perf
     @Override
     public void initialize() {
         log("::initialize");
-        MENU = "Ruby Gems"; //Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.rubyproject.gems.Bundle", "CTL_RubyGems");
+        MENU = "Tools"+"|"+"Ruby Gems"; //Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.rubyproject.gems.Bundle", "CTL_RubyGems");
         TITLE = "Ruby Gems"; //org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.rubyproject.gems.Bundle", "CTL_RubyGems");
         
     }
     @Override
     public void prepare() {
         log("prepare");
+        repaintManager().addRegionFilter(GemsProgress);
     }
-
+    private static final RegionFilter GemsProgress = new RegionFilter() {
+        public boolean accept(JComponent c) {
+           return  !(c instanceof javax.swing.JProgressBar);
+        }
+        public String getFilterName() {
+            return "Gems Dialog progressbar filter";
+        }
+    };
     @Override
     public ComponentOperator open() {
         log("::open");
         log("MENU:= "+MENU);
         log("TITLE:= "+TITLE);
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU);
         return new WizardOperator(TITLE);
     }
-
+    @Override
+    public void close() {
+        super.close();
+        repaintManager().resetRegionFilters();        
+        
+    }    
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new RubyGemsDialog("doMeasurement"));        
+    }
 }

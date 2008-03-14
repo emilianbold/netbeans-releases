@@ -195,6 +195,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.sharpAtStartLine));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.indentNamespace));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.indentCasesFromSwitch));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.absoluteLabelIndent));
         sheet.put(set);
         
 	set = new Sheet.Set();
