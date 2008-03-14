@@ -17,7 +17,7 @@ public class AstClassElement extends AstElement implements ClassElement {
     public String getName() {
         if (name == null) {
             if (node instanceof ClassNode) {
-                name = ((ClassNode)node).getName();
+                name = ((ClassNode)node).getNameWithoutPackage();
             }
 
             if (name == null) {
