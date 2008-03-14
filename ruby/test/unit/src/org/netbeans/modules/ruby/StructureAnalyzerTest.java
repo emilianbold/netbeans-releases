@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -57,7 +57,6 @@ import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstClassElement;
 
 /**
- *
  * @author Tor Norbye
  */
 public class StructureAnalyzerTest extends RubyTestBase {
@@ -66,16 +65,6 @@ public class StructureAnalyzerTest extends RubyTestBase {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-    
     private void annotate(int indent, StringBuilder sb, Document document, List<? extends StructureItem> structure) {
         for (StructureItem element : structure) {
             for (int i = 0; i < indent; i++) {
@@ -91,7 +80,7 @@ public class StructureAnalyzerTest extends RubyTestBase {
             sb.append(":");
             sb.append("\n");
             List<? extends StructureItem> children = element.getNestedItems();
-            if (children != null && children.size() > 0) {
+            if (children != null && !children.isEmpty()) {
                 List<? extends StructureItem> c = new ArrayList<StructureItem>(children);
                 // Sort children to make tests more stable
                 Collections.sort(c, new Comparator<StructureItem>() {
@@ -354,6 +343,22 @@ public class StructureAnalyzerTest extends RubyTestBase {
 
     public void testFolds5() throws Exception {
         checkFolds("testfiles/unused.rb");
+    }
+
+    public void testRubyStructureItemEqualsAndHashCode() throws Exception {
+        CompilationInfo info = getInfo("testfiles/testRubyStructureItemEqualsAndHashCode.rb");
+        StructureAnalyzer analyzer = new StructureAnalyzer();
+
+        List<? extends StructureItem> structures = analyzer.scan(info, null);
+        assertEquals("two methods", 3, structures.size());
+        StructureItem twoParams = structures.get(0);
+        StructureItem oneParamA = structures.get(1);
+        StructureItem oneParamB = structures.get(2);
+        assertFalse("not equals", twoParams.equals(oneParamA));
+        assertFalse("not same hashCode (first: " + twoParams.hashCode() + ", second: " + oneParamA.hashCode() + ')',
+                twoParams.hashCode() == oneParamA.hashCode());
+        assertFalse("not equals", oneParamA.equals(oneParamB));
+        assertEquals("same hashCode - we consider just arity", oneParamA.hashCode(), oneParamB.hashCode());
     }
 
 }
