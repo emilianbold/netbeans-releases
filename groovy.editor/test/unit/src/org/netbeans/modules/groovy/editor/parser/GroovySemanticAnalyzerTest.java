@@ -78,12 +78,6 @@ public class GroovySemanticAnalyzerTest extends GroovyTestBase {
 //        // as returning Level.FINEST here would log from all loggers
 //    }
 
-    private void parseFile(FileObject file) throws IOException {
-        CompilationInfo info = getInfo(file);
-        GroovySemanticAnalyzer analyzer = new GroovySemanticAnalyzer();
-        analyzer.run(info);
-    }
-
     private String annotate(Document doc, Map<OffsetRange, ColoringAttributes> highlights) throws Exception {
         StringBuilder sb = new StringBuilder();
         String text = doc.getText(0, doc.getLength());
@@ -127,103 +121,5 @@ public class GroovySemanticAnalyzerTest extends GroovyTestBase {
     public void testAnalysis() throws Exception {
         checkSemantic("testfiles/Hello.groovy");
     }
-    
-    public void testCombinedTest() throws IOException {
-        
-        String str =    "class DemoClass {\n" +
-                        "\tint field1 = 1\n" +
-                        "\n" +
-                        "DemoClass(int inputval){\n" +
-                        "\tfield1 = inputval\n" +
-                        "}\n" +
-                        "static void main(args) {\n" +
-                        "\tString s = 'aaa'\n" +
-                        "\tprintln 'Hello, world'\n" +
-                        "}\n" +
-                        "void dynamicmethod() {\n" +
-                        "\tfield1 = 2\n" +
-                        "\tthis.field1 = 77\n" +
-                        "}\n" +
-                        "}";
-        
-        // un-comment the line below to have cut'n'pastable 
-        // testcases for the groovy-editor
-        // System.out.println(str);
-        copyStringToFileObject(testFO, str);
-        parseFile(testFO);
-    }
-    
-    public void testPropertyExpression() throws IOException {
-        
-        String str =    "class TestClass {\n" +
-                        "\tpublic int pField = 1\n" +
-                        "}\n" +
-                        "TestClass tc = new TestClass()\n" +
-                        "tc.pField = 9\n" +
-                        "\n";
-        
-        // un-comment the line below to have cut'n'pastable 
-        // testcases for the groovy-editor
-        // System.out.println(str);
-        copyStringToFileObject(testFO, str);
-        parseFile(testFO);
-    }
-    
-        public void testConstructorAnnotation() throws IOException {
-        
-        String str =    "class TestClass {\n" +
-                        "\tint field1 = 1;\n" +
-                        "\n" +
-                        "\tTestClass (int f) {\n" +
-                        "\tfield1 = f;\n" +
-                        "\t}\n" +
-                        "}\n" +
-                        "println \"End.\"\n";
-        
-        // un-comment the line below to have cut'n'pastable 
-        // testcases for the groovy-editor
-        // System.out.println(str);
-        copyStringToFileObject(testFO, str);
-        parseFile(testFO);
-        
-        // mark this below "false" to deliberately fail the test and 
-        // thereby enabling the logging from the SemanticAnalyzer
-        assertTrue(true);
-    }
-
-        public void testClassNode() throws IOException {
-        
-        String str =    "class TestClass {\n" +
-                        "\tint field1 = 1;\n" +
-                        "\n" +
-                        "\tTestClass (int f) {\n" +
-                        "\t}\n" +
-                        "}\n" +
-                        "  class  SecondTestClass {\n" +
-                        "\n" +
-                        "\nSecondTestClass (int f) {\n" +
-                        "\t}\n" +
-                        "\nSecondTestClass (String str) {\n" +
-                        "\t}\n" +
-                        "}\n" +
-                        "   class   ThirdTestClass {\n" +
-                        "\n" +
-                        "\nThirdTestClass (int f) {\n" +
-                        "\t}\n" +
-                        "\nThirdTestClass (String str) {\n" +
-                        "\t}\n" +
-                        "}\n" +
-                        "println \"End.\"\n";
-        
-        // un-comment the line below to have cut'n'pastable 
-        // testcases for the groovy-editor
-        // System.out.println(str);
-        copyStringToFileObject(testFO, str);
-        parseFile(testFO);
-        
-        // mark this below "false" to deliberately fail the test and 
-        // thereby enabling the logging from the SemanticAnalyzer
-        assertTrue(true);
-    }        
     
 }

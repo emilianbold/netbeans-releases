@@ -43,18 +43,10 @@ package org.netbeans.modules.groovy.editor.parser;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.expr.PropertyExpression;
-import org.codehaus.groovy.ast.Variable;
-import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.ast.ConstructorNode;
+import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -62,11 +54,11 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.groovy.editor.AstPath;
 import org.netbeans.modules.groovy.editor.AstUtilities;
+import org.netbeans.modules.groovy.editor.SemanticAnalysisVisitor;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.openide.util.Exceptions;
 
 /**
- * @todo use visitor instead of annotate()
  * 
  * @author MArtin Adamek
  */
@@ -74,7 +66,6 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
 
     private boolean cancelled;
     private Map<OffsetRange, ColoringAttributes> semanticHighlights;
-    private final Logger LOG = Logger.getLogger(GroovySemanticAnalyzer.class.getName());
 
     public GroovySemanticAnalyzer() {
         
@@ -121,7 +112,8 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
         AstPath path = new AstPath();
         path.descend(root);
         try {
-            annotate(root, highlights, path, null, false, (BaseDocument) info.getDocument());
+            SemanticAnalysisVisitor visitor = new SemanticAnalysisVisitor((ModuleNode) root, (BaseDocument) info.getDocument());
+            highlights.putAll(visitor.annotate());
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
@@ -150,77 +142,4 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
         }
     }
 
-    /** Find unused local and dynamic variables */
-    @SuppressWarnings("unchecked")
-    private void annotate(ASTNode node, Map<OffsetRange, ColoringAttributes> highlights, AstPath path,
-        List<String> parameters, boolean isParameter, BaseDocument doc) {
-        
-        LOG.log(Level.FINEST, "name:toString:" + node.getClass().getName() + ":" + node.toString());
-        
-        if (node instanceof FieldNode) {
-            OffsetRange range = AstUtilities.getRange(node, doc);
-            highlights.put(range, ColoringAttributes.FIELD);
-            
-            FieldNode field = (FieldNode)node;
-            if (field.isStatic()){
-                highlights.put(range, ColoringAttributes.STATIC);
-            }
-        } else if (node instanceof ConstructorNode) {
-          // Beware, a ConstructorNode is a MethodNode as well, (see below)
-          // but we have to catch the Constructors first.
-          ConstructorNode constructor = (ConstructorNode) node;
-          LOG.log(Level.FINEST, "ConstructorNode found: " + node.getClass().getName() + ":" + node.toString());
-          OffsetRange range = AstUtilities.getRange(node, doc);
-          highlights.put(range, ColoringAttributes.CONSTRUCTOR);
-
-        } else if (node instanceof MethodNode) {
-            OffsetRange range = AstUtilities.getRange(node, doc);
-            highlights.put(range, ColoringAttributes.METHOD);
-            
-            MethodNode method = (MethodNode)node;
-            if (method.isStatic()){
-                highlights.put(range, ColoringAttributes.STATIC);
-            }
-            
-        } else if (node instanceof PropertyExpression) {
-          PropertyExpression propExpr = (PropertyExpression) node;
-          
-          // FIXME: Houston, we have a problem:
-          // the PropertyExpression comes with no line/column information
-          // this is supposed to be fixed in Groovy. See:
-          // http://jira.codehaus.org/browse/GROOVY-2575
-
-        } else if (node instanceof ClassNode) {
-            ClassNode classNode = (ClassNode)node;
-            
-            if(node.getLineNumber() > 0) {
-                OffsetRange range = AstUtilities.getRange(node, doc);
-                
-                highlights.put(range, ColoringAttributes.CLASS);
-            }
-            
-        } else if (node instanceof VariableExpression) {
-            VariableExpression varEx = (VariableExpression) node;
-            Variable var = varEx.getAccessedVariable();
-
-            if (var instanceof FieldNode) {
-                if (node.getLineNumber() > 0) {
-                    OffsetRange range = AstUtilities.getRange(node, doc);
-                    highlights.put(range, ColoringAttributes.FIELD);
-                }
-            }
-        }
-
-        
-        
-
-        List<ASTNode> list = AstUtilities.children(node);
-        for (ASTNode child : list) {
-            path.descend(child);
-            annotate(child, highlights, path, parameters, isParameter, doc);
-            path.ascend();
-        }
-    }
-
-    
 }
