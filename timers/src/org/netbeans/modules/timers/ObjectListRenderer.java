@@ -38,56 +38,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.project;
+package org.netbeans.modules.timers;
 
-import java.net.URI;
-import java.net.URL;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
-import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
-import org.netbeans.spi.java.queries.support.SourceForBinaryQueryImplementation2Base;
+import java.awt.Component;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
+import org.openide.explorer.view.NodeRenderer;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 
-/**
- * Finds sources corresponding to binaries.
- * Assumes an instance of SourceForBinaryQueryImplementation is in project's lookup.
- * @author Jesse Glick, Tomas Zezula
+/** Renderer for various NetBeans objects.
+ *
+ * @author Jaroslav Tulach
  */
-public class ProjectSourceForBinaryQuery extends SourceForBinaryQueryImplementation2Base {
-    
-    /** Default constructor for lookup. */
-    public ProjectSourceForBinaryQuery() {}
+final class ObjectListRenderer extends DefaultListCellRenderer {
 
-    public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
-        Project project = FileOwnerQuery.getOwner(URI.create(binaryRoot.toString()));
-        if (project != null) {
-            SourceForBinaryQueryImplementation sfbqi = project.getLookup().lookup(SourceForBinaryQueryImplementation.class);
-            if (sfbqi != null) {
-                return sfbqi.findSourceRoots(binaryRoot);
-            }
-        }
-        return null;
+    private NodeRenderer r;
+
+    ObjectListRenderer() {
+        super();
+        r = new NodeRenderer();
     }
 
-    
-    public Result findSourceRoots2(URL binaryRoot) {
-        Project project = FileOwnerQuery.getOwner(URI.create(binaryRoot.toString()));
-        if (project != null) {
-            SourceForBinaryQueryImplementation sfbqi = project.getLookup().lookup(SourceForBinaryQueryImplementation.class);
-            if (sfbqi != null) {
-                if (sfbqi instanceof SourceForBinaryQueryImplementation2) {
-                    return ((SourceForBinaryQueryImplementation2)sfbqi).findSourceRoots2(binaryRoot);
-                }
-                else {
-                    final SourceForBinaryQuery.Result result = sfbqi.findSourceRoots(binaryRoot);
-                    if (result != null) {
-                        return asResult (result);
-                    }
-                }
+    @Override
+    public Component getListCellRendererComponent(JList list, Object wr, int index, boolean isSelected, boolean cellHasFocus) {
+        Object value = ((WeakReference) wr).get();
+        if (value instanceof FileObject) {
+            try {
+                FileObject fo = (FileObject) value;
+                value = DataObject.find(fo);
+            } catch (IOException e) {
+                FileObject fo = (FileObject) value;
+                value = "FO: " + fo;
             }
         }
-        return null;
+        
+        if (value instanceof DataObject) {
+            value = ((DataObject)value).getNodeDelegate();
+        }
+        
+        if (value instanceof Node) {
+            Node node = (Node)value;
+            return r.getListCellRendererComponent(list, node, index, isSelected, cellHasFocus);
+        }
+
+        return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
     }
-    
 }

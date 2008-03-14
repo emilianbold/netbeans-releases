@@ -8,6 +8,25 @@
         </component>
     </component>
     <component name="Schemas" title="Schemas" type="/IEP/Model/Plan|Schemas"/>
-    <component name="Operators" title="Operators" type="/IEP/Model/Plan|Operators"/>
+    <component name="Operators" title="Operators" type="/IEP/Model/Plan|Operators">
+        <component type="/IEP/Input/StreamInput" name="o0" title="o0">
+            <property name="x" value="84"/>
+            <property name="y" value="82"/>
+            <property name="z" value="0"/>
+            <property name="name" value="StreamInput0"/>
+            <property name="id" value="o0"/>
+            <property name="inputSchemaIdList" value=""/>
+            <property name="outputSchemaId" value=""/>
+            <property name="description" value=""/>
+            <property name="topoScore" value="0"/>
+            <property name="inputType" value="i18n.IEP.IOType.none"/>
+            <property name="outputType" value="i18n.IEP.IOType.stream"/>
+            <property name="inputIdList" value=""/>
+            <property name="staticInputIdList" value=""/>
+            <property name="isGlobal" value="false"/>
+            <property name="globalId" value=""/>
+            <property name="batchMode" value="false"/>
+        </component>
+    </component>
     <component name="Links" title="Links" type="/IEP/Model/Plan|Links"/>
 </component>

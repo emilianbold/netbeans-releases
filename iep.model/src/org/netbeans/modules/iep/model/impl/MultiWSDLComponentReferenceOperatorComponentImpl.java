@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,60 +31,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.timers;
 
-import java.lang.ref.WeakReference;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.junit.NbTestCase;
+package org.netbeans.modules.iep.model.impl;
+
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.MultiWSDLComponentReference;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.w3c.dom.Element;
 
 /**
  *
- * @author Petr Hrebejk
+ * @author radval
  */
-public class InstanceWatcherTest extends NbTestCase {
+public class MultiWSDLComponentReferenceOperatorComponentImpl extends OperatorComponentImpl implements MultiWSDLComponentReference {
 
-    public InstanceWatcherTest(String testName) {
-    super(testName);
+    public MultiWSDLComponentReferenceOperatorComponentImpl(IEPModel model,  Element e) {
+        super(model, e);
     }
-
-    public void testFiring() throws Exception {
-        System.out.println("addChangeListener");
-
-        QueueListener listener = new QueueListener();
-        InstanceWatcher iw = new InstanceWatcher();
         
-        iw.addChangeListener(listener);
-        
-        Integer ts1 = new Integer( 20 );
-        iw.add( ts1 );
-               
-        WeakReference tmp; // For forcing GC
-        
-        tmp = new WeakReference<Object>( new Object() );
-        assertGC( "", tmp );
-        
-        assertEquals( "There should be no change in the queue", 0, listener.changeCount );
-        
-        ts1 = null; // Remove hard reference
-        
-        tmp = new WeakReference<Object>( new Object() );        
-        assertGC( "", tmp ); // Do garbage collect
-        
-        assertEquals( "There should be one change in the queue", 1, listener.changeCount );
-                
-    }
-
-    
-    private static class QueueListener implements ChangeListener {
-        
-        int changeCount;
-        
-        public void stateChanged( ChangeEvent e ) {
-            changeCount ++;
-        }
-        
+    public MultiWSDLComponentReferenceOperatorComponentImpl(IEPModel model) {
+        super(model);
     }
     
+    public NamedComponentReference<PortType> getPortType() {
+        return resolveGlobalReference(PortType.class, ATTR_PORTTYPE);
+    }
+
+    public void setPortType(NamedComponentReference<PortType> value) {
+        setAttribute(PORT_TYPE, ATTR_PORTTYPE, value);
+    }
+
+    public NamedComponentReference<Operation> getOperation() {
+        return resolveGlobalReference(Operation.class, ATTR_OPERATION);
+    }
+
+    public void setOperation(NamedComponentReference<Operation> value) {
+        setAttribute(OPERATION, ATTR_OPERATION, value);
+    }
+
+    public NamedComponentReference<Message> getMessage() {
+        return resolveGlobalReference(Message.class, ATTR_MESSAGE);
+    }
+
+    public void setMessage(NamedComponentReference<Message> value) {
+        setAttribute(MESSAGE, ATTR_MESSAGE, value);
+    }
+
 }
