@@ -55,6 +55,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
 import org.openide.modules.ModuleInfo;
+import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.util.lookup.AbstractLookup;
 
@@ -70,6 +71,10 @@ public class InstanceDataObjectTest extends NbTestCase {
     /** Creates new DataFolderTest */
     public InstanceDataObjectTest(String name) {
         super (name);
+    }
+    
+    protected <T extends Node.Cookie> T getCookie(DataObject obj, Class<T> clazz) {
+        return obj.getCookie(clazz);
     }
     
     @Override
@@ -214,7 +219,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         assertNotNull(fo);
         String filename = fo.getNameExt();
         DataObject dobj = DataObject.find(fo);
-        InstanceCookie.Of ic = (InstanceCookie.Of) dobj.getCookie(InstanceCookie.Of.class);
+        InstanceCookie.Of ic = (InstanceCookie.Of) getCookie(dobj, InstanceCookie.Of.class);
         assertNotNull(filename, ic);
         
         assertTrue(filename, ic.instanceOf(Runnable.class));
@@ -276,7 +281,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         
         DataObject obj = DataObject.find (fo);
         
-        InstanceCookie ic = (InstanceCookie)obj.getCookie (InstanceCookie.class);
+        InstanceCookie ic = (InstanceCookie)getCookie (obj, InstanceCookie.class);
         assertTrue ("Object: " + obj + " does not have instance cookie", ic != null);
         
         Object value = ic.instanceCreate ();
@@ -351,7 +356,7 @@ public class InstanceDataObjectTest extends NbTestCase {
             fail ("Wrong name of new data object: " + newObj.getName ());
         }
 
-        InstanceCookie ic = (InstanceCookie)newObj.getCookie (InstanceCookie.class);
+        InstanceCookie ic = (InstanceCookie)getCookie (newObj, InstanceCookie.class);
         
         if (ic == null) {
             fail ("No instance cookie for " + newObj);
@@ -373,13 +378,13 @@ public class InstanceDataObjectTest extends NbTestCase {
 
         InstanceDataObject obj = InstanceDataObject.create (folder, null, ser, null);
         
-        InstanceCookie icOrig = (InstanceCookie) obj.getCookie (InstanceCookie.class);
+        InstanceCookie icOrig = (InstanceCookie) getCookie (obj, InstanceCookie.class);
         assertNotNull("No instance cookie for " + obj, icOrig);
         assertEquals("created instance is different from the original", ser, icOrig.instanceCreate());
         
         DataObject newObj = obj.copy(folder);
         
-        InstanceCookie ic = (InstanceCookie) newObj.getCookie (InstanceCookie.class);
+        InstanceCookie ic = (InstanceCookie) getCookie (newObj, InstanceCookie.class);
         
         assertNotNull("No instance cookie for " + newObj, ic);
         assertTrue("created instance is same as the original", ic.instanceCreate() != icOrig.instanceCreate());
@@ -400,7 +405,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         
         InstanceDataObject ido = InstanceDataObject.create (folderTest, "testLookupRefresh", ser, null);
         Collection col = l.lookupAll(ser.getClass());
-        InstanceCookie ic = (InstanceCookie) ido.getCookie(InstanceCookie.class);
+        InstanceCookie ic = (InstanceCookie) getCookie(ido, InstanceCookie.class);
         assertEquals("IDO did not create new InstanceCookie", ser, ic.instanceCreate());
         
         Set origSet = new HashSet(Arrays.asList(new Object[] {ser}));
@@ -439,7 +444,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         });
         
         col = l.lookupAll(ser.getClass());
-        ic = (InstanceCookie) ido.getCookie(InstanceCookie.class);
+        ic = (InstanceCookie) getCookie(ido, InstanceCookie.class);
         origSet = new HashSet(Arrays.asList(new Object[] {ic.instanceCreate()}));
         
         assertEquals("wrong lookup result", origSet, new HashSet(col));
@@ -460,7 +465,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         assertEquals("created wrong filename: ", "javax-swing-JButton", ido.getName());
         InstanceDataObject ido2 = InstanceDataObject.create(folder, filename, "javax.swing.JButton");
         assertEquals("creating the same instance failed", ido, ido2);
-        InstanceCookie ic = (InstanceCookie) ido.getCookie(InstanceCookie.class);
+        InstanceCookie ic = (InstanceCookie) getCookie(ido, InstanceCookie.class);
         assertEquals("wrong classname: ", "javax.swing.JButton", ic.instanceClass().getName());
         
         filename = "new file";
@@ -468,7 +473,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         assertEquals("created wrong filename: ", filename, ido.getName());
         ido2 = InstanceDataObject.create(folder, filename, "javax.swing.JButton");
         assertEquals("creating the same instance failed", ido, ido2);
-        ic = (InstanceCookie) ido.getCookie(InstanceCookie.class);
+        ic = (InstanceCookie) getCookie(ido, InstanceCookie.class);
         assertEquals("wrong classname: ", "javax.swing.JButton", ic.instanceClass().getName());
     }
     
@@ -482,13 +487,13 @@ public class InstanceDataObjectTest extends NbTestCase {
         InstanceDataObject ido = InstanceDataObject.find(folder, "button2", "java.awt.Button");
         assertNotNull("ido not found: 'button2'", ido);
         assertEquals("found wrong ido", "button2", ido.getName());
-        InstanceCookie ic = (InstanceCookie) ido.getCookie(InstanceCookie.class);
+        InstanceCookie ic = (InstanceCookie) getCookie(ido, InstanceCookie.class);
         assertEquals("found ido with wrong classname", "java.awt.Button", ic.instanceClass().getName());
         
         ido = InstanceDataObject.find(folder, "button", "javax.swing.JButton");
         assertNotNull("ido not found: 'button'", ido);
         assertEquals("found wrong ido", "button", ido.getName());
-        ic = (InstanceCookie) ido.getCookie(InstanceCookie.class);
+        ic = (InstanceCookie) getCookie(ido, InstanceCookie.class);
         assertEquals("found ido with wrong classname", "javax.swing.JButton", ic.instanceClass().getName());
         
         String renamed = "renamed_button";
@@ -497,7 +502,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         ido = InstanceDataObject.find(folder, renamed, "javax.swing.JButton");
         assertNotNull("ido not found: " + ido.getName(), ido);
         assertEquals("found wrong ido", renamed, ido.getName());
-        ic = (InstanceCookie) ido.getCookie(InstanceCookie.class);
+        ic = (InstanceCookie) getCookie(ido, InstanceCookie.class);
         assertEquals("found ido with wrong classname", "javax.swing.JButton", ic.instanceClass().getName());
         
         ido = InstanceDataObject.find(folder, "button", "javax.swing.JButton");
@@ -506,13 +511,13 @@ public class InstanceDataObjectTest extends NbTestCase {
         ido = InstanceDataObject.find(folder, "fileWithInstanceClass", "javax.swing.JButton");
         assertNotNull("ido not found: 'fileWithInstanceClass'", ido);
         assertEquals("found wrong ido", "fileWithInstanceClass", ido.getName());
-        ic = (InstanceCookie) ido.getCookie(InstanceCookie.class);
+        ic = (InstanceCookie) getCookie(ido, InstanceCookie.class);
         assertEquals("found ido with wrong classname", "javax.swing.JButton", ic.instanceClass().getName());
         
         ido = InstanceDataObject.find(folder, null, "javax.swing.JButton");
         assertNotNull("ido not found 'javax-swing-JButton'", ido);
         assertEquals("found wrong ido", "javax-swing-JButton", ido.getName());
-        ic = (InstanceCookie) ido.getCookie(InstanceCookie.class);
+        ic = (InstanceCookie) getCookie(ido, InstanceCookie.class);
         assertEquals("found ido with wrong classname", "javax.swing.JButton", ic.instanceClass().getName());
         
         ido = InstanceDataObject.find(folder, null, "java.awt.Button");
@@ -555,7 +560,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         InstanceDataObject ido = InstanceDataObject.create(folder, "MyButtonek", b, null);
         
         Class c = Object.class;
-        Object res = ido.getCookie(c);
+        Object res = getCookie(ido, c);
         assertNotNull("Some object found", res);
         assertEquals("This finds InstanceDataObject", InstanceDataObject.class, res.getClass());
     }
@@ -606,14 +611,14 @@ public class InstanceDataObjectTest extends NbTestCase {
         
         InstanceDataObject ido = (InstanceDataObject)DataObject.find (file);
         
-        InstanceCookie ic = (InstanceCookie)ido.getCookie (InstanceCookie.class);
+        InstanceCookie ic = (InstanceCookie)getCookie (ido, InstanceCookie.class);
         assertNotNull ("Has cookie", ic);
         assertEquals ("And its value is y", y, ic.instanceCreate ());
         
 
         lookupFO.delete ();
         
-        ic = (InstanceCookie)ido.getCookie (InstanceCookie.class);
+        ic = (InstanceCookie)getCookie (ido, InstanceCookie.class);
         assertNotNull ("Has cookie", ic);
         assertEquals ("And its value is x", x, ic.instanceCreate ());
     }
@@ -852,7 +857,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         DataObject obj = DataObject.find (fo);
         assertNotNull("Object found", obj);
         
-        InstanceCookie.Of c = (InstanceCookie.Of)obj.getCookie(InstanceCookie.Of.class);
+        InstanceCookie.Of c = (InstanceCookie.Of)getCookie(obj, InstanceCookie.Of.class);
         assertNotNull ("Cookie found", c);
         
         assertTrue("Instance of object", c.instanceOf(Object.class));
@@ -918,7 +923,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         
         DataObject obj = DataObject.find (fo);
         assertNotNull(obj);
-        assertNull (obj.getCookie(InstanceCookie.class));
+        assertNull (getCookie(obj, InstanceCookie.class));
         
 
         obj.addPropertyChangeListener(new PropertyChangeListener() {
@@ -937,7 +942,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         is.read(all);
         is.close();
 
-        assertNotNull (obj.getCookie(InstanceCookie.class));        
+        assertNotNull (getCookie(obj, InstanceCookie.class));        
         assertEquals (new String (all),1, events.size()); 
     }
 
@@ -952,7 +957,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         
         writeObject(fo, obj);
         DataObject ser = DataObject.find(fo);
-        InstanceCookie ic = (InstanceCookie)ser.getCookie(InstanceCookie.class);            
+        InstanceCookie ic = (InstanceCookie)getCookie(ser, InstanceCookie.class);            
 
         
         assertNotNull (ic);
@@ -965,7 +970,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         ((ArrayList)obj).add("element");
         Thread.sleep(2000);
         writeObject(fo, obj);
-        ic = (InstanceCookie)ser.getCookie(InstanceCookie.class);            
+        ic = (InstanceCookie)getCookie(ser, InstanceCookie.class);            
         assertNotNull (ic);        
         Object instance2 = ic.instanceCreate();
         assertNotNull (instance2);
@@ -1020,7 +1025,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         
         DataObject obj = DataObject.find (fo);
         assertNotNull(obj);
-        assertNotNull (obj.getCookie(InstanceCookie.class));
+        assertNotNull (getCookie(obj, InstanceCookie.class));
         
 
         obj.addPropertyChangeListener(new PropertyChangeListener() {
@@ -1039,7 +1044,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         is.read(all);
         is.close();
 
-        assertNotNull (obj.getCookie(InstanceCookie.class));        
+        assertNotNull (getCookie(obj, InstanceCookie.class));        
         assertEquals (new String (all),1, events.size()); 
     }
 
