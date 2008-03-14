@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,34 +38,28 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.ruby.platform.gems;
 
-package gui;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.api.ruby.platform.RubyTestBase;
 
+public final class GemRunnerTest extends RubyTestBase {
 
-import org.netbeans.junit.NbTestSuite;
-import gui.actions.*;
-
-/**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
- *
- * @author  mmirilovic@netbeans.org, rashid@netbeans.org, mrkam@netbeans.org
- */
-public class EPMeasureActions1  {
-
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-            
-// Disabled testGCProjects check to shorten run time        
-//        suite.addTest(new WatchProjects("testInitGCProjects"));
-        suite.addTest(new CreateBPELmodule("measureTime", "Create BPEL module"));
-        suite.addTest(new CreateCompositeApplication("measureTime", "Create Composite Application"));
-//        suite.addTest(new AddNewWSDLDocument("measureTime", "Add New WSDL Document"));
-//        suite.addTest(new AddNewXMLSchema("measureTime", "Add New XML Schema"));
-//        suite.addTest(new AddNewXMLDocument("measureTime", "Add New XML Document"));
-//        suite.addTest(new AddNewBpelProcess("measureTime", "Add New Bpel Process")); 
-// Disabled testGCProjects check to shorten run time        
-//        suite.addTest(new WatchProjects("testGCProjects"));
-        return suite;
+    public GemRunnerTest(String testName) {
+        super(testName);
     }
-    
+
+    public void testGemsAreFetchedWithDescriptions() { // # issue 125508
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        GemManager gm = jruby.getGemManager();
+        List<String> errors = new ArrayList<String>();
+        List<Gem> installed = gm.getInstalledGems(errors);
+        assertFalse("has some installed gems in default platform", installed.isEmpty());
+        for (Gem gem : installed) {
+            assertNotNull(gem.getName() + " has description", gem.getDescription());
+        }
+    }
 }
