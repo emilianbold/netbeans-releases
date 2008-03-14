@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.openide.modules.ModuleInfo;
 import org.openide.cookies.InstanceCookie;
@@ -82,6 +83,11 @@ public class SerialDataConvertorTest extends NbTestCase {
     /** Creates new DataFolderTest */
     public SerialDataConvertorTest(String name) {
         super (name);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     /** Setups variables.
