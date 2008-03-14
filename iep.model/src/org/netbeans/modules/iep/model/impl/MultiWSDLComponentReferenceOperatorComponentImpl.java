@@ -62,7 +62,7 @@ public class MultiWSDLComponentReferenceOperatorComponentImpl extends OperatorCo
     }
     
     public NamedComponentReference<PortType> getPortType() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return resolveGlobalReference(PortType.class, ATTR_PORTTYPE);
     }
 
     public void setPortType(NamedComponentReference<PortType> value) {
@@ -70,19 +70,19 @@ public class MultiWSDLComponentReferenceOperatorComponentImpl extends OperatorCo
     }
 
     public NamedComponentReference<Operation> getOperation() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return resolveGlobalReference(Operation.class, ATTR_OPERATION);
     }
 
     public void setOperation(NamedComponentReference<Operation> value) {
-        setAttribute(OPERATION, ATTR_PORTTYPE, value);
+        setAttribute(OPERATION, ATTR_OPERATION, value);
     }
 
     public NamedComponentReference<Message> getMessage() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return resolveGlobalReference(Message.class, ATTR_MESSAGE);
     }
 
     public void setMessage(NamedComponentReference<Message> value) {
-        setAttribute(MESSAGE, ATTR_PORTTYPE, value);
+        setAttribute(MESSAGE, ATTR_MESSAGE, value);
     }
 
 }
