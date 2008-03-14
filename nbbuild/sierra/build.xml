@@ -43,7 +43,7 @@
     <import file="build.tst"/>
     
     <target name="all" depends="init,get-netbeans,build-xtest,clean,build-and-create"/>
-    <target name="build-and-create" depends="build-fcs,create-zip-init,create-zip,create-zip-fcs,build-dev,create-zip-dev"/>
+    <target name="build-and-create" depends="build-fcs,create-init,create-zip,create-zip-fcs,build-dev,create-zip-dev"/>
     <target name="hudson" depends="run-daily,all"/>
 
     <target name="init">
@@ -79,7 +79,7 @@
     </target>
 
     <!-- zip -->
-    <target name="create-zip-init">
+    <target name="create-init">
         <delete dir="${dist}"/>
         <mkdir dir="${dist}"/>
         <delete dir="${latest}"/>
