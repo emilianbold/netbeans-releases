@@ -190,6 +190,7 @@ tokens {
     LITERAL___w64="__w64"; // NOI18N
     LITERAL___extension__="__extension__"; // NOI18N
     LITERAL___attribute__="__attribute__"; // NOI18N
+    LITERAL_restrict="restrict"; // NOI18N
     LITERAL___restrict="__restrict"; // NOI18N
     LITERAL___complex="__complex__"; // NOI18N
     LITERAL___imag="__imag__"; // NOI18N
