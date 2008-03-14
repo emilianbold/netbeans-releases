@@ -901,32 +901,17 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 //            CompilerSet cs = (CompilerSet) cbCompilerSet.getSelectedItem();
             CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
             changed = false;
-            
-            csm.saveToDisk();
-            CompilerSetManager.setDefault(csm);
-//            model.setPath(dirlist);
-//            model.setMakeName(tfMakeCommand.getText());
-//            model.setMakePath(tfMakePath.getText());
             if (cs != null) {
                 cs.getTool(Tool.MakeTool).setPath(tfMakePath.getText());
                 cs.getTool(Tool.DebuggerTool).setPath(tfGdbPath.getText());
                 cs.getTool(Tool.CCompiler).setPath(tfCPath.getText());
                 cs.getTool(Tool.CCCompiler).setPath(tfCppPath.getText());
                 cs.getTool(Tool.FortranCompiler).setPath(tfFortranPath.getText());
-    //            model.setGdbName(tfGdbCommand.getText());
-    //            model.setGdbPath(tfGdbPath.getText());
                 model.setCompilerSetName(csm.getDefaultCompilerSet().getName());
                 model.setSelectedCompilerSetName(cs.getName());
-    //            if (cSelections.get(cs.getName()) != null) {
-    //                model.setCCompilerName(cSelections.get(cs.getName()));
-    //            }
-    //            if (cppSelections.get(cs.getName()) != null) {
-    //                model.setCppCompilerName(cppSelections.get(cs.getName()));
-    //            }
-    //            if (fortranSelections.get(cs.getName()) != null) {
-    //                model.setFortranCompilerName(fortranSelections.get(cs.getName()));
-    //            }
             }
+            csm.saveToDisk();
+            CompilerSetManager.setDefault(csm);
             currentCompilerSet = cs;
 //            fireCompilerSetChange();
 //            fireCompilerSetModified();

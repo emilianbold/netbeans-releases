@@ -141,6 +141,7 @@ public class CompilerSetManager {
                         null,
                         null);
                     DialogDisplayer.getDefault().notify(dialogDescriptor);
+                }
             }
         }
         if (instance != null && instance.getCompilerSets().size() == 0) { // No compilers found
