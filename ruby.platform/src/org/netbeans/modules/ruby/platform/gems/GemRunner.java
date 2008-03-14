@@ -81,15 +81,15 @@ final class GemRunner {
     }
 
     boolean fetchBoth() {
-        return gemRunner("list", null, null, "--both"); // NOI18N
+        return gemRunner("list", null, null, "--both", "--details"); // NOI18N
     }
 
     boolean fetchRemote() {
-        return gemRunner("list", null, null, "--remote"); // NOI18N
+        return gemRunner("list", null, null, "--remote", "--details"); // NOI18N
     }
 
     boolean fetchLocal() {
-        return gemRunner("list", null, null, "--local"); // NOI18N
+        return gemRunner("list", null, null, "--local", "--details"); // NOI18N
     }
     
     boolean install(final List<String> gemNames, boolean rdoc, boolean ri, boolean includeDeps,
