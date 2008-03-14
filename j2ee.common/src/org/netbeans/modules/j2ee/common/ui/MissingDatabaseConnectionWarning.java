@@ -63,6 +63,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -114,7 +115,7 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
             DialogDescriptor.CLOSED_OPTION
         };
         final DialogDescriptor desc = new DialogDescriptor(panel, title, true, options,
-                DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx("projrave_ui_elements_dialogs_resolve_data_source_db"), null);
         desc.setMessageType(DialogDescriptor.WARNING_MESSAGE);
         Dialog dlg = null;
         try {
