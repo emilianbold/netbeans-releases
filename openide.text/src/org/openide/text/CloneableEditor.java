@@ -50,6 +50,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.*;
+import javax.xml.ws.FaultAction;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.*;
@@ -177,6 +178,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     }
 
     
+    final static Logger TIMER = Logger.getLogger("TIMER"); // NOI18N
+    final boolean NEW_INITIALIZE = Boolean.getBoolean("org.openide.text.CloneableEditor.newInitialize"); // NOI18N
+
     class DoInitialize implements Runnable {
         private final QuietEditorPane tmp;
         private Document doc;
@@ -186,34 +190,51 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
         public DoInitialize(QuietEditorPane tmp) {
             this.tmp = tmp;
-            task = CloneableEditorSupport.RP.create(this);
-            task.setPriority(Thread.NORM_PRIORITY);
-            task.schedule(0);
+            if (!NEW_INITIALIZE) {
+                run();
+            } else {
+                task = CloneableEditorSupport.RP.create(this);
+                task.setPriority(Thread.MIN_PRIORITY);
+                task.schedule(0);
+            }
         }
         
+        @SuppressWarnings("fallthrough")
         public void run() {
+            long now = System.currentTimeMillis();
+            
+            int phaseNow = phase;
             switch (phase++) {
             case 0: 
                 initNonVisual();
-                WindowManager.getDefault().invokeWhenUIReady(this);
-                return;
+                if (NEW_INITIALIZE) {
+                    WindowManager.getDefault().invokeWhenUIReady(this);
+                    break;
+                }
             case 1:
-                initKit();
-                task.schedule(0);
-                return;
-            case 2:
-                initDecoration();
-                WindowManager.getDefault().invokeWhenUIReady(this);
-                return;
-            case 3:    
                 initVisual();
-                task.schedule(1000);
-                return;
-            case 4:
+                if (NEW_INITIALIZE) {
+                    task.schedule(1000);
+                    break;
+                }
+            case 2:
                 initRest();
-                return;
+                break;
             default:
                 throw new IllegalStateException("Wrong phase: " + phase + " for " + support);
+            }
+            
+            long howLong = System.currentTimeMillis() - now;
+            if (TIMER.isLoggable(Level.FINE)) {
+                String thread = SwingUtilities.isEventDispatchThread() ? "AWT" : "RP"; // NOI18N
+                Object who = doc.getProperty(Document.StreamDescriptionProperty);
+                if (who == null) {
+                    who = support.messageName();
+                }
+                TIMER.log(Level.FINE,  
+                    "Open Editor, phase " + phaseNow + ", " + thread + " [ms]",
+                    new Object[] { who, howLong}
+                );
             }
         }
             
@@ -245,8 +266,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             kit = support.cesKit();
         }
         
-        private void initKit() {
-            tmp.setEditorKit(kit);
+        private void initCustomEditor() {
             if (doc instanceof NbDocument.CustomEditor) {
                 NbDocument.CustomEditor ce = (NbDocument.CustomEditor) doc;
                 customComponent = ce.createEditor(tmp);
@@ -262,7 +282,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
 
         private void initDecoration() {
-            
             if (doc instanceof NbDocument.CustomToolbar) {
                 NbDocument.CustomToolbar ce = (NbDocument.CustomToolbar) doc;
                 customToolbar = ce.createToolbar(tmp);
@@ -278,6 +297,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
         
         private void initVisual() {
+            tmp.setEditorKit(kit);
+            
+            // the following two shall be done out of AWT:
+            initCustomEditor();
+            initDecoration();
+            
             tmp.setDocument(doc);
             
             if (customComponent != null) {
