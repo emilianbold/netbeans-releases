@@ -102,6 +102,7 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
 
     @Override
     public void update() {
+        
     }
 
     @Override
