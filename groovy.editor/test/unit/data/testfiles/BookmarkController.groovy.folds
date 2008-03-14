@@ -1,4 +1,4 @@
-+ import org.grails.bookmarks.*
+  import org.grails.bookmarks.*
   
   class BookmarkController extends SecureController {
   	
