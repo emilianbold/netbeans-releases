@@ -36,40 +36,58 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.hibernate.framework;
 
-import java.io.File;
-import org.netbeans.modules.web.api.webmodule.ExtenderController;
+import java.util.Set;
+import java.util.TreeSet;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileObject;
+import org.openide.util.HelpCtx;
 
 /**
  *
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
-public class HibernateFrameworkProvider extends WebFrameworkProvider{
+public class HibernateWebModuleExtender extends WebModuleExtender {
 
-    public HibernateFrameworkProvider() {
-        super(NbBundle.getMessage(HibernateFrameworkProvider.class, "HibernateFramework_Name"), 
-                NbBundle.getMessage(HibernateFrameworkProvider.class, "HibernateFramework_Description"));
-    }
+    HibernateConfigurationPanel configPanel = new HibernateConfigurationPanel();
+
     @Override
-    public boolean isInWebModule(WebModule wm) {
-        return true;
+    public void addChangeListener(ChangeListener listener) {
+
     }
 
     @Override
-    public WebModuleExtender createWebModuleExtender(WebModule wm, ExtenderController controller) {
-        HibernateWebModuleExtender webModuleExtender = new HibernateWebModuleExtender();
-        return webModuleExtender;
+    public void removeChangeListener(ChangeListener listener) {
+
     }
 
-    
     @Override
-    public File[] getConfigurationFiles(WebModule wm) {
-        return new File[]{};
+    public JComponent getComponent() {
+        return configPanel;
+    }
+
+    @Override
+    public HelpCtx getHelp() {
+        return null;
+    }
+
+    @Override
+    public void update() {
+        System.out.println("update is called.");
+    }
+
+    @Override
+    public boolean isValid() {
+        return configPanel.isPanelValid();
+    }
+
+    @Override
+    public Set<FileObject> extend(WebModule webModule) {
+        System.out.println("extend is called ./");
+        return new TreeSet<FileObject>();
     }
 }

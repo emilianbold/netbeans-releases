@@ -1,26 +1,93 @@
 /*
- * HibernateConfigurationPanel.java
- *
- * Created on 11 March, 2008, 3:00 PM
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * 
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.hibernate.framework;
 
+import javax.swing.DefaultComboBoxModel;
+import org.netbeans.modules.hibernate.wizards.Util;
+
 /**
- *
- * @author  isvuser
+ * This panel allows setting up a Hibernate session during the 
+ * New Project creation. This panel by default setups a default session
+ * using Java DB connection. 
+ * 
+ * @author  Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public class HibernateConfigurationPanel extends javax.swing.JPanel {
-    
+
+    private final String JAVADB_DIALECT_CODE = "Derby"; //NOI18N
+
     /** Creates new form HibernateConfigurationPanel */
     public HibernateConfigurationPanel() {
         initComponents();
+        fillDBDialectCombo();
+        setDefaults();
+    }
+
+    private void fillDBDialectCombo() {
+        dialectComboBox.setModel(new DefaultComboBoxModel(Util.getDialectCodes()));
+    }
+
+    private void setDefaults() {
+        dialectComboBox.setSelectedItem(JAVADB_DIALECT_CODE);
+        driverClassTextField.setText(Util.getSelectedDriver(JAVADB_DIALECT_CODE));
+        connectionURLComboBox.setSelectedItem(Util.getSelectedURLConnection(JAVADB_DIALECT_CODE));
+        usernameTextField.setText("travel"); //NOI18N
+        passwordTextField.setText("travel"); //NOI18N
+    }
+
+    private void updateDriverClassAndConnectionURL() {
+        String dialectCode = (String) dialectComboBox.getSelectedItem();
+        driverClassTextField.setText(Util.getSelectedDriver(dialectCode));
+        connectionURLComboBox.setSelectedItem(Util.getSelectedURLConnection(dialectCode));
+        if (JAVADB_DIALECT_CODE.equals(dialectCode)) {
+            usernameTextField.setText("travel"); //NOI18N
+            passwordTextField.setText("travel"); //NOI18N
+        } else {
+            usernameTextField.setText(""); //NOI18N
+            passwordTextField.setText(""); //NOI18N
+        }
     }
 
     public boolean isPanelValid() {
-      return true;
+        return true;
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -32,7 +99,17 @@ public class HibernateConfigurationPanel extends javax.swing.JPanel {
         hibernateSessionNameLabel = new javax.swing.JLabel();
         hibernateSessionNameTextField = new javax.swing.JTextField();
         databaseDialectNameLabel = new javax.swing.JLabel();
-        databaseDialectNameTextField = new javax.swing.JTextField();
+        driverClassLabel = new javax.swing.JLabel();
+        connectionURLLabel = new javax.swing.JLabel();
+        usernameLabel = new javax.swing.JLabel();
+        passwordLabel = new javax.swing.JLabel();
+        dialectComboBox = new javax.swing.JComboBox();
+        connectionURLComboBox = new javax.swing.JComboBox();
+        passwordTextField = new javax.swing.JTextField();
+        usernameTextField = new javax.swing.JTextField();
+        driverClassTextField = new javax.swing.JTextField();
+        jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
 
         hibernateSessionNameLabel.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationPanel.class, "HibernateConfigurationPanel.hibernateSessionNameLabel.text")); // NOI18N
 
@@ -40,44 +117,139 @@ public class HibernateConfigurationPanel extends javax.swing.JPanel {
 
         databaseDialectNameLabel.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationPanel.class, "HibernateConfigurationPanel.databaseDialectNameLabel.text")); // NOI18N
 
-        databaseDialectNameTextField.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationPanel.class, "HibernateConfigurationPanel.databaseDialectNameTextField.text")); // NOI18N
+        driverClassLabel.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationPanel.class, "HibernateConfigurationPanel.driverClassLabel.text")); // NOI18N
+
+        connectionURLLabel.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationPanel.class, "HibernateConfigurationPanel.connectionURLLabel.text")); // NOI18N
+
+        usernameLabel.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationPanel.class, "HibernateConfigurationPanel.usernameLabel.text")); // NOI18N
+
+        passwordLabel.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationPanel.class, "HibernateConfigurationPanel.passwordLabel.text")); // NOI18N
+
+        dialectComboBox.setEditable(true);
+        dialectComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dialectComboBoxActionPerformed(evt);
+            }
+        });
+
+        connectionURLComboBox.setEditable(true);
+
+        passwordTextField.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationPanel.class, "HibernateConfigurationPanel.passwordTextField.text")); // NOI18N
+
+        usernameTextField.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationPanel.class, "HibernateConfigurationPanel.usernameTextField.text")); // NOI18N
+
+        driverClassTextField.setEditable(false);
+        driverClassTextField.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationPanel.class, "HibernateConfigurationPanel.driverClassTextField.text")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 12, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 65, Short.MAX_VALUE)
+        );
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 98, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 41, Short.MAX_VALUE)
+        );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(hibernateSessionNameLabel)
-                    .add(databaseDialectNameLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(databaseDialectNameTextField)
-                    .add(hibernateSessionNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE))
-                .addContainerGap(27, Short.MAX_VALUE))
+                    .add(connectionURLLabel)
+                    .add(driverClassLabel)
+                    .add(databaseDialectNameLabel)
+                    .add(usernameLabel)
+                    .add(passwordLabel))
+                .add(6, 6, 6)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, hibernateSessionNameTextField)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, dialectComboBox, 0, 186, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                    .add(passwordTextField)
+                                    .add(usernameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 27, Short.MAX_VALUE)
+                                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                .add(org.jdesktop.layout.GroupLayout.LEADING, driverClassTextField)
+                                .add(org.jdesktop.layout.GroupLayout.LEADING, connectionURLComboBox, 0, 262, Short.MAX_VALUE)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(hibernateSessionNameLabel)
-                    .add(hibernateSessionNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(databaseDialectNameLabel)
-                    .add(databaseDialectNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(150, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(hibernateSessionNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(databaseDialectNameLabel)
+                            .add(dialectComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(driverClassLabel)
+                            .add(driverClassTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                    .add(connectionURLLabel)
+                                    .add(connectionURLComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(layout.createSequentialGroup()
+                                        .add(8, 8, 8)
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                            .add(usernameLabel)
+                                            .add(usernameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                            .add(passwordLabel)
+                                            .add(passwordTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                                    .add(layout.createSequentialGroup()
+                                        .add(7, 7, 7)
+                                        .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-    
-    
+    private void dialectComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dialectComboBoxActionPerformed
+        updateDriverClassAndConnectionURL();
+}//GEN-LAST:event_dialectComboBoxActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox connectionURLComboBox;
+    private javax.swing.JLabel connectionURLLabel;
     private javax.swing.JLabel databaseDialectNameLabel;
-    private javax.swing.JTextField databaseDialectNameTextField;
+    private javax.swing.JComboBox dialectComboBox;
+    private javax.swing.JLabel driverClassLabel;
+    private javax.swing.JTextField driverClassTextField;
     private javax.swing.JLabel hibernateSessionNameLabel;
     private javax.swing.JTextField hibernateSessionNameTextField;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JLabel passwordLabel;
+    private javax.swing.JTextField passwordTextField;
+    private javax.swing.JLabel usernameLabel;
+    private javax.swing.JTextField usernameTextField;
     // End of variables declaration//GEN-END:variables
-    
 }
