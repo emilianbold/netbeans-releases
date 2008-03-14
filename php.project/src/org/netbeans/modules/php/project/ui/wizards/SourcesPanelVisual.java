@@ -42,6 +42,7 @@ package org.netbeans.modules.php.project.ui.wizards;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.regex.Pattern;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
@@ -62,9 +63,14 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class SourcesPanelVisual extends JPanel {
+public class SourcesPanelVisual extends JPanel implements DocumentListener {
 
     private static final long serialVersionUID = -358263102348820543L;
+
+    // derived/taken from the BNF for URI (RFC2396).
+    public static final String URL_REGEXP = "^https?://[^/?# ]+(:\\d+)?/[^?#]*(\\?[^#]*)?(#\\w*)?$";
+    private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEXP);
+
     static final LocalServer DEFAULT_LOCAL_SERVER;
 
     private final WebFolderNameProvider webFolderNameProvider;
@@ -89,6 +95,8 @@ public class SourcesPanelVisual extends JPanel {
         localServerComboBox.setModel(localServerComboBoxModel);
         localServerComboBox.setRenderer(new LocalServerComboBoxRenderer());
         localServerComboBox.setEditor(localServerComboBoxEditor);
+
+        urlTextField.getDocument().addDocumentListener(this);
     }
 
     void addSourcesListener(ChangeListener listener) {
@@ -113,6 +121,9 @@ public class SourcesPanelVisual extends JPanel {
         locateButton = new javax.swing.JButton();
         browseButton = new javax.swing.JButton();
         localServerLabel = new javax.swing.JLabel();
+        urlInfoLabel = new javax.swing.JLabel();
+        urlLabel = new javax.swing.JLabel();
+        urlTextField = new javax.swing.JTextField();
 
         org.openide.awt.Mnemonics.setLocalizedText(sourcesLabel, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "LBL_Sources")); // NOI18N
 
@@ -135,21 +146,32 @@ public class SourcesPanelVisual extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(localServerLabel, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "TXT_LocalServer")); // NOI18N
         localServerLabel.setEnabled(false);
 
+        org.openide.awt.Mnemonics.setLocalizedText(urlInfoLabel, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "TXT_Url")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "LBL_Url")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(sourcesLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(localServerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(localServerComboBox, 0, 319, Short.MAX_VALUE)
+                        .add(sourcesLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(locateButton)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(localServerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(localServerComboBox, 0, 319, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(locateButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(browseButton))))
+                    .add(urlInfoLabel)
+                    .add(layout.createSequentialGroup()
+                        .add(urlLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(browseButton)))
+                        .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 527, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -162,6 +184,12 @@ public class SourcesPanelVisual extends JPanel {
                     .add(browseButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(localServerLabel)
+                .add(18, 18, 18)
+                .add(urlInfoLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(urlLabel)
+                    .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -207,10 +235,17 @@ public class SourcesPanelVisual extends JPanel {
     private javax.swing.JLabel localServerLabel;
     private javax.swing.JButton locateButton;
     private javax.swing.JLabel sourcesLabel;
+    private javax.swing.JLabel urlInfoLabel;
+    private javax.swing.JLabel urlLabel;
+    private javax.swing.JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
 
     static boolean isProjectFolder(LocalServer localServer) {
         return DEFAULT_LOCAL_SERVER.equals(localServer);
+    }
+
+    static boolean isValidUrl(String url) {
+        return URL_PATTERN.matcher(url).matches();
     }
 
     LocalServer getSourcesLocation() {
@@ -228,6 +263,14 @@ public class SourcesPanelVisual extends JPanel {
 
     void selectSourcesLocation(LocalServer localServer) {
         localServerComboBox.setSelectedItem(localServer);
+    }
+
+    String getUrl() {
+        return urlTextField.getText().trim();
+    }
+
+    void setUrl(String url) {
+        urlTextField.setText(url);
     }
 
     static class LocalServer implements Comparable<LocalServer> {
@@ -437,5 +480,22 @@ public class SourcesPanelVisual extends JPanel {
             component.setEnabled(enabled);
             changeSupport.fireChange();
         }
+    }
+
+    // listeners
+    public void insertUpdate(DocumentEvent e) {
+        processUpdate();
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        processUpdate();
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        processUpdate();
+    }
+
+    private void processUpdate() {
+        changeSupport.fireChange();
     }
 }

@@ -67,6 +67,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     static final String SET_AS_MAIN = "setAsMain"; // NOI18N
     static final String WWW_FOLDER = "wwwFolder"; // NOI18N
     static final String LOCAL_SERVERS = "localServers"; // NOI18N
+    static final String URL = "url"; // NOI18N
     static final String CREATE_INDEX_FILE = "createIndexFile"; // NOI18N
     static final String INDEX_FILE = "indexFile"; // NOI18N
     static final String ENCODING = "encoding"; // NOI18N
@@ -116,6 +117,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         if (wwwFolder != null) {
             sourcesPanelVisual.selectSourcesLocation(wwwFolder);
         }
+        sourcesPanelVisual.setUrl(getUrl());
 
         // options
         Boolean createIndex = isCreateIndex();
@@ -146,6 +148,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         LocalServer sourceRoot = sourcesPanelVisual.getSourcesLocation();
         d.putProperty(WWW_FOLDER, sourceRoot);
         d.putProperty(LOCAL_SERVERS, sourcesPanelVisual.getLocalServerModel());
+        d.putProperty(URL, sourcesPanelVisual.getUrl());
 
         // options
         d.putProperty(CREATE_INDEX_FILE, optionsPanelVisual.isCreateIndex());
@@ -243,6 +246,14 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     private MutableComboBoxModel getLocalServers() {
         return (MutableComboBoxModel) descriptor.getProperty(LOCAL_SERVERS);
     }
+    
+    private String getUrl() {
+        String url = (String) descriptor.getProperty(URL);
+        if (url == null) {
+            url = "http://localhost/" + getProjectName(); // NOI18N
+        }
+        return url;
+    }
 
     private Boolean isCreateIndex() {
         return (Boolean) descriptor.getProperty(CREATE_INDEX_FILE);
@@ -302,18 +313,26 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
 
     private String validateSources() {
         LocalServer localServer = sourcesPanelVisual.getSourcesLocation();
-        if (isProjectFolder(localServer)) {
-            // no need to validate source directory
-            return null;
-        }
-        String sourcesLocation = localServer.getSrcRoot();
+        if (!isProjectFolder(localServer)) {
+            String sourcesLocation = localServer.getSrcRoot();
 
-        File sources = new File(sourcesLocation);
-        if (!Utils.isValidFileName(sources.getName())) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
+            File sources = new File(sourcesLocation);
+            if (!Utils.isValidFileName(sources.getName())) {
+                return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
+            }
+
+            String err = validateProjectDirectory(sourcesLocation, "Sources"); // NOI18N
+            if (err != null) {
+                return err;
+            }
+        }
+        
+        String url = sourcesPanelVisual.getUrl();
+        if (!SourcesPanelVisual.isValidUrl(url)) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_InvalidUrl");
         }
 
-        return validateProjectDirectory(sourcesLocation, "Sources"); // NOI18N
+        return null;
     }
 
     private String validateOptions() {

@@ -92,6 +92,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         wizard.putProperty(ConfigureProjectPanel.SET_AS_MAIN, null);
         wizard.putProperty(ConfigureProjectPanel.WWW_FOLDER, null);
         wizard.putProperty(ConfigureProjectPanel.LOCAL_SERVERS, null);
+        wizard.putProperty(ConfigureProjectPanel.URL, null);
         wizard.putProperty(ConfigureProjectPanel.CREATE_INDEX_FILE, null);
         wizard.putProperty(ConfigureProjectPanel.INDEX_FILE, null);
         wizard.putProperty(ConfigureProjectPanel.ENCODING, null);
@@ -179,8 +180,14 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     private WizardDescriptor.Panel[] createPanels() {
+        String[] steps = new String[] {
+            NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_ProjectTitleName"),
+            NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_ProjectServer"),
+        };
+
         return new WizardDescriptor.Panel[] {
-            new ConfigureProjectPanel(),
+            new ConfigureProjectPanel(steps),
+            new ConfigureServerPanel(steps),
         };
     }
 
