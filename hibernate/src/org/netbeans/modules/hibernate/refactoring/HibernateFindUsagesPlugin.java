@@ -42,10 +42,8 @@ import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
@@ -54,7 +52,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.hibernate.refactoring.HibernateRefactoringUtil.RenamedClassName;
+import org.netbeans.modules.hibernate.refactoring.HibernateRefactoringUtil.OccurrenceItem;
 import org.netbeans.modules.hibernate.service.HibernateEnvironment;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -62,7 +60,6 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.text.PositionBounds;
 
 /**
  * 
@@ -134,13 +131,15 @@ public class HibernateFindUsagesPlugin implements RefactoringPlugin {
 
                     if (binaryClassName[0] != null) {
                         String className = binaryClassName[0];
-                        Map<FileObject, PositionBounds> occurrences =
+                        Map<FileObject, OccurrenceItem> occurrences =
                                 HibernateRefactoringUtil.getJavaClassOccurrences(mFileObjs, className);
 
                         for (FileObject mFileObj : occurrences.keySet()) {
+                            OccurrenceItem foundPlace = occurrences.get(mFileObj);
                             HibernateRefactoringElement elem = new HibernateRefactoringElement(mFileObj,
                                     className,
-                                    occurrences.get(mFileObj));
+                                    foundPlace.getLocation(),
+                                    foundPlace.getText());
                             refactoringElements.add(query, elem);
                         }
                     }

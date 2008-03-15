@@ -260,8 +260,8 @@ public class HibernateRefactoringUtil {
         }
     }
 
-    public static Map<FileObject, PositionBounds> getJavaClassOccurrences(List<FileObject> allMappingFiles, String oldBinaryName) {
-        Map<FileObject, PositionBounds> occurrences = new HashMap<FileObject, PositionBounds>();
+    public static Map<FileObject, OccurrenceItem> getJavaClassOccurrences(List<FileObject> allMappingFiles, String oldBinaryName) {
+        Map<FileObject, OccurrenceItem> occurrences = new HashMap<FileObject, OccurrenceItem>();
         for (FileObject mFileObj : allMappingFiles) {
             try {
                 InputStream is = mFileObj.getInputStream();
@@ -274,8 +274,8 @@ public class HibernateRefactoringUtil {
                     String clsName = myClazz[ci].getAttributeValue("name"); // NO I18N
                     if (clsName.equals(oldBinaryName)) {
                         // Find the class. That means this file needs to be refactored
-                        PositionBounds location = getJavaClassPositionBounds(mFileObj, oldBinaryName);
-                        occurrences.put(mFileObj, location);
+                        OccurrenceItem foundPlace = getJavaClassPositionBounds(mFileObj, oldBinaryName);
+                        occurrences.put(mFileObj, foundPlace);
 
                         // It is safe to assume that this is only one <class> element
                         // with this particular Java class. 
@@ -295,7 +295,7 @@ public class HibernateRefactoringUtil {
         return occurrences;
     }
 
-    private static PositionBounds getJavaClassPositionBounds(FileObject mappingFile, String className) {
+    private static OccurrenceItem getJavaClassPositionBounds(FileObject mappingFile, String className) {
         try {
             // Get the document for this file
             DataObject dataObject = DataObject.find(mappingFile);
@@ -316,6 +316,7 @@ public class HibernateRefactoringUtil {
             }
 
             boolean inClassElement = false;
+            String text = null;
             while (item != null) {
                 TokenID tokenId = item.getTokenID();
 
@@ -327,9 +328,7 @@ public class HibernateRefactoringUtil {
                         String tagName = ((Tag) element).getTagName();
                         if (tagName.equalsIgnoreCase("class")) { // NOI18N
                             inClassElement = true;
-
-                        //String text = document.getText( item.getOffset(), element.getElementLength() );
-                        //System.err.println( "======element: " + text );
+                            text = document.getText(item.getOffset(), element.getElementLength());
                         }
                     }
 
@@ -340,12 +339,15 @@ public class HibernateRefactoringUtil {
                     String image = item.getImage();
                     if (image.contains(className)) {
                         // Found it
+                        inClassElement = false;
 
                         int startOffset = item.getOffset() + 1;
                         int endOffset = startOffset + className.length();
 
-                        return new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
+                        PositionBounds loc = new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
                                 editor.createPositionRef(endOffset, Bias.Forward));
+                        
+                        return new OccurrenceItem(loc,text);
                     }
                 }
 
@@ -361,11 +363,11 @@ public class HibernateRefactoringUtil {
         return null;
     }
 
-    public static Map<FileObject, List<PositionBounds>> getJavaPackageOccurrences(List<FileObject> allMappingFiles, String oldPkgName) {
-        Map<FileObject, List<PositionBounds>> occurrences = new HashMap<FileObject, List<PositionBounds>>();
+    public static Map<FileObject, List<OccurrenceItem>> getJavaPackageOccurrences(List<FileObject> allMappingFiles, String oldPkgName) {
+        Map<FileObject, List<OccurrenceItem>> occurrences = new HashMap<FileObject, List<OccurrenceItem>>();
 
         for (FileObject mFileObj : allMappingFiles) {
-            List<PositionBounds> locs = new ArrayList<PositionBounds>();
+            List<OccurrenceItem> foundPlaces = new ArrayList<OccurrenceItem>();
             int startOffset = -1;
             try {
                 InputStream is = mFileObj.getInputStream();
@@ -375,10 +377,10 @@ public class HibernateRefactoringUtil {
                 String pkgName = hbMapping.getAttributeValue("package"); //NOI18N
                 if (pkgName.equals(oldPkgName)) {
                     // Find one
-                    PositionBounds location = getJavaPackagePositionBounds(mFileObj, oldPkgName, startOffset);
-                    locs.add(location);
+                    OccurrenceItem foundPlace = getJavaPackagePositionBounds(mFileObj, oldPkgName, startOffset);
+                    foundPlaces.add(foundPlace);
 
-                    startOffset = location.getBegin().getOffset() + 1;
+                    startOffset = foundPlace.getLocation().getBegin().getOffset() + 1;
                 }
 
                 // Check the name attribute in the <class> tag
@@ -388,10 +390,10 @@ public class HibernateRefactoringUtil {
                     String clsName = myClazz[ci].getAttributeValue("name"); // NO I18N
                     if (clsName.startsWith(oldPkgName)) {
 
-                        PositionBounds location = getJavaPackagePositionBounds(mFileObj, oldPkgName, startOffset);
-                        locs.add(location);
+                        OccurrenceItem foundPlace = getJavaPackagePositionBounds(mFileObj, oldPkgName, startOffset);
+                        foundPlaces.add(foundPlace);
 
-                        startOffset = location.getBegin().getOffset() + 1;
+                        startOffset = foundPlace.getLocation().getBegin().getOffset() + 1;
                     }
 
                 // TODO: class name can be in other elements/attributes. 
@@ -404,13 +406,13 @@ public class HibernateRefactoringUtil {
             }
 
             // Find everything in this file
-            occurrences.put(mFileObj, locs);
+            occurrences.put(mFileObj, foundPlaces);
         }
 
         return occurrences;
     }
 
-    private static PositionBounds getJavaPackagePositionBounds(FileObject mappingFile, String pkgName, int start) {
+    private static OccurrenceItem getJavaPackagePositionBounds(FileObject mappingFile, String pkgName, int start) {
         try {
             // Get the document for this file
             DataObject dataObject = DataObject.find(mappingFile);
@@ -433,6 +435,7 @@ public class HibernateRefactoringUtil {
             }
 
             boolean inTheElement = false; //<hibernate-mapping> or <class>
+            String text = null;
             while (item != null) {
                 TokenID tokenId = item.getTokenID();
 
@@ -443,7 +446,9 @@ public class HibernateRefactoringUtil {
                         String tagName = ((Tag) element).getTagName();
                         if (tagName.equalsIgnoreCase("hibernate-mapping")) { // NOI18N
                             inTheElement = true;
+                            text = document.getText(item.getOffset(), element.getElementLength());
                         } else if (tagName.equalsIgnoreCase("class")) { // NOI18N
+                            text = document.getText(item.getOffset(), element.getElementLength());
                             inTheElement = true;
                         }
                     }
@@ -459,8 +464,10 @@ public class HibernateRefactoringUtil {
 
                         int startOffset = item.getOffset() + 1;
                         int endOffset = startOffset + pkgName.length();
-                        return new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
+                        PositionBounds loc = new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
                                 editor.createPositionRef(endOffset, Bias.Forward));
+                        
+                        return new OccurrenceItem(loc, text);
                     }
                 }
 
@@ -474,6 +481,25 @@ public class HibernateRefactoringUtil {
         }
 
         return null;
+    }
+
+    public static final class OccurrenceItem {
+
+        private String text;
+        private PositionBounds location;
+
+        public OccurrenceItem(PositionBounds location, String text) {
+            this.location = location;
+            this.text = text;
+        }
+
+        public String getText() {
+            return this.text;
+        }
+
+        public PositionBounds getLocation() {
+            return this.location;
+        }
     }
 
     public static boolean anyHibernateMappingFiles(FileObject fo) {

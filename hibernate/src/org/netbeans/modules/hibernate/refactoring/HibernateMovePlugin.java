@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.hibernate.refactoring.HibernateRefactoringUtil.OccurrenceItem;
 import org.netbeans.modules.hibernate.service.HibernateEnvironment;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -52,7 +53,6 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.text.PositionBounds;
 
 /**
  *
@@ -138,14 +138,16 @@ public class HibernateMovePlugin implements RefactoringPlugin {
 
                 if (newBinaryName != null) {
 
-                    Map<FileObject, PositionBounds> occurrences =
+                    Map<FileObject, OccurrenceItem> occurrences =
                             HibernateRefactoringUtil.getJavaClassOccurrences(mappingFileObjs, oldBinaryName);
 
                     for (FileObject mFileObj : occurrences.keySet()) {
+                        OccurrenceItem foundPlace = occurrences.get(mFileObj);
                         HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
                                 oldBinaryName,
                                 newBinaryName,
-                                occurrences.get(mFileObj));
+                                foundPlace.getLocation(),
+                                foundPlace.getText());
                         refactoringElements.add(refactoring, elem);
                     }
 

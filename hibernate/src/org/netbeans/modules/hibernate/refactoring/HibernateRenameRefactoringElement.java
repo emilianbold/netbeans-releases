@@ -51,18 +51,18 @@ public class HibernateRenameRefactoringElement extends HibernateRefactoringEleme
 
     private String newName;
 
-    public HibernateRenameRefactoringElement(FileObject fo, String oldName, String newName, PositionBounds position) {
-        super(fo, oldName, position);
+    public HibernateRenameRefactoringElement(FileObject fo, String oldName, String newName, PositionBounds position, String displayText) {
+        super(fo, oldName, position, displayText);
         this.newName = newName;
     }
 
     @Override
-    public String getText() {
+    public String getDisplayText() {
         return NbBundle.getMessage(HibernateRenameRefactoringElement.class, "CHANGE", origName, newName);
     }
 
     @Override
     public void performChange() {
-    // Do nothing here. The changes are performed in RenameTransaction
+        // Do nothing here. The changes are performed in RenameTransaction
     }
 }

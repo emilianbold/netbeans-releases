@@ -39,41 +39,22 @@
 package org.netbeans.modules.hibernate.refactoring;
 
 import com.sun.source.tree.Tree.Kind;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Position.Bias;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.Project;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.TokenID;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.modules.hibernate.mapping.model.HibernateMapping;
-import org.netbeans.modules.hibernate.mapping.model.MyClass;
+import org.netbeans.modules.hibernate.refactoring.HibernateRefactoringUtil.OccurrenceItem;
 import org.netbeans.modules.hibernate.refactoring.HibernateRefactoringUtil.RenamedClassName;
 import org.netbeans.modules.hibernate.service.HibernateEnvironment;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
-import org.netbeans.modules.xml.text.syntax.SyntaxElement;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
-import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
-import org.netbeans.modules.xml.text.syntax.dom.StartTag;
-import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 
 /**
@@ -151,14 +132,16 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
                     String newBinaryName = clazz.getNewBinaryName();
                     if (oldBinaryName != null && newBinaryName != null) {
 
-                        Map<FileObject, PositionBounds> occurrences =
+                        Map<FileObject, OccurrenceItem> occurrences =
                                 HibernateRefactoringUtil.getJavaClassOccurrences(mFileObjs, oldBinaryName);
 
                         for (FileObject mFileObj : occurrences.keySet()) {
+                            OccurrenceItem foundPlace = occurrences.get(mFileObj);
                             HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
                                     oldBinaryName,
                                     newBinaryName,
-                                    occurrences.get(mFileObj));
+                                    foundPlace.getLocation(),
+                                    foundPlace.getText());
                             refactoringElements.add(refactoring, elem);
                         }
 
@@ -170,17 +153,18 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
                 // If the rename is not recursive (e.g, "a.b.c" -> "x.b.c"), the new name is the whole package name.
                 String newPackageName = recursive ? HibernateRefactoringUtil.getRenamedPackageName(fo, refactoring.getNewName()) : refactoring.getNewName();
                 if (oldPackageName != null && newPackageName != null) {
-                    Map<FileObject, List<PositionBounds>> occurrences =
+                    Map<FileObject, List<OccurrenceItem>> occurrences =
                             HibernateRefactoringUtil.getJavaPackageOccurrences(mFileObjs, oldPackageName);
 
                     for (FileObject mFileObj : occurrences.keySet()) {
-                        List<PositionBounds> locations = occurrences.get(mFileObj);
+                        List<OccurrenceItem> foundPlaces = occurrences.get(mFileObj);
 
-                        for (PositionBounds loc : locations) {
+                        for (OccurrenceItem foundPlace : foundPlaces) {
                             HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
                                     oldPackageName,
                                     newPackageName,
-                                    loc);
+                                    foundPlace.getLocation(),
+                                    foundPlace.getText());
                             refactoringElements.add(refactoring, elem);
                         }
                     }

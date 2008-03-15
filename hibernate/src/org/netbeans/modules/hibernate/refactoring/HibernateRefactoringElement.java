@@ -42,7 +42,6 @@ import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementati
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  * A refactoring element for refactoring the mapped the class name
@@ -53,24 +52,26 @@ public class HibernateRefactoringElement extends SimpleRefactoringElementImpleme
 
     private FileObject mappingFileObject;
     private PositionBounds position;
+    private String text;
     protected String origName;
 
-    public HibernateRefactoringElement(FileObject fo, String oldName, PositionBounds position) {
+    public HibernateRefactoringElement(FileObject fo, String oldName, PositionBounds position, String text) {
         this.mappingFileObject = fo;
         this.origName = oldName;
         this.position = position;
+        this.text = text;
     }
 
     public String getText() {
-        return NbBundle.getMessage(HibernateRefactoringElement.class, "FOUND", origName);
+        return this.text;
     }
 
     public String getDisplayText() {
-        return getText();
+        return fixDisplayText(getText());
     }
 
     public void performChange() {
-    // Do nothing here.
+        // Do nothing here.
     }
 
     public Lookup getLookup() {
@@ -83,5 +84,12 @@ public class HibernateRefactoringElement extends SimpleRefactoringElementImpleme
 
     public PositionBounds getPosition() {
         return position;
+    }
+
+    private String fixDisplayText(String displayText) {
+        String finalText = displayText.replaceAll("<", "&lt;");
+        finalText.replaceAll(">", "&gt;");
+        String[] subStrings = finalText.split(origName);
+        return subStrings[0] + "<b>" + origName + "</b>" + subStrings[1];
     }
 }
