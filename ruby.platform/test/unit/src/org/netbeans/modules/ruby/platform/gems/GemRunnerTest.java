@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,43 +37,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ruby.platform.gems;
 
-package org.netbeans.spi.java.queries.support;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.api.ruby.platform.RubyTestBase;
 
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.modules.java.queries.SFBQImpl2Result;
-import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
-import org.openide.util.Parameters;
+public final class GemRunnerTest extends RubyTestBase {
 
-/**
- * Base class for {@link SourceForBinaryQueryImplementation2} which need to delegate
- * to other {@link SourceForBinaryQueryImplementation}.
- * @since 1.16
- * @author Tomas Zezula
- */
-public abstract class SourceForBinaryQueryimplementation2Base implements SourceForBinaryQueryImplementation2 {
+    public GemRunnerTest(String testName) {
+        super(testName);
+    }
 
-    /**
-     * Creates a wrapper for {@link SourceForBinaryQuery.Result}. This method
-     * should be used by delegating {@link SourceForBinaryQueryImplementation2}
-     * which need to delegate to {@link SourceForBinaryQueryImplementation}. 
-     * @param result returned by {@link SourceForBinaryQueryImplementation},
-     * When result is already instanceof {@link SourceForBinaryQueryImplementation2.Result}
-     * it's returned without wrapping.
-     * @return a {@link SourceForBinaryQueryImplementation2.Result}.
-     */
-    protected final Result asResult (SourceForBinaryQuery.Result result) {
-        Parameters.notNull("result", result);   //NOI18N
-        if (result instanceof Result) {
-            return (Result) result;
-        }
-        else {
-            return new SFBQImpl2Result(result);
+    public void testGemsAreFetchedWithDescriptions() { // # issue 125508
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        GemManager gm = jruby.getGemManager();
+        List<String> errors = new ArrayList<String>();
+        List<Gem> installed = gm.getInstalledGems(errors);
+        assertFalse("has some installed gems in default platform", installed.isEmpty());
+        for (Gem gem : installed) {
+            assertNotNull(gem.getName() + " has description", gem.getDescription());
         }
     }
 }

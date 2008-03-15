@@ -803,6 +803,7 @@ public class TreeModelNode extends AbstractNode {
                     int i, k = ch.length;
                     for (i = 0; i < k; i++)
                         try {
+                            DefaultTreeExpansionManager.get(model).setChildrenToActOn(TreeModelChildren.this);
                             if (model.isExpanded (ch [i])) {
                                 TreeTable treeTable = treeModelRoot.getTreeTable ();
                                 if (treeTable.isExpanded(object)) {

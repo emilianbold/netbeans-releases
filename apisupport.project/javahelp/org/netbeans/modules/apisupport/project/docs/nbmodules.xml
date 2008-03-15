@@ -15,7 +15,7 @@
   <!-- maps -->
   <maps>
      <homeID>nbmodule_about</homeID>
-     <mapref location="nbmodule-map.jhm" />
+     <mapref location="nbmodule-map.xml"/>
   </maps>
   
   <!-- views -->
