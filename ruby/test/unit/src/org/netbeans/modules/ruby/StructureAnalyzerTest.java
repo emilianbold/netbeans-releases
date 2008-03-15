@@ -120,13 +120,12 @@ public class StructureAnalyzerTest extends RubyTestBase {
             }
 
             @Override
-            public void appendText(String text) {
-                // TODO escaped
+            public void appendText(String text, int fromInclusive, int toExclusive) {
                 sb.append("ESCAPED{");
-                sb.append(text);
+                sb.append(text, fromInclusive, toExclusive);
                 sb.append("}");
             }
-
+            
             @Override
             public void name(ElementKind kind, boolean start) {
                 if (start) {

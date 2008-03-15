@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,16 +31,59 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.gsf.api;
+package org.netbeans.modules.javascript.editing;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.NameKind;
 
 /**
- *
+ * Cache which performs type lookup etc. for functions
+ * 
  * @author Tor Norbye
  */
-public enum ElementKind {
-    CONSTRUCTOR, MODULE, PACKAGE, CLASS, METHOD, FIELD, VARIABLE,
-    ATTRIBUTE, CONSTANT, KEYWORD, OTHER, PARAMETER, GLOBAL,
-    PROPERTY, ERROR, DB, CALL, TAG, FILE
+public class FunctionCache {
+    static FunctionCache instance = new FunctionCache();
+    static final IndexedElement NONE = new IndexedProperty(null, null, null, null, null, 0, ElementKind.OTHER);
+    
+    Map<String,IndexedElement> cache = new HashMap<String,IndexedElement>(500);
+    
+    public String getType(String fqn, JsIndex index) {
+        IndexedElement element = cache.get(fqn);
+        if (element == NONE) {
+            return null;
+        } else if (element == null) {
+            Set<IndexedElement> elements = index.getElements(fqn, null, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
+            if (elements.size() > 0) {
+                IndexedElement firstElement = elements.iterator().next();
+                cache.put(fqn, firstElement);
+                return firstElement.getType();
+            } else {
+                cache.put(fqn, NONE);
+            }
+            return null;
+        } else {
+            return element.getType();
+        }
+    }
+    
+    public void wipe(String fqn) {
+        cache.remove(fqn);
+    }
+    
+    public static FunctionCache getInstance() {
+        return instance;
+    }
+
+    boolean isEmpty() {
+        return cache.size() == 0;
+    }
 }
