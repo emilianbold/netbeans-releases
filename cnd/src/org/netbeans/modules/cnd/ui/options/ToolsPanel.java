@@ -1980,7 +1980,7 @@ private boolean selectCompiler(JTextField tf, Tool tool) {
         return false;
     }
     if (!new File(new File(tfBaseDirectory.getText()), fileChooser.getSelectedFile().getName()).exists()) {
-        NotifyDescriptor nb = new NotifyDescriptor.Message("Only compilers within base directory are allowed", NotifyDescriptor.ERROR_MESSAGE); // NOI18N
+        NotifyDescriptor nb = new NotifyDescriptor.Message(getString("COMPILER_BASE_ERROR"), NotifyDescriptor.ERROR_MESSAGE);
         DialogDisplayer.getDefault().notify(nb);
         return false;
     }
