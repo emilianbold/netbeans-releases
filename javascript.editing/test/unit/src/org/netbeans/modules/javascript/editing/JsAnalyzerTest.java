@@ -388,4 +388,9 @@ public class JsAnalyzerTest extends JsTestBase {
     public void testImports2() throws Exception {
         checkImports("testfiles/dragdrop.js");
     }
+
+    public void testClasses() throws Exception {
+        checkStructure("testfiles/classes.js");
+        checkFolds("testfiles/classes.js");
+    }
 }

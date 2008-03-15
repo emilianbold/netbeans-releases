@@ -92,7 +92,7 @@ public class JsAnalyzer implements StructureScanner {
                 } else {
                     in = e.getName();
                 }
-            } else if (e.getKind() == ElementKind.CONSTRUCTOR) {
+            } else if (e.getKind() == ElementKind.CONSTRUCTOR && Character.isUpperCase(e.getName().charAt(0))) {
                 if (e.getIn() != null && e.getIn().length() > 0) {
                     in = e.getIn() + "." + e.getName();
                 } else {

@@ -38,6 +38,7 @@ Jmaki:CLASS:[]:ESCAPED{Jmaki}:
   getElementsByStyle:METHOD:[]:ESCAPED{getElementsByStyle}(PARAMETERS{ESCAPED{className}, ESCAPED{root}}) : ESCAPED{void}:
   getWidget:METHOD:[]:ESCAPED{getWidget}(PARAMETERS{ESCAPED{id}}) : ESCAPED{void}:
   getXHR:METHOD:[]:ESCAPED{getXHR} : ESCAPED{void}:
+  initialize:CONSTRUCTOR:[]:ESCAPED{initialize} : ESCAPED{void}:
   initialized:PROPERTY:[]:ESCAPED{initialized} : ESCAPED{Boolean}:
   loadStyle:METHOD:[]:ESCAPED{loadStyle}(PARAMETERS{ESCAPED{target}}) : ESCAPED{void}:
   loadWidget:METHOD:[]:ESCAPED{loadWidget}(PARAMETERS{ESCAPED{_jmw}}) : ESCAPED{void}:
@@ -63,8 +64,6 @@ se:CLASS:[]:ESCAPED{se}:
   onreadystatechange:METHOD:[]:ESCAPED{onreadystatechange} : ESCAPED{void}:
 _req:CLASS:[]:ESCAPED{_req}:
   onreadystatechange:METHOD:[]:ESCAPED{onreadystatechange} : ESCAPED{void}:
-Jmaki.initialize:CLASS:[]:ESCAPED{Jmaki.initialize}:
-  initialize:CONSTRUCTOR:[]:ESCAPED{initialize} : ESCAPED{void}:
 Jmaki.Timer:CLASS:[]:ESCAPED{Jmaki.Timer}:
   Timer:CONSTRUCTOR:[]:ESCAPED{Timer}(PARAMETERS{ESCAPED{args}, ESCAPED{isCall}}) : ESCAPED{Jmaki.Timer}:
   args:PROPERTY:[]:ESCAPED{args}:

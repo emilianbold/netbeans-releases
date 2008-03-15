@@ -77,6 +77,7 @@ Draggable:CLASS:[]:ESCAPED{Draggable}:
   finishDrag:METHOD:[]:ESCAPED{finishDrag}(PARAMETERS{ESCAPED{event}, ESCAPED{success}}) : ESCAPED{void}:
   handle:PROPERTY:[]:ESCAPED{handle}:
   initDrag:METHOD:[]:ESCAPED{initDrag}(PARAMETERS{ESCAPED{event}}) : ESCAPED{void}:
+  initialize:CONSTRUCTOR:[]:ESCAPED{initialize}(PARAMETERS{ESCAPED{element}}) : ESCAPED{Draggable}:
   keyPress:METHOD:[]:ESCAPED{keyPress}(PARAMETERS{ESCAPED{event}}) : ESCAPED{void}:
   options:PROPERTY:[]:ESCAPED{options}:
   scroll:METHOD:[]:ESCAPED{scroll} : ESCAPED{void}:
@@ -84,17 +85,14 @@ Draggable:CLASS:[]:ESCAPED{Draggable}:
   startScrolling:METHOD:[]:ESCAPED{startScrolling}(PARAMETERS{ESCAPED{speed}}) : ESCAPED{void}:
   stopScrolling:METHOD:[]:ESCAPED{stopScrolling} : ESCAPED{void}:
   updateDrag:METHOD:[]:ESCAPED{updateDrag}(PARAMETERS{ESCAPED{event}, ESCAPED{pointer}}) : ESCAPED{void}:
-Draggable.initialize:CLASS:[]:ESCAPED{Draggable.initialize}:
-  initialize:CONSTRUCTOR:[]:ESCAPED{initialize}(PARAMETERS{ESCAPED{element}}) : ESCAPED{Draggable}:
 SortableObserver:CLASS:[]:ESCAPED{SortableObserver}:
   SortableObserver:CONSTRUCTOR:[]:ESCAPED{SortableObserver}:
   element:PROPERTY:[]:ESCAPED{element}:
+  initialize:CONSTRUCTOR:[]:ESCAPED{initialize}(PARAMETERS{ESCAPED{element}, ESCAPED{observer}}) : ESCAPED{SortableObserver}:
   lastValue:PROPERTY:[]:ESCAPED{lastValue}:
   observer:PROPERTY:[]:ESCAPED{observer}:
   onEnd:METHOD:[]:ESCAPED{onEnd} : ESCAPED{void}:
   onStart:METHOD:[]:ESCAPED{onStart} : ESCAPED{void}:
-SortableObserver.initialize:CLASS:[]:ESCAPED{SortableObserver.initialize}:
-  initialize:CONSTRUCTOR:[]:ESCAPED{initialize}(PARAMETERS{ESCAPED{element}, ESCAPED{observer}}) : ESCAPED{SortableObserver}:
 Sortable:CLASS:[]:ESCAPED{Sortable}:
   _constructIndex:METHOD:[]:ESCAPED{_constructIndex}(PARAMETERS{ESCAPED{node}}) : ESCAPED{void}:
   _findChildrenElement:METHOD:[]:ESCAPED{_findChildrenElement}(PARAMETERS{ESCAPED{element}, ESCAPED{containerTag}}) : ESCAPED{void}:

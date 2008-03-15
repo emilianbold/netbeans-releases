@@ -1,0 +1,18 @@
+Jmaki:CLASS:[]:ESCAPED{Jmaki}:
+  Jmaki:CONSTRUCTOR:[]:ESCAPED{Jmaki} : ESCAPED{Jmaki}:
+  processCall:METHOD:[]:ESCAPED{processCall} : ESCAPED{void}:
+Faen:CLASS:[]:ESCAPED{Faen}:
+  Faen:CONSTRUCTOR:[]:ESCAPED{Faen} : ESCAPED{Faen}:
+  boo:METHOD:[]:ESCAPED{boo} : ESCAPED{void}:
+Foob:CLASS:[]:ESCAPED{Foob}:
+  bar:PROPERTY:[]:ESCAPED{bar}:
+  foo:METHOD:[]:ESCAPED{foo} : ESCAPED{void}:
+Window:CLASS:[]:ESCAPED{Window}:
+  addEventListener:METHOD:[]:ESCAPED{addEventListener}(PARAMETERS{ESCAPED{type}, ESCAPED{listener}, ESCAPED{useCapture}}) : ESCAPED{void}:
+  alert:METHOD:[]:ESCAPED{alert}(PARAMETERS{ESCAPED{message}}) : ESCAPED{void}:
+  atob:METHOD:[]:ESCAPED{atob}(PARAMETERS{ESCAPED{encodedData}}) : ESCAPED{void}:
+  availHeight:PROPERTY:[]:ESCAPED{availHeight}:
+  availLeft:PROPERTY:[]:ESCAPED{availLeft}:
+  availTop:PROPERTY:[]:ESCAPED{availTop}:
+  availWidth:PROPERTY:[]:ESCAPED{availWidth}:
+  initialize:CONSTRUCTOR:[]:ESCAPED{initialize} : ESCAPED{Window}:
