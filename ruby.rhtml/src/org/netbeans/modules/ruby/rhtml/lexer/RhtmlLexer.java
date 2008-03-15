@@ -127,14 +127,18 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
                             state = ISA_LT;
                             break;
                             
-                        case '%':
+                        case '%': {
+                            int peek = input.read();
+                            if (peek == '%') {
+                                // %% means just %
+                                break;
+                            }
+                            if (peek != LexerInput.EOF) {
+                                input.backup(1);
+                            }
+                            
                             // See if we're in a line prefix
                             if (input.readLength() == 1) {
-                                // Just treat the % as a delimiter
-                                if (input.read() != '%') {
-                                    // %% = %
-                                    input.backup(1);
-                                }
                                 state = ISI_RUBY_LINE;
                                 return token(RhtmlTokenId.DELIMITER);
                             }
@@ -154,8 +158,8 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
                             }
                             break;
                     }
-                    
-                    break;
+                }
+                break;
                     
                 case ISA_LT:
                     switch (actChar) {

@@ -26,7 +26,7 @@ Sample from http://www.ruby-doc.org/stdlib/libdoc/erb/rdoc/classes/ERB.html:
 Some other cases to check:
 
   Lines containing % should not be treated as Ruby
-  %% lines_with_two_percents :should, :be, :considered, :ruby
+  %% this is a normal line, not a Ruby line
   <%% double_percents_should_be_cancelled %%>
   <% normal %>
   <%= normalexpr %>
