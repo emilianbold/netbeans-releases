@@ -107,9 +107,9 @@ is the proper place.
     <changes>
         <change id="CommitToGuards">
             <api name="general"/>
-            <summary>Added ModificationResult.Difference.guards(boolean) and isGuarded() methods permitting to write modifications even to guarded sections</summary>
+            <summary>Added ModificationResult.Difference.setCommitToGuards(boolean) and isCommitToGuards() methods permitting to write modifications even to guarded sections</summary>
             <version major="0" minor="33"/>
-            <date day="12" month="3" year="2008"/>
+            <date day="15" month="3" year="2008"/>
             <author login="jpokorsky"/>
             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
             <description>
