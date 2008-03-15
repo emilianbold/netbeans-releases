@@ -1,14 +1,18 @@
 package org.netbeans.modules.iep.model;
 
-import java.io.File;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
+import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 public class ModelHelper {
 
@@ -144,4 +148,47 @@ public class ModelHelper {
                     
             }
         
+            public void generateOperatorSchema(MultiWSDLComponentReference ref) {
+                NamedComponentReference<Message> msgRef = ref.getMessage();
+
+                if(msgRef != null) {
+                    Message msg = msgRef.get();
+                    if(msg != null) {
+                        Collection<Part> parts = msg.getParts();
+                        Iterator<Part> it = parts.iterator();
+                        //(1) More than one part:
+                        //all parts should be of builtin types
+                        //if a part is not builting type it will
+                        //be generated as CLOB
+                        
+                        //(2) Only one part
+                        if(it.hasNext()) {
+                            Part part = it.next();
+                            //(a) part has element
+                            NamedComponentReference<GlobalElement> element = part.getElement();
+                            if(element != null && element.get() != null) {
+                                GlobalElement ge = element.get();
+                                //ge should not be of simple type ex:string
+                                //we can not handle this case
+                                //to handle any message we need to ask user to
+                                //pick what he wants to get out of message
+                                //and name them as schema attributes of
+                                //an operator, we 
+                                //keep xpath mappings to extract these fields
+                                //then we can have a generic solution.
+                                
+                                //for now assume that this element is wrapper
+                                //and content is within it.
+                                
+                            }
+                            
+                            //(b) part has type
+                            NamedComponentReference<GlobalType> type = part.getType();
+                            if(type != null && type.get() != null) {
+                                GlobalType gt = type.get();
+                            }
+                        }
+                    }
+                }
+            }
 }

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,27 +31,64 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.sun.manager.jbi.nodes;
+package org.netbeans.modules.websvc.core;
 
+import javax.swing.event.ChangeListener;
+import org.openide.util.ChangeSupport;
 
 /**
  *
- * @author jqian
+ * @author Ajit
  */
-public interface Undeployable {
+public abstract class ProjectWebServiceViewImpl implements ProjectWebServiceView {
 
-    public boolean canUndeploy(boolean force);
+    private ChangeSupport serviceListeners,  clientListeners;
     
-    /**
-     * Undeploy the undeployable.
-     * 
-     * @param force     whether forcefull undeployment is requested
-     * 
-     * @return <code>true</code> if undeployment is successful; 
-     *         <code>false</code> if the undeployment is cancelled or failed.
-     */
-    public boolean undeploy(boolean force);
+    protected ProjectWebServiceViewImpl() {
+        serviceListeners = new ChangeSupport(this);
+        clientListeners = new ChangeSupport(this);
+    }
 
+    public void addChangeListener(ChangeListener l, ViewType viewType) {
+        switch (viewType) {
+            case SERVICE:
+                serviceListeners.addChangeListener(l);
+                break;
+            case CLIENT:
+                clientListeners.addChangeListener(l);
+                break;
+        }
+    }
+
+    public void removeChangeListener(ChangeListener l, ViewType viewType) {
+        switch (viewType) {
+            case SERVICE:
+                if (serviceListeners != null) {
+                    serviceListeners.removeChangeListener(l);
+                }
+                break;
+            case CLIENT:
+                if (clientListeners != null) {
+                    clientListeners.removeChangeListener(l);
+                }
+                break;
+        }
+    }
+
+    protected void fireChange(ViewType viewType) {
+        switch (viewType) {
+            case SERVICE:
+                serviceListeners.fireChange();
+                return;
+            case CLIENT:
+                clientListeners.fireChange();
+                return;
+        }
+    }
 }

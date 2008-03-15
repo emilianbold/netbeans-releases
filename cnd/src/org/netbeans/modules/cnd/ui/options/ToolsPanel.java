@@ -901,32 +901,17 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 //            CompilerSet cs = (CompilerSet) cbCompilerSet.getSelectedItem();
             CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
             changed = false;
-            
-            csm.saveToDisk();
-            CompilerSetManager.setDefault(csm);
-//            model.setPath(dirlist);
-//            model.setMakeName(tfMakeCommand.getText());
-//            model.setMakePath(tfMakePath.getText());
             if (cs != null) {
                 cs.getTool(Tool.MakeTool).setPath(tfMakePath.getText());
                 cs.getTool(Tool.DebuggerTool).setPath(tfGdbPath.getText());
                 cs.getTool(Tool.CCompiler).setPath(tfCPath.getText());
                 cs.getTool(Tool.CCCompiler).setPath(tfCppPath.getText());
                 cs.getTool(Tool.FortranCompiler).setPath(tfFortranPath.getText());
-    //            model.setGdbName(tfGdbCommand.getText());
-    //            model.setGdbPath(tfGdbPath.getText());
                 model.setCompilerSetName(csm.getDefaultCompilerSet().getName());
                 model.setSelectedCompilerSetName(cs.getName());
-    //            if (cSelections.get(cs.getName()) != null) {
-    //                model.setCCompilerName(cSelections.get(cs.getName()));
-    //            }
-    //            if (cppSelections.get(cs.getName()) != null) {
-    //                model.setCppCompilerName(cppSelections.get(cs.getName()));
-    //            }
-    //            if (fortranSelections.get(cs.getName()) != null) {
-    //                model.setFortranCompilerName(fortranSelections.get(cs.getName()));
-    //            }
             }
+            csm.saveToDisk();
+            CompilerSetManager.setDefault(csm);
             currentCompilerSet = cs;
 //            fireCompilerSetChange();
 //            fireCompilerSetModified();
@@ -976,7 +961,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
      * @return Returns true if all data is valid
      */
     public boolean dataValid() {
-        
+        if (csm.getCompilerSets().size() == 0) {
+            valid = false;
+            firePropertyChange(PROP_VALID, !valid, valid);
+            return false;
+        }
         if (updating || changingCompilerSet) {
             return true;
         } else {
@@ -1983,41 +1972,46 @@ private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//G
     
 }//GEN-LAST:event_btBaseDirectoryActionPerformed
 
-private void selectCompiler(JTextField tf) {
+private boolean selectCompiler(JTextField tf, Tool tool) {
     String seed = tfBaseDirectory.getText();
     FileChooser fileChooser = new FileChooser(getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false);
     int ret = fileChooser.showOpenDialog(this);
     if (ret == JFileChooser.CANCEL_OPTION) {
-        return;
+        return false;
     }
     if (!new File(new File(tfBaseDirectory.getText()), fileChooser.getSelectedFile().getName()).exists()) {
-        NotifyDescriptor nb = new NotifyDescriptor.Message("Only compilers within base directory are allowed", NotifyDescriptor.ERROR_MESSAGE); // NOI18N
+        NotifyDescriptor nb = new NotifyDescriptor.Message(getString("COMPILER_BASE_ERROR"), NotifyDescriptor.ERROR_MESSAGE);
         DialogDisplayer.getDefault().notify(nb);
-        return;
+        return false;
     }
     tf.setText(fileChooser.getSelectedFile().getPath());
+    tool.setPath(tf.getText());
+    fireCompilerSetChange();
+    fireCompilerSetModified();
+    return true;
 }
 
-private void selectTool(JTextField tf) {
+private boolean selectTool(JTextField tf) {
     String seed = tfBaseDirectory.getText();
     FileChooser fileChooser = new FileChooser(getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false);
     int ret = fileChooser.showOpenDialog(this);
     if (ret == JFileChooser.CANCEL_OPTION) {
-        return;
+        return false;
     }
     tf.setText(fileChooser.getSelectedFile().getPath());
+    return true;
 }
 
 private void btCVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCVersionActionPerformed
-    selectCompiler(tfCPath);
+    selectCompiler(tfCPath, currentCompilerSet.getTool(Tool.CCompiler));
 }//GEN-LAST:event_btCVersionActionPerformed
 
 private void btCppVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCppVersionActionPerformed
-    selectCompiler(tfCppPath);
+    selectCompiler(tfCppPath, currentCompilerSet.getTool(Tool.CCCompiler));
 }//GEN-LAST:event_btCppVersionActionPerformed
 
 private void btFortranVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btFortranVersionActionPerformed
-    selectCompiler(tfFortranPath);
+    selectCompiler(tfFortranPath, currentCompilerSet.getTool(Tool.FortranCompiler));
 }//GEN-LAST:event_btFortranVersionActionPerformed
 
 private void btMakeVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btMakeVersionActionPerformed

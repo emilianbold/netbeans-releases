@@ -9,7 +9,7 @@
     </component>
     <component name="Schemas" title="Schemas" type="/IEP/Model/Plan|Schemas"/>
     <component name="Operators" title="Operators" type="/IEP/Model/Plan|Operators">
-        <component type="/IEP/Input/StreamInput" name="o0" title="o0" portType="po:" operation="" message="">
+        <component type="/IEP/Input/StreamInput" name="o0" title="o0" portType="po:PurchaseOrderPT" operation="receivePurchaseOrder" message="receivePurchaseOrderRequest">
             <property name="x" value="84"/>
             <property name="y" value="82"/>
             <property name="z" value="0"/>
