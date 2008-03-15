@@ -65,6 +65,7 @@ import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2Target;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2TargetModuleID;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.spi.glassfish.AppDesc;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.ServerUtilities;
 
@@ -241,10 +242,11 @@ public class Hk2DeploymentManager implements DeploymentManager {
         List<TargetModuleID> moduleList = new ArrayList<TargetModuleID>();
         GlassfishModule commonSupport = getCommonServerSupport();
         if(commonSupport != null) {
-            String [] moduleNames = commonSupport.getModuleList();
-            if(moduleNames != null && moduleNames.length > 0) {
-                for(String moduleName: moduleNames) {
-                    moduleList.add(new Hk2TargetModuleID(target[0], moduleName, moduleName));
+            AppDesc [] appList = commonSupport.getModuleList();
+            if(appList != null && appList.length > 0) {
+                for(AppDesc app: appList) {
+                    moduleList.add(new Hk2TargetModuleID(target[0], app.getName(), 
+                            app.getName(), app.getPath()));
                 }
             }
         }

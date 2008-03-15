@@ -55,7 +55,6 @@ import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
@@ -96,18 +95,20 @@ public class FastDeploy extends IncrementalDeployment {
     public ProgressObject initialDeploy(Target target, J2eeModule app, ModuleConfiguration configuration, File dir) {
         // !PW FIXME Hack from old V3 plugin for name field.  What is the correct way?
         String moduleName = dir.getParentFile().getParentFile().getName();
-        Hk2TargetModuleID moduleId = new Hk2TargetModuleID(target, moduleName, moduleName);
+        Hk2TargetModuleID moduleId = new Hk2TargetModuleID(target, moduleName, 
+                moduleName, dir.getAbsolutePath());
         DeployProgressObject progressObject = new DeployProgressObject(moduleId);
-        
+
         GlassfishModule commonSupport = dm.getCommonServerSupport();
         commonSupport.deploy(progressObject, dir, moduleName);
-        
+
         return progressObject;
     }
     
     public ProgressObject initialDeploy(Target target,  File dir, String moduleName) {
         // !PW FIXME Hack from old V3 plugin for name field.  What is the correct way?
-        Hk2TargetModuleID moduleId = new Hk2TargetModuleID(target, moduleName, moduleName);
+        Hk2TargetModuleID moduleId = new Hk2TargetModuleID(target, moduleName, 
+                moduleName, dir.getAbsolutePath());
         DeployProgressObject progressObject = new DeployProgressObject(moduleId);
         GlassfishModule commonSupport = dm.getCommonServerSupport();
         commonSupport.deploy(progressObject, dir, moduleName);
@@ -121,11 +122,11 @@ public class FastDeploy extends IncrementalDeployment {
      * @return 
      */
     public ProgressObject incrementalDeploy(TargetModuleID targetModuleID, AppChangeDescriptor appChangeDescriptor) {
-//        System.out.println("incrementalDeploy");
-//        Hk2ManagerImpl tmi = new Hk2ManagerImpl((Hk2DeploymentManager)dm);
-//        tmi.reDeploy(targetModuleID);
-//        return tmi;    
-        return null;
+        Hk2TargetModuleID hk2tid = (Hk2TargetModuleID) targetModuleID;
+        DeployProgressObject progressObject = new DeployProgressObject(targetModuleID);
+        GlassfishModule commonSupport = dm.getCommonServerSupport();
+        commonSupport.deploy(progressObject, new File(hk2tid.getLocation()), hk2tid.getModuleID());
+        return progressObject;
     }
     
     /**

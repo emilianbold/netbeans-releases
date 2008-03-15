@@ -52,6 +52,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.swing.event.ChangeListener;
+import org.netbeans.spi.glassfish.AppDesc;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
 import org.netbeans.spi.glassfish.GlassfishModule.ServerState;
@@ -225,7 +226,7 @@ public class CommonServerSupport implements GlassfishModule {
         return mgr.undeploy(name);
     }
     
-    public String [] getModuleList() {
+    public AppDesc [] getModuleList() {
         CommandRunner mgr = new CommandRunner(getInstanceProperties());
         return mgr.getApplications();
     }

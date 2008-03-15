@@ -51,6 +51,7 @@ import org.netbeans.modules.glassfish.common.CommandRunner;
 import org.netbeans.modules.glassfish.common.nodes.actions.DeployDirectoryCookie;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
+import org.netbeans.spi.glassfish.AppDesc;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -77,7 +78,7 @@ public class Hk2ItemNode extends AbstractNode {
     
     private static final int TIMEOUT = 30000;
     
-    private Hk2ItemNode(Children children, final Object module, final Lookup lookup, final ItemType type) {
+    private Hk2ItemNode(Children children, final Lookup lookup, final ItemType type) {
         super(children);
         this.type = type;
         
@@ -301,15 +302,14 @@ public class Hk2ItemNode extends AbstractNode {
             }
     }
     
-    public Hk2ItemNode(Lookup lookup, Object module, ItemType type) {
-        this(Children.LEAF, module, lookup, type);
-//        String s = ((Hk2TargetModuleID) module).getModuleID();
-        String s = module.toString(); // was module.getModuleID()
-        setDisplayName(s);//Hk2PluginUtils.getName(module));
+    public Hk2ItemNode(Lookup lookup, AppDesc app, ItemType type) {
+        this(Children.LEAF, lookup, type);
+        setDisplayName(app.getName());
+        setShortDescription("<html>name: " + app.getName() + "<br>path: " + app.getPath() + "</html>");
     }
     
     public Hk2ItemNode(Lookup lookup, Children children, String name, ItemType type) {
-        this(children, null, lookup, type);
+        this(children, lookup, type);
         setDisplayName(name);
     }
     

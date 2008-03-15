@@ -180,7 +180,7 @@ public interface GlassfishModule {
      * 
      * @return array of application names current deployed.
      */
-    public String [] getModuleList();
+    public AppDesc [] getModuleList();
     
     /**
      * Returns the current server state (stopped, running, etc.)

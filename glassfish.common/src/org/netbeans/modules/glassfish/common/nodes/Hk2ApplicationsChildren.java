@@ -46,6 +46,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.CommandRunner;
+import org.netbeans.spi.glassfish.AppDesc;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -79,12 +80,12 @@ public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Re
                     try {
                         java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
                         CommandRunner mgr = new CommandRunner(ip);
-                        String [] names = mgr.getApplications();
+                        AppDesc [] apps = mgr.getApplications();
 
-                        if(names != null && names.length > 0) {
-                            for(String name: names) {
-                                System.out.println("Adding app " + name);
-                                keys.add(new Hk2ItemNode(lookup, name, Hk2ItemNode.ItemType.J2EE_APPLICATION));
+                        if(apps != null && apps.length > 0) {
+                            for(AppDesc app: apps) {
+                                System.out.println("Adding app " + app.getName());
+                                keys.add(new Hk2ItemNode(lookup, app, Hk2ItemNode.ItemType.J2EE_APPLICATION));
                             }
                         } else {
                             System.out.println("No apps...");

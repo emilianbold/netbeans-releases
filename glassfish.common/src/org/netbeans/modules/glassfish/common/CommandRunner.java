@@ -60,6 +60,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.spi.glassfish.AppDesc;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
 import org.netbeans.spi.glassfish.OperationStateListener;
@@ -111,8 +112,8 @@ public class CommandRunner extends BasicTask<OperationState> {
      * 
      * @return String array of names of deployed applications.
      */
-    public String [] getApplications() {
-        String[] result = new String[0];
+    public AppDesc [] getApplications() {
+        AppDesc [] result = new AppDesc[0];
         try {
             ServerCommand.ListCommand cmd = new ServerCommand.ListCommand();
             serverCmd = cmd;

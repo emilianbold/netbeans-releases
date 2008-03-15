@@ -56,13 +56,15 @@ public class Hk2TargetModuleID implements TargetModuleID {
     private final Target target;
     private final String docBaseURI;
     private final String path;
+    private final String location;
     private TargetModuleID parent;
     private final Vector<TargetModuleID> children;
     
-    public Hk2TargetModuleID(Target target, String docBaseURI, String path) {
+    public Hk2TargetModuleID(Target target, String docBaseURI, String path, String location) {
         this.target = target;
         this.docBaseURI = docBaseURI;
         this.path = path;
+        this.location = location;
         this.parent = null;
         this.children = new Vector<TargetModuleID>();
     }    
@@ -79,6 +81,10 @@ public class Hk2TargetModuleID implements TargetModuleID {
     
     public String getWebURL() {
         return ((Hk2Target) target).getServerUri() + "/" + path.replaceAll(" ", "%20");
+    }
+    
+    public String getLocation() {
+        return location;
     }
     
     // Retrieve the id assigned to represent the deployed module.

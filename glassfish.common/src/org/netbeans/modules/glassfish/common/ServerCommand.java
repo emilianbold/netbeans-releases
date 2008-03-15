@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import org.netbeans.spi.glassfish.AppDesc;
 
 
 /**
@@ -176,7 +177,7 @@ public abstract class ServerCommand {
         
         private Manifest list = null;
         private List<String> containerList = null;
-        private List<String> appList = null; 
+        private List<AppDesc> appList = null; 
         
         public String [] getContainers() {
             if(containerList != null && containerList.size() > 0) {
@@ -185,9 +186,9 @@ public abstract class ServerCommand {
             return null;
         }
         
-        public String [] getApplications() {
+        public AppDesc [] getApplications() {
             if(appList != null && appList.size() > 0) {
-                return appList.toArray(new String [appList.size()]);
+                return appList.toArray(new AppDesc [appList.size()]);
             }
             return null;
         }
@@ -240,10 +241,15 @@ public abstract class ServerCommand {
                 containerList.add(container);
                 
                 String [] apps = appDesc.split(","); // NOI18N
-                appList = new ArrayList<String>(apps.length);
+                appList = new ArrayList<AppDesc>(apps.length);
                 for(String app: apps) {
                     Attributes appAttr = list.getAttributes(app);
-                    appList.add(appAttr.getValue("message")); // NOI18N
+                    String name = appAttr.getValue("message"); // NOI18N
+                    String path = appAttr.getValue("Source_value"); // NOI18N
+                    if(path.startsWith("file:")) {
+                        path = new String(path.substring(5));
+                    }
+                    appList.add(new AppDesc(name, path));
                 }
             }
             
@@ -280,6 +286,7 @@ public abstract class ServerCommand {
                 cmd.append("?contextroot="); // NOI18N
                 cmd.append(contextRoot);
             }
+            cmd.append("?force=true");
             return cmd.toString();
         } 
         
