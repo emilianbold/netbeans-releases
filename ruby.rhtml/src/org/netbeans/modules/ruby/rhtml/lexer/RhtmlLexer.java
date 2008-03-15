@@ -42,7 +42,6 @@
 package org.netbeans.modules.ruby.rhtml.lexer;
 
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
-import org.netbeans.modules.ruby.rhtml.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -83,6 +82,7 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
     private static final int ISI_COMMENT_SCRIPTLET_PC = 6; // just after % in a Ruby comment scriptlet
     private static final int ISI_EXPR_SCRIPTLET       = 7; // inside Ruby expression scriptlet
     private static final int ISI_EXPR_SCRIPTLET_PC    = 8; // just after % in an expression scriptlet
+    private static final int ISI_RUBY_LINE            = 9; // just after % in an %-line
     
     public RhtmlLexer(LexerRestartInfo<RhtmlTokenId> info) {
         this.input = info.input();
@@ -126,7 +126,35 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
                         case '<':
                             state = ISA_LT;
                             break;
+                            
+                        case '%':
+                            // See if we're in a line prefix
+                            if (input.readLength() == 1) {
+                                // Just treat the % as a delimiter
+                                if (input.read() != '%') {
+                                    // %% = %
+                                    input.backup(1);
+                                }
+                                state = ISI_RUBY_LINE;
+                                return token(RhtmlTokenId.DELIMITER);
+                            }
+                            CharSequence cs = input.readText();
+                            // -2: skip the final %
+                            for (int i = cs.length()-2; i >= 0; i--) {
+                                char c = cs.charAt(i);
+                                if (c == '\n') {
+                                    // We're in a new line: Finish this token as HTML.
+                                    input.backup(1);
+                                    // When we come back we'll just process the line as a delimiter
+                                    return token(RhtmlTokenId.HTML);
+                                } else if (!Character.isWhitespace(c)) {
+                                    // The % is not the beginning of a line
+                                    break;
+                                }
+                            }
+                            break;
                     }
+                    
                     break;
                     
                 case ISA_LT:
@@ -154,6 +182,19 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
                                 state = INIT;
                                 return token(RhtmlTokenId.HTML); //return CL token
                             }
+                        case '%':
+                            // Handle <%% == <%
+                            if(input.readLength() == 3) {
+                                // just read <%%.  TODO - should <%%= be considered valid?
+                                state = ISI_SCRIPTLET;
+                                return token(RhtmlTokenId.DELIMITER);
+                            } else {
+                                // RHTML symbol, but we also have content language in the buffer
+                                input.backup(3); //backup <%@
+                                state = INIT;
+                                return token(RhtmlTokenId.HTML); //return CL token
+                            }
+                            
                         case '#':
                             if(input.readLength() == 3) {
                                 // just <%! or <%= read
@@ -210,6 +251,27 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
 
                 case ISI_SCRIPTLET_PC:
                     switch(actChar) {
+                        case '%': {
+                            // Handle %%>
+                            int peek = input.read();
+                            if (peek != '>') {
+                                input.backup(1);
+                                // Still in percent state
+                                break;
+                            } else {
+                                // %%>
+                                if(input.readLength() == 3) {
+                                    //just the '%>' symbol read
+                                    state = INIT;
+                                    return token(RhtmlTokenId.DELIMITER);
+                                } else {
+                                    //return the scriptlet content
+                                    input.backup(3); // backup '%>' we will read JUST them again
+                                    state = ISI_SCRIPTLET;
+                                    return token(RhtmlTokenId.RUBY);
+                                }
+                            }
+                        }
                         case '>':
                             if(input.readLength() == 2) {
                                 //just the '%>' symbol read
@@ -224,6 +286,22 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
                         default:
                             state = ISI_SCRIPTLET;
                             break;
+                    }
+                    break;
+
+                case ISI_RUBY_LINE:
+                    while (actChar != '\n') {
+                        actChar = input.read();
+                        if (actChar == LexerInput.EOF) {
+                            break;
+                        }
+                    }
+                    if (actChar == '\n') {
+                        input.backup(1);
+                    }
+                    state = INIT;
+                    if (input.readLength() > 0) {
+                        return token(RhtmlTokenId.RUBY);
                     }
                     break;
 

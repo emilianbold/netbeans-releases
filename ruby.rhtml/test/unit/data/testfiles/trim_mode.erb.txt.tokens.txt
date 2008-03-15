@@ -1,0 +1,48 @@
+<Unnamed test>
+HTML            ".t.e.s.t RHTML delimiters\nSample from http://www.ruby-doc.org/stdlib/libdoc/erb/rdoc/classes/ERB.html:\n\n   From:  James Edward Gray II <james@grayproductions.net>\n    To:  ", la=3, st=0
+DELIMITER       "<%=", st=7
+RUBY_EXPR       " to ", la=2, st=7
+DELIMITER       "%>", st=0
+HTML            "\n    Subject:  Addressing Needs\n\n    ", la=3, st=0
+DELIMITER       "<%=", st=7
+RUBY_EXPR       " to[/\\w+/] ", la=2, st=7
+DELIMITER       "%>", st=0
+HTML            ":\n\n    Just wanted to send a quick note assuring that your needs are being\n    addressed.\n\n    I want you to know that my team will keep working on the issues,\n    especially:\n\n    ", la=3, st=0
+DELIMITER       "<%#", st=5
+RUBYCOMMENT     " ignore numerous minor requests -- focus on priorities ", la=2, st=5
+DELIMITER       "%>", st=0
+HTML            "\n    ", la=1, st=0
+DELIMITER       "%", la=1, st=9
+RUBY            " priorities.each do |priority|", la=1, st=0
+HTML            "\n      \n      * ", la=3, st=0
+DELIMITER       "<%=", st=7
+RUBY_EXPR       " priority ", la=2, st=7
+DELIMITER       "%>", st=0
+HTML            "\n    ", la=1, st=0
+DELIMITER       "%", la=1, st=9
+RUBY            " end", la=1, st=0
+HTML            "\n\n    Thanks for your patience.\n\n    James Edward Gray II\n\nSome other cases to check:\n\n  Lines containing % should not be treated as Ruby\n  ", la=1, st=0
+DELIMITER       "%%", st=9
+RUBY            " lines_with_two_percents :should, :be, :considered, :ruby", la=1, st=0
+HTML            "\n  ", la=3, st=0
+DELIMITER       "<%%", st=3
+RUBY            " double_percents_should_be_cancelled ", la=3, st=3
+DELIMITER       "%%>", st=0
+HTML            "\n  ", la=3, st=0
+DELIMITER       "<%", la=1, st=3
+RUBY            " normal ", la=2, st=3
+DELIMITER       "%>", st=0
+HTML            "\n  ", la=3, st=0
+DELIMITER       "<%=", st=7
+RUBY_EXPR       " normalexpr ", la=2, st=7
+DELIMITER       "%>", st=0
+HTML            "\n  ", la=3, st=0
+DELIMITER       "<%#", st=5
+RUBYCOMMENT     " comment ", la=2, st=5
+DELIMITER       "%>", st=0
+HTML            "\n  html\n  <div></div>", la=1, st=0
+----- EOF -----
+
+<Unnamed test>
+----- EOF -----
+
