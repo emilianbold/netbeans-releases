@@ -105,6 +105,18 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="CommitToGuards">
+            <api name="general"/>
+            <summary>Added ModificationResult.Difference.guards(boolean) and isGuarded() methods permitting to write modifications even to guarded sections</summary>
+            <version major="0" minor="33"/>
+            <date day="12" month="3" year="2008"/>
+            <author login="jpokorsky"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                Added methods to allow ModificationResult to write changes into guarded sections of a document in case the API client
+                is aware of what he does.
+            </description>
+        </change>
         <change id="PartialReparseAPI">
             <api name="general"/>
             <summary>Added CompilationInfo.getChangedTree method returning the reparsed subtree</summary>
