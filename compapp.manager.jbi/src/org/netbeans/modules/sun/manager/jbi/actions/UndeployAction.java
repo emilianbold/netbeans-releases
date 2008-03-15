@@ -89,7 +89,7 @@ public abstract class UndeployAction extends NodeAction {
                 Undeployable undeployable =
                         node.getLookup().lookup(Undeployable.class);
                 try {
-                    if (undeployable != null && !undeployable.canUndeploy()) {
+                    if (undeployable != null && !undeployable.canUndeploy(isForceAction())) {
                         ret = false;
                         break;
                     }
@@ -102,6 +102,7 @@ public abstract class UndeployAction extends NodeAction {
         return ret;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
