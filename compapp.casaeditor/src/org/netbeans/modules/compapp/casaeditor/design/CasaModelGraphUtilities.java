@@ -78,6 +78,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaRegion;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -370,9 +371,17 @@ public class CasaModelGraphUtilities {
             CasaServiceEngineServiceUnit sesu,
             CasaNodeWidget widget)
     {
+//        String unitName = sesu.getUnitName();
+//        String compName = sesu.getComponentName();
+//        widget.setNodeProperties(unitName, compName);
+        
         String unitName = sesu.getUnitName();
-        String compName = sesu.getComponentName();
-        widget.setNodeProperties(unitName, compName);
+        String type = sesu.getComponentName();
+        type = JbiDefaultComponentInfo.getDisplayName(type).toUpperCase();
+        if (type.endsWith("SERVICEENGINE")) {  // NOI18N
+           type = type.substring(0, type.length() - 13);
+       }
+        widget.setNodeProperties(unitName, type);
     }
 
     private static String getShortNameInUpperCase(String str) {
