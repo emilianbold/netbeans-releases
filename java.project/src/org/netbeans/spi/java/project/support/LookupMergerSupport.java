@@ -46,7 +46,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
-import org.netbeans.spi.java.queries.support.SourceForBinaryQueryimplementation2Base;
+import org.netbeans.spi.java.queries.support.SourceForBinaryQueryImplementation2Base;
 import org.netbeans.spi.project.LookupMerger;
 import org.openide.util.Lookup;
 
@@ -90,7 +90,7 @@ public final class LookupMergerSupport {
         
     }
     
-    private static class SFBIMerged extends SourceForBinaryQueryimplementation2Base {
+    private static class SFBIMerged extends SourceForBinaryQueryImplementation2Base {
         private Lookup lookup;
         
         public SFBIMerged(Lookup lkp) {

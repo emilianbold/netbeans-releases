@@ -39,72 +39,87 @@
 
 package org.netbeans.modules.iep.model;
 
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement.StringAttribute;
 import org.netbeans.modules.xml.xam.dom.Attribute;
-import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-
 /**
  *
  * @author radval
  */
-public interface Import extends IEPComponent {
+public interface MultiWSDLComponentReference {
 
-    static final String LOCATIION_PROPERTY = "location";
+    /**
+     * operation atribute name.
+     */
+    String OPERATION = "operation";     // NOI18N
 
-    static final String NAMESPACE_PROPERTY = "namespace";
+    /**
+     * portType attribute name.
+     */
+    String PORT_TYPE = "portType";          // NOI18N
 
-    static final String IMPORT_TYPE_PROPERTY = "importType";                              // NOI18N
     
     /**
-     * This type should be used for xsd document.
+     * message attribute name.
      */
-    String SCHEMA_IMPORT_TYPE ="http://www.w3.org/2001/XMLSchema";  // NOI18N
+    String MESSAGE = "message";          // NOI18N
     
-    /**
-     * This type should be used for wsdl document.
-     */
-    String WSDL_IMPORT_TYPE = "http://schemas.xmlsoap.org/wsdl/";   // NOI18N
+    static final Attribute ATTR_OPERATION = new StringAttribute(OPERATION);
 
-    
-    static final Attribute ATTR_LOCATION = new StringAttribute(LOCATIION_PROPERTY);
-
-    static final Attribute ATTR_NAMESPACE = new StringAttribute(NAMESPACE_PROPERTY);
+    static final Attribute ATTR_PORTTYPE = new StringAttribute(PORT_TYPE);
         
-    static final Attribute ATTR_IMPORT_TYPE = new StringAttribute(IMPORT_TYPE_PROPERTY);
-    
-    String getLocation();
-    
-    void setLocation(String location);
-    
-    String getNamespace();
-    
-    void setNamespace(String namespace);
+    static final Attribute ATTR_MESSAGE = new StringAttribute(MESSAGE);
     
     /**
-     * Getter for ""importType" attribute.
-     * 
-     * @return "importType" attribute value.
+     * Gets the value of the "portType" property.
+     *
+     * @return possible object is reference to PortType object in WSDL model.
      */
-    String getImportType();
+    NamedComponentReference<PortType> getPortType();
 
     /**
-     * Setter for ""importType" attribute.
+     * Sets the value of the portType property.
      * 
      * @param value
-     *            New "importType" attribute value.
+     *            allowed object is reference to PortType object in WSDL model.
      */
-    void setImportType( String value );
+    void setPortType( NamedComponentReference<PortType> value );
+
+    /**
+     * Gets the value of the operation property.
+     * 
+     * @return possible object is reference to Operation object in WSDL model.
+     */
+    NamedComponentReference<Operation> getOperation();
+
+    /**
+     * Sets the value of the operation property.
+     * 
+     * @param value
+     *            allowed object is reference to Operation object in WSDL model.
+     */
+    void setOperation( NamedComponentReference<Operation> value );
     
-    
-    Component getParentComponent();
     
     /**
-     * Returns the imported WSDL model.
-     *
-     * @return a WSDL model object if the import location or namespace resolves 
-     * into a model source and the model source is well-formed; 
-     * @exception DepResolverException if location or namespace values cannot resolve;
-     */    
-    WSDLModel getImportedWSDLModel() throws CatalogModelException;
+     * Gets the value of the message property.
+     * 
+     * @return possible object is reference to Operation object in WSDL model.
+     */
+    NamedComponentReference<Message> getMessage();
+
+    /**
+     * Sets the value of the message property.
+     * 
+     * @param value
+     *            allowed object is reference to Operation object in WSDL model.
+     */
+    void setMessage( NamedComponentReference<Message> value );
+    
+    
 }
