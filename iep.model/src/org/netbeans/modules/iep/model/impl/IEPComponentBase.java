@@ -129,4 +129,10 @@ public abstract class IEPComponentBase extends
 //            String v = getAttribute(attrName);
 //            return v == null ? null : new GlobalReferenceImpl<T>(c, this, v);
 //        }
+        
+          protected <T extends ReferenceableWSDLComponent> NamedComponentReference<T> resolveGlobalReference(
+            Class<T> c, Attribute attrName) {
+            String v = getAttribute(attrName);
+            return v == null ? null : new GlobalReferenceImpl<T>(c, this, v);
+          }  
 }
