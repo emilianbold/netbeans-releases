@@ -283,28 +283,39 @@ public class CasaModelGraphUtilities {
             int x,
             int y)
     {
-        CasaNodeWidgetEngine sesuWidget = (CasaNodeWidgetEngine) scene.addNode(su);
-        
-        // mapping process names to endpoint lists
-        Map<String, List<CasaEndpointRef>> process2EndpointRefMap =
-                new HashMap<String, List<CasaEndpointRef>>();
-                
-        buildProcess2EndpointMap(process2EndpointRefMap, su.getProvides());
-        buildProcess2EndpointMap(process2EndpointRefMap, su.getConsumes());
+        CasaNodeWidgetEngine sesuWidget = (CasaNodeWidgetEngine) scene.addNode(su);        
         
         boolean showEndpointGroup = CasaFactory.getCasaCustomizer().getBOOLEAN_CLASSIC_SESU_LAYOUT_STYLE();
-        for (String processName : process2EndpointRefMap.keySet()) {
-            if (showEndpointGroup && !processName.equals(NULL_PROCESS_NAME)) {
-                List<CasaEndpointRef> endpointRefs = process2EndpointRefMap.get(processName);
-                CasaEndpoint endpoint = endpointRefs.get(0).getEndpoint().get();
-                createProcess(su, endpoint, scene, false);
-            }
+        
+        if (showEndpointGroup) {
+            // mapping process names to endpoint lists
+            Map<String, List<CasaEndpointRef>> process2EndpointRefMap =
+                    new HashMap<String, List<CasaEndpointRef>>();
+
+            buildProcess2EndpointMap(process2EndpointRefMap, su.getProvides());
+            buildProcess2EndpointMap(process2EndpointRefMap, su.getConsumes());
             
-            List<CasaEndpointRef> endpointRefs = process2EndpointRefMap.get(processName);
-            for (CasaEndpointRef endpointRef : endpointRefs) {
-                createPin(su, endpointRef, endpointRef.getDisplayName(), scene, false);
+            for (String processName : process2EndpointRefMap.keySet()) {
+                if (!processName.equals(NULL_PROCESS_NAME)) {
+                    List<CasaEndpointRef> endpointRefs = process2EndpointRefMap.get(processName);
+                    CasaEndpoint endpoint = endpointRefs.get(0).getEndpoint().get();
+                    createProcess(su, endpoint, scene, false);
+                }
+
+                List<CasaEndpointRef> endpointRefs = process2EndpointRefMap.get(processName);
+                for (CasaEndpointRef endpointRef : endpointRefs) {
+                    createPin(su, endpointRef, endpointRef.getDisplayName(), scene, false);
+                }
+            }  
+        } else {
+            for (CasaProvides provides : su.getProvides()) {
+                createPin(su, provides, provides.getDisplayName(), scene, false);
             }
-        }        
+            for (CasaConsumes consumes : su.getConsumes()) {
+                createPin(su, consumes, consumes.getDisplayName(), scene, false);
+            }
+        }
+        
         sesuWidget.doneAddingWidget();
         
         scene.validate();
