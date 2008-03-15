@@ -78,7 +78,8 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
-import org.netbeans.jemmy.util.Dumper;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.performance.test.utilities.PerformanceTestCase;
 
@@ -381,7 +382,10 @@ public class Utilities {
     public static void buildproject(String project) {
         ProjectRootNode prn = ProjectsTabOperator.invoke().getProjectRootNode(project);
         prn.buildProject();
-        MainWindowOperator.getDefault().waitStatusText("Finished building "+project); // NOI18N
+        StringComparator sc = MainWindowOperator.getDefault().getComparator();
+        MainWindowOperator.getDefault().setComparator(new Operator.DefaultStringComparator(false, true));
+        MainWindowOperator.getDefault().waitStatusText("Finished building "); // NOI18N
+        MainWindowOperator.getDefault().setComparator(sc);
     }
     
     /**
