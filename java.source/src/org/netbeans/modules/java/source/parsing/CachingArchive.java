@@ -145,7 +145,7 @@ public class CachingArchive implements Archive {
                       
     // Private methods ---------------------------------------------------------
     
-    private synchronized void doInit() {
+    synchronized void doInit() {
         if (folders == null) {
             try {
                 names = new byte[16384];
