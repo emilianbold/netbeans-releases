@@ -454,6 +454,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         try {
             final URL root = getOwningSourceRoot(fo);
             if ( root != null && VisibilityQuery.getDefault().isVisible(fo)) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Folder created: "+FileUtil.getFileDisplayName(fo)+" Owner: " + root);
+                }
                 scheduleCompilation(fo,root);
             }
         } catch (IOException ioe) {
@@ -466,8 +469,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         final boolean isFolder = fo.isFolder();
         try {
             if ((isJava(fo) || isFolder) && VisibilityQuery.getDefault().isVisible(fo)) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Java file deleted: " + FileUtil.getFileDisplayName(fo));
+                }
                 final URL root = getOwningSourceRoot (fo);
                 if (root != null) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Owner: " + root);
+                    }
                     markRootTasklistDirty(root);
                     submit(Work.delete(fo,root,isFolder));
                     if (TasklistSettings.isTasklistEnabled()) {
@@ -497,8 +506,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         final FileObject fo = fe.getFile();        
         try {
             if (isJava(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Java file created: " + FileUtil.getFileDisplayName(fo));
+                }
                 final URL root = getOwningSourceRoot (fo);        
                 if (root != null) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Owner: " + root);
+                    }
                     markRootTasklistDirty(root);
                     File f = FileUtil.toFile(fo);
                     
@@ -529,9 +544,15 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         final FileObject fo = fe.getFile();
         try {
             if (isJava(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Java file changed: " + FileUtil.getFileDisplayName(fo));
+                }
                 final URL root = getOwningSourceRoot (fo);
                 File file = FileUtil.toFile(fo);
                 if (root != null && file != null) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Owner: " + root);
+                    }
                     markRootTasklistDirty(root);
                     assureCompiledWithDeps(root, file);
                 }

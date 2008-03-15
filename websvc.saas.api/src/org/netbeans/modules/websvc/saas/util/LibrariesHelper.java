@@ -68,12 +68,17 @@ public class LibrariesHelper {
     public static final String WEBSERVICE_CLIENTS_SUB_DIR = "webservice_clients"; // NOI18N
 
     public static void addDefaultJaxWsClientJars(Project project, FileObject targetSource, WsdlSaas saas) {
-        List<String> jarPaths = getDefaultJaxWsClientJars(saas);
-        addArchiveRefsToProject(project, targetSource, jarPaths);
+        List<String> jarPaths = getDefaultJaxWsClientJars(saas, WsdlServiceProxyDescriptor.JarEntry.PROXY_JAR_TYPE);
+        addArchiveRefsToProject(project, targetSource, jarPaths, ClassPath.COMPILE);
+        // NOT SUPPORTED by current ProjectClassPathModifier
+        /*List<String> sourceJarPaths = getDefaultJaxWsClientJars(saas, WsdlServiceProxyDescriptor.JarEntry.SRC_JAR_TYPE);
+        addArchiveRefsToProject(project, targetSource, sourceJarPaths, ClassPath.SOURCE);*/
     }
     
     public static void addClientJars(Project project, FileObject targetSource, WadlSaas saas) {
-        addArchivesToProject(project, targetSource, saas.getLibraryJars());
+        addArchivesToProject(project, targetSource, saas.getLibraryJars(), ClassPath.COMPILE);
+        /* NOT SUPPORTED by current ProjectClassPathModifier
+        addArchivesToProject(project, targetSource, saas.getJaxbSourceJars(), ClassPath.SOURCE);*/
     }
     
     /**
@@ -83,6 +88,11 @@ public class LibrariesHelper {
      * @param jars jar files to be added to the project (filename Strings)
      */
     public static void addArchiveRefsToProject(Project project, FileObject targetSource, List<String> jars) {
+        addArchiveRefsToProject(project, targetSource, jars, ClassPath.COMPILE);
+    }
+    
+    public static void addArchiveRefsToProject(Project project, FileObject targetSource, 
+            List<String> jars, String classPathType) {
         List<FileObject> jarFiles = new ArrayList<FileObject>();
         for (String jarPath : jars) {
             FileObject jarFO = FileUtil.toFileObject(new File(jarPath));
@@ -91,14 +101,19 @@ public class LibrariesHelper {
             }
         }
         
-        addArchivesToProject(project, targetSource, jarFiles);
+        addArchivesToProject(project, targetSource, jarFiles, classPathType);
     }
      
     public static void addArchivesToProject(Project project, FileObject targetSource, List<FileObject> jars) {
+        addArchivesToProject(project, targetSource, jars, ClassPath.COMPILE);
+    }
+    
+    public static void addArchivesToProject(Project project, FileObject targetSource, 
+            List<FileObject> jars, String classPathType) {
         if (targetSource == null) {
             targetSource = getSourceRoot(project);
         }
-        ClassPath classPath = ClassPath.getClassPath(targetSource, ClassPath.COMPILE);
+        ClassPath classPath = ClassPath.getClassPath(targetSource, classPathType);
         try {
             FileObject wsClientsSubDir = getWebServiceClientLibraryDir(project);
             ArrayList<URL> archiveJars = new ArrayList<URL>();
@@ -116,7 +131,7 @@ public class LibrariesHelper {
                     Exceptions.printStackTrace(ex);
                 }
                 URL[] archiveURLs = archiveJars.toArray(new URL[archiveJars.size()]);
-                ProjectClassPathModifier.addRoots(archiveURLs, targetSource, ClassPath.COMPILE);
+                ProjectClassPathModifier.addRoots(archiveURLs, targetSource, classPathType);
             }
             
         } catch (IOException ioe) {
@@ -142,12 +157,12 @@ public class LibrariesHelper {
         return wsClientsSubDir;
     }
     
-    public static List<String> getDefaultJaxWsClientJars(WsdlSaas saas) {
+    public static List<String> getDefaultJaxWsClientJars(WsdlSaas saas, String jarType) {
         WsdlData data = saas.getWsdlData();
         List<String> jarPaths = new ArrayList<String>();
         File basePath = data.getJaxWsDescriptor().getXmlDescriptorFile().getParentFile();
         for (WsdlServiceProxyDescriptor.JarEntry jar : data.getJaxWsDescriptor().getJars()) {
-            if (jar.getType().equals(WsdlServiceProxyDescriptor.JarEntry.PROXY_JAR_TYPE)) {
+            if (jar.getType().equals(jarType)) {
                 File jarPath = new File(basePath, jar.getName());
                 jarPaths.add(jarPath.getAbsolutePath());
             }

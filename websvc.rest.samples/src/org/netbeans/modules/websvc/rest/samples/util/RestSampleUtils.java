@@ -62,6 +62,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -327,7 +328,7 @@ public class RestSampleUtils {
                 writer.flush();
                 outputStream.close();
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Exceptions.printStackTrace(ex);
             }
         }
     }
@@ -348,7 +349,7 @@ public class RestSampleUtils {
             try {
                 ProjectClassPathModifier.addLibraries(new Library[]{jerseyLibrary}, sourceRoot, type);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             }
         }
     }
