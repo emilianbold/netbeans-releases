@@ -71,7 +71,6 @@ public class StripAction extends ContextAction {
     
     private final VCSContext context;
     private static String HG_STIP_SAVE_BUNDLE = "saving bundle to ";
-    private static String HG_TIP = "tip"; // NOI18N
             
     public StripAction(String name, VCSContext context) {
         this.context = context;
@@ -85,17 +84,15 @@ public class StripAction extends ContextAction {
     public static void strip(final VCSContext ctx){
         final File root = HgUtils.getRootFile(ctx);
         if (root == null) return;
-        File[] files = ctx != null? ctx.getFiles().toArray(new File[0]): null;
         String repository = root.getAbsolutePath();
          
         String rev = null;
 
-        final Strip strip = new Strip(root, files);
+        final Strip strip = new Strip(root);
         if (!strip.showDialog()) {
             return;
         }
         rev = strip.getSelectionRevision();
-        if(rev == null) rev = HG_TIP;
         final boolean doBackup = strip.isBackupRequested();
         final String revStr = rev;
 

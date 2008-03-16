@@ -63,8 +63,6 @@ public class ComponentImpl extends IEPComponentBase implements Component {
                     child = new ComponentImpl(getModel(), childEl);
             } else if (localName.equals(PROPERTY_CHILD)) {
                     child = new PropertyImpl(getModel(), childEl);
-            } else if (localName.equals(IMPORT_CHILD)) {
-                    child = new ImportImpl(getModel(), childEl);
             } else if(localName.equals(DOCUMENTATION_CHILD)) {
             	child = new DocumentationImpl(getModel(), childEl);
             }

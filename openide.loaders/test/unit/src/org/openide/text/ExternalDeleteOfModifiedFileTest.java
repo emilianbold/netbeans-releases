@@ -187,9 +187,6 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
         OutputStream os = new BufferedOutputStream(new FileOutputStream(f));
         for (int i = 0; i < 1024 * 1024 + 50000; i++) {
             os.write('A');
-            if (i % 80 == 0) {
-                os.write('\n');
-            }
         }
         os.close();
 

@@ -88,6 +88,7 @@ import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import java.sql.PreparedStatement;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLUtils;
 import org.netbeans.modules.sql.framework.model.RuntimeDatabaseModel;
@@ -105,7 +106,7 @@ import org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea;
  */
 public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
 
-    private static transient final Logger mLogger = Logger.getLogger(DataOutputPanel.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(DataOutputPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     public static final String NL = System.getProperty("line.separator", "\n");
     public static final String LOG_CATEGORY = DataOutputPanel.class.getName();
@@ -153,8 +154,8 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
         putClientProperty("PersistenceType", "Never"); //NOI18N
         this.setLayout(new BorderLayout());
 
-        String nbBundle = mLoc.t("BUND332: Output: {0}", sqlDefinition.getDisplayName());
-        this.setName(nbBundle.substring(15));
+        String nbBundle = mLoc.t("PRSR001: Output: {0}", sqlDefinition.getDisplayName());
+        this.setName(Localizer.parse(nbBundle));
         setBorder(BorderFactory.createEmptyBorder());
 
         JPanel panel = new JPanel();
@@ -177,11 +178,11 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
         validate();
 
         URL url = null;
-        String nbBundle14 = mLoc.t("BUND333: Truncate this table");
+        String nbBundle14 = mLoc.t("PRSR001: Truncate this table");
         if (showTruncate) {
             //create truncate button
             TruncateTableAction truncAction = new TruncateTableAction(this);
-            truncAction.putValue(Action.SHORT_DESCRIPTION,  nbBundle14.substring(15));
+            truncAction.putValue(Action.SHORT_DESCRIPTION,  Localizer.parse(nbBundle14));
             url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/stop.gif");
             truncAction.putValue(Action.SMALL_ICON, new ImageIcon(url));
             //add truncate button
@@ -192,8 +193,8 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
         if (showFilter) {
             //add Filter button  
             showDataFilter_ActionPerformed filterAction = new showDataFilter_ActionPerformed();
-            String nbBundle1 = mLoc.t("BUND334: Enable/Disable of Table Content filtering");
-            filterAction.putValue(Action.SHORT_DESCRIPTION, nbBundle1.substring(15));
+            String nbBundle1 = mLoc.t("PRSR001: Enable/Disable of Table Content filtering");
+            filterAction.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle1));
             url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/funnel.png");
             filterAction.putValue(Action.SMALL_ICON, new ImageIcon(url));
             filterButton = new JButton(filterAction);
@@ -229,16 +230,16 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
         //add refresh button
         url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/refresh.png");
         refreshButton = new JButton(new ImageIcon(url));
-        String nbBundle2 = mLoc.t("BUND335: Refresh records");
-        refreshButton.setToolTipText(nbBundle2.substring(15));
+        String nbBundle2 = mLoc.t("PRSR001: Refresh records");
+        refreshButton.setToolTipText(Localizer.parse(nbBundle2));
         refreshButton.addActionListener(outputListener);
         btn[1] = refreshButton;
 
         // add navigation buttons
         url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/navigate_beginning.png");
         first = new JButton(new ImageIcon(url));
-        String nbBundle3 = mLoc.t("BUND336: Go to the first page");
-        first.setToolTipText(nbBundle3.substring(15));
+        String nbBundle3 = mLoc.t("PRSR001: Go to the first page");
+        first.setToolTipText(Localizer.parse(nbBundle3));
         first.addActionListener(outputListener);
         first.setEnabled(false);
         toolbar.add(first);
@@ -246,8 +247,8 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
 
         url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/navigate_left.png");
         previous = new JButton(new ImageIcon(url));
-        String nbBundle4 = mLoc.t("BUND337: Go to the previous page");
-        previous.setToolTipText(nbBundle4.substring(15));
+        String nbBundle4 = mLoc.t("PRSR001: Go to the previous page");
+        previous.setToolTipText(Localizer.parse(nbBundle4));
         previous.addActionListener(outputListener);
         previous.setEnabled(false);
         toolbar.add(previous);
@@ -255,8 +256,8 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
 
         url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/navigate_right.png");
         next = new JButton(new ImageIcon(url));
-        String nbBundle5 = mLoc.t("BUND338: Go to the next page");
-        next.setToolTipText(nbBundle5.substring(15));
+        String nbBundle5 = mLoc.t("PRSR001: Go to the next page");
+        next.setToolTipText(Localizer.parse(nbBundle5));
         next.addActionListener(outputListener);
         next.setEnabled(false);
         toolbar.add(next);
@@ -264,15 +265,15 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
 
         url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/navigate_end.png");
         last = new JButton(new ImageIcon(url));
-        String nbBundle6 = mLoc.t("BUND339: Go to the last page");
-        last.setToolTipText(nbBundle6.substring(15));
+        String nbBundle6 = mLoc.t("PRSR001: Go to the last page");
+        last.setToolTipText(Localizer.parse(nbBundle6));
         last.addActionListener(outputListener);
         last.setEnabled(false);
         toolbar.add(last);
         toolbar.addSeparator(new Dimension(10, 10));
         //add limit row label
-        String nbBundle7 = mLoc.t("BUND340: Page size:");
-        limitRow = new JLabel(nbBundle7.substring(15));
+        String nbBundle7 = mLoc.t("PRSR001: Page size:");
+        limitRow = new JLabel(Localizer.parse(nbBundle7));
         limitRow.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
         toolbar.add(limitRow);
 
@@ -293,9 +294,9 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
         refreshField.addActionListener(outputListener);
         toolbar.add(refreshField);
 
-        String nbBundle8 = mLoc.t("BUND341: Total Rows:");
-        JLabel totalRowsNameLabel = new JLabel(nbBundle8.substring(15));
-        totalRowsNameLabel.getAccessibleContext().setAccessibleName(nbBundle8.substring(15));
+        String nbBundle8 = mLoc.t("PRSR001: Total Rows:");
+        JLabel totalRowsNameLabel = new JLabel(Localizer.parse(nbBundle8));
+        totalRowsNameLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle8));
         totalRowsNameLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
         toolbar.add(totalRowsNameLabel);
         totalRowsLabel = new JLabel();
@@ -304,24 +305,24 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
 
         url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/row_add.png");
         insert = new JButton(new ImageIcon(url));
-        String nbBundle9 = mLoc.t("BUND342: Insert a record.");
-        insert.setToolTipText(nbBundle9.substring(15));
+        String nbBundle9 = mLoc.t("PRSR001: Insert a record.");
+        insert.setToolTipText(Localizer.parse(nbBundle9));
         insert.addActionListener(outputListener);
         insert.setEnabled(false);
         btn[2] = insert;
 
         url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/row_delete.png");
         deleteRow = new JButton(new ImageIcon(url));
-        String nbBundle10 = mLoc.t("BUND343: Delete Selected Records.");
-        deleteRow.setToolTipText(nbBundle10.substring(15));
+        String nbBundle10 = mLoc.t("PRSR001: Delete Selected Records.");
+        deleteRow.setToolTipText(Localizer.parse(nbBundle10));
         deleteRow.addActionListener(outputListener);
         deleteRow.setEnabled(false);
         btn[3] = deleteRow;
 
         url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/row_preferences.png");
         commit = new JButton(new ImageIcon(url));
-        String nbBundle11 = mLoc.t("BUND344: Commit the Changes done on this page.");
-        commit.setToolTipText(nbBundle11.substring(15));
+        String nbBundle11 = mLoc.t("PRSR001: Commit the Changes done on this page.");
+        commit.setToolTipText(Localizer.parse(nbBundle11));
         commit.addActionListener(outputListener);
         commit.setEnabled(false);
         btn[4] = commit;
@@ -412,8 +413,8 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
 
         int intVal = totalCount;
         if (intVal <= 0) {
-            String nbBundle12 = mLoc.t("BUND345: Enter a valid number to refresh records.{0}", table.getDisplayName());
-            String errorMsg = nbBundle12.substring(15);
+            String nbBundle12 = mLoc.t("PRSR001: Enter a valid number to refresh records.{0}", table.getDisplayName());
+            String errorMsg = Localizer.parse(nbBundle12);
             DialogDisplayer.getDefault().notify(new Message(errorMsg, NotifyDescriptor.INFORMATION_MESSAGE));
             return;
         }
@@ -663,18 +664,18 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
         GridBagConstraints c = new GridBagConstraints();
         panel.setLayout(gl);
 
-        String nbBundle52 = mLoc.t("BUND346: Field Name");
-        JLabel label = new JLabel(nbBundle52.substring(15));
-        label.getAccessibleContext().setAccessibleName(nbBundle52.substring(15));
+        String nbBundle52 = mLoc.t("PRSR001: Field Name");
+        JLabel label = new JLabel(Localizer.parse(nbBundle52));
+        label.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle52));
         label.setForeground(Color.RED);
         c.weightx = 0.35;
         c.gridwidth = GridBagConstraints.RELATIVE;
         c.fill = GridBagConstraints.HORIZONTAL;
         panel.add(label, c);
 
-        String nbBundle53 = mLoc.t("BUND347: Field Value");
-        label = new JLabel(nbBundle53.substring(15));
-        label.getAccessibleContext().setAccessibleName(nbBundle53.substring(15));
+        String nbBundle53 = mLoc.t("PRSR001: Field Value");
+        label = new JLabel(Localizer.parse(nbBundle53));
+        label.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle53));
         label.setForeground(Color.RED);
         c.weightx = 0.65;
         c.gridwidth = GridBagConstraints.REMAINDER;
@@ -724,8 +725,8 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
     protected void setTotalCount(ResultSet rs) {
         try {
             if (rs == null) {
-                String nbBundle13 = mLoc.t("BUND051: N/A");
-                totalRowsLabel.setText(nbBundle13.substring(15));
+                String nbBundle13 = mLoc.t("PRSR001: N/A");
+                totalRowsLabel.setText(Localizer.parse(nbBundle13));
             } else {
                 if (rs.next()) {
                     int count = rs.getInt(1);
@@ -734,7 +735,7 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
                 }
             }
         } catch (SQLException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT145: Could not get total row count{0}", DataOutputPanel.class.getName()), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR145: Could not get total row count{0}", DataOutputPanel.class.getName()), ex);
         }
     }
 

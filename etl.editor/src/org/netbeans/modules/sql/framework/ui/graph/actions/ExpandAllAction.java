@@ -50,6 +50,7 @@ import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 
 /**
@@ -59,22 +60,22 @@ import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 public class ExpandAllAction extends GraphAction {
 
     private static final URL expandAllImgUrl = ExpandAllAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/expand_all_edm.png");
-    private static transient final Logger mLogger = Logger.getLogger(ExpandAllAction.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ExpandAllAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public ExpandAllAction() {
         //action name
-        String nbBundle = mLoc.t("BUND317: Expand All");
-        this.putValue(Action.NAME,nbBundle.substring(15));
+        String nbBundle = mLoc.t("PRSR001: Expand All");
+        this.putValue(Action.NAME, Localizer.parse(nbBundle));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(expandAllImgUrl));
 
         //action tooltip
-        String nbBundle1 = mLoc.t("BUND316: Expand All Graph Objects (Shift-E)");
-        this.putValue(Action.SHORT_DESCRIPTION, nbBundle1.substring(15));
-        // Acceleratot Shift-E
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('E', InputEvent.SHIFT_DOWN_MASK));
+        String nbBundle1 = mLoc.t("PRSR001: Expand All Graph Objects (Cntl-E)");
+        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle1));
+        // Acceleratot Cntl-E
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('E', InputEvent.CTRL_MASK ));
     }
 
     /**

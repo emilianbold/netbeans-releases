@@ -51,7 +51,6 @@ import javax.swing.Action;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteItemID;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPalettePlugin;
 import org.netbeans.modules.compapp.casaeditor.api.InternalProjectTypePalettePlugin;
-import org.netbeans.modules.compapp.casaeditor.graph.CasaFactory;
 import org.netbeans.modules.compapp.projects.jbi.api.InternalProjectTypePlugin;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
@@ -79,17 +78,13 @@ public class CasaPalette {
                 CasaBasePlugin.getInstance(),
                 CasaPalette.CATEGORY_ID_END_POINTS, 
                 NbBundle.getMessage(CasaPalette.class, "Palette_Consume_Title"), // NOI18N
-                CasaFactory.getCasaCustomizer().getBOOLEAN_CLASSIC_ENDPOINT_PIN_STYLE() ?
-                "org/netbeans/modules/compapp/casaeditor/palette/resources/consumesPaletteClassic.png" : // NOI18N
                 "org/netbeans/modules/compapp/casaeditor/palette/resources/consumesPalette.png"); // NOI18N
     public static final CasaPaletteItemID ITEM_ID_PROVIDE               = 
             new CasaPaletteItemID(
                 CasaBasePlugin.getInstance(),
                 CasaPalette.CATEGORY_ID_END_POINTS, 
                 NbBundle.getMessage(CasaPalette.class, "Palette_Provide_Title"), // NOI18N
-                CasaFactory.getCasaCustomizer().getBOOLEAN_CLASSIC_ENDPOINT_PIN_STYLE() ?
-                "org/netbeans/modules/compapp/casaeditor/palette/resources/providesPaletteClassic.png" : // NOI18N
-                "org/netbeans/modules/compapp/casaeditor/palette/resources/providesPalette.png");  // NOI18N
+                "org/netbeans/modules/compapp/casaeditor/palette/resources/providesPalette.png"); // NOI18N
     public static final CasaPaletteItemID ITEM_ID_INTERNAL_SU           = 
             new CasaPaletteItemID(
                 CasaBasePlugin.getInstance(),
@@ -109,7 +104,7 @@ public class CasaPalette {
     {
     };
     
-//    private static PaletteController msPaletteController = null;
+    private static PaletteController msPaletteController = null;
     private static String CASA_PALETTE_ROOT = "CasaPalette"; // NOI18N
     private static PaletteController palette = null;
     private static CasaPaletteRootNode paletteRoot;

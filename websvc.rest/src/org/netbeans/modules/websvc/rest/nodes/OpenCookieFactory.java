@@ -46,12 +46,12 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
+import org.openide.ErrorManager;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -70,7 +70,7 @@ public class OpenCookieFactory {
             
             return new OpenCookieImpl(source, className, methodName);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.toString());
         }
         
         return null;
@@ -86,7 +86,7 @@ public class OpenCookieFactory {
             try {
                 dataObj = DataObject.find(source);
             } catch (Exception de) {
-                Exceptions.printStackTrace(de);
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
             }
             
             javaSource = JavaSource.forFileObject(source);

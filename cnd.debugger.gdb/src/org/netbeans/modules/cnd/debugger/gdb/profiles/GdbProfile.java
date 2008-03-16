@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.actions.BuildToolsAction;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 public class GdbProfile implements ConfigurationAuxObject {

@@ -42,6 +42,7 @@ import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.ErrorManager;
 import org.openide.util.Utilities;
 
@@ -51,7 +52,7 @@ import org.openide.util.Utilities;
  */
 public class AxionDBConfigurationBeanInfo extends SimpleBeanInfo {
 
-    private static transient final Logger mLogger = Logger.getLogger(AxionDBConfigurationBeanInfo.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(AxionDBConfigurationBeanInfo.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /**
@@ -64,15 +65,15 @@ public class AxionDBConfigurationBeanInfo extends SimpleBeanInfo {
         try {
             PropertyDescriptor[] descriptors = new PropertyDescriptor[2];
             descriptors[0] = new PropertyDescriptor(AxionDBConfiguration.PROP_LOC, AxionDBConfiguration.class);
-            String nbBundle1 = mLoc.t("BUND255: Mashup Database Location");
-            descriptors[0].setDisplayName(nbBundle1.substring(15));
-            String nbBundle2 = mLoc.t("BUND257: The directory where the Mashup Database should be created.");
-            descriptors[0].setShortDescription(nbBundle2.substring(15));
+            String nbBundle1 = mLoc.t("PRSR001: Mashup Database Location");
+            descriptors[0].setDisplayName(Localizer.parse(nbBundle1));
+            String nbBundle2 = mLoc.t("PRSR001: The directory where the Mashup Database should be created.");
+            descriptors[0].setShortDescription(Localizer.parse(nbBundle2));
             descriptors[1] = new PropertyDescriptor(AxionDBConfiguration.PROP_DRV_LOC, AxionDBConfiguration.class);
-            String nbBundle3 = mLoc.t("BUND258: MashupDB Driver Location");
-            descriptors[1].setDisplayName(nbBundle3.substring(15));
-            String nbBundle4 = mLoc.t("BUND259: The directory where the MashupDB Driver(MashupDB.zip) is located.");
-            descriptors[1].setShortDescription(nbBundle4.substring(15));
+            String nbBundle3 = mLoc.t("PRSR001: MashupDB Driver Location");
+            descriptors[1].setDisplayName(Localizer.parse(nbBundle3));
+            String nbBundle4 = mLoc.t("PRSR001: The directory where the MashupDB Driver(MashupDB.zip) is located.");
+            descriptors[1].setShortDescription(Localizer.parse(nbBundle4));
             return descriptors;
         } catch (IntrospectionException ex) {
             ErrorManager.getDefault().notify(ex);

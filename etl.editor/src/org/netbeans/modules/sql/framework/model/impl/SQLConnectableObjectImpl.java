@@ -56,7 +56,7 @@ import org.netbeans.modules.sql.framework.model.visitors.SQLVisitor;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Base class implementation of SQLConnectableObject; inherits behavior from
@@ -70,7 +70,7 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
 
     /* Log4J category string */
     private static final String LOG_CATEGORY = SQLConnectableObjectImpl.class.getName();
-    private static transient final Logger mLogger = Logger.getLogger(SQLConnectableObjectImpl.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLConnectableObjectImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     /** Map of SQLInputObjects */
     protected Map inputMap;
@@ -324,7 +324,7 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
                         inputObject.setSQLObject(copiedObj);
                     }
                 } catch (CloneNotSupportedException ex) {
-                    mLogger.errorNoloc(mLoc.t("EDIT111: Failed to cloned input map{0}", LOG_CATEGORY), ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR111: Failed to cloned input map{0}", LOG_CATEGORY), ex);
                 }
             }
         }
@@ -354,7 +354,7 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
                         }
 
                     } catch (Exception ex) {
-                        mLogger.errorNoloc(mLoc.t("EDIT112: Finding expression contains column refs{0}", LOG_CATEGORY), ex);
+                        mLogger.errorNoloc(mLoc.t("PRSR112: Finding expression contains column refs{0}", LOG_CATEGORY), ex);
                     }
                 }
             }
@@ -391,7 +391,7 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
                         }
 
                     } catch (Exception ex) {
-                        mLogger.errorNoloc(mLoc.t("EDIT112: Finding expression contains column refs{0}", LOG_CATEGORY), ex);
+                        mLogger.errorNoloc(mLoc.t("PRSR113: Finding expression contains column refs{0}", LOG_CATEGORY), ex);
                     }
                 }
             }

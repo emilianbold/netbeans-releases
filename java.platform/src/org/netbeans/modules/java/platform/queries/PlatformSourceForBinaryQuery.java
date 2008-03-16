@@ -50,11 +50,11 @@ import javax.swing.event.ChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
@@ -65,13 +65,13 @@ import org.openide.util.WeakListeners;
  * provides sources for the active platform and project libraries
  */
 
-public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImplementation2 {
+public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImplementation {
     
     private static final String JAR_FILE = "jar:file:";                 //NOI18N
     private static final String RTJAR_PATH = "/jre/lib/rt.jar!/";       //NOI18N
     private static final String SRC_ZIP = "/src.zip";                    //NOI18N
 
-    private Map<URL,SourceForBinaryQueryImplementation2.Result> cache = new HashMap<URL,SourceForBinaryQueryImplementation2.Result>();
+    private Map<URL,SourceForBinaryQuery.Result> cache = new HashMap<URL,SourceForBinaryQuery.Result>();
 
     public PlatformSourceForBinaryQuery () {
     }
@@ -81,8 +81,8 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
      * @param binaryRoot the URL of a classpath root (platform supports file and jar protocol)
      * @return FileObject[], never returns null
      */
-    public SourceForBinaryQueryImplementation2.Result findSourceRoots2(URL binaryRoot) {
-        SourceForBinaryQueryImplementation2.Result res = this.cache.get (binaryRoot);
+    public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
+        SourceForBinaryQuery.Result res = this.cache.get (binaryRoot);
         if (res != null) {
             return res;
         }
@@ -115,11 +115,7 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         return null;
     }
     
-    public SourceForBinaryQuery.Result findSourceRoots (URL binaryRoot) {
-        return this.findSourceRoots2(binaryRoot);
-    }
-    
-    private static class Result implements SourceForBinaryQueryImplementation2.Result, PropertyChangeListener {
+    private static class Result implements SourceForBinaryQuery.Result, PropertyChangeListener {
                         
         private JavaPlatform platform;
         private final ChangeSupport cs = new ChangeSupport(this);
@@ -149,14 +145,10 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
                 cs.fireChange();
             }
         }
-
-        public boolean preferSources() {
-            return false;
-        }
         
     }
     
-    private static class UnregisteredPlatformResult implements SourceForBinaryQueryImplementation2.Result {
+    private static class UnregisteredPlatformResult implements SourceForBinaryQuery.Result {
         
         private FileObject srcRoot;
         
@@ -176,9 +168,5 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         public void removeChangeListener(ChangeListener l) {
             //Not supported, no listening.
         }
-
-        public boolean preferSources() {
-            return false;
-        }
-    }}
+}}
 

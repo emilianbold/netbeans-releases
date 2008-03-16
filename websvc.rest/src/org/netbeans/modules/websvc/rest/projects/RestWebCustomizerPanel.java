@@ -44,12 +44,15 @@ package org.netbeans.modules.websvc.rest.projects;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -174,7 +177,7 @@ public class RestWebCustomizerPanel extends javax.swing.JPanel implements Action
             new AntFilesHelper(support).refreshRestBuildXml();
             ProjectManager.getDefault().saveProject(support.getProject());
         } catch(IOException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
         }
     }
 

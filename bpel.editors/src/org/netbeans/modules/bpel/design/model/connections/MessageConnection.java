@@ -92,9 +92,8 @@ public class MessageConnection extends Connection {
         GeneralPath path = new GeneralPath();
         
         path.moveTo(pl_point.x, pl_point.y);
-        FPoint pl_point1 = getPLSidePoint();
+        
         path.lineTo(pl_point.x + ((dir == Direction.RIGHT) ? 100 : -100), pl_point.y);
-       // path.lineTo(pl_point1.x, pl_point1.y);
                 
         if (isPatternSelected()) {
             paintCurvedConnection(g2, path, 2, pl_point, COLOR_SELECTED, isOutcoming, dir);

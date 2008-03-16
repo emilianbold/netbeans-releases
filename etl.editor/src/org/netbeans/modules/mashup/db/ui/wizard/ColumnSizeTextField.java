@@ -52,7 +52,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Used in ColumnMetadata table to render scale and precision
@@ -62,7 +62,7 @@ import org.netbeans.modules.etl.logger.Localizer;
  */
 public class ColumnSizeTextField extends JTextField {
 
-    private static transient final Logger mLogger = Logger.getLogger(ColumnSizeTextField.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ColumnSizeTextField.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /**
@@ -88,7 +88,7 @@ public class ColumnSizeTextField extends JTextField {
                     result[j++] = source[i];
                 } else {
                     toolkit.beep();
-                    mLogger.infoNoloc(mLoc.t("EDIT073: insertString:{0}" + source[i], getClass().getName()));
+                    mLogger.infoNoloc(mLoc.t("PRSR073: insertString:{0}" + source[i], getClass().getName()));
                 }
             }
             super.insertString(offs, new String(result, 0, j), a);

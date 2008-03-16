@@ -133,7 +133,7 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         
         StartLog.logStart ("Main window initialization"); //NOI18N
 
-        TimableEventQueue.initialize();
+        TimeableEventQueue.initialize();
         
         // -----------------------------------------------------------------------------------------------------
         // 11. Initialization of main window

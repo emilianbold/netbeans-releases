@@ -59,7 +59,8 @@
         <operation name="sendPurchaseOrder">
             <input name="sendPurchaseOrderRequest" message="tns:POMessage"></input>
             <output name="sendPurchaseOrderReply" message="tns:POMessage"></output>
-            <fault name="cannotCompleteOrder" message="tns:orderFaultType"></fault>
+            <fault name="cannotCompleteOrder"
+                   message="tns:orderFaultType"></fault>
         </operation>
     </portType>
     
@@ -70,13 +71,16 @@
         <operation name="sendPurchaseOrder">
             <soap:operation style="rpc"/>
             <input name="sendPurchaseOrderRequest">
-                <soap:body parts="purchaseOrder" use="literal"/>
+                <soap:body parts="purchaseOrder"
+                           use="literal"/>
             </input>
             <output name="sendPurchaseOrderReply">
-                <soap:body parts="purchaseOrder" use="literal"/>
+                <soap:body parts="purchaseOrder"
+                           use="literal"/>
             </output>
             <fault name="cannotCompleteOrder">
-                <soap:fault name="cannotCompleteOrder" use="literal"/>
+                <soap:fault name="cannotCompleteOrder"
+                            use="literal"/>
             </fault>
         </operation>
     </binding>
@@ -89,11 +93,10 @@
     </service>
     
     <plink:partnerLinkType name="purchasingLT">
-        <plink:role name="purchaseService" portType="tns:purchaseOrderPT"></plink:role>
+        <plink:role name="purchaseService"
+                    portType="tns:purchaseOrderPT"></plink:role>
     </plink:partnerLinkType>
-
     <bpws:property name="pocorr" type="xsd:int"/>
-    
     <bpws:propertyAlias propertyName="tns:pocorr" messageType="tns:POMessage" part="purchaseOrder">
         <bpws:query>/sns:purchaseOrder/sns:orderId</bpws:query>
     </bpws:propertyAlias>

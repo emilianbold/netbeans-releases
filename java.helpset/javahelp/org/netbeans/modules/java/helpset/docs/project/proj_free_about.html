@@ -11,19 +11,25 @@
 <body>
 <h2>About Free-Form Java Projects</h2>
 <p> <small><a href="#seealso">See Also</a></small> 
-<p>The IDE also contains free-form project templates for Java and web applications. Free-form projects do 
+<p>The IDE also contains free-form project templates for the various categories 
+of projects (such as General Java and Web). Free-form projects do 
 not produce an Ant script or hold project metadata in another form. Instead, 
   these projects rely on your existing Ant script to provide instructions for 
   handling your project source.
-<p>The full distribution of the IDE contains the following free-form templates:</p> 
+<p>The standard distribution of the IDE contains the following free-form templates:</p> 
 <ul>
   <li><b><img src="../images/freeform-project.png" width="16" height="16" alt="free-form project icon">&nbsp;Java 
-    Free-Form Project.</b> A free-form project containing one or 
+    Project with Existing Ant Script.</b> A free-form project containing one or 
     more Java source roots. </li>
   <li><b><img src="../images/freeform-project.png" width="16" height="16" alt="free-form project icon">&nbsp;Web 
-    Free-Form Project.</b> A free-form project containing a 
+    Application with Existing Ant Script.</b> A free-form project containing a 
     web application and optionally other Java source roots.</li>
 </ul>
+  <ul class="note"> 
+    <li>Depending on what modules you have installed, your 
+      IDE may contain additional templates. Consult the help for your NetBeans 
+      modules for more information.</li>
+  </ul>
 
 <h3>Source Folders</h3>
 <p>Free-form Java projects can contain multiple source folders. The classpath 
@@ -41,7 +47,7 @@ not produce an Ant script or hold project metadata in another form. Instead,
   for all IDE actions, such as running, debugging, and generating Javadoc. If 
   your Ant script does not contain targets for these commands, the commands are 
   disabled. </p>
-<p>You can write debug targets in your Ant script or in a supplementary 
+<p>You can easily write debug targets in your Ant script or in a supplementary 
   Ant script. You can also add a shortcut to any of your Ant script's targets 
   to the contextual menu of your project's node in the Projects window.</p>
 <p>For a full guide to configuring free-form projects, see:

@@ -529,7 +529,7 @@ public class BreakpointsNodeModel implements NodeModel {
 //    }
 //    
     
-    private void fireNodeChanged (JPDABreakpoint b) {
+    void fireNodeChanged (JPDABreakpoint b) {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)

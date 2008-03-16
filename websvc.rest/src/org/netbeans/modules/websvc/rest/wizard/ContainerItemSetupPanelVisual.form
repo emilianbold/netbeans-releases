@@ -16,7 +16,6 @@
   </AccessibilityProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
-    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -30,11 +29,11 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="containerUriLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="448" max="32767" attributes="0"/>
+              <EmptySpace pref="434" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="mediaTypeLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="467" max="32767" attributes="0"/>
+              <EmptySpace pref="454" max="32767" attributes="0"/>
           </Group>
           <Component id="jSeparator1" alignment="0" pref="524" max="32767" attributes="1"/>
           <Group type="102" alignment="0" attributes="0">
@@ -48,14 +47,14 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="packageComboBox" alignment="0" pref="411" max="32767" attributes="1"/>
-                  <Component id="resourceNameTextField" alignment="0" pref="411" max="32767" attributes="1"/>
-                  <Component id="classTextField" alignment="0" pref="411" max="32767" attributes="1"/>
-                  <Component id="projectTextField" alignment="0" pref="411" max="32767" attributes="1"/>
-                  <Component id="locationComboBox" alignment="0" pref="411" max="32767" attributes="1"/>
+                  <Component id="packageComboBox" alignment="0" pref="378" max="32767" attributes="1"/>
+                  <Component id="resourceNameTextField" alignment="0" pref="378" max="32767" attributes="1"/>
+                  <Component id="classTextField" alignment="0" pref="378" max="32767" attributes="1"/>
+                  <Component id="projectTextField" alignment="0" pref="378" max="32767" attributes="1"/>
+                  <Component id="locationComboBox" alignment="0" pref="378" max="32767" attributes="1"/>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="containerTextField" pref="411" max="32767" attributes="1"/>
+                      <Component id="containerTextField" pref="378" max="32767" attributes="1"/>
                   </Group>
               </Group>
           </Group>
@@ -67,11 +66,11 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="uriTextField" alignment="0" pref="285" max="32767" attributes="1"/>
-                  <Component id="representationClassTextField" alignment="0" pref="285" max="32767" attributes="0"/>
-                  <Component id="containerRepresentationClassTextField" alignment="0" pref="285" max="32767" attributes="1"/>
-                  <Component id="containerUriTextField" alignment="0" pref="285" max="32767" attributes="1"/>
-                  <Component id="medaTypeComboBox" alignment="0" pref="285" max="32767" attributes="1"/>
+                  <Component id="uriTextField" alignment="0" pref="258" max="32767" attributes="1"/>
+                  <Component id="representationClassTextField" alignment="0" pref="258" max="32767" attributes="0"/>
+                  <Component id="containerRepresentationClassTextField" alignment="0" pref="258" max="32767" attributes="1"/>
+                  <Component id="containerUriTextField" alignment="0" pref="258" max="32767" attributes="1"/>
+                  <Component id="medaTypeComboBox" alignment="0" pref="258" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">

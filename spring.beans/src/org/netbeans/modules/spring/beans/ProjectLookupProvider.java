@@ -52,27 +52,11 @@ import org.openide.util.lookup.Lookups;
  */
 public class ProjectLookupProvider implements LookupProvider {
 
-    private final boolean web;
-
-    public static ProjectLookupProvider createNonWeb() {
-        return new ProjectLookupProvider(false);
-    }
-
-    public static ProjectLookupProvider createWeb() {
-        return new ProjectLookupProvider(true);
-    }
-
-    public ProjectLookupProvider(boolean web) {
-        this.web = web;
-    }
-
     public Lookup createAdditionalLookup(Lookup baseContext) {
         Project project = baseContext.lookup(Project.class);
         if (project == null) {
             throw new IllegalStateException("Lookup " + baseContext + " does not contain a Project");
         }
-        return Lookups.fixed(
-                new ProjectSpringScopeProvider(project),
-                new RecommendedTemplatesImpl(web));
+        return Lookups.singleton(new ProjectSpringScopeProvider(project));
     }
 }

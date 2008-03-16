@@ -28,8 +28,5 @@
 </project>
 ]]></file>
 	<file name="bogus.xml"><![CDATA[fail on me!]]></file>
-        <file name="illegal-encoding.xml"><![CDATA[<?xml version="1.0" encoding="${encoding}"?>
-<beans xmlns="http://www.springframework.org/schema/beans"/>
-]]></file>
     </folder>
 </filesystem>

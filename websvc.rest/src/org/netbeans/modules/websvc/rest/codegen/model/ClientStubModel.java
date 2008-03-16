@@ -56,6 +56,8 @@ import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.websvc.rest.RestUtils;
@@ -69,6 +71,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * ClientStubModel
@@ -230,7 +233,11 @@ public class ClientStubModel {
                     addResource(r);
                 }
             }
-        } catch (Exception ex) {
+        } catch (XPathExpressionException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SAXException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ParserConfigurationException ex) {
             Exceptions.printStackTrace(ex);
         }
         return appName;

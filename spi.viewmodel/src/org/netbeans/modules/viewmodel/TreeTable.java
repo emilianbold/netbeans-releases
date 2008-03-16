@@ -215,9 +215,8 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
       * Called whenever an item in the tree has been expanded.
       */
     public void treeExpanded (TreeExpansionEvent event) {
-        Node node = Visualizer.findNode(event.getPath ().getLastPathComponent());
-        Object obj = node.getLookup().lookup(Object.class);
-        DefaultTreeExpansionManager.get(model).setChildrenToActOn(node.getChildren());
+        Object obj = Visualizer.findNode 
+            (event.getPath ().getLastPathComponent ()).getLookup().lookup(Object.class);
         model.nodeExpanded (obj);
     }
 
@@ -225,9 +224,8 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
       * Called whenever an item in the tree has been collapsed.
       */
     public void treeCollapsed (TreeExpansionEvent event) {
-        Node node = Visualizer.findNode(event.getPath ().getLastPathComponent());
-        Object obj = node.getLookup().lookup(Object.class);
-        DefaultTreeExpansionManager.get(model).setChildrenToActOn(node.getChildren());
+        Object obj = Visualizer.findNode 
+            (event.getPath ().getLastPathComponent ()).getLookup().lookup(Object.class);
         model.nodeCollapsed (obj);
     }
     

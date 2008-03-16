@@ -1,7 +1,7 @@
 /*
  *  MicroMarketsConverter
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on November 27, 2007, 2:08 AM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -29,7 +29,7 @@ public class MicroMarketsConverter {
     private Collection<MicroMarket> entities;
     private Collection<MicroMarketRefConverter> references;
     private URI uri;
-    
+  
     /** Creates a new instance of MicroMarketsConverter */
     public MicroMarketsConverter() {
     }

@@ -65,10 +65,7 @@ public class ContextTargetNode extends BindingTargetNode {
         for (int i = 0; kids != null && i < kids.length; i++) {
             // Do not show the data provider in the object binding dialog.
             // We have explicit data provider binding dialog
-            // Fix: 128647 Don't check in case of interfaces Ex: java.util.List
-            if (kids[i].getInstance() == null){
-              super.add(_createTargetNode(this, kids[i], null, kids[i].getInstance()));  
-            }else if (!DataProvider.class.isAssignableFrom(kids[i].getInstance().getClass())
+            if (!DataProvider.class.isAssignableFrom(kids[i].getInstance().getClass())
                     && !RowSet.class.isAssignableFrom(kids[i].getInstance().getClass())) {
                 super.add(_createTargetNode(this, kids[i], null, kids[i].getInstance()));
             }

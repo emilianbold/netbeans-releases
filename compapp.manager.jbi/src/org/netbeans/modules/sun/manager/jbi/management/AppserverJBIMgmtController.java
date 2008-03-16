@@ -44,9 +44,7 @@ import com.sun.esb.management.api.administration.AdministrationService;
 import com.sun.esb.management.api.configuration.ConfigurationService;
 import com.sun.esb.management.api.deployment.DeploymentService;
 import com.sun.esb.management.api.installation.InstallationService;
-import com.sun.esb.management.api.notification.NotificationService;
 import com.sun.esb.management.client.ManagementClient;
-import com.sun.esb.management.client.ManagementClientFactory;
 import com.sun.esb.management.common.ManagementRemoteException;
 import java.io.File;
 import java.net.InetAddress;
@@ -83,12 +81,6 @@ public class AppserverJBIMgmtController {
     private ConfigurationService configurationService;
     private PerformanceMeasurementServiceWrapper performanceMeasurementServiceWrapper;
     private RuntimeManagementServiceWrapper runtimeManagementServiceWrapper;
-    private NotificationService notificationService;
-    
-    private String hostName;
-    private String port;
-    private String userName;
-    private String password;
     
     public static final String SERVER_TARGET = "server";
     private static final String HOST_MBEAN_NAME =
@@ -144,20 +136,6 @@ public class AppserverJBIMgmtController {
             configurationService = managementClient.getConfigurationService();
         }
         return configurationService;
-    }
-    
-    public NotificationService getNotificationService()
-            throws ManagementRemoteException {
-
-        if (notificationService == null) {
-            String rmiPortString = managementClient.getAdministrationService().getJmxRmiPort();        
-            notificationService = 
-                    //managementClient.getNotificationService(); // DOES NOT WORK
-                    //ManagementClientFactory.getInstance(mBeanServerConnection, true).getNotificationService(); // DOES NOT WORK
-                    //ManagementClientFactory.getInstance("localhost", 8686, "admin", "adminadmin").getNotificationService(); // WORKS
-                    ManagementClientFactory.getInstance(hostName, Integer.parseInt(rmiPortString), userName, password).getNotificationService();
-        }
-        return notificationService;
     }
 
     public PerformanceMeasurementServiceWrapper 
@@ -248,10 +226,10 @@ public class AppserverJBIMgmtController {
                     if (serverInstance != null) {
                         JBIClassLoader jbiClassLoader = new JBIClassLoader(serverInstance);
 
-                        hostName = serverInstance.getHostName();
-                        port = serverInstance.getAdminPort();
-                        userName = serverInstance.getUserName();
-                        password = serverInstance.getPassword();
+                        String hostName = serverInstance.getHostName();
+                        String port = serverInstance.getAdminPort();
+                        String userName = serverInstance.getUserName();
+                        String password = serverInstance.getPassword();
 
                         HTTPServerConnector httpConnector = new HTTPServerConnector(
                                 hostName, port, userName, password, jbiClassLoader);
@@ -267,8 +245,7 @@ public class AppserverJBIMgmtController {
         if (myMBeanServerConnection == null) {
             // Fall back on the mBeanServerConnection provided by NetBeans
             try {
-                logger.warning("Could not find the server instance. Falling back " + // NOI18N
-                        "on the mBeanServerConnection provided by NetBeans."); // NOI18N
+                logger.warning("Could not find the server instance. Falling back on the mBeanServerConnection provided by NetBeans."); // NOI18N
                 myMBeanServerConnection = mBeanServerConnection;
             } catch (Exception e) {
                 logger.warning(e.getMessage());

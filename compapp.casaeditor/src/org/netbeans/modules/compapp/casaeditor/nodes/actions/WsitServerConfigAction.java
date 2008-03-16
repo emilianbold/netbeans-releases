@@ -69,9 +69,6 @@ import javax.swing.undo.UndoManager;
  * @version
  */
 public class WsitServerConfigAction extends NodeAction {
-
-    private static String helpID = "org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl"; // NOI18N
-    
     /**
      * DOCUMENT ME!
      *
@@ -152,7 +149,7 @@ public class WsitServerConfigAction extends NodeAction {
         SwingUtilities.invokeLater(new Runnable(){
             public void run(){
                 DialogDescriptor dialogDesc = new DialogDescriptor(stc, "WS-Policy Attachment: "+node.getName());  // NOI18N
-                dialogDesc.setHelpCtx(new HelpCtx(helpID));
+                //dialogDesc.setHelpCtx(new HelpCtx(EditWSAttributesCookieImpl.class));
                 Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
                 dialog.setVisible(true);
 

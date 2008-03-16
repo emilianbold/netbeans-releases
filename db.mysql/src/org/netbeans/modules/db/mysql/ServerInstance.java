@@ -49,7 +49,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -139,7 +138,7 @@ public class ServerInstance implements Node.Cookie {
     // Cache list of databases, refresh only if connection is changed
     // or an explicit refresh is requested
     // Synchronized on the instance (this)
-    HashMap<String, DatabaseModel> databases = new HashMap<String, DatabaseModel>();
+    ArrayList<DatabaseModel> databases = new ArrayList<DatabaseModel>();
 
     public static synchronized ServerInstance getDefault() {
         if ( DEFAULT == null ) {
@@ -384,32 +383,23 @@ public class ServerInstance implements Node.Cookie {
     }
     
     private synchronized void updateDisplayName() {
-        String label;
+        State state = getState();
         if ( state == State.CONNECTED ) {
-            label = "LBL_ServerDisplayName";
+            setDisplayName(NbBundle.getMessage(ServerInstance.class,
+                    "LBL_ServerDisplayName"));
         } else if ( state == State.DISCONNECTED ) {
-            label = "LBL_ServerNotConnectedDisplayName";
+            setDisplayName(NbBundle.getMessage(ServerInstance.class,
+                    "LBL_ServerNotConnectedDisplayName"));
         } else {
-            label = "LBL_ServerConnectingDisplayName";
+            setDisplayName(NbBundle.getMessage(ServerInstance.class, 
+                    "LBL_ServerConnectingDisplayName"));
         }
-        setDisplayName(NbBundle.getMessage(ServerInstance.class,
-                label, getHostPort(), getUser()));
     }
     
     public String getShortDescription() {
         return NbBundle.getMessage(ServerInstance.class,
-                "LBL_ServerShortDescription", getHostPort(), getUser());
+                "LBL_ServerDisplayName");
     }
-    
-    private String getHostPort() {
-        String port = getPort();
-        if ( Utils.isEmpty(port)) {
-            port = "";
-        } else {
-            port = ":" + port;
-        }
-        return getHost() + port;
-   }
     
     public String getURL() {
         return DatabaseUtils.getURL(getHost(), getPort());
@@ -447,15 +437,14 @@ public class ServerInstance implements Node.Cookie {
     public void refreshDatabaseList() throws DatabaseException {        
         try {
             synchronized(this) {
-                databases = new HashMap<String, DatabaseModel>();
+                databases = new ArrayList<DatabaseModel>();
                 if ( isConnected() ) {        
                     ResultSet rs = adminConn.getConnection()
                             .prepareStatement(GET_DATABASES_SQL)
                             .executeQuery();
 
                     while ( rs.next() ) {
-                        String dbname = rs.getString(1);
-                        databases.put(dbname, new DatabaseModel(this, dbname));
+                        databases.add(new DatabaseModel(this, rs.getString(1)));
                     }
                 }
             }
@@ -481,7 +470,7 @@ public class ServerInstance implements Node.Cookie {
             refreshDatabaseList();
         }
         
-        return databases.values();
+        return databases;
     }
         
     /**
@@ -608,8 +597,8 @@ public class ServerInstance implements Node.Cookie {
     
     public boolean databaseExists(String dbname)  throws DatabaseException {
         refreshDatabaseList();
-
-        return databases.containsKey(dbname);
+        
+        return getDatabases().contains(dbname);
     }
     
     public void createDatabase(String dbname) throws DatabaseException {

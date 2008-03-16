@@ -65,7 +65,7 @@ import org.openide.NotifyDescriptor;
 import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * This class provides preview functionality for join defined by user. This view is
@@ -80,7 +80,7 @@ public class JoinPreviewPanel extends JPanel implements IGraphViewContainer {
     private JoinBuilderSQLUIModel model;
     // private JoinMainPanel mainPanel;
     private IGraphView mainGraphView;
-    private static transient final Logger mLogger = Logger.getLogger(JoinPreviewPanel.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(JoinPreviewPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /** Creates a new instance of JoinPreviewPanel */
@@ -179,7 +179,7 @@ public class JoinPreviewPanel extends JPanel implements IGraphViewContainer {
             // now call restore ui state to show the model
             model.restoreUIState();
         } catch (BaseException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT181: Error caught while refreshing preview{0}", LOG_CATEGORY), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR181: Error caught while refreshing preview{0}", LOG_CATEGORY), ex);
             return;
         }
 
@@ -220,7 +220,7 @@ public class JoinPreviewPanel extends JPanel implements IGraphViewContainer {
             // now call restore ui state to show the model
             model.restoreUIState();
         } catch (BaseException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT181: Error caught while refreshing preview{0}", LOG_CATEGORY), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR182: Error caught while refreshing preview{0}", LOG_CATEGORY), ex);
             return;
         }
 
@@ -254,7 +254,7 @@ public class JoinPreviewPanel extends JPanel implements IGraphViewContainer {
             // now call restore ui state to show the model
             model.restoreUIState();
         } catch (BaseException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT183: Error caught while removing Table in preview{0}", LOG_CATEGORY), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR183: Error caught while removing Table in preview{0}", LOG_CATEGORY), ex);
             return;
         }
 
@@ -291,7 +291,7 @@ public class JoinPreviewPanel extends JPanel implements IGraphViewContainer {
             // now call restore ui state to show the model
             model.restoreUIState();
         } catch (BaseException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT184: Error caught while creating a join again to relink all tables in preview{0}", LOG_CATEGORY), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR184: Error caught while creating a join again to relink all tables in preview{0}", LOG_CATEGORY), ex);
             return;
         }
 
@@ -351,7 +351,7 @@ public class JoinPreviewPanel extends JPanel implements IGraphViewContainer {
 
             SwingUtilities.invokeLater(layout);
         } catch (BaseException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT158: error in doing reload{0}", LOG_CATEGORY), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR185: error in doing reload{0}", LOG_CATEGORY), ex);
             //Logger.printThrowable(Logger.ERROR, JoinPreviewPanel.class.getName(), "setSQLJoinView", "error in doing reload", ex);
             NotifyDescriptor d = new NotifyDescriptor.Message(ex.toString(), NotifyDescriptor.WARNING_MESSAGE);
             DialogDisplayer.getDefault().notify(d);

@@ -127,9 +127,7 @@ PropertyChangeListener {
         }
         if (event.getConditionResult () == event.CONDITION_FALSE) return;
         JPDABreakpoint breakpoint = (JPDABreakpoint) event.getSource ();
-        if (breakpoint.getSuspend() != JPDABreakpoint.SUSPEND_NONE) {
-            getBreakpointsNodeModel ().setCurrentBreakpoint (breakpoint);
-        }
+        getBreakpointsNodeModel ().setCurrentBreakpoint (breakpoint);
         synchronized (lock) {
             if (ioManager == null) {
                 lookupIOManager ();

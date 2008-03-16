@@ -47,17 +47,19 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
+import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -99,7 +101,7 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
                     generator.generate(progressDialog.getProgressHandle());
                     
                 } catch(Exception iox) {
-                    Exceptions.printStackTrace(iox);
+                    ErrorManager.getDefault().notify(iox);
                 } finally {
                     RestUtils.enableRestServicesChangeListner(project);
                     progressDialog.close();

@@ -226,8 +226,6 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
         empty.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfTableCustomizer.class, "ACSD_EmptyTable")); // NOI18N
         fromBean.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JsfTableCustomizer.class, "ACSN_GeneratedTable")); // NOI18N
         fromBean.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfTableCustomizer.class, "ACSD_GeneratedTable")); // NOI18N
-
-        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_JsfTable")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed

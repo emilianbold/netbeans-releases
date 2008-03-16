@@ -7,7 +7,7 @@
     <grammars/>
     <resources base="http://api.wxbug.net">	
         <resource path="getLiveWeatherRSS.aspx">
-            <method name="GET" id="liveWeatherRSS">
+            <method name="GET" id="WeatherBug.LiveWeatherRSS">
                 <doc xml:lang="en">
                     The LiveWeatherRSS method retrieves weather for a specific U.S. zipcode in either
                     U.S. customary units  (Farenheit, miles, inches)) or metric units. 

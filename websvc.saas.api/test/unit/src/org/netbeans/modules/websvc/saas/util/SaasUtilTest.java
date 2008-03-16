@@ -152,7 +152,7 @@ public class SaasUtilTest extends NbTestCase {
 
         InputStream in = this.getClass().getResourceAsStream("/org/netbeans/modules/websvc/saas/services/youtube/resources/YouTubeVideos.xml");
         SaasServices ss = SaasUtil.loadSaasServices(in);
-        assertEquals("Video Service", ss.getDisplayName());
+        assertEquals("YouTubeVideos", ss.getDisplayName());
         
         //TODO fixme this only works if we have absolute include/href=<absolute-URI>
         assertNotNull(ss.getSaasMetadata());

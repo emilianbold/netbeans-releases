@@ -41,7 +41,6 @@
 package org.netbeans.modules.compapp.casaeditor.model.casa.impl;
 
 import java.util.List;
-import java.util.Map;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponentVisitor;
@@ -95,7 +94,7 @@ public class CasaEndpointImpl extends CasaComponentImpl
         String attrValue = getAttribute(CasaAttribute.INTERFACE_NAME);
         return getQName(attrValue);
     }
-
+    
     public void setInterfaceQName(QName qname) { // REFACTOR ME
         if (qname == null) {
             qname = new QName(""); // NOI18N
@@ -115,14 +114,7 @@ public class CasaEndpointImpl extends CasaComponentImpl
                     if (prefix == null || prefix.equals(Constants.EMPTY_STRING)) {      
                         prefix = "ns";                             // NOI18N
                     }
-                    // prefix = ensureUnique(prefix, namespace);
-                    // IZ#129816, 129810, incorrect namespace prefix generated
-                    Map pfx = root.getPrefixes();
-                    int count = 0;
-                    while (pfx.get(prefix) != null) {
-                        prefix = "ns" + count;
-                        count++;
-                    }
+                    prefix = ensureUnique(prefix, namespace);
                     root.addPrefix(prefix, namespace);
                 } else {
                     prefix = existingPrefix;
@@ -166,14 +158,7 @@ public class CasaEndpointImpl extends CasaComponentImpl
                     if (prefix == null || prefix.equals(Constants.EMPTY_STRING)) {      
                         prefix = "ns";                             // NOI18N
                     }
-                    // prefix = ensureUnique(prefix, namespace);
-                    // IZ#129816, 129810, incorrect namespace prefix generated
-                    Map pfx = root.getPrefixes();
-                    int count = 0;
-                    while (pfx.get(prefix) != null) {
-                        prefix = "ns" + count;
-                        count++;
-                    }
+                    prefix = ensureUnique(prefix, namespace);
                     root.addPrefix(prefix, namespace);
                 } else {
                     prefix = existingPrefix;

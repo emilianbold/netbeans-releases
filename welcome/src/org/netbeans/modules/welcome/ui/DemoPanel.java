@@ -63,7 +63,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -205,14 +204,9 @@ class DemoPanel extends RSSFeedReaderPanel {
             }
 
             if( null == image ) {
+                image = new ImageIcon( url );
                 ObjectOutputStream output = null;
                 try {
-                    URLConnection conn = url.openConnection();
-                    boolean defCache = conn.getDefaultUseCaches();
-                    conn.setDefaultUseCaches(true);
-                    image = new ImageIcon( url );
-                    conn.setDefaultUseCaches(defCache);
-
                     output = new ObjectOutputStream( new FileOutputStream( getCacheFilePath() ) );
                     output.writeObject( image );
                 } catch( Exception e ) {

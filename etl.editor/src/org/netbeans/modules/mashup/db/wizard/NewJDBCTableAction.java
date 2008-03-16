@@ -12,6 +12,7 @@ import javax.swing.JComponent;
 import net.java.hulp.i18n.Logger;
 import org.axiondb.ExternalConnectionProvider;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.mashup.db.common.FlatfileDBConnectionFactory;
 import org.netbeans.modules.mashup.db.ui.wizard.SelectDatabasePanel;
 import org.netbeans.modules.mashup.tables.wizard.JDBCTablePanel;
@@ -23,9 +24,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 
 public final class NewJDBCTableAction extends CallableSystemAction {
-    private static transient final Logger mLogger = Logger.getLogger(NewJDBCTableAction.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(NewJDBCTableAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    public String nbBundle1 = mLoc.t("BUND277: Add JDBC Table(s)");
+    public String nbBundle1 = mLoc.t("PRSR001: Add JDBC Table(s)");
     private WizardDescriptor.Panel[] panels;
     public static final String DEFAULT_FLATFILE_JDBC_URL_PREFIX = "jdbc:axiondb:";
 
@@ -33,7 +34,7 @@ public final class NewJDBCTableAction extends CallableSystemAction {
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle(nbBundle1.substring(15));
+        wizardDescriptor.setTitle(Localizer.parse(nbBundle1));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.getAccessibleContext().setAccessibleDescription("This dialog lets user to create flatfile tables from jdbc sources");
         dialog.setVisible(true);
@@ -87,14 +88,14 @@ public final class NewJDBCTableAction extends CallableSystemAction {
                 }
             }
             if (status) {
-                String nbBundle2 = mLoc.t("BUND275: Tables successfully created.");
+                String nbBundle2 = mLoc.t("PRSR001: Tables successfully created.");
                 NotifyDescriptor d =
-                        new NotifyDescriptor.Message(nbBundle2.substring(15), NotifyDescriptor.INFORMATION_MESSAGE);
+                        new NotifyDescriptor.Message(Localizer.parse(nbBundle2), NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
             } else {
-                String nbBundle3 = mLoc.t("BUND276: Tables creation failed.");
+                String nbBundle3 = mLoc.t("PRSR001: Tables creation failed.");
                 NotifyDescriptor d =
-                        new NotifyDescriptor.Message(nbBundle3.substring(15), NotifyDescriptor.WARNING_MESSAGE);
+                        new NotifyDescriptor.Message(Localizer.parse(nbBundle3), NotifyDescriptor.WARNING_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
             }
         }
@@ -136,7 +137,7 @@ public final class NewJDBCTableAction extends CallableSystemAction {
     }
 
     public String getName() {
-        return nbBundle1.substring(15);
+        return Localizer.parse(nbBundle1);
     }
 
     @Override

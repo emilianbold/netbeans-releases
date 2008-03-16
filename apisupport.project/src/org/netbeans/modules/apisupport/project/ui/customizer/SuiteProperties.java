@@ -168,7 +168,7 @@ public final class SuiteProperties extends ModuleProperties {
         return disabledModules;
     }
     
-    public void setEnabledClusters(String[] value) {
+    void setEnabledClusters(String[] value) {
         if (Arrays.asList(enabledClusters).equals(Arrays.asList(value))) {
             return;
         }
@@ -176,7 +176,7 @@ public final class SuiteProperties extends ModuleProperties {
         this.changedEnabledClusters = true;
     }
     
-    public void setDisabledModules(String[] value) {
+    void setDisabledModules(String[] value) {
         if (Arrays.asList(disabledModules).equals(Arrays.asList(value))) {
             return;
         }

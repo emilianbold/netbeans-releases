@@ -39,7 +39,6 @@ import javax.xml.namespace.QName;
 public enum IEPQNames {
 		COMPONENT(createIEPQName("component")), 
 		PROPERTY(createIEPQName("property")), 
-                IMPORT(createIEPQName("import")), 
 		DOCUMENTATION(createIEPQName("documentation"));
 
 	public static final String IEP_NS_URI = "http://jbi.com.sun/iep";

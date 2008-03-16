@@ -120,6 +120,7 @@
 
     <tocitem text="Configuring the IDE's Workspace">
       <tocitem text="Managing IDE Windows" target="workspace.window.managing"/>
+      <tocitem text="Changing Window Modes" target="workspace.window.mode"/>
       <tocitem text="Customizing Menus in the IDE" target="configure.menucustomize" />
       <tocitem text="Customizing the Display of Commands in a Menu" target="configure.menucommands" />
       <tocitem text="Customizing the Contextual Menu for an Object" target="configure.menucontextual" />

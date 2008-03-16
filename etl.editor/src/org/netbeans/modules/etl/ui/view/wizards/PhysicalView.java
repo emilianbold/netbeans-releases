@@ -50,7 +50,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Support for creating logical views.
@@ -59,7 +59,7 @@ import org.netbeans.modules.etl.logger.Localizer;
  */
 public class PhysicalView {
 
-    private static transient final Logger mLogger = Logger.getLogger(PhysicalView.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(PhysicalView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /**
@@ -227,8 +227,8 @@ public class PhysicalView {
         /**
          * DOCUMENT ME!
          */
-        String nbBundle1 = mLoc.t("BUND083: {1} - {0}", pi.getDisplayName(), dataFolder.getName());
-        final String GROUP_NAME_PATTERN =  nbBundle1.substring(15); // NOI18N
+        String nbBundle1 = mLoc.t("PRSR001: {1} - {0}", pi.getDisplayName(), dataFolder.getName());
+        final String GROUP_NAME_PATTERN =  Localizer.parse(nbBundle1); // NOI18N
 
         /**
          * Creates a new GroupNode object.

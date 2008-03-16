@@ -264,10 +264,7 @@ public final class RailsServerManager {
                 
             return;
         }
-        // check whether the user has modified script/server to use another server
-        RubyInstance explicitlySpecified = ServerResolver.getExplicitlySpecifiedServer(project);
-        server = (RubyServer) (explicitlySpecified != null ? explicitlySpecified : instance);
-        
+        server = (RubyServer) instance;
         String displayName = getServerTabName(server, projectName, port);
         String serverPath = server.getServerPath();
         ExecutionDescriptor desc = new ExecutionDescriptor(RubyPlatform.platformFor(project), displayName, dir, serverPath);

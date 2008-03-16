@@ -224,11 +224,7 @@ class StatusDocument {
         try {
             // Use a Transformer for output
             TransformerFactory tFactory = TransformerFactory.newInstance();
-            try {
-                tFactory.setAttribute("indent-number", new Integer(3));
-            } catch (IllegalArgumentException iae) {
-                LOG.log(Level.INFO,"Warning: Attribute \"indent-number\" unsupported.",iae);
-            } 
+            tFactory.setAttribute("indent-number", new Integer(3));
 
             Transformer transformer = tFactory.newTransformer();
 

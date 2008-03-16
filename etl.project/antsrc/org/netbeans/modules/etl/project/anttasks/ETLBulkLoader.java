@@ -44,15 +44,15 @@ import org.netbeans.modules.etlbulkloader.packager.ETLBLPackager;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.Project;
 import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.etl.project.Localizer;
-
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 /**
  *
  * @author Manish
  */
 public class ETLBulkLoader extends Task {
 
-     private static transient final Logger mLogger = Logger.getLogger(ETLBulkLoader.class.getName());
+     private static transient final Logger mLogger = LogUtil.getLogger(ETLBulkLoader.class.getName());
      private static transient final Localizer mLoc = Localizer.get();
     
     public void execute() {

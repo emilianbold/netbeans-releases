@@ -505,10 +505,6 @@ public abstract class JBIComponentContainerNode
         protected JBIComponentType getComponentType() {
             return JBIComponentType.SERVICE_ENGINE;
         }
-        
-        protected boolean needRefresh(String notificationSourceType) {
-            return notificationSourceType.equals("ServiceEngine"); // NOI18N
-        }
 
         @Override
         public HelpCtx getHelpCtx() {
@@ -550,10 +546,6 @@ public abstract class JBIComponentContainerNode
 
         protected JBIComponentType getComponentType() {
             return JBIComponentType.BINDING_COMPONENT;
-        }
-        
-        protected boolean needRefresh(String notificationSourceType) {
-            return notificationSourceType.equals("BindingComponent"); // NOI18N
         }
 
         @Override
@@ -612,10 +604,6 @@ public abstract class JBIComponentContainerNode
 
         protected JBIComponentType getComponentType() {
             return JBIComponentType.SHARED_LIBRARY;
-        }
-        
-        protected boolean needRefresh(String notificationSourceType) {
-            return notificationSourceType.equals("SharedLibrary"); // NOI18N
         }
 
         @Override

@@ -6,18 +6,18 @@
 <html>
 <head>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-<title>Overview of Code Completion in Schema-Constrained XML Documents</title>
+<title>About Using Code Completion in XML Instance Documents Constrained by XML Schema</title>
 </head>
 <body>
-<h2>Overview of Code Completion in Schema-Constrained XML Documents</h2>
+<h2>About Using Code Completion in XML Instance Documents Constrained by XML Schema</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>You can use code completion in XML files if the XML document is constrained by an XML schema. In the schema source file, this constraint is represented by a <tt>xsi:schemaLocation</tt> or a <tt>xsi:noNamespaceSchemaLocation</tt> attribute in the root element of the schema. Typically, <tt>xsi:schemaLocation</tt> is used for schemas with a target namespace and <tt>xsi:noNamespaceSchemaLocation</tt> is used for schemas with no target namespace.</p>
 <p>As a general rule, if the root elements provide the necessary information to locate the schemas, the IDE will be able to offer code completion based on those schemas. The IDE will attempt to locate the schemas in the following order:</p>
 <ol>
 <li>Check the local file system to find the schema.</li>
 <li>If not found in the local file system, perform a lookup in the runtime catalog.</li>
-<li>If not found, try to fetch them from the internet, cache them locally and use them to provide CC</li>
 </ol>
+<p>If the IDE does not find the schemas in the local file system or the runtime catalog, code completion will not be available.</p>
 <p>The code completion functionality provides two types of code completion:</p>
 <ul>
 <li><b>Element code completion.</b> When you type a starting tag (&lt;) inside an existing parent element, you will see a list of child elements for that parent element. For example, assume that your schema has parent element called <tt>purchaseOrder</tt>. When you type the starting tag (&lt;), you will see all the child elements of <tt>purchaseOrder</tt> in the code completion box.</li>
@@ -26,8 +26,8 @@
 
 <p>You can use code completion in XML instance documents in several ways:</p>
 <ul>
-<li><a href="usingcodecompletion-oneschema.html" title="Using Code Completion in XML Instance Documents Constrained by an XML Schema">Using Code Completion in XML Documents Constrained by a Single XML Schema</a></li>
-<li><a href="usingcodecompletion-multi-schemas.html" title="Using Code Completion in XML Documents Constrained by Multiple XML Schemas">Using Code Completion in XML Documents Constrained by Multiple XML Schemas</a></li>
+<li><a href="usingcodecompletion-oneschema.html" title="Using Code Completion in XML Instance Documents Constrained by an XML Schema">Using Code Completion in XML Instance Documents Constrained by an XML Schema</a></li>
+<li><a href="usingcodecompletion-multi-schemas.html" title="Using Code Completion in XML Instance Documents Constrained by Multiple XML Schema Files">Using Code Completion in XML Instance Documents Constrained by Multiple XML Schema Files</a></li>
 <li><a href="usingcodecompletion-xml-catalog.html" title="Using Code Completion in XML Files Constrained by an XML Catalog">Using Code Completion in XML Files Constrained by an XML Catalog</a></li>
 </ul>
 <p><b>To complete an XML tag in an XML document:</b></p>

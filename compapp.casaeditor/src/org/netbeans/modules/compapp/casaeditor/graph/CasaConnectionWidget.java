@@ -83,14 +83,12 @@ public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimi
     private static final Stroke STROKE_SELECTED = new BasicStroke(2.0f);
     private static final Image IMAGE_QOS_BADGE_ICON = Utilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/QoS.png");    // NOI18N
-
     private static final Image IMAGE_UNCONFIGURED_QOS_BADGE_ICON = Utilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/UnConfiguredQoS.png");    // NOI18N
-
     private DependenciesRegistry mDependenciesRegistry = new DependenciesRegistry(this);
     private Widget mQoSWidget;
     private Widget mUnConfiguredQoSWidget;
-    
+
     public CasaConnectionWidget(Scene scene) {
         super(scene);
         setSourceAnchorShape(AnchorShape.NONE);
@@ -98,25 +96,12 @@ public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimi
         setPaintControlPoints(true);
         setState(ObjectState.createNormal());
 
-        initQoSWidgets();
-    }
-    
-    public void updateQoSWidgets() {
-
-        ObjectScene objectScene = (ObjectScene) getScene();
-        final CasaConnection myCasaConnection =
-                (CasaConnection) objectScene.findObject(CasaConnectionWidget.this);
-        updateQoSWidgets(myCasaConnection);
-    }
-
-    private void initQoSWidgets() {
-
         mQoSWidget = new ImageWidget(getScene(), IMAGE_QOS_BADGE_ICON);
         mUnConfiguredQoSWidget =
                 new ImageWidget(getScene(), IMAGE_UNCONFIGURED_QOS_BADGE_ICON);
 
         CasaQoSEditAction qosEditAction =
-                new CasaQoSEditAction((CasaModelGraphScene) getScene());
+                new CasaQoSEditAction((CasaModelGraphScene) scene);
 
         mQoSWidget.getActions().addAction(qosEditAction);
         mUnConfiguredQoSWidget.getActions().addAction(qosEditAction);
@@ -152,10 +137,9 @@ public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimi
                 //System.out.println("obj for connection is " + myCasaConnection);
                 if (myCasaConnection == null) {
                     return; // FIXME
-
                 }
 
-                updateQoSWidgets(myCasaConnection);
+                updateQoSWidget(myCasaConnection);
 
                 myCasaConnection.getModel().addPropertyChangeListener(new PropertyChangeListener() {
 
@@ -180,7 +164,7 @@ public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimi
                         }
 
                         if (casaConnection == myCasaConnection) {
-                            updateQoSWidgets(myCasaConnection);
+                            updateQoSWidget(myCasaConnection);
                         }
                     }
                 });
@@ -244,13 +228,13 @@ public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimi
 
                 Point p = sourceAnchor.getRelatedSceneLocation();
                 int x = p.x + sourceWidget.getBounds().width / 2 + 10;
-                int y = p.y - 6;
-
+                int y = p.y - 6;                
+                
                 /*CasaConnectionWidget.this.getControlPoints().size();
                 CasaNodeWidgetEngine sesuWidget = 
-                (CasaNodeWidgetEngine) sourceWidget.getParentWidget().getParentWidget();
+                        (CasaNodeWidgetEngine) sourceWidget.getParentWidget().getParentWidget();
                 if (sesuWidget.isMinimized()) {
-                
+                    
                 }*/
 
                 mQoSWidget.setPreferredLocation(new Point(x, y));
@@ -275,39 +259,28 @@ public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimi
         }
     }
 
-    private void updateQoSWidgets(CasaConnection casaConnection) {
+    private void updateQoSWidget(CasaConnection casaConnection) {
         boolean needValidation = false;
 
-        if (CasaFactory.getCasaCustomizer().getBOOLEAN_CLASSIC_QOS_STYLE()) {           
-            if (isConnectionConfiguredWithQoS(casaConnection)) {
-                if (getChildren().contains(mUnConfiguredQoSWidget)) {
-                    removeChild(mUnConfiguredQoSWidget);
-                    needValidation = true;
-                }
-                if (!getChildren().contains(mQoSWidget)) {
-                    addChild(mQoSWidget);
-                    needValidation = true;
-                }
-            } else {
-                if (getChildren().contains(mQoSWidget)) {
-                    removeChild(mQoSWidget);
-                    needValidation = true;
-                }
-                if (!getChildren().contains(mUnConfiguredQoSWidget)) {
-                    addChild(mUnConfiguredQoSWidget);
-                    needValidation = true;
-                }
-            }
-        } else {
+        if (isConnectionConfiguredWithQoS(casaConnection)) {
             if (getChildren().contains(mUnConfiguredQoSWidget)) {
                 removeChild(mUnConfiguredQoSWidget);
                 needValidation = true;
             }
+            if (!getChildren().contains(mQoSWidget)) {
+                addChild(mQoSWidget);
+                needValidation = true;
+            }
+        } else {
             if (getChildren().contains(mQoSWidget)) {
                 removeChild(mQoSWidget);
                 needValidation = true;
             }
-        } 
+            if (!getChildren().contains(mUnConfiguredQoSWidget)) {
+                addChild(mUnConfiguredQoSWidget);
+                needValidation = true;
+            }
+        }
 
         if (needValidation) {
             getScene().validate();

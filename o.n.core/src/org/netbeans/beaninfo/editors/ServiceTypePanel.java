@@ -41,8 +41,6 @@
 
 package org.netbeans.beaninfo.editors;
 
-import java.beans.BeanDescriptor;
-import java.beans.Introspector;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -214,11 +212,6 @@ public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
         while (en.hasMoreElements ()) {
             try {
                 ServiceType service = en.nextElement ();
-                BeanDescriptor bd = Introspector.getBeanInfo(service.getClass()).getBeanDescriptor();
-                if (bd != null && bd.isHidden()) {
-                    continue;
-                }
-                
                 if (createNew) {
                     // in this case create a new instance for all types
                     ServiceType newObject = service.getClass().newInstance();

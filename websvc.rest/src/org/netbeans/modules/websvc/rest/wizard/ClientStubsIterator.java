@@ -41,10 +41,13 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
@@ -52,7 +55,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.codegen.ClientStubsGenerator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -135,7 +137,7 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
                             result.addAll(new ClientStubsGenerator(stubRoot, stubFolder, wadlFile, createJmaki, overwrite).generate(pHandle));
                         }
                     } catch(Exception iox) {
-                        Exceptions.printStackTrace(iox);
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, "instantiate", iox);
                     } finally {
                         dialog.close();
                         pHandle.finish();
@@ -145,7 +147,7 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
             generatorTask.schedule(50);
             dialog.open();
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "instantiate", ex);
         }
         return result;
     }

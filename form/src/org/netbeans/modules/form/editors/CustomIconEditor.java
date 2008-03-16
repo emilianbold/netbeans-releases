@@ -145,15 +145,12 @@ public class CustomIconEditor extends javax.swing.JPanel {
         ignoreCombo = false;
         urlField.setText(""); // NOI18N
         
-        if ((nbIcon == null) || (nbIcon.getType() != IconEditor.TYPE_CLASSPATH)) {
+        if (nbIcon == null) {
+            classPathRadio.setSelected(true);
             FileObject sourceFile = propertyEditor.getSourceFile();
             ClassPath cp = ClassPath.getClassPath(sourceFile, ClassPath.SOURCE);
             setPackageRoot(cp.findOwnerRoot(sourceFile));
-            setPackage(propertyEditor.getDefaultResourceFolder());            
-        }
-        
-        if (nbIcon == null) {
-            classPathRadio.setSelected(true);
+            setPackage(propertyEditor.getDefaultResourceFolder());
             previewLabel.setIcon(null);
             return;
         }
@@ -854,7 +851,6 @@ public class CustomIconEditor extends javax.swing.JPanel {
             ignoreNull = false;
         }
         if (propertyEditor.getValue() instanceof NbImageIcon) {
-            setValue((NbImageIcon)propertyEditor.getValue());
             switchFromCPToExternal();
         }
         else if (!"".equals(text.trim())) { // not a valid text // NOI18N

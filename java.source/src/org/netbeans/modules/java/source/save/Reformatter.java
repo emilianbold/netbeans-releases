@@ -1772,9 +1772,9 @@ public class Reformatter implements ReformatTask {
                         accept(LBRACE);
                         break;
                 }
-                boolean oldAfterNewLine = afterNewline;
-                afterNewline = bracePlacement != CodeStyle.BracePlacement.SAME_LINE;
                 if (!inits.isEmpty()) {
+                    boolean oldAfterNewLine = afterNewline;
+                    afterNewline = bracePlacement != CodeStyle.BracePlacement.SAME_LINE;
                     if (afterNewline)
                         newline();
                     else
@@ -1790,39 +1790,35 @@ public class Reformatter implements ReformatTask {
                         newline();
                     else
                         spaces(cs.spaceWithinBraces() ? 1 : 0);
-                } else if (afterNewline) {
-                    newline();
+                    afterNewline = oldAfterNewLine;
                 }
                 indent = halfIndent;
-                if (afterNewline) {
-                    Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
-                    if (diff != null && diff.end == tokens.offset()) {
-                        if (diff.text != null) {
-                            int idx = diff.text.lastIndexOf('\n'); //NOI18N
-                            if (idx < 0)
-                                diff.text = getIndent();
-                            else
-                                diff.text = diff.text.substring(0, idx + 1) + getIndent();
+                Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
+                if (diff != null && diff.end == tokens.offset()) {
+                    if (diff.text != null) {
+                        int idx = diff.text.lastIndexOf('\n'); //NOI18N
+                        if (idx < 0)
+                            diff.text = getIndent();
+                        else
+                            diff.text = diff.text.substring(0, idx + 1) + getIndent();
 
-                        }
-                        String spaces = diff.text != null ? diff.text : getIndent();
-                        if (spaces.equals(fText.substring(diff.start, diff.end)))
-                            diffs.removeFirst();
-                    } else if (tokens.movePrevious()) {
-                        if (tokens.token().id() == WHITESPACE) {
-                            String text =  tokens.token().text().toString();
-                            int idx = text.lastIndexOf('\n'); //NOI18N
-                            if (idx >= 0) {
-                                text = text.substring(idx + 1);
-                                String ind = getIndent();
-                                if (!ind.equals(text))
-                                    diffs.addFirst(new Diff(tokens.offset() + idx + 1, tokens.offset() + tokens.token().length(), ind));
-                            }
-                        }
-                        tokens.moveNext();
                     }
+                    String spaces = diff.text != null ? diff.text : getIndent();
+                    if (spaces.equals(fText.substring(diff.start, diff.end)))
+                        diffs.removeFirst();
+                } else if (tokens.movePrevious()) {
+                    if (tokens.token().id() == WHITESPACE) {
+                        String text =  tokens.token().text().toString();
+                        int idx = text.lastIndexOf('\n'); //NOI18N
+                        if (idx >= 0) {
+                            text = text.substring(idx + 1);
+                            String ind = getIndent();
+                            if (!ind.equals(text))
+                                diffs.addFirst(new Diff(tokens.offset() + idx + 1, tokens.offset() + tokens.token().length(), ind));
+                        }
+                    }
+                    tokens.moveNext();
                 }
-                afterNewline = oldAfterNewLine;
                 accept(RBRACE);
                 indent = oldIndent;
             }

@@ -50,8 +50,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.KeyStroke;
@@ -74,7 +72,6 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
@@ -102,7 +99,6 @@ import org.openide.ErrorManager;
 public final class CodeTemplateInsertHandler
 implements DocumentListener, KeyListener {
     
-    private static final Logger LOG = Logger.getLogger(CodeTemplateInsertHandler.class.getName());
     /**
      * Property used while nested template expanding.
      */
@@ -630,7 +626,6 @@ implements DocumentListener, KeyListener {
     }
     
     private void tabUpdate() {
-        ((BaseTextUI)component.getUI()).getEditorUI().getWordMatch().clear();
         updateLastRegionBounds();
         CodeTemplateParameterImpl activeMasterImpl = getActiveMasterImpl();
         if (activeMasterImpl != null) {
@@ -655,24 +650,24 @@ implements DocumentListener, KeyListener {
                     attribs = getSyncedTextBlocksHighlight();
                     Color foreground = (Color) attribs.getAttribute(StyleConstants.Foreground);
                     Color background = (Color) attribs.getAttribute(StyleConstants.Background);
-                    attribsLeft = createAttribs(
+                    attribsLeft = AttributesUtilities.createImmutable(
                             StyleConstants.Background, background,
                             EditorStyleConstants.LeftBorderLineColor, foreground, 
                             EditorStyleConstants.TopBorderLineColor, foreground, 
                             EditorStyleConstants.BottomBorderLineColor, foreground
                     );
-                    attribsRight = createAttribs(
+                    attribsRight = AttributesUtilities.createImmutable(
                             StyleConstants.Background, background,
                             EditorStyleConstants.RightBorderLineColor, foreground, 
                             EditorStyleConstants.TopBorderLineColor, foreground, 
                             EditorStyleConstants.BottomBorderLineColor, foreground
                     );
-                    attribsMiddle = createAttribs(
+                    attribsMiddle = AttributesUtilities.createImmutable(
                             StyleConstants.Background, background,
                             EditorStyleConstants.TopBorderLineColor, foreground, 
                             EditorStyleConstants.BottomBorderLineColor, foreground
                     );
-                    attribsAll = createAttribs(
+                    attribsAll = AttributesUtilities.createImmutable(
                             StyleConstants.Background, background,
                             EditorStyleConstants.LeftBorderLineColor, foreground, 
                             EditorStyleConstants.RightBorderLineColor, foreground,
@@ -683,27 +678,15 @@ implements DocumentListener, KeyListener {
                 
                 OffsetsBag nue = new OffsetsBag(doc);
                 PositionRegion region = ctpi.getPositionRegion();
-                try {
-                    int startLine = Utilities.getLineOffset((BaseDocument) doc, region.getStartOffset());
-                    int endLine = Utilities.getLineOffset((BaseDocument) doc, region.getEndOffset());
-
-                    for(int i = startLine; i <= endLine; i++) {
-                        int s = Math.max(Utilities.getRowStartFromLineOffset((BaseDocument) doc, i), region.getStartOffset());
-                        int e = Math.min(Utilities.getRowEnd((BaseDocument) doc, s), region.getEndOffset());
-                        int size = e - s;
-
-                        if (size == 1) {
-                            nue.addHighlight(s, e, attribsAll);
-                        } else if (size > 1) {
-                            nue.addHighlight(s, s + 1, attribsLeft);
-                            nue.addHighlight(e - 1, e, attribsRight);
-                            if (size > 2) {
-                                nue.addHighlight(s + 1, e - 1, attribsMiddle);
-                            }
-                        }
+                int size = region.getEndOffset() - region.getStartOffset();
+                if (size == 1) {
+                    nue.addHighlight(region.getStartOffset(), region.getEndOffset(), attribsAll);
+                } else if (size > 1) {
+                    nue.addHighlight(region.getStartOffset(), region.getStartOffset() + 1, attribsLeft);
+                    nue.addHighlight(region.getEndOffset() - 1, region.getEndOffset(), attribsRight);
+                    if (size > 2) {
+                        nue.addHighlight(region.getStartOffset() + 1, region.getEndOffset() - 1, attribsMiddle);
                     }
-                } catch (BadLocationException ble) {
-                    LOG.log(Level.WARNING, null, ble);
                 }
 
                 OffsetsBag bag = getBag(doc);
@@ -806,8 +789,7 @@ implements DocumentListener, KeyListener {
                 if (doc.getProperty(BaseKit.DOC_REPLACE_SELECTION_PROPERTY) == null)
                     notifyParameterUpdate(activeMasterImpl.getParameter(), true);
             } else { // the insert is not managed => release
-                if (DocumentUtilities.isTypingModification(evt) || 
-                        evt.getLength() >= evt.getDocument().getLength()) //HACK! - see issue #128600
+                if (DocumentUtilities.isTypingModification(evt))
                     release();
             }
         }
@@ -865,25 +847,6 @@ implements DocumentListener, KeyListener {
         FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
         AttributeSet as = fcs.getFontColors("synchronized-text-blocks-ext"); //NOI18N
         return as == null ? SimpleAttributeSet.EMPTY : as;
-    }
-
-    private static AttributeSet createAttribs(Object... keyValuePairs) {
-        assert keyValuePairs.length % 2 == 0 : "There must be even number of prameters. " +
-            "They are key-value pairs of attributes that will be inserted into the set.";
-
-        List<Object> list = new ArrayList<Object>();
-        
-        for(int i = keyValuePairs.length / 2 - 1; i >= 0 ; i--) {
-            Object attrKey = keyValuePairs[2 * i];
-            Object attrValue = keyValuePairs[2 * i + 1];
-
-            if (attrKey != null && attrValue != null) {
-                list.add(attrKey);
-                list.add(attrValue);
-            }
-        }
-        
-        return AttributesUtilities.createImmutable(list.toArray());
     }
     
     public static final class HLFactory implements HighlightsLayerFactory {

@@ -1,6 +1,0 @@
-References in file quote_nosyshdr/cpu.h
-[2160-2160] class Cpu : public Module {
-References in file quote_nosyshdr/disk.h
-[2156-2156] class Disk : public Module {
-References in file quote_nosyshdr/memory.h
-[2160-2160] class Memory : public Module {

@@ -49,6 +49,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/modules/ws/qaf/rest/InstallPluginsTest.class"/>
+                <include name="org/netbeans/modules/ws/qaf/rest/InstallPluginsTest.class/testInstallRest" expectedFail="RESTful plugin is installed"/>
                 <include name="org/netbeans/modules/ws/qaf/rest/InstallPluginsTest.class/testInstallJMaki" expectedFail="jMaki plugin is installed"/>
                 <include name="org/netbeans/modules/ws/qaf/rest/CRUDTSuite.class"/>
                 <include name="org/netbeans/modules/ws/qaf/rest/PatternsTSuite.class"/>

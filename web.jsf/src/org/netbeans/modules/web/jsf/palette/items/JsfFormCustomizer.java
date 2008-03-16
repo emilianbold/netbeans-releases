@@ -208,7 +208,7 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
                         .add(edit)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(detail))
-                    .add(classTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE))
+                    .add(classTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jButton1))
         );
@@ -256,7 +256,7 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(errorField)
-                .addContainerGap(58, Short.MAX_VALUE))
+                .addContainerGap(28, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -276,8 +276,6 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
         empty.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSD_Emtry_form")); // NOI18N
         fromBean.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSN_FormGenerated")); // NOI18N
         fromBean.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSD_FromGenerated")); // NOI18N
-
-        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_JsfForm")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed

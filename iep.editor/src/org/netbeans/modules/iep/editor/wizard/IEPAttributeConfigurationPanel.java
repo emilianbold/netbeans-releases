@@ -7,7 +7,6 @@
 package org.netbeans.modules.iep.editor.wizard;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -15,22 +14,15 @@ import java.util.Vector;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.JList;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumnModel;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.module.iep.editor.xsd.nodes.SchemaComponentIEPTypeFinderVisitor;
 import org.netbeans.modules.iep.editor.designer.JTextFieldFilter;
 import org.netbeans.modules.iep.editor.ps.SelectPanelTableCellRenderer;
 import org.netbeans.modules.iep.editor.share.SharedConstants;
-import org.netbeans.modules.xml.axi.AXIComponent;
-import org.netbeans.modules.xml.axi.AXIType;
-import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
 
 /**
  *
@@ -52,19 +44,10 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
     
     private static JComboBox mComboBoxSqlType;
     
-    private Project mProject;
-    
-    private List<AXIComponent> mExistingArtificatNames = new ArrayList<AXIComponent>();
-    
     /** Creates new form IEPAttributeConfigurationPanel */
     public IEPAttributeConfigurationPanel() {
         initComponents();
         initGUI();
-    }
-    
-    public IEPAttributeConfigurationPanel(Project project) {
-        this();
-        this.mProject = project;
     }
     
     public void addDefaultIEPAttributes(List<XSDToIEPAttributeNameVisitor.AttributeNameToType> nameToTypeList) {
@@ -189,80 +172,9 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         // TODO add your handling code here:
-        //mTableModel.addNewRow();
-    	mExistingArtificatNames.clear();
-        //go through available attr and add for preselection
-    	//only the once which user has not modified in table
-    	
-        List<PlaceholderSchemaAttribute> attrList =  this.mTableModel.getAttributeList();
-        Iterator<PlaceholderSchemaAttribute> it = attrList.iterator();
-        while(it.hasNext()) {
-            PlaceholderSchemaAttribute attr = it.next();
-            AXIComponent comp = attr.getAXIComponent();
-            if(comp != null) {
-            	mExistingArtificatNames.add(comp);
-            }
-        }
-        
-        
-        List<AXIComponent> copiedExistingArtificatNames = new ArrayList<AXIComponent>();
-        copiedExistingArtificatNames.addAll(mExistingArtificatNames);
-        
-         List<AXIComponent> newComponents = SchemaArtifactSelectionDialog.showDialog(this.mProject, copiedExistingArtificatNames);
-        
-         //remove the once which are no longer available in new selection
-         List<AXIComponent> removedArtificatNames = new ArrayList<AXIComponent>();
-        Iterator<AXIComponent> itA = mExistingArtificatNames.iterator();
-        while(itA.hasNext()) {
-            AXIComponent comp = itA.next();
-            if(!newComponents.contains(comp)) {
-                removedArtificatNames.add(comp);
-                
-                PlaceholderSchemaAttribute attr = mTableModel.getMatchingRow(comp);
-                if(attr != null) {
-                    mTableModel.removeRow(attr);
-                }
-            } 
-        }
-        mExistingArtificatNames.removeAll(removedArtificatNames);
-        
-        //keep the once which user has modified in table or newly addded
-        
-         itA = newComponents.iterator();
-        while(itA.hasNext()) {
-            AXIComponent comp = itA.next();
-            if(!mExistingArtificatNames.contains(comp)) {
-                mExistingArtificatNames.add(comp);
-                
-                //now add to table
-                AXIType type = (AXIType) comp;
-                String name = type.getName();
-
-                SchemaComponent sc = comp.getPeer();
-                SchemaComponentIEPTypeFinderVisitor visitor = new SchemaComponentIEPTypeFinderVisitor();
-                sc.accept(visitor);
-                String iepType = visitor.getIEPType();
-
-
-                PlaceholderSchemaAttribute attr = new PlaceholderSchemaAttribute(comp);
-                attr.setAttributeName(name);
-                attr.setAttributeType(iepType);
-                if(SharedConstants.SQL_TYPE_VARCHAR.equals(iepType)) {
-                    attr.setAttributeSize("50"); //by default use 50 for size. size is required for VARCHAR
-                }
-
-                this.mTableModel.addRow(attr);
-            }
-        }
-        
-        
-        
-        
-        
-        
+        mTableModel.addNewRow();
 }//GEN-LAST:event_addButtonActionPerformed
 
-    
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
         List<PlaceholderSchemaAttribute> attrList = new ArrayList<PlaceholderSchemaAttribute>();
         
@@ -408,11 +320,6 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
         }
         
     }
-    
-    public JTable getTable() {
-        return this.mAttributeTable;
-    }
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton deleteButton;
