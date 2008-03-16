@@ -157,7 +157,26 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
                             children.add(serviceNodes);
                             projectNodeList.add(new ProjectNode(children, rootNode));
                         }
-                        
+                    }
+                }
+                // this is a hook for other services (Axis) to be accessible    
+                Children projectChildren = rootNode.getChildren();
+                if (projectChildren.getNodesCount() > 0) {
+                    Node[] projectSubnodes = projectChildren.getNodes();
+                    for (Node n:projectSubnodes) {
+                        if (n.getValue("is_web_service_root") != null) { //NOI18N
+                            Children children = new Children.Array();
+                            Children originalServiceChildren = n.getChildren();
+                            if (originalServiceChildren.getNodesCount() > 0) {
+                                Node[] otherServiceNodes = originalServiceChildren.getNodes();
+                                Node[] serviceNodes = new Node[otherServiceNodes.length];
+                                for (int j = 0;j < otherServiceNodes.length; j++) {
+                                    serviceNodes[j] = new ServiceNode(otherServiceNodes[j]);
+                                }
+                                children.add(serviceNodes);
+                                projectNodeList.add(new ProjectNode(children, rootNode));
+                            }
+                        }
                     }
                 }
             }
@@ -243,8 +262,14 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
         
         public String getWsdlURL() {
             WsWsdlCookie cookie = serviceNode.getLookup().lookup(WsWsdlCookie.class);
-            if(cookie != null){
+            if (cookie != null) {
                 return cookie.getWsdlURL();
+            } else {
+                // this is a hook for other services (Axis) to be accessible
+                String wsdlUrl = (String)serviceNode.getValue("wsdl_url"); //NOI18N
+                if (wsdlUrl != null){
+                    return wsdlUrl;
+                }
             }
             return null;
         }
