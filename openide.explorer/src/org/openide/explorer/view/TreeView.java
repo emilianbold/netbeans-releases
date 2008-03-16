@@ -1063,7 +1063,7 @@ public abstract class TreeView extends JScrollPane {
         
         List<TreePath> remSel = null;
         for (VisualizerNode vn : removed) {
-            TreePath path = new TreePath(treeModel.getPathToRoot(vn));
+            TreePath path = new TreePath(vn.getPathToRoot());
 	    for(TreePath tp : selPaths) {
                 if (path.isDescendant(tp)) {
                     if (remSel == null) remSel = new ArrayList();

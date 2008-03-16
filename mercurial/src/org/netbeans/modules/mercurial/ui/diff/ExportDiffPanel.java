@@ -50,6 +50,8 @@ import javax.swing.DefaultComboBoxModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Dialog;
+import java.util.Arrays;
+import java.util.HashSet;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -59,6 +61,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
@@ -78,17 +81,21 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
     private Thread                          refreshViewThread;
     private static final RequestProcessor   rp = new RequestProcessor("MercurialExportDiff", 1);  // NOI18N
     private RepositoryRevision              repoRev;
-    private static final int HG_REVISION_TARGET_LIMIT = 100;
     private File fileToDiff;
     private HgLogMessage[] messages;
+    private int fetchRevisionLimit = Mercurial.HG_NUMBER_TO_FETCH_DEFAULT;
+    private boolean bGettingRevisions = false;
+    private File [] roots;
     
     /** Creates new form ExportDiffPanel */
-    public ExportDiffPanel(File repo, RepositoryRevision repoRev, File fileToDiff) {
+    public ExportDiffPanel(File repo, RepositoryRevision repoRev, File [] roots, File fileToDiff) {
         this.fileToDiff = fileToDiff;
         this.repoRev = repoRev;
-        repository = repo;
-        refreshViewTask = rp.create(new RefreshViewTask());
+        this.roots = roots;
+        this.repository = repo;
+        this.refreshViewTask = rp.create(new RefreshViewTask());
         initComponents();
+        revisionsComboBox.setMaximumRowCount(Mercurial.HG_MAX_REVISION_COMBO_SIZE);
         if(fileToDiff != null){
             org.openide.awt.Mnemonics.setLocalizedText(revisionsLabel, NbBundle.getMessage(ExportDiffPanel.class, 
                     "ExportDiffPanel.revisionsLabel.text.forFileDiff")); // NOI18N
@@ -206,14 +213,44 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
     }// </editor-fold>//GEN-END:initComponents
 
 private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revisionsComboBoxActionPerformed
-
     int index = revisionsComboBox.getSelectedIndex();
+    if(getMore((String) revisionsComboBox.getSelectedItem())) return;
+    
     if(messages != null && index >= 0 && index < messages.length ){
         changesetPanel1.setInfo(messages[index]);
     }
 }//GEN-LAST:event_revisionsComboBoxActionPerformed
     
+    private boolean getMore(String revStr) {
+        if (bGettingRevisions) return false;
+        boolean bGetMore = false;
+        int limit = -1;
 
+        if (revStr != null && revStr.equals(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_20_Revisions"))) {
+            bGetMore = true;
+            limit = Mercurial.HG_FETCH_20_REVISIONS;
+        } else if (revStr != null && revStr.equals(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_50_Revisions"))) {
+            bGetMore = true;
+            limit = Mercurial.HG_FETCH_50_REVISIONS;
+        } else if (revStr != null && revStr.equals(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_All_Revisions"))) {
+            bGetMore = true;
+            limit = Mercurial.HG_FETCH_ALL_REVISIONS;
+        }
+        if (bGetMore && !bGettingRevisions) {
+            fetchRevisionLimit = limit;
+            RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
+            HgProgressSupport hgProgressSupport = new HgProgressSupport() {
+                public void perform() {
+                    changesetPanel1.clearInfo();
+                    refreshRevisions();
+                }
+            };
+            hgProgressSupport.start(rp, repository.getAbsolutePath(),
+                    org.openide.util.NbBundle.getMessage(Mercurial.class, "MSG_Fetching_Revisions")); // NOI18N
+        }
+        return bGetMore;
+    }
+    
     /**
      * Must NOT be run from AWT.
      */
@@ -277,8 +314,10 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
     }
 
     private void refreshRevisions() {
+        bGettingRevisions = true;
         OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
-        messages = HgCommand.getLogMessages(repository.getAbsolutePath(), HG_REVISION_TARGET_LIMIT, logger);
+        Set<File> setRoots = new HashSet<File>(Arrays.asList(roots));        
+        messages = HgCommand.getLogMessagesNoFileInfo(repository.getAbsolutePath(), setRoots, fetchRevisionLimit, logger);
 
         Set<String>  targetRevsSet = new LinkedHashSet<String>();
         int size;
@@ -293,12 +332,18 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
                 i++;
             }
         }
+        if(targetRevsSet.size() > 0){
+            targetRevsSet.add(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_20_Revisions"));
+            targetRevsSet.add(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_50_Revisions"));
+            targetRevsSet.add(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_All_Revisions"));
+        }
         ComboBoxModel targetsModel = new DefaultComboBoxModel(new Vector<String>(targetRevsSet));
         revisionsComboBox.setModel(targetsModel);
 
         if (targetRevsSet.size() > 0 ) {
             revisionsComboBox.setSelectedIndex(0);
         }
+        bGettingRevisions = false;
     }
 
     public void actionPerformed(ActionEvent evt) {
@@ -318,6 +363,7 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
             fileChooser.removeChoosableFileFilter(fileFilter);
 
         }
+        fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
         fileChooser.setApproveButtonMnemonic(NbBundle.getMessage(ExportDiffPanel.class, "OK_Button").charAt(0));                      // NO I18N
         fileChooser.setApproveButtonText(NbBundle.getMessage(ExportDiffPanel.class, "OK_Button"));                                        // NO I18N
         fileChooser.setCurrentDirectory(new File(HgModuleConfig.getDefault().getExportFolder()));

@@ -35,9 +35,9 @@
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="locationCB" pref="530" max="32767" attributes="1"/>
-                                          <Component id="projectTextField" alignment="0" pref="530" max="32767" attributes="0"/>
-                                          <Component id="folderTextField" alignment="1" pref="530" max="32767" attributes="1"/>
+                                          <Component id="locationCB" pref="553" max="32767" attributes="1"/>
+                                          <Component id="projectTextField" alignment="0" pref="553" max="32767" attributes="0"/>
+                                          <Component id="folderTextField" alignment="1" pref="553" max="32767" attributes="1"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                   </Group>
@@ -69,7 +69,7 @@
                   <Component id="jSeparator2" alignment="0" pref="738" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="wadlRadioButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="487" max="32767" attributes="0"/>
+                      <EmptySpace pref="507" max="32767" attributes="0"/>
                   </Group>
               </Group>
           </Group>

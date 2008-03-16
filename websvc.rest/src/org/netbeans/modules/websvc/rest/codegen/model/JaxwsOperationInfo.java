@@ -42,25 +42,17 @@
 package org.netbeans.modules.websvc.rest.codegen.model;
 
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.support.JaxWsUtils;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
-import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import org.netbeans.modules.websvc.manager.util.WebServiceLibReferenceHelper;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
@@ -71,6 +63,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -288,7 +281,7 @@ public class JaxwsOperationInfo {
             FileObject wsdlFO = FileUtil.toFileObject(new File(webServiceData.getURL()));;
             return WSDLModelFactory.getDefault().getModel(Utilities.createModelSource(wsdlFO, true));
         } catch(CatalogModelException ex) {
-            Logger.global.log(Level.INFO, "", ex);
+            Exceptions.printStackTrace(ex);
         }
         return null;
     }

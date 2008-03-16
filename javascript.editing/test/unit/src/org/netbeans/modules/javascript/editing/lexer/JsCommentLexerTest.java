@@ -111,6 +111,7 @@ public class JsCommentLexerTest extends NbTestCase {
                 "* @param {Object} n	Number to start with. Default is 1.\n" +
                 "* @param {String, Date} myDate	Specifies the date, if applicable.\n" +
                 "* @param {Object/Array} values The bla bla bloo (i.e. {0}) or an object (i.e. {foo: 'bar'})\n" +
+                "* @param {Foo.Bar/Baz} values2 Bla bla\n" +
                 "* @return {Function} Returns a function that will ...\n" +
                 "*/";
 
@@ -120,10 +121,11 @@ public class JsCommentLexerTest extends NbTestCase {
         
         Map<String, String> types = JsCommentLexer.findFunctionTypes(ts);
         
-        assertEquals(types.size(), 4);
+        assertEquals(types.size(), 5);
         assertEquals("Object", types.get("n"));
         assertEquals("String|Date", types.get("myDate"));
         assertEquals("Object|Array", types.get("values"));
+        assertEquals("Foo.Bar|Baz", types.get("values2"));
         assertEquals("Function", types.get("@return"));
     }
     

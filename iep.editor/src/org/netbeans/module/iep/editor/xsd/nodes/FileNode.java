@@ -43,6 +43,9 @@ import java.beans.BeanInfo;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ImageIcon;
+import javax.swing.JTree;
+import javax.swing.tree.TreeNode;
+
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIModel;
 import org.openide.filesystems.FileObject;
@@ -59,15 +62,24 @@ public class FileNode extends AbstractSchemaArtifactNode {
     
     private List<AXIComponent> mExistingArtificatNames = new ArrayList<AXIComponent>();
     
-    public FileNode(Node fileDelegate, List<AXIComponent> existingArtificatNames) {
+    private JTree mTree;
+    
+    private List<AbstractSchemaArtifactNode> mNodesToBeExpanded = new ArrayList<AbstractSchemaArtifactNode>();
+    
+    public FileNode(Node fileDelegate, 
+            List<AXIComponent> existingArtificatNames,
+            JTree tree) {
         super(fileDelegate.getDisplayName());
         this.mFileDelegateNode = fileDelegate;
+        this.mTree = tree;
         //this.setUserObject(projectDelegate.getDisplayName());
         
         this.mIcon = new ImageIcon(this.mFileDelegateNode.getIcon(BeanInfo.ICON_COLOR_16x16)); 
         this.mExistingArtificatNames = existingArtificatNames;
         
         populateSchemaFiles();
+        
+        
     }
     
    
@@ -77,12 +89,17 @@ public class FileNode extends AbstractSchemaArtifactNode {
             if(dObject != null) {
                 FileObject fileObject = dObject.getPrimaryFile();
                 AXIModel model = AxiModelHelper.getAXIModel(fileObject);
-                AxiTreeNodeVisitor mVisitor = new AxiTreeNodeVisitor(this, mExistingArtificatNames);
+                AxiTreeNodeVisitor mVisitor = new AxiTreeNodeVisitor(this, mExistingArtificatNames, mTree);
                 model.getRoot().accept(mVisitor);
+                mNodesToBeExpanded = mVisitor.getNodesToBeExpanded();
             }
         } catch(Exception ex) {
             ex.printStackTrace();
         }
+    }
+    
+    public List<AbstractSchemaArtifactNode> getNodesToBeExpanded() {
+    	return this.mNodesToBeExpanded;
     }
 }
 
