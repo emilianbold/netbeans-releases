@@ -42,6 +42,9 @@
 package org.netbeans.modules.db.test;
 
 import java.io.IOException;
+import java.net.URL;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.DatabaseConnectionConvertor;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
 import org.openide.filesystems.FileObject;
@@ -79,5 +82,19 @@ public class Util {
         for (int i = 0; i < fos.length; i++) {
             fos[i].delete();
         }
+    }
+    
+    public static JDBCDriver createDummyDriver() throws Exception {
+        JDBCDriver[] drivers = 
+                JDBCDriverManager.getDefault().getDrivers("org.bar.barDriver");
+        if ( drivers.length > 0 ) {
+            return drivers[0];
+        }
+        
+        JDBCDriver driver = JDBCDriver.create("bar_driver", "Bar Driver", 
+                "org.bar.BarDriver", new URL[]{ new URL("file://foo/path/foo.jar")});
+        JDBCDriverManager.getDefault().addDriver(driver);
+                
+        return driver;
     }
 }
