@@ -219,7 +219,7 @@ public class RhtmlKit extends HTMLKit {
                                 return true;
                             }
                         }
-                    } else if (token.id() == RhtmlTokenId.RUBY || token.id() == RhtmlTokenId.RUBY_EXPR && dotPos >= 1 && dotPos < doc.getLength()-4) {
+                    } else if (token.id() == RhtmlTokenId.RUBY || token.id() == RhtmlTokenId.RUBY_EXPR && dotPos >= 1 && dotPos <= doc.getLength()-3) {
                         // If you type ">" one space away from %> it's likely that you typed
                         // "<% foo %>" without looking at the screen; I had auto inserted %> at the end
                         // and because I also auto insert a space without typing through it, you've now

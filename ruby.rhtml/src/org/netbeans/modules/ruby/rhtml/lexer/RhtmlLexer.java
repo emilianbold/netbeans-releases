@@ -53,6 +53,8 @@ import org.netbeans.spi.lexer.TokenFactory;
  *
  * @author Marek Fukala
  * @author Tor Norbye
+ * 
+ * @todo <%% should be treated as HTML (<%) -- ditto for %%>
  *
  * @version 1.00
  */
@@ -194,9 +196,9 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
                             if (peek != '>') {
                                 // Handle <%% == <%
                                 if(input.readLength() == 3) {
-                                    // just read <%%.  TODO - should <%%= be considered valid?
-                                    state = ISI_SCRIPTLET;
-                                    return token(RhtmlTokenId.DELIMITER);
+                                    // <%% is just an escape for <% in HTML...
+                                    state = INIT;
+                                    break;
                                 } else {
                                     // RHTML symbol, but we also have content language in the buffer
                                     input.backup(3); //backup <%@
@@ -251,6 +253,7 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
                                 return token(RhtmlTokenId.HTML); //return CL token
                             }
                     }
+                    break;
                     
                 case ISI_COMMENT_SCRIPTLET:
                     switch(actChar) {
@@ -272,27 +275,6 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
 
                 case ISI_SCRIPTLET_PC:
                     switch(actChar) {
-                        case '%': {
-                            // Handle %%>
-                            int peek = input.read();
-                            if (peek != '>') {
-                                input.backup(1);
-                                // Still in percent state
-                                break;
-                            } else {
-                                // %%>
-                                if(input.readLength() == 3) {
-                                    //just the '%>' symbol read
-                                    state = INIT;
-                                    return token(RhtmlTokenId.DELIMITER);
-                                } else {
-                                    //return the scriptlet content
-                                    input.backup(3); // backup '%>' we will read JUST them again
-                                    state = ISI_SCRIPTLET;
-                                    return token(RhtmlTokenId.RUBY);
-                                }
-                            }
-                        }
                         case '>':
                             if(input.readLength() == 2) {
                                 //just the '%>' symbol read
