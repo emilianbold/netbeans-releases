@@ -37,63 +37,20 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql.installations;
+package org.netbeans.modules.websvc.core.jaxws.nodes;
 
-import org.netbeans.modules.db.mysql.Installation;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.core.ProjectWebServiceView;
+import org.netbeans.modules.websvc.core.ProjectWebServiceViewProvider;
 
 /**
- * Provides some helper functionality for installations
- * 
- * @author David Van Couvering
+ *
+ * @author Ajit
  */
-public abstract class AbstractInstallation implements Installation {
-    /**
-     * @return the base/installation path for this installation
-     */
-    protected abstract String getBasePath();
-    
-    /**
-     * 
-     * @return the path for the start command, relative to its base path
-     */
-    protected abstract String getStartPath();
-    
-    /**
-     * @return the path for the stop command, relative to its base path
-     */
-    protected abstract String getStopPath();
-    
-    /**
-     * Create a new installation given a new base path
-     * 
-     * @param basePath the base path to use for the installation
-     * 
-     * @return a new instance of the installation using this new base path
-     */
-    protected abstract Installation createInstallation(String basePath);
-   
+public class ProjectJaxWsWebServiceViewProvider implements ProjectWebServiceViewProvider {
 
-    public Installation getInstallation(String command, Command cmdType) {
-        // Installations either come with no admin UI or with phpmyadmin,
-        // so creating a new installation from the admin command doesn't
-        // really work...
-        if ( cmdType == Command.ADMIN ) {
-            return null;
-        }
-        
-        String newBasePath;
-        
-        if ( cmdType == Command.START ) {
-            newBasePath = command.replace(getStartPath(), "");
-        } else {
-            newBasePath = command.replace(getStopPath(), "");
-        }
-        if ( newBasePath.equals(command)) {
-            // not a valid command path
-            return null;
-        }
-        
-        return createInstallation(newBasePath);
+    public ProjectWebServiceView createProjectWebServiceView(Project p) {
+        return new ProjectJaxWsWebServiceView(p);
     }
 
 }

@@ -197,6 +197,9 @@ public class Utils {
     
     public static List<String> getDiagnostics(FileObject fileObject) {
         final List<String> result = new ArrayList<String>();
+        if (fileObject == null) {
+            return result;
+        }
         JavaSource js = JavaSource.forFileObject(fileObject);
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {

@@ -37,37 +37,53 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.java.queries.support;
+package org.netbeans.modules.javascript.editing;
 
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.modules.java.queries.SFBQImpl2Result;
-import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
-import org.openide.util.Parameters;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.NameKind;
 
 /**
- * Base class for {@link SourceForBinaryQueryImplementation2} which need to delegate
- * to other {@link SourceForBinaryQueryImplementation}.
- * @since 1.16
- * @author Tomas Zezula
+ * Cache which performs type lookup etc. for functions
+ * 
+ * @author Tor Norbye
  */
-public abstract class SourceForBinaryQueryimplementation2Base implements SourceForBinaryQueryImplementation2 {
+public class FunctionCache {
+    static FunctionCache instance = new FunctionCache();
+    static final IndexedElement NONE = new IndexedProperty(null, null, null, null, null, 0, ElementKind.OTHER);
+    
+    Map<String,IndexedElement> cache = new HashMap<String,IndexedElement>(500);
+    
+    public String getType(String fqn, JsIndex index) {
+        IndexedElement element = cache.get(fqn);
+        if (element == NONE) {
+            return null;
+        } else if (element == null) {
+            Set<IndexedElement> elements = index.getElements(fqn, null, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
+            if (elements.size() > 0) {
+                IndexedElement firstElement = elements.iterator().next();
+                cache.put(fqn, firstElement);
+                return firstElement.getType();
+            } else {
+                cache.put(fqn, NONE);
+            }
+            return null;
+        } else {
+            return element.getType();
+        }
+    }
+    
+    public void wipe(String fqn) {
+        cache.remove(fqn);
+    }
+    
+    public static FunctionCache getInstance() {
+        return instance;
+    }
 
-    /**
-     * Creates a wrapper for {@link SourceForBinaryQuery.Result}. This method
-     * should be used by delegating {@link SourceForBinaryQueryImplementation2}
-     * which need to delegate to {@link SourceForBinaryQueryImplementation}. 
-     * @param result returned by {@link SourceForBinaryQueryImplementation},
-     * When result is already instanceof {@link SourceForBinaryQueryImplementation2.Result}
-     * it's returned without wrapping.
-     * @return a {@link SourceForBinaryQueryImplementation2.Result}.
-     */
-    protected final Result asResult (SourceForBinaryQuery.Result result) {
-        Parameters.notNull("result", result);   //NOI18N
-        if (result instanceof Result) {
-            return (Result) result;
-        }
-        else {
-            return new SFBQImpl2Result(result);
-        }
+    boolean isEmpty() {
+        return cache.size() == 0;
     }
 }

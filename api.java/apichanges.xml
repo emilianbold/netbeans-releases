@@ -85,7 +85,7 @@ made subject to such option by the copyright holder.
                     Added support base class for SourceForBinaryQueryImplementation2 which delegates to other SourceForBinaryQueryImplementations.
                 </p>
             </description>
-            <class package="org.netbeans.spi.java.queries.support" name="SourceForBinaryQueryimplementation2Base"/>
+            <class package="org.netbeans.spi.java.queries.support" name="SourceForBinaryQueryImpl2Base"/>
             <issue number="129884"/>
         </change>
         <change id="source-for-binary-query2">

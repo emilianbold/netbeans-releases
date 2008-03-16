@@ -61,6 +61,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.javascript.editing.JsMimeResolver;
+import org.netbeans.modules.javascript.editing.NbUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -99,6 +100,20 @@ public class LexUtilities {
         INDENT_WORDS.add(JsTokenId.IF);
         INDENT_WORDS.add(JsTokenId.ELSE);
         INDENT_WORDS.add(JsTokenId.WHILE);
+    }
+
+    public static BaseDocument getDocument(CompilationInfo info, boolean forceOpen) {
+        try {
+            BaseDocument doc = (BaseDocument) info.getDocument();
+            if (doc == null && forceOpen) {
+                doc = NbUtilities.getBaseDocument(info.getFileObject(), true);
+            }
+            
+            return doc;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
     }
 
     private LexUtilities() {

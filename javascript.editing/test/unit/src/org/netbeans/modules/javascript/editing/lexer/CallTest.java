@@ -336,7 +336,9 @@ public class CallTest extends JsTestBase {
 
     public void testCallUnknown() throws Exception {
         Call call = getCall("getFoo().x^");
-        assertSame(Call.UNKNOWN, call);
+        assertNull(call.getType());
+        assertNull(call.getLhs());
+        assertEquals(6, call.getPrevCallParenPos());
     }
 
     public void testCallLocal() throws Exception {

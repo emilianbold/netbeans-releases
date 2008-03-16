@@ -160,12 +160,14 @@ public class Saas {
     public void save() {
         try {
             SaasUtil.saveSaas(this, getSaasFile());
-            java.io.OutputStream out = null;
-            try {
-                out = getPropFile().getOutputStream();
-                getProperties().store(out, null);
-            } finally {
-                if (out != null) { out.close(); }
+            if (getProperties().size() > 0) {
+                java.io.OutputStream out = null;
+                try {
+                    out = getPropFile(true).getOutputStream();
+                    getProperties().store(out, getDisplayName() + " : " + getUrl());
+                } finally {
+                    if (out != null) { out.close(); }
+                }
             }
         } catch(Exception e) {
             Exceptions.printStackTrace(e);
@@ -249,13 +251,9 @@ public class Saas {
     }
     
     public FileObject getSaasFolder() {
-        return getSaasFolder(true);
-    }
-    
-    public FileObject getSaasFolder(boolean create) {
         if (saasFolder == null) {
             saasFolder = SaasServicesModel.getWebServiceHome().getFileObject(getDisplayName());
-            if (saasFolder == null && create) {
+            if (saasFolder == null) {
                 try {
                     saasFolder = SaasServicesModel.getWebServiceHome().createFolder(getDisplayName());
                 } catch(Exception ex) {
@@ -282,11 +280,14 @@ public class Saas {
     private Properties getProperties() throws IOException {
         if (props == null) {
             props = new Properties();
-            InputStream in = getPropFile().getInputStream();
-            try {
-                props.load(in);
-            } finally {
-                in.close();
+            FileObject fo = getPropFile(false);
+            if (fo != null) {
+                InputStream in = getPropFile(false).getInputStream();
+                try {
+                    props.load(in);
+                } finally {
+                    in.close();
+                }
             }
         }
         return props;
@@ -296,11 +297,14 @@ public class Saas {
     public static final String PROP_LOCAL_SERVICE_FILE = "local.service.file";
     
     private FileObject propFile;
-    private FileObject getPropFile() throws IOException {
+    private FileObject getPropFile(boolean create) throws IOException {
         if (propFile == null) {
             propFile = getSaasFolder().getFileObject(SAAS_PROPERTIES);
-            if (propFile == null) {
+            if (propFile == null && create) {
                 propFile = getSaasFolder().createData(SAAS_PROPERTIES);
+                try {
+                    Thread.sleep(50);
+                } catch(InterruptedException e) {}
             }
         }
         return propFile;

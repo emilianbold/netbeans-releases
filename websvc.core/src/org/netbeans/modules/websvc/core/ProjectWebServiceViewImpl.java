@@ -37,63 +37,58 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql.installations;
+package org.netbeans.modules.websvc.core;
 
-import org.netbeans.modules.db.mysql.Installation;
-import org.openide.util.Utilities;
+import javax.swing.event.ChangeListener;
+import org.openide.util.ChangeSupport;
 
 /**
- * Defines the installation of MySQL from mysql.com or other standalone
- * mechanism, where it is not installed as a service and you directly
- * call the commands to start and stop
- * 
- * @author David Van Couvering
+ *
+ * @author Ajit
  */
-public abstract class AbstractStandaloneInstallation extends AbstractInstallation {
-    private static final String START_PATH="/mysqld";
-    private static final String STOP_PATH="/mysqladmin";
-    private static final String DEFAULT_PORT = "3306";
+public abstract class ProjectWebServiceViewImpl implements ProjectWebServiceView {
+
+    private ChangeSupport serviceListeners,  clientListeners;
     
-    private String basePath;
-    
-    protected AbstractStandaloneInstallation(String basePath) {
-        this.basePath = basePath;
-    }
-            
-    public boolean isStackInstall() {
-        return false;
+    protected ProjectWebServiceViewImpl() {
+        serviceListeners = new ChangeSupport(this);
+        clientListeners = new ChangeSupport(this);
     }
 
-    public String[] getAdminCommand() {
-        return new String[] { "", "" };
+    public void addChangeListener(ChangeListener l, ViewType viewType) {
+        switch (viewType) {
+            case SERVICE:
+                serviceListeners.addChangeListener(l);
+                break;
+            case CLIENT:
+                clientListeners.addChangeListener(l);
+                break;
+        }
     }
 
-    public String[] getStartCommand() {
-        String command = basePath + START_PATH; // NOI18N
-        return new String[] { command, "" };
+    public void removeChangeListener(ChangeListener l, ViewType viewType) {
+        switch (viewType) {
+            case SERVICE:
+                if (serviceListeners != null) {
+                    serviceListeners.removeChangeListener(l);
+                }
+                break;
+            case CLIENT:
+                if (clientListeners != null) {
+                    clientListeners.removeChangeListener(l);
+                }
+                break;
+        }
     }
 
-    public String[] getStopCommand() {
-        String command = basePath + STOP_PATH; // NOI18N
-        return new String[] { command, "-u root stop" };
-    }
-    
-    public String getDefaultPort() {
-        return DEFAULT_PORT;
-    }
-
-    @Override
-    protected String getBasePath() {
-        return basePath;
-    }
-
-    @Override
-    protected String getStartPath() {
-        return START_PATH;
-    }
-
-    @Override
-    protected String getStopPath() {
-        return STOP_PATH;
+    protected void fireChange(ViewType viewType) {
+        switch (viewType) {
+            case SERVICE:
+                serviceListeners.fireChange();
+                return;
+            case CLIENT:
+                clientListeners.fireChange();
+                return;
+        }
     }
 }

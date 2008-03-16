@@ -137,7 +137,7 @@ public class LogReader {
             if (TRACE) message = "**>> by [" + CURRENT_DIRECTORY + "] "; //NOI18N
         } else if (line.indexOf(ENTERING_DIRECTORY) >= 0) {
             String dirMessage = line.substring(line.indexOf(ENTERING_DIRECTORY) + ENTERING_DIRECTORY.length() + 1).trim();
-            workDir = dirMessage.replaceAll("`|'|\"", "");
+            workDir = dirMessage.replaceAll("`|'|\"", ""); //NOI18N
             if (TRACE) message = "**>> by [" + ENTERING_DIRECTORY + "] "; //NOI18N
         } else if (line.startsWith(LABEL_CD)) {
             int end = line.indexOf(MAKE_DELIMITER);
@@ -243,8 +243,8 @@ public class LogReader {
                 if (!(line.charAt(start - 1) == ' ' && 
                         ( prefix.equals("if") || prefix.equals("then") || prefix.equals("else") ))) { //NOI18N
                     // or it's a lib compiled by libtool? 
-                    int ltStart = line.substring(0, start).indexOf("libtool");
-                    if (!(ltStart >= 0 && line.substring(ltStart, start).indexOf("compile") >= 0)) {
+                    int ltStart = line.substring(0, start).indexOf("libtool"); //NOI18N
+                    if (!(ltStart >= 0 && line.substring(ltStart, start).indexOf("compile") >= 0)) { //NOI18N
                         // no, it's not a compile line
                         li.compilerType = CompilerType.UNKNOWN;
                         // I hope
@@ -606,7 +606,7 @@ public class LogReader {
         System.err.print("\n*** Results: ");
         for (SourceFileProperties sourceFileProperties : list) {
             String fileName = sourceFileProperties.getItemName();
-            while (fileName.indexOf("../") == 0) {
+            while (fileName.indexOf("../") == 0) { //NOI18N
                 fileName = fileName.substring(3);
             }
             System.err.print(fileName + " ");

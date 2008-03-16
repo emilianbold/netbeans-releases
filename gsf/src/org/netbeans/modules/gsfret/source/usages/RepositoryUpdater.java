@@ -2009,6 +2009,10 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                         //coupling error
                         //TODO: check if the source sig file ~ the source java file:
                         //couplingAbort(a, active);
+                        if (PREINDEXING) {
+                            Exceptions.printStackTrace(a);
+                            System.exit(0);
+                        }                        
                         if (jt != null) {
                             jt.finish();
                         }
