@@ -5,10 +5,10 @@ Spry.XML.Schema.Node:CLASS:[]:ESCAPED{Spry.XML.Schema.Node}:
   children:PROPERTY:[]:ESCAPED{children} : ESCAPED{Array}:
   isAttribute:PROPERTY:[]:ESCAPED{isAttribute} : ESCAPED{Boolean}:
   nodeName:PROPERTY:[]:ESCAPED{nodeName}:
-  toString:METHOD:[]:ESCAPED{toString}(PARAMETERS{ESCAPED{indentStr}}) : ESCAPED{void}:
+  toString:METHOD:[]:ESCAPED{toString}(PARAMETERS{ESCAPED{indentStr}}):
 Spry.XML.Schema:CLASS:[]:ESCAPED{Spry.XML.Schema}:
   mapElementIntoSchemaNode:METHOD:[STATIC]:ESCAPED{mapElementIntoSchemaNode}(PARAMETERS{ESCAPED{ele}, ESCAPED{schemaNode}}) : ESCAPED{void}:
 Spry.XML:CLASS:[]:ESCAPED{Spry.XML}:
-  getSchema:METHOD:[STATIC]:ESCAPED{getSchema}(PARAMETERS{ESCAPED{xmlDoc}}) : ESCAPED{void}:
-  getSchemaForElement:METHOD:[STATIC]:ESCAPED{getSchemaForElement}(PARAMETERS{ESCAPED{ele}}) : ESCAPED{void}:
+  getSchema:METHOD:[STATIC]:ESCAPED{getSchema}(PARAMETERS{ESCAPED{xmlDoc}}):
+  getSchemaForElement:METHOD:[STATIC]:ESCAPED{getSchemaForElement}(PARAMETERS{ESCAPED{ele}}):
 Spry:CLASS:[]:ESCAPED{Spry}:

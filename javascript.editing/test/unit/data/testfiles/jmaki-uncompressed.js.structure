@@ -2,7 +2,7 @@ _cb:METHOD:[]:ESCAPED{_cb} : ESCAPED{void}:
 logWidgetError:METHOD:[]:ESCAPED{logWidgetError}(PARAMETERS{ESCAPED{name}, ESCAPED{uuid}, ESCAPED{url}, ESCAPED{line}, ESCAPED{_m}, ESCAPED{div}}) : ESCAPED{void}:
 logError:METHOD:[]:ESCAPED{logError}(PARAMETERS{ESCAPED{message}, ESCAPED{div}}) : ESCAPED{void}:
 postInitialize:METHOD:[]:ESCAPED{postInitialize} : ESCAPED{void}:
-getPosition:METHOD:[]:ESCAPED{getPosition}(PARAMETERS{ESCAPED{_e}}) : ESCAPED{void}:
+getPosition:METHOD:[]:ESCAPED{getPosition}(PARAMETERS{ESCAPED{_e}}):
 init:METHOD:[]:ESCAPED{init} : ESCAPED{void}:
 layout:METHOD:[]:ESCAPED{layout} : ESCAPED{void}:
 inject:METHOD:[]:ESCAPED{inject}(PARAMETERS{ESCAPED{task}}) : ESCAPED{void}:
@@ -20,7 +20,7 @@ Jmaki:CLASS:[]:ESCAPED{Jmaki}:
   Jmaki:CONSTRUCTOR:[]:ESCAPED{Jmaki} : ESCAPED{Jmaki}:
   addGlueListener:METHOD:[]:ESCAPED{addGlueListener}(PARAMETERS{ESCAPED{l}, ESCAPED{t}}) : ESCAPED{void}:
   addLibraries:METHOD:[]:ESCAPED{addLibraries}(PARAMETERS{ESCAPED{_libs}, ESCAPED{_cb}, ESCAPED{_inprocess}}) : ESCAPED{void}:
-  addLibrary:METHOD:[]:ESCAPED{addLibrary}(PARAMETERS{ESCAPED{lib}, ESCAPED{cb}}) : ESCAPED{void}:
+  addLibrary:METHOD:[]:ESCAPED{addLibrary}(PARAMETERS{ESCAPED{lib}, ESCAPED{cb}}):
   addTimer:METHOD:[]:ESCAPED{addTimer}(PARAMETERS{ESCAPED{_timer}}) : ESCAPED{void}:
   addTimers:METHOD:[]:ESCAPED{addTimers}(PARAMETERS{ESCAPED{_timers}}) : ESCAPED{void}:
   addType:METHOD:[]:ESCAPED{addType}(PARAMETERS{ESCAPED{name}}) : ESCAPED{void}:
@@ -30,21 +30,21 @@ Jmaki:CLASS:[]:ESCAPED{Jmaki}:
   debug:PROPERTY:[]:ESCAPED{debug} : ESCAPED{Boolean}:
   debugGlue:PROPERTY:[]:ESCAPED{debugGlue} : ESCAPED{Boolean}:
   destroy:METHOD:[]:ESCAPED{destroy} : ESCAPED{void}:
-  doAjax:METHOD:[]:ESCAPED{doAjax}(PARAMETERS{ESCAPED{args}}) : ESCAPED{void}:
+  doAjax:METHOD:[]:ESCAPED{doAjax}(PARAMETERS{ESCAPED{args}}):
   extend:METHOD:[]:ESCAPED{extend}(PARAMETERS{ESCAPED{_src}, ESCAPED{_par}}) : ESCAPED{void}:
-  filter:METHOD:[]:ESCAPED{filter}(PARAMETERS{ESCAPED{input}, ESCAPED{filter}}) : ESCAPED{void}:
-  findObject:METHOD:[]:ESCAPED{findObject}(PARAMETERS{ESCAPED{_path}}) : ESCAPED{void}:
-  getAllChildren:METHOD:[]:ESCAPED{getAllChildren}(PARAMETERS{ESCAPED{target}, ESCAPED{children}}) : ESCAPED{void}:
-  getElementsByStyle:METHOD:[]:ESCAPED{getElementsByStyle}(PARAMETERS{ESCAPED{className}, ESCAPED{root}}) : ESCAPED{void}:
-  getWidget:METHOD:[]:ESCAPED{getWidget}(PARAMETERS{ESCAPED{id}}) : ESCAPED{void}:
-  getXHR:METHOD:[]:ESCAPED{getXHR} : ESCAPED{void}:
+  filter:METHOD:[]:ESCAPED{filter}(PARAMETERS{ESCAPED{input}, ESCAPED{filter}}):
+  findObject:METHOD:[]:ESCAPED{findObject}(PARAMETERS{ESCAPED{_path}}):
+  getAllChildren:METHOD:[]:ESCAPED{getAllChildren}(PARAMETERS{ESCAPED{target}, ESCAPED{children}}):
+  getElementsByStyle:METHOD:[]:ESCAPED{getElementsByStyle}(PARAMETERS{ESCAPED{className}, ESCAPED{root}}):
+  getWidget:METHOD:[]:ESCAPED{getWidget}(PARAMETERS{ESCAPED{id}}):
+  getXHR:METHOD:[]:ESCAPED{getXHR} : ESCAPED{XMLHttpRequest|ActiveXObject|void}:
   initialize:CONSTRUCTOR:[]:ESCAPED{initialize} : ESCAPED{void}:
   initialized:PROPERTY:[]:ESCAPED{initialized} : ESCAPED{Boolean}:
   loadStyle:METHOD:[]:ESCAPED{loadStyle}(PARAMETERS{ESCAPED{target}}) : ESCAPED{void}:
   loadWidget:METHOD:[]:ESCAPED{loadWidget}(PARAMETERS{ESCAPED{_jmw}}) : ESCAPED{void}:
   loaded:PROPERTY:[]:ESCAPED{loaded} : ESCAPED{Boolean}:
   log:METHOD:[]:ESCAPED{log}(PARAMETERS{ESCAPED{text}, ESCAPED{level}}) : ESCAPED{void}:
-  namespace:METHOD:[]:ESCAPED{namespace}(PARAMETERS{ESCAPED{_path}, ESCAPED{target}}) : ESCAPED{void}:
+  namespace:METHOD:[]:ESCAPED{namespace}(PARAMETERS{ESCAPED{_path}, ESCAPED{target}}):
   publish:METHOD:[]:ESCAPED{publish}(PARAMETERS{ESCAPED{name}, ESCAPED{args}, ESCAPED{bubbleDown}, ESCAPED{bubbleUp}}) : ESCAPED{void}:
   replaceStyleClass:METHOD:[]:ESCAPED{replaceStyleClass}(PARAMETERS{ESCAPED{root}, ESCAPED{oldStyle}, ESCAPED{targetStyle}}) : ESCAPED{void}:
   resourcesRoot:PROPERTY:[]:ESCAPED{resourcesRoot} : ESCAPED{String}:
@@ -56,8 +56,8 @@ Jmaki:CLASS:[]:ESCAPED{Jmaki}:
 Jmaki.Map:CLASS:[]:ESCAPED{Jmaki.Map}:
   Map:CONSTRUCTOR:[]:ESCAPED{Map} : ESCAPED{Jmaki.Map}:
   clear:METHOD:[]:ESCAPED{clear} : ESCAPED{void}:
-  get:METHOD:[]:ESCAPED{get}(PARAMETERS{ESCAPED{key}}) : ESCAPED{void}:
-  keys:METHOD:[]:ESCAPED{keys} : ESCAPED{void}:
+  get:METHOD:[]:ESCAPED{get}(PARAMETERS{ESCAPED{key}}):
+  keys:METHOD:[]:ESCAPED{keys}:
   put:METHOD:[]:ESCAPED{put}(PARAMETERS{ESCAPED{key}, ESCAPED{value}}) : ESCAPED{void}:
   remove:METHOD:[]:ESCAPED{remove}(PARAMETERS{ESCAPED{key}}) : ESCAPED{void}:
 se:CLASS:[]:ESCAPED{se}:
@@ -83,6 +83,6 @@ Jmaki.DContainer:CLASS:[]:ESCAPED{Jmaki.DContainer}:
   url:PROPERTY:[]:ESCAPED{url}:
 Jmaki.Injector:CLASS:[]:ESCAPED{Jmaki.Injector}:
   Injector:CONSTRUCTOR:[]:ESCAPED{Injector} : ESCAPED{Jmaki.Injector}:
-  get:METHOD:[]:ESCAPED{get}(PARAMETERS{ESCAPED{p}}) : ESCAPED{void}:
+  get:METHOD:[]:ESCAPED{get}(PARAMETERS{ESCAPED{p}}):
   inject:METHOD:[]:ESCAPED{inject}(PARAMETERS{ESCAPED{task}}) : ESCAPED{void}:
-  loadScripts:METHOD:[]:ESCAPED{loadScripts}(PARAMETERS{ESCAPED{task}, ESCAPED{initFunction}}) : ESCAPED{void}:
+  loadScripts:METHOD:[]:ESCAPED{loadScripts}(PARAMETERS{ESCAPED{task}, ESCAPED{initFunction}}):

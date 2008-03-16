@@ -535,6 +535,7 @@ public class JsAnalyzer implements StructureScanner {
                         }
                     }
                 }
+                break;
             }
             
             case Token.RETURN: {
@@ -567,14 +568,15 @@ public class JsAnalyzer implements StructureScanner {
         }
         
         public boolean unvisit(Node node) {
-            if (currentFunction != null && currentFunction.nodeType == null) {
-                // Except for stubs...
-                if (info != null && !info.getFileObject().getNameExt().startsWith("stub_")) { // NOI18N
-                    currentFunction.nodeType = "void"; // NOI18N
-                }
-            }
-            currentFunction = null;
             if (node.getType() == Token.FUNCTION) {
+                if (currentFunction != null && currentFunction.nodeType == null) {
+                    // Except for stubs...
+                    if (info != null && !info.getFileObject().getNameExt().startsWith("stub_")) { // NOI18N
+                        currentFunction.nodeType = "void"; // NOI18N
+                    }
+                }
+                currentFunction = null;
+                
                 Node n = node.getParentNode();
                 for (; n != null; n = n.getParentNode()) {
                     if (n.getType() == Token.FUNCTION) {

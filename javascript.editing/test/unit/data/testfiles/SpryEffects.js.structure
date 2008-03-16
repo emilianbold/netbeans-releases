@@ -4,10 +4,10 @@ compositeColorHex:GLOBAL:[]:ESCAPED{compositeColorHex}:
 dimensions:GLOBAL:[]:ESCAPED{dimensions}:
 Spry.Effect.Registry:CLASS:[]:ESCAPED{Spry.Effect.Registry}:
   Registry:CONSTRUCTOR:[STATIC]:ESCAPED{Registry} : ESCAPED{Spry.Effect.Registry}:
-  effectsAreTheSame:METHOD:[]:ESCAPED{effectsAreTheSame}(PARAMETERS{ESCAPED{effectA}, ESCAPED{effectB}}) : ESCAPED{void}:
+  effectsAreTheSame:METHOD:[]:ESCAPED{effectsAreTheSame}(PARAMETERS{ESCAPED{effectA}, ESCAPED{effectB}}) : ESCAPED{Boolean}:
   elements:PROPERTY:[]:ESCAPED{elements} : ESCAPED{Array}:
-  getIndexOfElement:METHOD:[]:ESCAPED{getIndexOfElement}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  getRegisteredEffect:METHOD:[]:ESCAPED{getRegisteredEffect}(PARAMETERS{ESCAPED{element}, ESCAPED{effect}}) : ESCAPED{void}:
+  getIndexOfElement:METHOD:[]:ESCAPED{getIndexOfElement}(PARAMETERS{ESCAPED{element}}):
+  getRegisteredEffect:METHOD:[]:ESCAPED{getRegisteredEffect}(PARAMETERS{ESCAPED{element}, ESCAPED{effect}}):
 Spry.Effect.Utils.Position:CLASS:[]:ESCAPED{Spry.Effect.Utils.Position}:
   Position:CONSTRUCTOR:[STATIC]:ESCAPED{Position} : ESCAPED{Spry.Effect.Utils.Position}:
   x:PROPERTY:[]:ESCAPED{x} : ESCAPED{Number}:
@@ -21,25 +21,25 @@ Spry.Effect.Utils.PositionedRectangle:CLASS:[]:ESCAPED{Spry.Effect.Utils.Positio
   position:PROPERTY:[]:ESCAPED{position} : ESCAPED{Spry.Effect.Utils.Position}:
   rectangle:PROPERTY:[]:ESCAPED{rectangle} : ESCAPED{Spry.Effect.Utils.Rectangle}:
 Spry.Effect.Utils:CLASS:[]:ESCAPED{Spry.Effect.Utils}:
-  camelize:METHOD:[STATIC]:ESCAPED{camelize}(PARAMETERS{ESCAPED{stringToCamelize}}) : ESCAPED{void}:
-  getFirstChildElement:METHOD:[STATIC]:ESCAPED{getFirstChildElement}(PARAMETERS{ESCAPED{node}}) : ESCAPED{void}:
-  getPercentValue:METHOD:[STATIC]:ESCAPED{getPercentValue}(PARAMETERS{ESCAPED{value}}) : ESCAPED{void}:
-  getPixelValue:METHOD:[STATIC]:ESCAPED{getPixelValue}(PARAMETERS{ESCAPED{value}}) : ESCAPED{void}:
-  hexToInt:METHOD:[STATIC]:ESCAPED{hexToInt}(PARAMETERS{ESCAPED{hexStr}}) : ESCAPED{void}:
-  intToHex:METHOD:[STATIC]:ESCAPED{intToHex}(PARAMETERS{ESCAPED{integerNum}}) : ESCAPED{void}:
-  isPercentValue:METHOD:[STATIC]:ESCAPED{isPercentValue}(PARAMETERS{ESCAPED{value}}) : ESCAPED{void}:
-  optionsAreIdentical:METHOD:[STATIC]:ESCAPED{optionsAreIdentical}(PARAMETERS{ESCAPED{optionsA}, ESCAPED{optionsB}}) : ESCAPED{void}:
-  rgb:METHOD:[STATIC]:ESCAPED{rgb}(PARAMETERS{ESCAPED{redInt}, ESCAPED{greenInt}, ESCAPED{blueInt}}) : ESCAPED{void}:
+  camelize:METHOD:[STATIC]:ESCAPED{camelize}(PARAMETERS{ESCAPED{stringToCamelize}}):
+  getFirstChildElement:METHOD:[STATIC]:ESCAPED{getFirstChildElement}(PARAMETERS{ESCAPED{node}}):
+  getPercentValue:METHOD:[STATIC]:ESCAPED{getPercentValue}(PARAMETERS{ESCAPED{value}}):
+  getPixelValue:METHOD:[STATIC]:ESCAPED{getPixelValue}(PARAMETERS{ESCAPED{value}}):
+  hexToInt:METHOD:[STATIC]:ESCAPED{hexToInt}(PARAMETERS{ESCAPED{hexStr}}):
+  intToHex:METHOD:[STATIC]:ESCAPED{intToHex}(PARAMETERS{ESCAPED{integerNum}}):
+  isPercentValue:METHOD:[STATIC]:ESCAPED{isPercentValue}(PARAMETERS{ESCAPED{value}}):
+  optionsAreIdentical:METHOD:[STATIC]:ESCAPED{optionsAreIdentical}(PARAMETERS{ESCAPED{optionsA}, ESCAPED{optionsB}}) : ESCAPED{Boolean}:
+  rgb:METHOD:[STATIC]:ESCAPED{rgb}(PARAMETERS{ESCAPED{redInt}, ESCAPED{greenInt}, ESCAPED{blueInt}}):
 Spry.Effect:CLASS:[]:ESCAPED{Spry.Effect}:
   cleanWhitespace:METHOD:[STATIC]:ESCAPED{cleanWhitespace}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
   enforceVisible:METHOD:[STATIC]:ESCAPED{enforceVisible}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  getDimensions:METHOD:[STATIC]:ESCAPED{getDimensions}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  getElement:METHOD:[STATIC]:ESCAPED{getElement}(PARAMETERS{ESCAPED{ele}}) : ESCAPED{void}:
-  getOffsetPosition:METHOD:[STATIC]:ESCAPED{getOffsetPosition}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  getStyleProp:METHOD:[STATIC]:ESCAPED{getStyleProp}(PARAMETERS{ESCAPED{element}, ESCAPED{prop}}) : ESCAPED{void}:
+  getDimensions:METHOD:[STATIC]:ESCAPED{getDimensions}(PARAMETERS{ESCAPED{element}}):
+  getElement:METHOD:[STATIC]:ESCAPED{getElement}(PARAMETERS{ESCAPED{ele}}):
+  getOffsetPosition:METHOD:[STATIC]:ESCAPED{getOffsetPosition}(PARAMETERS{ESCAPED{element}}):
+  getStyleProp:METHOD:[STATIC]:ESCAPED{getStyleProp}(PARAMETERS{ESCAPED{element}, ESCAPED{prop}}):
   makeClipping:METHOD:[STATIC]:ESCAPED{makeClipping}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
   makePositioned:METHOD:[STATIC]:ESCAPED{makePositioned}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  setStyleProp:METHOD:[STATIC]:ESCAPED{setStyleProp}(PARAMETERS{ESCAPED{element}, ESCAPED{prop}, ESCAPED{value}}) : ESCAPED{void}:
+  setStyleProp:METHOD:[STATIC]:ESCAPED{setStyleProp}(PARAMETERS{ESCAPED{element}, ESCAPED{prop}, ESCAPED{value}}):
 Spry.Effect.Animator:CLASS:[]:ESCAPED{Spry.Effect.Animator}:
   Animator:CONSTRUCTOR:[STATIC]:ESCAPED{Animator}(PARAMETERS{ESCAPED{options}}) : ESCAPED{Spry.Effect.Animator}:
   animate:METHOD:[]:ESCAPED{animate}(PARAMETERS{ESCAPED{position}}) : ESCAPED{void}:
@@ -47,7 +47,7 @@ Spry.Effect.Animator:CLASS:[]:ESCAPED{Spry.Effect.Animator}:
   direction:PROPERTY:[]:ESCAPED{direction}:
   doToggle:METHOD:[]:ESCAPED{doToggle} : ESCAPED{void}:
   drawEffect:METHOD:[]:ESCAPED{drawEffect} : ESCAPED{void}:
-  getElapsedMilliseconds:METHOD:[]:ESCAPED{getElapsedMilliseconds} : ESCAPED{void}:
+  getElapsedMilliseconds:METHOD:[]:ESCAPED{getElapsedMilliseconds}:
   interval:PROPERTY:[]:ESCAPED{interval} : ESCAPED{Number}:
   isFinished:PROPERTY:[]:ESCAPED{isFinished} : ESCAPED{Boolean}:
   nextEffect:PROPERTY:[]:ESCAPED{nextEffect}:
@@ -225,7 +225,7 @@ Spry.Effect.Cluster:CLASS:[]:ESCAPED{Spry.Effect.Cluster}:
   direction:PROPERTY:[]:ESCAPED{direction}:
   doToggle:METHOD:[]:ESCAPED{doToggle} : ESCAPED{void}:
   effectsArray:PROPERTY:[]:ESCAPED{effectsArray} : ESCAPED{Array}:
-  getNextEffect:METHOD:[]:ESCAPED{getNextEffect} : ESCAPED{void}:
+  getNextEffect:METHOD:[]:ESCAPED{getNextEffect}:
   name:PROPERTY:[]:ESCAPED{name} : ESCAPED{String}:
   options:PROPERTY:[]:ESCAPED{options}:
   reset:METHOD:[]:ESCAPED{reset} : ESCAPED{void}:

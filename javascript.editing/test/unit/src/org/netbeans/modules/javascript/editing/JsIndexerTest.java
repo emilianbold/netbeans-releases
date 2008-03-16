@@ -437,4 +437,8 @@ public class JsIndexerTest extends JsTestBase {
     public void testTypes2() throws Exception {
         checkIndexer("testfiles/types2.js");
     }
+
+    public void testReturnTypes() throws Exception {
+        checkIndexer("testfiles/returntypes.js");
+    }
 }

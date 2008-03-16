@@ -15,8 +15,8 @@ Indexed:
   base : person;;Person;|DOCUMENTED|PROPERTY|;;0;44;;;
   base : pirate;;Pirate;|DOCUMENTED|CONSTRUCTOR|;;0;16f;;;
   base : pirate;;Pirate;|DOCUMENTED|PROPERTY|;;0;140;;;
-  base : say;Person;say;|FUNCTION|;message;0;;;void;
-  base : say;Pirate;say;|DOCUMENTED|FUNCTION|;message;0;1c0;;void;
+  base : say;Person;say;|FUNCTION|;message;0;;;;
+  base : say;Pirate;say;|DOCUMENTED|FUNCTION|;message;0;1c0;;;
   clz : Person;|CONSTRUCTOR|;;0;;;;
   clz : Pirate;|DOCUMENTED|CONSTRUCTOR|;;0;16f;;;
   extend : pirate;Pirate;Person
@@ -24,10 +24,10 @@ Indexed:
   fqn : john;;john;|GLOBAL|;;0;;;Pirate;
   fqn : person.initialize;;Person.initialize;|CONSTRUCTOR|;name;0;;;Person;
   fqn : person.name;;Person.name;|PROPERTY|;;0;;;;
-  fqn : person.say;;Person.say;|FUNCTION|;message;0;;;void;
+  fqn : person.say;;Person.say;|FUNCTION|;message;0;;;;
   fqn : person;;Person;|CONSTRUCTOR|;;0;;;;
   fqn : person;;Person;|DOCUMENTED|PROPERTY|;;0;44;;;
-  fqn : pirate.say;;Pirate.say;|DOCUMENTED|FUNCTION|;message;0;1c0;;void;
+  fqn : pirate.say;;Pirate.say;|DOCUMENTED|FUNCTION|;message;0;1c0;;;
   fqn : pirate;;Pirate;|DOCUMENTED|CONSTRUCTOR|;;0;16f;;;
   fqn : pirate;;Pirate;|DOCUMENTED|PROPERTY|;;0;140;;;
 

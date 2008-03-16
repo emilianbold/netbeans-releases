@@ -5,10 +5,10 @@ Droppables:CLASS:[]:ESCAPED{Droppables}:
   add:METHOD:[]:ESCAPED{add}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
   deactivate:METHOD:[]:ESCAPED{deactivate}(PARAMETERS{ESCAPED{drop}}) : ESCAPED{void}:
   drops:PROPERTY:[]:ESCAPED{drops} : ESCAPED{Array}:
-  findDeepestChild:METHOD:[]:ESCAPED{findDeepestChild}(PARAMETERS{ESCAPED{drops}}) : ESCAPED{void}:
+  findDeepestChild:METHOD:[]:ESCAPED{findDeepestChild}(PARAMETERS{ESCAPED{drops}}):
   fire:METHOD:[]:ESCAPED{fire}(PARAMETERS{ESCAPED{event}, ESCAPED{element}}) : ESCAPED{void}:
-  isAffected:METHOD:[]:ESCAPED{isAffected}(PARAMETERS{ESCAPED{point}, ESCAPED{element}, ESCAPED{drop}}) : ESCAPED{void}:
-  isContained:METHOD:[]:ESCAPED{isContained}(PARAMETERS{ESCAPED{element}, ESCAPED{drop}}) : ESCAPED{void}:
+  isAffected:METHOD:[]:ESCAPED{isAffected}(PARAMETERS{ESCAPED{point}, ESCAPED{element}, ESCAPED{drop}}) : ESCAPED{Boolean}:
+  isContained:METHOD:[]:ESCAPED{isContained}(PARAMETERS{ESCAPED{element}, ESCAPED{drop}}):
   remove:METHOD:[]:ESCAPED{remove}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
   reset:METHOD:[]:ESCAPED{reset} : ESCAPED{void}:
   show:METHOD:[]:ESCAPED{show}(PARAMETERS{ESCAPED{point}, ESCAPED{element}}) : ESCAPED{void}:
@@ -65,7 +65,7 @@ Draggables:CLASS:[]:ESCAPED{Draggables}:
   updateDrag:METHOD:[]:ESCAPED{updateDrag}(PARAMETERS{ESCAPED{event}}) : ESCAPED{void}:
 Draggable:CLASS:[]:ESCAPED{Draggable}:
   Draggable:CONSTRUCTOR:[]:ESCAPED{Draggable}:
-  _getWindowScroll:METHOD:[]:ESCAPED{_getWindowScroll}(PARAMETERS{ESCAPED{w}}) : ESCAPED{void}:
+  _getWindowScroll:METHOD:[]:ESCAPED{_getWindowScroll}(PARAMETERS{ESCAPED{w}}):
   currentDelta:METHOD:[]:ESCAPED{currentDelta} : ESCAPED{Array}:
   delta:PROPERTY:[]:ESCAPED{delta}:
   destroy:METHOD:[]:ESCAPED{destroy} : ESCAPED{void}:
@@ -94,23 +94,23 @@ SortableObserver:CLASS:[]:ESCAPED{SortableObserver}:
   onEnd:METHOD:[]:ESCAPED{onEnd} : ESCAPED{void}:
   onStart:METHOD:[]:ESCAPED{onStart} : ESCAPED{void}:
 Sortable:CLASS:[]:ESCAPED{Sortable}:
-  _constructIndex:METHOD:[]:ESCAPED{_constructIndex}(PARAMETERS{ESCAPED{node}}) : ESCAPED{void}:
-  _findChildrenElement:METHOD:[]:ESCAPED{_findChildrenElement}(PARAMETERS{ESCAPED{element}, ESCAPED{containerTag}}) : ESCAPED{void}:
-  _findRootElement:METHOD:[]:ESCAPED{_findRootElement}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  _tree:METHOD:[]:ESCAPED{_tree}(PARAMETERS{ESCAPED{element}, ESCAPED{options}, ESCAPED{parent}}) : ESCAPED{void}:
+  _constructIndex:METHOD:[]:ESCAPED{_constructIndex}(PARAMETERS{ESCAPED{node}}):
+  _findChildrenElement:METHOD:[]:ESCAPED{_findChildrenElement}(PARAMETERS{ESCAPED{element}, ESCAPED{containerTag}}):
+  _findRootElement:METHOD:[]:ESCAPED{_findRootElement}(PARAMETERS{ESCAPED{element}}):
+  _tree:METHOD:[]:ESCAPED{_tree}(PARAMETERS{ESCAPED{element}, ESCAPED{options}, ESCAPED{parent}}):
   create:METHOD:[]:ESCAPED{create}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
   destroy:METHOD:[]:ESCAPED{destroy}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  findElements:METHOD:[]:ESCAPED{findElements}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}) : ESCAPED{void}:
-  findTreeElements:METHOD:[]:ESCAPED{findTreeElements}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}) : ESCAPED{void}:
+  findElements:METHOD:[]:ESCAPED{findElements}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+  findTreeElements:METHOD:[]:ESCAPED{findTreeElements}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
   mark:METHOD:[]:ESCAPED{mark}(PARAMETERS{ESCAPED{dropon}, ESCAPED{position}}) : ESCAPED{void}:
   onEmptyHover:METHOD:[]:ESCAPED{onEmptyHover}(PARAMETERS{ESCAPED{element}, ESCAPED{dropon}, ESCAPED{overlap}}) : ESCAPED{void}:
   onHover:METHOD:[]:ESCAPED{onHover}(PARAMETERS{ESCAPED{element}, ESCAPED{dropon}, ESCAPED{overlap}}) : ESCAPED{void}:
-  options:METHOD:[]:ESCAPED{options}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  sequence:METHOD:[]:ESCAPED{sequence}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  serialize:METHOD:[]:ESCAPED{serialize}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
+  options:METHOD:[]:ESCAPED{options}(PARAMETERS{ESCAPED{element}}):
+  sequence:METHOD:[]:ESCAPED{sequence}(PARAMETERS{ESCAPED{element}}):
+  serialize:METHOD:[]:ESCAPED{serialize}(PARAMETERS{ESCAPED{element}}):
   setSequence:METHOD:[]:ESCAPED{setSequence}(PARAMETERS{ESCAPED{element}, ESCAPED{new_sequence}}) : ESCAPED{void}:
   sortables:PROPERTY:[]:ESCAPED{sortables}:
-  tree:METHOD:[]:ESCAPED{tree}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
+  tree:METHOD:[]:ESCAPED{tree}(PARAMETERS{ESCAPED{element}}):
   unmark:METHOD:[]:ESCAPED{unmark} : ESCAPED{void}:
 options_for_draggable:CLASS:[]:ESCAPED{options_for_draggable}:
   constraint:PROPERTY:[]:ESCAPED{constraint}:
@@ -146,6 +146,6 @@ root:CLASS:[]:ESCAPED{root}:
   parent:PROPERTY:[]:ESCAPED{parent}:
   position:PROPERTY:[]:ESCAPED{position} : ESCAPED{Number}:
 Element:CLASS:[]:ESCAPED{Element}:
-  findChildren:METHOD:[STATIC]:ESCAPED{findChildren}(PARAMETERS{ESCAPED{element}, ESCAPED{only}, ESCAPED{recursive}, ESCAPED{tagName}}) : ESCAPED{void}:
-  isParent:METHOD:[STATIC]:ESCAPED{isParent}(PARAMETERS{ESCAPED{child}, ESCAPED{element}}) : ESCAPED{void}:
+  findChildren:METHOD:[STATIC]:ESCAPED{findChildren}(PARAMETERS{ESCAPED{element}, ESCAPED{only}, ESCAPED{recursive}, ESCAPED{tagName}}):
+  isParent:METHOD:[STATIC]:ESCAPED{isParent}(PARAMETERS{ESCAPED{child}, ESCAPED{element}}):
   offsetSize:METHOD:[STATIC]:ESCAPED{offsetSize}(PARAMETERS{ESCAPED{element}, ESCAPED{type}}) : ESCAPED{void}:

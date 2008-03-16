@@ -1954,7 +1954,9 @@ public class JsCodeCompletion implements Completable {
             }
             formatter.appendHtml(")"); // NOI18N
 
-            if (indexedElement != null && indexedElement.getType() != null && indexedElement.getType() != Node.UNKNOWN_TYPE) {
+            if (indexedElement != null && indexedElement.getType() != null && 
+                    indexedElement.getType() != Node.UNKNOWN_TYPE &&
+                    indexedElement.getKind() != ElementKind.CONSTRUCTOR) {
                 formatter.appendHtml(" : ");
                 formatter.appendText(indexedElement.getType());
             }
