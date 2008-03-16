@@ -77,10 +77,9 @@ import org.netbeans.modules.form.layoutdesign.*;
 import org.netbeans.modules.form.layoutdesign.LayoutConstants.PaddingType;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 import org.netbeans.modules.form.palette.PaletteUtils;
+import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 
 
 /**
@@ -256,10 +255,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             addPropertyChangeListener("activatedNodes", new PropertyChangeListener() { // NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
                     try {
-                        if (formEditor == null) {
-                            // Lazy synchronization of already closed form - issue 129877
-                            return;
-                        }
                         Lookup[] lookups = lookup.getSubLookups();
                         Node[] oldNodes = (Node[])evt.getOldValue();
                         Node[] nodes = (Node[])evt.getNewValue();
@@ -323,14 +318,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     void reset(FormEditor formEditor) {
-        if (menuEditLayer != null) {
-            menuEditLayer.hideMenuLayer();
-            menuEditLayer = null;
-        }
-                
         if (initialized) {
             clearSelection();
-            explorerManager.setRootContext(new AbstractNode(Children.LEAF));
         }
         initialized = false;
 
@@ -348,6 +337,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             textEditLayer=null;               
         }
         
+        if(menuEditLayer!=null) {
+            menuEditLayer = null;
+        }
+                
         if (formModel != null) {
             if (formModelListener != null) {
                 formModel.removeFormModelListener(formModelListener);                
@@ -1753,10 +1746,16 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     @Override
     public void componentClosed() {
         super.componentClosed();
-        // Closed FormDesigner is not going to be reused.
-        // Clear all references to prevent memory leaks - even if FormDesigner
-        // is kept for some reason, make sure FormModel is not held from it.
-        reset(null);
+        if (formModel != null) {
+            if (formModelListener != null) {
+                formModel.removeFormModelListener(formModelListener);
+            }
+            if (settingsListener != null) {
+                FormLoaderSettings.getPreferences().removePreferenceChangeListener(settingsListener);
+            }
+            topDesignComponent = null;
+            formModel = null;
+        }
     }
 
     @Override

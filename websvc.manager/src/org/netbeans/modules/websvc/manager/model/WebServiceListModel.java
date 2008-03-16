@@ -354,8 +354,6 @@ public class WebServiceListModel {
                 manager.setImported(false);
                 manager.load();
                 WsdlUtil.markImportProcessed();
-            } else {
-                manager.load();
             }
             
             // TODO doesn't do anything useful yet

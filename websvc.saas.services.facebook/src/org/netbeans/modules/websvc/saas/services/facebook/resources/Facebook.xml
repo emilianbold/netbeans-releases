@@ -50,8 +50,8 @@
                api-doc="http://wiki.developers.facebook.com/index.php/API"
                url="org/netbeans/modules/websvc/saas/services/facebook/resources/FacebookWadl.xml">
     
-    <description>Social Networking Service</description>
-    <display-name>Social Networking Service</display-name>
+    <description>Facebook Service</description>
+    <display-name>Facebook</display-name>
     
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.facebook.Bundle</localizing-bundle>

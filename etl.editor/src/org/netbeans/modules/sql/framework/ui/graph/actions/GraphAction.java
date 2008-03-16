@@ -46,7 +46,7 @@ import java.util.HashMap;
 import net.java.hulp.i18n.Logger;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * @author Ritesh Adval
@@ -56,7 +56,7 @@ public abstract class GraphAction extends AbstractAction {
 
     /* log4j logger category */
     private static final String LOG_CATEGORY = GraphAction.class.getName();
-    private static transient final Logger mLogger = Logger.getLogger(GraphAction.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(GraphAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private static HashMap actionMap = new HashMap();
 
@@ -88,9 +88,9 @@ public abstract class GraphAction extends AbstractAction {
             action = (GraphAction) actionClass.newInstance();
             actionMap.put(actionClass, action);
         } catch (InstantiationException e1) {
-            mLogger.errorNoloc(mLoc.t("EDIT138: Error creating instance of action{0}", actionClass.getName()), e1);
+            mLogger.errorNoloc(mLoc.t("PRSR138: Error creating instance of action{0}", actionClass.getName()), e1);
         } catch (IllegalAccessException e2) {
-            mLogger.errorNoloc(mLoc.t("EDIT138: Error creating instance of action{0}", actionClass.getName()), e2);
+            mLogger.errorNoloc(mLoc.t("PRSR139: Error creating instance of action{0}", actionClass.getName()), e2);
         }
 
         return action;

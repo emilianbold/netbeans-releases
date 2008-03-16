@@ -246,15 +246,14 @@ class JbiViews {
                 }
             } else if (key == KEY_SVC_COMP_NODE) {
                 n = ServiceCompositionNode.createServiceCompositionNode((JbiProject) project);
-                if (n != null) {
-                    n.addNodeListener(new NodeAdapter() {
+                n.addNodeListener(new NodeAdapter() {
 
-                        @Override
-                        public void nodeDestroyed(NodeEvent ev) {
-                            refreshKey(KEY_SVC_COMP_NODE);
-                        }
-                    });
-                }
+                    @Override
+                    public void nodeDestroyed(NodeEvent ev) {
+                        System.err.println("XXXXXXXXXX ServiceCompositionNode getting destroyed");
+                        refreshKey(KEY_SVC_COMP_NODE);
+                    }
+                });
             }
             
             return (n == null) ? new Node[0] : new Node[] {n};

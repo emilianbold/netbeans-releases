@@ -88,6 +88,7 @@ import org.openide.NotifyDescriptor;
 import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DatabaseModel;
 
 /**
@@ -97,7 +98,7 @@ import org.netbeans.modules.sql.framework.model.DatabaseModel;
  * @version $Revision$
  */
 public class TablePanel extends JPanel {
-    private static transient final Logger mLogger = Logger.getLogger(TablePanel.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(TablePanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     class ActionAdapter implements ActionListener {
@@ -879,17 +880,17 @@ public class TablePanel extends JPanel {
 
         ActionAdapter aAdapter = new ActionAdapter();
 
-        String nbBundle1 = mLoc.t("BUND151: Add");
-        JButton addColumnButton = new JButton(nbBundle1.substring(15));
-        addColumnButton.getAccessibleContext().setAccessibleName(nbBundle1.substring(15));
+        String nbBundle1 = mLoc.t("PRSR001: Add");
+        JButton addColumnButton = new JButton(Localizer.parse(nbBundle1));
+        addColumnButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle1));
         addColumnButton.setActionCommand("Add");
-        addColumnButton.setMnemonic(nbBundle1.substring(15).charAt(0));
+        addColumnButton.setMnemonic(Localizer.parse(nbBundle1).charAt(0));
         addColumnButton.addActionListener(aAdapter);
-        String nbBundle2 = mLoc.t("BUND152: Remove");
-        JButton removeColumnButton = new JButton(nbBundle2.substring(15));
-        removeColumnButton.getAccessibleContext().setAccessibleName(nbBundle2.substring(15));
+        String nbBundle2 = mLoc.t("PRSR001: Remove");
+        JButton removeColumnButton = new JButton(Localizer.parse(nbBundle2));
+        removeColumnButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle2));
         removeColumnButton.setActionCommand("Remove");
-        removeColumnButton.setMnemonic(nbBundle2.substring(15).charAt(0));
+        removeColumnButton.setMnemonic(Localizer.parse(nbBundle2).charAt(0));
         removeColumnButton.addActionListener(aAdapter);
 
         tableButtonPanel.add(addColumnButton);

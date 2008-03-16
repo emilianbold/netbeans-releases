@@ -433,24 +433,28 @@ public final class ClassIndex {
         final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
         List<ClassPath.Entry> entries = cp.entries();
 	for (ClassPath.Entry entry : entries) {
-            URL[] srcRoots;
-            if (!sources) {
-                srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, true);                        
-                if (srcRoots == null) {
+	    try {
+                URL[] srcRoots;
+                if (!sources) {
+                    srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, true);                        
+                    if (srcRoots == null) {
+                        srcRoots = new URL[] {entry.getURL()};
+                    }
+                }
+                else {
                     srcRoots = new URL[] {entry.getURL()};
+                }                
+                for (URL srcRoot : srcRoots) {
+                    oldState.add (srcRoot);
+                    ClassIndexImpl ci = ClassIndexManager.getDefault().getUsagesQuery(srcRoot);
+                    if (ci != null) {
+                        ci.addClassIndexImplListener(spiListener);
+                        queries.add (ci);
+                    }
                 }
-            }
-            else {
-                srcRoots = new URL[] {entry.getURL()};
-            }                
-            for (URL srcRoot : srcRoots) {
-                oldState.add (srcRoot);
-                ClassIndexImpl ci = ClassIndexManager.getDefault().getUsagesQuery(srcRoot);
-                if (ci != null) {
-                    ci.addClassIndexImplListener(spiListener);
-                    queries.add (ci);
-                }
-            }	    
+	    } catch (IOException ioe) {
+		Exceptions.printStackTrace(ioe);
+	    }
 	}
     }
     

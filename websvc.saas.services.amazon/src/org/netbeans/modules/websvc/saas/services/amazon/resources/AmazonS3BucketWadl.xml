@@ -56,11 +56,11 @@
             
             This is a single WADL method for a all 3 methods of Amazon S3 services.
         -->	
-        <resource path="{bucket}.s3.amazonaws.com" id="amazons3.bucket">
+        <resource path="{bucket}.s3.amazonaws.com/" id="amazons3.bucket">
             
             <param name="bucket" type="xsd:string" style="template" required="true"/>
             
-            <method name="GET" id="getBucket">
+            <method name="GET" id="amazons3.getBucket">
                 <request>
                     <param name="Authorization" type="xsd:string" style="header" required="true"/>
                 </request>
@@ -69,7 +69,7 @@
                 </response>
             </method>
             
-            <method name="GET" id="getLocation">
+            <method name="GET" id="amazons3.getLocation">
                 <request>
                     <param name="Authorization" type="xsd:string" style="header" required="true"/>
                     <param name="location" type="xsd:string" style="query" required="true"/>
@@ -79,7 +79,7 @@
                 </response>
             </method>
 
-            <method name="PUT" id="setAcl">
+            <method name="PUT" id="amazons3.setAcl">
                 <request>
                     <param name="Authorization" type="xsd:string" style="header" required="true"/>
                     <param name="acl" type="xsd:string" style="query" required="true"/>
@@ -90,9 +90,9 @@
                 </response>
             </method>
             
-            <resource path="{object}" id="amazons3.object">
+            <resource path="{object}/" id="amazons3.object">
                 <param name="object" type="xsd:string" style="template" required="true"/>
-                <method name="GET" id="getObject">
+                <method name="GET" id="amazons3.getObject">
                     <request>
                         <param name="Authorization" type="xsd:string" style="header" required="true"/>
                     </request>
@@ -100,7 +100,7 @@
                         <representation mediaType="*/*"/>
                     </response>
                 </method>
-                <method name="PUT" id="putObject">
+                <method name="PUT" id="amazons3.putObject">
                     <request>
                         <param name="Authorization" type="xsd:string" style="header" required="true"/>
                         <representation mediaType="*/*"/>
@@ -109,7 +109,7 @@
                         <representation mediaType="*/*"/>
                     </response>
                 </method>
-                <method name="DELETE" id="deleteObject">
+                <method name="DELETE" id="amazons3.deleteObject">
                     <request>
                         <param name="Authorization" type="xsd:string" style="header" required="true"/>
                     </request>

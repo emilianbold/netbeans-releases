@@ -52,40 +52,39 @@ import org.openide.util.Lookup;
  */
 public class EditorOptionsPanelController extends OptionsPanelController {
     private EditorPropertySheet panel;
-    private static final boolean TRACE = false;
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
 
     
     public EditorOptionsPanelController(){
-        if (TRACE) System.out.println("EditorOptionsPanelController.ctor()"); // NOI18N
+        //System.out.println("EditorOptionsPanelController.ctor()");
          panel = new EditorPropertySheet(this);
     }
     
     public void update() {
-        if (TRACE) System.out.println("EditorOptionsPanelController.update()"); // NOI18N
+        //System.out.println("EditorOptionsPanelController.update()");
         changed = false;
 	panel.load();
     }
     
     public void applyChanges() {
-        if (TRACE) System.out.println("EditorOptionsPanelController.applyChanges()"); // NOI18N
+        //System.out.println("EditorOptionsPanelController.applyChanges()");
 	panel.store();
     }
     
     public void cancel() {
-        if (TRACE) System.out.println("EditorOptionsPanelController.cancel()"); // NOI18N
+        //System.out.println("EditorOptionsPanelController.cancel()");
 	panel.cancel();
     }
     
     public boolean isValid() {
-        if (TRACE) System.out.println("EditorOptionsPanelController.isValid()"); // NOI18N
+        //System.out.println("EditorOptionsPanelController.isValid()");
         return true;
     }
     
     public boolean isChanged() {
-        if (TRACE) System.out.println("EditorOptionsPanelController.isChanged()"); // NOI18N
+        //System.out.println("EditorOptionsPanelController.isChanged()");
 	return changed;
     }
 

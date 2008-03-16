@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import org.dom4j.Attribute;
 import org.dom4j.Branch;
 import org.dom4j.Document;
 import org.dom4j.DocumentFactory;
@@ -56,18 +55,10 @@ import org.dom4j.Element;
 import org.openide.util.Exceptions;
 import org.dom4j.Node;
 import org.dom4j.dom.DOMDocumentFactory;
-import org.dom4j.tree.DefaultDocument;
-import org.dom4j.tree.NodeListener;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
@@ -1039,21 +1030,13 @@ public class UMLXMLManip
    public static List getAllAffectedElements(Node doc, String xmiid)
    {
       List retList = null;
-      if (doc != null && doc.getDocument() != null 
-          && rrIndexes.get(doc.getDocument()) != null) 
-      {
-          retList = rrIndexes.get(doc.getDocument()).getByKey(xmiid);
-      } 
-      else
-      {
-          // This query checks every XML attribute to see if
-          // the value of that XML attribute contains a string
-          // that matches xmiID
-          String query = "//@*[contains( ., '";
-          query += xmiid;
-          query += "')]";
-          retList = XMLManip.selectNodeList(doc, query);
-      }
+      // This query checks every XML attribute to see if
+      // the value of that XML attribute contains a string
+      // that matches xmiID
+      String query = "//@*[contains( ., '";
+      query += xmiid;
+      query += "')]";
+      retList = XMLManip.selectNodeList(doc, query);
       return retList;
    }
 
@@ -1101,190 +1084,6 @@ public class UMLXMLManip
          }
       }
    }
-
-
-   /**
-    *  an index machinery for search in replaceReferences getAllAffectedElements() call
-    */
-   private static HashMap<DefaultDocument, RRIndex> rrIndexes = new HashMap<DefaultDocument, RRIndex>(); 
-
-
-   public static void replaceReferencesIndexCreate(Document doc)
-   {
-       if ( ! (doc instanceof DefaultDocument)) 
-       {
-           return;
-       }
-       DefaultDocument dd = (DefaultDocument)doc;
-       RRIndex l = rrIndexes.get(dd);
-       if (l == null) 
-       {
-           l = new RRIndex(dd);
-           dd.addNodeListener(l);
-           rrIndexes.put(dd, l);
-       }
-   }
-    
-
-   public static void replaceReferencesIndexDrop(Document doc)
-   {
-       if ( ! (doc instanceof DefaultDocument)) 
-       {
-           return;
-       }
-       DefaultDocument dd = (DefaultDocument)doc;
-       RRIndex l = rrIndexes.get(dd);
-       if (l != null) 
-       {
-           dd.removeNodeListener(l);
-           rrIndexes.remove(dd);
-       }
-   }
-
-
-    public static class RRIndex implements NodeListener {
-        
-        private HashMap<String, Set<Attribute>> indexed = new HashMap<String, Set<Attribute>>();
-        private HashMap<Attribute, Set<String>> reversed = new HashMap<Attribute, Set<String>>();
-        Pattern pattern = Pattern.compile("(DCE\\.[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})");
-
-        public RRIndex(Document doc) 
-        {
-            childAdded(null, doc.getRootElement(), true);
-        }
-
-        public List<Element> getByKey(String key) 
-        {
-            Set<Attribute> els = indexed.get(key);
-            return new ArrayList(els != null ? els : new HashSet<Attribute>());            
-        } 
-
-        public void childAdded(Node parent, Node n, boolean subtree) 
-        {
-            if (n instanceof Element) {
-                Element el = (Element)n;
-                update(el, true);
-                if (subtree) 
-                {
-                    List children = el.elements();
-                    if (children != null) 
-                    {
-                        for (int i = 0; i < children.size(); i++) 
-                        {
-                            Node child = (Node) children.get(i);
-                            if (child instanceof Element) 
-                            {                                
-                                update((Element)child, true);
-                                childAdded(el, child, true); 
-                            }
-                        }
-                    }
-                }                
-            }
-        }
-
-        public void childRemoved(Node parent, Node n, boolean subtree)
-        {
-            if (n instanceof Element) {
-                Element el = (Element)n;
-                update(el, false);
-                if (subtree) 
-                {
-                    List children = el.elements();
-                    if (children != null) 
-                    {
-                        for (int i = 0; i < children.size(); i++) 
-                        {
-                            Node child = (Node) children.get(i);
-                            if (child instanceof Element) 
-                            {
-                                update((Element)child, false);
-                                childRemoved(el, child, true); 
-                            }
-                        }
-                    }
-                }                
-            }
-
-        }
-
-        public void nodeModified(Node n)
-        {
-            if (n instanceof Element) 
-            {
-                update((Element)n, true);
-            } 
-            else if (n instanceof Attribute)
-            {
-                update(n.getParent(), true);
-            }
-        }
-        
-        private void update(Element el, boolean toAdd) 
-        {
-            Iterator attrs = el.attributeIterator();
-            if (attrs != null) 
-            {
-                while(attrs.hasNext()) 
-                {
-                    Object next = attrs.next();
-                    if (next instanceof Attribute) 
-                    {
-                        Attribute attr = (Attribute)next;
-                        Set<String> rm = reversed.get(attr);
-                        if (rm != null) 
-                        {
-                            for(String key : rm) 
-                            {
-                                Set<Attribute> els = indexed.get(key);
-                                if (els != null) 
-                                {
-                                    els.remove(attr);
-                                    if (els.size() == 0) 
-                                    {
-                                        indexed.remove(key);
-                                    }
-                                }
-                            }
-                            reversed.remove(attr);
-                        }
-                        if (! toAdd) 
-                        {
-                            continue;
-                        }
-                        String value = attr.getValue();
-                        if (value != null) 
-                        {
-                            Matcher m = pattern.matcher(value);
-                            int start = 0;
-                            while(m.find(start)) 
-                            {
-                                String id = value.substring(m.start(), m.end());
-                                start = m.end();
-                                Set<Attribute> els = indexed.get(id);
-                                if (els == null) 
-                                {
-                                    els = new HashSet<Attribute>();
-                                    indexed.put(id, els);
-                                }
-                                els.add(attr);
-                                Set<String> keys = reversed.get(attr);
-                                if (keys == null) 
-                                {
-                                    keys = new HashSet<String>();
-                                    reversed.put(attr, keys);
-                                }
-                                keys.add(id);
-                            }
-                        }
-                    }
-                }
-            }                                
-        }
-        
-    }
-
-
 
    /**
     *

@@ -42,11 +42,10 @@
 
 package gui.actions;
 
-import java.awt.event.InputEvent;
 import java.io.File;
 
-
 import javax.swing.tree.TreePath;
+
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -99,24 +98,20 @@ public class CreateClassDiagramFromMultipleNodes extends org.netbeans.performanc
    
     public void prepare() {
         log(":: prepare");
-
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
-        Node diag1 = new Node(pNode,"Model|org|gjt|sp|jedit|gui|AbbrevEditor");        
-        Node diag2 = new Node(pNode,"Model|org|gjt|sp|jedit|gui|ViewRegisters");        
+        diag = new Node(pNode,"Model"+"|"+"org"+"|"+"gjt"+"|"+"sp"+"|"+"jedit"+"|"+"gui"+"|"+testDiagramName);
+        diag.select();
+        new EventTool().waitNoEvent(1000);
         JTreeOperator projectTree = new ProjectsTabOperator().tree();
-
-        TreePath path1 = diag1.getTreePath();
-        TreePath path2 = diag2.getTreePath();
-        
-        projectTree.clickOnPath(path1, 1, InputEvent.BUTTON1_MASK);
-        new EventTool().waitNoEvent(500);
-        projectTree.clickOnPath(path2, 1, InputEvent.BUTTON1_MASK, InputEvent.SHIFT_MASK);
-        new EventTool().waitNoEvent(500);
-        projectTree.clickOnPath(path2, 1, InputEvent.BUTTON3_MASK);
-
-        JPopupMenuOperator selectMenu = new JPopupMenuOperator();
  
-        selectMenu.pushMenu("Create Diagram From Selected Elements");
+        TreePath[] arrTreePath ;
+        arrTreePath=new TreePath[40] ;
+        for (int i=0; i<arrTreePath.length ;i++) {
+        arrTreePath[i]=projectTree.getPathForRow(22+i);
+    }  
+         projectTree.callPopupOnPaths(arrTreePath);   
+         JPopupMenuOperator selectMenu = new JPopupMenuOperator();
+         selectMenu.pushMenu("Create Diagram From Selected Elements");
 
         create_diag = new NbDialogOperator("Create New Diagram");
         new EventTool().waitNoEvent(1000);
@@ -130,10 +125,10 @@ public class CreateClassDiagramFromMultipleNodes extends org.netbeans.performanc
     public ComponentOperator open() {
         log("::open");
  
-        JButtonOperator finishButton = new JButtonOperator(create_diag,"Finish");
+       JButtonOperator finishButton = new JButtonOperator(create_diag,"Finish");
         finishButton.push();
 
-        return null;
+         return null;
     }
     
     protected void shutdown() {
@@ -145,9 +140,9 @@ public class CreateClassDiagramFromMultipleNodes extends org.netbeans.performanc
 
     public void close(){
         log("::close");
-        new CloseAllDocumentsAction().performAPI(); 
+     new CloseAllDocumentsAction().performAPI();
+ 
     } 
-    
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new CreateClassDiagramFromMultipleNodes("measureTime"));
     }      

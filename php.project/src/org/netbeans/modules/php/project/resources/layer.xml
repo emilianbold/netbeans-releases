@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
   The Original Software is NetBeans. The Initial Developer of the Original
-  Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
   Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -44,24 +44,7 @@ made subject to such option by the copyright holder.
 
 <filesystem>
     <folder name="Templates">
-        <folder name="Project">
-            <folder name="PHP">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
-                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpDescription.html"/>
-                <attr name="position" intvalue="520"/>
-                
-                <file name="PHPProject.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/index.php">
-                    <attr name="position" intvalue="100"/>
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewPhpProjectWizardIterator"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpProject.png"/>
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPhpProject.html"/>
-                </file>
-
-            </folder>
-        </folder>
-        <!--folder name="Scripting">
+        <folder name="Scripting">
             <attr name="position" intvalue="20"/>
             
             <file name="EmptyPHP.php" url="nbresloc:/org/netbeans/modules/php/project/resources/EmptyPHP.php">
@@ -70,11 +53,33 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/resources/EmptyPHPFileDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
             </file>
-        </folder-->
+        </folder>
+        <folder name="Project">
+            <folder name="PHP">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.wizards.Bundle"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/resources/phpdescr.html"/>
+                <attr name="position" intvalue="520"/>
+                
+                <file name="PHPProject.php" url="nbresloc:/org/netbeans/modules/php/project/templates/index.php">
+                    <attr name="position" intvalue="100"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateWizardIterator" 
+                          newvalue="org.netbeans.modules.php.project.wizards.NewPhpProjectWizardIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" 
+                          stringvalue="org.netbeans.modules.php.project.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" 
+                          urlvalue="nbresloc:/org/netbeans/modules/php/project/resources/php_project.png"/>
+                    <attr name="templateWizardURL" 
+                          urlvalue="nbresloc:/org/netbeans/modules/php/project/resources/PHPProject.html"/>
+                    <attr name="templateCategory" stringvalue="PHP"/>
+                </file>
+
+            </folder>
+        </folder>
         
     </folder>
 
-    <!--folder name="OptionsDialog">
+    <folder name="OptionsDialog">
         <folder name="Advanced">
             <file name="ActionsPanel.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.options.ActionsOptionsContainerPanel"/>
@@ -92,7 +97,7 @@ made subject to such option by the copyright holder.
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.options.ProjectActionsOptions"/>
             </file>
         </folder>
-    </folder-->
+    </folder>
     
 <!-- separate php category was moved into misclleaneous as one php panel
     <folder name="OptionsDialog">

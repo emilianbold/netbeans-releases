@@ -431,12 +431,6 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
             observer.setDropSuccess(success);
             evt.dropComplete(false);
             //evt.dropComplete(success);
-            SwingUtilities.invokeLater( new Runnable() {
-                public void run() {
-                    windowDragAndDrop.dragFinished();
-                    windowDragAndDrop.dragFinishedEx();
-                }
-            });
         }
     }
     // >> DropTargetListener implementation >>

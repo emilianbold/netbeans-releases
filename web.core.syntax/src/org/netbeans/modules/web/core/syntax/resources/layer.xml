@@ -197,10 +197,7 @@ made subject to such option by the copyright holder.
                 
                 <file name="Settings.settings" url="../settings/JSPOptions.settings"/>
                 <file name="EditorKit.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.syntax.JSPKit.createKitForJsp"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JSPKit"/>
-                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.web.core.syntax.JSPKit"/>
-                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 <folder name="Popup">
                     
@@ -315,10 +312,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 
                 <file name="EditorKit.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.syntax.JSPKit.createKitForTag"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JSPKit"/>
-                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.web.core.syntax.JSPKit"/>
-                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 
                 <folder name="CompletionProviders">

@@ -96,10 +96,4 @@ public abstract class ExpressionImpl extends BpelEntityImpl implements Expressio
     
     private static AtomicReference<Attribute[]> myAttributes = 
         new AtomicReference<Attribute[]>();
-    
-    @Override
-    public String toString() {
-        return getContent().trim();
-    }
-    
 }

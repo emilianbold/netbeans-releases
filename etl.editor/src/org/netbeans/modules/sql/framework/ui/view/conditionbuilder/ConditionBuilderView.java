@@ -64,7 +64,7 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * @author Ritesh Adval
@@ -72,7 +72,7 @@ import org.netbeans.modules.etl.logger.Localizer;
  */
 public class ConditionBuilderView extends JPanel implements EnhancedCustomPropertyEditor {
 
-    private static transient final Logger mLogger = Logger.getLogger(ConditionBuilderView.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ConditionBuilderView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     private class TabChangeAdapter implements ChangeListener {
@@ -90,11 +90,11 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
             }
 
             Component selComp = rightPanel.getSelectedComponent();
-            String nbBundle1 = mLoc.t("BUND387: Failed to synchronize graph with SQL code - check if condition is valid in text mode.");
+            String nbBundle1 = mLoc.t("PRSR001: Failed to synchronize graph with SQL code - check if condition is valid in text mode.");
             if (selComp instanceof ConditionBuilderRightPanel) {
                 if (trySync && !ConditionBuilderView.this.synchronizeGraphView()) {
                     DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(nbBundle1.substring(15),
+                            new NotifyDescriptor.Message(Localizer.parse(nbBundle1),
                             NotifyDescriptor.INFORMATION_MESSAGE));
                     trySync = false;
                     rightPanel.setSelectedComponent(rightTextPanel);
@@ -106,11 +106,11 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
                 rightGraphPanel1.setModifiable(!rightTextPanel.isDirty());
                 ConditionBuilderView.this.condContainerObj.setGuiMode(SQLCondition.GUIMODE_GRAPHICAL);
             } else if (selComp instanceof ConditionBuilderExpRightPanel) {
-                String nbBundle2 = mLoc.t("BUND388: Failed to synchronize SQL code with graphical mode - check if condition is valid in graphical mode.");
+                String nbBundle2 = mLoc.t("PRSR001: Failed to synchronize SQL code with graphical mode - check if condition is valid in graphical mode.");
                 if (trySync && !ConditionBuilderView.this.synchronizeSQLCodeView()) {
                     DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor.Message(
-                           nbBundle2.substring(15),
+                           Localizer.parse(nbBundle2),
                             NotifyDescriptor.INFORMATION_MESSAGE));
                     trySync = false;
                     rightPanel.setSelectedComponent(rightGraphPanel);
@@ -155,7 +155,7 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
         try {
             condContainerObj = (SQLCondition) cond.cloneSQLObject();
         } catch (CloneNotSupportedException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT514: error cloning the condition{0}", LOG_CATEGORY), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR156: error cloning the condition{0}", LOG_CATEGORY), ex);
             return;
         }
     }
@@ -187,10 +187,10 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
         // When user exit find out the currently selected mode
         // then try to synchronize other mode
         boolean result = setGuiMode();
-        String nbBundle3 = mLoc.t("BUND389: The condition is not valid. Make sure you correct it.");
+        String nbBundle3 = mLoc.t("PRSR001: The condition is not valid. Make sure you correct it.");
         if (showError && !result) {
             DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(nbBundle3.substring(15),
+                    new NotifyDescriptor.Message(Localizer.parse(nbBundle3),
                     NotifyDescriptor.WARNING_MESSAGE));
         }
 
@@ -242,7 +242,7 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
                 }
             } else {
                 // Ignore this safely
-                mLogger.errorNoloc(mLoc.t("EDIT515: Exception occurred while parsing condition{0}", LOG_CATEGORY), ex);
+                mLogger.errorNoloc(mLoc.t("PRSR157: Exception occurred while parsing condition{0}", LOG_CATEGORY), ex);
             }
         }
 

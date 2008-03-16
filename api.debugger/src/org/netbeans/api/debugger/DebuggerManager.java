@@ -310,9 +310,6 @@ public final class DebuggerManager implements ContextProvider {
                 //S ystem.out.println("@  StartDebugging DelegaingSession: " + s);
             } else {
                 SessionProvider sp = (SessionProvider) sessionProviders.get (i);
-                if (sp.getSessionName() == null) throw new NullPointerException("<null> session name provided by: "+sp);
-                if (sp.getTypeID() == null) throw new NullPointerException("<null> type ID provided by: "+sp);
-                if (sp.getServices() == null) throw new NullPointerException("<null> services provided by: "+sp);
                 s = new Session (
                     sp.getSessionName (),
                     sp.getLocationName (),

@@ -22,7 +22,6 @@ import java.util.List;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.logging.tree.AlertItem;
 import org.netbeans.modules.bpel.mapper.logging.tree.LogItem;
-import org.netbeans.modules.bpel.mapper.logging.tree.LoggingTreeItem;
 import org.netbeans.modules.bpel.mapper.model.BpelModelUpdater;
 import org.netbeans.modules.bpel.mapper.model.GraphInfoCollector;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
@@ -40,8 +39,6 @@ import org.netbeans.modules.bpel.model.ext.logging.api.Log;
 import org.netbeans.modules.bpel.model.ext.logging.api.LogLevel;
 import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
 import org.netbeans.modules.soa.mappercore.model.Graph;
-import org.netbeans.modules.soa.mappercore.model.Link;
-import org.netbeans.modules.soa.mappercore.model.Vertex;
 
 /**
  * 
@@ -121,6 +118,14 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
         GraphInfoCollector graphInfo = new GraphInfoCollector(graph);
         BpelModel bpelModel = extensibleElement.getBpelModel();
         
+        //
+        //
+        // Create BPEL ForEach structures
+        //
+        Object rightTreeDO = MapperSwingTreeModel.getDataObject(rightTreePath);
+
+        Expression bpelExpr = null;
+
         Trace trace = getTrace(extensibleElement);
         if (trace == null) {
             return;
@@ -128,13 +133,14 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
         // 125695
         // remove trace if there is not content
         if (graph.isEmpty()) {
-            removeEmptyGraph(trace, rightTreePath);
-            return;
+            BpelContainer parent = trace.getParent();
+            if (parent != null) {
+                parent.remove(trace);
+            }
+            getMapperModel().deleteGraph(rightTreePath); // Remove empty graph !!!
+            return; // NOTHING TO DO FURTHER
         }
-
-        Object rightTreeDO = MapperSwingTreeModel.getDataObject(rightTreePath);
-        Expression bpelExpr = null;
-
+                
         if (rightTreeDO instanceof LogItem) {
             LogLevel level = ((LogItem)rightTreeDO).getLevel();
             Location location = ((LogItem)rightTreeDO).getLocation();
@@ -185,39 +191,6 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
         //
         // Populate 
         populateContentHolder(bpelExpr, graphInfo);
-    }
-
-    // todo m
-    private void removeEmptyGraph(Trace trace, TreePath rightTreePath ) {
-        assert trace != null;
-        assert rightTreePath != null;
-        
-        Object rightTreeDO = MapperSwingTreeModel.getDataObject(rightTreePath);
-
-        if (rightTreeDO instanceof LogItem) {
-            LogLevel level = ((LogItem)rightTreeDO).getLevel();
-            Location location = ((LogItem)rightTreeDO).getLocation();
-            Log rightLog = findLog(trace, location, level);
-            if (rightLog != null) {
-                trace.remove(rightLog);
-            }
-        } else if (rightTreeDO instanceof AlertItem) {
-            AlertLevel level = ((AlertItem)rightTreeDO).getLevel();
-            Location location = ((AlertItem)rightTreeDO).getLocation();
-            Alert rightAlert = findAlert(trace, location, level);
-            if (rightAlert != null) {
-                trace.remove(rightAlert);
-            }
-        }
-
-        List<BpelEntity> traceChildren = trace.getChildren();
-        if (traceChildren == null || traceChildren.isEmpty()) {
-            BpelContainer parent = trace.getParent();
-            if (parent != null) {
-                parent.remove(trace);
-            }
-        }
-        getMapperModel().deleteGraph(rightTreePath); // Remove empty graph !!!
     }
     
     private Trace getTrace(ExtensibleElements extensibleElement) {

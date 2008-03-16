@@ -242,10 +242,7 @@ public class ModeStructureSnapshot {
                 if(child.hasVisibleDescendant()) {
                     count++;
                     // At leas two are needed so the split is showing.
-                    if(count >= 2 
-                            //#124847
-                            || (Constants.SWITCH_HIDE_EMPTY_DOCUMENT_AREA 
-                                && getParent() == null && count==1)) {
+                    if(count >= 2) {
                         return true;
                     }
                 }

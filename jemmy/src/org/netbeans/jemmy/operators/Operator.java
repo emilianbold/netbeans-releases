@@ -1056,8 +1056,8 @@ public abstract class Operator extends Object
 
 	/**
          * Constructs a DefaultStringComparator object.
-	 * @param ce Compare exactly. If false, text can be a substring of caption.
-	 * @param ccs Compare case sensitively.
+	 * @param ce Compare exactly. If true, text can be a substring of caption.
+	 * @param ccs Compare case sensitively. If true, both text and caption are 
 	 */
 	public DefaultStringComparator(boolean ce, boolean ccs) {
 	    this.ce = ce;

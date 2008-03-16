@@ -57,6 +57,7 @@ import java.awt.image.RescaleOp;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.GrayFilter;
 import javax.swing.ImageIcon;
@@ -65,6 +66,7 @@ import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.openide.util.Utilities;
 
@@ -78,6 +80,15 @@ public abstract class CasaPinWidget extends ErrableWidget {
     public enum AnchorScheme {
         HORIZONTAL, LEFT, RIGHT, VERTICAL, TOP, BOTTOM
     };
+
+    protected static final Image IMAGE_ARROW_LEFT_PROVIDES = Utilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/providesLeft.png"); // NOI18N
+    protected static final Image IMAGE_ARROW_RIGHT_CONSUMES = Utilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/consumesRight.png"); // NOI18N
+    protected static final Image IMAGE_ARROW_RIGHT_PROVIDES = Utilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/providesRight.png"); // NOI18N
+    protected static final Image IMAGE_ARROW_LEFT_CONSUMES = Utilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/consumesLeft.png"); // NOI18N
     
     protected ImageWidget mImageWidget;
     
@@ -89,36 +100,21 @@ public abstract class CasaPinWidget extends ErrableWidget {
     private Image mUnHighlightedImage;
     private GrayFilter mPinGrayFilter = new GrayFilter(true, 20);
     
-    private Image mPinImage;
-    private Image mClassicPinImage;
     
     /**
      * Creates a pin widget.
      * @param scene the scene
      */
-    public CasaPinWidget(Scene scene, Image pinImage, Image classicPinImage) {
+    public CasaPinWidget(Scene scene) {
         super (scene);
         
-        mPinImage = pinImage;
-        mClassicPinImage = classicPinImage;
-        
         mImageWidget = new ImageWidget(scene);
-        mImageWidget.setImage(getPinImage());
         
         setOpaque(false);
         setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 0));
         notifyStateChanged(ObjectState.createNormal(), ObjectState.createNormal());
     }
-        
-    public void updatePinImage() {
-        mImageWidget.setImage(getPinImage());
-    }
-    
-    protected Image getPinImage() {
-        return CasaFactory.getCasaCustomizer().getBOOLEAN_CLASSIC_ENDPOINT_PIN_STYLE() ? 
-            mClassicPinImage : mPinImage;
-    }
-    
+
     protected boolean hasPreferredLocation() {
         return false;
     }    
@@ -132,16 +128,8 @@ public abstract class CasaPinWidget extends ErrableWidget {
     }
     
     protected abstract void setPinName(String name);
-        
-    protected void setSelected(boolean isSelected) {
-        Image originalImage = getPinImage();
-        
-        if (isSelected) {
-            mImageWidget.setImage(createSelectedPinImage(originalImage));
-        } else {
-            mImageWidget.setImage(originalImage);
-        }
-    }
+    
+    protected abstract void setSelected(boolean isSelected);
     
     
     /**
@@ -149,7 +137,6 @@ public abstract class CasaPinWidget extends ErrableWidget {
      * @param previousState the previous state
      * @param state the new state
      */
-    @Override
     protected void notifyStateChanged (ObjectState previousState, ObjectState state) {
         super.notifyStateChanged(previousState, state);
         if ((!previousState.isSelected() && state.isSelected()) ||

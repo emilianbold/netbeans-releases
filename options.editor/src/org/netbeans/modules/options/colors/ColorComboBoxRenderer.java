@@ -46,6 +46,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.SystemColor;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
@@ -84,11 +85,11 @@ ListCellRenderer, ComboBoxEditor {
     public void paint (Graphics g) {
         
         //AntiAliasing check
-        @SuppressWarnings("unchecked") //NOI18N
-        Map<?, ?> aa = (Map<?, ?>) Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
+        Object aa = Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
 
         if (aa != null) {
-            ((Graphics2D) g).setRenderingHints(aa);
+            ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                    RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
         
         Color oldColor = g.getColor ();
@@ -118,7 +119,7 @@ ListCellRenderer, ComboBoxEditor {
         g.setColor (oldColor);
     }
 
-    public @Override void setEnabled (boolean enabled) {
+    public void setEnabled (boolean enabled) {
         setBackground (enabled ? 
             SystemColor.text : SystemColor.control
         );

@@ -98,7 +98,7 @@ import com.nwoods.jgo.JGoView;
 import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * This class represents a case area build on top of list area
@@ -108,7 +108,7 @@ import org.netbeans.modules.etl.logger.Localizer;
  */
 public class SQLCaseArea extends BasicListArea {
     
-    protected static final JGoBrush BRUSH_OUTPUT_REGULAR = JGoBrush.makeStockBrush(new Color(236, 215, 215)); // pink
+    protected static final JGoBrush BRUSH_OUTPUT_REGULAR = JGoBrush.makeStockBrush(new Color(236, 217, 217)); // pink
     
     protected static final JGoBrush BRUSH_INPUT_REGULAR = JGoBrush.makeStockBrush(new Color(240, 240, 240)); // light gray
     
@@ -122,13 +122,13 @@ public class SQLCaseArea extends BasicListArea {
 
     private static final JGoPen PEN_DEFAULT = JGoPen.makeStockPen(Color.WHITE);
     
-    private  final String nbBundle1 = mLoc.t("BUND432: condition");
+    private  final String nbBundle1 = mLoc.t("PRSR001: condition");
     
-    String nbBundle2 = mLoc.t("BUND433: invalid condition");
+    String nbBundle2 = mLoc.t("PRSR001: invalid condition");
     
-    private final String VALID_CONDITION = nbBundle1.substring(15);
+    private final String VALID_CONDITION = Localizer.parse(nbBundle1);
     
-    private  final String INVALID_CONDITION = nbBundle2.substring(15);
+    private  final String INVALID_CONDITION = Localizer.parse(nbBundle2);
     
     private static final URL caseUrl = SQLCaseArea.class
         .getResource("/org/netbeans/modules/sql/framework/ui/resources/images/Case.png");
@@ -164,7 +164,7 @@ public class SQLCaseArea extends BasicListArea {
     private ImageIcon invalidIcon = null;
     private ImageIcon validIcon = null;
     
-    private static transient final Logger mLogger = Logger.getLogger(SQLCaseArea.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLCaseArea.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     
     /** Creates a new instance of SQLCaseArea */
@@ -378,8 +378,8 @@ public class SQLCaseArea extends BasicListArea {
                 //layout children again
                 this.setHeight(this.getMaximumHeight());
             } else {
-                String nbBundle3 = mLoc.t("BUND434: Cannot remove selected when condition - at least one condition must be defined.");
-                String msg = nbBundle3.substring(15);
+                String nbBundle3 = mLoc.t("PRSR001: Cannot remove selected when condition - at least one condition must be defined.");
+                String msg = Localizer.parse(nbBundle3);
                 NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
             }
@@ -705,8 +705,8 @@ public class SQLCaseArea extends BasicListArea {
             
             conditionArea = new ConditionCellArea(INVALID_CONDITION);
             conditionArea.setTextAlignment(JGoText.ALIGN_CENTER);
-            String nbBundle4 = mLoc.t("BUND435: Double-click to edit condition{0}" ,"");
-            conditionArea.setToolTipText(nbBundle4.substring(15));
+            String nbBundle4 = mLoc.t("PRSR001: Double-click to edit condition{0}" ,"");
+            conditionArea.setToolTipText(Localizer.parse(nbBundle4));
             conditionArea.setLinePen(PEN_DEFAULT);
             conditionArea.setTextColor(TEXT_COLOR_INPUT);
             conditionArea.setBrush(BRUSH_INPUT_REGULAR);
@@ -1047,28 +1047,28 @@ public class SQLCaseArea extends BasicListArea {
         whenPopup = new JPopupMenu();
 
         // Show SQL
-        String nbBundle5 = mLoc.t("BUND365: Show SQL");
-        showSqlItem = new JMenuItem(nbBundle5.substring(15), new ImageIcon(showSqlUrl));
+        String nbBundle5 = mLoc.t("PRSR001: Show SQL");
+        showSqlItem = new JMenuItem(Localizer.parse(nbBundle5), new ImageIcon(showSqlUrl));
         showSqlItem.addActionListener(aListener);
 
         // Add new when. Use Action to allow inclusion in multiple menus but control via
         // only
         // one ActionListener.
-        String nbBundle6 = mLoc.t("BUND437: Add New When");
-        Action addWhenAction = new AbstractAction(nbBundle6.substring(15), new ImageIcon(caseUrl)) {
+        String nbBundle6 = mLoc.t("PRSR001: Add New When");
+        Action addWhenAction = new AbstractAction(Localizer.parse(nbBundle6), new ImageIcon(caseUrl)) {
             public void actionPerformed(ActionEvent e) {
                 addWhen_ActionPerformed(e);
             }
         };
 
         // Remove case-when
-        String nbBundle7 = mLoc.t("BUND152: Remove");
-        removeItem = new JMenuItem(nbBundle7.substring(15), new ImageIcon(removeUrl));
+        String nbBundle7 = mLoc.t("PRSR001: Remove");
+        removeItem = new JMenuItem(Localizer.parse(nbBundle7), new ImageIcon(removeUrl));
         removeItem.addActionListener(aListener);
 
         // Remove when
-        String nbBundle8 = mLoc.t("BUND439: Remove When");
-        removeWhenAction = new AbstractAction(nbBundle8.substring(15), new ImageIcon(removeUrl)) {
+        String nbBundle8 = mLoc.t("PRSR001: Remove When");
+        removeWhenAction = new AbstractAction(Localizer.parse(nbBundle8), new ImageIcon(removeUrl)) {
             public void actionPerformed(ActionEvent e) {
                 removeWhen_ActionPerformed(e);
             }
@@ -1081,8 +1081,8 @@ public class SQLCaseArea extends BasicListArea {
         popUpMenu.add(removeItem);
 
         // Build up when-specific pop up menu.
-        String nbBundle9 = mLoc.t("BUND440: Edit Condition...");
-        Action editWhenAction = new AbstractAction(nbBundle9.substring(15), new ImageIcon(editUrl)) {
+        String nbBundle9 = mLoc.t("PRSR001: Edit Condition...");
+        Action editWhenAction = new AbstractAction(Localizer.parse(nbBundle9), new ImageIcon(editUrl)) {
             public void actionPerformed(ActionEvent e) {
                 editWhen_ActionPerformed(e);
             }
@@ -1126,8 +1126,8 @@ public class SQLCaseArea extends BasicListArea {
         SQLWhen when = (SQLWhen) renderer.getDataObject();
         ConditionBuilderView builderView = ConditionBuilderUtil.getConditionBuilderView(when, (IGraphViewContainer) this.getGraphView().getGraphViewContainer());
         
-        String nbBundle10 = mLoc.t("BUND441: Edit when condition");
-        String dlgTitle = nbBundle10.substring(15);
+        String nbBundle10 = mLoc.t("PRSR001: Edit when condition");
+        String dlgTitle = Localizer.parse(nbBundle10);
         DialogDescriptor dd = new DialogDescriptor(builderView, dlgTitle,
             true, NotifyDescriptor.OK_CANCEL_OPTION, null, null);
         builderView.doValidation();
@@ -1171,8 +1171,8 @@ public class SQLCaseArea extends BasicListArea {
             cellArea.setText(INVALID_CONDITION);
             cellArea.setImageIcon(BasicCellArea.IMAGE_VALIDATION, invalidIcon);
         }
-        String nbBundle11 = mLoc.t("BUND435: Double-click to edit condition{0}",conditionDisplay);
-        cellArea.setToolTipText(nbBundle11.substring(15));        
+        String nbBundle11 = mLoc.t("PRSR001: Double-click to edit condition{0}",conditionDisplay);
+        cellArea.setToolTipText(Localizer.parse(nbBundle11));        
     }
 
     private void removeWhen_ActionPerformed(ActionEvent e) {

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,6 +50,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.junit.DefaultPlugin;
@@ -57,11 +58,13 @@ import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.JUnitSettings;
 import org.netbeans.modules.junit.TestUtil;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
@@ -282,8 +285,15 @@ public class TestSuiteWizardIterator
         /* collect and build necessary data: */
         String name = Templates.getTargetName(wizard);
         FileObject targetFolder = Templates.getTargetFolder(wizard);
+        DataFolder targetDataFolder = DataFolder.findFolder(targetFolder);
         FileObject testRootFolder = findTestRootFolder(targetFolder);
         assert testRootFolder != null;
+        
+        
+        ClassPath testClassPath = ClassPathSupport.createClassPath(
+                new FileObject[] {testRootFolder});
+        List testClassNames = TestUtil.getJavaFileNames(targetFolder,
+                                                        testClassPath);
         
         DefaultPlugin defaultPlugin = new DefaultPlugin();
         

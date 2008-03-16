@@ -42,6 +42,7 @@ package org.netbeans.modules.editor.macros.storage.ui;
 
 import java.awt.Component;
 import java.util.Collections;
+import java.util.Set;
 import javax.swing.AbstractButton;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -55,6 +56,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.api.ShortcutsFinder;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -255,6 +257,14 @@ public class MacrosPanel extends JPanel {
         assert shortcutsFinder != null : "Can't find ShortcutsFinder"; //NOI18N
         
         String shortcut = shortcutsFinder.showShortcutsDialog();
+        // is there already an action with such SC defined?
+        ShortcutAction act = shortcutsFinder.findActionForShortcut(shortcut);
+        if (act != null) {
+            Set<String> set = Collections.emptySet();
+            ((MacrosModel.Macro) act).setShortcuts(set);
+            shortcutsFinder.setShortcuts(act, set);
+        }
+        
         if (shortcut != null) {
             MacrosModel.Macro macro = model.getMacroByIndex(tMacros.getSelectedRow());
             macro.setShortcut(shortcut);

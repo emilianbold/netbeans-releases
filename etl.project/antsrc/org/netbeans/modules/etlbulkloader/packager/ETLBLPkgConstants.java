@@ -7,8 +7,8 @@ package org.netbeans.modules.etlbulkloader.packager;
 import java.io.File;
 import java.io.IOException;
 import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.etl.project.Localizer;
-
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  *
@@ -38,7 +38,7 @@ public class ETLBLPkgConstants {
     public static final String modelFileSuffix = ".etl";
     public static final String engineFileSuffix = "_engine.xml";
     
-    private static transient final Logger mLogger = Logger.getLogger(ETLBLPkgConstants.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLBLPkgConstants.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     //Current Working dir
@@ -46,7 +46,7 @@ public class ETLBLPkgConstants {
         try {
             return new File(".").getCanonicalPath();
         } catch (IOException ex) {
-            mLogger.errorNoloc(mLoc.t("PRJS041: Exception :{0}",ex.getMessage()),ex);
+            mLogger.errorNoloc(mLoc.t("PRSR041: Exception :{0}",ex.getMessage()),ex);
         }
         return null;
     }

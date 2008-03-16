@@ -41,7 +41,6 @@
 
 package org.netbeans.core.windows.actions;
 
-import java.awt.EventQueue;
 import org.netbeans.core.windows.view.ui.toolbars.ToolbarConfiguration;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.ToolbarPool;
@@ -74,24 +73,18 @@ public class ToolbarsListAction extends AbstractAction
     
     public JMenuItem getMenuPresenter() {
         String label = NbBundle.getMessage(ToolbarsListAction.class, "CTL_ToolbarsListAction");
-        final JMenu menu = new JMenu(label);
+        JMenu menu = new JMenu(label);
+        //#40584 fix start setting the empty, transparent icon for the menu item to align it correctly with other items
+        //menu.setIcon(new ImageIcon(Utilities.loadImage("org/openide/resources/actions/empty.gif"))); //NOI18N
+        //#40584 fix end
         Mnemonics.setLocalizedText(menu, label);
-        final ToolbarConfiguration curConf = 
+        ToolbarConfiguration curConf = 
             ToolbarConfiguration.findConfiguration(ToolbarPool.getDefault().getConfiguration());
         if (curConf == null) {
             return null;
         }
-        if (EventQueue.isDispatchThread()) {
-            return curConf.getToolbarsMenu(menu);
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    curConf.getToolbarsMenu(menu);
-                }
-            });
-            return menu;
-        }
+        return curConf.getToolbarsMenu(menu);
     }
-
+    
 }
 

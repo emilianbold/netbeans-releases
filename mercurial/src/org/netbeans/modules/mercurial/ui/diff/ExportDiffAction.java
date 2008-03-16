@@ -86,8 +86,7 @@ public class ExportDiffAction extends ContextAction {
 
     private static void exportDiff(VCSContext ctx) {
         final File root = HgUtils.getRootFile(ctx);
-        File[] files = ctx != null? ctx.getFiles().toArray(new File[0]): null;
-        ExportDiff ed = new ExportDiff(root, files);
+        ExportDiff ed = new ExportDiff(root);
         if (!ed.showDialog()) {
             return;
         }
@@ -121,7 +120,7 @@ public class ExportDiffAction extends ContextAction {
         if(repoRev.getRepositoryRootUrl() == null || repoRev.getRepositoryRootUrl().equals(""))
             return;
         final File root = new File(repoRev.getRepositoryRootUrl());
-        ExportDiff ed = new ExportDiff(root, repoRev, null, fileToDiff);
+        ExportDiff ed = new ExportDiff(root, repoRev, fileToDiff);
         final String revStr = repoRev.getLog().getRevision();
         if (!ed.showDialog()) {
             return;
@@ -149,11 +148,11 @@ public class ExportDiffAction extends ContextAction {
         support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")); // NOI18N
     }
 
-    public static void exportDiffRevision(final RepositoryRevision repoRev, final File[] roots) {
+    public static void exportDiffRevision(final RepositoryRevision repoRev) {
         if(repoRev == null || repoRev.getRepositoryRootUrl() == null || repoRev.getRepositoryRootUrl().equals(""))
             return;
         final File root = new File(repoRev.getRepositoryRootUrl());
-        ExportDiff ed = new ExportDiff(root, repoRev, roots);
+        ExportDiff ed = new ExportDiff(root, repoRev);
         final String revStr = repoRev.getLog().getRevision();
         if (!ed.showDialog()) {
             return;

@@ -47,8 +47,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.etl.project.Localizer;
-
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * @author Sujit Biswas
@@ -56,7 +56,7 @@ import org.netbeans.modules.etl.project.Localizer;
  */
 public class Lookup {
 
-    private static transient final Logger mLogger = Logger.getLogger(Lookup.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(Lookup.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private HashMap<String, HashMap<String, Integer>> lookupMap = new HashMap<String, HashMap<String, Integer>>();
     private HashMap<String, Integer> childIndex = new HashMap<String, Integer>();
@@ -243,7 +243,7 @@ public class Lookup {
             }
         }
 
-        mLogger.infoNoloc(mLoc.t("PRJS014: Fields for table [{0} cannot be found in the data model", tablename));
+        mLogger.infoNoloc(mLoc.t("PRSR014: Fields for table [{0} cannot be found in the data model", tablename));
         return null;
     }
 

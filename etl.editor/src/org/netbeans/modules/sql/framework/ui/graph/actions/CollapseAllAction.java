@@ -50,6 +50,7 @@ import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 
 /**
@@ -59,22 +60,22 @@ import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 public class CollapseAllAction extends GraphAction {
 
     private static final URL collapseAllImgUrl = CollapseAllAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/collapse_all_edm.png");
-    private static transient final Logger mLogger = Logger.getLogger(ExpandAllAction.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ExpandAllAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public CollapseAllAction() {
         //action name
-        String nbBundle = mLoc.t("BUND313: Collapse All");
-        this.putValue(Action.NAME, nbBundle.substring(15));
+        String nbBundle = mLoc.t("PRSR001: Collapse All");
+        this.putValue(Action.NAME, Localizer.parse(nbBundle));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(collapseAllImgUrl));
 
         //action tooltip
-        String nbBundle1 = mLoc.t("BUND314: Collapse All Graph Objects (Shift-C)");
-        this.putValue(Action.SHORT_DESCRIPTION, nbBundle1.substring(15));
-       // Acceleratot Shift-C
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('C', InputEvent.SHIFT_DOWN_MASK));
+        String nbBundle1 = mLoc.t("PRSR001: Collapse All Graph Objects (Cntl-C)");
+        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle1));
+       // Acceleratot Cntl-C
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('C', InputEvent.CTRL_MASK ));
     }
 
     /**

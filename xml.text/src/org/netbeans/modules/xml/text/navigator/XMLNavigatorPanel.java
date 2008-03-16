@@ -41,9 +41,11 @@
 
 package org.netbeans.modules.xml.text.navigator;
 
-import org.openide.util.NbBundle;
+import javax.swing.JComponent;
 import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorContent;
 import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorPanel;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /** An implementation of NavigatorPanel for XML navigator.
  *
@@ -51,10 +53,9 @@ import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorPanel;
  * @version 1.0
  */
 public class XMLNavigatorPanel extends AbstractXMLNavigatorPanel {
+
       
-    /**
-     * public no arg constructor needed for system to instantiate the provider.
-     */
+    /** public no arg constructor needed for system to instantiate the provider. */
     public XMLNavigatorPanel() {
     }
     
@@ -66,11 +67,19 @@ public class XMLNavigatorPanel extends AbstractXMLNavigatorPanel {
         return NbBundle.getMessage(XMLNavigatorPanel.class, "XML_View");
     }
     
+    public JComponent getComponent() {
+        return navigator;
+    }
+    
+    public Lookup getLookup() {
+        return null;
+    }
     protected  AbstractXMLNavigatorContent getNavigatorUI() {
 	if (navigator == null) {
-	    navigator = new NavigatorContent();
+	    navigator = NavigatorContent.getDefault();
 	}
 	return navigator;
     }
+
     
 }

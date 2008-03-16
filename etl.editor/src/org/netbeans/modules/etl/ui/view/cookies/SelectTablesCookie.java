@@ -52,7 +52,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Cookie for exposing access to a dialog box for selecting tables to participate in an
@@ -66,7 +66,7 @@ public class SelectTablesCookie implements Node.Cookie {
     private static final boolean DEBUG = false;
     private static final String LOG_CATEGORY = SelectTablesCookie.class.getName();
     private ETLDataObject dataObj;
-    private static transient final Logger mLogger = Logger.getLogger(SelectTablesCookie.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(SelectTablesCookie.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /**
@@ -98,9 +98,9 @@ public class SelectTablesCookie implements Node.Cookie {
                 helper.updateTableSelections(dataObj, sources, targets);
 
                 if (DEBUG) {
-                    mLogger.infoNoloc(mLoc.t("EDIT019: Selected source tables:{0}", sources));
-                    mLogger.infoNoloc(mLoc.t("EDIT020: Selected target tables:{0}", targets));
-                    mLogger.infoNoloc(mLoc.t("EDIT021: New state of ETL Definition:{0}", def.toXMLString("")));
+                    mLogger.infoNoloc(mLoc.t("PRSR019: Selected source tables:{0}", sources));
+                    mLogger.infoNoloc(mLoc.t("PRSR020: Selected target tables:{0}", targets));
+                    mLogger.infoNoloc(mLoc.t("PRSR021: New state of ETL Definition:{0}", def.toXMLString("")));
                 }
                 dataObj.getETLEditorSupport().synchDocument();
             }

@@ -22,17 +22,22 @@ package org.netbeans.modules.etl.project.ui.wizards;
 import java.io.File;
 import java.io.IOException;
 
-import org.openide.util.NbBundle;
+import net.java.hulp.i18n.Logger;
 
 import org.netbeans.modules.compapp.projects.base.ui.wizards.*;
 import org.netbeans.modules.etl.project.EtlproProjectGenerator;
+import org.netbeans.modules.etl.project.Localizer;
+import org.netbeans.modules.etl.project.LogUtil;
 
 public class NewEtlproProjectWizardIterator extends NewIcanproProjectWizardIterator{
     
     private static final long serialVersionUID = 1L;
+    private static transient final Logger mLogger = LogUtil.getLogger(NewEtlproProjectWizardIterator.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     protected String getDefaultName() {
-        return NbBundle.getMessage(NewEtlproProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName"); //NOI18N        
+        String nbBundle1 = mLoc.t("PRSR001: DataIntegratorApp{0}");
+        return Localizer.parse(nbBundle1);//NOI18N        
     }
 
     protected void createProject(File dirF, String name, String j2eeLevel) throws IOException {

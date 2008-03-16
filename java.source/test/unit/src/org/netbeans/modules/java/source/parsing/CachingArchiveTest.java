@@ -91,12 +91,12 @@ public class CachingArchiveTest extends NbTestCase {
         
         CachingArchive a = new CachingArchive(archive, false);
         
-        a.doInit();
+        a.initialize();
         
         a.putName(new byte[65536]);
         
         a.clear();
-        a.doInit();
+        a.initialize();
         
         a.putName(new byte[1]);
     }

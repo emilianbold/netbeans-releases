@@ -141,12 +141,13 @@ public class JsAnalyzerTest extends JsTestBase {
             }
 
             @Override
-            public void appendText(String text, int fromInclusive, int toExclusive) {
+            public void appendText(String text) {
+                // TODO escaped
                 sb.append("ESCAPED{");
-                sb.append(text, fromInclusive, toExclusive);
+                sb.append(text);
                 sb.append("}");
             }
-            
+
             @Override
             public void name(ElementKind kind, boolean start) {
                 if (start) {
@@ -387,10 +388,5 @@ public class JsAnalyzerTest extends JsTestBase {
 
     public void testImports2() throws Exception {
         checkImports("testfiles/dragdrop.js");
-    }
-
-    public void testClasses() throws Exception {
-        checkStructure("testfiles/classes.js");
-        checkFolds("testfiles/classes.js");
     }
 }

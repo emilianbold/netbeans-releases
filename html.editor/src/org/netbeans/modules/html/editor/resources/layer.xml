@@ -240,8 +240,6 @@ made subject to such option by the copyright holder.
                 <file name="Settings.settings" url="HTMLOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.html.HTMLKit"/>
-                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.editor.html.HTMLKit"/>
-                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 
                 <folder name="UpToDateStatusProvider">

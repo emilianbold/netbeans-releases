@@ -56,12 +56,10 @@ public class JsCommentFormatter {
     private static final String PARAM_TAG = "@param"; //NOI18N
     private static final String RETURN_TAG = "@return"; //NOI18N
     private static final String THROWS_TAG = "@throws"; //NOI18N
-    private static final String DEPRECATED_TAG = "@deprecated"; //NOI18N
     
     private final TokenSequence<? extends JsCommentTokenId> ts;
     private final StringBuilder summary;
     private String returnTag;
-    private String deprecation;
     private final List<String> params;
     private final List<String> exceptions;
     // flag to see if this is already formatted comment with all html stuff
@@ -97,29 +95,9 @@ public class JsCommentFormatter {
         StringBuilder sb = new StringBuilder();
         
         if (!formattedComment && summary.length() > 0) {
-            String summaryText = summary.toString().trim();
-            if (summaryText.length() > 0) {
-                sb.append("<b>Summary</b><blockquote>").append(summaryText).append("</blockquote>"); //NOI18N
-            }
+            sb.append("<b>Summary</b><blockquote>").append(summary).append("</blockquote>"); //NOI18N
         } else {
             sb.append(summary);
-        }
-
-        if (deprecation != null) {
-            boolean hasDescription = deprecation.trim().length() > 0;
-            sb.append("<b");
-            if (!hasDescription) {
-                sb.append(" style=\"background:#ffcccc\"");
-            }
-            sb.append(">Deprecated</b>");
-            sb.append("<blockquote");
-            if (hasDescription) {
-                sb.append(" style=\"background:#ffcccc\">");
-                sb.append(deprecation);
-            } else {
-                sb.append(">");
-            }
-            sb.append("</blockquote>"); //NOI18N
         }
         
         if (params.size() > 0) {
@@ -192,8 +170,7 @@ public class JsCommentFormatter {
             returnTag = tag.substring(RETURN_TAG.length()).trim();
         } else if (tag.startsWith(THROWS_TAG)) {
             exceptions.add(tag.substring(THROWS_TAG.length()).trim());
-        } else if (tag.startsWith(DEPRECATED_TAG)) {
-            deprecation = tag.substring(DEPRECATED_TAG.length()).trim();
         }
     }
+    
 }

@@ -1,7 +1,7 @@
 /*
  *  ProductsConverter
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on November 27, 2007, 2:08 AM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -27,9 +27,9 @@ import o.n.m.ws.qaf.rest.crud.Product;
 @XmlRootElement(name = "products")
 public class ProductsConverter {
     private Collection<Product> entities;
-    private Collection<o.n.m.ws.qaf.rest.crud.converter.ProductRefConverter> references;
+    private Collection<ProductRefConverter> references;
     private URI uri;
-    
+  
     /** Creates a new instance of ProductsConverter */
     public ProductsConverter() {
     }
@@ -51,7 +51,7 @@ public class ProductsConverter {
      * @return a collection of ProductRefConverter
      */
     @XmlElement(name = "productRef")
-    public Collection<o.n.m.ws.qaf.rest.crud.converter.ProductRefConverter> getReferences() {
+    public Collection<ProductRefConverter> getReferences() {
         references = new ArrayList<ProductRefConverter>();
         if (entities != null) {
             for (Product entity : entities) {
@@ -66,7 +66,7 @@ public class ProductsConverter {
      *
      * @param a collection of ProductRefConverter to set
      */
-    public void setReferences(Collection<o.n.m.ws.qaf.rest.crud.converter.ProductRefConverter> references) {
+    public void setReferences(Collection<ProductRefConverter> references) {
         this.references = references;
     }
 

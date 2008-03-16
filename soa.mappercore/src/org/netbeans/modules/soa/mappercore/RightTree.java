@@ -79,8 +79,7 @@ public class RightTree extends MapperPanel implements
     private JLabel childrenLabel;
     private RightTreeCellRenderer treeCellRenderer = new DefaultRightTreeCellRenderer();
     private ActionListener actionEscape;
-    private boolean printMode = false;
-    
+
     RightTree(Mapper mapper) {
         super(mapper);
 
@@ -272,13 +271,6 @@ public class RightTree extends MapperPanel implements
 
         clearCellRendererPane();
     }
-    
-    @Override
-    public void print(Graphics g) {
-        printMode = true;
-        super.print(g);
-        printMode = false;
-    }
 
     @Override
     public void paintComponent(Graphics g) {
@@ -329,7 +321,7 @@ public class RightTree extends MapperPanel implements
         final boolean leaf = node.isLeaf();
         final boolean expanded = node.isExpanded();
 
-        if (node.isSelected() && !printMode) {
+        if (node.isSelected()) {
             VerticalGradient gradient = (hasFocus())
                     ? Mapper.SELECTED_BACKGROUND_IN_FOCUS
                     : Mapper.SELECTED_BACKGROUND_NOT_IN_FOCUS;
@@ -457,17 +449,6 @@ public class RightTree extends MapperPanel implements
         Graph graph = node.getGraph();
 
         boolean hasEdge = (graph != null && graph.hasOutgoingLinks());
-        Link link = null;
-        for (int i = graph.getLinkCount() - 1; i >= 0; i--) {
-          if (graph.getLink(i).getTarget() instanceof Graph) {
-              link = graph.getLink(i);
-          }  
-        }
-        
-        if (link != null) {
-            hasEdge = getCanvas().getRendererContext().paintLink(node.getTreePath(), link);
-        }
-        
         boolean hasChildEdges = false;
 
         if (leaf) {

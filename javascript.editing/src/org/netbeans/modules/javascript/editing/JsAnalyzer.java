@@ -48,7 +48,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.ImageIcon;
 import org.mozilla.javascript.FunctionNode;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Token;
@@ -92,7 +91,7 @@ public class JsAnalyzer implements StructureScanner {
                 } else {
                     in = e.getName();
                 }
-            } else if (e.getKind() == ElementKind.CONSTRUCTOR && Character.isUpperCase(e.getName().charAt(0))) {
+            } else if (e.getKind() == ElementKind.CONSTRUCTOR) {
                 if (e.getIn() != null && e.getIn().length() > 0) {
                     in = e.getIn() + "." + e.getName();
                 } else {
@@ -242,27 +241,9 @@ public class JsAnalyzer implements StructureScanner {
         private Map<String,String> classExtends;
         private Set<String> fields;
         private Node inConstructor;
-        private Node currentFunction;
-        /** Namespace map */
-        private Map<String,String> classToFqn;
         
         private AnalysisResult(CompilationInfo info) {
             this.info = info;
-        }
-
-        void addNameSpace(String name, String namespace) {
-            if (classToFqn == null) {
-                classToFqn = new HashMap<String,String>();
-            }
-            classToFqn.put(name, namespace);
-        }
-        
-        String getNameSpace(String name) {
-            if (classToFqn != null) {
-                return classToFqn.get(name);
-            }
-            
-            return null;
         }
 
         String getExtends(String name) {
@@ -274,13 +255,6 @@ public class JsAnalyzer implements StructureScanner {
         
         Map<String,String> getExtendsMap() {
             return classExtends;
-        }
-        
-        void addSuperClass(String className, String superName) {
-            if (classExtends == null) {
-                classExtends = new HashMap<String, String>();
-            }
-            classExtends.put(className.toString(), superName.toString());
         }
         
         public boolean visit(Node node) {
@@ -309,7 +283,10 @@ public class JsAnalyzer implements StructureScanner {
                                     StringBuilder className = new StringBuilder();
                                     StringBuilder superName = new StringBuilder();
                                     if (AstUtilities.addName(className, first) && AstUtilities.addName(superName, second)) {
-                                        addSuperClass(className.toString(), superName.toString());
+                                        if (classExtends == null) {
+                                            classExtends = new HashMap<String, String>();
+                                        }
+                                        classExtends.put(className.toString(), superName.toString());
                                     }
                                 }
                             }
@@ -329,23 +306,26 @@ public class JsAnalyzer implements StructureScanner {
                         className = className.substring(0, className.length()-AstUtilities.DOT_PROTOTYPE.length());
 
                         // Make a constructor function for this type of object
-                        String name = className;
-                        String in = null;
-                        int dot = className.lastIndexOf('.');
-                        if (dot != -1) {
-                            in = className.substring(0, dot);
-                            name = className.substring(dot+1);
-                        }
-                        AstElement js = AstElement.createElement(info, node, name, in, this);
+                        AstElement js = AstElement.getElement(info, node);
                         if (js != null) {
-                            checkDocumentation(js);
+                            String name = className;
+                            String in = className;
+                            int dot = className.lastIndexOf('.');
+                            if (dot != -1) {
+                                in = className.substring(0, dot);
+                                name = className.substring(dot+1);
+                            }
+                            js.setName(name, in);
                             js.setKind(ElementKind.CONSTRUCTOR);
                             elements.add(js);
                         }
                     }
 
                     if (superName != null) {
-                        addSuperClass(className, superName.toString());
+                        if (classExtends == null) {
+                            classExtends = new HashMap<String, String>();
+                        }
+                        classExtends.put(className, superName.toString());
                     }
 
                     // TODO - only do this for capitalized names??
@@ -353,24 +333,13 @@ public class JsAnalyzer implements StructureScanner {
                         if (child.getType() == Token.OBJLITNAME) {
                             Node f = AstUtilities.getLabelledNode(child);
                             if (f != null) {
-                                AstElement js = AstElement.createElement(info, f, child.getString(), className, this);
+                                AstElement js = AstElement.getElement(info, f);
                                 if (js != null) {
-                                    checkDocumentation(js);
+                                    js.setName(child.getString(), className);
                                     if (f.getType() != Token.FUNCTION) {
                                         js.setKind(ElementKind.PROPERTY);
-                                        // Try to initialize the type, if possible
-                                        String type = AstUtilities.getExpressionType(f);
-                                        if (type != null) {
-                                            js.setType(type);
-                                        }
                                     } else if (js.getKind() == ElementKind.CONSTRUCTOR) {
                                         inConstructor = f;
-                                        String in = js.getIn();
-                                        if (in != null && in.length() > 0) {
-                                            js.setType(in);
-                                        } else {
-                                            js.setType(js.getName());
-                                        }
                                     }
                                     elements.add(js);
                                 }
@@ -387,14 +356,12 @@ public class JsAnalyzer implements StructureScanner {
             
             case Token.FUNCTION: {
                 FunctionNode func = (FunctionNode) node;
-                currentFunction = func;
                 boolean[] isInstanceHolder = new boolean[1];
                 String name = AstUtilities.getFunctionFqn(node, isInstanceHolder);
                     
                 if (name != null && name.length() > 0) {
                     String in = "";
                     boolean isInstance = isInstanceHolder[0];
-                    String fqn = name;
                     int lastDotIndex = name.lastIndexOf('.');
                     if (lastDotIndex != -1) {
                         in = name.substring(0, lastDotIndex);
@@ -418,17 +385,14 @@ public class JsAnalyzer implements StructureScanner {
                         }
                     }
                     
-                    AstElement js = AstElement.createElement(info, func, name, in, this);
-                    if (js != null) {
-                        checkDocumentation(js);
-                        if (!isInstance) {
-                            js.markStatic();
-                        }
-                        elements.add(js);
+                    FunctionAstElement js = new FunctionAstElement(info, func);
+                    js.setName(name, in);
+                    if (!isInstance) {
+                        js.setModifiers(AstElement.STATIC);
                     }
+                    elements.add(js);
                     
                     if (Character.isUpperCase(name.charAt(0))) {
-                        js.setType(fqn);
                         inConstructor = func;
                     }
                 } else {
@@ -492,18 +456,10 @@ public class JsAnalyzer implements StructureScanner {
                                                 fields = new HashSet<String>();
                                             }
                                             fields.add(propFqn);
-                                            AstElement js = AstElement.createElement(info, propertyNode, name, in, this); 
-                                            if (js != null) {
-                                                checkDocumentation(js);
-                                                js.setKind(ElementKind.PROPERTY);
-                                                if (rhs != null) {
-                                                    String type = AstUtilities.getExpressionType(rhs);
-                                                    if (type != null) {
-                                                        js.setType(type);
-                                                    }
-                                                }
-                                                elements.add(js);
-                                            }
+                                            AstElement js = AstElement.getElement(info, propertyNode); 
+                                            js.setKind(ElementKind.PROPERTY);
+                                            js.setName(name, in);
+                                            elements.add(js);
                                         }
                                     }
                                 }
@@ -529,35 +485,12 @@ public class JsAnalyzer implements StructureScanner {
                                 String className = AstUtilities.getFqn(parentNode, null, null);
                                 if (className != null) {
                                     String superClass = callExp.substring(0, callExp.length()-DOT_CALL.length()); // NOI18N
-                                    addSuperClass(className, superClass.toString());
+                                    if (classExtends == null) {
+                                        classExtends = new HashMap<String, String>();
+                                    }
+                                    classExtends.put(className, superClass.toString());
                                 }
                             }
-                        }
-                    }
-                }
-                break;
-            }
-            
-            case Token.RETURN: {
-                // See if we can figure out the return type of this function
-                if (currentFunction != null) {
-                    if (currentFunction.nodeType == Node.UNKNOWN_TYPE) {
-                        break;
-                    }
-                    Node child = node.getFirstChild();
-                    String type; // NOI18N
-                    if (child == null) {
-                        type = "void"; // NOI18N
-                    } else {
-                        type = AstUtilities.getExpressionType(child);
-                    }
-                    if (type == Node.UNKNOWN_TYPE) {
-                        currentFunction.nodeType = Node.UNKNOWN_TYPE;
-                    } else if (currentFunction.nodeType == null) {
-                        currentFunction.nodeType = type;
-                    } else {
-                        if (currentFunction.nodeType.indexOf(type) == -1) {
-                            currentFunction.nodeType = currentFunction.nodeType + "|" + type; // NOI18N
                         }
                     }
                 }
@@ -568,72 +501,9 @@ public class JsAnalyzer implements StructureScanner {
         }
         
         public boolean unvisit(Node node) {
-            if (node.getType() == Token.FUNCTION) {
-                if (currentFunction != null && currentFunction.nodeType == null) {
-                    // Except for stubs...
-                    if (info != null && !info.getFileObject().getNameExt().startsWith("stub_")) { // NOI18N
-                        currentFunction.nodeType = "void"; // NOI18N
-                    }
-                }
-                currentFunction = null;
-                
-                Node n = node.getParentNode();
-                for (; n != null; n = n.getParentNode()) {
-                    if (n.getType() == Token.FUNCTION) {
-                        currentFunction = n;
-                        break;
-                    }
-                }
-            }
-
             return false;
         }
-        
-        /** 
-         * Elements can have their names and namespaces updated by documentation;
-         * not just on this element but by a general name space map. E.g.
-         * we can have one documentation saying that "Anim" is in YAHOO.util
-         * and then multiple references to just Anim; these should all map to
-         * YAHOO.util.Anim.
-         */
-        private void checkDocumentation(AstElement element) {
-            // Namespace lookup
-            if (element.in != null && element.in.length() > 0) {
-                String namespace = getNameSpace(element.in);
-                if (namespace != null) {
-                    element.in = namespace + "." + element.in;
-                }
-            } else if (Character.isUpperCase(element.name.charAt(0))) {
-                String namespace = getNameSpace(element.name);
-                if (namespace != null) {
-                    element.in = namespace;
-                }
-            }
-            
-            Map<String, String> typeMap = element.getDocProps();
-            if (typeMap != null) {
-                String clz = typeMap.get("@class"); // NOI18N
-                if (clz != null) {
-                    int dot = clz.lastIndexOf('.');
-                    if (dot != -1) {
-                        element.in = clz.substring(0, dot);
-                        element.name = clz.substring(dot+1);
-                    } else {
-                        element.name = clz;
-                    }
-                    String s = typeMap.get("@extends"); // NOI18N
-                    if (s != null) {
-                        addSuperClass(element.name, s);
-                    }
-                }
-                String namespace = typeMap.get("@namespace"); // NOI18N
-                if (namespace != null) {
-                    addNameSpace(element.name, namespace);
-                    element.in = namespace;
-                }
-            }
-        }
-        
+
         private void postProcess(JsParseResult result) {
             if (result.getRootNode() != null) {
                 VariableVisitor visitor = result.getVariableVisitor();
@@ -645,7 +515,6 @@ public class JsAnalyzer implements StructureScanner {
                         if (!globals.contains(name)) {
                             globals.add(name);
                             GlobalAstElement global = new GlobalAstElement(info, node);
-                            node.element = global;
                             elements.add(global);
                         }
                     }
@@ -720,10 +589,6 @@ public class JsAnalyzer implements StructureScanner {
             return name;
         }
 
-        public String getSortText() {
-            return getName();
-        }
-
         public String getHtml() {
             formatter.reset();
             formatter.appendText(name);
@@ -796,10 +661,6 @@ public class JsAnalyzer implements StructureScanner {
         public String toString() {
             return getName();
         }
-
-        public ImageIcon getCustomIcon() {
-            return null;
-        }
     }
 
     private class JsStructureItem implements StructureItem {
@@ -832,24 +693,11 @@ public class JsAnalyzer implements StructureScanner {
             
             return name;
         }
-        
-        public String getSortText() {
-            return getName();
-        }
 
         public String getHtml() {
             formatter.reset();
-            boolean strike = element.getModifiers().contains(Modifier.DEPRECATED);
-            if (strike) {
-                formatter.deprecated(true);
-            }
-
             formatter.appendText(getName());
-            
-            if (strike) {
-                formatter.deprecated(false);
-            }
-            
+
             if (element instanceof FunctionAstElement) {
                 // Append parameters
                 FunctionAstElement jn = (FunctionAstElement)element;
@@ -873,11 +721,6 @@ public class JsAnalyzer implements StructureScanner {
                     formatter.parameters(false);
                     formatter.appendHtml(")");
                 }
-            }
-
-            if (element.getType() != null && element.getType() != Node.UNKNOWN_TYPE) {
-                formatter.appendHtml(" : ");
-                formatter.appendText(element.getType());
             }
 
             return formatter.getText();
@@ -979,10 +822,6 @@ public class JsAnalyzer implements StructureScanner {
         @Override
         public String toString() {
             return getName();
-        }
-
-        public ImageIcon getCustomIcon() {
-            return null;
         }
     }
 }

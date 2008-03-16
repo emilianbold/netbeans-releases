@@ -187,12 +187,12 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
             if (!location.equals(oldPlatformLoc) || getAIVPP().getDomainsListModel().getSize() < 1) {
                 Object[] domainsList = getDomainList(Util.getRegisterableDefaultDomains(location),location);
                 getAIVPP().setDomainsList(domainsList,true);
-                if (ServerLocationManager.getAppServerPlatformVersion(location) !=
-                        ServerLocationManager.GF_V2) {
-                    getAIVPP().setProfilesList(SHORT_PROFILES_LIST,true);
-                } else {
-                    getAIVPP().setProfilesList(LONG_PROFILES_LIST,true);
-                }
+            }
+            if (ServerLocationManager.getAppServerPlatformVersion(location) !=
+                    ServerLocationManager.GF_V2) {
+                getAIVPP().setProfilesList(SHORT_PROFILES_LIST,true);
+            } else {
+                getAIVPP().setProfilesList(LONG_PROFILES_LIST,true);
             }
             //component.setDomainsList();
             if (ServerLocationManager.isGlassFish(location)) {

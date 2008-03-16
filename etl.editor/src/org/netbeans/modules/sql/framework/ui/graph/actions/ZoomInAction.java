@@ -45,6 +45,7 @@ import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 
 
@@ -58,22 +59,22 @@ import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 public class ZoomInAction extends GraphAction {
 
     private static final URL zoomInImgUrl = ZoomInAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/zoom_in_edm.png");
-    private static transient final Logger mLogger = Logger.getLogger(ZoomInAction.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ZoomInAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public ZoomInAction() {
         //action name
-        String nbBundle = mLoc.t("BUND321: Zoom In...");
-        this.putValue(Action.NAME, nbBundle.substring(15));
+        String nbBundle = mLoc.t("PRSR001: Zoom In...");
+        this.putValue(Action.NAME, Localizer.parse(nbBundle));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(zoomInImgUrl));
 
         //action tooltip
-        String nbBundle1 = mLoc.t("BUND322: Zoom In (Shift-Q)");
-        this.putValue(Action.SHORT_DESCRIPTION, nbBundle1.substring(15));
-        // Acceleratot Shift-Q
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('Q', InputEvent.SHIFT_DOWN_MASK));
+        String nbBundle1 = mLoc.t("PRSR001: Zoom In (Cntl-Q)");
+        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle1));
+        // Acceleratot Cntl-Q
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('Q', InputEvent.CTRL_MASK ));
     }
 
     public void actionPerformed(ActionEvent e) {
